@@ -13,18 +13,18 @@ const whatsappHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
 export function EmptyCart() {
   return (
     <div className="mx-auto max-w-3xl px-5 py-24 text-center sm:px-8">
-      <div className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-[20px] border border-[var(--site-line)] bg-white">
+      <div className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-[20px] border border-(--site-line) bg-white">
         <ShoppingBag
           size={36}
           aria-hidden="true"
-          className="text-[var(--brand-orange-ink)]"
+          className="text-(--brand-orange-ink)"
           strokeWidth={1.6}
         />
       </div>
-      <h1 className="mt-6 font-display text-[clamp(2rem,4vw,2.4rem)] leading-tight tracking-[-0.02em] text-[var(--site-ink)]">
+      <h1 className="mt-6 font-display text-[clamp(2rem,4vw,2.4rem)] leading-tight tracking-[-0.02em] text-(--site-ink)">
         Sepetin boş.
       </h1>
-      <p className="mx-auto mt-3 max-w-[420px] text-[16px] leading-[1.6] text-[var(--site-body)]">
+      <p className="mx-auto mt-3 max-w-[420px] text-[16px] leading-[1.6] text-(--site-body)">
         Ders, koçluk ve denemeden ihtiyacın olanı seçerek paketini oluşturabilirsin.
       </p>
       <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">

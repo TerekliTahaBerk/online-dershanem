@@ -41,16 +41,16 @@ export default async function DenemeKulubuPage() {
       />
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
-        <section className="overflow-hidden bg-[var(--site-bg-warm)] py-20 sm:py-28">
+        <section className="overflow-hidden bg-(--site-bg-warm) py-20 sm:py-28">
           <div className="site-container grid items-center gap-12 lg:grid-cols-[1.12fr_.88fr]">
             <div>
               <span className="site-eyebrow">
                 Online Deneme Kulübüm · LGS, TYT ve AYT
               </span>
-              <h1 className="mt-5 max-w-3xl font-display text-[clamp(2.7rem,6vw,5.25rem)] leading-[.98] tracking-[-.055em] text-[var(--site-ink)]">
+              <h1 className="mt-5 max-w-3xl font-display text-[clamp(2.7rem,6vw,5.25rem)] leading-[.98] tracking-[-.055em] text-(--site-ink)">
                 Sadece puanı değil, bir sonraki adımı da görün.
               </h1>
-              <p className="mt-7 max-w-2xl text-lg leading-8 text-[var(--site-body)]">
+              <p className="mt-7 max-w-2xl text-lg leading-8 text-(--site-body)">
                 LGS, TYT ve AYT için gerçek sınav saatinde online denemeye
                 girin; sonuç, kazanım analizi ve gelişim raporlarını tek panelde
                 takip edin. Her paketin içeriği ve erişim koşulları satın
@@ -93,13 +93,13 @@ export default async function DenemeKulubuPage() {
                 return (
                   <article
                     key={String(title)}
-                    className="rounded-[24px] border border-[var(--site-line)] bg-white p-5"
+                    className="rounded-od-xl border border-(--site-line) bg-white p-5"
                   >
-                    <CardIcon className="text-[var(--brand-orange)]" />
-                    <h2 className="mt-4 font-display text-xl text-[var(--site-ink)]">
+                    <CardIcon className="text-(--brand-orange)" />
+                    <h2 className="mt-4 font-display text-xl text-(--site-ink)">
                       {String(title)}
                     </h2>
-                    <p className="mt-2 text-sm leading-6 text-[var(--site-body)]">
+                    <p className="mt-2 text-sm leading-6 text-(--site-body)">
                       {String(body)}
                     </p>
                   </article>
@@ -115,10 +115,10 @@ export default async function DenemeKulubuPage() {
         >
           <div className="max-w-2xl">
             <span className="site-eyebrow">Paketler</span>
-            <h2 className="mt-4 font-display text-4xl tracking-[-.04em] text-[var(--site-ink)] sm:text-5xl">
+            <h2 className="mt-4 font-display text-4xl tracking-[-.04em] text-(--site-ink) sm:text-5xl">
               Takvimi ve hakları belli paketler
             </h2>
-            <p className="mt-4 leading-7 text-[var(--site-body)]">
+            <p className="mt-4 leading-7 text-(--site-body)">
               Fiyat, deneme tarihleri ve rapor erişimleri canlı ürün
               kataloğundan gelir.
             </p>
@@ -152,19 +152,19 @@ export default async function DenemeKulubuPage() {
           )}
         </section>
 
-        <section className="bg-[var(--site-bg-warm)] py-20">
+        <section className="bg-(--site-bg-warm) py-20">
           <div className="site-container">
             <span className="site-eyebrow">Sık sorulanlar</span>
             <div className="mt-7 grid gap-4 lg:grid-cols-2">
               {ODK_PUBLIC_FAQ.map((item) => (
                 <details
                   key={item.q}
-                  className="rounded-[22px] border border-[var(--site-line)] bg-white p-5"
+                  className="rounded-[22px] border border-(--site-line) bg-white p-5"
                 >
-                  <summary className="cursor-pointer font-semibold text-[var(--site-ink)]">
+                  <summary className="cursor-pointer font-semibold text-(--site-ink)">
                     {item.q}
                   </summary>
-                  <p className="mt-3 leading-7 text-[var(--site-body)]">
+                  <p className="mt-3 leading-7 text-(--site-body)">
                     {item.a}
                   </p>
                 </details>

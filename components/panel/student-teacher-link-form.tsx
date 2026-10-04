@@ -109,7 +109,7 @@ export function StudentTeacherLinkForm({
       </button>
       {error ? (
         <p
-          className="sm:col-span-3 text-sm font-semibold text-[var(--brand-danger,#b42318)]"
+          className="sm:col-span-3 text-sm font-semibold text-(--brand-danger,#b42318)"
           role="alert"
         >
           {error}
@@ -139,7 +139,7 @@ export function StudentTeacherUnlinkButton({ linkId }: { linkId: string }) {
       type="button"
       disabled={pending}
       onClick={() => void onClick()}
-      className="text-[12.5px] font-semibold text-[var(--site-muted)] underline-offset-2 hover:underline"
+      className="text-[12.5px] font-semibold text-(--site-muted) underline-offset-2 hover:underline"
     >
       Kaldır
     </button>

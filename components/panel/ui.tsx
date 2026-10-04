@@ -45,7 +45,7 @@ export function PanelHeading({
           <p className="text-[13px] text-dc-ink-faint">{eyebrow}</p>
         ) : null}
         <h1
-          className={`text-[22px] font-extrabold leading-[1.25] tracking-[-0.02em] text-dc-ink sm:text-[26px] ${
+          className={`text-[22px] font-extrabold leading-tight tracking-[-0.02em] text-dc-ink sm:text-[26px] ${
             eyebrow ? "mt-2" : ""
           }`}
         >
@@ -218,12 +218,12 @@ export function PanelMetric({
 }) {
   const toneClasses: Record<Exclude<PanelTone, "danger">, string> = {
     neutral: "bg-dc-surface-soft text-dc-ink-muted",
-    info: "bg-[var(--pd-pastel-sky-soft)] text-[var(--pd-pastel-sky-ink)]",
-    success: "bg-[var(--pd-pastel-mint-soft)] text-[var(--pd-pastel-mint-ink)]",
+    info: "bg-(--pd-pastel-sky-soft) text-(--pd-pastel-sky-ink)",
+    success: "bg-(--pd-pastel-mint-soft) text-(--pd-pastel-mint-ink)",
     warning:
-      "bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]",
+      "bg-(--pd-pastel-yellow-soft) text-(--pd-pastel-yellow-ink)",
     critical:
-      "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]",
+      "bg-(--pd-pastel-blush-soft) text-(--pd-pastel-blush-ink)",
   };
   const semanticTone = normalizeTone(tone);
   return (
@@ -231,7 +231,7 @@ export function PanelMetric({
       {Icon ? (
         <span
           className={cn(
-            "grid h-9 w-9 place-items-center rounded-[10px]",
+            "grid h-9 w-9 place-items-center rounded-od",
             toneClasses[semanticTone],
           )}
         >
@@ -268,12 +268,12 @@ export function PanelStatusBadge({
 }) {
   const toneClasses: Record<Exclude<PanelTone, "danger">, string> = {
     neutral: "bg-slate-100 text-slate-700",
-    info: "bg-[var(--pd-pastel-sky-soft)] text-[var(--pd-pastel-sky-ink)]",
+    info: "bg-(--pd-pastel-sky-soft) text-(--pd-pastel-sky-ink)",
     warning:
-      "bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]",
-    success: "bg-[var(--pd-pastel-mint-soft)] text-[var(--pd-pastel-mint-ink)]",
+      "bg-(--pd-pastel-yellow-soft) text-(--pd-pastel-yellow-ink)",
+    success: "bg-(--pd-pastel-mint-soft) text-(--pd-pastel-mint-ink)",
     critical:
-      "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]",
+      "bg-(--pd-pastel-blush-soft) text-(--pd-pastel-blush-ink)",
   };
   const semanticTone = normalizeTone(tone);
   return (
@@ -312,11 +312,11 @@ export function PanelAttentionCard({
 }) {
   const Heading = headingLevel === 2 ? "h2" : "h3";
   const toneClasses: Record<"info" | "warning" | "critical", string> = {
-    info: "border-[var(--pd-pastel-sky-ink)]/20 bg-[var(--pd-pastel-sky-soft)]",
+    info: "border-(--pd-pastel-sky-ink)/20 bg-(--pd-pastel-sky-soft)",
     warning:
-      "border-[var(--pd-pastel-yellow-ink)]/20 bg-[var(--pd-pastel-yellow-soft)]",
+      "border-(--pd-pastel-yellow-ink)/20 bg-(--pd-pastel-yellow-soft)",
     critical:
-      "border-[var(--pd-pastel-blush-ink)]/25 bg-[var(--pd-pastel-blush-soft)]",
+      "border-(--pd-pastel-blush-ink)/25 bg-(--pd-pastel-blush-soft)",
   };
   const semanticTone = tone === "danger" ? "critical" : tone;
   return (
@@ -379,7 +379,7 @@ export function PanelActionRow({
           ) : null}
         </div>
         {cta ? (
-          <div className="w-full sm:w-auto sm:shrink-0 [&>*]:w-full sm:[&>*]:w-auto">
+          <div className="w-full sm:w-auto sm:shrink-0 *:w-full sm:*:w-auto">
             {cta}
           </div>
         ) : null}
@@ -496,7 +496,7 @@ export function PanelTaskRow({
         <span
           className={`shrink-0 text-[13px] ${
             rightTone === "warn"
-              ? "text-[var(--pd-pastel-yellow-ink)]"
+              ? "text-(--pd-pastel-yellow-ink)"
               : "text-dc-ink-muted"
           }`}
         >

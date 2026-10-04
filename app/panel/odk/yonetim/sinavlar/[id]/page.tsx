@@ -86,15 +86,15 @@ export default async function OdkAdminExamDetailPage({
         <ArrowLeft size={13} /> Denemelere dön
       </Link>
       <header className="mt-5">
-        <p className="text-xs font-extrabold uppercase text-[var(--brand-olive)]">
+        <p className="text-xs font-extrabold uppercase text-(--brand-olive)">
           {familyCode} ·{" "}
           {exam.structureMode === "FULL_TEMPLATE" ? "Tam deneme" : "Matematik"}{" "}
           · sürüm {exam.currentVersion.versionNumber}
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em]">
+        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
           {exam.title}
         </h1>
-        <p className="mt-2 text-sm text-[var(--site-body)]">
+        <p className="mt-2 text-sm text-(--site-body)">
           Sonuçlar yönetim yayınlamadan öğrenciye açılmaz. LIVE sonrası kritik
           alanlar kilitlenir.
         </p>

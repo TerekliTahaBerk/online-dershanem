@@ -62,14 +62,14 @@ export default async function CurriculumAdminPage() {
       <section className="my-6 grid gap-3 sm:grid-cols-2">
         <article className="panel-metric-card">
           <p className="text-3xl font-extrabold">%{lessonCoverage}</p>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Son 30 gün kazanım etiketli tamamlanmış ders · {taggedLessons}/
             {completedLessons}
           </p>
         </article>
         <article className="panel-metric-card">
           <p className="text-3xl font-extrabold">%{assignmentCoverage}</p>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Son 30 gün kazanım etiketli ödev · {taggedAssignments}/{assignments}
           </p>
         </article>

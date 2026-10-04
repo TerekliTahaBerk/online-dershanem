@@ -74,40 +74,40 @@ export function OrderSummaryCard({
 
   return (
     <aside className={`lg:sticky lg:top-24 lg:self-start ${className}`.trim()}>
-      <div className="rounded-[24px] border border-[var(--site-line)] bg-white p-6 shadow-[0_1px_2px_rgba(20,20,15,0.04)]">
+      <div className="rounded-od-xl border border-(--site-line) bg-white p-6 shadow-[0_1px_2px_rgba(20,20,15,0.04)]">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-[20px] tracking-tight text-[var(--site-ink)]">
+          <h2 className="font-display text-[20px] tracking-tight text-(--site-ink)">
             {title}
           </h2>
-          <span className="text-[12px] text-[var(--site-body)]">
+          <span className="text-[12px] text-(--site-body)">
             {itemCount} ürün
           </span>
         </div>
 
-        <ul className="mt-5 space-y-4 divide-y divide-[var(--site-line)]">
+        <ul className="mt-5 space-y-4 divide-y divide-(--site-line)">
           {items.map((it, idx) => (
             <li key={it.id ?? idx} className="flex gap-3 pt-4 first:pt-0">
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[14px] bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-(--brand-orange-soft) text-(--brand-orange-ink)">
                 <ShoppingBag size={18} strokeWidth={1.6} />
               </div>
               <div className="flex-1 min-w-0">
                 {it.category && (
-                  <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--brand-orange-ink)]">
+                  <div className="text-xs font-semibold uppercase tracking-[0.16em] text-(--brand-orange-ink)">
                     {it.category}
                   </div>
                 )}
-                <div className="text-[13px] font-semibold text-[var(--site-ink)] truncate">
+                <div className="text-[13px] font-semibold text-(--site-ink) truncate">
                   {it.name}
                 </div>
                 {(it.subtitle || (it.qty && it.qty > 1)) && (
-                  <div className="mt-0.5 text-xs text-[var(--site-body)]">
+                  <div className="mt-0.5 text-xs text-(--site-body)">
                     {it.subtitle}
                     {it.subtitle && it.qty && it.qty > 1 ? " · " : ""}
                     {it.qty && it.qty > 1 ? `${it.qty} adet` : ""}
                   </div>
                 )}
               </div>
-              <div className="text-right text-[13px] font-semibold text-[var(--site-ink)] whitespace-nowrap">
+              <div className="text-right text-[13px] font-semibold text-(--site-ink) whitespace-nowrap">
                 {formatTRY(it.priceCents * (it.qty ?? 1))}
               </div>
             </li>
@@ -115,38 +115,38 @@ export function OrderSummaryCard({
         </ul>
 
         {couponCode && (
-          <div className="mt-5 flex items-center justify-between rounded-full bg-[var(--brand-orange-soft)] px-3.5 py-2 text-[12.5px]">
-            <span className="font-medium text-[var(--brand-orange-ink)]">
+          <div className="mt-5 flex items-center justify-between rounded-full bg-(--brand-orange-soft) px-3.5 py-2 text-[12.5px]">
+            <span className="font-medium text-(--brand-orange-ink)">
               Kupon: <strong>{couponCode}</strong>
             </span>
-            <span className="text-xs text-[var(--brand-orange-ink)]">
+            <span className="text-xs text-(--brand-orange-ink)">
               Ödeme adımında uygulanır
             </span>
           </div>
         )}
 
-        <div className="mt-5 space-y-2 border-t border-[var(--site-line)] pt-4 text-[13px]">
-          <div className="flex justify-between text-[var(--site-body)]">
+        <div className="mt-5 space-y-2 border-t border-(--site-line) pt-4 text-[13px]">
+          <div className="flex justify-between text-(--site-body)">
             <span>Ara toplam</span>
             <span>{formatTRY(totalCents)}</span>
           </div>
-          <div className="flex items-baseline justify-between pt-2 border-t border-[var(--site-line)]">
-            <span className="text-[14px] font-semibold text-[var(--site-ink)]">
+          <div className="flex items-baseline justify-between pt-2 border-t border-(--site-line)">
+            <span className="text-[14px] font-semibold text-(--site-ink)">
               Toplam
             </span>
-            <span className="font-display text-[22px] text-[var(--site-ink)]">
+            <span className="font-display text-[22px] text-(--site-ink)">
               {formatTRY(totalCents)}
             </span>
           </div>
         </div>
 
-        <div className="mt-5 flex items-start gap-2 rounded-[16px] bg-[var(--site-bg-warm)] p-3.5 text-xs text-[var(--site-body)]">
+        <div className="mt-5 flex items-start gap-2 rounded-od-lg bg-(--site-bg-warm) p-3.5 text-xs text-(--site-body)">
           <ShieldCheck
             size={16}
-            className="mt-0.5 flex-shrink-0 text-[var(--brand-orange-ink)]"
+            className="mt-0.5 shrink-0 text-(--brand-orange-ink)"
           />
           <span>
-            <strong className="text-[var(--site-ink)]">PayTR</strong> ile
+            <strong className="text-(--site-ink)">PayTR</strong> ile
             256-bit SSL güvenli ödeme. Kart bilgileriniz sitemizde saklanmaz;
             kullanılabilir taksit seçenekleri kartınıza ve bankanıza göre ödeme
             ekranında gösterilir.
@@ -156,7 +156,7 @@ export function OrderSummaryCard({
         {backHref && (
           <Link
             href={backHref}
-            className="mt-4 block text-center text-[12.5px] text-[var(--site-body)] hover:text-[var(--site-ink)] transition"
+            className="mt-4 block text-center text-[12.5px] text-(--site-body) hover:text-(--site-ink) transition"
           >
             {backLabel}
           </Link>
@@ -178,14 +178,14 @@ export function CheckoutPageHeader({
 }) {
   return (
     <div className="mb-6">
-      <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-orange-ink)]">
+      <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.18em] text-(--brand-orange-ink)">
         <Lock size={12} /> Güvenli Ödeme
       </span>
-      <h1 className="mt-1 font-display text-[32px] leading-[1.05] tracking-tight text-[var(--site-ink)]">
+      <h1 className="mt-1 font-display text-[32px] leading-[1.05] tracking-tight text-(--site-ink)">
         {title}
       </h1>
       {subtitle && (
-        <p className="mt-1 text-[13.5px] text-[var(--site-body)]">{subtitle}</p>
+        <p className="mt-1 text-[13.5px] text-(--site-body)">{subtitle}</p>
       )}
     </div>
   );

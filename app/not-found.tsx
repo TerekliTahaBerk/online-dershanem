@@ -31,7 +31,7 @@ export default function NotFound() {
         <div className="site-container py-16 sm:py-24">
           <div className="max-w-[640px]">
             <p className="dc-eyebrow">Hata 404</p>
-            <h1 className="mt-4 font-display text-[length:var(--public-title)] leading-[1.08] tracking-[-0.025em] text-dc-ink">
+            <h1 className="mt-4 font-display text-(length:--public-title) leading-[1.08] tracking-tight text-dc-ink">
               Sayfa bulunamadı
             </h1>
             <p className="mt-4 text-[17px] leading-[1.65] text-dc-ink-body">

@@ -16,13 +16,13 @@ export default async function SessionsPage() {
   return (
     <main className="mx-auto max-w-3xl">
       <header className="mb-7">
-        <p className="text-sm font-bold uppercase tracking-wider text-[var(--brand-olive)]">
+        <p className="text-sm font-bold uppercase tracking-wider text-(--brand-olive)">
           Hesap güvenliği
         </p>
-        <h1 className="mt-2 text-3xl font-black text-[var(--site-ink)]">
+        <h1 className="mt-2 text-3xl font-black text-(--site-ink)">
           Aktif oturumlar
         </h1>
-        <p className="mt-3 text-sm leading-6 text-[var(--site-body)]">
+        <p className="mt-3 text-sm leading-6 text-(--site-body)">
           Bu hesap {formatPolicyDuration(policy.idleTimeoutMs)}{" "}
           kullanılmadığında veya en geç{" "}
           {formatPolicyDuration(policy.absoluteTtlMs)} sonunda yeniden giriş

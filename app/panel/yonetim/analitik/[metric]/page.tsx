@@ -120,7 +120,7 @@ export default async function ManagementAnalyticsMetricPage({
     >
       <Link
         href={`/panel/yonetim/analitik?${qs}`}
-        className="mb-4 inline-flex items-center gap-1.5 text-xs font-bold text-[var(--brand-olive)]"
+        className="mb-4 inline-flex items-center gap-1.5 text-xs font-bold text-(--brand-olive)"
       >
         <ArrowLeft size={14} /> Analitiklere dön
       </Link>
@@ -150,9 +150,9 @@ export default async function ManagementAnalyticsMetricPage({
       <section className="mt-6 grid gap-4 lg:grid-cols-2">
         <article className="panel-surface p-5">
           <h2 className="text-sm font-extrabold">Tanım sözleşmesi</h2>
-          <dl className="mt-3 space-y-3 text-xs text-[var(--site-body)]">
+          <dl className="mt-3 space-y-3 text-xs text-(--site-body)">
             <div>
-              <dt className="font-bold text-[var(--site-muted)]">
+              <dt className="font-bold text-(--site-muted)">
                 Query source
               </dt>
               <dd className="mt-0.5 font-mono text-[11px]">
@@ -160,23 +160,23 @@ export default async function ManagementAnalyticsMetricPage({
               </dd>
             </div>
             <div>
-              <dt className="font-bold text-[var(--site-muted)]">
+              <dt className="font-bold text-(--site-muted)">
                 Date semantics
               </dt>
               <dd className="mt-0.5">{def.dateSemantics}</dd>
             </div>
             <div>
-              <dt className="font-bold text-[var(--site-muted)]">Timezone</dt>
+              <dt className="font-bold text-(--site-muted)">Timezone</dt>
               <dd className="mt-0.5">{def.timezone}</dd>
             </div>
             <div>
-              <dt className="font-bold text-[var(--site-muted)]">
+              <dt className="font-bold text-(--site-muted)">
                 Denominator
               </dt>
               <dd className="mt-0.5">{def.denominator}</dd>
             </div>
             <div>
-              <dt className="font-bold text-[var(--site-muted)]">Aralık</dt>
+              <dt className="font-bold text-(--site-muted)">Aralık</dt>
               <dd className="mt-0.5">
                 {formatIstanbulDateInput(filters.from)} –{" "}
                 {formatIstanbulDateInput(filters.to)}
@@ -187,14 +187,14 @@ export default async function ManagementAnalyticsMetricPage({
 
         <article className="panel-surface p-5">
           <h2 className="text-sm font-extrabold">Değer</h2>
-          <p className="mt-4 text-4xl font-extrabold tracking-[-0.03em] text-[var(--site-ink)]">
+          <p className="mt-4 text-4xl font-extrabold tracking-[-0.03em] text-(--site-ink)">
             {formatMetricDisplay(def.unit, value)}
           </p>
 
           {metricKey === "sales_by_product" ? (
-            <ul className="mt-4 divide-y divide-[var(--site-line)] text-xs">
+            <ul className="mt-4 divide-y divide-(--site-line) text-xs">
               {snapshot.commercial.salesByProduct.length === 0 ? (
-                <li className="py-3 text-[var(--site-muted)]">
+                <li className="py-3 text-(--site-muted)">
                   Bu aralıkta satış yok.
                 </li>
               ) : (
@@ -227,7 +227,7 @@ export default async function ManagementAnalyticsMetricPage({
 
           {metricKey.startsWith("cohort_") ||
           metricKey === "plan_alignment_vs_outcome" ? (
-            <div className="mt-4 space-y-3 text-xs text-[var(--site-body)]">
+            <div className="mt-4 space-y-3 text-xs text-(--site-body)">
               {snapshot.success.mockExamTrends.map((row) => (
                 <p key={row.exam}>
                   {row.exam}:{" "}
@@ -252,7 +252,7 @@ export default async function ManagementAnalyticsMetricPage({
           ) : null}
 
           {def.domain === "teacher_ops" ? (
-            <p className="mt-4 text-[11px] text-[var(--site-muted)]">
+            <p className="mt-4 text-[11px] text-(--site-muted)">
               Bu görünüm öğretmen sıralaması veya performans değerlendirmesi
               üretmez; yalnız operasyon yükünü gösterir.
             </p>

@@ -118,7 +118,7 @@ export function PilotRolloutControl({
         <h2 className="text-sm font-extrabold">
           Gruptan pilot kohortu oluştur
         </h2>
-        <p className="mt-2 text-xs leading-5 text-[var(--site-muted)]">
+        <p className="mt-2 text-xs leading-5 text-(--site-muted)">
           Öğretmen, aktif öğrenciler, bağlı veliler ve işlemi yapan admin tek
           kohorta alınır. Eksik rol varsa pilot oluşmaz.
         </p>
@@ -146,7 +146,7 @@ export function PilotRolloutControl({
         >
           Pilot taslağı oluştur
         </button>
-        <p className="mt-4 border-t border-[var(--site-line)] pt-4 text-[10px] leading-4 text-[var(--site-muted)]">
+        <p className="mt-4 border-t border-(--site-line) pt-4 text-[10px] leading-4 text-(--site-muted)">
           Kohort oluşturmak erişimi açmaz. Aktivasyon; env, güvenlik, restore,
           dört rol ve SLO kapılarından geçer.
         </p>
@@ -155,7 +155,7 @@ export function PilotRolloutControl({
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-sm font-extrabold">Yayın yaşam döngüsü</h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Sürüm kontrolü eski sekmenin yeni kararı ezmesini engeller.
             </p>
           </div>
@@ -177,7 +177,7 @@ export function PilotRolloutControl({
         {message ? (
           <p
             role="status"
-            className="mt-3 rounded-2xl bg-[var(--brand-olive-soft)] p-3 text-xs font-bold text-[var(--brand-olive)]"
+            className="mt-3 rounded-2xl bg-(--brand-olive-soft) p-3 text-xs font-bold text-(--brand-olive)"
           >
             {message}
           </p>
@@ -197,7 +197,7 @@ export function PilotRolloutControl({
                       {cohort.status}
                     </span>
                   </div>
-                  <p className="mt-2 text-xs text-[var(--site-muted)]">
+                  <p className="mt-2 text-xs text-(--site-muted)">
                     {cohort.memberCount} üye · Admin {cohort.coverage.ADMIN} ·
                     Öğretmen {cohort.coverage.TEACHER} · Öğrenci{" "}
                     {cohort.coverage.STUDENT} · Veli {cohort.coverage.PARENT} ·
@@ -268,7 +268,7 @@ export function PilotRolloutControl({
             </article>
           ))}
           {!rows.length ? (
-            <p className="rounded-2xl border border-dashed border-[var(--site-line)] p-8 text-center text-sm text-[var(--site-muted)]">
+            <p className="rounded-2xl border border-dashed border-(--site-line) p-8 text-center text-sm text-(--site-muted)">
               Henüz pilot kohortu yok.
             </p>
           ) : null}

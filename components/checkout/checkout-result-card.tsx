@@ -75,7 +75,7 @@ export function CheckoutResultCard({
 
   return (
     <div
-      className={`mx-auto max-w-xl rounded-[24px] border bg-white p-8 text-center shadow-[0_1px_2px_rgba(20,20,15,0.04)] sm:p-10 ${cfg.borderClass}`}
+      className={`mx-auto max-w-xl rounded-od-xl border bg-white p-8 text-center shadow-[0_1px_2px_rgba(20,20,15,0.04)] sm:p-10 ${cfg.borderClass}`}
     >
       <div
         className={`mx-auto inline-flex h-16 w-16 items-center justify-center rounded-full ${cfg.iconBg}`}
@@ -84,33 +84,33 @@ export function CheckoutResultCard({
       </div>
 
       {eyebrow && (
-        <div className="mt-5 text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--brand-orange-ink)]">
+        <div className="mt-5 text-[12px] font-semibold uppercase tracking-[0.18em] text-(--brand-orange-ink)">
           {eyebrow}
         </div>
       )}
 
-      <h1 className="mt-2 font-display text-[28px] leading-tight tracking-tight text-[var(--site-ink)]">
+      <h1 className="mt-2 font-display text-[28px] leading-tight tracking-tight text-(--site-ink)">
         {title ?? cfg.defaultTitle}
       </h1>
 
-      <p className="mt-3 text-[14px] leading-relaxed text-[var(--site-body)]">
+      <p className="mt-3 text-[14px] leading-relaxed text-(--site-body)">
         {description ?? cfg.defaultDescription}
       </p>
 
       {status === "success" && nextStepNote && (
-        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4 text-left text-[13px] text-[var(--site-ink)]">
+        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4 text-left text-[13px] text-(--site-ink)">
           <GraduationCap
             size={20}
             strokeWidth={1.6}
-            className="mt-0.5 flex-shrink-0 text-[var(--brand-orange-ink)]"
+            className="mt-0.5 shrink-0 text-(--brand-orange-ink)"
           />
           <div>{nextStepNote}</div>
         </div>
       )}
 
       {status === "success" && (
-        <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-[var(--site-body)]">
-          <ShieldCheck size={12} className="text-[var(--brand-orange-ink)]" />
+        <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-(--site-body)">
+          <ShieldCheck size={12} className="text-(--brand-orange-ink)" />
           PayTR üzerinden güvenli ödeme tamamlandı.
         </div>
       )}
@@ -122,8 +122,8 @@ export function CheckoutResultCard({
               href={primaryAction.href}
               className={
                 (primaryAction.variant ?? "primary") === "primary"
-                  ? "inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--brand-orange)] px-7 py-3 text-[14px] font-semibold text-white shadow-[0_14px_30px_-12px_rgba(44,58,32,0.5)] transition-colors hover:bg-[var(--brand-orange-hover)]"
-                  : "inline-flex min-h-12 items-center justify-center rounded-full border border-[var(--site-line)] bg-white px-7 py-3 text-[14px] font-semibold text-[var(--site-ink)] transition-colors hover:bg-[var(--site-bg-warm)]"
+                  ? "inline-flex min-h-12 items-center justify-center rounded-full bg-(--brand-orange) px-7 py-3 text-[14px] font-semibold text-white shadow-[0_14px_30px_-12px_rgba(44,58,32,0.5)] transition-colors hover:bg-(--brand-orange-hover)"
+                  : "inline-flex min-h-12 items-center justify-center rounded-full border border-(--site-line) bg-white px-7 py-3 text-[14px] font-semibold text-(--site-ink) transition-colors hover:bg-(--site-bg-warm)"
               }
             >
               {primaryAction.label}
@@ -134,8 +134,8 @@ export function CheckoutResultCard({
               href={secondaryAction.href}
               className={
                 (secondaryAction.variant ?? "ghost") === "primary"
-                  ? "inline-flex min-h-12 items-center justify-center rounded-full bg-[var(--brand-orange)] px-7 py-3 text-[14px] font-semibold text-white shadow-[0_14px_30px_-12px_rgba(44,58,32,0.5)] transition-colors hover:bg-[var(--brand-orange-hover)]"
-                  : "inline-flex min-h-12 items-center justify-center rounded-full border border-[var(--site-line)] bg-white px-7 py-3 text-[14px] font-semibold text-[var(--site-ink)] transition-colors hover:bg-[var(--site-bg-warm)]"
+                  ? "inline-flex min-h-12 items-center justify-center rounded-full bg-(--brand-orange) px-7 py-3 text-[14px] font-semibold text-white shadow-[0_14px_30px_-12px_rgba(44,58,32,0.5)] transition-colors hover:bg-(--brand-orange-hover)"
+                  : "inline-flex min-h-12 items-center justify-center rounded-full border border-(--site-line) bg-white px-7 py-3 text-[14px] font-semibold text-(--site-ink) transition-colors hover:bg-(--site-bg-warm)"
               }
             >
               {secondaryAction.label}

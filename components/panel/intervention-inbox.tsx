@@ -144,21 +144,21 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
     <div>
       <div className="grid gap-3 sm:grid-cols-3">
         <article className="panel-metric-card">
-          <UserCheck size={18} className="text-[var(--brand-olive)]" />
+          <UserCheck size={18} className="text-(--brand-olive)" />
           <p className="mt-3 text-2xl font-extrabold">{openCount}</p>
-          <p className="text-xs text-[var(--site-muted)]">Açık insan takibi</p>
+          <p className="text-xs text-(--site-muted)">Açık insan takibi</p>
         </article>
         <article className="panel-metric-card">
           <Clock3 size={18} className="text-amber-700" />
           <p className="mt-3 text-2xl font-extrabold">{overdueCount}</p>
-          <p className="text-xs text-[var(--site-muted)]">
+          <p className="text-xs text-(--site-muted)">
             24 saat hedefini geçen
           </p>
         </article>
         <article className="panel-metric-card">
           <ShieldQuestion size={18} className="text-violet-700" />
           <p className="mt-3 text-2xl font-extrabold">{falsePositiveCount}</p>
-          <p className="text-xs text-[var(--site-muted)]">
+          <p className="text-xs text-(--site-muted)">
             Yanlış işaret · kural iyileştirme girdisi
           </p>
         </article>
@@ -169,7 +169,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
           <select
             value={filter}
             onChange={(event) => setFilter(event.target.value as typeof filter)}
-            className="ml-2 rounded-xl border border-[var(--site-line)] bg-white px-3 py-2"
+            className="ml-2 rounded-xl border border-(--site-line) bg-white px-3 py-2"
           >
             <option value="ACTIVE">Açık kayıtlar</option>
             <option value="CLOSED">Kapananlar</option>
@@ -188,7 +188,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
       {message ? (
         <p
           role="status"
-          className="mt-3 rounded-xl bg-[#eef2df] px-4 py-3 text-sm font-bold text-[var(--brand-olive)]"
+          className="mt-3 rounded-xl bg-[#eef2df] px-4 py-3 text-sm font-bold text-(--brand-olive)"
         >
           {message}
         </p>
@@ -207,7 +207,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-extrabold uppercase tracking-[.06em] text-[var(--brand-olive)]">
+                    <p className="text-xs font-extrabold uppercase tracking-[.06em] text-(--brand-olive)">
                       {reasonLabels[
                         row.reasonCode as keyof typeof reasonLabels
                       ] || row.reasonCode}
@@ -216,23 +216,23 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                       {row.studentName}
                     </h2>
                   </div>
-                  <span className="rounded-full bg-[var(--site-bg-warm)] px-3 py-1 text-[11px] font-extrabold">
+                  <span className="rounded-full bg-(--site-bg-warm) px-3 py-1 text-[11px] font-extrabold">
                     {statusLabels[row.status]}
                   </span>
                 </div>
                 <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                  <div className="rounded-2xl border border-[var(--site-line)] p-4">
-                    <p className="text-[11px] font-extrabold uppercase text-[var(--site-muted)]">
+                  <div className="rounded-2xl border border-(--site-line) p-4">
+                    <p className="text-[11px] font-extrabold uppercase text-(--site-muted)">
                       Neden işaretlendi?
                     </p>
                     <p className="mt-2 text-sm leading-6">{row.explanation}</p>
-                    <p className="mt-2 text-xs text-[var(--site-muted)]">
+                    <p className="mt-2 text-xs text-(--site-muted)">
                       {row.evidenceCount} kontrollü kanıt · puanlama veya teşhis
                       yok
                     </p>
                   </div>
                   <div className="rounded-2xl bg-[#eef2df] p-4">
-                    <p className="text-[11px] font-extrabold uppercase text-[var(--brand-olive)]">
+                    <p className="text-[11px] font-extrabold uppercase text-(--brand-olive)">
                       Önerilen en küçük eylem
                     </p>
                     <p className="mt-2 text-sm leading-6">
@@ -240,16 +240,16 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                     </p>
                   </div>
                 </div>
-                <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-[var(--site-muted)]">
+                <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-(--site-muted)">
                   <span>
                     Sahip:{" "}
-                    <strong className="text-[var(--site-body)]">
+                    <strong className="text-(--site-body)">
                       {row.ownerName || "Henüz yok"}
                     </strong>
                   </span>
                   <span>
                     Hedef:{" "}
-                    <strong className="text-[var(--site-body)]">
+                    <strong className="text-(--site-body)">
                       {new Date(row.dueAt).toLocaleString("tr-TR", {
                         dateStyle: "medium",
                         timeStyle: "short",
@@ -272,7 +272,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                   </p>
                 ) : null}
                 {!closed && row.canAct ? (
-                  <div className="mt-5 border-t border-[var(--site-line)] pt-5">
+                  <div className="mt-5 border-t border-(--site-line) pt-5">
                     <div className="flex flex-wrap gap-2">
                       {!row.ownerName ? (
                         <button
@@ -299,7 +299,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                     </div>
                     <label className="mt-4 block text-xs font-bold">
                       İç aksiyon notu{" "}
-                      <span className="font-normal text-[var(--site-muted)]">
+                      <span className="font-normal text-(--site-muted)">
                         (öğrenci ve veli görmez, en fazla 500 karakter)
                       </span>
                       <textarea
@@ -313,7 +313,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                         }
                         disabled={disabled}
                         maxLength={500}
-                        className="mt-2 min-h-20 w-full rounded-2xl border border-[var(--site-line)] bg-white p-3 text-sm"
+                        className="mt-2 min-h-20 w-full rounded-2xl border border-(--site-line) bg-white p-3 text-sm"
                       />
                     </label>
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -354,7 +354,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                             }))
                           }
                           disabled={disabled}
-                          className="mt-2 w-full rounded-xl border border-[var(--site-line)] bg-white px-3 py-2"
+                          className="mt-2 w-full rounded-xl border border-(--site-line) bg-white px-3 py-2"
                         >
                           <option value="CHECK_IN_COMPLETED">
                             Öğrenciyle kısa görüşme yapıldı
@@ -400,7 +400,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                             }))
                           }
                           disabled={disabled}
-                          className="mt-2 w-full rounded-xl border border-[var(--site-line)] bg-white px-3 py-2"
+                          className="mt-2 w-full rounded-xl border border-(--site-line) bg-white px-3 py-2"
                         >
                           <option value="CONTEXT_MISSING">
                             Bağlam eksikti
@@ -444,7 +444,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                   </button>
                 ) : null}
                 {row.activities.length ? (
-                  <details className="mt-5 border-t border-[var(--site-line)] pt-4">
+                  <details className="mt-5 border-t border-(--site-line) pt-4">
                     <summary className="cursor-pointer text-xs font-extrabold">
                       Son işlem geçmişi
                     </summary>
@@ -452,7 +452,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                       {row.activities.map((activity) => (
                         <li
                           key={activity.id}
-                          className="rounded-xl bg-[var(--site-bg-warm)] px-3 py-2 text-xs"
+                          className="rounded-xl bg-(--site-bg-warm) px-3 py-2 text-xs"
                         >
                           <strong>
                             {activityLabels[activity.type] || activity.type}
@@ -460,12 +460,12 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                           · {activity.actorName} ·{" "}
                           {new Date(activity.createdAt).toLocaleString("tr-TR")}
                           {activity.note ? (
-                            <p className="mt-1 leading-5 text-[var(--site-body)]">
+                            <p className="mt-1 leading-5 text-(--site-body)">
                               {activity.note}
                             </p>
                           ) : null}
                           {activity.outcomeCode ? (
-                            <p className="mt-1 text-[var(--site-muted)]">
+                            <p className="mt-1 text-(--site-muted)">
                               Sonuç:{" "}
                               {outcomeLabels[activity.outcomeCode] ||
                                 activity.outcomeCode}
@@ -480,7 +480,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
             );
           })
         ) : (
-          <div className="panel-surface p-8 text-center text-sm text-[var(--site-muted)]">
+          <div className="panel-surface p-8 text-center text-sm text-(--site-muted)">
             Bu görünümde kayıt yok. Tek günlük dalgalanmalar özellikle vaka
             üretmez.
           </div>

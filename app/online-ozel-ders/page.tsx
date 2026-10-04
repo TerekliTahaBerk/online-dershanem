@@ -64,9 +64,9 @@ export default function OnlineOzelDersPage() {
             ].map((item) => (
               <article
                 key={item}
-                className="flex items-start gap-3 rounded-[22px] border border-[var(--site-line)] bg-white p-6 text-[15px] font-medium leading-6 text-[var(--site-body)]"
+                className="flex items-start gap-3 rounded-[22px] border border-(--site-line) bg-white p-6 text-[15px] font-medium leading-6 text-(--site-body)"
               >
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-(--brand-orange-soft) text-(--brand-orange-ink)">
                   <Check size={13} strokeWidth={2.5} aria-hidden="true" />
                 </span>
                 {item}
@@ -74,8 +74,8 @@ export default function OnlineOzelDersPage() {
             ))}
           </div>
 
-          <div className="mt-4 rounded-[24px] border border-[var(--site-line)] bg-white p-7 sm:p-9">
-            <h2 className="font-display text-[clamp(1.6rem,3vw,2.2rem)] leading-tight tracking-[-0.02em] text-[var(--site-ink)]">
+          <div className="mt-4 rounded-od-xl border border-(--site-line) bg-white p-7 sm:p-9">
+            <h2 className="font-display text-[clamp(1.6rem,3vw,2.2rem)] leading-tight tracking-[-0.02em] text-(--site-ink)">
               Hangi öğrenciler için daha uygun?
             </h2>
             <ul className="mt-5 space-y-3">
@@ -86,10 +86,10 @@ export default function OnlineOzelDersPage() {
               ].map((item) => (
                 <li
                   key={item}
-                  className="flex items-start gap-3 text-[15.5px] leading-7 text-[var(--site-body)]"
+                  className="flex items-start gap-3 text-[15.5px] leading-7 text-(--site-body)"
                 >
                   <Check
-                    className="mt-1 h-4 w-4 shrink-0 text-[var(--brand-orange-ink)]"
+                    className="mt-1 h-4 w-4 shrink-0 text-(--brand-orange-ink)"
                     strokeWidth={2.4}
                     aria-hidden="true"
                   />
@@ -99,41 +99,41 @@ export default function OnlineOzelDersPage() {
             </ul>
           </div>
 
-          <div className="mt-4 rounded-[24px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-7 sm:p-9">
-            <h2 className="font-display text-[clamp(1.6rem,3vw,2.2rem)] leading-tight tracking-[-0.02em] text-[var(--site-ink)]">
+          <div className="mt-4 rounded-od-xl border border-(--site-line) bg-(--site-bg-warm) p-7 sm:p-9">
+            <h2 className="font-display text-[clamp(1.6rem,3vw,2.2rem)] leading-tight tracking-[-0.02em] text-(--site-ink)">
               İlgili rehber yazılar
             </h2>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <Link
                 href="/matematik"
-                className="group flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
+                className="group flex items-center justify-between gap-3 rounded-2xl border border-(--site-line) bg-white p-5 text-[15px] font-semibold text-(--site-ink) transition-colors hover:border-(--brand-orange)"
               >
                 Online matematik dersi rehberi
                 <ArrowRight
                   size={17}
-                  className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:translate-x-0.5"
+                  className="shrink-0 text-(--brand-orange-ink) transition-transform group-hover:translate-x-0.5"
                   aria-hidden="true"
                 />
               </Link>
               <Link
                 href="/blog/online-ozel-ders-mi-dershane-mi"
-                className="group flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
+                className="group flex items-center justify-between gap-3 rounded-2xl border border-(--site-line) bg-white p-5 text-[15px] font-semibold text-(--site-ink) transition-colors hover:border-(--brand-orange)"
               >
                 Online özel ders mi dershane mi?
                 <ArrowRight
                   size={17}
-                  className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:translate-x-0.5"
+                  className="shrink-0 text-(--brand-orange-ink) transition-transform group-hover:translate-x-0.5"
                   aria-hidden="true"
                 />
               </Link>
               <Link
                 href="/blog/yks-online-ders-calisma-plani"
-                className="group flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
+                className="group flex items-center justify-between gap-3 rounded-2xl border border-(--site-line) bg-white p-5 text-[15px] font-semibold text-(--site-ink) transition-colors hover:border-(--brand-orange)"
               >
                 YKS online ders çalışma planı
                 <ArrowRight
                   size={17}
-                  className="shrink-0 text-[var(--brand-orange-ink)] transition-transform group-hover:translate-x-0.5"
+                  className="shrink-0 text-(--brand-orange-ink) transition-transform group-hover:translate-x-0.5"
                   aria-hidden="true"
                 />
               </Link>

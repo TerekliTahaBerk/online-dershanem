@@ -174,7 +174,7 @@ export function UserRowActions({
   }
 
   const btn =
-    "inline-flex items-center gap-1.5 rounded-full border border-[var(--site-line)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] disabled:opacity-50";
+    "inline-flex items-center gap-1.5 rounded-full border border-(--site-line) px-2.5 py-1.5 text-[12px] font-semibold text-(--site-body) transition-colors hover:text-(--site-ink) disabled:opacity-50";
 
   const inviteButtonText = inviteAcceptedAt ? "Daveti yenile" : "Daveti gönder";
   const canSuspend = currentStatus === "ACTIVE";
@@ -321,7 +321,7 @@ export function UserRowActions({
 
       {deleteConfirmOpen ? (
         <div
-          className="fixed inset-0 z-[280] flex items-center justify-center bg-[#10150d]/35 px-4 backdrop-blur-[2px]"
+          className="fixed inset-0 z-280 flex items-center justify-center bg-[#10150d]/35 px-4 backdrop-blur-[2px]"
           role="presentation"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget && pending !== "delete")
@@ -334,16 +334,16 @@ export function UserRowActions({
             aria-label="Hesap silme onayı"
             className="w-full max-w-[460px] rounded-[14px] border border-white/60 bg-white p-5 shadow-[0_30px_90px_-30px_rgba(20,20,15,.55)]"
           >
-            <h3 className="text-[15px] font-bold text-[var(--site-ink)]">
+            <h3 className="text-[15px] font-bold text-(--site-ink)">
               Hesabı kalıcı olarak sil
             </h3>
-            <p className="mt-2 text-[13px] leading-6 text-[var(--site-body)]">
+            <p className="mt-2 text-[13px] leading-6 text-(--site-body)">
               <span className="font-semibold">{fullName || email}</span> hesabı
               geri alınamaz şekilde silinecek. Bağlı kritik kayıtlar varsa işlem
               reddedilir.
             </p>
             {loadingDeletePreview ? (
-              <p className="mt-3 text-[12.5px] text-[var(--site-muted)]">
+              <p className="mt-3 text-[12.5px] text-(--site-muted)">
                 Silme etkisi hesaplanıyor…
               </p>
             ) : deletePreview ? (
@@ -352,7 +352,7 @@ export function UserRowActions({
                   Bu hesap için kalıcı silme engeli görünmüyor.
                 </p>
               ) : (
-                <div className="mt-3 rounded-[10px] border border-amber-200 bg-amber-50 p-3">
+                <div className="mt-3 rounded-od border border-amber-200 bg-amber-50 p-3">
                   <p className="text-[12.5px] font-semibold text-amber-800">
                     Bu hesap silinemez; önce arşivleyin veya güvenli aksiyon
                     askıya alma.
@@ -373,7 +373,7 @@ export function UserRowActions({
                 type="button"
                 onClick={() => setDeleteConfirmOpen(false)}
                 disabled={pending === "delete"}
-                className="rounded-[10px] border border-[var(--site-line)] bg-white px-3.5 py-2 text-[12.5px] font-semibold text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] disabled:opacity-50"
+                className="rounded-od border border-(--site-line) bg-white px-3.5 py-2 text-[12.5px] font-semibold text-(--site-body) transition-colors hover:text-(--site-ink) disabled:opacity-50"
               >
                 Vazgeç
               </button>
@@ -385,7 +385,7 @@ export function UserRowActions({
                   loadingDeletePreview ||
                   (deletePreview !== null && !deletePreview.canDelete)
                 }
-                className="inline-flex items-center gap-1.5 rounded-[10px] bg-rose-600 px-3.5 py-2 text-[12.5px] font-bold text-white transition-colors hover:bg-rose-700 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-od bg-rose-600 px-3.5 py-2 text-[12.5px] font-bold text-white transition-colors hover:bg-rose-700 disabled:opacity-60"
               >
                 {pending === "delete" ? (
                   <Loader2

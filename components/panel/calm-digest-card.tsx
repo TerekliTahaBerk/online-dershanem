@@ -83,7 +83,7 @@ export function CalmDigestCard({
   return (
     <section className="panel-surface overflow-hidden">
       <div className="bg-[linear-gradient(135deg,#f6f8ed,#fff_55%,#fff8dc)] p-6 sm:p-8">
-        <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+        <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[.08em] text-(--brand-olive)">
           <HeartHandshake size={16} /> Bu hafta, sakin bir bakış
         </p>
         <h2 className="mt-3 text-2xl font-semibold tracking-[-.04em]">
@@ -91,7 +91,7 @@ export function CalmDigestCard({
             ? "Öğretmenin yayınladığı haftalık özet"
             : "İki iyi giden nokta, bir küçük destek."}
         </h2>
-        <p className="mt-2 text-xs text-[var(--site-muted)]">
+        <p className="mt-2 text-xs text-(--site-muted)">
           Veriler{" "}
           {new Intl.DateTimeFormat("tr-TR", {
             dateStyle: "medium",
@@ -130,7 +130,7 @@ export function CalmDigestCard({
           </p>
         </article>
       </div>
-      <div className="border-t border-[var(--site-line)] p-5 sm:p-7">
+      <div className="border-t border-(--site-line) p-5 sm:p-7">
         <p className="text-xs font-bold">Bu özet size nasıl hissettirdi?</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button
@@ -182,7 +182,7 @@ export function CalmDigestCard({
         </div>
         <p
           aria-live="polite"
-          className="mt-2 text-xs font-bold text-[var(--brand-olive)]"
+          className="mt-2 text-xs font-bold text-(--brand-olive)"
         >
           {message}
         </p>

@@ -209,49 +209,49 @@ export default async function AdminReportsPage() {
       <section className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
         <article className="panel-metric-card">
           <CheckCircle2 size={18} className="text-emerald-700" />
-          <p className="mt-4 text-3xl font-extrabold text-[var(--site-ink)]">
+          <p className="mt-4 text-3xl font-extrabold text-(--site-ink)">
             %{noteRate}
           </p>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Ders tamamlama
           </p>
         </article>
         <article className="panel-metric-card">
           <UsersRound size={18} className="text-dc-ink-muted" />
-          <p className="mt-4 text-3xl font-extrabold text-[var(--site-ink)]">
+          <p className="mt-4 text-3xl font-extrabold text-(--site-ink)">
             %{attendanceRate}
           </p>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">Katılım</p>
+          <p className="mt-1 text-xs text-(--site-muted)">Katılım</p>
         </article>
         <article className="panel-metric-card">
           <ClipboardCheck size={18} className="text-dc-brand-strong" />
-          <p className="mt-4 text-3xl font-extrabold text-[var(--site-ink)]">
+          <p className="mt-4 text-3xl font-extrabold text-(--site-ink)">
             {groups.reduce((sum, group) => sum + group.assignments.length, 0)}
           </p>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">Aktif ödev</p>
+          <p className="mt-1 text-xs text-(--site-muted)">Aktif ödev</p>
         </article>
         <article className="panel-metric-card">
           <AlertTriangle size={18} className="text-rose-700" />
-          <p className="mt-4 text-3xl font-extrabold text-[var(--site-ink)]">
+          <p className="mt-4 text-3xl font-extrabold text-(--site-ink)">
             {overdueAssignments}
           </p>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Gecikmiş çalışma
           </p>
         </article>
         <article className="panel-metric-card">
           <UserRoundX size={18} className="text-[#8A5F37]" />
-          <p className="mt-4 text-3xl font-extrabold text-[var(--site-ink)]">
+          <p className="mt-4 text-3xl font-extrabold text-(--site-ink)">
             {groups.filter((group) => !group.enrollments.length).length}
           </p>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">Boş grup</p>
+          <p className="mt-1 text-xs text-(--site-muted)">Boş grup</p>
         </article>
         <article className="panel-metric-card">
           <WalletCards size={18} className="text-amber-700" />
-          <p className="mt-4 text-3xl font-extrabold text-[var(--site-ink)]">
+          <p className="mt-4 text-3xl font-extrabold text-(--site-ink)">
             {pendingPayments}
           </p>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Bekleyen ödeme
           </p>
         </article>
@@ -259,11 +259,11 @@ export default async function AdminReportsPage() {
       {featureFlags.reviewQueue ? (
         <section className="mt-5 grid gap-3 sm:grid-cols-2">
           <article className="panel-metric-card">
-            <RotateCcw size={18} className="text-[var(--brand-olive)]" />
+            <RotateCcw size={18} className="text-(--brand-olive)" />
             <p className="mt-4 text-3xl font-extrabold">
               {sevenDayRate === null ? "—" : `%${sevenDayRate}`}
             </p>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               7 günde yeniden çözüm · {sevenDayEligible.length} uygun öğe ·
               hedef ≥%60
             </p>
@@ -273,7 +273,7 @@ export default async function AdminReportsPage() {
             <p className="mt-4 text-3xl font-extrabold">
               {retentionRate === null ? "—" : `%${retentionRate}`}
             </p>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               30 günlük doğru geri çağırma · {retentionAttempts.length} deneme
             </p>
           </article>
@@ -286,7 +286,7 @@ export default async function AdminReportsPage() {
             <p className="mt-4 text-3xl font-extrabold">
               {planCompletionRate === null ? "—" : `%${planCompletionRate}`}
             </p>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Haftalık plan görevi tamamlama · {completedPlanTaskCount}/
               {generatedPlanTaskCount} · pilot baz çizgisi
             </p>
@@ -300,7 +300,7 @@ export default async function AdminReportsPage() {
             <p className="mt-4 text-3xl font-extrabold">
               {aiApprovalRate === null ? "—" : `%${aiApprovalRate}`}
             </p>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               AI taslak onayı · {aiReviewed.length} inceleme · en az 5 örnek
             </p>
           </article>
@@ -309,7 +309,7 @@ export default async function AdminReportsPage() {
             <p className="mt-4 text-3xl font-extrabold">
               {aiFallbackRate === null ? "—" : `%${aiFallbackRate}`}
             </p>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Güvenli fallback · {aiDrafts.length} üretim
             </p>
           </article>
@@ -318,7 +318,7 @@ export default async function AdminReportsPage() {
             <p className="mt-4 text-3xl font-extrabold">
               {aiFlagRate === null ? "—" : `%${aiFlagRate}`}
             </p>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Doğrulanmış hata işareti · küçük örnek gizlenir
             </p>
           </article>
@@ -329,7 +329,7 @@ export default async function AdminReportsPage() {
                 ? "Eksik"
                 : `$${(aiKnownCostMicrousd / 1_000_000).toLocaleString("tr-TR", { maximumFractionDigits: 4 })}`}
             </p>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Bilinen model maliyeti · fiyat env'i yoksa rollout durur
             </p>
           </article>
@@ -337,14 +337,14 @@ export default async function AdminReportsPage() {
       ) : null}
       <section className="mt-5 panel-surface p-5 sm:p-6">
         <div className="flex items-start gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#eef2df] text-[var(--brand-olive)]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#eef2df] text-(--brand-olive)">
             <Activity size={19} />
           </span>
           <div>
-            <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+            <h2 className="text-sm font-extrabold text-(--site-ink)">
               Kritik yolculuk SLO'ları
             </h2>
-            <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+            <p className="mt-1 text-xs leading-5 text-(--site-muted)">
               Son 30 gün · Kimliksiz ürün event'leri · En az 5 örnek olmadan
               durum kararı verilmez.
             </p>
@@ -354,7 +354,7 @@ export default async function AdminReportsPage() {
           {sloMetrics.map((metric) => (
             <article
               key={metric.key}
-              className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4"
+              className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4"
             >
               <div
                 className={`inline-flex rounded-full px-2 py-1 text-[10px] font-extrabold uppercase tracking-[.06em] ${metric.status === "healthy" ? "bg-emerald-100 text-emerald-800" : metric.status === "breached" ? "bg-rose-100 text-rose-800" : "bg-slate-100 text-slate-600"}`}
@@ -365,13 +365,13 @@ export default async function AdminReportsPage() {
                     ? "Hedef dışı"
                     : metric.status === "observing" ? "Baz çizgisi" : "Veri bekleniyor"}
               </div>
-              <p className="mt-4 text-2xl font-extrabold tracking-[-.04em] text-[var(--site-ink)]">
+              <p className="mt-4 text-2xl font-extrabold tracking-[-.04em] text-(--site-ink)">
                 {formatSloValue(metric.value, metric.unit)}
               </p>
-              <p className="mt-1 text-xs font-bold text-[var(--site-body)]">
+              <p className="mt-1 text-xs font-bold text-(--site-body)">
                 {metric.label}
               </p>
-              <p className="mt-2 text-[11px] text-[var(--site-muted)]">
+              <p className="mt-2 text-[11px] text-(--site-muted)">
                 {metric.sampleSize} örnek · {metric.target === null ? "Hedef iş kararı bekliyor" : <>{metric.comparison === "gte" ? "≥" : "≤"}{formatSloValue(metric.target, metric.unit)}</>}
               </p>
             </article>
@@ -380,12 +380,12 @@ export default async function AdminReportsPage() {
       </section>
       <div className="mt-5 grid gap-5 xl:grid-cols-2">
         <section className="panel-surface overflow-hidden">
-          <div className="border-b border-[var(--site-line)] p-5">
-            <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+          <div className="border-b border-(--site-line) p-5">
+            <h2 className="text-sm font-extrabold text-(--site-ink)">
               Öğretmen ders tamamlama
             </h2>
           </div>
-          <div className="divide-y divide-[var(--site-line)]">
+          <div className="divide-y divide-(--site-line)">
             {teachers.map((teacher) => {
               const percent = teacher.total
                 ? Math.round((teacher.completed / teacher.total) * 100)
@@ -417,12 +417,12 @@ export default async function AdminReportsPage() {
           </div>
         </section>
         <section className="panel-surface overflow-hidden">
-          <div className="border-b border-[var(--site-line)] p-5">
-            <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+          <div className="border-b border-(--site-line) p-5">
+            <h2 className="text-sm font-extrabold text-(--site-ink)">
               Grup ödev ilerlemesi
             </h2>
           </div>
-          <div className="divide-y divide-[var(--site-line)]">
+          <div className="divide-y divide-(--site-line)">
             {groups.map((group) => {
               const rows = group.assignments.flatMap((item) => item.progress);
               const done = rows.filter((item) => item.status === "DONE").length;

@@ -44,13 +44,13 @@ export default async function TeacherDigestsPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
           <HeartHandshake size={15} /> Sakin aile iletişimi
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em]">
+        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
           Taslağı görün, aynı anda paylaşın.
         </h1>
-        <p className="mt-2 text-sm leading-6 text-[var(--site-body)]">
+        <p className="mt-2 text-sm leading-6 text-(--site-body)">
           Özel öğrenci notu, görev listesi ve tekil kötü günler özete alınmaz.
           Öğrenci ve veli aynı yayınlanmış metni görür.
         </p>

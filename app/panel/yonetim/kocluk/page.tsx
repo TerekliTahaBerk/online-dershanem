@@ -462,7 +462,7 @@ export default async function AdminCoachingPage() {
                 return (
                   <li
                     key={row.id}
-                    className="rounded-[10px] border border-dc-line-soft bg-white px-3.5 py-3"
+                    className="rounded-od border border-dc-line-soft bg-white px-3.5 py-3"
                   >
                     <p className="font-semibold text-dc-ink">
                       {studentName} · {coachName}
@@ -497,7 +497,7 @@ export default async function AdminCoachingPage() {
               {studentsWithoutPlan.map((row) => (
                 <li
                   key={row.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-dc-line-soft bg-white px-3.5 py-3"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-od border border-dc-line-soft bg-white px-3.5 py-3"
                 >
                   <span>
                     <strong>
@@ -528,7 +528,7 @@ export default async function AdminCoachingPage() {
               {studentsWithoutGoals.map((row) => (
                 <li
                   key={row.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-dc-line-soft bg-white px-3.5 py-3"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-od border border-dc-line-soft bg-white px-3.5 py-3"
                 >
                   <span>
                     <strong>

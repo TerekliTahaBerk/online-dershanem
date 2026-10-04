@@ -49,7 +49,7 @@ export function SettingsForm({
 }
 
 export const settingsInputClass =
-  "w-full rounded-lg border border-[#DDE4E0] bg-white px-3 py-2.5 text-[14px] text-dc-ink outline-none transition-colors placeholder:text-dc-ink-ghost focus-visible:border-dc-brand-strong focus-visible:ring-2 focus-visible:ring-dc-brand-strong";
+  "w-full rounded-lg border border-[#DDE4E0] bg-white px-3 py-2.5 text-[14px] text-dc-ink outline-hidden transition-colors placeholder:text-dc-ink-ghost focus-visible:border-dc-brand-strong focus-visible:ring-2 focus-visible:ring-dc-brand-strong";
 
 export function SettingsField({ id, label, hint, children }: { id: string; label: string; hint?: string; children: React.ReactNode }) {
   return (

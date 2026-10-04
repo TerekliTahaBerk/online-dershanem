@@ -56,14 +56,14 @@ function trendCopy(delta: number | null) {
       label: `+${delta.toFixed(0)} puan`,
       Icon: ArrowUpRight,
       className:
-        "bg-[var(--pd-pastel-mint-soft)] text-[var(--pd-pastel-mint-ink)]",
+        "bg-(--pd-pastel-mint-soft) text-(--pd-pastel-mint-ink)",
     };
   if (delta <= -10)
     return {
       label: `${delta.toFixed(0)} puan`,
       Icon: ArrowDownRight,
       className:
-        "bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]",
+        "bg-(--pd-pastel-yellow-soft) text-(--pd-pastel-yellow-ink)",
     };
   return {
     label: "Benzer düzey",
@@ -84,8 +84,8 @@ function metric(
       <span className={`panel-metric-icon ${tone}`}>
         <Icon size={18} />
       </span>
-      <p className="mt-4 text-2xl font-black text-[var(--site-ink)]">{value}</p>
-      <p className="mt-1 text-xs text-[var(--site-muted)]">{label}</p>
+      <p className="mt-4 text-2xl font-black text-(--site-ink)">{value}</p>
+      <p className="mt-1 text-xs text-(--site-muted)">{label}</p>
     </article>
   );
 }
@@ -122,8 +122,8 @@ export function OdkAudienceReports({
       />
 
       {!students.length ? (
-        <div className="mt-8 rounded-3xl border border-dashed border-[var(--site-line)] bg-white p-8 text-center">
-          <Target size={22} className="mx-auto text-[var(--site-muted)]" />
+        <div className="mt-8 rounded-3xl border border-dashed border-(--site-line) bg-white p-8 text-center">
+          <Target size={22} className="mx-auto text-(--site-muted)" />
           <h2 className="mt-3 text-sm font-extrabold">
             {role === "ADMIN"
               ? "Henüz denemeye katılmış ODK öğrencisi yok."
@@ -131,7 +131,7 @@ export function OdkAudienceReports({
                 ? "Aktif grubunuza bağlı öğrenci bulunmuyor."
                 : "Henüz bağlı öğrenciniz bulunmuyor."}
           </h2>
-          <p className="mt-2 text-xs text-[var(--site-muted)]">
+          <p className="mt-2 text-xs text-(--site-muted)">
             Açıklanmış sonuç oluştuğunda rapor alanı otomatik güncellenir.
           </p>
         </div>
@@ -149,11 +149,11 @@ export function OdkAudienceReports({
                   aria-current={
                     student.userId === selectedUserId ? "true" : undefined
                   }
-                  className={`min-w-fit rounded-2xl border px-4 py-3 ${student.userId === selectedUserId ? "border-[var(--brand-olive)] bg-[var(--brand-olive)] text-white" : "border-[var(--site-line)] bg-white text-[var(--site-ink)]"}`}
+                  className={`min-w-fit rounded-2xl border px-4 py-3 ${student.userId === selectedUserId ? "border-(--brand-olive) bg-(--brand-olive) text-white" : "border-(--site-line) bg-white text-(--site-ink)"}`}
                 >
                   <strong className="block text-sm">{student.name}</strong>
                   <span
-                    className={`mt-1 block text-[10px] ${student.userId === selectedUserId ? "text-white" : "text-[var(--site-muted)]"}`}
+                    className={`mt-1 block text-[10px] ${student.userId === selectedUserId ? "text-white" : "text-(--site-muted)"}`}
                   >
                     {student.context}
                   </span>
@@ -161,13 +161,13 @@ export function OdkAudienceReports({
               ))}
             </nav>
           ) : (
-            <div className="mt-7 inline-flex items-center gap-3 rounded-2xl border border-[var(--site-line)] bg-white px-4 py-3">
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--panel-nav-active)] text-sm font-black text-[var(--brand-olive)]">
+            <div className="mt-7 inline-flex items-center gap-3 rounded-2xl border border-(--site-line) bg-white px-4 py-3">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-(--panel-nav-active) text-sm font-black text-(--brand-olive)">
                 {students[0].name.charAt(0).toLocaleUpperCase("tr-TR")}
               </span>
               <span>
                 <strong className="block text-sm">{students[0].name}</strong>
-                <span className="mt-0.5 block text-[10px] text-[var(--site-muted)]">
+                <span className="mt-0.5 block text-[10px] text-(--site-muted)">
                   {students[0].context}
                 </span>
               </span>
@@ -175,11 +175,11 @@ export function OdkAudienceReports({
           )}
 
           {!report || !latest ? (
-            <div className="mt-6 rounded-3xl border border-dashed border-[var(--site-line)] bg-white p-8">
-              <h2 className="font-extrabold text-[var(--site-ink)]">
+            <div className="mt-6 rounded-3xl border border-dashed border-(--site-line) bg-white p-8">
+              <h2 className="font-extrabold text-(--site-ink)">
                 Açıklanmış sonuç henüz yok.
               </h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--site-muted)]">
+              <p className="mt-2 text-sm leading-6 text-(--site-muted)">
                 Öğrenci denemeyi tamamlayıp admin sonucu açıkladığında rapor
                 burada oluşacak.
               </p>
@@ -189,21 +189,21 @@ export function OdkAudienceReports({
               <section className="mt-6 panel-surface p-5 sm:p-6">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-extrabold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+                    <p className="text-xs font-extrabold uppercase tracking-[.08em] text-(--brand-olive)">
                       Son açıklanan deneme
                     </p>
-                    <h2 className="mt-2 text-xl font-semibold text-[var(--site-ink)]">
+                    <h2 className="mt-2 text-xl font-semibold text-(--site-ink)">
                       {latest.title}
                     </h2>
-                    <p className="mt-1 text-xs text-[var(--site-muted)]">
+                    <p className="mt-1 text-xs text-(--site-muted)">
                       {latest.family} · {date.format(latest.takenAt)}
                     </p>
                   </div>
-                  <span className="rounded-2xl bg-[var(--panel-nav-active)] px-5 py-3 text-center">
-                    <strong className="block text-3xl font-black text-[var(--site-ink)]">
+                  <span className="rounded-2xl bg-(--panel-nav-active) px-5 py-3 text-center">
+                    <strong className="block text-3xl font-black text-(--site-ink)">
                       {latest.totalNet.toFixed(2)}
                     </strong>
-                    <span className="text-[10px] font-bold text-[var(--site-muted)]">
+                    <span className="text-[10px] font-bold text-(--site-muted)">
                       net
                     </span>
                   </span>
@@ -231,19 +231,19 @@ export function OdkAudienceReports({
                     <div className="flex items-start gap-3">
                       <Target
                         size={18}
-                        className="mt-0.5 shrink-0 text-[var(--brand-olive)]"
+                        className="mt-0.5 shrink-0 text-(--brand-olive)"
                       />
                       <div>
-                        <h2 className="font-extrabold text-[var(--site-ink)]">
+                        <h2 className="font-extrabold text-(--site-ink)">
                           Kazanım eğilimleri
                         </h2>
-                        <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+                        <p className="mt-1 text-xs leading-5 text-(--site-muted)">
                           Yüzde, bağlı sorulardaki doğru oranıdır. Az sorulu
                           ölçümlerde yeni kanıt bekleyin.
                         </p>
                       </div>
                     </div>
-                    <span className="min-w-fit rounded-full bg-[var(--pd-pastel-yellow-soft)] px-2.5 py-1 text-[10px] font-extrabold text-[var(--pd-pastel-yellow-ink)]">
+                    <span className="min-w-fit rounded-full bg-(--pd-pastel-yellow-soft) px-2.5 py-1 text-[10px] font-extrabold text-(--pd-pastel-yellow-ink)">
                       {attentionCount} gelişim alanı
                     </span>
                   </div>
@@ -253,18 +253,18 @@ export function OdkAudienceReports({
                       return (
                         <article
                           key={trend.outcomeId}
-                          className="rounded-2xl border border-[var(--site-line)] p-4"
+                          className="rounded-2xl border border-(--site-line) p-4"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div>
-                              <p className="text-[10px] font-black text-[var(--brand-olive)]">
+                              <p className="text-[10px] font-black text-(--brand-olive)">
                                 {trend.code} · {trend.unitName}
                               </p>
-                              <h3 className="mt-1 text-sm font-bold leading-5 text-[var(--site-ink)]">
+                              <h3 className="mt-1 text-sm font-bold leading-5 text-(--site-ink)">
                                 {trend.title}
                               </h3>
                             </div>
-                            <span className="text-lg font-black text-[var(--site-ink)]">
+                            <span className="text-lg font-black text-(--site-ink)">
                               %{trend.latestAccuracy.toFixed(0)}
                             </span>
                           </div>
@@ -274,12 +274,12 @@ export function OdkAudienceReports({
                             >
                               <copy.Icon size={12} /> {copy.label}
                             </span>
-                            <span className="text-[10px] text-[var(--site-muted)]">
+                            <span className="text-[10px] text-(--site-muted)">
                               {trend.evidenceCount} deneme ·{" "}
                               {trend.questionCount} soru
                             </span>
                             {trend.questionCount < 3 ? (
-                              <span className="rounded-full bg-[var(--pd-pastel-yellow-soft)] px-2 py-1 text-[9px] font-bold text-[var(--pd-pastel-yellow-ink)]">
+                              <span className="rounded-full bg-(--pd-pastel-yellow-soft) px-2 py-1 text-[9px] font-bold text-(--pd-pastel-yellow-ink)">
                                 Yeni kanıt gerekli
                               </span>
                             ) : null}
@@ -288,7 +288,7 @@ export function OdkAudienceReports({
                       );
                     })}
                     {!report.trends.length ? (
-                      <p className="text-sm text-[var(--site-muted)]">
+                      <p className="text-sm text-(--site-muted)">
                         Kazanım verisi bulunmuyor.
                       </p>
                     ) : null}
@@ -298,9 +298,9 @@ export function OdkAudienceReports({
                   <div className="flex items-center gap-2">
                     <BarChart3
                       size={17}
-                      className="text-[var(--brand-olive)]"
+                      className="text-(--brand-olive)"
                     />
-                    <h2 className="font-extrabold text-[var(--site-ink)]">
+                    <h2 className="font-extrabold text-(--site-ink)">
                       Deneme geçmişi
                     </h2>
                   </div>
@@ -308,38 +308,38 @@ export function OdkAudienceReports({
                     {[...report.exams].reverse().map((exam) => (
                       <article
                         key={exam.id}
-                        className="rounded-2xl border border-[var(--site-line)] p-4"
+                        className="rounded-2xl border border-(--site-line) p-4"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <h3 className="text-sm font-bold text-[var(--site-ink)]">
+                            <h3 className="text-sm font-bold text-(--site-ink)">
                               {exam.title}
                             </h3>
-                            <p className="mt-1 text-[10px] text-[var(--site-muted)]">
+                            <p className="mt-1 text-[10px] text-(--site-muted)">
                               {exam.family} · {date.format(exam.takenAt)}
                             </p>
                           </div>
-                          <strong className="text-lg text-[var(--brand-olive)]">
+                          <strong className="text-lg text-(--brand-olive)">
                             {exam.totalNet.toFixed(2)}
                           </strong>
                         </div>
-                        <p className="mt-3 text-xs text-[var(--site-body)]">
+                        <p className="mt-3 text-xs text-(--site-body)">
                           {exam.correctCount} doğru · {exam.wrongCount} yanlış ·{" "}
                           {exam.blankCount} boş
                         </p>
                         {exam.integrityNotice ? (
-                          <p className="mt-2 text-[10px] font-bold text-[var(--pd-pastel-yellow-ink)]">
+                          <p className="mt-2 text-[10px] font-bold text-(--pd-pastel-yellow-ink)">
                             {exam.integrityNotice}
                           </p>
                         ) : null}
                       </article>
                     ))}
                   </div>
-                  <div className="mt-5 rounded-2xl bg-[var(--panel-nav-active)] p-4">
-                    <h3 className="flex items-center gap-2 text-xs font-extrabold text-[var(--site-ink)]">
+                  <div className="mt-5 rounded-2xl bg-(--panel-nav-active) p-4">
+                    <h3 className="flex items-center gap-2 text-xs font-extrabold text-(--site-ink)">
                       <BookOpenCheck size={14} /> Yorumlama notu
                     </h3>
-                    <p className="mt-2 text-xs leading-5 text-[var(--site-body)]">
+                    <p className="mt-2 text-xs leading-5 text-(--site-body)">
                       Tek bir denemeyi kesin yargı olarak kullanmayın.
                       Tekrarlayan kazanım kanıtı ve öğrencinin kendi eğilimi
                       daha anlamlıdır.

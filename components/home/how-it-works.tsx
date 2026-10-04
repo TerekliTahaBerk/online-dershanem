@@ -29,8 +29,8 @@ const steps = [
 export function HowItWorks() {
   return (
     <section className="border-y border-dc-line-soft bg-white">
-      <div className="site-container py-[var(--dc-section-tight)]">
-        <h2 className="font-display text-[length:var(--public-title)] leading-[1.1] tracking-[-0.025em] text-dc-ink">
+      <div className="site-container py-(--dc-section-tight)">
+        <h2 className="font-display text-(length:--public-title) leading-[1.1] tracking-tight text-dc-ink">
           Nasıl başlıyorsun?
         </h2>
 
@@ -48,7 +48,7 @@ export function HowItWorks() {
                 className={`font-mono text-xs font-semibold ${
                   i === 0
                     ? "text-dc-brand-strong"
-                    : "text-[var(--dc-ink-faint)]"
+                    : "text-(--dc-ink-faint)"
                 }`}
               >
                 {n}

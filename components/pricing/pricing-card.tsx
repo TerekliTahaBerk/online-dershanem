@@ -32,7 +32,7 @@ export function PricingCard({
   return (
     <PublicCard className="flex h-full flex-col sm:p-9">
       <div className="flex items-center justify-between gap-4">
-        <span className="text-[12px] font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+        <span className="text-[12px] font-bold uppercase tracking-[.08em] text-(--brand-olive)">
           {data.category} paketi
         </span>
         {data.discountLabel ? (
@@ -41,11 +41,11 @@ export function PricingCard({
           </PublicBadge>
         ) : null}
       </div>
-      <h3 className="mt-5 max-w-[16ch] text-[clamp(1.7rem,3vw,2.25rem)] font-semibold leading-[1.04] tracking-[-.035em] text-[var(--site-ink)]">
+      <h3 className="mt-5 max-w-[16ch] text-[clamp(1.7rem,3vw,2.25rem)] font-semibold leading-[1.04] tracking-[-.035em] text-(--site-ink)">
         {data.name}
       </h3>
       {data.tagline ? (
-        <p className="mt-3 text-[14px] leading-6 text-[var(--site-body)]">
+        <p className="mt-3 text-[14px] leading-6 text-(--site-body)">
           {data.tagline}
         </p>
       ) : null}
@@ -62,9 +62,9 @@ export function PricingCard({
         suffix={per ? `/ ${per}` : undefined}
         note="Aylık ödeme · taahhüt yok"
       />
-      <div className="mt-8 flex-1 border-t border-[var(--site-line)] pt-7">
+      <div className="mt-8 flex-1 border-t border-(--site-line) pt-7">
         {data.highlightsTitle ? (
-          <p className="mb-4 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+          <p className="mb-4 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
             {data.highlightsTitle}
           </p>
         ) : null}
@@ -72,11 +72,11 @@ export function PricingCard({
           {data.highlights.map((item) => (
             <li
               key={item}
-              className="flex items-start gap-3 text-[14px] leading-6 text-[var(--site-body)]"
+              className="flex items-start gap-3 text-[14px] leading-6 text-(--site-body)"
             >
               <Check
                 size={16}
-                className="mt-1 shrink-0 text-[var(--brand-olive)]"
+                className="mt-1 shrink-0 text-(--brand-olive)"
                 aria-hidden="true"
               />
               {item}
@@ -95,7 +95,7 @@ export function PricingCard({
       >
         {data.ctaLabel ?? `${data.category} Paketini Satın Al`}
       </PurchaseFunnelTrigger>
-      <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-xs text-[var(--site-muted)]">
+      <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-xs text-(--site-muted)">
         <Lock size={12} aria-hidden="true" />
         {data.note ?? "PayTR güvenli ödeme · Hesap gerekmez"}
       </p>

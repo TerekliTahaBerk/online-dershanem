@@ -64,7 +64,7 @@ export function RequestMfaResetForm({ userId }: { userId: string }) {
   const [reason, setReason] = useState("");
 
   return (
-    <div className="rounded-[16px] border border-amber-200 bg-amber-50 p-4">
+    <div className="rounded-od-lg border border-amber-200 bg-amber-50 p-4">
       <p className="flex items-center gap-2 text-[13px] font-bold text-amber-900">
         <ShieldAlert size={15} aria-hidden="true" /> MFA sıfırlama talebi
       </p>
@@ -84,7 +84,7 @@ export function RequestMfaResetForm({ userId }: { userId: string }) {
         onChange={(event) => setReason(event.target.value)}
         rows={2}
         maxLength={500}
-        className="mt-1.5 w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-[13px] text-[var(--site-ink)] outline-none focus:border-amber-500"
+        className="mt-1.5 w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-[13px] text-(--site-ink) outline-hidden focus:border-amber-500"
         placeholder="Ör. yönetici telefonunu kaybetti, kimliği telefonla doğrulandı."
       />
       <button

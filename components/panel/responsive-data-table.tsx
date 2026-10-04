@@ -54,7 +54,7 @@ export function ResponsiveDataTableRow({
   return (
     <tr
       className={cn(
-        "panel-table-row border-t border-[var(--site-line)]",
+        "panel-table-row border-t border-(--site-line)",
         className,
       )}
     >
@@ -82,7 +82,7 @@ export function ResponsiveDataTableCell({
       className={cn(
         "panel-table-cell py-2 pr-3",
         header
-          ? "pb-2 text-left text-[10px] uppercase tracking-wide text-[var(--site-muted)]"
+          ? "pb-2 text-left text-[10px] uppercase tracking-wide text-(--site-muted)"
           : "",
         className,
       )}

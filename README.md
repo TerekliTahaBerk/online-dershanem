@@ -35,7 +35,7 @@ Administrator, teacher, student, and parent experiences have separate navigation
 
 - Next.js 16 App Router, React 19, and TypeScript 5
 - PostgreSQL and Prisma 6
-- Tailwind CSS 3
+- Tailwind CSS 4
 - Playwright, Node.js test runner, and Lighthouse CI
 - Vercel, Vercel Blob, Resend, PayTR, and optional Meta/OpenAI integrations
 

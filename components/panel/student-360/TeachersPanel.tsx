@@ -17,7 +17,7 @@ export function TeachersPanel(props: TeachersPanelProps) {
             data.links.map((link) => (
               <div
                 key={link.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-dc-line-soft px-3 py-2.5"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-od border border-dc-line-soft px-3 py-2.5"
               >
                 <div>
                   <p className="text-[12.5px] font-semibold uppercase tracking-wide text-dc-ink-faint">

@@ -59,13 +59,13 @@ export function ArchiveUserAction({
   }
 
   return (
-    <div className="rounded-[12px] border border-[var(--site-line)] bg-white p-4">
+    <div className="rounded-[12px] border border-(--site-line) bg-white p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-[14px] font-bold text-[var(--site-ink)]">
+          <h3 className="text-[14px] font-bold text-(--site-ink)">
             Kullanıcıyı arşivle
           </h3>
-          <p className="mt-1 text-[12.5px] text-[var(--site-muted)]">
+          <p className="mt-1 text-[12.5px] text-(--site-muted)">
             Hard delete son seçenektir. Önce etki analizini görün.
           </p>
         </div>
@@ -81,21 +81,21 @@ export function ArchiveUserAction({
       {open ? (
         <div className="mt-4 space-y-3">
           {loadingImpact ? (
-            <p className="text-sm text-[var(--site-muted)]">
+            <p className="text-sm text-(--site-muted)">
               Analiz yükleniyor…
             </p>
           ) : null}
           {impact ? (
             <>
-              <p className="text-[13.5px] font-semibold text-[var(--site-ink)]">
+              <p className="text-[13.5px] font-semibold text-(--site-ink)">
                 {impact.message}
               </p>
-              <ul className="space-y-1.5 text-[13px] text-[var(--site-muted)]">
+              <ul className="space-y-1.5 text-[13px] text-(--site-muted)">
                 {impact.buckets.length ? (
                   impact.buckets.map((bucket) => (
                     <li key={bucket.key}>
                       {bucket.label}:{" "}
-                      <strong className="text-[var(--site-ink)]">
+                      <strong className="text-(--site-ink)">
                         {bucket.count}
                       </strong>
                     </li>
@@ -116,7 +116,7 @@ export function ArchiveUserAction({
           ) : null}
           {error ? (
             <p
-              className="text-sm font-semibold text-[var(--brand-danger,#b42318)]"
+              className="text-sm font-semibold text-(--brand-danger,#b42318)"
               role="alert"
             >
               {error}

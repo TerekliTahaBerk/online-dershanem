@@ -78,9 +78,9 @@ export function CurriculumManager({
             );
           }}
         >
-          <Plus size={19} className="text-[var(--brand-olive)]" />
+          <Plus size={19} className="text-(--brand-olive)" />
           <h2 className="mt-3 text-sm font-extrabold">Yeni sürüm</h2>
-          <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+          <p className="mt-1 text-xs leading-5 text-(--site-muted)">
             Resmî kaynağı ve yılı ayrı sürümleyin; eski sürümü silmek yerine
             arşivleyin.
           </p>
@@ -129,13 +129,13 @@ export function CurriculumManager({
           </button>
         </form>
         <section className="panel-surface overflow-hidden">
-          <div className="border-b border-[var(--site-line)] p-5">
+          <div className="border-b border-(--site-line) p-5">
             <h2 className="text-sm font-extrabold">Müfredat sürümleri</h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Yalnız ACTIVE sürümlerin kazanımları öğretmen seçiminde görünür.
             </p>
           </div>
-          <div className="divide-y divide-[var(--site-line)]">
+          <div className="divide-y divide-(--site-line)">
             {versions.map((version) => (
               <article
                 key={version.id}
@@ -150,10 +150,10 @@ export function CurriculumManager({
                       {version.status}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-[var(--site-body)]">
+                  <p className="mt-1 text-xs text-(--site-body)">
                     {version.title} · {version.exam} · {version.academicYear}
                   </p>
-                  <p className="mt-1 text-[10px] text-[var(--site-muted)]">
+                  <p className="mt-1 text-[10px] text-(--site-muted)">
                     {version.subjectCount} ders · {version.outcomeCount} kazanım
                   </p>
                 </div>
@@ -181,7 +181,7 @@ export function CurriculumManager({
               </article>
             ))}
             {!versions.length ? (
-              <p className="p-8 text-center text-sm text-[var(--site-muted)]">
+              <p className="p-8 text-center text-sm text-(--site-muted)">
                 İlk müfredat sürümünü oluşturun.
               </p>
             ) : null}
@@ -215,12 +215,12 @@ export function CurriculumManager({
         }}
       >
         <div className="flex items-center gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]">
+          <span className="grid h-10 w-10 place-items-center rounded-2xl bg-(--brand-olive-soft) text-(--brand-olive)">
             <BookOpenCheck size={19} />
           </span>
           <div>
             <h2 className="text-sm font-extrabold">Kazanım ekle</h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Ders → ünite → kazanım → beceri yapısı korunur.
             </p>
           </div>
@@ -302,7 +302,7 @@ export function CurriculumManager({
         {message ? (
           <p
             aria-live="polite"
-            className="mt-3 text-xs font-bold text-[var(--brand-olive)]"
+            className="mt-3 text-xs font-bold text-(--brand-olive)"
           >
             {message}
           </p>

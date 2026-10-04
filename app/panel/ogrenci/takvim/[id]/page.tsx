@@ -99,7 +99,7 @@ export default async function StudentLessonDetailPage({
           title={lesson.title}
         />
 
-        <div className="mt-4 flex flex-wrap gap-x-8 gap-y-2 border-b border-dc-line pb-5 text-[14px] font-medium text-[var(--pd-ink-3)]">
+        <div className="mt-4 flex flex-wrap gap-x-8 gap-y-2 border-b border-dc-line pb-5 text-[14px] font-medium text-(--pd-ink-3)">
           <span>Öğretmen: {lesson.teacher.fullName || "—"}</span>
           <span>Grup: {lesson.group.name}</span>
           <span
@@ -115,7 +115,7 @@ export default async function StudentLessonDetailPage({
           <h2 className="text-[16px] font-bold text-dc-ink">
             Derste ne işlendi?
           </h2>
-          <p className="mt-2 text-[14.5px] leading-[1.7] text-[var(--pd-ink-3)]">
+          <p className="mt-2 text-[14.5px] leading-[1.7] text-(--pd-ink-3)">
             {shared?.topic ||
               "Öğretmen bu dersin özetini henüz eklemedi. Eklendiğinde burada görünecek."}
           </p>
@@ -125,7 +125,7 @@ export default async function StudentLessonDetailPage({
           <section className="mt-6">
             <h2 className="text-[16px] font-bold text-dc-ink">Öğretmen notu</h2>
             <PanelCard className="mt-2">
-              <p className="text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">
+              <p className="text-[14.5px] leading-[1.65] text-(--pd-ink-3)">
                 &ldquo;{personal.note}&rdquo;
               </p>
             </PanelCard>
@@ -135,7 +135,7 @@ export default async function StudentLessonDetailPage({
         <section className="mt-6">
           <h2 className="text-[16px] font-bold text-dc-ink">Verilen çalışma</h2>
           {shared?.homework ? (
-            <p className="mt-2 text-[14.5px] leading-[1.7] text-[var(--pd-ink-3)]">
+            <p className="mt-2 text-[14.5px] leading-[1.7] text-(--pd-ink-3)">
               {shared.homework}
             </p>
           ) : null}
@@ -180,7 +180,7 @@ export default async function StudentLessonDetailPage({
         {shared?.nextGoal ? (
           <section className="mt-6">
             <h2 className="text-[16px] font-bold text-dc-ink">Sonraki hedef</h2>
-            <p className="mt-2 text-[14.5px] leading-[1.7] text-[var(--pd-ink-3)]">
+            <p className="mt-2 text-[14.5px] leading-[1.7] text-(--pd-ink-3)">
               {shared.nextGoal}
             </p>
           </section>

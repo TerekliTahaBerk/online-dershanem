@@ -26,13 +26,13 @@ const examples = [
 
 export function DinoLayer() {
   return (
-    <section className="site-container py-[var(--dc-section)]">
+    <section className="site-container py-(--dc-section)">
       <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
         <div>
           <p className="text-[12px] font-semibold tracking-[0.08em] text-dc-brand-strong">
             DINO AI
           </p>
-          <h2 className="mt-4 font-display text-[length:var(--public-title)] leading-[1.12] tracking-[-0.025em] text-dc-ink">
+          <h2 className="mt-4 font-display text-(length:--public-title) leading-[1.12] tracking-tight text-dc-ink">
             Dino AI ne yapıyor?
           </h2>
           <p className="mt-4 text-[17px] leading-[1.65] text-dc-ink-body">

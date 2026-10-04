@@ -77,13 +77,13 @@ export default async function TeacherAssignmentsPage() {
       email={session.email}
     >
       <header className="mb-7">
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
           <ClipboardCheck size={15} /> Çalışma döngüsü
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em] text-[var(--site-ink)]">
+        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-(--site-ink)">
           Ödevleri ver, ilerlemeyi gör.
         </h1>
-        <p className="mt-2 text-sm text-[var(--site-body)]">
+        <p className="mt-2 text-sm text-(--site-body)">
           Ödev öğrenciye ulaşır; tamamlanma durumu veli paneline aynı anda
           yansır.
         </p>

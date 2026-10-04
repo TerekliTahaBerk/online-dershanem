@@ -141,7 +141,7 @@ export function DinoChat({
             </p>
 
             {turn.note ? (
-              <p className="mt-3 rounded-[10px] border border-dc-line-soft bg-[#FCFDFC] px-3.5 py-2.5 text-[12.5px] text-dc-ink-muted">
+              <p className="mt-3 rounded-od border border-dc-line-soft bg-[#FCFDFC] px-3.5 py-2.5 text-[12.5px] text-dc-ink-muted">
                 {turn.note}
               </p>
             ) : null}

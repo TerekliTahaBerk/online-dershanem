@@ -46,7 +46,7 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
       {home.actions.length ? (
         <PanelCard className="mt-5 max-w-[720px] py-5">
           <PanelCardTitle>Gereken aksiyon</PanelCardTitle>
-          <div className="mt-3 rounded-[10px] border border-dc-line-soft">
+          <div className="mt-3 rounded-od border border-dc-line-soft">
             {home.actions.map((action, index) => (
               <PanelActionRow
                 key={action.id}
@@ -111,7 +111,7 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
           ) : null}
         </ul>
         {home.thisWeek.upcoming.length ? (
-          <div className="mt-4 rounded-[10px] border border-dc-line-soft">
+          <div className="mt-4 rounded-od border border-dc-line-soft">
             {home.thisWeek.upcoming.map((item, index) => (
               <PanelActionRow
                 key={item.id}
@@ -254,7 +254,7 @@ export function ParentCalmHomeView({ home }: { home: ParentCalmHome }) {
             ) : null}
           </ul>
           {home.coaching.sharedNote ? (
-            <p className="mt-3 rounded-[10px] border border-dc-line-soft bg-[#FCFDFC] px-3.5 py-3 text-[14px] leading-[1.65] text-dc-ink-body">
+            <p className="mt-3 rounded-od border border-dc-line-soft bg-[#FCFDFC] px-3.5 py-3 text-[14px] leading-[1.65] text-dc-ink-body">
               {home.coaching.sharedNote}
             </p>
           ) : (

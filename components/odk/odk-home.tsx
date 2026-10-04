@@ -68,10 +68,10 @@ function MetricCard({
       <span className={`panel-metric-icon panel-tone-${tone}`}>
         <Icon size={18} aria-hidden="true" />
       </span>
-      <p className="mt-4 text-2xl font-black tracking-[-.03em] text-[var(--site-ink)]">
+      <p className="mt-4 text-2xl font-black tracking-[-.03em] text-(--site-ink)">
         {value}
       </p>
-      <p className="mt-1 text-xs text-[var(--site-muted)]">{label}</p>
+      <p className="mt-1 text-xs text-(--site-muted)">{label}</p>
     </article>
   );
 }
@@ -96,15 +96,15 @@ function PrimaryCard({
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-[10px] font-extrabold uppercase tracking-[.09em] text-[var(--brand-olive)]">
+            <p className="text-[10px] font-extrabold uppercase tracking-[.09em] text-(--brand-olive)">
               {eyebrow}
             </p>
             {badge}
           </div>
-          <h2 className="mt-2 text-xl font-semibold tracking-[-.035em] text-[var(--site-ink)]">
+          <h2 className="mt-2 text-xl font-semibold tracking-[-.035em] text-(--site-ink)">
             {title}
           </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--site-body)]">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-(--site-body)">
             {copy}
           </p>
         </div>

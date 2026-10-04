@@ -33,7 +33,7 @@ export default function ProductsPage() {
       <main id="main-content" tabIndex={-1}>
         <section className="site-container pb-2 pt-14 text-center sm:pt-[72px]">
           <p className="dc-eyebrow">Ürünler</p>
-          <h1 className="mx-auto mt-4 max-w-[760px] font-display text-[length:var(--public-display)] leading-[1.08] tracking-[-0.03em] text-dc-ink">
+          <h1 className="mx-auto mt-4 max-w-[760px] font-display text-(length:--public-display) leading-[1.08] tracking-[-0.03em] text-dc-ink">
             Üç ayrı ürün. Hangisine ihtiyacın varsa onu al.
           </h1>
           <p className="mx-auto mt-4 max-w-[620px] text-[18px] leading-[1.65] text-dc-ink-body">

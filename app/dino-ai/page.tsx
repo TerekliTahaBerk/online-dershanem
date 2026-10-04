@@ -47,7 +47,7 @@ export default function DinoAiPage() {
               <p className="text-[12px] font-semibold tracking-[0.08em] text-dc-brand-strong">
                 DINO AI · {copy.status}
               </p>
-              <h1 className="mt-4 font-display text-[length:var(--public-display)] leading-[1.1] tracking-[-0.03em] text-dc-ink">
+              <h1 className="mt-4 font-display text-(length:--public-display) leading-[1.1] tracking-[-0.03em] text-dc-ink">
                 {copy.headline}
               </h1>
               <p className="mt-4 max-w-[500px] text-[17px] leading-[1.65] text-dc-ink-body sm:text-[18px]">
@@ -92,9 +92,9 @@ export default function DinoAiPage() {
           </div>
         </section>
 
-        <section className="mt-[var(--dc-section-tight)] border-y border-dc-line-soft bg-white">
-          <div className="site-container py-[var(--dc-section-tight)]">
-            <h2 className="font-display text-[length:var(--public-title)] leading-[1.1] tracking-[-0.025em] text-dc-ink">
+        <section className="mt-(--dc-section-tight) border-y border-dc-line-soft bg-white">
+          <div className="site-container py-(--dc-section-tight)">
+            <h2 className="font-display text-(length:--public-title) leading-[1.1] tracking-tight text-dc-ink">
               Hangi alanlar için hazırlanıyor?
             </h2>
 

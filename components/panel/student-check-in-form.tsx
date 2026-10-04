@@ -117,7 +117,7 @@ export function StudentCheckInForm({
           type="button"
           aria-pressed={selected === value}
           onClick={() => setSelected(value as T)}
-          className={`rounded-2xl border p-3 text-left text-xs font-bold ${selected === value ? "border-[var(--brand-olive)] bg-[var(--panel-nav-active)]" : "border-[var(--site-line)] bg-white"}`}
+          className={`rounded-2xl border p-3 text-left text-xs font-bold ${selected === value ? "border-(--brand-olive) bg-(--panel-nav-active)" : "border-(--site-line) bg-white"}`}
         >
           {label as string}
         </button>
@@ -129,11 +129,11 @@ export function StudentCheckInForm({
       <section className="panel-card p-5">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-extrabold">60 saniyelik check-in</h2>
-          <span className="rounded-full bg-[var(--panel-nav-active)] px-3 py-1 text-xs font-bold">
+          <span className="rounded-full bg-(--panel-nav-active) px-3 py-1 text-xs font-bold">
             Bu hafta {remaining} hak
           </span>
         </div>
-        <p className="mt-2 text-sm text-[var(--site-body)]">
+        <p className="mt-2 text-sm text-(--site-body)">
           Bu bir sınav, tanı veya puan değildir. Nasıl ilerlediğini anlamana
           yardımcı olur.
         </p>
@@ -171,7 +171,7 @@ export function StudentCheckInForm({
             </legend>
             {options(checkInLabels.barrier, barrier, setBarrier)}
           </fieldset>
-          <label className="flex items-start gap-3 rounded-2xl border border-[var(--site-line)] p-3 text-sm">
+          <label className="flex items-start gap-3 rounded-2xl border border-(--site-line) p-3 text-sm">
             <input
               type="checkbox"
               checked={share || help}
@@ -181,7 +181,7 @@ export function StudentCheckInForm({
             />
             <span>
               <b>Öğretmenim görsün</b>
-              <span className="block text-xs text-[var(--site-muted)]">
+              <span className="block text-xs text-(--site-muted)">
                 Kapalıysa yalnız sen görürsün. Veliye hiçbir durumda
                 gösterilmez.
               </span>
@@ -232,7 +232,7 @@ export function StudentCheckInForm({
               <article key={item.id} className="panel-card p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <b>{item.groupName}</b>
-                  <span className="text-xs text-[var(--site-muted)]">
+                  <span className="text-xs text-(--site-muted)">
                     {new Date(item.createdAt).toLocaleDateString("tr-TR")} ·{" "}
                     {item.shared ? "Öğretmenle paylaşıldı" : "Yalnız bende"}
                   </span>
@@ -243,7 +243,7 @@ export function StudentCheckInForm({
                   {checkInLabels.barrier[item.barrier]}
                 </p>
                 {item.request ? (
-                  <div className="mt-3 rounded-2xl bg-[var(--panel-nav-active)] p-3 text-sm">
+                  <div className="mt-3 rounded-2xl bg-(--panel-nav-active) p-3 text-sm">
                     <b>
                       {item.request.status === "OPEN"
                         ? "Öğretmen yanıtı bekleniyor"
@@ -292,7 +292,7 @@ export function StudentCheckInForm({
               </article>
             ))
           ) : (
-            <p className="text-sm text-[var(--site-muted)]">
+            <p className="text-sm text-(--site-muted)">
               Henüz check-in yok.
             </p>
           )}

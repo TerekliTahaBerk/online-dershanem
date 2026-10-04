@@ -55,7 +55,7 @@ export function ResetPasswordForm() {
     return (
       <p
         role="status"
-        className="text-center text-[14px] text-[var(--site-muted)]"
+        className="text-center text-[14px] text-(--site-muted)"
       >
         Bağlantı doğrulanıyor…
       </p>
@@ -77,13 +77,13 @@ export function ResetPasswordForm() {
   }
 
   const field =
-    "rounded-[12px] border border-[var(--site-line)] bg-white px-4 py-3 text-[15px] text-[var(--site-ink)] outline-none focus-visible:border-[var(--brand-olive)] focus-visible:ring-2 focus-visible:ring-[var(--brand-olive-soft)] disabled:opacity-60";
+    "rounded-[12px] border border-(--site-line) bg-white px-4 py-3 text-[15px] text-(--site-ink) outline-hidden focus-visible:border-(--brand-olive) focus-visible:ring-2 focus-visible:ring-(--brand-olive-soft) disabled:opacity-60";
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
       <div className="flex flex-col gap-2">
         <label
           htmlFor="new-password"
-          className="text-[13px] font-semibold text-[var(--site-ink)]"
+          className="text-[13px] font-semibold text-(--site-ink)"
         >
           Yeni parola
         </label>
@@ -100,7 +100,7 @@ export function ResetPasswordForm() {
         />
         <p
           id="reset-password-hint"
-          className="text-[12.5px] leading-5 text-[var(--site-muted)]"
+          className="text-[12.5px] leading-5 text-(--site-muted)"
         >
           En az {PASSWORD_MIN_LENGTH} karakter. Uzun ve hatırlayabileceğiniz bir
           cümle seçin.
@@ -109,7 +109,7 @@ export function ResetPasswordForm() {
       <div className="flex flex-col gap-2">
         <label
           htmlFor="repeat-password"
-          className="text-[13px] font-semibold text-[var(--site-ink)]"
+          className="text-[13px] font-semibold text-(--site-ink)"
         >
           Yeni parola (tekrar)
         </label>

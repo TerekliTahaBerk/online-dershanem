@@ -27,7 +27,7 @@ export function AssignmentsPanel(props: AssignmentsPanelProps) {
             return (
               <div
                 key={item.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-dc-line-soft px-3 py-2.5"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-od border border-dc-line-soft px-3 py-2.5"
               >
                 <div>
                   <p className="text-[13.5px] font-semibold text-dc-ink">

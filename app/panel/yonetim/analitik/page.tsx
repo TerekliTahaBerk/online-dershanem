@@ -21,7 +21,7 @@ function toneClass(tone: string) {
   if (tone === "positive") return "text-emerald-700";
   if (tone === "critical") return "text-rose-700";
   if (tone === "watch") return "text-amber-700";
-  return "text-[var(--site-ink)]";
+  return "text-(--site-ink)";
 }
 
 function fmtPct(value: number | null) {
@@ -70,7 +70,7 @@ export default async function ManagementAnalyticsPage({
       />
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-xs text-[var(--site-muted)]">
+        <p className="text-xs text-(--site-muted)">
           {formatIstanbulDateInput(filters.from)} –{" "}
           {formatIstanbulDateInput(filters.to)} · ürün {filters.product}
         </p>
@@ -100,25 +100,25 @@ export default async function ManagementAnalyticsPage({
           <Link
             key={kpi.key}
             href={`${kpi.href}?${qs}`}
-            className="panel-metric-card transition hover:border-[var(--brand-olive)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-olive)]"
+            className="panel-metric-card transition hover:border-(--brand-olive) focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--brand-olive)"
           >
             <p
               className={`mt-1 text-3xl font-extrabold tracking-[-0.03em] ${toneClass(kpi.tone)}`}
             >
               {kpi.display}
             </p>
-            <p className="mt-2 text-xs font-bold text-[var(--site-body)]">
+            <p className="mt-2 text-xs font-bold text-(--site-body)">
               {kpi.label}
             </p>
-            <p className="mt-1 text-[11px] text-[var(--site-muted)]">
+            <p className="mt-1 text-[11px] text-(--site-muted)">
               {kpi.hint}
             </p>
             {kpi.sampleNote ? (
-              <p className="mt-2 text-[10px] text-[var(--site-muted)]">
+              <p className="mt-2 text-[10px] text-(--site-muted)">
                 {kpi.sampleNote}
               </p>
             ) : null}
-            <p className="mt-3 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--brand-olive)]">
+            <p className="mt-3 text-[10px] font-extrabold uppercase tracking-[0.08em] text-(--brand-olive)">
               Detay →
             </p>
           </Link>
@@ -129,57 +129,57 @@ export default async function ManagementAnalyticsPage({
         <section className="mt-6 panel-surface p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+              <h2 className="text-sm font-extrabold text-(--site-ink)">
                 Gidişat
               </h2>
-              <p className="mt-1 text-xs text-[var(--site-muted)]">
+              <p className="mt-1 text-xs text-(--site-muted)">
                 Öğrenci / öğretmen / veli Analiz kataloğuyla aynı gidişat
                 sinyalleri (kohort).
               </p>
             </div>
             <Link
               href={`/panel/yonetim/analitik/gidisat_median_net_delta?${qs}`}
-              className="text-xs font-bold text-[var(--brand-olive)]"
+              className="text-xs font-bold text-(--brand-olive)"
             >
               Medyan net detay →
             </Link>
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <article className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+            <article className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-(--site-muted)">
                 Katılım
               </p>
-              <p className="mt-2 text-xl font-extrabold text-[var(--site-ink)]">
+              <p className="mt-2 text-xl font-extrabold text-(--site-ink)">
                 {fmtPct(gidisat.attendancePercent)}
               </p>
             </article>
-            <article className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+            <article className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-(--site-muted)">
                 Çalışma
               </p>
-              <p className="mt-2 text-xl font-extrabold text-[var(--site-ink)]">
+              <p className="mt-2 text-xl font-extrabold text-(--site-ink)">
                 {fmtPct(gidisat.assignmentPercent)}
               </p>
             </article>
-            <article className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+            <article className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-(--site-muted)">
                 Plan
               </p>
-              <p className="mt-2 text-xl font-extrabold text-[var(--site-ink)]">
+              <p className="mt-2 text-xl font-extrabold text-(--site-ink)">
                 {fmtPct(gidisat.planPercent)}
               </p>
             </article>
-            <article className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+            <article className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-(--site-muted)">
                 Medyan net Δ
               </p>
-              <p className="mt-2 text-xl font-extrabold text-[var(--site-ink)]">
+              <p className="mt-2 text-xl font-extrabold text-(--site-ink)">
                 {gidisat.suppressed || gidisat.medianNetDelta === null
                   ? "—"
                   : `${gidisat.medianNetDelta > 0 ? "+" : ""}${gidisat.medianNetDelta}`}
               </p>
-              <p className="mt-1 text-[11px] text-[var(--site-muted)]">
+              <p className="mt-1 text-[11px] text-(--site-muted)">
                 {gidisat.suppressed
                   ? `${gidisat.pairedStudents}/10 eşleşme`
                   : `${gidisat.pairedStudents} eşleşme`}
@@ -201,7 +201,7 @@ export default async function ManagementAnalyticsPage({
           ) : null}
 
           {gidisat.narrative.length ? (
-            <ul className="mt-4 space-y-1.5 text-xs text-[var(--site-body)]">
+            <ul className="mt-4 space-y-1.5 text-xs text-(--site-body)">
               {gidisat.narrative.map((line) => (
                 <li key={line}>{line}</li>
               ))}
@@ -212,10 +212,10 @@ export default async function ManagementAnalyticsPage({
 
       <section className="mt-6 grid gap-4 xl:grid-cols-2">
         <article className="panel-surface p-5">
-          <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+          <h2 className="text-sm font-extrabold text-(--site-ink)">
             Ticari özet
           </h2>
-          <ul className="mt-3 space-y-2 text-xs text-[var(--site-body)]">
+          <ul className="mt-3 space-y-2 text-xs text-(--site-body)">
             <li>Won → Paid: {snapshot.commercial.wonToPaidPercent ?? "—"}%</li>
             <li>
               Ort. satış süresi: {snapshot.commercial.avgSalesCycleDays ?? "—"}{" "}
@@ -234,16 +234,16 @@ export default async function ManagementAnalyticsPage({
           </ul>
           <Link
             href={`/panel/yonetim/analitik/sales_by_product?${qs}`}
-            className="mt-4 inline-block text-xs font-bold text-[var(--brand-olive)]"
+            className="mt-4 inline-block text-xs font-bold text-(--brand-olive)"
           >
             Ürün bazında satış →
           </Link>
         </article>
         <article className="panel-surface p-5">
-          <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+          <h2 className="text-sm font-extrabold text-(--site-ink)">
             Öğrenci risk & öğretmen işleri
           </h2>
-          <ul className="mt-3 space-y-2 text-xs text-[var(--site-body)]">
+          <ul className="mt-3 space-y-2 text-xs text-(--site-body)">
             <li>
               Risk: {snapshot.education.risk.critical} kritik ·{" "}
               {snapshot.education.risk.watch} izleme ·{" "}
@@ -256,34 +256,34 @@ export default async function ManagementAnalyticsPage({
               (sıralama yok)
             </li>
           </ul>
-          <p className="mt-3 text-[11px] text-[var(--site-muted)]">
+          <p className="mt-3 text-[11px] text-(--site-muted)">
             Öğretmen metrikleri performans puanı veya leaderboard üretmez.
           </p>
         </article>
       </section>
 
       <section className="mt-6 panel-surface p-5">
-        <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+        <h2 className="text-sm font-extrabold text-(--site-ink)">
           Kohort başarı (gizlilik eşikli)
         </h2>
-        <p className="mt-1 text-xs text-[var(--site-muted)]">
+        <p className="mt-1 text-xs text-(--site-muted)">
           n &lt; 10 örneklemde değerler bastırılır. Nedensellik iddiası yoktur.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {snapshot.success.mockExamTrends.map((row) => (
             <article
               key={row.exam}
-              className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4"
+              className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4"
             >
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.08em] text-(--site-muted)">
                 {row.exam}
               </p>
-              <p className="mt-2 text-xl font-extrabold text-[var(--site-ink)]">
+              <p className="mt-2 text-xl font-extrabold text-(--site-ink)">
                 {row.status === "READY" && row.medianChange !== null
                   ? `${row.medianChange > 0 ? "+" : ""}${row.medianChange}`
                   : "—"}
               </p>
-              <p className="mt-1 text-[11px] text-[var(--site-muted)]">
+              <p className="mt-1 text-[11px] text-(--site-muted)">
                 {row.status === "INSUFFICIENT_SAMPLE"
                   ? `${row.pairedStudents}/10 eşleşme`
                   : `${row.pairedStudents} eşleşme · medyan değişim`}
@@ -293,7 +293,7 @@ export default async function ManagementAnalyticsPage({
         </div>
         <Link
           href={`/panel/yonetim/analitik/cohort_mock_exam_trend?${qs}`}
-          className="mt-4 inline-block text-xs font-bold text-[var(--brand-olive)]"
+          className="mt-4 inline-block text-xs font-bold text-(--brand-olive)"
         >
           Kohort detayı →
         </Link>

@@ -271,27 +271,27 @@ export default async function OperationsPage() {
             <dt>Ödemeden ilk derse geçen süre</dt>
             <dd className="mt-1">
               <span className="text-xl font-bold">{firstLessonMetrics.duration.value === null ? "Yetersiz veri" : `${(firstLessonMetrics.duration.value / 3_600_000).toLocaleString("tr-TR", { maximumFractionDigits: 1 })} saat · ortanca`}</span>
-              <p className="text-xs text-[var(--site-muted)]">{firstLessonMetrics.duration.sampleSize} tamamlanmış ilk ders</p>
+              <p className="text-xs text-(--site-muted)">{firstLessonMetrics.duration.sampleSize} tamamlanmış ilk ders</p>
             </dd>
           </div>
           <div>
             <dt>İlk derse katılım</dt>
             <dd className="mt-1">
               <span className="text-xl font-bold">{firstLessonMetrics.participation.value === null ? "Yetersiz veri" : `%${firstLessonMetrics.participation.value.toLocaleString("tr-TR")}`}</span>
-              <p className="text-xs text-[var(--site-muted)]">{firstLessonMetrics.participation.sampleSize} kayıtlı katılım sonucu · zamanında veya geç katılım</p>
+              <p className="text-xs text-(--site-muted)">{firstLessonMetrics.participation.sampleSize} kayıtlı katılım sonucu · zamanında veya geç katılım</p>
             </dd>
           </div>
         </dl>
-        <p className="mt-3 text-xs leading-5 text-[var(--site-muted)]">En az beş örnek gerekir. İptal edilen dersler ve yenilemeler hariçtir. {firstLessonMetrics.waitingCount} ilk ders bekliyor; {firstLessonMetrics.missingAttendanceCount} katılım sonucu bekliyor. {firstLessonMetrics.paidCount} ödenmiş başlangıcın {firstLessonMetrics.linkedLeadCount} tanesinde kayıtlı lead bağlantısı var; kimlik bilgisiyle tahmini eşleştirme yapılmaz.</p>
+        <p className="mt-3 text-xs leading-5 text-(--site-muted)">En az beş örnek gerekir. İptal edilen dersler ve yenilemeler hariçtir. {firstLessonMetrics.waitingCount} ilk ders bekliyor; {firstLessonMetrics.missingAttendanceCount} katılım sonucu bekliyor. {firstLessonMetrics.paidCount} ödenmiş başlangıcın {firstLessonMetrics.linkedLeadCount} tanesinde kayıtlı lead bağlantısı var; kimlik bilgisiyle tahmini eşleştirme yapılmaz.</p>
       </section>
 
       <section className="panel-surface mt-7">
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[var(--site-line)] p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-(--site-line) p-5">
           <div>
-            <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+            <h2 className="text-sm font-extrabold text-(--site-ink)">
               Operasyon hazırlık kontrolü
             </h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Kritik günlük işler panel içinde tamamlanabiliyor mu, yoksa
               SQL/Prisma müdahalesi gerekiyor mu?
             </p>
@@ -314,7 +314,7 @@ export default async function OperationsPage() {
         >
           <table className="min-w-[760px] w-full text-left text-[12.5px]">
             <thead>
-              <tr className="border-b border-[var(--site-line)] text-[11px] uppercase tracking-[.06em] text-[var(--site-muted)]">
+              <tr className="border-b border-(--site-line) text-[11px] uppercase tracking-[.06em] text-(--site-muted)">
                 <th className="px-2 py-2">İş</th>
                 <th className="px-2 py-2">Panel kapsamı</th>
                 <th className="px-2 py-2">Durum</th>
@@ -325,12 +325,12 @@ export default async function OperationsPage() {
               {readinessRows.map((row) => (
                 <tr
                   key={row.task}
-                  className="border-b border-[var(--site-line)] align-top"
+                  className="border-b border-(--site-line) align-top"
                 >
-                  <td className="px-2 py-2.5 font-semibold text-[var(--site-ink)]">
+                  <td className="px-2 py-2.5 font-semibold text-(--site-ink)">
                     {row.task}
                   </td>
-                  <td className="px-2 py-2.5 text-[var(--site-body)]">
+                  <td className="px-2 py-2.5 text-(--site-body)">
                     {row.coverage}
                   </td>
                   <td className="px-2 py-2.5">
@@ -344,7 +344,7 @@ export default async function OperationsPage() {
                       {row.status}
                     </span>
                   </td>
-                  <td className="px-2 py-2.5 text-[var(--site-muted)]">
+                  <td className="px-2 py-2.5 text-(--site-muted)">
                     {row.note}
                   </td>
                 </tr>
@@ -355,12 +355,12 @@ export default async function OperationsPage() {
       </section>
 
       <section className="panel-surface mt-7">
-        <div className="flex flex-col gap-3 border-b border-[var(--site-line)] p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-b border-(--site-line) p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+            <h2 className="text-sm font-extrabold text-(--site-ink)">
               Birleşik iş kutusu
             </h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Sahip, son tarih, sıradaki işlem ve çözülme durumuyla gerçek
               operasyon istisnalarını tek listede izleyin.
             </p>
@@ -371,7 +371,7 @@ export default async function OperationsPage() {
           </span>
         </div>
 
-        <div className="divide-y divide-[var(--site-line)]">
+        <div className="divide-y divide-(--site-line)">
           {unifiedOperations.slice(0, 40).map((item) => {
             const overdue = Boolean(
               item.dueAt && item.dueAt < now && item.resolution === "OPEN",
@@ -407,39 +407,39 @@ export default async function OperationsPage() {
                         </span>
                       ) : null}
                     </div>
-                    <h3 className="mt-2 text-sm font-extrabold text-[var(--site-ink)]">
+                    <h3 className="mt-2 text-sm font-extrabold text-(--site-ink)">
                       {item.title}
                     </h3>
-                    <p className="mt-1 text-xs text-[var(--site-muted)]">
+                    <p className="mt-1 text-xs text-(--site-muted)">
                       {item.detail}
                     </p>
                   </div>
                   <dl className="grid min-w-[320px] grid-cols-2 gap-3 text-[10.5px]">
                     <div>
-                      <dt className="text-[var(--site-muted)]">Sorumlu</dt>
-                      <dd className="mt-1 font-bold text-[var(--site-ink)]">
+                      <dt className="text-(--site-muted)">Sorumlu</dt>
+                      <dd className="mt-1 font-bold text-(--site-ink)">
                         {item.owner}
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-[var(--site-muted)]">
+                      <dt className="text-(--site-muted)">
                         Sıradaki işlem
                       </dt>
-                      <dd className="mt-1 font-bold text-[var(--site-ink)]">
+                      <dd className="mt-1 font-bold text-(--site-ink)">
                         {item.nextAction}
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-[var(--site-muted)]">Son tarih</dt>
+                      <dt className="text-(--site-muted)">Son tarih</dt>
                       <dd
-                        className={`mt-1 font-bold ${overdue ? "text-rose-700" : "text-[var(--site-ink)]"}`}
+                        className={`mt-1 font-bold ${overdue ? "text-rose-700" : "text-(--site-ink)"}`}
                       >
                         {item.dueAt ? dateTime.format(item.dueAt) : "Tanımsız"}
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-[var(--site-muted)]">Olay zamanı</dt>
-                      <dd className="mt-1 font-bold text-[var(--site-ink)]">
+                      <dt className="text-(--site-muted)">Olay zamanı</dt>
+                      <dd className="mt-1 font-bold text-(--site-ink)">
                         {dateTime.format(item.createdAt)}
                       </dd>
                     </div>
@@ -448,7 +448,7 @@ export default async function OperationsPage() {
                 <div className="mt-3">
                   <Link
                     href={item.href}
-                    className="text-xs font-bold text-[var(--brand-olive)] underline-offset-2 hover:underline"
+                    className="text-xs font-bold text-(--brand-olive) underline-offset-2 hover:underline"
                   >
                     {item.ctaLabel}
                   </Link>
@@ -457,7 +457,7 @@ export default async function OperationsPage() {
             );
           })}
           {!unifiedOperations.length ? (
-            <p className="p-8 text-center text-sm text-[var(--site-muted)]">
+            <p className="p-8 text-center text-sm text-(--site-muted)">
               Açık operasyon istisnası yok.
             </p>
           ) : null}
@@ -500,12 +500,12 @@ export default async function OperationsPage() {
       </section>
 
       <section className="panel-surface mt-7">
-        <div className="flex flex-col gap-3 border-b border-[var(--site-line)] p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-b border-(--site-line) p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+            <h2 className="text-sm font-extrabold text-(--site-ink)">
               Yeni öğrenciyi aktif et
             </h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Ödenmiş siparişi hesap, veli, grup ve ilk ders adımlarından
               geçirip aktif öğrenciye dönüştürün.
             </p>
@@ -515,7 +515,7 @@ export default async function OperationsPage() {
           </span>
         </div>
 
-        <div className="divide-y divide-[var(--site-line)]">
+        <div className="divide-y divide-(--site-line)">
           {onboardingQueue.map((item) => {
             const profile = item.order.user?.studentProfile;
             const hasParent = Boolean(profile?.parents.length);
@@ -572,10 +572,10 @@ export default async function OperationsPage() {
                         </span>
                       ) : null}
                     </div>
-                    <h3 className="mt-2 text-sm font-extrabold text-[var(--site-ink)]">
+                    <h3 className="mt-2 text-sm font-extrabold text-(--site-ink)">
                       {item.order.packageName}
                     </h3>
-                    <p className="mt-1 text-xs text-[var(--site-muted)]">
+                    <p className="mt-1 text-xs text-(--site-muted)">
                       {item.order.user?.fullName ||
                         item.order.user?.email ||
                         "Henüz hesaba bağlanmadı"}{" "}
@@ -586,26 +586,26 @@ export default async function OperationsPage() {
 
                   <dl className="grid min-w-[320px] grid-cols-2 gap-3 text-[10.5px]">
                     <div>
-                      <dt className="text-[var(--site-muted)]">
+                      <dt className="text-(--site-muted)">
                         Sıradaki işlem
                       </dt>
-                      <dd className="mt-1 font-bold text-[var(--site-ink)]">
+                      <dd className="mt-1 font-bold text-(--site-ink)">
                         {OD_ONBOARDING_NEXT_ACTION[item.state]}
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-[var(--site-muted)]">Sorumlu</dt>
-                      <dd className="mt-1 font-bold text-[var(--site-ink)]">
+                      <dt className="text-(--site-muted)">Sorumlu</dt>
+                      <dd className="mt-1 font-bold text-(--site-ink)">
                         {item.owner?.fullName ||
                           item.owner?.email ||
                           "Atanmamış"}
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-[var(--site-muted)]">Son tarih</dt>
+                      <dt className="text-(--site-muted)">Son tarih</dt>
                       <dd
                         className={`mt-1 flex items-center gap-1 font-bold ${
-                          overdue ? "text-rose-700" : "text-[var(--site-ink)]"
+                          overdue ? "text-rose-700" : "text-(--site-ink)"
                         }`}
                       >
                         <Clock3 size={12} />
@@ -613,8 +613,8 @@ export default async function OperationsPage() {
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-[var(--site-muted)]">Son geçiş</dt>
-                      <dd className="mt-1 font-bold text-[var(--site-ink)]">
+                      <dt className="text-(--site-muted)">Son geçiş</dt>
+                      <dd className="mt-1 font-bold text-(--site-ink)">
                         {dateTime.format(item.stateEnteredAt)}
                       </dd>
                     </div>
@@ -643,8 +643,8 @@ export default async function OperationsPage() {
                   </div>
                 ) : null}
 
-                <div className="mt-3 rounded-xl border border-[var(--site-line)] bg-white px-3 py-2.5">
-                  <p className="text-[10.5px] font-bold text-[var(--site-ink)]">
+                <div className="mt-3 rounded-xl border border-(--site-line) bg-white px-3 py-2.5">
+                  <p className="text-[10.5px] font-bold text-(--site-ink)">
                     Aktivasyon checklist’i
                   </p>
                   <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
@@ -698,14 +698,14 @@ export default async function OperationsPage() {
                 />
 
                 <details className="mt-3">
-                  <summary className="cursor-pointer text-[10.5px] font-bold text-[var(--brand-olive)]">
+                  <summary className="cursor-pointer text-[10.5px] font-bold text-(--brand-olive)">
                     Son geçişler ({item.transitions.length})
                   </summary>
                   <div className="mt-2 space-y-1">
                     {item.transitions.map((transition) => (
                       <p
                         key={transition.id}
-                        className="text-[10.5px] text-[var(--site-muted)]"
+                        className="text-[10.5px] text-(--site-muted)"
                       >
                         {dateTime.format(transition.occurredAt)} ·{" "}
                         {transition.fromState
@@ -725,7 +725,7 @@ export default async function OperationsPage() {
           })}
 
           {!onboardingQueue.length ? (
-            <p className="p-8 text-center text-sm text-[var(--site-muted)]">
+            <p className="p-8 text-center text-sm text-(--site-muted)">
               Aktivasyon bekleyen ödenmiş sipariş yok.
             </p>
           ) : null}
@@ -733,12 +733,12 @@ export default async function OperationsPage() {
       </section>
 
       <section id="cron-durumu" className="panel-surface mt-7 scroll-mt-24">
-        <div className="flex flex-col gap-3 border-b border-[var(--site-line)] p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-b border-(--site-line) p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="flex items-center gap-2 text-sm font-extrabold text-[var(--site-ink)]">
+            <h2 className="flex items-center gap-2 text-sm font-extrabold text-(--site-ink)">
               <Activity size={17} /> Kritik cron heartbeat&apos;leri
             </h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Kalıcı son çalışma kanıtı · ODK yaşam döngüsü için sıkı 8 dakika
               eşiği
             </p>
@@ -762,16 +762,16 @@ export default async function OperationsPage() {
               key={job.name}
               className={`rounded-2xl border p-4 ${
                 job.name === "odk-exam-lifecycle"
-                  ? "border-[var(--brand-olive)]"
-                  : "border-[var(--site-line)]"
+                  ? "border-(--brand-olive)"
+                  : "border-(--site-line)"
               }`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-extrabold text-[var(--site-ink)]">
+                  <p className="text-xs font-extrabold text-(--site-ink)">
                     {job.label}
                   </p>
-                  <p className="mt-1 font-mono text-[10px] text-[var(--site-muted)]">
+                  <p className="mt-1 font-mono text-[10px] text-(--site-muted)">
                     {job.name}
                   </p>
                 </div>
@@ -794,30 +794,30 @@ export default async function OperationsPage() {
 
               <dl className="mt-4 grid grid-cols-2 gap-3 text-[10.5px]">
                 <div>
-                  <dt className="text-[var(--site-muted)]">Son başarı</dt>
-                  <dd className="mt-1 font-bold text-[var(--site-ink)]">
+                  <dt className="text-(--site-muted)">Son başarı</dt>
+                  <dd className="mt-1 font-bold text-(--site-ink)">
                     {job.lastSucceededAt
                       ? dateTime.format(new Date(job.lastSucceededAt))
                       : "Henüz yok"}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-[var(--site-muted)]">Süre</dt>
-                  <dd className="mt-1 font-bold text-[var(--site-ink)]">
+                  <dt className="text-(--site-muted)">Süre</dt>
+                  <dd className="mt-1 font-bold text-(--site-ink)">
                     {job.lastDurationMs === null
                       ? "—"
                       : `${job.lastDurationMs} ms`}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-[var(--site-muted)]">İşlenen</dt>
-                  <dd className="mt-1 font-bold text-[var(--site-ink)]">
+                  <dt className="text-(--site-muted)">İşlenen</dt>
+                  <dd className="mt-1 font-bold text-(--site-ink)">
                     {job.processedCount}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-[var(--site-muted)]">Başarısız</dt>
-                  <dd className="mt-1 font-bold text-[var(--site-ink)]">
+                  <dt className="text-(--site-muted)">Başarısız</dt>
+                  <dd className="mt-1 font-bold text-(--site-ink)">
                     {job.failedCount}
                   </dd>
                 </div>
@@ -835,25 +835,25 @@ export default async function OperationsPage() {
 
       <div className="mt-7 grid gap-6 xl:grid-cols-2">
         <section>
-          <h2 className="text-sm font-bold text-[var(--site-ink)]">
+          <h2 className="text-sm font-bold text-(--site-ink)">
             Siparişler{" "}
-            <span className="text-[var(--site-muted)]">({orders.length})</span>
+            <span className="text-(--site-muted)">({orders.length})</span>
           </h2>
           <div className="mt-3 space-y-2">
             {orders.map((order) => (
               <div
                 key={order.id}
-                className="rounded-2xl border border-[var(--site-line)] bg-white p-4 shadow-[var(--panel-card-shadow)]"
+                className="rounded-2xl border border-(--site-line) bg-white p-4 shadow-(--panel-card-shadow)"
               >
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <Link
                       href={`/panel/yonetim/siparisler/${order.id}`}
-                      className="text-sm font-bold text-[var(--site-ink)] underline-offset-2 hover:underline"
+                      className="text-sm font-bold text-(--site-ink) underline-offset-2 hover:underline"
                     >
                       {order.packageName}
                     </Link>
-                    <p className="mt-1 text-xs text-[var(--site-muted)]">
+                    <p className="mt-1 text-xs text-(--site-muted)">
                       {order.user?.fullName ||
                         order.user?.email ||
                         "Henüz hesaba bağlanmadı"}
@@ -878,7 +878,7 @@ export default async function OperationsPage() {
               </div>
             ))}
             {!orders.length ? (
-              <p className="rounded-2xl border border-dashed border-[var(--site-line)] p-5 text-sm text-[var(--site-muted)]">
+              <p className="rounded-2xl border border-dashed border-(--site-line) p-5 text-sm text-(--site-muted)">
                 Henüz sipariş yok.
               </p>
             ) : null}
@@ -886,21 +886,21 @@ export default async function OperationsPage() {
         </section>
 
         <section>
-          <h2 className="text-sm font-bold text-[var(--site-ink)]">
+          <h2 className="text-sm font-bold text-(--site-ink)">
             Talepler{" "}
-            <span className="text-[var(--site-muted)]">({leads.length})</span>
+            <span className="text-(--site-muted)">({leads.length})</span>
           </h2>
           <div className="mt-3 space-y-2">
             {leads.map((lead) => (
               <div
                 key={lead.id}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--site-line)] bg-white p-4 shadow-[var(--panel-card-shadow)]"
+                className="flex items-center justify-between gap-3 rounded-2xl border border-(--site-line) bg-white p-4 shadow-(--panel-card-shadow)"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-bold text-[var(--site-ink)]">
+                  <p className="truncate text-sm font-bold text-(--site-ink)">
                     {lead.fullName}
                   </p>
-                  <p className="mt-1 truncate text-xs text-[var(--site-muted)]">
+                  <p className="mt-1 truncate text-xs text-(--site-muted)">
                     {lead.phone} · {lead.examType} · {lead.targetGoal}
                   </p>
                 </div>
@@ -908,7 +908,7 @@ export default async function OperationsPage() {
               </div>
             ))}
             {!leads.length ? (
-              <p className="rounded-2xl border border-dashed border-[var(--site-line)] p-5 text-sm text-[var(--site-muted)]">
+              <p className="rounded-2xl border border-dashed border-(--site-line) p-5 text-sm text-(--site-muted)">
                 Henüz talep yok.
               </p>
             ) : null}
@@ -917,21 +917,21 @@ export default async function OperationsPage() {
       </div>
 
       <section id="eposta-kuyrugu" className="panel-surface mt-7 scroll-mt-24">
-        <div className="flex items-center justify-between gap-3 border-b border-[var(--site-line)] p-5">
+        <div className="flex items-center justify-between gap-3 border-b border-(--site-line) p-5">
           <div>
-            <h2 className="flex items-center gap-2 text-sm font-extrabold text-[var(--site-ink)]">
+            <h2 className="flex items-center gap-2 text-sm font-extrabold text-(--site-ink)">
               <MailWarning size={17} /> E-posta kuyruğu
             </h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Bekleyen veya başarısız makbuz ve bildirimler
             </p>
           </div>
-          <span className="rounded-full bg-[var(--site-bg-warm)] px-2.5 py-1 text-xs font-bold text-[var(--site-muted)]">
+          <span className="rounded-full bg-(--site-bg-warm) px-2.5 py-1 text-xs font-bold text-(--site-muted)">
             {emailQueue.length}
           </span>
         </div>
 
-        <div className="divide-y divide-[var(--site-line)]">
+        <div className="divide-y divide-(--site-line)">
           {emailQueue.map((email) => (
             <article
               key={email.id}
@@ -939,7 +939,7 @@ export default async function OperationsPage() {
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="truncate text-sm font-bold text-[var(--site-ink)]">
+                  <h3 className="truncate text-sm font-bold text-(--site-ink)">
                     {email.subject}
                   </h3>
                   <span
@@ -958,7 +958,7 @@ export default async function OperationsPage() {
                         : "Bırakıldı"}
                   </span>
                 </div>
-                <p className="mt-1 text-xs text-[var(--site-muted)]">
+                <p className="mt-1 text-xs text-(--site-muted)">
                   {new Intl.DateTimeFormat("tr-TR", {
                     dateStyle: "medium",
                     timeStyle: "short",
@@ -976,7 +976,7 @@ export default async function OperationsPage() {
             </article>
           ))}
           {!emailQueue.length ? (
-            <p className="p-8 text-center text-sm text-[var(--site-muted)]">
+            <p className="p-8 text-center text-sm text-(--site-muted)">
               Bekleyen e-posta yok.
             </p>
           ) : null}
@@ -997,11 +997,11 @@ function PlacementMetric({
 }) {
   return (
     <article className="panel-metric-card">
-      <p className="text-[10px] font-extrabold uppercase tracking-[.07em] text-[var(--site-muted)]">
+      <p className="text-[10px] font-extrabold uppercase tracking-[.07em] text-(--site-muted)">
         {label}
       </p>
-      <p className="mt-3 text-2xl font-black text-[var(--site-ink)]">{value}</p>
-      <p className="mt-1 text-[10.5px] text-[var(--site-muted)]">{detail}</p>
+      <p className="mt-3 text-2xl font-black text-(--site-ink)">{value}</p>
+      <p className="mt-1 text-[10.5px] text-(--site-muted)">{detail}</p>
     </article>
   );
 }

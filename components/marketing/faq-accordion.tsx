@@ -24,7 +24,7 @@ export function FaqAccordion({
           {showAllLink ? (
             <Link
               href="/sss"
-              className="mt-7 inline-flex text-[14px] font-semibold text-[var(--brand-olive)] hover:underline"
+              className="mt-7 inline-flex text-[14px] font-semibold text-(--brand-olive) hover:underline"
             >
               Tüm soruları gör
             </Link>

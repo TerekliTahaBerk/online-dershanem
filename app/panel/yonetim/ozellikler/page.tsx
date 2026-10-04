@@ -96,7 +96,7 @@ export default async function PanelFeatureInventoryPage() {
               ? `${drift.length} eski public env değeri drift üretiyor`
               : "Server/client drift yok"}
           </h2>
-          <p className="mt-1 text-xs leading-5 text-[var(--site-body)]">
+          <p className="mt-1 text-xs leading-5 text-(--site-body)">
             İstemci görünürlüğü artık `NEXT_PUBLIC_PANEL_FEATURE_*` okumaz;
             `PanelShell` sunucuda çözdüğü typed snapshot'ı menüye aktarır. Eski
             public değişkenler tanımlıysa yalnız temizlik uyarısı olarak
@@ -125,7 +125,7 @@ export default async function PanelFeatureInventoryPage() {
         </p>
         <Link
           href="/panel/yonetim/isletme/genel-bakis"
-          className="mt-3.5 inline-block rounded-[10px] border border-[#DDE4E0] bg-white px-4 py-2.5 text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
+          className="mt-3.5 inline-block rounded-od border border-[#DDE4E0] bg-white px-4 py-2.5 text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
         >
           İşletme yetkilerini aç
         </Link>
@@ -167,7 +167,7 @@ export default async function PanelFeatureInventoryPage() {
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-base font-extrabold text-[var(--site-ink)]">
+                  <h2 className="text-base font-extrabold text-(--site-ink)">
                     {feature.label}
                   </h2>
                   <span
@@ -181,7 +181,7 @@ export default async function PanelFeatureInventoryPage() {
                     {feature.enabled ? "Açık" : "Kapalı"}
                   </span>
                 </div>
-                <p className="mt-2 break-all font-mono text-[10.5px] text-[var(--site-muted)]">
+                <p className="mt-2 break-all font-mono text-[10.5px] text-(--site-muted)">
                   {feature.environmentKey} ·{" "}
                   {feature.source === "environment"
                     ? "env ile belirlendi"
@@ -189,17 +189,17 @@ export default async function PanelFeatureInventoryPage() {
                 </p>
               </div>
               <div className="shrink-0 text-left xl:text-right">
-                <p className="text-[10px] font-extrabold uppercase tracking-[.08em] text-[var(--site-muted)]">
+                <p className="text-[10px] font-extrabold uppercase tracking-[.08em] text-(--site-muted)">
                   Sahip
                 </p>
-                <p className="mt-1 text-xs font-bold text-[var(--site-ink)]">
+                <p className="mt-1 text-xs font-bold text-(--site-ink)">
                   {feature.owner}
                 </p>
               </div>
             </div>
-            <dl className="mt-5 grid gap-4 border-t border-[var(--site-line)] pt-5 md:grid-cols-2 xl:grid-cols-4">
+            <dl className="mt-5 grid gap-4 border-t border-(--site-line) pt-5 md:grid-cols-2 xl:grid-cols-4">
               <div>
-                <dt className="text-[10px] font-extrabold uppercase tracking-[.07em] text-[var(--site-muted)]">
+                <dt className="text-[10px] font-extrabold uppercase tracking-[.07em] text-(--site-muted)">
                   Roller
                 </dt>
                 <dd className="mt-1.5 text-xs leading-5">
@@ -207,7 +207,7 @@ export default async function PanelFeatureInventoryPage() {
                 </dd>
               </div>
               <div>
-                <dt className="text-[10px] font-extrabold uppercase tracking-[.07em] text-[var(--site-muted)]">
+                <dt className="text-[10px] font-extrabold uppercase tracking-[.07em] text-(--site-muted)">
                   Veri bağımlılığı
                 </dt>
                 <dd className="mt-1.5 text-xs leading-5">
@@ -215,7 +215,7 @@ export default async function PanelFeatureInventoryPage() {
                 </dd>
               </div>
               <div>
-                <dt className="text-[10px] font-extrabold uppercase tracking-[.07em] text-[var(--site-muted)]">
+                <dt className="text-[10px] font-extrabold uppercase tracking-[.07em] text-(--site-muted)">
                   E2E kapsaması
                 </dt>
                 <dd className="mt-1.5 text-xs leading-5">
@@ -223,7 +223,7 @@ export default async function PanelFeatureInventoryPage() {
                 </dd>
               </div>
               <div>
-                <dt className="text-[10px] font-extrabold uppercase tracking-[.07em] text-[var(--site-muted)]">
+                <dt className="text-[10px] font-extrabold uppercase tracking-[.07em] text-(--site-muted)">
                   Rollback
                 </dt>
                 <dd className="mt-1.5 text-xs leading-5">{feature.rollback}</dd>

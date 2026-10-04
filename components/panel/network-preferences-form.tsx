@@ -68,14 +68,14 @@ export function NetworkPreferencesForm({ initial }: { initial: Preference }) {
                 lowDataMode: !current.lowDataMode,
               }))
             }
-            className={`flex w-full items-start gap-3 rounded-2xl border p-4 text-left ${preference.lowDataMode ? "border-[var(--brand-olive)] bg-[var(--panel-nav-active)]" : "border-[var(--site-line)]"}`}
+            className={`flex w-full items-start gap-3 rounded-2xl border p-4 text-left ${preference.lowDataMode ? "border-(--brand-olive) bg-(--panel-nav-active)" : "border-(--site-line)"}`}
           >
             <DatabaseZap className="mt-0.5 shrink-0" size={18} />
             <span>
               <span className="block text-sm font-extrabold">
                 Düşük veri modu
               </span>
-              <span className="mt-1 block text-xs leading-5 text-[var(--site-body)]">
+              <span className="mt-1 block text-xs leading-5 text-(--site-body)">
                 Video ve büyük dosyaları otomatik açmaz; varsa metin dökümünü
                 öne çıkarır.
               </span>
@@ -93,14 +93,14 @@ export function NetworkPreferencesForm({ initial }: { initial: Preference }) {
                 offlineWritesEnabled: !current.offlineWritesEnabled,
               }))
             }
-            className={`flex w-full items-start gap-3 rounded-2xl border p-4 text-left ${preference.offlineWritesEnabled ? "border-[var(--brand-olive)] bg-[var(--panel-nav-active)]" : "border-[var(--site-line)]"}`}
+            className={`flex w-full items-start gap-3 rounded-2xl border p-4 text-left ${preference.offlineWritesEnabled ? "border-(--brand-olive) bg-(--panel-nav-active)" : "border-(--site-line)"}`}
           >
             <HardDrive className="mt-0.5 shrink-0" size={18} />
             <span>
               <span className="block text-sm font-extrabold">
                 Güvenli çevrimdışı yazma
               </span>
-              <span className="mt-1 block text-xs leading-5 text-[var(--site-body)]">
+              <span className="mt-1 block text-xs leading-5 text-(--site-body)">
                 Ders kapanışı ve ödev durumu en fazla 24 saat bu tarayıcıda
                 bekler. Yalnız kişisel cihazda açın.
               </span>
@@ -112,7 +112,7 @@ export function NetworkPreferencesForm({ initial }: { initial: Preference }) {
         </div>
         <p
           role="status"
-          className="mt-4 min-h-5 text-xs font-bold text-[var(--brand-olive)]"
+          className="mt-4 min-h-5 text-xs font-bold text-(--brand-olive)"
         >
           {message}
         </p>
@@ -130,20 +130,20 @@ export function NetworkPreferencesForm({ initial }: { initial: Preference }) {
           {offline.online ? <Wifi size={18} /> : <WifiOff size={18} />} Cihaz
           kuyruğu
         </h2>
-        <p className="mt-2 text-sm leading-6 text-[var(--site-body)]">
+        <p className="mt-2 text-sm leading-6 text-(--site-body)">
           {offline.online
             ? "Bağlantı var."
             : "Bağlantı yok; izin verilen işlemler cihazda bekleyebilir."}{" "}
           İçerik burada gösterilmez.
         </p>
         <dl className="mt-5 grid grid-cols-2 gap-3">
-          <div className="rounded-2xl bg-[var(--site-bg-warm)] p-4">
+          <div className="rounded-2xl bg-(--site-bg-warm) p-4">
             <dt className="text-xs font-bold">Bekleyen</dt>
             <dd className="mt-1 text-2xl font-extrabold">
               {offline.queuedCount}
             </dd>
           </div>
-          <div className="rounded-2xl bg-[var(--site-bg-warm)] p-4">
+          <div className="rounded-2xl bg-(--site-bg-warm) p-4">
             <dt className="text-xs font-bold">Kontrol isteyen</dt>
             <dd className="mt-1 text-2xl font-extrabold">
               {offline.conflictCount}
@@ -168,7 +168,7 @@ export function NetworkPreferencesForm({ initial }: { initial: Preference }) {
             <Trash2 size={14} /> Cihaz kuyruğunu sil
           </button>
         </div>
-        <p className="mt-4 text-xs leading-5 text-[var(--site-muted)]">
+        <p className="mt-4 text-xs leading-5 text-(--site-muted)">
           Ödeme, kullanıcı yönetimi, sağlık/erişilebilirlik düzenlemesi, kanıt
           metni ve dosya yükleme hiçbir zaman çevrimdışı kuyruğa alınmaz.
         </p>

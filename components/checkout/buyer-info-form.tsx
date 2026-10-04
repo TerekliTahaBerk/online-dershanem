@@ -414,26 +414,26 @@ export function BuyerInfoForm({
         <input key={k} type="hidden" name={k} value={v} />
       ))}
 
-      <div className="flex items-start gap-3 rounded-[20px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-5 py-4">
-        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
+      <div className="flex items-start gap-3 rounded-[20px] border border-(--site-line) bg-(--site-bg-warm) px-5 py-4">
+        <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-(--brand-orange-soft) text-(--brand-orange-ink)">
           <ShoppingBag size={18} strokeWidth={1.7} />
         </div>
         <div className="flex-1">
-          <div className="text-xs uppercase tracking-[0.18em] text-[var(--brand-orange-ink)] font-semibold mb-1">
+          <div className="text-xs uppercase tracking-[0.18em] text-(--brand-orange-ink) font-semibold mb-1">
             Sepetiniz
           </div>
-          <div className="text-[var(--site-ink)] font-display text-[22px] leading-tight">
+          <div className="text-(--site-ink) font-display text-[22px] leading-tight">
             {packageLabel}
           </div>
-          <div className="text-[var(--brand-orange-ink)] text-[20px] font-bold mt-1">
+          <div className="text-(--brand-orange-ink) text-[20px] font-bold mt-1">
             {priceLabel}
           </div>
         </div>
       </div>
 
       {account ? (
-        <div className="rounded-[20px] border border-[var(--site-line)] bg-white px-5 py-4 text-[14px] leading-6 text-[var(--site-body)]">
-          <p className="font-semibold text-[var(--site-ink)]">
+        <div className="rounded-[20px] border border-(--site-line) bg-white px-5 py-4 text-[14px] leading-6 text-(--site-body)">
+          <p className="font-semibold text-(--site-ink)">
             {account.displayName} hesabıyla satın alıyorsunuz.
           </p>
           <p>
@@ -444,7 +444,7 @@ export function BuyerInfoForm({
           {account.role === "PARENT" ? (
             account.beneficiaries.length ? (
               <fieldset className="mt-3">
-                <legend className="text-[13px] font-semibold text-[var(--site-ink)]">Bu paket kimin için?</legend>
+                <legend className="text-[13px] font-semibold text-(--site-ink)">Bu paket kimin için?</legend>
                 <div className="mt-2 flex flex-col gap-2">
                   {account.beneficiaries.map((child) => {
                     const key = `${child.type}:${child.id}`;
@@ -458,8 +458,8 @@ export function BuyerInfoForm({
                           onChange={() => setBeneficiaryKey(key)}
                           className="h-4 w-4"
                         />
-                        <span className="text-[var(--site-ink)]">{child.label}</span>
-                        <span className="text-[12px] text-[var(--site-body)]">· {child.hint}</span>
+                        <span className="text-(--site-ink)">{child.label}</span>
+                        <span className="text-[12px] text-(--site-body)">· {child.hint}</span>
                       </label>
                     );
                   })}
@@ -637,11 +637,11 @@ export function BuyerInfoForm({
       </Section>
 
       {service === "OD" ? (
-        <section className="rounded-[24px] border border-[var(--brand-orange-soft)] bg-white p-5 shadow-[0_1px_2px_rgba(20,20,15,0.03)] sm:p-6">
-          <h2 className="text-[22px] font-medium tracking-[-0.015em] text-[var(--site-ink)]">
+        <section className="rounded-od-xl border border-(--brand-orange-soft) bg-white p-5 shadow-[0_1px_2px_rgba(20,20,15,0.03)] sm:p-6">
+          <h2 className="text-[22px] font-medium tracking-[-0.015em] text-(--site-ink)">
             Ders zamanı ve yerleştirme
           </h2>
-          <p className="mt-2 text-sm leading-6 text-[var(--site-body)]">
+          <p className="mt-2 text-sm leading-6 text-(--site-body)">
             Bu bilgiler uygun grubu bulmak için doğrudan operasyon ekibine
             aktarılır; yeniden girmeniz gerekmez.
           </p>
@@ -649,20 +649,20 @@ export function BuyerInfoForm({
             <PlacementExpectationCard expectation={placementExpectation} />
           ) : null}
           <fieldset className="mt-5">
-            <legend className="text-[12.5px] font-medium uppercase tracking-wide text-[var(--site-body)]">
+            <legend className="text-[12.5px] font-medium uppercase tracking-wide text-(--site-body)">
               Uygun olduğunuz saatler <RequiredMark />
             </legend>
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               {OD_TIME_RANGE_OPTIONS.map((option) => (
                 <label
                   key={option.value}
-                  className="flex cursor-pointer items-center gap-2 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-3 py-3 text-sm"
+                  className="flex cursor-pointer items-center gap-2 rounded-2xl border border-(--site-line) bg-(--site-bg-warm) px-3 py-3 text-sm"
                 >
                   <input
                     type="checkbox"
                     name="availabilityTimeRanges"
                     value={option.value}
-                    className="h-4 w-4 accent-[var(--brand-orange)]"
+                    className="h-4 w-4 accent-(--brand-orange)"
                   />
                   {option.label}
                 </label>
@@ -700,7 +700,7 @@ export function BuyerInfoForm({
               type="checkbox"
               name="placementConsent"
               value="1"
-              className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--brand-orange)]"
+              className="mt-0.5 h-5 w-5 shrink-0 accent-(--brand-orange)"
             />
             <span className="text-sm leading-6 text-amber-950">
               <strong>Anladım:</strong> Gösterilen kapasite, saatler ve
@@ -730,11 +730,11 @@ export function BuyerInfoForm({
       </Section>
 
       {couponContext ? (
-        <section className="rounded-[24px] border border-[var(--site-line)] bg-white p-5 shadow-[0_1px_2px_rgba(20,20,15,0.03)] sm:p-6">
-          <h2 className="text-[22px] font-medium tracking-[-0.015em] text-[var(--site-ink)]">
+        <section className="rounded-od-xl border border-(--site-line) bg-white p-5 shadow-[0_1px_2px_rgba(20,20,15,0.03)] sm:p-6">
+          <h2 className="text-[22px] font-medium tracking-[-0.015em] text-(--site-ink)">
             İndirim kodu
           </h2>
-          <p className="mt-2 text-sm leading-6 text-[var(--site-body)]">
+          <p className="mt-2 text-sm leading-6 text-(--site-body)">
             Kodunuz varsa buraya girin; indirim ödeme tutarına yansır.
           </p>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
@@ -755,7 +755,7 @@ export function BuyerInfoForm({
               placeholder="ÖRN. HOSGELDIN"
               aria-invalid={!!couponError}
               aria-describedby={couponError ? "couponCode-error" : undefined}
-              className="min-h-12 flex-1 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-4 py-3 text-[15px] uppercase text-[var(--site-ink)] outline-none transition-[border-color,box-shadow] duration-150 placeholder:normal-case placeholder:text-[var(--site-muted)] focus:border-[var(--brand-orange)] focus-visible:ring-2 focus-visible:ring-[var(--brand-orange)] disabled:opacity-60"
+              className="min-h-12 flex-1 rounded-2xl border border-(--site-line) bg-(--site-bg-warm) px-4 py-3 text-[15px] uppercase text-(--site-ink) outline-hidden transition-[border-color,box-shadow] duration-150 placeholder:normal-case placeholder:text-(--site-muted) focus:border-(--brand-orange) focus-visible:ring-2 focus-visible:ring-(--brand-orange) disabled:opacity-60"
             />
             {appliedCoupon ? (
               <button
@@ -765,7 +765,7 @@ export function BuyerInfoForm({
                   setCouponCode("");
                   setCouponError(null);
                 }}
-                className="min-h-12 rounded-2xl border border-[var(--site-line)] px-5 text-[14px] font-semibold text-[var(--site-body)] transition-colors hover:border-rose-300 hover:text-rose-600"
+                className="min-h-12 rounded-2xl border border-(--site-line) px-5 text-[14px] font-semibold text-(--site-body) transition-colors hover:border-rose-300 hover:text-rose-600"
               >
                 Kaldır
               </button>
@@ -774,7 +774,7 @@ export function BuyerInfoForm({
                 type="button"
                 onClick={() => void applyCoupon()}
                 disabled={couponState === "checking" || !couponCode.trim()}
-                className="min-h-12 rounded-2xl border border-[var(--brand-orange)] px-5 text-[14px] font-semibold text-[var(--brand-orange-ink)] transition-colors hover:bg-[var(--brand-orange-soft)] disabled:cursor-not-allowed disabled:opacity-50"
+                className="min-h-12 rounded-2xl border border-(--brand-orange) px-5 text-[14px] font-semibold text-(--brand-orange-ink) transition-colors hover:bg-(--brand-orange-soft) disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {couponState === "checking" ? "Kontrol ediliyor..." : "Uygula"}
               </button>
@@ -799,7 +799,7 @@ export function BuyerInfoForm({
         </section>
       ) : null}
 
-      <div className="space-y-3 rounded-[20px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-5 py-4">
+      <div className="space-y-3 rounded-[20px] border border-(--site-line) bg-(--site-bg-warm) px-5 py-4">
         <label className="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"
@@ -810,13 +810,13 @@ export function BuyerInfoForm({
             aria-describedby={
               fieldErrors.kvkkConsent ? "kvkkConsent-error" : undefined
             }
-            className={`mt-0.5 h-5 w-5 shrink-0 rounded accent-[var(--brand-orange)] ${fieldErrors.kvkkConsent ? "outline outline-2 outline-rose-400" : "border-[var(--site-line)]"}`}
+            className={`mt-0.5 h-5 w-5 shrink-0 rounded-sm accent-(--brand-orange) ${fieldErrors.kvkkConsent ? "outline-solid outline-2 outline-rose-400" : "border-(--site-line)"}`}
           />
-          <span className="text-sm text-[var(--site-body)]">
+          <span className="text-sm text-(--site-body)">
             <Link
               href="/kvkk"
               target="_blank"
-              className="text-[var(--brand-orange-ink)] underline font-medium"
+              className="text-(--brand-orange-ink) underline font-medium"
             >
               KVKK Aydınlatma Metni
             </Link>
@@ -833,9 +833,9 @@ export function BuyerInfoForm({
             type="checkbox"
             name="marketingConsent"
             value="1"
-            className="mt-0.5 h-5 w-5 shrink-0 rounded border-[var(--site-line)] accent-[var(--brand-orange)]"
+            className="mt-0.5 h-5 w-5 shrink-0 rounded-sm border-(--site-line) accent-(--brand-orange)"
           />
-          <span className="text-sm text-[var(--site-body)]">
+          <span className="text-sm text-(--site-body)">
             Kampanya, duyuru ve eğitim içerikleri için elektronik ileti
             (SMS/e-posta) almayı kabul ediyorum.
           </span>
@@ -850,13 +850,13 @@ export function BuyerInfoForm({
             aria-describedby={
               fieldErrors.paymentConsent ? "paymentConsent-error" : undefined
             }
-            className={`mt-0.5 h-5 w-5 shrink-0 rounded accent-[var(--brand-orange)] ${fieldErrors.paymentConsent ? "outline outline-2 outline-rose-400" : "border-[var(--site-line)]"}`}
+            className={`mt-0.5 h-5 w-5 shrink-0 rounded-sm accent-(--brand-orange) ${fieldErrors.paymentConsent ? "outline-solid outline-2 outline-rose-400" : "border-(--site-line)"}`}
           />
-          <span className="text-sm text-[var(--site-body)]">
+          <span className="text-sm text-(--site-body)">
             <Link
               href="/iade"
               target="_blank"
-              className="text-[var(--brand-orange-ink)] underline font-medium"
+              className="text-(--brand-orange-ink) underline font-medium"
             >
               Ön bilgilendirme ve mesafeli satış sözleşmesini
             </Link>{" "}
@@ -881,7 +881,7 @@ export function BuyerInfoForm({
         </div>
       )}
 
-      <div className="rounded-[16px] border border-[var(--brand-orange-soft)] bg-[var(--brand-orange-tint)] px-4 py-3 text-[13.5px] text-[var(--site-ink)]">
+      <div className="rounded-od-lg border border-(--brand-orange-soft) bg-(--brand-orange-tint) px-4 py-3 text-[13.5px] text-(--site-ink)">
         <strong>Bilgi:</strong>{" "}
         {service === "OD"
           ? "Satın almak için hesap oluşturmanız gerekmez. Ödeme sonrası ekibimiz sizinle iletişime geçer, öğrencinin seviyesini değerlendirir ve ilk ders planlamasını yapar. Bu form sonrasında güvenli ödeme sayfasına yönlendirileceksiniz."
@@ -890,7 +890,7 @@ export function BuyerInfoForm({
       <button
         type="submit"
         disabled={isPending}
-        className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-[var(--brand-orange)] px-6 py-4 text-[16px] font-semibold text-white shadow-[0_14px_30px_-12px_rgba(44,58,32,0.5)] transition-colors hover:bg-[var(--brand-orange-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-full bg-(--brand-orange) px-6 py-4 text-[16px] font-semibold text-white shadow-[0_14px_30px_-12px_rgba(44,58,32,0.5)] transition-colors hover:bg-(--brand-orange-hover) disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isPending ? "İşleniyor..." : submitLabel} →
       </button>
@@ -918,14 +918,14 @@ function PlacementExpectationCard({
         </p>
         <p className="mt-1 leading-5">{expectation.capacityLabel}</p>
       </div>
-      <div className="rounded-2xl bg-[var(--site-bg-warm)] px-4 py-3">
+      <div className="rounded-2xl bg-(--site-bg-warm) px-4 py-3">
         <p className="flex items-center gap-2 font-bold">
           <CalendarClock size={15} />
           Beklenen başlangıç
         </p>
         <p className="mt-1 leading-5">{expectation.expectedStartLabel}</p>
       </div>
-      <div className="rounded-2xl bg-[var(--site-bg-warm)] px-4 py-3">
+      <div className="rounded-2xl bg-(--site-bg-warm) px-4 py-3">
         <p className="flex items-center gap-2 font-bold">
           <Clock3 size={15} />
           Gözlenen ders saatleri
@@ -936,7 +936,7 @@ function PlacementExpectationCard({
             : "Saat uyumu görüşmede belirlenecek"}
         </p>
       </div>
-      <div className="rounded-2xl bg-[var(--site-bg-warm)] px-4 py-3">
+      <div className="rounded-2xl bg-(--site-bg-warm) px-4 py-3">
         <p className="font-bold">Yerleştirme SLA'sı</p>
         <p className="mt-1 leading-5">{expectation.placementSlaLabel}</p>
       </div>
@@ -952,8 +952,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-[24px] border border-[var(--site-line)] bg-white p-5 shadow-[0_1px_2px_rgba(20,20,15,0.03)] sm:p-6">
-      <h2 className="mb-4 text-[22px] font-medium tracking-[-0.015em] text-[var(--site-ink)]">
+    <section className="rounded-od-xl border border-(--site-line) bg-white p-5 shadow-[0_1px_2px_rgba(20,20,15,0.03)] sm:p-6">
+      <h2 className="mb-4 text-[22px] font-medium tracking-[-0.015em] text-(--site-ink)">
         {title}
       </h2>
       <div className="grid gap-4 sm:grid-cols-2">{children}</div>
@@ -998,17 +998,17 @@ function Field({
     [help ? `${name}-help` : null, error ? `${name}-error` : null]
       .filter(Boolean)
       .join(" ") || undefined;
-  const fieldClass = `min-h-12 w-full rounded-2xl border px-4 py-3 text-[15px] text-[var(--site-ink)] outline-none transition-[border-color,background-color,box-shadow] duration-150 placeholder:text-[var(--site-muted)] ${
+  const fieldClass = `min-h-12 w-full rounded-2xl border px-4 py-3 text-[15px] text-(--site-ink) outline-hidden transition-[border-color,background-color,box-shadow] duration-150 placeholder:text-(--site-muted) ${
     error
       ? "border-rose-400 bg-rose-50 focus:border-rose-400 focus-visible:ring-2 focus-visible:ring-rose-500"
-      : "border-[var(--site-line)] bg-[var(--site-bg-warm)] focus:border-[var(--brand-orange)] focus:ring-2 focus:ring-[var(--brand-orange)]/15"
+      : "border-(--site-line) bg-(--site-bg-warm) focus:border-(--brand-orange) focus:ring-2 focus:ring-(--brand-orange)/15"
   }`;
   return (
     <label
       htmlFor={name}
       className={`block ${textarea ? "sm:col-span-2" : ""}`}
     >
-      <span className="block text-[12.5px] font-medium text-[var(--site-body)] mb-1.5 uppercase tracking-wide">
+      <span className="block text-[12.5px] font-medium text-(--site-body) mb-1.5 uppercase tracking-wide">
         {label}
         {required ? <RequiredMark /> : null}
       </span>
@@ -1047,7 +1047,7 @@ function Field({
       {help && (
         <span
           id={`${name}-help`}
-          className="block text-xs text-[var(--site-body)] mt-1"
+          className="block text-xs text-(--site-body) mt-1"
         >
           {help}
         </span>
@@ -1076,7 +1076,7 @@ function SelectField({
 }) {
   return (
     <label htmlFor={name} className="block">
-      <span className="block text-[12.5px] font-medium text-[var(--site-body)] mb-1.5 uppercase tracking-wide">
+      <span className="block text-[12.5px] font-medium text-(--site-body) mb-1.5 uppercase tracking-wide">
         {label}
         {required ? <RequiredMark /> : null}
       </span>
@@ -1088,7 +1088,7 @@ function SelectField({
         defaultValue={defaultValue ?? ""}
         aria-invalid={!!error}
         aria-describedby={error ? `${name}-error` : undefined}
-        className={`min-h-12 w-full rounded-2xl border px-4 py-3 text-[15px] text-[var(--site-ink)] outline-none transition-[border-color,background-color,box-shadow] duration-150 ${error ? "border-rose-400 bg-rose-50 focus:ring-2 focus:ring-rose-400/20" : "border-[var(--site-line)] bg-[var(--site-bg-warm)] focus:border-[var(--brand-orange)] focus:ring-2 focus:ring-[var(--brand-orange)]/15"}`}
+        className={`min-h-12 w-full rounded-2xl border px-4 py-3 text-[15px] text-(--site-ink) outline-hidden transition-[border-color,background-color,box-shadow] duration-150 ${error ? "border-rose-400 bg-rose-50 focus:ring-2 focus:ring-rose-400/20" : "border-(--site-line) bg-(--site-bg-warm) focus:border-(--brand-orange) focus:ring-2 focus:ring-(--brand-orange)/15"}`}
       >
         {options.map((o) => (
           <option key={o.v} value={o.v}>

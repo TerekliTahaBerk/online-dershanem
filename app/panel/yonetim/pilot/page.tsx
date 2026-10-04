@@ -64,7 +64,7 @@ export default async function PilotRolloutPage() {
           </span>
           <div>
             <h2 className="text-sm font-extrabold">Yayın readiness kapıları</h2>
-            <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+            <p className="mt-1 text-xs leading-5 text-(--site-muted)">
               `Bekliyor` pilotu başlatmaya engel değildir; ancak kohortu
               genişletmeden önce gerçek örneklemle hedefe dönüşmelidir.
             </p>
@@ -74,7 +74,7 @@ export default async function PilotRolloutPage() {
           {readiness.checks.map((check) => (
             <article
               key={check.key}
-              className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4"
+              className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4"
             >
               <span
                 className={`rounded-full px-2 py-1 text-[10px] font-extrabold ${check.status === "PASS" ? "bg-emerald-100 text-emerald-800" : check.status === "BLOCK" ? "bg-rose-100 text-rose-800" : "bg-amber-100 text-amber-900"}`}
@@ -86,7 +86,7 @@ export default async function PilotRolloutPage() {
                     : "Veri bekliyor"}
               </span>
               <h3 className="mt-3 text-xs font-extrabold">{check.label}</h3>
-              <p className="mt-2 text-[11px] leading-5 text-[var(--site-muted)]">
+              <p className="mt-2 text-[11px] leading-5 text-(--site-muted)">
                 {check.detail}
               </p>
             </article>

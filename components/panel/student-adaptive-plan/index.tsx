@@ -358,18 +358,18 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
           aria-labelledby="plan-setup-heading"
           className="panel-surface p-5 sm:p-6"
         >
-          <p className="text-xs font-extrabold uppercase tracking-[.07em] text-[var(--brand-olive)]">
+          <p className="text-xs font-extrabold uppercase tracking-[.07em] text-(--brand-olive)">
             Haftalık plan
           </p>
           <h2
             id="plan-setup-heading"
             ref={preferencesHeadingRef}
             tabIndex={-1}
-            className="mt-1 text-xl font-semibold outline-none"
+            className="mt-1 text-xl font-semibold outline-hidden"
           >
             Bu hafta için aktif bir plan görünmüyor.
           </h2>
-          <p className="mt-2 text-sm text-[var(--site-muted)]">
+          <p className="mt-2 text-sm text-(--site-muted)">
             Aşağıdan gün ve süre tercihlerini kaydettiğinde planın hazırlanır.
           </p>
           <div className="mt-5">{preferenceFields}</div>
@@ -397,18 +397,18 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
       {examCountdown ? (
         <section
           aria-labelledby="exam-countdown-heading"
-          className="panel-surface border-l-4 border-l-[var(--brand-olive)] p-4 sm:p-5"
+          className="panel-surface border-l-4 border-l-(--brand-olive) p-4 sm:p-5"
         >
           <h2
             id="exam-countdown-heading"
-            className="text-xs font-extrabold uppercase tracking-[.07em] text-[var(--brand-olive)]"
+            className="text-xs font-extrabold uppercase tracking-[.07em] text-(--brand-olive)"
           >
             Sınava kalan
           </h2>
           <p className="mt-1 text-lg font-semibold">
             {examCountdownHeadline(examCountdown)}
           </p>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             {dateTime.format(new Date(examCountdown.examAt))} ·{" "}
             {examCountdownNote(examCountdown.tier)}
           </p>
@@ -418,11 +418,11 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
       {plan ? (
         <section
           aria-labelledby="today-focus-heading"
-          className="panel-surface border-l-4 border-l-[var(--brand-olive)] p-5 sm:p-6"
+          className="panel-surface border-l-4 border-l-(--brand-olive) p-5 sm:p-6"
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-extrabold uppercase tracking-[.07em] text-[var(--brand-olive)]">
+              <p className="text-xs font-extrabold uppercase tracking-[.07em] text-(--brand-olive)">
                 Bugünkü odak
               </p>
               <h2
@@ -432,11 +432,11 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
                 {todayFocus.headline}
               </h2>
               {todayFocus.detail ? (
-                <p className="mt-1 text-sm text-[var(--site-muted)]">
+                <p className="mt-1 text-sm text-(--site-muted)">
                   {todayPending.length} çalışma · {todayFocus.detail}
                 </p>
               ) : null}
-              <p className="mt-2 text-xs font-bold text-[var(--site-muted)]">
+              <p className="mt-2 text-xs font-bold text-(--site-muted)">
                 {planStatusLabel(plan.status, { autoApproved: plan.autoApproved })}
               </p>
             </div>
@@ -460,7 +460,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
         >
           <h2
             id="today-tasks-heading"
-            className="text-sm font-extrabold text-[var(--site-ink)]"
+            className="text-sm font-extrabold text-(--site-ink)"
           >
             Bugünkü çalışmalar
           </h2>
@@ -471,16 +471,16 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
               )}
             </div>
           ) : (
-            <div className="mt-5 rounded-2xl border border-dashed border-[var(--site-line)] p-6 text-center">
-              <ListChecks className="mx-auto text-[var(--site-muted)]" />
+            <div className="mt-5 rounded-2xl border border-dashed border-(--site-line) p-6 text-center">
+              <ListChecks className="mx-auto text-(--site-muted)" />
               <p className="mt-2 text-sm font-bold">
                 Bugün planında çalışma görünmüyor.
               </p>
             </div>
           )}
           {todayCompleted.length ? (
-            <details className="mt-4 rounded-xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-3">
-              <summary className="cursor-pointer text-xs font-bold text-[var(--site-muted)]">
+            <details className="mt-4 rounded-xl border border-(--site-line) bg-(--site-bg-warm) p-3">
+              <summary className="cursor-pointer text-xs font-bold text-(--site-muted)">
                 Tamamlananlar ({todayCompleted.length})
               </summary>
               <div className="mt-3 space-y-2">
@@ -505,19 +505,19 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
         >
           <h2
             id="week-progress-heading"
-            className="text-sm font-extrabold text-[var(--site-ink)]"
+            className="text-sm font-extrabold text-(--site-ink)"
           >
             Bu hafta
           </h2>
           <div className="mt-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-[var(--site-muted)]">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-(--site-muted)">
               <span>
                 {weekProgress.completedCount} / {weekProgress.totalCount} görev
                 tamamlandı
               </span>
               <span>Plan uyumu %{weekProgress.percent}</span>
             </div>
-            <div className="mt-2 flex flex-wrap gap-3 text-xs text-[var(--site-muted)]">
+            <div className="mt-2 flex flex-wrap gap-3 text-xs text-(--site-muted)">
               <span>
                 {weekProgress.completedLabel} / {weekProgress.plannedLabel} plan
               </span>
@@ -550,16 +550,16 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
 
           {weekProgress.subjectDistribution.length ? (
             <div className="mt-5">
-              <h3 className="text-xs font-extrabold uppercase tracking-[.07em] text-[var(--site-muted)]">
+              <h3 className="text-xs font-extrabold uppercase tracking-[.07em] text-(--site-muted)">
                 Ders dağılımı
               </h3>
-              <ul className="mt-2 space-y-1.5 text-xs text-[var(--site-muted)]">
+              <ul className="mt-2 space-y-1.5 text-xs text-(--site-muted)">
                 {weekProgress.subjectDistribution.map((row) => (
                   <li
                     key={row.subject}
                     className="flex flex-wrap justify-between gap-2"
                   >
-                    <span className="font-bold text-[var(--site-ink)]">
+                    <span className="font-bold text-(--site-ink)">
                       {row.subject}
                     </span>
                     <span>
@@ -569,7 +569,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-[11px] leading-5 text-[var(--site-muted)]">
+              <p className="mt-3 text-[11px] leading-5 text-(--site-muted)">
                 Akademik bağlantı: çalışma süresi ile deneme netleri birlikte
                 izlenebilir; bu bir neden-sonuç iddiası değildir.
               </p>
@@ -590,10 +590,10 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
             {upcomingExams.map((exam) => (
               <li
                 key={exam.id}
-                className="rounded-xl border border-[var(--site-line)] px-3 py-2 text-sm"
+                className="rounded-xl border border-(--site-line) px-3 py-2 text-sm"
               >
                 <p className="font-bold">{exam.title}</p>
-                <p className="text-xs text-[var(--site-muted)]">
+                <p className="text-xs text-(--site-muted)">
                   {dateTime.format(new Date(exam.startsAt))}
                 </p>
               </li>
@@ -609,7 +609,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
       >
         <h2
           id="coach-section-heading"
-          className="text-sm font-extrabold text-[var(--site-ink)]"
+          className="text-sm font-extrabold text-(--site-ink)"
         >
           Koçundan
         </h2>
@@ -619,7 +619,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
               {initialCoaching.coachName}
             </p>
             {initialCoaching.focus ? (
-              <p className="mt-1 text-xs text-[var(--site-muted)]">
+              <p className="mt-1 text-xs text-(--site-muted)">
                 Bu haftaki odak: {initialCoaching.focus}
               </p>
             ) : null}
@@ -628,7 +628,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
                 {initialCoaching.sharedNote}
               </p>
             ) : (
-              <p className="mt-2 text-xs text-[var(--site-muted)]">
+              <p className="mt-2 text-xs text-(--site-muted)">
                 Bu hafta için yeni bir koç notu yok.
               </p>
             )}
@@ -638,12 +638,12 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
               </p>
             ) : null}
             {initialCoachSummary?.nextWeekFocus ? (
-              <p className="mt-2 text-xs font-bold text-[var(--site-muted)]">
+              <p className="mt-2 text-xs font-bold text-(--site-muted)">
                 Gelecek hafta: {initialCoachSummary.nextWeekFocus}
               </p>
             ) : null}
             {initialCoaching.nextScheduledAt ? (
-              <p className="mt-2 text-xs font-bold text-[var(--site-muted)]">
+              <p className="mt-2 text-xs font-bold text-(--site-muted)">
                 Sonraki görüşme:{" "}
                 {dateTime.format(new Date(initialCoaching.nextScheduledAt))}
               </p>
@@ -656,7 +656,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
             ) : null}
           </div>
         ) : (
-          <p className="mt-3 text-sm text-[var(--site-muted)]">
+          <p className="mt-3 text-sm text-(--site-muted)">
             Henüz atanmış bir koç görünmüyor.
           </p>
         )}
@@ -671,7 +671,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2
               id="week-remaining-heading"
-              className="text-sm font-extrabold text-[var(--site-ink)]"
+              className="text-sm font-extrabold text-(--site-ink)"
             >
               Haftanın kalanı
             </h2>
@@ -689,7 +689,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
             <div className="mt-4 space-y-4">
               {upcomingDayKeys.map((dateKey) => (
                 <div key={dateKey}>
-                  <h3 className="text-xs font-extrabold uppercase tracking-[.07em] text-[var(--site-muted)]">
+                  <h3 className="text-xs font-extrabold uppercase tracking-[.07em] text-(--site-muted)">
                     {dayHeading.format(
                       new Date(`${dateKey}T00:00:00.000+03:00`),
                     )}
@@ -702,11 +702,11 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
                 </div>
               ))}
               {pastDayKeys.length ? (
-                <details className="rounded-xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-3">
-                  <summary className="cursor-pointer text-xs font-bold text-[var(--site-muted)]">
+                <details className="rounded-xl border border-(--site-line) bg-(--site-bg-warm) p-3">
+                  <summary className="cursor-pointer text-xs font-bold text-(--site-muted)">
                     Geçmiş günler ({pastDayKeys.length})
                   </summary>
-                  <ul className="mt-2 space-y-1 text-xs text-[var(--site-muted)]">
+                  <ul className="mt-2 space-y-1 text-xs text-(--site-muted)">
                     {pastDayKeys.map((dateKey) => {
                       const rows = weeklyGroups[dateKey];
                       const completed = rows.filter(
@@ -729,8 +729,8 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
               ) : null}
             </div>
           ) : (
-            <div className="mt-5 rounded-2xl border border-dashed border-[var(--site-line)] p-6 text-center">
-              <ListChecks className="mx-auto text-[var(--site-muted)]" />
+            <div className="mt-5 rounded-2xl border border-dashed border-(--site-line) p-6 text-center">
+              <ListChecks className="mx-auto text-(--site-muted)" />
               <p className="mt-2 text-sm font-bold">
                 Haftanın kalanında planlanan çalışma görünmüyor.
               </p>
@@ -746,12 +746,12 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
         >
           <h2
             id="change-request-heading"
-            className="text-sm font-extrabold text-[var(--site-ink)]"
+            className="text-sm font-extrabold text-(--site-ink)"
           >
             Değişiklik / destek
           </h2>
           {plan.status === "CHANGE_REQUESTED" ? (
-            <p className="mt-3 rounded-2xl bg-[#fff9dc] p-4 text-xs font-bold text-[var(--brand-olive)]">
+            <p className="mt-3 rounded-2xl bg-[#fff9dc] p-4 text-xs font-bold text-(--brand-olive)">
               Değişiklik talebin koçuna iletildi:{" "}
               {changeCategoryLabels[plan.changeRequestCategory ?? ""] ??
                 "Belirtilmedi"}
@@ -761,7 +761,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
               <p className="text-sm font-bold">
                 Planında değişiklik mi gerekiyor?
               </p>
-              <p className="mt-1 text-xs text-[var(--site-muted)]">
+              <p className="mt-1 text-xs text-(--site-muted)">
                 Planım fazla yoğun veya günlerim değiştiğinde buradan koçuna
                 talep gönderebilirsin.
               </p>
@@ -825,7 +825,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
               ) : null}
             </div>
           ) : (
-            <p className="mt-3 text-sm text-[var(--site-muted)]">
+            <p className="mt-3 text-sm text-(--site-muted)">
               Plan onaylandığında değişiklik ve destek taleplerini buradan
               iletebilirsin.
             </p>
@@ -839,13 +839,13 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
             <div className="flex items-center gap-2">
               <SlidersHorizontal
                 size={17}
-                className="text-[var(--brand-olive)]"
+                className="text-(--brand-olive)"
               />
               <h2
                 id="plan-preferences-panel-heading"
                 ref={preferencesHeadingRef}
                 tabIndex={-1}
-                className="text-sm font-extrabold outline-none"
+                className="text-sm font-extrabold outline-hidden"
               >
                 Plan Tercihleri
               </h2>
@@ -858,7 +858,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
               <X size={14} /> Kapat
             </button>
           </div>
-          <p className="mt-2 text-xs leading-5 text-[var(--site-muted)]">
+          <p className="mt-2 text-xs leading-5 text-(--site-muted)">
             Planı değil, sadece ayarları buradan değiştir.
           </p>
           <div className="mt-5">{preferenceFields}</div>
@@ -874,7 +874,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
       ) : null}
       <p
         aria-live="polite"
-        className="min-h-[1rem] text-xs font-bold text-[var(--brand-olive)]"
+        className="min-h-4 text-xs font-bold text-(--brand-olive)"
       >
         {message}
       </p>

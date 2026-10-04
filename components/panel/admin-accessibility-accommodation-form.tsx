@@ -43,7 +43,7 @@ export function AdminAccessibilityAccommodationForm({
   return (
     <section className="panel-surface mt-5 p-5">
       <h2 className="text-sm font-extrabold">Akademik makul düzenleme</h2>
-      <p className="mt-2 text-xs leading-5 text-[var(--site-body)]">
+      <p className="mt-2 text-xs leading-5 text-(--site-body)">
         Tanı veya belge metni girmeyin. Yalnız öğretmenin uygulaması gereken
         işlevsel düzenlemeyi seçin.
       </p>
@@ -62,7 +62,7 @@ export function AdminAccessibilityAccommodationForm({
             <option value={100}>%100 ek süre</option>
           </select>
         </label>
-        <label className="flex items-center gap-3 rounded-2xl border border-[var(--site-line)] p-4 text-sm font-bold">
+        <label className="flex items-center gap-3 rounded-2xl border border-(--site-line) p-4 text-sm font-bold">
           <input
             type="checkbox"
             checked={breaks}
@@ -74,7 +74,7 @@ export function AdminAccessibilityAccommodationForm({
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <p
           role="status"
-          className="text-xs font-bold text-[var(--brand-olive)]"
+          className="text-xs font-bold text-(--brand-olive)"
         >
           {message}
         </p>

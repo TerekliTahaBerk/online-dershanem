@@ -169,7 +169,7 @@ export default async function ParentLessonsPage({
             <h2 className="text-[15px] font-bold text-dc-ink">
               Son dersin özeti
             </h2>
-            <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">
+            <p className="mt-2 text-[14.5px] leading-[1.65] text-(--pd-ink-3)">
               {lastWithSummary?.notes[0]?.topic ||
                 "Öğretmen henüz ders özeti eklemedi. Eklendiğinde burada görünecek."}
             </p>

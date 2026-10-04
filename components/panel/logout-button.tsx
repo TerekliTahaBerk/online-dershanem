@@ -29,7 +29,7 @@ export function LogoutButton({ compact = false }: { compact?: boolean }) {
       type="button"
       onClick={onLogout}
       disabled={pending}
-      className={`flex items-center gap-1.5 text-[12px] font-semibold text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] disabled:opacity-60 ${compact ? "w-full rounded-xl px-1 py-1.5" : "rounded-full border border-[var(--site-line)] px-3 py-1.5"}`}
+      className={`flex items-center gap-1.5 text-[12px] font-semibold text-(--site-body) transition-colors hover:text-(--site-ink) disabled:opacity-60 ${compact ? "w-full rounded-xl px-1 py-1.5" : "rounded-full border border-(--site-line) px-3 py-1.5"}`}
     >
       <LogOut size={13} aria-hidden="true" />
       {pending ? "Çıkılıyor" : "Çıkış"}

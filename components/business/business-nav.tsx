@@ -79,7 +79,7 @@ export function BusinessNav({
         <div key={group.id} className="min-w-fit lg:w-full">
           <p
             id={`business-nav-group-${group.id}`}
-            className="mb-1.5 px-3 text-[10px] font-extrabold uppercase tracking-[.12em] text-[var(--site-muted)]"
+            className="mb-1.5 px-3 text-[10px] font-extrabold uppercase tracking-[.12em] text-(--site-muted)"
           >
             {group.label}
           </p>
@@ -97,15 +97,15 @@ export function BusinessNav({
                     aria-current={selected ? "page" : undefined}
                     className={`group flex min-w-fit items-center gap-3 rounded-2xl px-3 py-2.5 transition-all lg:w-full ${
                       selected
-                        ? "bg-[var(--panel-nav-active)] text-[var(--brand-olive-hover)] shadow-[inset_0_0_0_1px_rgba(58,74,44,.05)]"
-                        : "text-[var(--site-body)] hover:bg-white hover:text-[var(--site-ink)]"
+                        ? "bg-(--panel-nav-active) text-(--brand-olive-hover) shadow-[inset_0_0_0_1px_rgba(58,74,44,.05)]"
+                        : "text-(--site-body) hover:bg-white hover:text-(--site-ink)"
                     }`}
                   >
                     <span
                       className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl transition-colors ${
                         selected
-                          ? "bg-white text-[var(--brand-olive)] shadow-sm"
-                          : "bg-white/65 text-[var(--site-muted)] group-hover:text-[var(--site-ink)]"
+                          ? "bg-white text-(--brand-olive) shadow-xs"
+                          : "bg-white/65 text-(--site-muted) group-hover:text-(--site-ink)"
                       }`}
                     >
                       <Icon size={16} strokeWidth={2.2} aria-hidden="true" />

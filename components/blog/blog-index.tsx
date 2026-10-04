@@ -37,7 +37,7 @@ export function BlogIndex({ posts }: { posts: readonly BlogPost[] }) {
     <>
       <section className="site-container pt-14 sm:pt-[72px]">
         <p className="dc-eyebrow">Blog</p>
-        <h1 className="mt-4 font-display text-[length:var(--public-display)] leading-[1.08] tracking-[-0.03em] text-dc-ink">
+        <h1 className="mt-4 font-display text-(length:--public-display) leading-[1.08] tracking-[-0.03em] text-dc-ink">
           Sınav hazırlığında işe yarayan yazılar
         </h1>
         <p className="mt-3.5 max-w-[600px] text-[16.5px] leading-[1.65] text-dc-ink-body sm:text-[17.5px]">

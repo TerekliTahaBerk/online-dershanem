@@ -115,17 +115,17 @@ function Card({
 }) {
   return (
     <article className="panel-metric-card">
-      <Icon size={18} className="text-[var(--brand-olive)]" />
-      <p className="mt-4 text-2xl font-semibold text-[var(--site-ink)]">
+      <Icon size={18} className="text-(--brand-olive)" />
+      <p className="mt-4 text-2xl font-semibold text-(--site-ink)">
         {value}
       </p>
-      <p className="mt-1 text-xs font-bold text-[var(--site-muted)]">{label}</p>
+      <p className="mt-1 text-xs font-bold text-(--site-muted)">{label}</p>
     </article>
   );
 }
 function Empty({ text }: { text: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-[var(--site-line)] px-5 py-10 text-center text-sm text-[var(--site-muted)]">
+    <div className="rounded-2xl border border-dashed border-(--site-line) px-5 py-10 text-center text-sm text-(--site-muted)">
       {text}
     </div>
   );
@@ -143,7 +143,7 @@ function UnitField({ units }: { units: { id: string; name: string }[] }) {
   if (units.length === 1)
     return <input type="hidden" name="businessUnitId" value={units[0].id} />;
   return (
-    <label className="text-xs font-bold text-[var(--site-muted)]">
+    <label className="text-xs font-bold text-(--site-muted)">
       İş birimi
       <select
         name="businessUnitId"
@@ -604,13 +604,13 @@ export default async function BusinessSectionPage({
       mobileQuickItems={businessMobilePrimaryNav(allowedSections)}
     >
       <header className="mb-5">
-        <p className="text-[11px] font-extrabold uppercase tracking-[.1em] text-[var(--brand-olive)]">
+        <p className="text-[11px] font-extrabold uppercase tracking-widest text-(--brand-olive)">
           Reklam, CRM ve Finans
         </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-[-.04em] text-[var(--site-ink)]">
+        <h1 className="mt-2 text-3xl font-semibold tracking-[-.04em] text-(--site-ink)">
           {SECTION_LABELS[section]}
         </h1>
-        <p className="mt-2 text-sm text-[var(--site-muted)]">
+        <p className="mt-2 text-sm text-(--site-muted)">
           {access.units.map((unit) => unit.name).join(" · ")} · Europe/Istanbul
         </p>
       </header>
@@ -649,7 +649,7 @@ export default async function BusinessSectionPage({
                 <option value="OD">OnlineDershanem</option>
                 <option value="ODK">OnlineDenemeKulübü</option>
               </select>
-              <button className="rounded-xl bg-[var(--brand-olive)] px-4 text-xs font-bold text-white">
+              <button className="rounded-xl bg-(--brand-olive) px-4 text-xs font-bold text-white">
                 Uygula
               </button>
             </form>
@@ -661,7 +661,7 @@ export default async function BusinessSectionPage({
                 {rangeNotice}
               </p>
             ) : null}
-            <p className="mb-3 text-xs text-[var(--site-muted)]">
+            <p className="mb-3 text-xs text-(--site-muted)">
               {formatIstanbulDateInput(from)} – {formatIstanbulDateInput(to)} ·{" "}
               {product === "ALL" ? "Tüm iş birimleri" : product} · TRY ·
               Europe/Istanbul
@@ -726,7 +726,7 @@ export default async function BusinessSectionPage({
                       </div>
                       <div className="mt-1 h-3 rounded-full bg-slate-100">
                         <div
-                          className="h-3 rounded-full bg-[var(--brand-olive)]"
+                          className="h-3 rounded-full bg-(--brand-olive)"
                           style={{
                             width: `${kpis.leadTotal ? Math.max(4, (count / kpis.leadTotal) * 100) : 0}%`,
                           }}
@@ -813,23 +813,23 @@ export default async function BusinessSectionPage({
                 />{" "}
                 Yalnız okunmamış
               </label>
-              <button className="rounded-xl bg-[var(--brand-olive)] px-3 py-2 text-xs font-bold text-white">
+              <button className="rounded-xl bg-(--brand-olive) px-3 py-2 text-xs font-bold text-white">
                 Filtrele
               </button>
             </form>
             <div className="grid gap-4 xl:grid-cols-[360px_1fr]">
               <section className="panel-surface overflow-hidden">
-                <p className="border-b border-[var(--site-line)] px-4 py-3 text-xs font-bold text-[var(--site-muted)]">
+                <p className="border-b border-(--site-line) px-4 py-3 text-xs font-bold text-(--site-muted)">
                   Filtreye uyan toplam {inboxTotal} konuşma ·{" "}
                   {conversations.length} tanesi gösteriliyor
                 </p>
-                <div className="divide-y divide-[var(--site-line)]">
+                <div className="divide-y divide-(--site-line)">
                   {conversations.length ? (
                     conversations.map((c) => (
                       <Link
                         key={c.id}
                         href={`?conversation=${c.id}`}
-                        className={`block p-4 hover:bg-[var(--site-bg-warm)] ${selectedConversation === c.id ? "bg-[var(--brand-olive-soft)]" : ""}`}
+                        className={`block p-4 hover:bg-(--site-bg-warm) ${selectedConversation === c.id ? "bg-(--brand-olive-soft)" : ""}`}
                       >
                         <div className="flex justify-between gap-3">
                           <strong className="truncate text-sm">
@@ -837,11 +837,11 @@ export default async function BusinessSectionPage({
                               c.username ||
                               c.instagramScopedUserId}
                           </strong>
-                          <time className="text-[10px] text-[var(--site-muted)]">
+                          <time className="text-[10px] text-(--site-muted)">
                             {dt.format(c.lastMessageAt)}
                           </time>
                         </div>
-                        <p className="mt-1 truncate text-xs text-[var(--site-muted)]">
+                        <p className="mt-1 truncate text-xs text-(--site-muted)">
                           {c.messages[0]?.body || "Medya mesajı"}
                         </p>
                         <div className="mt-2 flex flex-wrap gap-1 text-[9px] font-bold">
@@ -892,7 +892,7 @@ export default async function BusinessSectionPage({
                           {selected.displayName ||
                             selected.instagramScopedUserId}
                         </h2>
-                        <p className="text-xs text-[var(--site-muted)]">
+                        <p className="text-xs text-(--site-muted)">
                           {selected.temperature} · {selected.productInterest} ·{" "}
                           {selected.summary || "Özet bekleniyor"}
                         </p>
@@ -900,7 +900,7 @@ export default async function BusinessSectionPage({
                           {selected.tags.map((tag) => (
                             <span
                               key={tag}
-                              className="rounded-full bg-[var(--brand-olive-soft)] px-2 py-1 text-[10px]"
+                              className="rounded-full bg-(--brand-olive-soft) px-2 py-1 text-[10px]"
                             >
                               #{tag}
                             </span>
@@ -998,7 +998,7 @@ export default async function BusinessSectionPage({
                       {orderedMessages.map((m) => (
                         <article
                           key={m.id}
-                          className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm ${m.direction === "OUTBOUND" ? "ml-auto bg-[var(--brand-olive)] text-white" : "bg-[var(--site-bg-warm)]"}`}
+                          className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm ${m.direction === "OUTBOUND" ? "ml-auto bg-(--brand-olive) text-white" : "bg-(--site-bg-warm)"}`}
                         >
                           <p>{m.body || "Medya"}</p>
                           <p className="mt-1 text-[9px] opacity-70">
@@ -1189,7 +1189,7 @@ export default async function BusinessSectionPage({
                   <option value="ONLINE_DERSHANEM">OnlineDershanem</option>
                   <option value="ONLINE_DENEME_KULUBU">Online Deneme Kulübüm</option>
                 </select>
-                <button className="rounded-xl bg-[var(--brand-olive)] px-3 py-2 text-sm font-bold text-white">
+                <button className="rounded-xl bg-(--brand-olive) px-3 py-2 text-sm font-bold text-white">
                   Aday ekle
                 </button>
               </form>
@@ -1294,7 +1294,7 @@ export default async function BusinessSectionPage({
                   <option>ONLINE_DERSHANEM</option>
                   <option>ONLINE_DENEME_KULUBU</option>
                 </select>
-                <button className="rounded-xl bg-[var(--brand-olive)] text-sm font-bold text-white">
+                <button className="rounded-xl bg-(--brand-olive) text-sm font-bold text-white">
                   Kampanya ekle
                 </button>
               </form>
@@ -1350,7 +1350,7 @@ export default async function BusinessSectionPage({
                     className="rounded-xl border p-2 text-xs"
                   />
                 ))}
-                <button className="rounded-xl bg-[var(--brand-olive)] p-2 text-xs font-bold text-white">
+                <button className="rounded-xl bg-(--brand-olive) p-2 text-xs font-bold text-white">
                   Manuel reklam ekle
                 </button>
               </form>
@@ -1480,7 +1480,7 @@ export default async function BusinessSectionPage({
                   placeholder="Komisyon TL"
                   className="rounded-xl border px-3 py-2 text-sm"
                 />
-                <button className="rounded-xl bg-[var(--brand-olive)] p-2 text-sm font-bold text-white">
+                <button className="rounded-xl bg-(--brand-olive) p-2 text-sm font-bold text-white">
                   Kaydet
                 </button>
               </form>
@@ -1504,7 +1504,7 @@ export default async function BusinessSectionPage({
               Bu ekran operasyonel takip ve tahmini raporlama amaçlıdır. Resmî
               beyan ve muhasebe işlemleri için mali müşavir kontrolü gerekir.
             </div>
-            <p className="mb-3 text-xs text-[var(--site-muted)]">
+            <p className="mb-3 text-xs text-(--site-muted)">
               {formatIstanbulDateInput(from)} – {formatIstanbulDateInput(to)} ·
               TRY · KDV dahil tutarlar üzerinden hesaplanır
             </p>
@@ -1570,7 +1570,7 @@ export default async function BusinessSectionPage({
                 <button className="rounded-xl border p-2 text-xs font-bold">
                   Onayla ve kilitle
                 </button>
-                <p className="text-[10px] text-[var(--site-muted)]">
+                <p className="text-[10px] text-(--site-muted)">
                   Kilitli dönemde sessiz değişiklik yapılamaz; yalnız
                   ters/düzeltme kaydı kullanılır.
                 </p>
@@ -1581,7 +1581,7 @@ export default async function BusinessSectionPage({
         {section === "mutabakat" && (
           <>
             <form action={runReconciliation} className="mb-4">
-              <button className="rounded-xl bg-[var(--brand-olive)] px-4 py-2 text-xs font-bold text-white">
+              <button className="rounded-xl bg-(--brand-olive) px-4 py-2 text-xs font-bold text-white">
                 PayTR · sipariş · ledger mutabakatını çalıştır
               </button>
             </form>
@@ -1616,7 +1616,7 @@ export default async function BusinessSectionPage({
                           <select
                             aria-label="Çözüm"
                             name="status"
-                            className="rounded border p-1"
+                            className="rounded-sm border p-1"
                           >
                             <option>MANUALLY_MATCHED</option>
                             <option>CORRECTED</option>
@@ -1645,12 +1645,12 @@ export default async function BusinessSectionPage({
             ) : null}
             <section className="panel-surface p-5">
               <h2 className="font-extrabold">Dışa aktarma</h2>
-              <p className="mt-2 text-sm text-[var(--site-muted)]">
+              <p className="mt-2 text-sm text-(--site-muted)">
                 Tüm hücreler CSV formula injection korumasıyla hazırlanır.
               </p>
               <Link
                 href="/api/admin/business/reports.csv"
-                className="mt-4 inline-flex rounded-xl bg-[var(--brand-olive)] px-4 py-2 text-xs font-bold text-white"
+                className="mt-4 inline-flex rounded-xl bg-(--brand-olive) px-4 py-2 text-xs font-bold text-white"
               >
                 CSV indir
               </Link>
@@ -1710,7 +1710,7 @@ export default async function BusinessSectionPage({
                   placeholder="Doğrulanmış içerik"
                   className="min-h-24 rounded-xl border px-3 py-2 text-sm sm:col-span-2"
                 />
-                <button className="rounded-xl bg-[var(--brand-olive)] p-2 text-sm font-bold text-white sm:col-span-2">
+                <button className="rounded-xl bg-(--brand-olive) p-2 text-sm font-bold text-white sm:col-span-2">
                   Bilgi ekle
                 </button>
               </form>
@@ -1780,7 +1780,7 @@ export default async function BusinessSectionPage({
                         Yeni sürüm olarak kaydet
                       </button>
                     </form>
-                    <p className="mt-2 text-[10px] text-[var(--site-muted)]">
+                    <p className="mt-2 text-[10px] text-(--site-muted)">
                       {x.category} · {x.source || "Manuel"}
                     </p>
                   </article>
@@ -1831,14 +1831,14 @@ export default async function BusinessSectionPage({
                     <p className="mt-2 text-sm">
                       {item?.status || "DISCONNECTED"}
                     </p>
-                    <p className="mt-1 text-xs text-[var(--site-muted)]">
+                    <p className="mt-1 text-xs text-(--site-muted)">
                       Son kontrol:{" "}
                       {item?.lastHealthAt
                         ? dt.format(item.lastHealthAt)
                         : "Henüz yok"}
                       {item?.lastErrorCode ? ` · ${item.lastErrorCode}` : ""}
                     </p>
-                    <p className="mt-1 text-xs text-[var(--site-muted)]">
+                    <p className="mt-1 text-xs text-(--site-muted)">
                       Secret değerleri yalnız sunucu ortamından okunur.
                     </p>
                   </article>
@@ -1873,7 +1873,7 @@ export default async function BusinessSectionPage({
           <div className="grid gap-4 xl:grid-cols-2">
             <section className="panel-surface p-5">
               <h2 className="font-extrabold">Güvenli varsayılanlar</h2>
-              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[var(--site-body)]">
+              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-(--site-body)">
                 <li>AI başlangıç modu: SUGGESTION</li>
                 <li>
                   Kapalı/spam konuşmalar saklama süresi sonunda

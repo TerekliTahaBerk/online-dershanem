@@ -14,7 +14,7 @@ export function ParentPanel(props: ParentPanelProps) {
           {data.parents.map((parent) => (
             <div
               key={parent.linkId}
-              className="flex items-center justify-between gap-3 rounded-[10px] border border-dc-line p-3"
+              className="flex items-center justify-between gap-3 rounded-od border border-dc-line p-3"
             >
               <div className="min-w-0">
                 <p className="truncate text-[13.5px] font-bold text-dc-ink">

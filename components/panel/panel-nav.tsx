@@ -62,10 +62,10 @@ export function PanelNav({
                 prefetch
                 onClick={onNavigate}
                 aria-current={active ? "page" : undefined}
-                className={`flex items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-[14px] font-semibold transition-colors ${
+                className={`flex items-center gap-2.5 rounded-od px-3 py-2.5 text-[14px] font-semibold transition-colors ${
                   active
                     ? "bg-dc-brand-soft text-dc-brand-deep"
-                    : "text-[var(--pd-ink-3)] hover:bg-dc-surface-muted"
+                    : "text-(--pd-ink-3) hover:bg-dc-surface-muted"
                 }`}
               >
                 <span

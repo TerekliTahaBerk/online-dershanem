@@ -339,7 +339,7 @@ export function PackageBuilder({
                         </span>
                       ))}
                     </span>
-                    <span className="mt-3 flex flex-col gap-1.5 text-[14.5px] font-medium leading-[1.5] text-[var(--pd-ink-3)]">
+                    <span className="mt-3 flex flex-col gap-1.5 text-[14.5px] font-medium leading-normal text-(--pd-ink-3)">
                       {copy.points.map((p) => (
                         <span key={p} className="flex items-start gap-2">
                           <Check
@@ -387,7 +387,7 @@ export function PackageBuilder({
                           ) : null}
                         </>
                       ) : (
-                        <span className="block text-[12.5px] font-medium leading-[1.5] text-dc-ink-faint sm:max-w-[110px]">
+                        <span className="block text-[12.5px] font-medium leading-normal text-dc-ink-faint sm:max-w-[110px]">
                           Fiyat ön görüşmede netleşir
                         </span>
                       )}
@@ -656,7 +656,7 @@ export function PackageBuilder({
 
                 {line.product === "dershanem" && line.selected ? (
                   <>
-                    <p className="ml-[30px] mt-1 text-[12.5px] leading-[1.5] text-dc-ink-faint">
+                    <p className="ml-[30px] mt-1 text-[12.5px] leading-normal text-dc-ink-faint">
                       {selection.format === "birebir"
                         ? "Birebir özel ders"
                         : "Maks. 4 kişilik grup"}
@@ -673,7 +673,7 @@ export function PackageBuilder({
                 ) : null}
 
                 {line.product === "kocum" && line.selected ? (
-                  <p className="ml-[30px] mt-1 text-[12.5px] leading-[1.5] text-dc-ink-faint">
+                  <p className="ml-[30px] mt-1 text-[12.5px] leading-normal text-dc-ink-faint">
                     Tüm dersleri kapsar
                   </p>
                 ) : null}
@@ -701,19 +701,19 @@ export function PackageBuilder({
                   <span className="text-[15px] font-bold">
                     {billingCopy[total.billing].label}
                   </span>
-                  <span className="text-[30px] font-extrabold tracking-[-0.025em]">
+                  <span className="text-[30px] font-extrabold tracking-tight">
                     {formatCents(total.payableCents ?? 0)}
                   </span>
                 </div>
               ))}
               {activeTotals.length > 1 ? (
-                <p className="text-[12.5px] leading-[1.5] text-dc-ink-faint">
+                <p className="text-[12.5px] leading-normal text-dc-ink-faint">
                   Her dönemin tutarı ayrı gösterilir; tek bir toplam değildir.
                 </p>
               ) : null}
             </div>
           ) : (
-            <div className="mt-1 text-[15px] font-semibold leading-[1.5] text-dc-ink">
+            <div className="mt-1 text-[15px] font-semibold leading-normal text-dc-ink">
               {count === 0
                 ? "Henüz ürün seçilmedi"
                 : "Fiyat ön görüşmede netleşir"}
@@ -823,14 +823,14 @@ export function PackageBuilder({
           {/* Neden bazı yapılandırmalar doğrudan ödemeye gitmiyor — kullanıcı
               CTA'nın neden değiştiğini görebilsin. */}
           {count > 0 && !checkoutItem ? (
-            <p className="mt-2.5 text-center text-[12px] leading-[1.5] text-dc-ink-faint">
+            <p className="mt-2.5 text-center text-[12px] leading-normal text-dc-ink-faint">
               {quote.priceResolved
                 ? "Başlangıç ve kayıt bilgilerini ekibimiz seninle paylaşır."
                 : "Özel kapsamın için hazırlanan yazılı teklifi birlikte değerlendiririz."}
             </p>
           ) : null}
 
-          <p className="mt-3 text-center text-[12.5px] font-medium leading-[1.5] text-dc-ink-faint">
+          <p className="mt-3 text-center text-[12.5px] font-medium leading-normal text-dc-ink-faint">
             {hintText(count, Boolean(checkoutItem))}
           </p>
 
@@ -843,7 +843,7 @@ export function PackageBuilder({
       </div>
 
       {count > 0 ? (
-        <div className="sticky bottom-0 z-30 -mx-[var(--dc-gutter)] mt-6 border-t border-dc-line bg-white px-[var(--dc-gutter)] pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-dc-sticky lg:hidden">
+        <div className="sticky bottom-0 z-30 -mx-(--dc-gutter) mt-6 border-t border-dc-line bg-white px-(--dc-gutter) pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-dc-sticky lg:hidden">
           <div className="flex items-center gap-3">
             <div className="min-w-0 flex-1">
               <div className="text-[12.5px] text-dc-ink-muted">

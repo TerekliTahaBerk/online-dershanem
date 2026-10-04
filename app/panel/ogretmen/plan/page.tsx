@@ -110,13 +110,13 @@ export default async function TeacherPlanPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
           <ListChecks size={15} /> Online Koçum planı
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em]">
+        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
           Haftayı görün, düzenleyin, kilitleyin.
         </h1>
-        <p className="mt-2 text-sm leading-6 text-[var(--site-body)]">
+        <p className="mt-2 text-sm leading-6 text-(--site-body)">
           Sistem önerir; kritik değişiklikler sizin onayınız olmadan öğrenciye
           gitmez. Görevleri sürükleyebilir veya Tarihi Değiştir ile
           taşıyabilirsiniz.
@@ -126,7 +126,7 @@ export default async function TeacherPlanPage() {
       {suggestions.length ? (
         <section className="mt-6 panel-surface p-5">
           <h2 className="text-sm font-extrabold">Bekleyen öneriler</h2>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Tekrar kuyruğu, deneme sonrası ve adaptif öneriler — otomatik
             yayınlanmaz.
           </p>
@@ -134,16 +134,16 @@ export default async function TeacherPlanPage() {
             {suggestions.map((item) => (
               <li
                 key={item.id}
-                className="rounded-xl border border-[var(--site-line)] p-3 text-sm"
+                className="rounded-xl border border-(--site-line) p-3 text-sm"
               >
                 <p className="font-bold">
                   {item.student.user.fullName || item.student.user.email} ·{" "}
                   {item.title}
                 </p>
-                <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-[var(--site-muted)]">
+                <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-(--site-muted)">
                   {item.kind}
                 </p>
-                <p className="mt-1 text-xs text-[var(--site-muted)]">
+                <p className="mt-1 text-xs text-(--site-muted)">
                   {item.rationale}
                 </p>
                 <SuggestionReviewButtons suggestionId={item.id} />
@@ -206,9 +206,9 @@ export default async function TeacherPlanPage() {
 
       {!plans.length ? (
         <div className="mt-6 panel-surface p-8 text-center">
-          <ListChecks className="mx-auto text-[var(--site-muted)]" />
+          <ListChecks className="mx-auto text-(--site-muted)" />
           <h2 className="mt-3 font-extrabold">Bu hafta için plan yok.</h2>
-          <p className="mt-1 text-sm text-[var(--site-muted)]">
+          <p className="mt-1 text-sm text-(--site-muted)">
             Öğrenci plan oluşturduğunda veya siz şablon uyguladığınızda burada
             görünür.
           </p>

@@ -57,7 +57,7 @@ export function ProductPanelCard({ card }: { card: ProductPanelCardModel }) {
   return (
     <article
       className={`flex w-full flex-col rounded-2xl border bg-white p-5 ${
-        card.state === "ACTIVE" ? "border-dc-line shadow-sm" : "border-dashed border-dc-line"
+        card.state === "ACTIVE" ? "border-dc-line shadow-xs" : "border-dashed border-dc-line"
       } ${card.lastUsed && card.state === "ACTIVE" ? "ring-2 ring-dc-brand-strong" : ""}`}
     >
       <div className="flex flex-wrap items-center gap-2">
@@ -90,7 +90,7 @@ export function ProductPanelCard({ card }: { card: ProductPanelCardModel }) {
             <ArrowRight size={16} aria-hidden="true" />
           </a>
         ) : card.state === "PREPARING" ? (
-          <p className="flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-[12.5px] leading-[1.5] text-amber-900">
+          <p className="flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-[12.5px] leading-normal text-amber-900">
             <Clock size={15} aria-hidden="true" className="mt-0.5 shrink-0" />
             Çocuğunuzun öğrenci hesabını açıyoruz; ekibimiz sizi arayacak.
           </p>

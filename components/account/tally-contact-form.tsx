@@ -55,7 +55,7 @@ export function TallyContactForm({ src, alreadySubmitted }: { src: string; alrea
     <main id="main-content" tabIndex={-1} className="site-scope flex min-h-dvh flex-col bg-dc-canvas">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-dc-line bg-white px-4 py-3 sm:px-6">
         <div className="flex items-center gap-3">
-          <Image src="/design/od-logo.png" alt="" width={1254} height={1254} sizes="36px" className="h-9 w-9 rounded-[10px] object-cover" />
+          <Image src="/design/od-logo.png" alt="" width={1254} height={1254} sizes="36px" className="h-9 w-9 rounded-od object-cover" />
           <div>
             <h1 className="text-[15px] font-extrabold text-dc-ink">Sana ulaşabilmemiz için birkaç soru</h1>
             <p className="text-[12.5px] text-dc-ink-muted">

@@ -15,12 +15,12 @@ const points = [
 
 export function PlatformPreview() {
   return (
-    <section className="site-container py-[var(--dc-section)]">
+    <section className="site-container py-(--dc-section)">
       <div className="relative grid overflow-hidden rounded-dc-banner dc-surface-deep bg-dc-brand-deep px-6 pt-10 sm:px-14 sm:pt-14 lg:grid-cols-[1fr_440px] lg:gap-8">
         <div className="pb-2 lg:pb-14">
-          <p className="dc-eyebrow !text-[#7FD3AF]">Öğrenci paneli</p>
+          <p className="dc-eyebrow text-[#7FD3AF]!">Öğrenci paneli</p>
 
-          <h2 className="mt-4 font-display text-[length:var(--public-title)] leading-[1.12] tracking-[-0.025em] text-white">
+          <h2 className="mt-4 font-display text-(length:--public-title) leading-[1.12] tracking-tight text-white">
             Dersinden denemene,
             <br />
             gelişimin tek yerde.
@@ -34,7 +34,7 @@ export function PlatformPreview() {
             {points.map((point) => (
               <li
                 key={point}
-                className="flex items-start gap-3 text-[15.5px] font-medium leading-[1.5] text-[#DCEAE4]"
+                className="flex items-start gap-3 text-[15.5px] font-medium leading-normal text-[#DCEAE4]"
               >
                 <Check
                   size={18}
@@ -54,7 +54,7 @@ export function PlatformPreview() {
             >
               Ürünleri incele
             </Link>
-            <p className="max-w-[340px] text-[13.5px] leading-[1.55] text-[var(--dc-on-deep-faint)]">
+            <p className="max-w-[340px] text-[13.5px] leading-[1.55] text-(--dc-on-deep-faint)">
               <strong className="font-semibold text-white">Ana ekrana ekle</strong>
               : iPhone&apos;da Safari&apos;nin Paylaş menüsünden, Android&apos;de
               tarayıcı menüsünden &quot;Ana ekrana ekle&quot;yi seç; panel

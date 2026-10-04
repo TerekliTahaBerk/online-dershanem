@@ -37,8 +37,8 @@ export const pilotStatusPresentation: Record<PilotCohortStatus, { label: string;
 
 export const statusToneClasses: Record<OdkStatusTone, string> = {
   neutral: "bg-slate-100 text-slate-700",
-  info: "bg-[var(--pd-pastel-sky-soft)] text-[var(--pd-pastel-sky-ink)]",
-  warning: "bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]",
-  success: "bg-[var(--pd-pastel-mint-soft)] text-[var(--pd-pastel-mint-ink)]",
-  danger: "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]",
+  info: "bg-(--pd-pastel-sky-soft) text-(--pd-pastel-sky-ink)",
+  warning: "bg-(--pd-pastel-yellow-soft) text-(--pd-pastel-yellow-ink)",
+  success: "bg-(--pd-pastel-mint-soft) text-(--pd-pastel-mint-ink)",
+  danger: "bg-(--pd-pastel-blush-soft) text-(--pd-pastel-blush-ink)",
 };

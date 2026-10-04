@@ -135,7 +135,7 @@ export function SubjectTrendCard({
       </table>
 
       {caption ? (
-        <p className="mt-4 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">
+        <p className="mt-4 text-[14.5px] leading-[1.65] text-(--pd-ink-3)">
           {caption}
         </p>
       ) : null}

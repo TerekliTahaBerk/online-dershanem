@@ -76,13 +76,13 @@ export default async function StudentCheckInPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
           <HandHeart size={15} /> Sakin check-in
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em]">
+        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
           Nasıl ilerlediğini fark et, gerekirse yardım iste.
         </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--site-body)]">
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-(--site-body)">
           Puan, sıralama ve serbest metin yok. Paylaşma kararın sende; veli bu
           alanı göremez.
         </p>

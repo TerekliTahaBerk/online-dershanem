@@ -112,7 +112,7 @@ export default async function ParentMockExamsPage({
           </p>
           <Link
             href={withParentStudentContext("/panel/veli/hesap", selected.id)}
-            className="mt-4 inline-block rounded-[10px] border border-[#DDE4E0] bg-white px-[18px] py-[11px] text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
+            className="mt-4 inline-block rounded-od border border-[#DDE4E0] bg-white px-[18px] py-[11px] text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
           >
             Hesap ve pakete git
           </Link>

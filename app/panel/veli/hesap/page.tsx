@@ -87,7 +87,7 @@ export default async function ParentAccountPage({
         {talep === "alindi" ? (
           <p
             role="status"
-            className="mt-4 rounded-[10px] border border-dc-brand-soft-line bg-dc-brand-soft px-4 py-3 text-[13.5px] font-semibold text-dc-brand-hover"
+            className="mt-4 rounded-od border border-dc-brand-soft-line bg-dc-brand-soft px-4 py-3 text-[13.5px] font-semibold text-dc-brand-hover"
           >
             Görüşme talebin alındı. Eğitim koordinatörü seninle iletişime
             geçecek.
@@ -165,7 +165,7 @@ export default async function ParentAccountPage({
                 <select
                   name="studentId"
                   required
-                  className="rounded-[10px] border border-[#DDE4E0] bg-white px-3 py-2.5 text-[13.5px] font-semibold text-dc-ink"
+                  className="rounded-od border border-[#DDE4E0] bg-white px-3 py-2.5 text-[13.5px] font-semibold text-dc-ink"
                 >
                   {children.map((child) => (
                     <option key={child.id} value={child.id}>
@@ -176,7 +176,7 @@ export default async function ParentAccountPage({
               </label>
               <button
                 type="submit"
-                className="rounded-[10px] border border-[#DDE4E0] bg-white px-[18px] py-[11px] text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
+                className="rounded-od border border-[#DDE4E0] bg-white px-[18px] py-[11px] text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
               >
                 Görüşme talebi oluştur
               </button>

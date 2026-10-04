@@ -77,13 +77,13 @@ export function ProductCompare() {
   return (
     <section
       aria-labelledby="urun-karsilastirma"
-      className="site-container py-[var(--dc-section-tight)]"
+      className="site-container py-(--dc-section-tight)"
     >
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-[640px]">
           <h2
             id="urun-karsilastirma"
-            className="font-display text-[length:var(--public-title)] leading-[1.08] tracking-[-0.025em] text-dc-ink"
+            className="font-display text-(length:--public-title) leading-[1.08] tracking-tight text-dc-ink"
           >
             Yan yana karşılaştır
           </h2>

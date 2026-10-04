@@ -315,12 +315,12 @@ export function MockExamWorkspace({
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-sm font-extrabold">Hızlı deneme girişi</h2>
-              <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+              <p className="mt-1 text-xs leading-5 text-(--site-muted)">
                 Doğru–yanlış–boş ve süreyi girin. Soru metni veya görseli
                 yüklenmez.
               </p>
             </div>
-            <TimerReset size={19} className="text-[var(--brand-olive)]" />
+            <TimerReset size={19} className="text-(--brand-olive)" />
           </div>
           <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {role !== "STUDENT" ? (
@@ -391,17 +391,17 @@ export function MockExamWorkspace({
               />
             </label>
           </div>
-          <details className="mt-4 rounded-2xl border border-[var(--site-line)] p-4">
+          <details className="mt-4 rounded-2xl border border-(--site-line) p-4">
             <summary className="cursor-pointer text-xs font-bold">
               <ClipboardPaste size={14} className="mr-2 inline" /> CSV / tablo
               değerlerini toplu yapıştır
             </summary>
-            <p className="mt-2 text-[10.5px] text-[var(--site-muted)]">
+            <p className="mt-2 text-[10.5px] text-(--site-muted)">
               Her bölüm için ayrı satır: doğru yanlış boş süre. Sekme, boşluk,
               virgül veya noktalı virgül kullanılabilir.
             </p>
             <textarea
-              className="mt-3 min-h-24 w-full rounded-xl border border-[var(--site-line)] p-3 font-mono text-xs"
+              className="mt-3 min-h-24 w-full rounded-xl border border-(--site-line) p-3 font-mono text-xs"
               value={paste}
               onChange={(event) => setPaste(event.target.value)}
             />
@@ -416,7 +416,7 @@ export function MockExamWorkspace({
           <div className="mt-5 overflow-x-auto">
             <table className="min-w-[760px] w-full text-left text-xs">
               <thead>
-                <tr className="text-[10px] uppercase tracking-wide text-[var(--site-muted)]">
+                <tr className="text-[10px] uppercase tracking-wide text-(--site-muted)">
                   <th className="pb-2">Bölüm</th>
                   <th>Doğru</th>
                   <th>Yanlış</th>
@@ -435,11 +435,11 @@ export function MockExamWorkspace({
                   return (
                     <tr
                       key={section.subjectCode}
-                      className="border-t border-[var(--site-line)]"
+                      className="border-t border-(--site-line)"
                     >
                       <th className="py-3 pr-3">
                         {template.name}
-                        <span className="ml-2 text-[10px] text-[var(--site-muted)]">
+                        <span className="ml-2 text-[10px] text-(--site-muted)">
                           /{template.questions}
                         </span>
                       </th>
@@ -454,7 +454,7 @@ export function MockExamWorkspace({
                         <td key={field} className="pr-2">
                           <input
                             aria-label={`${template.name} ${field}`}
-                            className="w-20 rounded-xl border border-[var(--site-line)] px-2 py-2"
+                            className="w-20 rounded-xl border border-(--site-line) px-2 py-2"
                             inputMode="numeric"
                             type="number"
                             min={0}
@@ -484,7 +484,7 @@ export function MockExamWorkspace({
           </div>
           <div className="mt-5">
             <h3 className="text-xs font-extrabold">En fazla üç hata nedeni</h3>
-            <p className="mt-1 text-[10.5px] text-[var(--site-muted)]">
+            <p className="mt-1 text-[10.5px] text-(--site-muted)">
               Öğrenci seçebilir; öğretmen daha sonra düzeltebilir. Bir
               “başarısızlık etiketi” değildir.
             </p>
@@ -492,7 +492,7 @@ export function MockExamWorkspace({
               {sections.map((section, index) => (
                 <div
                   key={section.subjectCode}
-                  className="rounded-2xl bg-[var(--site-bg-warm)] p-3"
+                  className="rounded-2xl bg-(--site-bg-warm) p-3"
                 >
                   <p className="mb-2 text-[10.5px] font-bold">
                     {mockExamTemplates[examType].sections[index].name}
@@ -502,7 +502,7 @@ export function MockExamWorkspace({
                       ([value, label]) => (
                         <label
                           key={value}
-                          className="inline-flex items-center gap-2 rounded-full border border-[var(--site-line)] bg-white px-3 py-2 text-[10.5px] font-bold"
+                          className="inline-flex items-center gap-2 rounded-full border border-(--site-line) bg-white px-3 py-2 text-[10.5px] font-bold"
                         >
                           <input
                             type="checkbox"
@@ -549,7 +549,7 @@ export function MockExamWorkspace({
             {status ? (
               <p
                 role="status"
-                className="text-xs font-bold text-[var(--site-body)]"
+                className="text-xs font-bold text-(--site-body)"
               >
                 {status}
               </p>
@@ -560,7 +560,7 @@ export function MockExamWorkspace({
       <section className="grid gap-5 xl:grid-cols-[1.15fr_.85fr]">
         <article className="panel-surface p-5">
           <h2 className="text-sm font-extrabold">Kişisel hata eğilimi</h2>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Sonuçlar yalnız öğrencinin kendi denemeleriyle karşılaştırılır.
           </p>
           <div
@@ -576,7 +576,7 @@ export function MockExamWorkspace({
                   {Object.values(mockExamErrorLabels).map((label) => (
                     <th
                       key={label}
-                      className="px-2 pb-2 text-center text-[9px] text-[var(--site-muted)]"
+                      className="px-2 pb-2 text-center text-[9px] text-(--site-muted)"
                     >
                       {label}
                     </th>
@@ -587,7 +587,7 @@ export function MockExamWorkspace({
                 {trend.heatmap.map((row) => (
                   <tr
                     key={row.key}
-                    className="border-t border-[var(--site-line)]"
+                    className="border-t border-(--site-line)"
                   >
                     <th className="py-3 text-left">{row.subject}</th>
                     {Object.keys(mockExamErrorLabels).map((category) => {
@@ -596,7 +596,7 @@ export function MockExamWorkspace({
                       return (
                         <td key={category} className="px-2 text-center">
                           <span
-                            className={`inline-grid h-8 w-8 place-items-center rounded-lg font-extrabold ${count >= 3 ? "bg-amber-200 text-amber-950" : count === 2 ? "bg-amber-100 text-amber-900" : count === 1 ? "bg-[#eef3e9] text-[var(--brand-olive)]" : "bg-slate-50 text-slate-400"}`}
+                            className={`inline-grid h-8 w-8 place-items-center rounded-lg font-extrabold ${count >= 3 ? "bg-amber-200 text-amber-950" : count === 2 ? "bg-amber-100 text-amber-900" : count === 1 ? "bg-[#eef3e9] text-(--brand-olive)" : "bg-slate-50 text-slate-400"}`}
                           >
                             {count}
                           </span>
@@ -609,7 +609,7 @@ export function MockExamWorkspace({
                   <tr>
                     <td
                       colSpan={6}
-                      className="py-8 text-center text-[var(--site-muted)]"
+                      className="py-8 text-center text-(--site-muted)"
                     >
                       İlk deneme kaydedildiğinde eğilim oluşacak.
                     </td>
@@ -647,7 +647,7 @@ export function MockExamWorkspace({
               ) : null}
             </div>
           ) : (
-            <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-xs text-[var(--site-muted)]">
+            <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-xs text-(--site-muted)">
               Tekrarlayan bir neden oluştuğunda burada yalnız bir uygulanabilir
               adım gösterilecek.
             </p>
@@ -671,11 +671,11 @@ export function MockExamWorkspace({
             return (
               <article
                 key={exam.id}
-                className="rounded-2xl border border-[var(--site-line)] p-4"
+                className="rounded-2xl border border-(--site-line) p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <span className="text-[9px] font-extrabold text-[var(--brand-olive)]">
+                    <span className="text-[9px] font-extrabold text-(--brand-olive)">
                       {exam.exam} ·{" "}
                       {new Intl.DateTimeFormat("tr-TR").format(
                         new Date(exam.takenAt),
@@ -686,11 +686,11 @@ export function MockExamWorkspace({
                       {exam.publisher ? ` · ${exam.publisher}` : ""}
                     </h3>
                   </div>
-                  <span className="rounded-full bg-[var(--brand-olive-soft)] px-2.5 py-1 text-xs font-extrabold text-[var(--brand-olive)]">
+                  <span className="rounded-full bg-(--brand-olive-soft) px-2.5 py-1 text-xs font-extrabold text-(--brand-olive)">
                     {net.toLocaleString("tr-TR")} net
                   </span>
                 </div>
-                <p className="mt-3 text-[10.5px] text-[var(--site-muted)]">
+                <p className="mt-3 text-[10.5px] text-(--site-muted)">
                   {exam.sections.reduce(
                     (sum, section) => sum + section.correctCount,
                     0,
@@ -729,7 +729,7 @@ export function MockExamWorkspace({
             );
           })}
           {!visibleExams.length ? (
-            <p className="text-sm text-[var(--site-muted)]">
+            <p className="text-sm text-(--site-muted)">
               Henüz deneme kaydı yok.
             </p>
           ) : null}
@@ -793,14 +793,14 @@ function ReasonEditor({
     setMessage("Hata nedenleri kaydedildi; değişiklik audit izine alındı.");
   }
   return (
-    <details className="mt-3 border-t border-[var(--site-line)] pt-3">
+    <details className="mt-3 border-t border-(--site-line) pt-3">
       <summary className="cursor-pointer text-[10.5px] font-bold">
         Hata nedenlerini gözden geçir
       </summary>
       <div className="mt-3 space-y-3">
         {exam.sections.map((section) => (
           <div key={section.id}>
-            <p className="text-[10px] font-bold text-[var(--site-muted)]">
+            <p className="text-[10px] font-bold text-(--site-muted)">
               {section.subjectName}
             </p>
             <div className="mt-1 flex flex-wrap gap-1.5">
@@ -811,7 +811,7 @@ function ReasonEditor({
                   onClick={() =>
                     toggle(section.id, category as MockExamErrorCategory)
                   }
-                  className={`rounded-full border px-2.5 py-1.5 text-[9.5px] font-bold ${values[section.id].includes(category as MockExamErrorCategory) ? "border-[var(--brand-olive)] bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]" : "border-[var(--site-line)] bg-white"}`}
+                  className={`rounded-full border px-2.5 py-1.5 text-[9.5px] font-bold ${values[section.id].includes(category as MockExamErrorCategory) ? "border-(--brand-olive) bg-(--brand-olive-soft) text-(--brand-olive)" : "border-(--site-line) bg-white"}`}
                 >
                   {label}
                 </button>

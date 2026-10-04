@@ -77,7 +77,7 @@ export function PanelTable({
 
 export function PanelTableRow({ children }: { children: ReactNode }) {
   return (
-    <tr className="panel-table-row border-b border-dc-line-soft text-[13.5px] font-medium text-[var(--pd-ink-3)] last:border-0">
+    <tr className="panel-table-row border-b border-dc-line-soft text-[13.5px] font-medium text-(--pd-ink-3) last:border-0">
       {Children.map(children, (child, index) => (
         <PanelTableCellIndexContext.Provider value={index}>
           {child}
@@ -109,7 +109,7 @@ export function PanelTableCell({
     tone === "ok"
       ? "text-dc-brand-hover"
       : tone === "warn"
-        ? "text-[var(--pd-pastel-yellow-ink)]"
+        ? "text-(--pd-pastel-yellow-ink)"
         : "";
 
   return (

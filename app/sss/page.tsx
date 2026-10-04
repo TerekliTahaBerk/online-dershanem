@@ -60,14 +60,14 @@ export default function SssPage() {
               Aradığınızı bulamazsanız{" "}
               <a
                 href={waHref}
-                className="font-semibold text-[var(--brand-orange-ink)] hover:underline"
+                className="font-semibold text-(--brand-orange-ink) hover:underline"
               >
                 WhatsApp&apos;tan yazabilirsiniz
               </a>{" "}
               veya{" "}
               <a
                 href={telHref}
-                className="font-semibold text-[var(--brand-orange-ink)] hover:underline"
+                className="font-semibold text-(--brand-orange-ink) hover:underline"
               >
                 bizi arayabilirsiniz
               </a>
@@ -80,15 +80,15 @@ export default function SssPage() {
           <div className="mx-auto flex max-w-3xl flex-col gap-10">
             {faqCategories.map((cat) => (
               <div key={cat.category}>
-                <h2 className="mb-4 text-[13px] font-semibold uppercase tracking-[0.06em] text-[var(--brand-orange-ink)]">
+                <h2 className="mb-4 text-[13px] font-semibold uppercase tracking-[0.06em] text-(--brand-orange-ink)">
                   {cat.category}
                 </h2>
-                <div className="divide-y divide-[var(--site-line)] overflow-hidden rounded-[24px] border border-[var(--site-line)] bg-white">
+                <div className="divide-y divide-(--site-line) overflow-hidden rounded-od-xl border border-(--site-line) bg-white">
                   {cat.items.map((item) => (
                     <details key={item.q} className="group px-6">
-                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-[16px] font-semibold text-[var(--site-ink)] [&::-webkit-details-marker]:hidden">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-[16px] font-semibold text-(--site-ink) [&::-webkit-details-marker]:hidden">
                         {item.q}
-                        <span className="shrink-0 text-[var(--brand-orange-ink)] transition-transform duration-200 ease-[cubic-bezier(0.2,0,0,1)] group-open:rotate-45">
+                        <span className="shrink-0 text-(--brand-orange-ink) transition-transform duration-200 ease-[cubic-bezier(0.2,0,0,1)] group-open:rotate-45">
                           <Plus
                             size={20}
                             strokeWidth={1.7}
@@ -96,7 +96,7 @@ export default function SssPage() {
                           />
                         </span>
                       </summary>
-                      <p className="pb-5 pr-8 text-[15px] leading-7 text-[var(--site-body)]">
+                      <p className="pb-5 pr-8 text-[15px] leading-7 text-(--site-body)">
                         {item.a}
                       </p>
                     </details>

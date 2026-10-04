@@ -150,7 +150,7 @@ export function SalesFunnelBoard({
           <h2 id="lost-reason-title" className="text-sm font-extrabold">
             Kayıp nedeni zorunlu
           </h2>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             LOST aşamasına geçmek için bir neden seçin. Bu veri raporlanır.
           </p>
           <label className="mt-3 block text-xs font-bold">
@@ -188,7 +188,7 @@ export function SalesFunnelBoard({
             </button>
             <button
               type="button"
-              className="rounded-xl bg-[var(--brand-olive)] px-3 py-2 text-xs font-bold text-white"
+              className="rounded-xl bg-(--brand-olive) px-3 py-2 text-xs font-bold text-white"
               onClick={() => {
                 const id = lostPrompt.id;
                 setLostPrompt(null);
@@ -263,7 +263,7 @@ export function SalesFunnelBoard({
                           </span>
                         ) : null}
                       </div>
-                      <p className="mt-1 truncate text-[10px] text-[var(--site-muted)]">
+                      <p className="mt-1 truncate text-[10px] text-(--site-muted)">
                         {PRODUCT_INTEREST_LABELS[lead.productInterest]}
                         {lead.estimatedValueCents
                           ? ` · ~${Math.round(lead.estimatedValueCents / 100)} TL`
@@ -271,12 +271,12 @@ export function SalesFunnelBoard({
                       </p>
                       <a
                         href={`/panel/yonetim/isletme/adaylar?lead=${lead.id}&focus=all`}
-                        className="mt-2 inline-block text-[10px] font-bold text-[var(--brand-olive)] underline"
+                        className="mt-2 inline-block text-[10px] font-bold text-(--brand-olive) underline"
                       >
                         Detay
                       </a>
                       {canWrite ? (
-                        <label className="mt-2 block text-[10px] font-bold text-[var(--site-muted)]">
+                        <label className="mt-2 block text-[10px] font-bold text-(--site-muted)">
                           Aşamayı değiştir
                           <select
                             aria-label={`${leadDisplayName(lead)} aşaması`}

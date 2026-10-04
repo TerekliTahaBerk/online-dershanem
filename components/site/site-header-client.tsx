@@ -48,13 +48,13 @@ export function SiteHeaderClient({
     <>
       <a
         href="#main-content"
-        className="fixed left-4 top-3 z-[200] -translate-y-24 rounded-full bg-[var(--site-ink)] px-5 py-3 text-sm font-semibold text-white shadow-lg transition-transform focus:translate-y-0"
+        className="fixed left-4 top-3 z-200 -translate-y-24 rounded-full bg-(--site-ink) px-5 py-3 text-sm font-semibold text-white shadow-lg transition-transform focus:translate-y-0"
       >
         Ana içeriğe geç
       </a>
       <header
         ref={headerRef}
-        className="sticky top-0 z-50 w-full border-b border-[var(--site-line)] bg-white/85 backdrop-blur-xl"
+        className="sticky top-0 z-50 w-full border-b border-(--site-line) bg-white/85 backdrop-blur-xl"
       >
         <div className="site-container">
           {/* Handoff 01 Navbar: 76px, sticky; masaüstünde 1fr auto 1fr — solda
@@ -75,8 +75,8 @@ export function SiteHeaderClient({
                   aria-current={isActive(link.href) ? "page" : undefined}
                   className={`whitespace-nowrap rounded-full px-3.5 py-2 text-[14.5px] font-semibold transition-colors ${
                     isActive(link.href)
-                      ? "text-[var(--site-ink)]"
-                      : "text-[var(--site-body)] hover:text-[var(--site-ink)]"
+                      ? "text-(--site-ink)"
+                      : "text-(--site-body) hover:text-(--site-ink)"
                   }`}
                 >
                   {link.label}
@@ -98,7 +98,7 @@ export function SiteHeaderClient({
                 height={1254}
                 priority
                 sizes="38px"
-                className="h-9 w-9 rounded-[10px] object-cover sm:h-[38px] sm:w-[38px]"
+                className="h-9 w-9 rounded-od object-cover sm:h-[38px] sm:w-[38px]"
               />
             </Link>
 
@@ -107,14 +107,14 @@ export function SiteHeaderClient({
               <Link
                 href={navLogin.href}
                 aria-current={isActive(navLogin.href) ? "page" : undefined}
-                className="hidden rounded-full px-3.5 py-2 text-[14.5px] text-[var(--site-body)] transition-colors hover:text-[var(--site-ink)] lg:inline-flex"
+                className="hidden rounded-full px-3.5 py-2 text-[14.5px] text-(--site-body) transition-colors hover:text-(--site-ink) lg:inline-flex"
               >
                 {navLogin.label}
               </Link>
 
               <Link
                 href={navCta.href}
-                className="site-btn site-btn-primary site-btn-sm min-h-11 whitespace-nowrap !px-3.5 max-lg:!text-[13px]"
+                className="site-btn site-btn-primary site-btn-sm min-h-11 whitespace-nowrap px-3.5! max-lg:text-[13px]!"
               >
                 {navCta.label}
               </Link>
@@ -127,7 +127,7 @@ export function SiteHeaderClient({
                 ref={menuButtonRef}
                 type="button"
                 onClick={() => setOpen((o) => !o)}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--site-line)] text-[var(--site-ink)] lg:hidden"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-(--site-line) text-(--site-ink) lg:hidden"
                 aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
                 aria-expanded={open}
                 aria-controls="site-mobile-menu"

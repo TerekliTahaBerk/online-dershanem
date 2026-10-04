@@ -60,7 +60,7 @@ function SummaryTileCard({ tile }: { tile: OpsSummaryTile }) {
   return (
     <TrackedPanelLink
       href={tile.href}
-      className="block rounded-[12px] border border-dc-line bg-white p-4 transition hover:border-dc-brand hover:shadow-[0_1px_0_rgba(16,24,40,0.04)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-dc-brand"
+      className="block rounded-[12px] border border-dc-line bg-white p-4 transition hover:border-dc-brand hover:shadow-[0_1px_0_rgba(16,24,40,0.04)] focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-dc-brand"
       event={{
         name: "admin_ops_center_action_clicked",
         properties: { actionCode: "SUMMARY_TILE", severity: "NA" },
@@ -108,7 +108,7 @@ function ActionQueue({
           </p>
         </div>
       </div>
-      <div className="mt-3.5 rounded-[10px] border border-dc-line-soft bg-white">
+      <div className="mt-3.5 rounded-od border border-dc-line-soft bg-white">
         {snapshot.actions.map((item, index) => {
           const presentation = OPS_SEVERITY_LABEL[item.severity];
           return (
@@ -164,14 +164,14 @@ export function AdminOperationsCenterView({
       label: "Kritik",
       count: snapshot.risk.critical,
       href: snapshot.risk.criticalHref,
-      barClass: "bg-[var(--pd-pastel-blush-ink)]",
+      barClass: "bg-(--pd-pastel-blush-ink)",
     },
     {
       key: "watch" as const,
       label: "Takip edilmeli",
       count: snapshot.risk.watch,
       href: snapshot.risk.watchHref,
-      barClass: "bg-[var(--pd-pastel-yellow-ink)]",
+      barClass: "bg-(--pd-pastel-yellow-ink)",
     },
     {
       key: "normal" as const,
@@ -231,7 +231,7 @@ export function AdminOperationsCenterView({
               cümle olarak görünecek.
             </p>
           ) : (
-            <ul className="mt-3.5 divide-y divide-dc-line-soft rounded-[10px] border border-dc-line-soft">
+            <ul className="mt-3.5 divide-y divide-dc-line-soft rounded-od border border-dc-line-soft">
               {snapshot.activities.map((item) => {
                 const body = (
                   <>
@@ -311,7 +311,7 @@ export function AdminOperationsCenterView({
                 <li key={check.id}>
                   <Link
                     href={check.href}
-                    className="block rounded-[10px] border border-dc-line-soft bg-white px-3 py-2.5 hover:border-dc-brand"
+                    className="block rounded-od border border-dc-line-soft bg-white px-3 py-2.5 hover:border-dc-brand"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-[12px] font-bold text-dc-ink">

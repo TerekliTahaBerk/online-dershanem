@@ -98,26 +98,26 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <main
         id="main-content"
         tabIndex={-1}
-        className="bg-[var(--site-bg-warm)] py-10 sm:py-20"
+        className="bg-(--site-bg-warm) py-10 sm:py-20"
       >
         <Container>
-          <article className="mx-auto max-w-3xl sm:rounded-3xl sm:border sm:border-[var(--site-line)] sm:bg-white sm:p-10 sm:shadow-[0_1px_2px_rgba(20,20,15,0.04)]">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--brand-orange-ink)]">
+          <article className="mx-auto max-w-3xl sm:rounded-3xl sm:border sm:border-(--site-line) sm:bg-white sm:p-10 sm:shadow-[0_1px_2px_rgba(20,20,15,0.04)]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-(--brand-orange-ink)">
               {post.category}
             </p>
-            <p className="mt-3 text-[13.5px] text-[var(--site-muted)]">
+            <p className="mt-3 text-[13.5px] text-(--site-muted)">
               {getBlogAuthor(post.category)} · {formatBlogDate(publishedAt)} ·{" "}
               {estimateBlogReadingMinutes(post)} dk okuma
             </p>
-            <h1 className="mt-3 font-display text-[clamp(2rem,4vw,3rem)] leading-tight tracking-[-0.02em] text-[var(--site-ink)]">
+            <h1 className="mt-3 font-display text-[clamp(2rem,4vw,3rem)] leading-tight tracking-[-0.02em] text-(--site-ink)">
               {post.title}
             </h1>
-            <p className="mt-4 text-[17px] leading-[1.75] text-[var(--site-body)]">
+            <p className="mt-4 text-[17px] leading-[1.75] text-(--site-body)">
               {post.excerpt}
             </p>
 
-            <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 border-y border-[var(--site-line)] py-4 text-[12.5px] leading-6 text-[var(--site-muted)]">
-              <span className="font-semibold text-[var(--site-ink)]">
+            <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 border-y border-(--site-line) py-4 text-[12.5px] leading-6 text-(--site-muted)">
+              <span className="font-semibold text-(--site-ink)">
                 Editoryal kontrol:
               </span>
               <span>Online Dershanem Eğitim Ekibi</span>
@@ -127,21 +127,21 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
             {post.summary?.length ? (
               <aside
-                className="mt-8 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-5 sm:p-6"
+                className="mt-8 rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-5 sm:p-6"
                 aria-labelledby="summary-title"
               >
                 <h2
                   id="summary-title"
-                  className="font-display text-xl text-[var(--site-ink)]"
+                  className="font-display text-xl text-(--site-ink)"
                 >
                   Kısa cevap
                 </h2>
-                <ul className="mt-3 space-y-2 text-[14.5px] leading-7 text-[var(--site-body)]">
+                <ul className="mt-3 space-y-2 text-[14.5px] leading-7 text-(--site-body)">
                   {post.summary.map((item) => (
                     <li key={item} className="flex gap-3">
                       <span
                         aria-hidden="true"
-                        className="mt-[11px] h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--brand-orange)]"
+                        className="mt-[11px] h-1.5 w-1.5 shrink-0 rounded-full bg-(--brand-orange)"
                       />
                       {item}
                     </li>
@@ -152,9 +152,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
             <nav
               aria-label="Yazı içeriği"
-              className="mt-8 rounded-2xl border border-[var(--site-line)] p-5 sm:p-6"
+              className="mt-8 rounded-2xl border border-(--site-line) p-5 sm:p-6"
             >
-              <h2 className="font-display text-xl text-[var(--site-ink)]">
+              <h2 className="font-display text-xl text-(--site-ink)">
                 Bu yazıda
               </h2>
               <ol className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
@@ -162,9 +162,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   <li key={section.h2}>
                     <Link
                       href={`#${blogHeadingId(section.h2)}`}
-                      className="inline-flex gap-2 leading-6 text-[var(--site-body)] underline decoration-[var(--site-line)] underline-offset-4 hover:text-[var(--brand-orange-ink)]"
+                      className="inline-flex gap-2 leading-6 text-(--site-body) underline decoration-(--site-line) underline-offset-4 hover:text-(--brand-orange-ink)"
                     >
-                      <span className="text-[var(--site-muted)]">
+                      <span className="text-(--site-muted)">
                         {String(index + 1).padStart(2, "0")}
                       </span>
                       {section.h2}
@@ -181,21 +181,21 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   id={blogHeadingId(section.h2)}
                   className="scroll-mt-28 space-y-4"
                 >
-                  <h2 className="font-display text-[clamp(1.4rem,2.6vw,1.9rem)] leading-tight tracking-[-0.01em] text-[var(--site-ink)]">
+                  <h2 className="font-display text-[clamp(1.4rem,2.6vw,1.9rem)] leading-tight tracking-[-0.01em] text-(--site-ink)">
                     {section.h2}
                   </h2>
 
                   {section.paragraphs?.map((paragraph) => (
                     <p
                       key={paragraph}
-                      className="text-[17px] leading-[1.75] text-[var(--site-body)]"
+                      className="text-[17px] leading-[1.75] text-(--site-body)"
                     >
                       {paragraph}
                     </p>
                   ))}
 
                   {section.bullets?.length ? (
-                    <ul className="list-disc space-y-2 pl-5 text-[17px] leading-[1.75] text-[var(--site-body)]">
+                    <ul className="list-disc space-y-2 pl-5 text-[17px] leading-[1.75] text-(--site-body)">
                       {section.bullets.map((bullet) => (
                         <li key={bullet}>{bullet}</li>
                       ))}
@@ -203,15 +203,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   ) : null}
 
                   {section.links?.length ? (
-                    <div className="space-y-2 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
-                      <h3 className="text-sm font-semibold text-[var(--site-ink)]">
+                    <div className="space-y-2 rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4">
+                      <h3 className="text-sm font-semibold text-(--site-ink)">
                         İlgili içerikler
                       </h3>
                       {section.links.map((item) => (
                         <Link
                           key={item.href}
                           href={item.href}
-                          className="block text-sm font-semibold text-[var(--brand-orange-ink)] underline"
+                          className="block text-sm font-semibold text-(--brand-orange-ink) underline"
                         >
                           {item.label}
                         </Link>
@@ -224,29 +224,29 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
             {post.faq?.length ? (
               <section
-                className="mt-10 border-t border-[var(--site-line)] pt-9"
+                className="mt-10 border-t border-(--site-line) pt-9"
                 aria-labelledby="article-faq-title"
               >
                 <p className="site-eyebrow">Sık sorulanlar</p>
                 <h2
                   id="article-faq-title"
-                  className="mt-3 font-display text-[clamp(1.5rem,2.8vw,2rem)] leading-tight text-[var(--site-ink)]"
+                  className="mt-3 font-display text-[clamp(1.5rem,2.8vw,2rem)] leading-tight text-(--site-ink)"
                 >
                   Bu konu hakkında kısa yanıtlar
                 </h2>
-                <div className="mt-5 divide-y divide-[var(--site-line)] border-y border-[var(--site-line)]">
+                <div className="mt-5 divide-y divide-(--site-line) border-y border-(--site-line)">
                   {post.faq.map((item) => (
                     <details key={item.q} className="group py-1">
-                      <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-3 text-[15px] font-semibold text-[var(--site-ink)] marker:content-none">
+                      <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-3 text-[15px] font-semibold text-(--site-ink) marker:content-none">
                         {item.q}
                         <span
                           aria-hidden="true"
-                          className="text-xl font-normal text-[var(--brand-orange-ink)] group-open:rotate-45"
+                          className="text-xl font-normal text-(--brand-orange-ink) group-open:rotate-45"
                         >
                           +
                         </span>
                       </summary>
-                      <p className="pb-5 pr-8 text-[14.5px] leading-7 text-[var(--site-body)]">
+                      <p className="pb-5 pr-8 text-[14.5px] leading-7 text-(--site-body)">
                         {item.a}
                       </p>
                     </details>
@@ -255,11 +255,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               </section>
             ) : null}
 
-            <section className="mt-10 rounded-3xl border border-[var(--site-line)] bg-[var(--brand-orange-soft)] p-6 sm:p-8">
-              <h2 className="font-display text-[clamp(1.4rem,2.6vw,1.9rem)] leading-tight tracking-[-0.01em] text-[var(--site-ink)]">
+            <section className="mt-10 rounded-3xl border border-(--site-line) bg-(--brand-orange-soft) p-6 sm:p-8">
+              <h2 className="font-display text-[clamp(1.4rem,2.6vw,1.9rem)] leading-tight tracking-[-0.01em] text-(--site-ink)">
                 {post.cta.title}
               </h2>
-              <p className="mt-2 text-[17px] leading-[1.75] text-[var(--site-body)]">
+              <p className="mt-2 text-[17px] leading-[1.75] text-(--site-body)">
                 {post.cta.text}
               </p>
               <LeadFunnelTrigger
@@ -279,7 +279,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </section>
 
             <section className="mt-8">
-              <h2 className="font-display text-[20px] leading-tight tracking-[-0.01em] text-[var(--site-ink)]">
+              <h2 className="font-display text-[20px] leading-tight tracking-[-0.01em] text-(--site-ink)">
                 Önerilen Yazılar
               </h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -287,7 +287,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   <Link
                     key={item.slug}
                     href={`/blog/${item.slug}/`}
-                    className="rounded-2xl border border-[var(--site-line)] bg-white p-4 text-sm font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
+                    className="rounded-2xl border border-(--site-line) bg-white p-4 text-sm font-semibold text-(--site-ink) transition-colors hover:border-(--brand-orange)"
                   >
                     {item.title}
                   </Link>
@@ -296,16 +296,16 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </section>
           </article>
 
-          <section className="mx-auto mt-6 grid max-w-3xl gap-4 rounded-3xl border border-[var(--site-line)] bg-white p-6 sm:grid-cols-2">
+          <section className="mx-auto mt-6 grid max-w-3xl gap-4 rounded-3xl border border-(--site-line) bg-white p-6 sm:grid-cols-2">
             <Link
               href="/online-dershane"
-              className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4 text-sm font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
+              className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4 text-sm font-semibold text-(--site-ink) transition-colors hover:border-(--brand-orange)"
             >
               Online dershane sayfasına git
             </Link>
             <Link
               href="/online-ozel-ders"
-              className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4 text-sm font-semibold text-[var(--site-ink)] transition-colors hover:border-[var(--brand-orange)]"
+              className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4 text-sm font-semibold text-(--site-ink) transition-colors hover:border-(--brand-orange)"
             >
               Online özel ders sayfasına git
             </Link>

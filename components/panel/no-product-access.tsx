@@ -24,7 +24,7 @@ export function NoProductAccess({ role, start = null }: { role: UserRole; start?
 
   return (
     <div className="max-w-[640px]">
-      <h1 className="text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em] text-dc-ink">
+      <h1 className="text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-dc-ink">
         Hesabın hazır, ürün erişimin henüz açılmadı.
       </h1>
       <p className="mt-3 text-[15.5px] leading-[1.65] text-dc-ink-muted">

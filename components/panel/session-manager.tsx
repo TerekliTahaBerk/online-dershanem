@@ -69,7 +69,7 @@ export function SessionManager({ sessions }: { sessions: ManagedSession[] }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-[var(--site-body)]">
+        <p className="text-sm text-(--site-body)">
           Hesabınızda {sessions.length} aktif oturum var.
         </p>
         {others.length ? (
@@ -98,14 +98,14 @@ export function SessionManager({ sessions }: { sessions: ManagedSession[] }) {
         {sessions.map((session) => (
           <article
             key={session.id}
-            className="rounded-2xl border border-[var(--site-line)] bg-white p-4 sm:flex sm:items-center sm:justify-between sm:gap-5"
+            className="rounded-2xl border border-(--site-line) bg-white p-4 sm:flex sm:items-center sm:justify-between sm:gap-5"
           >
             <div className="flex min-w-0 gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-(--brand-olive-soft) text-(--brand-olive)">
                 <Laptop size={18} />
               </span>
               <div className="min-w-0">
-                <p className="font-bold text-[var(--site-ink)]">
+                <p className="font-bold text-(--site-ink)">
                   {deviceLabel(session.userAgent)}{" "}
                   {session.current ? (
                     <span className="ml-2 rounded-full bg-emerald-100 px-2 py-1 text-[10px] text-emerald-800">
@@ -113,12 +113,12 @@ export function SessionManager({ sessions }: { sessions: ManagedSession[] }) {
                     </span>
                   ) : null}
                 </p>
-                <p className="mt-1 text-xs text-[var(--site-muted)]">
+                <p className="mt-1 text-xs text-(--site-muted)">
                   Son etkinlik:{" "}
                   {SESSION_DATE_FORMATTER.format(new Date(session.lastSeenAt))}
                   {session.ip ? ` · IP ${session.ip}` : ""}
                 </p>
-                <p className="mt-1 text-xs text-[var(--site-muted)]">
+                <p className="mt-1 text-xs text-(--site-muted)">
                   Açılış:{" "}
                   {SESSION_DATE_FORMATTER.format(new Date(session.createdAt))} ·
                   En geç:{" "}

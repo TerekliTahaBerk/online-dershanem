@@ -69,7 +69,7 @@ export function TeacherRecoveryManager({ rows }: { rows: Row[] }) {
     <div>
       <p
         aria-live="polite"
-        className="mb-4 text-sm font-bold text-[var(--brand-olive)]"
+        className="mb-4 text-sm font-bold text-(--brand-olive)"
       >
         {message}
       </p>
@@ -78,18 +78,18 @@ export function TeacherRecoveryManager({ rows }: { rows: Row[] }) {
           <article key={row.attendanceId} className="panel-surface p-5 sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-extrabold uppercase tracking-[.06em] text-[var(--brand-olive)]">
+                <p className="text-xs font-extrabold uppercase tracking-[.06em] text-(--brand-olive)">
                   {row.status === "ABSENT" ? "Katılmadı" : "Mazeretli"} ·{" "}
                   {new Date(row.lessonDate).toLocaleDateString("tr-TR")}
                 </p>
                 <h2 className="mt-1 text-lg font-extrabold">
                   {row.studentName}
                 </h2>
-                <p className="mt-1 text-sm text-[var(--site-muted)]">
+                <p className="mt-1 text-sm text-(--site-muted)">
                   {row.lessonTitle}
                 </p>
               </div>
-              <span className="rounded-full bg-[var(--site-bg-warm)] px-3 py-1 text-[11px] font-extrabold">
+              <span className="rounded-full bg-(--site-bg-warm) px-3 py-1 text-[11px] font-extrabold">
                 {row.package
                   ? row.package.status === "DRAFT"
                     ? "Önizleme"
@@ -100,8 +100,8 @@ export function TeacherRecoveryManager({ rows }: { rows: Row[] }) {
               </span>
             </div>
             {row.package ? (
-              <div className="mt-4 rounded-2xl border border-[var(--site-line)] bg-white p-4">
-                <p className="text-[11px] font-extrabold uppercase text-[var(--site-muted)]">
+              <div className="mt-4 rounded-2xl border border-(--site-line) bg-white p-4">
+                <p className="text-[11px] font-extrabold uppercase text-(--site-muted)">
                   Öğrencinin göreceği önizleme
                 </p>
                 <h3 className="mt-2 text-base font-extrabold">
@@ -110,7 +110,7 @@ export function TeacherRecoveryManager({ rows }: { rows: Row[] }) {
                 <p className="mt-2 text-sm leading-6">
                   Sonraki küçük adım: {row.package.summaryNextStep}
                 </p>
-                <ul className="mt-3 space-y-1 text-xs text-[var(--site-body)]">
+                <ul className="mt-3 space-y-1 text-xs text-(--site-body)">
                   {row.package.items.map((item) => (
                     <li key={item.id}>
                       • {item.kind === "MATERIAL" ? "Kaynak" : "Çalışma"}:{" "}
@@ -118,10 +118,10 @@ export function TeacherRecoveryManager({ rows }: { rows: Row[] }) {
                     </li>
                   ))}
                 </ul>
-                <p className="mt-3 text-xs font-bold text-[var(--brand-olive)]">
+                <p className="mt-3 text-xs font-bold text-(--brand-olive)">
                   Mini kontrol: {row.package.checkpointPrompt}
                 </p>
-                <p className="mt-2 text-[11px] text-[var(--site-muted)]">
+                <p className="mt-2 text-[11px] text-(--site-muted)">
                   Hedef: {new Date(row.package.dueAt).toLocaleString("tr-TR")} ·
                   Öğrenciye özel ders notu ve yoklama notu pakete alınmaz.
                 </p>
@@ -158,7 +158,7 @@ export function TeacherRecoveryManager({ rows }: { rows: Row[] }) {
         ))}
         {!rows.length ? (
           <div className="panel-surface p-9 text-center">
-            <PackageCheck className="mx-auto text-[var(--site-muted)]" />
+            <PackageCheck className="mx-auto text-(--site-muted)" />
             <p className="mt-3 text-sm font-bold">
               Son 30 günde telafi paketi bekleyen devamsızlık yok.
             </p>

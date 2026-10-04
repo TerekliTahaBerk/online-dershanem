@@ -38,23 +38,23 @@ function getActionLabel(action: NextBestAction["action"]): string {
 export function DinoNextBestActions({ items }: { items: NextBestAction[] }) {
   if (!items.length) return null;
   return (
-    <section className="mt-5 rounded-[24px] border border-[var(--site-line)] bg-white p-5">
-      <h2 className="text-[15px] font-extrabold text-[var(--site-ink)]">
+    <section className="mt-5 rounded-od-xl border border-(--site-line) bg-white p-5">
+      <h2 className="text-[15px] font-extrabold text-(--site-ink)">
         Önerilen sonraki adım
       </h2>
       <div className="mt-4 grid gap-3">
         {items.slice(0, 3).map((item) => (
           <article
             key={item.key}
-            className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4"
+            className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4"
           >
-            <p className="text-[12px] font-extrabold uppercase tracking-[.06em] text-[var(--brand-olive)]">
+            <p className="text-[12px] font-extrabold uppercase tracking-[.06em] text-(--brand-olive)">
               {item.audience}
             </p>
-            <h3 className="mt-1 text-[14px] font-bold text-[var(--site-ink)]">
+            <h3 className="mt-1 text-[14px] font-bold text-(--site-ink)">
               {item.title}
             </h3>
-            <p className="mt-1 text-[13px] leading-6 text-[var(--site-body)]">
+            <p className="mt-1 text-[13px] leading-6 text-(--site-body)">
               {item.explanation}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -66,7 +66,7 @@ export function DinoNextBestActions({ items }: { items: NextBestAction[] }) {
                   {getActionLabel(item.action)}
                 </Link>
               ) : (
-                <span className="rounded-full border border-[var(--site-line)] px-3 py-1 text-[12px] font-medium text-[var(--site-body)]">
+                <span className="rounded-full border border-(--site-line) px-3 py-1 text-[12px] font-medium text-(--site-body)">
                   {item.action.type === "ASK_QUESTION"
                     ? item.action.prompt
                     : "Eylem"}

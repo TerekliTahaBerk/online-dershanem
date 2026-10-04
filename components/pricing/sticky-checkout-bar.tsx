@@ -77,16 +77,16 @@ export function StickyCheckoutBar({
       role="region"
       aria-label="Hızlı paket satın alma"
     >
-      <div className="border-t border-[var(--site-line)] bg-white/95 shadow-[0_-12px_35px_-28px_rgba(20,20,15,.4)] backdrop-blur-md">
+      <div className="border-t border-(--site-line) bg-white/95 shadow-[0_-12px_35px_-28px_rgba(20,20,15,.4)] backdrop-blur-md">
         <div className="site-container flex flex-col gap-3 py-3 pb-[max(12px,env(safe-area-inset-bottom))] sm:flex-row sm:items-center sm:gap-5 sm:py-4">
-          <div className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-orange-soft)] text-[15px] font-bold text-[var(--brand-orange-ink)] sm:flex">
+          <div className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-(--brand-orange-soft) text-[15px] font-bold text-(--brand-orange-ink) sm:flex">
             ₺
           </div>
           <div className="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between sm:gap-8">
-            <div className="text-[13.5px] font-semibold text-[var(--site-ink)] sm:text-[15px]">
+            <div className="text-[13.5px] font-semibold text-(--site-ink) sm:text-[15px]">
               {hasMultiple ? "LGS veya YKS paketini seç" : items[0].name}
             </div>
-            <div className="text-[12px] leading-5 text-[var(--site-muted)] sm:text-[13px]">
+            <div className="text-[12px] leading-5 text-(--site-muted) sm:text-[13px]">
               {items[0].priceLabel}
               {note ? ` · ${note}` : ""}
             </div>

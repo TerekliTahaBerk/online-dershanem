@@ -59,13 +59,13 @@ export default async function StudentReviewPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
           <RotateCcw size={15} /> Beş–on dakikalık dönüş
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em]">
+        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
           Bugün yalnız birkaç küçük tekrar.
         </h1>
-        <p className="mt-2 text-sm leading-6 text-[var(--site-body)]">
+        <p className="mt-2 text-sm leading-6 text-(--site-body)">
           En fazla {dailyReviewLimit} çalışma gösterilir. Yanlış veya emin
           olmamak ilerlemeni silmez; yalnız sonraki dönüşü yaklaştırır.
         </p>

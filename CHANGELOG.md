@@ -26,6 +26,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Changed
 
+- Migrated styling to Tailwind CSS 4, preserving the existing theme and component appearance while removing its vulnerable `braces` dependency chain
 - After sign-in everyone (admin, teacher, student, parent) chooses the OD / OK / ODK panel at `/panel/urun-sec`; the choice is stored on the session and scopes the menu, with a "Panel değiştir" link in the shell
 
 - Updated Next.js and its ESLint configuration to 16.3.5+ to address critical remote-code-execution advisories
@@ -36,6 +37,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Fixed
 
+- Stabilized panel plan approval and lesson recovery E2E fixtures across weekdays and repeated runs
 - Group detail reported capacity as a fixed four regardless of the group's actual capacity
 - Progress bars in reports, group detail, the assignment manager and the ODK outcome breakdown had no accessible role, value or label
 - Every panel page rendered two `h1` elements, one from the topbar title and one from the page heading

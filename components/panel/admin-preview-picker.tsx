@@ -141,8 +141,8 @@ export function AdminPreviewPicker({
           onClick={() => setOpen(true)}
           className={
             compact
-              ? "inline-flex items-center gap-1.5 rounded-[10px] border border-dc-line bg-white px-2.5 py-1.5 text-[12px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
-              : "inline-flex items-center gap-1.5 rounded-[10px] border border-dc-line bg-white px-3 py-2 text-[12.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
+              ? "inline-flex items-center gap-1.5 rounded-od border border-dc-line bg-white px-2.5 py-1.5 text-[12px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
+              : "inline-flex items-center gap-1.5 rounded-od border border-dc-line bg-white px-3 py-2 text-[12.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
           }
         >
           <Eye size={14} aria-hidden="true" />
@@ -151,12 +151,12 @@ export function AdminPreviewPicker({
       ) : null}
 
       {open ? (
-        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/35 p-3 sm:items-center sm:p-6">
+        <div className="fixed inset-0 z-80 flex items-end justify-center bg-black/35 p-3 sm:items-center sm:p-6">
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="max-h-[90dvh] w-full max-w-lg overflow-hidden rounded-[16px] border border-dc-line bg-white shadow-xl"
+            className="max-h-[90dvh] w-full max-w-lg overflow-hidden rounded-od-lg border border-dc-line bg-white shadow-xl"
           >
             <div className="flex items-start justify-between gap-3 border-b border-dc-line-soft px-4 py-3.5">
               <div>
@@ -283,7 +283,7 @@ export function AdminPreviewPicker({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-[10px] border border-dc-line bg-white px-3 py-2 text-[12.5px] font-bold text-dc-ink"
+                className="rounded-od border border-dc-line bg-white px-3 py-2 text-[12.5px] font-bold text-dc-ink"
               >
                 Vazgeç
               </button>
@@ -291,7 +291,7 @@ export function AdminPreviewPicker({
                 type="button"
                 disabled={!selected || pending}
                 onClick={startPreview}
-                className="rounded-[10px] bg-dc-brand-strong px-3 py-2 text-[12.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-od bg-dc-brand-strong px-3 py-2 text-[12.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {pending ? "Açılıyor…" : cta}
               </button>

@@ -121,7 +121,7 @@ export function CreateUserForm() {
   }
 
   const field =
-    "rounded-[10px] border border-[var(--site-line)] bg-white px-3.5 py-2.5 text-[14px] text-[var(--site-ink)] outline-none transition-colors focus-visible:border-[var(--brand-olive)] focus-visible:ring-2 focus-visible:ring-[var(--brand-olive-soft)] disabled:opacity-60";
+    "rounded-od border border-(--site-line) bg-white px-3.5 py-2.5 text-[14px] text-(--site-ink) outline-hidden transition-colors focus-visible:border-(--brand-olive) focus-visible:ring-2 focus-visible:ring-(--brand-olive-soft) disabled:opacity-60";
 
   if (created) {
     return (
@@ -148,10 +148,10 @@ export function CreateUserForm() {
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="new-email"
-            className="text-[12.5px] font-semibold text-[var(--site-ink)]"
+            className="text-[12.5px] font-semibold text-(--site-ink)"
           >
             E-posta{" "}
-            <span className="text-[var(--site-muted)]">(giriş için)</span>
+            <span className="text-(--site-muted)">(giriş için)</span>
           </label>
           <input
             id="new-email"
@@ -168,7 +168,7 @@ export function CreateUserForm() {
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="new-name"
-            className="text-[12.5px] font-semibold text-[var(--site-ink)]"
+            className="text-[12.5px] font-semibold text-(--site-ink)"
           >
             Ad soyad
           </label>
@@ -185,10 +185,10 @@ export function CreateUserForm() {
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="new-phone"
-            className="text-[12.5px] font-semibold text-[var(--site-ink)]"
+            className="text-[12.5px] font-semibold text-(--site-ink)"
           >
             Telefon{" "}
-            <span className="text-[var(--site-muted)]">
+            <span className="text-(--site-muted)">
               (parolayı buradan ileteceksiniz)
             </span>
           </label>
@@ -207,7 +207,7 @@ export function CreateUserForm() {
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="new-role"
-            className="text-[12.5px] font-semibold text-[var(--site-ink)]"
+            className="text-[12.5px] font-semibold text-(--site-ink)"
           >
             Rol
           </label>
@@ -235,7 +235,7 @@ export function CreateUserForm() {
           </select>
           <p
             id="role-hint"
-            className="text-[12px] leading-5 text-[var(--site-muted)]"
+            className="text-[12px] leading-5 text-(--site-muted)"
           >
             {ROLE_OPTIONS.find((o) => o.value === role)?.hint}
           </p>
@@ -247,7 +247,7 @@ export function CreateUserForm() {
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="new-class"
-              className="text-[12.5px] font-semibold text-[var(--site-ink)]"
+              className="text-[12.5px] font-semibold text-(--site-ink)"
             >
               Sınıf
             </label>
@@ -263,7 +263,7 @@ export function CreateUserForm() {
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="new-exam"
-              className="text-[12.5px] font-semibold text-[var(--site-ink)]"
+              className="text-[12.5px] font-semibold text-(--site-ink)"
             >
               Sınav türü
             </label>
@@ -285,7 +285,7 @@ export function CreateUserForm() {
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="new-school"
-              className="text-[12.5px] font-semibold text-[var(--site-ink)]"
+              className="text-[12.5px] font-semibold text-(--site-ink)"
             >
               Okul
             </label>
@@ -306,7 +306,7 @@ export function CreateUserForm() {
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="new-subjects"
-              className="text-[12.5px] font-semibold text-[var(--site-ink)]"
+              className="text-[12.5px] font-semibold text-(--site-ink)"
             >
               Branşlar
             </label>
@@ -322,7 +322,7 @@ export function CreateUserForm() {
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="new-cap"
-              className="text-[12.5px] font-semibold text-[var(--site-ink)]"
+              className="text-[12.5px] font-semibold text-(--site-ink)"
             >
               Maks. öğrenci kapasitesi
             </label>
@@ -341,7 +341,7 @@ export function CreateUserForm() {
           <div className="sm:col-span-2 flex flex-col gap-1.5">
             <label
               htmlFor="new-notes"
-              className="text-[12.5px] font-semibold text-[var(--site-ink)]"
+              className="text-[12.5px] font-semibold text-(--site-ink)"
             >
               Dahili çalışma notları
             </label>
@@ -358,15 +358,15 @@ export function CreateUserForm() {
         </div>
       ) : null}
 
-      <fieldset className="rounded-[14px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
-        <legend className="px-1 text-[12.5px] font-semibold text-[var(--site-ink)]">
+      <fieldset className="rounded-[14px] border border-(--site-line) bg-(--site-bg-warm) p-4">
+        <legend className="px-1 text-[12.5px] font-semibold text-(--site-ink)">
           Ürün erişimi
         </legend>
         <div className="mt-1 flex flex-wrap gap-3">
           {(["OD", "OK", "ODK"] as ProductCode[]).map((product) => (
             <label
               key={product}
-              className="inline-flex items-center gap-2 rounded-xl border border-[var(--site-line)] bg-white px-3 py-2 text-xs font-bold text-[var(--site-body)]"
+              className="inline-flex items-center gap-2 rounded-xl border border-(--site-line) bg-white px-3 py-2 text-xs font-bold text-(--site-body)"
             >
               <input
                 type="checkbox"
@@ -384,7 +384,7 @@ export function CreateUserForm() {
             </label>
           ))}
         </div>
-        <p className="mt-2 text-[11.5px] leading-5 text-[var(--site-muted)]">
+        <p className="mt-2 text-[11.5px] leading-5 text-(--site-muted)">
           Yönetici ve öğretmenler görev gereği üç ürüne de erişir. Öğrenci ve
           velide en az bir ürün seçilmelidir.
         </p>
@@ -394,7 +394,7 @@ export function CreateUserForm() {
         <p
           role="alert"
           aria-live="assertive"
-          className="rounded-[10px] border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-[13px] text-rose-800"
+          className="rounded-od border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-[13px] text-rose-800"
         >
           {error}
         </p>
@@ -422,7 +422,7 @@ export function CreateUserForm() {
             </>
           )}
         </button>
-        <p className="text-[12px] text-[var(--site-muted)]">
+        <p className="text-[12px] text-(--site-muted)">
           Hesap açıldığında tek kullanımlık davet bağlantısı üretilir.
         </p>
       </div>

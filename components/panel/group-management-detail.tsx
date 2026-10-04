@@ -103,7 +103,7 @@ export function GroupManagementDetail({
   return (
     <div className="space-y-5">
       <section className="panel-surface p-5">
-        <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+        <h2 className="text-sm font-extrabold text-(--site-ink)">
           Grup ayarları
         </h2>
         <form
@@ -219,10 +219,10 @@ export function GroupManagementDetail({
       <section className="panel-surface p-5">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+            <h2 className="text-sm font-extrabold text-(--site-ink)">
               Öğrenci yönetimi
             </h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Doluluk: {seatLabel}
             </p>
           </div>
@@ -256,16 +256,16 @@ export function GroupManagementDetail({
             {candidates.map((student) => (
               <div
                 key={student.id}
-                className="rounded-xl border border-[var(--site-line)] p-3"
+                className="rounded-xl border border-(--site-line) p-3"
               >
-                <p className="text-xs font-bold text-[var(--site-ink)]">
+                <p className="text-xs font-bold text-(--site-ink)">
                   {student.name}
                 </p>
-                <p className="text-[11px] text-[var(--site-muted)]">
+                <p className="text-[11px] text-(--site-muted)">
                   {student.email}
                 </p>
                 {student.activeGroups.length ? (
-                  <p className="mt-1 text-[10.5px] text-[var(--site-muted)]">
+                  <p className="mt-1 text-[10.5px] text-(--site-muted)">
                     Aktif gruplar:{" "}
                     {student.activeGroups.map((item) => item.name).join(", ")}
                   </p>
@@ -297,12 +297,12 @@ export function GroupManagementDetail({
           {members.map((member) => (
             <div
               key={member.id}
-              className="rounded-xl border border-[var(--site-line)] p-3"
+              className="rounded-xl border border-(--site-line) p-3"
             >
-              <p className="text-xs font-bold text-[var(--site-ink)]">
+              <p className="text-xs font-bold text-(--site-ink)">
                 {member.name}
               </p>
-              <p className="text-[11px] text-[var(--site-muted)]">
+              <p className="text-[11px] text-(--site-muted)">
                 {member.email}
               </p>
               <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -371,7 +371,7 @@ export function GroupManagementDetail({
             </div>
           ))}
           {!members.length ? (
-            <p className="text-xs text-[var(--site-muted)]">
+            <p className="text-xs text-(--site-muted)">
               Aktif öğrenci yok.
             </p>
           ) : null}
@@ -379,7 +379,7 @@ export function GroupManagementDetail({
       </section>
 
       {message ? (
-        <p className="rounded-xl bg-[var(--brand-olive-soft)] px-3 py-2 text-xs font-bold text-[var(--brand-olive)]">
+        <p className="rounded-xl bg-(--brand-olive-soft) px-3 py-2 text-xs font-bold text-(--brand-olive)">
           {message}
         </p>
       ) : null}

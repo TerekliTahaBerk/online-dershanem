@@ -40,7 +40,7 @@ export function CommercePanel(props: CommercePanelProps) {
           {data.orders.map((order) => (
             <article
               key={order.id}
-              className="rounded-[10px] border border-dc-line-soft p-3"
+              className="rounded-od border border-dc-line-soft p-3"
             >
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>

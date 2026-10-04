@@ -124,7 +124,7 @@ export function StudentParentLinkForm({
           parents.length === 0 ||
           (!studentId && (students || []).length === 0)
         }
-        className="rounded-[10px] bg-dc-brand-strong px-3.5 py-2 text-[12.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-od bg-dc-brand-strong px-3.5 py-2 text-[12.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
         {busy ? "Bağlanıyor..." : "Veli bağla"}
       </button>

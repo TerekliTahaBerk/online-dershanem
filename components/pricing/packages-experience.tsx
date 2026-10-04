@@ -55,10 +55,10 @@ export function PackagesExperience({
         <section className="bg-white pt-14 sm:pt-20">
           <div className="site-container text-center">
             <p className="site-eyebrow justify-center">Online Dershanem</p>
-            <h1 className="mx-auto mt-4 max-w-5xl font-display text-[clamp(2.65rem,5.5vw,5rem)] leading-[.98] text-[var(--site-ink)]">
+            <h1 className="mx-auto mt-4 max-w-5xl font-display text-[clamp(2.65rem,5.5vw,5rem)] leading-[.98] text-(--site-ink)">
               {title}
             </h1>
-            <p className="mx-auto mt-6 max-w-xl text-[16.5px] leading-7 text-[var(--site-body)]">
+            <p className="mx-auto mt-6 max-w-xl text-[16.5px] leading-7 text-(--site-body)">
               {subtitle}
             </p>
           </div>
@@ -69,10 +69,10 @@ export function PackagesExperience({
           <div className="site-container pb-16 pt-9 sm:pb-24 sm:pt-12">
             <div className="grid items-start gap-12 lg:grid-cols-[.72fr_1.28fr] lg:gap-12">
               <div>
-                <h2 className="font-display text-[clamp(1.9rem,3vw,2.8rem)] text-[var(--site-ink)]">
+                <h2 className="font-display text-[clamp(1.9rem,3vw,2.8rem)] text-(--site-ink)">
                   Neler dahil?
                 </h2>
-                <p className="mt-3 max-w-md text-[14.5px] leading-6 text-[var(--site-body)]">
+                <p className="mt-3 max-w-md text-[14.5px] leading-6 text-(--site-body)">
                   LGS ve YKS paketlerinde aynı küçük grup ders standardı vardır.
                 </p>
                 {/*
@@ -81,13 +81,13 @@ export function PackagesExperience({
                   çelişiyordu. Kapsam açıkça yazılır ve diğer dersler için
                   kurucuya yönlendirilir.
                 */}
-                <p className="mt-3 max-w-md text-[14.5px] leading-6 text-[var(--site-body)]">
+                <p className="mt-3 max-w-md text-[14.5px] leading-6 text-(--site-body)">
                   Buradaki iki paket <strong>matematik dersi</strong> içindir.
                   Ders fiyatı derse göre değişmez; başka bir ders ya da birden
                   fazla ders istiyorsan{" "}
                   <Link
                     href="/paketler"
-                    className="font-semibold text-[var(--dc-brand-strong)] underline-offset-2 hover:underline"
+                    className="font-semibold text-(--dc-brand-strong) underline-offset-2 hover:underline"
                   >
                     paket kurucudan
                   </Link>{" "}
@@ -97,9 +97,9 @@ export function PackagesExperience({
                   {includedFeatures.map((f) => (
                     <li
                       key={f}
-                      className="flex items-start gap-3 text-[16px] leading-7 text-[var(--site-body)] sm:text-[18px]"
+                      className="flex items-start gap-3 text-[16px] leading-7 text-(--site-body) sm:text-[18px]"
                     >
-                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-(--brand-orange-soft) text-(--brand-orange-ink)">
                         <Check size={12} strokeWidth={3} aria-hidden="true" />
                       </span>
                       {f}
@@ -108,7 +108,7 @@ export function PackagesExperience({
                 </ul>
               </div>
 
-              <div className="order-first grid gap-5 md:grid-cols-2 lg:order-none">
+              <div className="order-first grid gap-5 md:grid-cols-2 lg:order-0">
                 {lessonPackages.map((pkg) => (
                   <PricingCard
                     key={`${pkg.category}-${pkg.subject}`}
@@ -132,9 +132,9 @@ export function PackagesExperience({
         </section>
 
         {/* Nasıl başlar */}
-        <section className="bg-[var(--site-bg-warm)]">
+        <section className="bg-(--site-bg-warm)">
           <div className="site-container py-20 sm:py-24">
-            <h2 className="text-center font-display text-[clamp(1.9rem,4vw,2.8rem)] leading-[1.1] text-[var(--site-ink)]">
+            <h2 className="text-center font-display text-[clamp(1.9rem,4vw,2.8rem)] leading-[1.1] text-(--site-ink)">
               Paket süreci nasıl başlar?
             </h2>
             <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -143,20 +143,20 @@ export function PackagesExperience({
                 return (
                   <div
                     key={s.title}
-                    className="rounded-[24px] border border-[var(--site-line)] bg-white p-7"
+                    className="rounded-od-xl border border-(--site-line) bg-white p-7"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-(--brand-orange-soft) text-(--brand-orange-ink)">
                         <Icon size={20} strokeWidth={1.8} aria-hidden="true" />
                       </span>
-                      <span className="font-display text-[26px] text-[var(--site-muted)]">
+                      <span className="font-display text-[26px] text-(--site-muted)">
                         0{i + 1}
                       </span>
                     </div>
-                    <h3 className="mt-5 text-[16px] font-bold text-[var(--site-ink)]">
+                    <h3 className="mt-5 text-[16px] font-bold text-(--site-ink)">
                       {s.title}
                     </h3>
-                    <p className="mt-2 text-[14px] leading-6 text-[var(--site-body)]">
+                    <p className="mt-2 text-[14px] leading-6 text-(--site-body)">
                       {s.body}
                     </p>
                   </div>
@@ -168,11 +168,11 @@ export function PackagesExperience({
 
         <section className="bg-white">
           <div className="site-container grid gap-5 pb-20 sm:pb-24 md:grid-cols-2">
-            <article className="rounded-[28px] border border-[var(--site-line)] bg-[var(--brand-orange-tint)] p-8 sm:p-10">
-              <h2 className="font-display text-[27px] text-[var(--site-ink)]">
+            <article className="rounded-[28px] border border-(--site-line) bg-(--brand-orange-tint) p-8 sm:p-10">
+              <h2 className="font-display text-[27px] text-(--site-ink)">
                 Kimler için uygun?
               </h2>
-              <ul className="mt-6 space-y-3 text-[14.5px] leading-6 text-[var(--site-body)]">
+              <ul className="mt-6 space-y-3 text-[14.5px] leading-6 text-(--site-body)">
                 {[
                   "Kalabalık sınıfta soru soramayanlar",
                   "Ders sonrası ne çalışacağını bilmek isteyenler",
@@ -181,7 +181,7 @@ export function PackagesExperience({
                   <li key={item} className="flex gap-2.5">
                     <Check
                       size={17}
-                      className="mt-1 shrink-0 text-[var(--brand-orange)]"
+                      className="mt-1 shrink-0 text-(--brand-orange)"
                       aria-hidden="true"
                     />
                     {item}
@@ -189,11 +189,11 @@ export function PackagesExperience({
                 ))}
               </ul>
             </article>
-            <article className="rounded-[28px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-8 sm:p-10">
-              <h2 className="font-display text-[27px] text-[var(--site-ink)]">
+            <article className="rounded-[28px] border border-(--site-line) bg-(--site-bg-warm) p-8 sm:p-10">
+              <h2 className="font-display text-[27px] text-(--site-ink)">
                 Kimler için uygun değil?
               </h2>
-              <ul className="mt-6 space-y-3 text-[14.5px] leading-6 text-[var(--site-body)]">
+              <ul className="mt-6 space-y-3 text-[14.5px] leading-6 text-(--site-body)">
                 {[
                   "Yalnızca kayıtlı video arayanlar",
                   "Derse ve verilen çalışmalara düzenli katılamayacak olanlar",

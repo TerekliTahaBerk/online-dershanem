@@ -98,20 +98,20 @@ export default function CampsPage() {
         <section className="bg-white pt-16 sm:pt-20">
           <div className="site-container text-center">
             <p className="site-eyebrow justify-center">Matematik Kampları</p>
-            <h1 className="mx-auto mt-4 max-w-4xl font-display text-[clamp(2.4rem,6vw,4.8rem)] leading-[1.04] text-[var(--site-ink)]">
+            <h1 className="mx-auto mt-4 max-w-4xl font-display text-[clamp(2.4rem,6vw,4.8rem)] leading-[1.04] text-(--site-ink)">
               Kısa sürede matematik düzeni kurmak isteyenler için kamplar.
             </h1>
-            <p className="mx-auto mt-6 max-w-xl text-[16.5px] leading-7 text-[var(--site-body)]">
+            <p className="mx-auto mt-6 max-w-xl text-[16.5px] leading-7 text-(--site-body)">
               LGS ve YKS matematiğinde belirli hedefe odaklanan kısa süreli
               çalışma dönemleri.
             </p>
-            <div className="mx-auto mt-6 flex max-w-xl items-start gap-3 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-5 py-4 text-left">
+            <div className="mx-auto mt-6 flex max-w-xl items-start gap-3 rounded-2xl border border-(--site-line) bg-(--site-bg-warm) px-5 py-4 text-left">
               <Clock3
                 size={18}
-                className="mt-0.5 shrink-0 text-[var(--brand-orange-ink)]"
+                className="mt-0.5 shrink-0 text-(--brand-orange-ink)"
                 aria-hidden="true"
               />
-              <p className="text-[13.5px] leading-6 text-[var(--site-body)]">
+              <p className="text-[13.5px] leading-6 text-(--site-body)">
                 Kamplar şu anda ön kayıt aşamasında. Kesin başlangıç tarihi ve
                 ücret bilgisi program netleştiğinde paylaşılacak; bu aşamada
                 ödeme alınmıyor.
@@ -144,33 +144,33 @@ export default function CampsPage() {
               {mathCamps.map((camp) => (
                 <article
                   key={camp.id}
-                  className="flex flex-col rounded-[24px] border border-[var(--site-line)] bg-white p-7 shadow-[0_1px_2px_rgba(20,20,15,0.03)]"
+                  className="flex flex-col rounded-od-xl border border-(--site-line) bg-white p-7 shadow-[0_1px_2px_rgba(20,20,15,0.03)]"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="rounded-full bg-[var(--brand-orange-soft)] px-3 py-1 text-[12px] font-semibold text-[var(--brand-orange-ink)]">
+                    <span className="rounded-full bg-(--brand-orange-soft) px-3 py-1 text-[12px] font-semibold text-(--brand-orange-ink)">
                       {camp.levelTag}
                     </span>
                     <span
                       className={`rounded-full px-3 py-1 text-xs font-semibold ${
                         camp.featured
-                          ? "bg-[var(--brand-orange)] text-white"
-                          : "border border-[var(--site-line)] bg-[var(--site-bg-warm)] text-[var(--site-muted)]"
+                          ? "bg-(--brand-orange) text-white"
+                          : "border border-(--site-line) bg-(--site-bg-warm) text-(--site-muted)"
                       }`}
                     >
                       {camp.featured ? "Ön kayıt" : "Yakında"}
                     </span>
                   </div>
-                  <h2 className="mt-4 font-display text-[22px] leading-[1.15] tracking-[-0.01em] text-[var(--site-ink)]">
+                  <h2 className="mt-4 font-display text-[22px] leading-[1.15] tracking-[-0.01em] text-(--site-ink)">
                     {camp.name}
                   </h2>
-                  <p className="mt-3 flex-1 text-[14.5px] leading-6 text-[var(--site-body)]">
+                  <p className="mt-3 flex-1 text-[14.5px] leading-6 text-(--site-body)">
                     {camp.goal}
                   </p>
-                  <dl className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-[var(--site-line)] pt-4 text-[13px] text-[var(--site-body)]">
+                  <dl className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-(--site-line) pt-4 text-[13px] text-(--site-body)">
                     <div className="flex items-center gap-1.5">
                       <Calendar
                         size={14}
-                        className="text-[var(--brand-orange)]"
+                        className="text-(--brand-orange)"
                         aria-hidden="true"
                       />
                       <dt className="sr-only">Süre</dt>
@@ -179,7 +179,7 @@ export default function CampsPage() {
                     <div className="flex items-center gap-1.5">
                       <Video
                         size={14}
-                        className="text-[var(--brand-orange)]"
+                        className="text-(--brand-orange)"
                         aria-hidden="true"
                       />
                       <dt className="sr-only">Ders</dt>
@@ -188,7 +188,7 @@ export default function CampsPage() {
                     <div className="flex items-center gap-1.5">
                       <GraduationCap
                         size={14}
-                        className="text-[var(--brand-orange)]"
+                        className="text-(--brand-orange)"
                         aria-hidden="true"
                       />
                       <dt className="sr-only">Seviye</dt>
@@ -197,7 +197,7 @@ export default function CampsPage() {
                     <div className="flex items-center gap-1.5">
                       <Users
                         size={14}
-                        className="text-[var(--brand-orange)]"
+                        className="text-(--brand-orange)"
                         aria-hidden="true"
                       />
                       <dt className="sr-only">Kontenjan</dt>
@@ -205,27 +205,27 @@ export default function CampsPage() {
                     </div>
                   </dl>
 
-                  <dl className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-[var(--site-bg-warm)] p-3.5">
+                  <dl className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-(--site-bg-warm) p-3.5">
                     <div>
-                      <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+                      <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-(--site-muted)">
                         Başlangıç
                       </dt>
-                      <dd className="mt-1 text-[12.5px] font-semibold text-[var(--site-ink)]">
+                      <dd className="mt-1 text-[12.5px] font-semibold text-(--site-ink)">
                         Henüz açıklanmadı
                       </dd>
                     </div>
-                    <div className="border-l border-[var(--site-line)] pl-3">
-                      <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+                    <div className="border-l border-(--site-line) pl-3">
+                      <dt className="text-xs font-semibold uppercase tracking-[0.08em] text-(--site-muted)">
                         Ücret
                       </dt>
-                      <dd className="mt-1 text-[12.5px] font-semibold text-[var(--site-ink)]">
+                      <dd className="mt-1 text-[12.5px] font-semibold text-(--site-ink)">
                         Henüz açıklanmadı
                       </dd>
                     </div>
                   </dl>
                   <Link
                     href="/iletisim"
-                    className="mt-6 inline-flex items-center gap-2 text-[14.5px] font-semibold text-[var(--brand-orange-ink)] hover:underline"
+                    className="mt-6 inline-flex items-center gap-2 text-[14.5px] font-semibold text-(--brand-orange-ink) hover:underline"
                   >
                     {camp.featured
                       ? "Ön kayıt bilgisi al"
@@ -235,7 +235,7 @@ export default function CampsPage() {
                 </article>
               ))}
             </div>
-            <p className="mt-8 text-center text-[13.5px] text-[var(--site-muted)]">
+            <p className="mt-8 text-center text-[13.5px] text-(--site-muted)">
               Kamplar henüz satışta değildir. Tarih, ücret ve kesin program
               açıklandıktan sonra ön kayıt talebi bırakanlarla iletişime
               geçilir.
@@ -244,9 +244,9 @@ export default function CampsPage() {
         </section>
 
         {/* Nasıl işler */}
-        <section className="bg-[var(--site-bg-warm)]">
+        <section className="bg-(--site-bg-warm)">
           <div className="site-container py-20 sm:py-24">
-            <h2 className="text-center font-display text-[clamp(1.9rem,4vw,2.8rem)] leading-[1.1] tracking-[-0.02em] text-[var(--site-ink)]">
+            <h2 className="text-center font-display text-[clamp(1.9rem,4vw,2.8rem)] leading-[1.1] tracking-[-0.02em] text-(--site-ink)">
               Kamp nasıl işler?
             </h2>
             <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
@@ -255,15 +255,15 @@ export default function CampsPage() {
                 return (
                   <div
                     key={s.title}
-                    className="rounded-[22px] border border-[var(--site-line)] bg-white p-6"
+                    className="rounded-[22px] border border-(--site-line) bg-white p-6"
                   >
-                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-(--brand-orange-soft) text-(--brand-orange-ink)">
                       <Icon size={19} strokeWidth={1.8} aria-hidden="true" />
                     </span>
-                    <h3 className="mt-4 text-[15.5px] font-bold text-[var(--site-ink)]">
+                    <h3 className="mt-4 text-[15.5px] font-bold text-(--site-ink)">
                       {s.title}
                     </h3>
-                    <p className="mt-2 text-[13.5px] leading-6 text-[var(--site-body)]">
+                    <p className="mt-2 text-[13.5px] leading-6 text-(--site-body)">
                       {s.body}
                     </p>
                   </div>

@@ -63,7 +63,7 @@ export function TeacherDigestReview({ initialRows }: { initialRows: Row[] }) {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="font-extrabold">{row.name}</h2>
-              <p className="mt-1 text-xs text-[var(--site-muted)]">
+              <p className="mt-1 text-xs text-(--site-muted)">
                 {row.digest
                   ? row.digest.status === "PUBLISHED"
                     ? "Yayınlandı"
@@ -82,8 +82,8 @@ export function TeacherDigestReview({ initialRows }: { initialRows: Row[] }) {
             </button>
           </div>
           {row.digest ? (
-            <div className="mt-4 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
-              <p className="flex items-center gap-2 text-xs font-extrabold text-[var(--brand-olive)]">
+            <div className="mt-4 rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4">
+              <p className="flex items-center gap-2 text-xs font-extrabold text-(--brand-olive)">
                 <Eye size={14} /> Veli ve öğrencinin göreceği aynı metin
               </p>
               <ul className="mt-3 space-y-2 text-xs leading-5">
@@ -108,7 +108,7 @@ export function TeacherDigestReview({ initialRows }: { initialRows: Row[] }) {
       ))}
       <p
         aria-live="polite"
-        className="text-xs font-bold text-[var(--brand-olive)]"
+        className="text-xs font-bold text-(--brand-olive)"
       >
         {message}
       </p>

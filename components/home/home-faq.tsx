@@ -45,9 +45,9 @@ export function HomeFaq() {
 
   return (
     <section className="border-t border-dc-line-soft bg-white">
-      <div className="site-container grid gap-10 py-[var(--dc-section-tight)] lg:grid-cols-[340px_1fr] lg:gap-12">
+      <div className="site-container grid gap-10 py-(--dc-section-tight) lg:grid-cols-[340px_1fr] lg:gap-12">
         <div>
-          <h2 className="font-display text-[length:var(--public-title)] leading-[1.1] tracking-[-0.025em] text-dc-ink">
+          <h2 className="font-display text-(length:--public-title) leading-[1.1] tracking-tight text-dc-ink">
             Sıkça sorulan sorular
           </h2>
           <p className="mt-3.5 text-[15.5px] leading-[1.6] text-dc-ink-muted">

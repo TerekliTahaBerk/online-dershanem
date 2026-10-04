@@ -479,7 +479,7 @@ export default async function OdkStudentResultPage({
             return (
               <div
                 key={item.question.questionNumber}
-                className={`rounded-xl p-3 text-xs font-bold ${item.result === "CORRECT" ? "bg-[var(--pd-pastel-mint-soft)] text-[var(--pd-pastel-mint-ink)]" : item.result === "WRONG" ? "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]" : "bg-slate-100 text-slate-700"}`}
+                className={`rounded-xl p-3 text-xs font-bold ${item.result === "CORRECT" ? "bg-(--pd-pastel-mint-soft) text-(--pd-pastel-mint-ink)" : item.result === "WRONG" ? "bg-(--pd-pastel-blush-soft) text-(--pd-pastel-blush-ink)" : "bg-slate-100 text-slate-700"}`}
               >
                 <p>Soru {item.question.questionNumber}</p>
                 <p className="mt-1">

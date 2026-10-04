@@ -98,7 +98,7 @@ function DraftCard({
     router.refresh();
   }
   return (
-    <article className="rounded-[14px] border border-[var(--site-line)] bg-white p-5 shadow-[var(--panel-card-shadow)]">
+    <article className="rounded-[14px] border border-(--site-line) bg-white p-5 shadow-(--panel-card-shadow)">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex flex-wrap gap-2">
@@ -124,7 +124,7 @@ function DraftCard({
               </span>
             ) : null}
           </div>
-          <p className="mt-2 text-xs font-bold text-[var(--site-muted)]">
+          <p className="mt-2 text-xs font-bold text-(--site-muted)">
             {draft.lessonTitle} · {draft.promptVersion} ·{" "}
             {draft.provider === "OPENAI" || draft.provider === "GEMINI"
               ? draft.modelName
@@ -210,7 +210,7 @@ function DraftCard({
           ))}
         </div>
       </div>
-      <div className="mt-4 rounded-2xl bg-[var(--site-bg-warm)] p-3">
+      <div className="mt-4 rounded-2xl bg-(--site-bg-warm) p-3">
         <p className="text-[11px] font-extrabold">Kullanılan kaynaklar</p>
         <div className="mt-2 flex flex-wrap gap-1">
           {draft.originalContent.citations.map((citation) => (
@@ -289,7 +289,7 @@ function DraftCard({
       {message ? (
         <p
           aria-live="polite"
-          className="mt-3 text-xs font-bold text-[var(--brand-olive)]"
+          className="mt-3 text-xs font-bold text-(--brand-olive)"
         >
           {message}
         </p>
@@ -365,7 +365,7 @@ export function TeacherAiDrafts({
           <Bot size={19} />
         </span>
         <h2 className="mt-4 font-extrabold">Dar görevli taslak</h2>
-        <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+        <p className="mt-1 text-xs leading-5 text-(--site-muted)">
           Yalnız ortak ders alanları ve görünür kazanımlar kullanılır. Öğrenciye
           özel veri gönderilmez.
         </p>
@@ -408,12 +408,12 @@ export function TeacherAiDrafts({
         {message ? (
           <p
             aria-live="polite"
-            className="mt-3 text-xs font-bold text-[var(--brand-olive)]"
+            className="mt-3 text-xs font-bold text-(--brand-olive)"
           >
             {message}
           </p>
         ) : null}
-        <p className="mt-4 border-t border-[var(--site-line)] pt-4 text-[10px] leading-4 text-[var(--site-muted)]">
+        <p className="mt-4 border-t border-(--site-line) pt-4 text-[10px] leading-4 text-(--site-muted)">
           Günlük kota ve maliyet tavanı uygulanır. Model yanıtı analitiğe
           kopyalanmaz; otomatik yayın yoktur.
         </p>
@@ -425,7 +425,7 @@ export function TeacherAiDrafts({
             <DraftCard key={draft.id} draft={draft} onReviewed={reviewed} />
           ))}
           {!items.length ? (
-            <p className="rounded-2xl border border-dashed border-[var(--site-line)] p-8 text-center text-sm text-[var(--site-muted)]">
+            <p className="rounded-2xl border border-dashed border-(--site-line) p-8 text-center text-sm text-(--site-muted)">
               Henüz taslak yok.
             </p>
           ) : null}

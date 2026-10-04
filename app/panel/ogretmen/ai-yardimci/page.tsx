@@ -48,10 +48,10 @@ export default async function TeacherAiAssistantPage() {
         <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-dc-brand-strong">
           <Bot size={15} /> İnsan denetimli yardımcı
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em]">
+        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
           Kaynağı görün, taslağı siz onaylayın.
         </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--site-body)]">
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-(--site-body)">
           Açık sohbet değil: yalnız ödev ve mini kontrol taslağı. Model yanlış
           olabilir; hiçbir çıktı kendiliğinden öğrenciye veya veliye gitmez.
         </p>

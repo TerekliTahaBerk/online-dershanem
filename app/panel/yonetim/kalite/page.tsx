@@ -168,7 +168,7 @@ export default async function AdminQualityPage() {
           <p className="mt-4 text-3xl font-extrabold">
             {percent(evidenceCoverage)}
           </p>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             30 günlük kazanım etiketleme · {taggedItems}/
             {lessons.length + assignments.length}
           </p>
@@ -180,14 +180,14 @@ export default async function AdminQualityPage() {
               ? "—"
               : `${feedbackMedian.toLocaleString("tr-TR", { maximumFractionDigits: 1 })} sa`}
           </p>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Kanıtlı ödev geri bildirim medyanı · {feedbackHours.length} inceleme
           </p>
         </article>
         <article className="panel-metric-card">
           <TrendingUp size={18} className="text-dc-ink-muted" />
           <p className="mt-4 text-3xl font-extrabold">{ready.length}/4</p>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Yayınlanabilir sınav kohortu · eşleşmiş örneklem{" "}
             {cohortSampleBand(pairedTotal)} bandında
           </p>
@@ -195,11 +195,11 @@ export default async function AdminQualityPage() {
       </section>
 
       <section className="mt-5 panel-surface overflow-hidden">
-        <div className="border-b border-[var(--site-line)] p-5">
+        <div className="border-b border-(--site-line) p-5">
           <h2 className="text-sm font-extrabold">
             Başlangıca göre gözlenen değişim
           </h2>
-          <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+          <p className="mt-1 text-xs leading-5 text-(--site-muted)">
             Net, toplam soru sayısına yüzde olarak normalize edilir. Medyan uç
             değerlerin etkisini azaltır; çeyrek aralığı belirsizliği ortaya
             koyar.
@@ -209,7 +209,7 @@ export default async function AdminQualityPage() {
           {gains.map((gain) => (
             <article
               key={gain.exam}
-              className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4"
+              className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4"
             >
               <div className="flex items-center justify-between">
                 <h3 className="font-extrabold">{gain.exam}</h3>
@@ -224,13 +224,13 @@ export default async function AdminQualityPage() {
                   <p className="mt-5 text-3xl font-extrabold">
                     {signed(gain.medianChange)}
                   </p>
-                  <p className="mt-1 text-xs text-[var(--site-muted)]">
+                  <p className="mt-1 text-xs text-(--site-muted)">
                     Medyan değişim · orta %50: {signed(gain.lowerQuartile)} –{" "}
                     {signed(gain.upperQuartile)}
                   </p>
                   <dl className="mt-4 grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <dt className="text-[var(--site-muted)]">
+                      <dt className="text-(--site-muted)">
                         Pozitif değişim
                       </dt>
                       <dd className="font-bold">
@@ -238,13 +238,13 @@ export default async function AdminQualityPage() {
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-[var(--site-muted)]">
+                      <dt className="text-(--site-muted)">
                         Medyan aralık
                       </dt>
                       <dd className="font-bold">{gain.medianGapDays} gün</dd>
                     </div>
                   </dl>
-                  <p className="mt-4 border-t border-[var(--site-line)] pt-3 text-[11px] text-[var(--site-muted)]">
+                  <p className="mt-4 border-t border-(--site-line) pt-3 text-[11px] text-(--site-muted)">
                     Kapsama: {percent(gain.coveragePercent)} ·{" "}
                     {gain.observedStudents} gözlenen öğrenci
                     {gain.dataThrough
@@ -257,7 +257,7 @@ export default async function AdminQualityPage() {
                   <p className="font-bold">
                     {COHORT_MIN_STUDENTS}'dan az uygun öğrenci
                   </p>
-                  <p className="mt-2 text-xs leading-5 text-[var(--site-muted)]">
+                  <p className="mt-2 text-xs leading-5 text-(--site-muted)">
                     Tam sayı, kapsama, değişim yönü ve tazelik minimum örneklem
                     tamamlanana kadar yayınlanmaz.
                   </p>
@@ -272,13 +272,13 @@ export default async function AdminQualityPage() {
         <div className="flex gap-3">
           <Info
             size={18}
-            className="mt-0.5 shrink-0 text-[var(--brand-olive)]"
+            className="mt-0.5 shrink-0 text-(--brand-olive)"
           />
           <div>
             <h2 className="text-sm font-extrabold">
               Tekrar eden ortak eksik sinyalleri
             </h2>
-            <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+            <p className="mt-1 text-xs leading-5 text-(--site-muted)">
               Yalnız en az {COHORT_MIN_STUDENTS} farklı öğrencide işaretlenen
               kontrollü hata nedenleri gösterilir; öğrenci adı ve grup kırılımı
               açılmaz.
@@ -290,14 +290,14 @@ export default async function AdminQualityPage() {
             {commonErrors.map(([category, students]) => (
               <span
                 key={category}
-                className="rounded-full border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-3 py-2 text-xs font-bold"
+                className="rounded-full border border-(--site-line) bg-(--site-bg-warm) px-3 py-2 text-xs font-bold"
               >
                 {errorLabels[category]} · {students.size} öğrenci
               </span>
             ))}
           </div>
         ) : (
-          <p className="mt-4 rounded-2xl bg-[var(--site-bg-warm)] p-4 text-sm text-[var(--site-muted)]">
+          <p className="mt-4 rounded-2xl bg-(--site-bg-warm) p-4 text-sm text-(--site-muted)">
             Minimum örneklemi geçen ortak hata sinyali henüz yok.
           </p>
         )}

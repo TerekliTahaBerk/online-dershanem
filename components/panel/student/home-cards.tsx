@@ -59,7 +59,7 @@ export function WeeklyPlanCard({
           <li
             key={task.id}
             className={`flex flex-wrap items-start gap-2.5 text-[14px] font-medium ${
-              task.done ? "text-dc-ink-ghost" : "text-[var(--pd-ink-3)]"
+              task.done ? "text-dc-ink-ghost" : "text-(--pd-ink-3)"
             }`}
           >
             <span
@@ -137,7 +137,7 @@ export function LatestExamCard({
             className={`text-[13.5px] font-bold ${
               delta >= 0
                 ? "text-dc-brand-hover"
-                : "text-[var(--pd-pastel-yellow-ink)]"
+                : "text-(--pd-pastel-yellow-ink)"
             }`}
           >
             {delta >= 0 ? "+" : ""}
@@ -149,7 +149,7 @@ export function LatestExamCard({
         {title} · {dateLabel}
       </p>
 
-      <ul className="mt-4 flex flex-col gap-2.5 text-[13.5px] font-medium text-[var(--pd-ink-3)]">
+      <ul className="mt-4 flex flex-col gap-2.5 text-[13.5px] font-medium text-(--pd-ink-3)">
         {subjects.map((s) => (
           <li key={s.name} className="flex flex-wrap gap-1.5 sm:gap-3">
             <span className="min-w-0 flex-1">{s.name}</span>
@@ -254,7 +254,7 @@ export function NetTrendCard({
         ))}
       </div>
 
-      <p className="mt-4 max-w-[720px] text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">
+      <p className="mt-4 max-w-[720px] text-[14.5px] leading-[1.65] text-(--pd-ink-3)">
         {caption}
       </p>
     </PanelCard>
@@ -290,7 +290,7 @@ export function DinoInsightCard({
       />
       <div className="min-w-0 flex-1">
         <h2 className="text-[16px] font-bold text-dc-ink">Dino açıklaması</h2>
-        <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">
+        <p className="mt-2 text-[14.5px] leading-[1.65] text-(--pd-ink-3)">
           {insight}
         </p>
         {basis ? (

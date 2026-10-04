@@ -122,7 +122,7 @@ export function AdminResultsReviewPanel({
         id="adim-sonuc"
         className="panel-surface scroll-mt-36 p-5 sm:p-6"
       >
-        <p className="text-xs text-[var(--site-muted)]">
+        <p className="text-xs text-(--site-muted)">
           Sonuç özeti yükleniyor…
         </p>
       </section>
@@ -137,7 +137,7 @@ export function AdminResultsReviewPanel({
         </span>
         <div>
           <h2 className="text-sm font-extrabold">Sonuç inceleme ve yayın</h2>
-          <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+          <p className="mt-1 text-xs leading-5 text-(--site-muted)">
             Puanlama ≠ yayın. Öğrenci yalnız yayın sonrası görür.
           </p>
         </div>
@@ -162,10 +162,10 @@ export function AdminResultsReviewPanel({
         ].map(([label, value]) => (
           <div
             key={String(label)}
-            className="rounded-2xl bg-[var(--site-bg-warm)] p-4"
+            className="rounded-2xl bg-(--site-bg-warm) p-4"
           >
-            <p className="text-xl font-black text-[var(--site-ink)]">{value}</p>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">{label}</p>
+            <p className="text-xl font-black text-(--site-ink)">{value}</p>
+            <p className="mt-1 text-xs text-(--site-muted)">{label}</p>
           </div>
         ))}
       </div>
@@ -175,7 +175,7 @@ export function AdminResultsReviewPanel({
           {summary.sectionAverages.map((section) => (
             <span
               key={section.code}
-              className="rounded-xl bg-white px-3 py-2 text-[11px] font-bold text-[var(--site-body)] ring-1 ring-[var(--site-line)]"
+              className="rounded-xl bg-white px-3 py-2 text-[11px] font-bold text-(--site-body) ring-1 ring-(--site-line)"
             >
               {section.title}:{" "}
               {section.averageNet == null ? "—" : section.averageNet.toFixed(2)}{" "}
@@ -266,7 +266,7 @@ export function AdminResultsReviewPanel({
         </ResponsiveDataTableBody>
       </ResponsiveDataTable>
       {!summary.rows.length ? (
-        <p className="mt-3 text-xs text-[var(--site-muted)]">
+        <p className="mt-3 text-xs text-(--site-muted)">
           Henüz oturum yok.
         </p>
       ) : null}
@@ -297,7 +297,7 @@ export function AdminResultsReviewPanel({
           </button>
         </div>
       ) : examStatus === "RELEASED" ? (
-        <p className="mt-4 rounded-xl bg-[var(--pd-pastel-mint-soft)] p-3 text-xs font-extrabold text-[var(--pd-pastel-mint-ink)]">
+        <p className="mt-4 rounded-xl bg-(--pd-pastel-mint-soft) p-3 text-xs font-extrabold text-(--pd-pastel-mint-ink)">
           Sonuçlar yayınlandı.
         </p>
       ) : null}
@@ -305,7 +305,7 @@ export function AdminResultsReviewPanel({
       {message ? (
         <p
           role={message.error ? "alert" : "status"}
-          className={`mt-3 rounded-xl p-3 text-xs font-bold ${message.error ? "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]" : "bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]"}`}
+          className={`mt-3 rounded-xl p-3 text-xs font-bold ${message.error ? "bg-(--pd-pastel-blush-soft) text-(--pd-pastel-blush-ink)" : "bg-(--brand-olive-soft) text-(--brand-olive)"}`}
         >
           {message.text}
         </p>

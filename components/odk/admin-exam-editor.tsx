@@ -308,7 +308,7 @@ export function AdminExamEditor({
 
   return (
     <div className="space-y-6">
-      <section className="sticky top-[76px] z-20 rounded-2xl border border-[var(--site-line)] bg-white/95 p-3 shadow-sm backdrop-blur lg:top-3">
+      <section className="sticky top-[76px] z-20 rounded-2xl border border-(--site-line) bg-white/95 p-3 shadow-xs backdrop-blur-sm lg:top-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <nav
             aria-label="Deneme hazırlama adımları"
@@ -329,9 +329,9 @@ export function AdminExamEditor({
               <a
                 key={href}
                 href={`#${href}`}
-                className="min-w-fit rounded-xl bg-[var(--site-bg-warm)] px-3 py-2 text-[11px] font-extrabold text-[var(--site-body)]"
+                className="min-w-fit rounded-xl bg-(--site-bg-warm) px-3 py-2 text-[11px] font-extrabold text-(--site-body)"
               >
-                <span className="mr-1 text-[var(--brand-olive)]">{index}.</span>
+                <span className="mr-1 text-(--brand-olive)">{index}.</span>
                 {label}
               </a>
             ))}
@@ -356,7 +356,7 @@ export function AdminExamEditor({
       {message ? (
         <p
           role={message.error ? "alert" : "status"}
-          className={`rounded-2xl p-3 text-xs font-bold ${message.error ? "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]" : "bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]"}`}
+          className={`rounded-2xl p-3 text-xs font-bold ${message.error ? "bg-(--pd-pastel-blush-soft) text-(--pd-pastel-blush-ink)" : "bg-(--brand-olive-soft) text-(--brand-olive)"}`}
         >
           {message.text}
         </p>
@@ -365,7 +365,7 @@ export function AdminExamEditor({
       <section id="adim-1" className="panel-surface scroll-mt-36 p-5 sm:p-6">
         <div>
           <h2 className="text-sm font-extrabold">1. Planlama bilgileri</h2>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Saatler cihazınızın yerel saatine göre girilir; sunucu sınav anında
             yeniden doğrular.
           </p>
@@ -440,7 +440,7 @@ export function AdminExamEditor({
               disabled={exam.status !== "DRAFT" && exam.status !== "READY"}
             />
           </label>
-          <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-[var(--site-line)] px-3 text-xs font-bold">
+          <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-(--site-line) px-3 text-xs font-bold">
             <input
               name="meetRequired"
               type="checkbox"
@@ -458,7 +458,7 @@ export function AdminExamEditor({
               <Save size={14} /> Planı kaydet
             </button>
           ) : (
-            <p className="rounded-xl bg-slate-50 p-3 text-xs text-[var(--site-muted)] md:col-span-2 xl:col-span-3">
+            <p className="rounded-xl bg-slate-50 p-3 text-xs text-(--site-muted) md:col-span-2 xl:col-span-3">
               Planlama kilitlendi. İçerik ve sınav kayıtları korunuyor.
             </p>
           )}
@@ -467,7 +467,7 @@ export function AdminExamEditor({
 
       <section id="adim-8" className="panel-surface scroll-mt-36 p-5 sm:p-6">
         <h2 className="text-sm font-extrabold">8. Güvenlik politikası</h2>
-        <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+        <p className="mt-1 text-xs leading-5 text-(--site-muted)">
           Client engeller güvenlik garantisi değildir; amaç davranışsal sinyal
           üretmektir.
         </p>
@@ -531,7 +531,7 @@ export function AdminExamEditor({
               disabled={exam.status !== "DRAFT" && exam.status !== "READY"}
             />
           </label>
-          <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-[var(--site-line)] px-3 text-xs font-bold">
+          <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-(--site-line) px-3 text-xs font-bold">
             <input
               name="autoSubmit"
               type="checkbox"
@@ -541,7 +541,7 @@ export function AdminExamEditor({
             />{" "}
             Süre bitince otomatik teslim
           </label>
-          <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-[var(--site-line)] px-3 text-xs font-bold">
+          <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-(--site-line) px-3 text-xs font-bold">
             <input
               name="blockCopyPaste"
               type="checkbox"
@@ -551,7 +551,7 @@ export function AdminExamEditor({
             />{" "}
             Kopyala/yapıştır sınırla
           </label>
-          <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-[var(--site-line)] px-3 text-xs font-bold">
+          <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-(--site-line) px-3 text-xs font-bold">
             <input
               name="logCopyPaste"
               type="checkbox"
@@ -561,7 +561,7 @@ export function AdminExamEditor({
             />{" "}
             Kopyala denemesini logla
           </label>
-          <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-[var(--site-line)] px-3 text-xs font-bold">
+          <label className="flex min-h-[44px] items-center gap-3 rounded-xl border border-(--site-line) px-3 text-xs font-bold">
             <input
               name="trackVisibility"
               type="checkbox"
@@ -584,7 +584,7 @@ export function AdminExamEditor({
 
       <section id="adim-2" className="panel-surface scroll-mt-36 p-5 sm:p-6">
         <h2 className="text-sm font-extrabold">2. Özel PDF dosyaları</h2>
-        <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+        <p className="mt-1 text-xs leading-5 text-(--site-muted)">
           Kitapçık sınav sırasında, cevap anahtarı yalnız sonuçlar açıklandıktan
           sonra yetkili öğrenciye sunulur.
         </p>
@@ -626,7 +626,7 @@ export function AdminExamEditor({
                 type="file"
                 accept="application/pdf,.pdf"
                 required
-                className="rounded-xl border border-[var(--site-line)] bg-white p-2 text-xs"
+                className="rounded-xl border border-(--site-line) bg-white p-2 text-xs"
               />
             </label>
             <button
@@ -645,7 +645,7 @@ export function AdminExamEditor({
             <h2 className="text-sm font-extrabold">
               3. Cevaplar ve kazanımlar
             </h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Dijital soru metnini, doğru cevabı ve ana kazanımı girin.
             </p>
           </div>
@@ -664,7 +664,7 @@ export function AdminExamEditor({
           {questions.map((question, index) => (
             <article
               key={question.id}
-              className="rounded-2xl border border-[var(--site-line)] bg-white p-4"
+              className="rounded-2xl border border-(--site-line) bg-white p-4"
             >
               <h3 className="text-sm font-extrabold">
                 Soru {question.questionNumber}
@@ -683,7 +683,7 @@ export function AdminExamEditor({
         >
           <table className="w-full min-w-[1180px] text-xs">
             <thead>
-              <tr className="text-left text-[10px] uppercase tracking-wide text-[var(--site-muted)]">
+              <tr className="text-left text-[10px] uppercase tracking-wide text-(--site-muted)">
                 <th className="pb-2">Soru</th>
                 <th>İçerik türü</th>
                 <th>Soru metni</th>
@@ -697,7 +697,7 @@ export function AdminExamEditor({
               {questions.map((question, index) => (
                 <tr
                   key={question.id}
-                  className="border-t border-[var(--site-line)]"
+                  className="border-t border-(--site-line)"
                 >
                   <th className="py-2 pr-3 text-left">
                     {question.questionNumber}
@@ -807,7 +807,7 @@ export function AdminExamEditor({
           </table>
         </div>
         {!outcomes.length ? (
-          <p className="mt-3 rounded-xl bg-[var(--pd-pastel-yellow-soft)] p-3 text-xs font-bold text-[var(--pd-pastel-yellow-ink)]">
+          <p className="mt-3 rounded-xl bg-(--pd-pastel-yellow-soft) p-3 text-xs font-bold text-(--pd-pastel-yellow-ink)">
             Bu sınav türü için aktif matematik kazanımı bulunamadı. Önce OD
             kazanım yönetiminden müfredatı etkinleştirin.
           </p>
@@ -820,7 +820,7 @@ export function AdminExamEditor({
           {issues.map((issue, index) => (
             <p
               key={`${issue.code}-${index}`}
-              className={`flex items-start gap-2 rounded-xl p-3 text-xs font-bold ${issue.level === "error" ? "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]" : "bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]"}`}
+              className={`flex items-start gap-2 rounded-xl p-3 text-xs font-bold ${issue.level === "error" ? "bg-(--pd-pastel-blush-soft) text-(--pd-pastel-blush-ink)" : "bg-(--pd-pastel-yellow-soft) text-(--pd-pastel-yellow-ink)"}`}
             >
               <AlertTriangle size={14} className="mt-0.5 shrink-0" />
               {issue.questionNumber ? `Soru ${issue.questionNumber}: ` : ""}
@@ -828,7 +828,7 @@ export function AdminExamEditor({
             </p>
           ))}
           {!issues.length ? (
-            <p className="flex items-center gap-2 rounded-xl bg-[var(--pd-pastel-mint-soft)] p-3 text-xs font-bold text-[var(--pd-pastel-mint-ink)]">
+            <p className="flex items-center gap-2 rounded-xl bg-(--pd-pastel-mint-soft) p-3 text-xs font-bold text-(--pd-pastel-mint-ink)">
               <CheckCircle2 size={15} /> Sürüm kilitlenmeye hazır.
             </p>
           ) : null}
@@ -883,7 +883,7 @@ export function AdminExamEditor({
 
       <section id="adim-5" className="panel-surface scroll-mt-36 p-5 sm:p-6">
         <h2 className="text-sm font-extrabold">Puanlama kısayolu</h2>
-        <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+        <p className="mt-1 text-xs leading-5 text-(--site-muted)">
           Detaylı sonuç tablosu ve yayın akışı aşağıda “Sonuç inceleme”
           bölümündedir.
         </p>
@@ -896,12 +896,12 @@ export function AdminExamEditor({
           ].map(([label, value]) => (
             <div
               key={label}
-              className="rounded-2xl bg-[var(--site-bg-warm)] p-4"
+              className="rounded-2xl bg-(--site-bg-warm) p-4"
             >
-              <p className="text-xl font-black text-[var(--site-ink)]">
+              <p className="text-xl font-black text-(--site-ink)">
                 {value}
               </p>
-              <p className="mt-1 text-xs text-[var(--site-muted)]">{label}</p>
+              <p className="mt-1 text-xs text-(--site-muted)">{label}</p>
             </div>
           ))}
         </div>

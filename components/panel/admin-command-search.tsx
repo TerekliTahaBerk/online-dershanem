@@ -273,7 +273,7 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--site-line)] bg-white text-[var(--site-muted)] transition hover:border-[#d4d0c5] hover:text-[var(--site-ink)] sm:w-[260px] sm:justify-between sm:px-3.5"
+        className="flex h-10 w-10 items-center justify-center rounded-xl border border-(--site-line) bg-white text-(--site-muted) transition hover:border-[#d4d0c5] hover:text-(--site-ink) sm:w-[260px] sm:justify-between sm:px-3.5"
         aria-label="Panelde ara"
         aria-haspopup="dialog"
         aria-expanded={open}
@@ -284,14 +284,14 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
             Öğrenci, sipariş, komut…
           </span>
         </span>
-        <kbd className="hidden rounded-md border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-1.5 py-0.5 text-[10px] font-bold text-[var(--site-muted)] sm:inline">
+        <kbd className="hidden rounded-md border border-(--site-line) bg-(--site-bg-warm) px-1.5 py-0.5 text-[10px] font-bold text-(--site-muted) sm:inline">
           ⌘K
         </kbd>
       </button>
 
       {open ? (
         <div
-          className="fixed inset-0 z-[300] flex items-start justify-center bg-[#10150d]/35 px-3 pt-[8vh] backdrop-blur-[3px] sm:px-4 sm:pt-[12vh]"
+          className="fixed inset-0 z-300 flex items-start justify-center bg-[#10150d]/35 px-3 pt-[8vh] backdrop-blur-[3px] sm:px-4 sm:pt-[12vh]"
           role="presentation"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) close();
@@ -304,10 +304,10 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
             aria-labelledby={titleId}
             className="flex max-h-[min(80vh,640px)] w-full max-w-[640px] flex-col overflow-hidden rounded-[14px] border border-white/60 bg-white shadow-[0_35px_100px_-25px_rgba(20,20,15,.55)]"
           >
-            <div className="flex items-center gap-3 border-b border-[var(--site-line)] px-4 py-3">
+            <div className="flex items-center gap-3 border-b border-(--site-line) px-4 py-3">
               <Search
                 size={18}
-                className="text-[var(--brand-olive)]"
+                className="text-(--brand-olive)"
                 aria-hidden="true"
               />
               <div className="min-w-0 flex-1">
@@ -328,7 +328,7 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
                       ? `${listboxId}-option-${activeIndex}`
                       : undefined
                   }
-                  className="min-w-0 w-full bg-transparent py-2 text-[15px] text-[var(--site-ink)] outline-none placeholder:text-[var(--site-muted)]"
+                  className="min-w-0 w-full bg-transparent py-2 text-[15px] text-(--site-ink) outline-hidden placeholder:text-(--site-muted)"
                   placeholder="Öğrenci, veli, sipariş veya komut ara…"
                   autoComplete="off"
                   spellCheck={false}
@@ -337,7 +337,7 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
               <button
                 type="button"
                 onClick={close}
-                className="grid h-8 w-8 place-items-center rounded-lg text-[var(--site-muted)] hover:bg-[var(--site-bg-warm)] hover:text-[var(--site-ink)]"
+                className="grid h-8 w-8 place-items-center rounded-lg text-(--site-muted) hover:bg-(--site-bg-warm) hover:text-(--site-ink)"
                 aria-label="Aramayı kapat"
               >
                 <X size={16} aria-hidden="true" />
@@ -353,10 +353,10 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
             >
               {!query.trim() && !commandResults.length ? (
                 <div className="px-4 py-10 text-center">
-                  <p className="text-sm font-bold text-[var(--site-ink)]">
+                  <p className="text-sm font-bold text-(--site-ink)">
                     Komut yok
                   </p>
-                  <p className="mt-1 text-xs text-[var(--site-muted)]">
+                  <p className="mt-1 text-xs text-(--site-muted)">
                     Bu hesap için hızlı aksiyon tanımlı değil.
                   </p>
                 </div>
@@ -364,7 +364,7 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
 
               {sections.map((section, sectionIndex) => (
                 <div key={section.kind + section.title} className="mb-2">
-                  <p className="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-[var(--site-muted)]">
+                  <p className="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.08em] text-(--site-muted)">
                     {section.title}
                   </p>
                   {section.items.map((item, itemIndex) => {
@@ -384,24 +384,24 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
                         onClick={() => go(item)}
                         className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left ${
                           active
-                            ? "bg-[var(--site-bg-warm)]"
-                            : "hover:bg-[var(--site-bg-warm)]"
+                            ? "bg-(--site-bg-warm)"
+                            : "hover:bg-(--site-bg-warm)"
                         }`}
                       >
-                        <span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]">
+                        <span className="grid h-9 w-9 place-items-center rounded-xl bg-(--brand-olive-soft) text-(--brand-olive)">
                           <Icon size={16} aria-hidden="true" />
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block text-[13px] font-bold text-[var(--site-ink)]">
+                          <span className="block text-[13px] font-bold text-(--site-ink)">
                             {item.label}
                           </span>
-                          <span className="mt-0.5 block truncate text-[11.5px] text-[var(--site-muted)]">
+                          <span className="mt-0.5 block truncate text-[11.5px] text-(--site-muted)">
                             {item.detail}
                           </span>
                         </span>
                         <ArrowRight
                           size={15}
-                          className={`text-[var(--site-muted)] transition ${
+                          className={`text-(--site-muted) transition ${
                             active
                               ? "translate-x-0.5 opacity-100"
                               : "opacity-0 group-hover:opacity-100"
@@ -416,7 +416,7 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
 
               {loadingEntities ? (
                 <p
-                  className="px-4 py-2 text-[11px] text-[var(--site-muted)]"
+                  className="px-4 py-2 text-[11px] text-(--site-muted)"
                   role="status"
                 >
                   Kayıtlarda aranıyor…
@@ -427,10 +427,10 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
               query.trim().length < GLOBAL_SEARCH_MIN_CHARS &&
               !commandResults.length ? (
                 <div className="px-4 py-10 text-center">
-                  <p className="text-sm font-bold text-[var(--site-ink)]">
+                  <p className="text-sm font-bold text-(--site-ink)">
                     Biraz daha yazın
                   </p>
-                  <p className="mt-1 text-xs text-[var(--site-muted)]">
+                  <p className="mt-1 text-xs text-(--site-muted)">
                     Kayıt araması için en az {GLOBAL_SEARCH_MIN_CHARS} karakter
                     gerekir.
                   </p>
@@ -441,17 +441,17 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
               !loadingEntities &&
               !flatResults.length ? (
                 <div className="px-4 py-10 text-center">
-                  <p className="text-sm font-bold text-[var(--site-ink)]">
+                  <p className="text-sm font-bold text-(--site-ink)">
                     Sonuç bulunamadı
                   </p>
-                  <p className="mt-1 text-xs text-[var(--site-muted)]">
+                  <p className="mt-1 text-xs text-(--site-muted)">
                     Ad, e-posta, telefon, sipariş no veya komut deneyin.
                   </p>
                 </div>
               ) : null}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--site-line)] bg-[var(--site-bg-warm)] px-4 py-2.5 text-[10.5px] text-[var(--site-muted)]">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-(--site-line) bg-(--site-bg-warm) px-4 py-2.5 text-[10.5px] text-(--site-muted)">
               <span>↑↓ gezin · Enter aç · Esc kapat</span>
               <span className="hidden sm:inline">⌘K / Ctrl+K</span>
             </div>

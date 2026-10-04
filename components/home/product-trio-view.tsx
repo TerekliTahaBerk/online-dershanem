@@ -56,10 +56,10 @@ function PlanPreview() {
   return (
     <div className="h-[172px] border-b border-dc-line-soft bg-dc-surface-muted p-[18px]">
       <div className="flex h-full flex-col gap-2 rounded-xl border border-dc-line bg-white p-3">
-        <div className="font-mono text-xs font-semibold text-[var(--dc-ink-faint)]">
+        <div className="font-mono text-xs font-semibold text-(--dc-ink-faint)">
           haftalık plan
         </div>
-        <div className="grid grid-cols-7 gap-[5px] text-center text-xs font-semibold text-[var(--dc-ink-faint)]">
+        <div className="grid grid-cols-7 gap-[5px] text-center text-xs font-semibold text-(--dc-ink-faint)">
           {["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz"].map((d) => (
             <span key={d}>{d}</span>
           ))}
@@ -124,7 +124,7 @@ function KpssPreview() {
   return (
     <div className="h-[172px] border-b border-dc-line-soft bg-dc-surface-muted p-[18px]">
       <div className="flex h-full flex-col rounded-xl border border-dc-line bg-white p-3">
-        <div className="flex items-center justify-between font-mono text-xs font-semibold text-[var(--dc-ink-faint)]">
+        <div className="flex items-center justify-between font-mono text-xs font-semibold text-(--dc-ink-faint)">
           <span>HAFTALIK ODAK</span>
           <span>12 HAFTA</span>
         </div>
@@ -208,9 +208,9 @@ export function ProductTrioView({
 
   return (
     <section className="border-y border-dc-line-soft bg-white">
-      <div className="site-container py-[var(--dc-section)]">
+      <div className="site-container py-(--dc-section)">
         <div className="max-w-[620px]">
-          <h2 className="font-display text-[length:var(--public-title)] leading-[1.08] tracking-[-0.025em] text-dc-ink">
+          <h2 className="font-display text-(length:--public-title) leading-[1.08] tracking-tight text-dc-ink">
             {title}
           </h2>
           <p className="mt-4 text-[17px] leading-[1.65] text-dc-ink-body">
@@ -236,7 +236,7 @@ export function ProductTrioView({
                   <p className="text-[12px] font-bold tracking-[0.08em] text-dc-brand-strong">
                     {eyebrow}
                   </p>
-                  <h3 className="font-display text-[25px] leading-[1.25] tracking-[-0.02em] text-dc-ink">
+                  <h3 className="font-display text-[25px] leading-tight tracking-[-0.02em] text-dc-ink">
                     {title}
                   </h3>
                   <p className="text-[15px] leading-[1.6] text-dc-ink-muted">

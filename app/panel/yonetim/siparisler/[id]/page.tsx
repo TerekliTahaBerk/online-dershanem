@@ -309,7 +309,7 @@ export default async function AdminOrderDetailPage({
                   <input type="hidden" name="orderId" value={order.id} />
                   <button
                     type="submit"
-                    className="rounded-[10px] bg-dc-brand-strong px-[14px] py-[9px] text-[13px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+                    className="rounded-od bg-dc-brand-strong px-[14px] py-[9px] text-[13px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
                   >
                     Erişim açmayı yeniden dene
                   </button>
@@ -392,12 +392,12 @@ export default async function AdminOrderDetailPage({
                 ) : null}
               </dl>
               {payment?.failureReason ? (
-                <p className="rounded-[10px] border border-[#F3DDD7] bg-[#FFF6F3] px-3 py-2 text-[12.5px] text-[#A24839]">
+                <p className="rounded-od border border-[#F3DDD7] bg-[#FFF6F3] px-3 py-2 text-[12.5px] text-[#A24839]">
                   Ödeme hata notu: {payment.failureReason}
                 </p>
               ) : null}
               {order.provisioningError || order.lines.length > 0 ? (
-                <pre className="overflow-x-auto whitespace-pre-wrap rounded-[10px] border border-dc-line-soft bg-[#FCFDFC] p-3.5 font-mono text-[13px] leading-[1.7] text-dc-ink-muted">
+                <pre className="overflow-x-auto whitespace-pre-wrap rounded-od border border-dc-line-soft bg-[#FCFDFC] p-3.5 font-mono text-[13px] leading-[1.7] text-dc-ink-muted">
                   {[
                     order.provisioningError
                       ? `order: ${order.provisioningError}`

@@ -29,9 +29,9 @@ export function Ecosystem({
   showDinoLayer = true,
 }: { showDinoLayer?: boolean } = {}) {
   return (
-    <section className="site-container py-[var(--dc-section)]">
+    <section className="site-container py-(--dc-section)">
       <div className="max-w-[640px]">
-        <h2 className="font-display text-[length:var(--public-title)] leading-[1.08] tracking-[-0.025em] text-dc-ink">
+        <h2 className="font-display text-(length:--public-title) leading-[1.08] tracking-tight text-dc-ink">
           Birlikte nasıl çalışır?
         </h2>
         <p className="mt-3.5 text-[17px] leading-[1.65] text-dc-ink-body">

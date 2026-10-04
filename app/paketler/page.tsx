@@ -29,7 +29,7 @@ export default async function PackagesPage() {
       <main id="main-content" tabIndex={-1}>
         <section className="site-container pt-16 text-center sm:pt-[72px]">
           <p className="dc-eyebrow">Paketler</p>
-          <h1 className="mx-auto mt-4 max-w-[760px] font-display text-[length:var(--public-display)] leading-[1.08] tracking-[-0.03em] text-dc-ink">
+          <h1 className="mx-auto mt-4 max-w-[760px] font-display text-(length:--public-display) leading-[1.08] tracking-[-0.03em] text-dc-ink">
             İhtiyacın olan desteği seç.
             <br />
             Birlikte kullan.
@@ -47,7 +47,7 @@ export default async function PackagesPage() {
 
         <section
           id="kapsam"
-          className="site-container scroll-mt-6 pb-[var(--dc-section)] pt-[88px]"
+          className="site-container scroll-mt-6 pb-(--dc-section) pt-[88px]"
         >
           <div className="flex flex-wrap items-end justify-between gap-6 border-b border-dc-ink pb-[18px]">
             <div>

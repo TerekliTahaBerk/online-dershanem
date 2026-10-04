@@ -85,7 +85,7 @@ export default async function OdPaymentPage({
       <main
         id="main-content"
         tabIndex={-1}
-        className="min-h-screen bg-[var(--site-bg-warm)] py-10 sm:py-14"
+        className="min-h-screen bg-(--site-bg-warm) py-10 sm:py-14"
       >
         <PaytrIframeShell
           breadcrumb={[

@@ -56,20 +56,20 @@ export function StudentExamStart({
 
   return (
     <div className="space-y-3">
-      <div className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
+      <div className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4">
         <div className="flex items-start gap-3">
           <span className="panel-metric-icon panel-tone-mint">
             <ShieldCheck size={17} />
           </span>
           <div>
-            <p className="font-bold text-[var(--site-ink)]">Başlamadan önce</p>
-            <p className="mt-1 text-sm leading-6 text-[var(--site-body)]">
+            <p className="font-bold text-(--site-ink)">Başlamadan önce</p>
+            <p className="mt-1 text-sm leading-6 text-(--site-body)">
               Süre sunucu tarafından doğrulanır. Cevapların her seçimde güvenli
               biçimde kaydedilir.
             </p>
           </div>
         </div>
-        <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-bold text-[var(--site-muted)]">
+        <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-bold text-(--site-muted)">
           <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1.5">
             <Wifi size={12} /> Bağlantı geri gelince kayıt sürer
           </span>
@@ -80,16 +80,16 @@ export function StudentExamStart({
       </div>
 
       {meetRequired ? (
-        <section className="rounded-2xl border border-[var(--site-line)] bg-white p-4 sm:p-5">
+        <section className="rounded-2xl border border-(--site-line) bg-white p-4 sm:p-5">
           <div className="flex items-center gap-2">
-            <span className="grid h-7 w-7 place-items-center rounded-lg bg-[var(--panel-nav-active)] text-xs font-extrabold text-[var(--brand-olive)]">
+            <span className="grid h-7 w-7 place-items-center rounded-lg bg-(--panel-nav-active) text-xs font-extrabold text-(--brand-olive)">
               1
             </span>
-            <h2 className="font-bold text-[var(--site-ink)]">
+            <h2 className="font-bold text-(--site-ink)">
               Meet gözetim odasına katıl
             </h2>
           </div>
-          <p className="mt-3 text-sm leading-6 text-[var(--site-body)]">
+          <p className="mt-3 text-sm leading-6 text-(--site-body)">
             Sınav boyunca görüşmede kalman gerekiyor. Tarayıcı bağlantı sinyali
             Meet katılımının yerine geçmez.
           </p>
@@ -105,12 +105,12 @@ export function StudentExamStart({
           ) : (
             <p
               role="alert"
-              className="mt-3 rounded-xl bg-[var(--pd-pastel-blush-soft)] p-3 text-xs font-bold text-[var(--pd-pastel-blush-ink)]"
+              className="mt-3 rounded-xl bg-(--pd-pastel-blush-soft) p-3 text-xs font-bold text-(--pd-pastel-blush-ink)"
             >
               Meet bağlantısı henüz tanımlanmadı.
             </p>
           )}
-          <label className="mt-4 flex min-h-[44px] cursor-pointer items-start gap-3 rounded-xl border border-[var(--site-line)] p-3 text-sm text-[var(--site-body)]">
+          <label className="mt-4 flex min-h-[44px] cursor-pointer items-start gap-3 rounded-xl border border-(--site-line) p-3 text-sm text-(--site-body)">
             <input
               type="checkbox"
               checked={acknowledged}
@@ -125,16 +125,16 @@ export function StudentExamStart({
         </section>
       ) : null}
 
-      <section className="rounded-2xl border border-[var(--site-line)] bg-white p-4 sm:p-5">
+      <section className="rounded-2xl border border-(--site-line) bg-white p-4 sm:p-5">
         <div className="flex items-center gap-2">
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-[var(--panel-nav-active)] text-xs font-extrabold text-[var(--brand-olive)]">
+          <span className="grid h-7 w-7 place-items-center rounded-lg bg-(--panel-nav-active) text-xs font-extrabold text-(--brand-olive)">
             {meetRequired ? "2" : "1"}
           </span>
-          <h2 className="font-bold text-[var(--site-ink)]">
+          <h2 className="font-bold text-(--site-ink)">
             {activeAttempt ? "Denemeye Devam Et" : "Denemeyi Başlat"}
           </h2>
         </div>
-        <p className="mt-3 text-sm leading-6 text-[var(--site-body)]">
+        <p className="mt-3 text-sm leading-6 text-(--site-body)">
           {activeAttempt
             ? "Devam eden oturumun ve kalan süren korunuyor."
             : "Başlattığında süren işlemeye başlayacak. Cihazının şarjını ve bağlantını kontrol et."}
@@ -153,14 +153,14 @@ export function StudentExamStart({
           {activeAttempt ? "Denemeye Devam Et" : "Denemeyi Başlat"}
         </button>
         {!activeAttempt && startError ? (
-          <p className="mt-3 rounded-xl bg-[var(--pd-pastel-yellow-soft)] p-3 text-sm font-semibold text-[var(--pd-pastel-yellow-ink)]">
+          <p className="mt-3 rounded-xl bg-(--pd-pastel-yellow-soft) p-3 text-sm font-semibold text-(--pd-pastel-yellow-ink)">
             {startError}
           </p>
         ) : null}
         {error ? (
           <p
             role="alert"
-            className="mt-3 rounded-xl bg-[var(--pd-pastel-blush-soft)] p-3 text-sm font-semibold text-[var(--pd-pastel-blush-ink)]"
+            className="mt-3 rounded-xl bg-(--pd-pastel-blush-soft) p-3 text-sm font-semibold text-(--pd-pastel-blush-ink)"
           >
             {error}
           </p>

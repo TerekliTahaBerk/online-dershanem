@@ -1,6 +1,192 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss' source(none);
+
+@source './';
+@source '../components';
+@source '../lib';
+
+@custom-variant dark (&:is([data-theme="dark"] *));
+
+@theme {
+  --color-dc-brand: var(--dc-brand);
+  --color-dc-brand-strong: var(--dc-brand-strong);
+  --color-dc-brand-hover: var(--dc-brand-hover);
+  --color-dc-brand-deep: var(--dc-brand-deep);
+  --color-dc-brand-soft: var(--dc-brand-soft);
+  --color-dc-brand-soft-line: var(--dc-brand-soft-line);
+  --color-dc-ink: var(--dc-ink);
+  --color-dc-ink-body: var(--dc-ink-body);
+  --color-dc-ink-muted: var(--dc-ink-muted);
+  --color-dc-ink-faint: var(--dc-ink-faint);
+  --color-dc-ink-ghost: var(--dc-ink-ghost);
+  --color-dc-canvas: var(--dc-canvas);
+  --color-dc-surface: var(--dc-surface);
+  --color-dc-surface-muted: var(--dc-surface-muted);
+  --color-dc-line: var(--dc-line);
+  --color-dc-line-soft: var(--dc-line-soft);
+  --color-dc-on-deep: var(--dc-on-deep);
+  --color-dc-on-deep-body: var(--dc-on-deep-body);
+  --color-dc-on-deep-muted: var(--dc-on-deep-muted);
+  --color-dc-on-deep-label: var(--dc-on-deep-label);
+  --color-dc-on-deep-faint: var(--dc-on-deep-faint);
+  --color-dc-on-deep-line: var(--dc-on-deep-line);
+
+  --color-anchor: #091413;
+  --color-ink: #111111;
+  --color-pine: #435633;
+  --color-brand: #546b41;
+  --color-mint: #dcccac;
+  --color-paper: #fafaf7;
+  --color-muted: #2c3734;
+  --color-soft: #eef3ef;
+
+  --color-line: rgba(9, 20, 19, 0.14);
+  --color-line-strong: rgba(40, 90, 72, 0.36);
+  --color-line-soft: rgba(9, 20, 19, 0.08);
+
+  --color-od-bg: var(--pd-bg);
+  --color-od-surface: var(--pd-bg-elevated);
+  --color-od-subtle: var(--pd-bg-subtle);
+  --color-od-muted-bg: var(--pd-bg-muted);
+  --color-od-ink: var(--pd-ink);
+  --color-od-ink-2: var(--pd-ink-2);
+  --color-od-ink-3: var(--pd-ink-3);
+  --color-od-mute: var(--pd-muted);
+  --color-od-mute-2: var(--pd-muted-2);
+  --color-od-border: var(--pd-line);
+  --color-od-border-2: var(--pd-line-2);
+  --color-od-border-strong: var(--pd-line-strong);
+  --color-od-accent: var(--pd-accent);
+  --color-od-accent-hover: var(--pd-accent-hover);
+  --color-od-accent-soft: var(--pd-accent-soft);
+  --color-od-accent-chip: var(--pd-accent-chip-bg);
+  --color-od-accent-chip-ink: var(--pd-accent-chip-ink);
+  --color-od-sidebar-bg: var(--pd-sidebar-bg);
+  --color-od-sidebar-line: var(--pd-sidebar-line);
+  --color-od-sidebar-item: var(--pd-sidebar-item);
+  --color-od-sidebar-item-hover: var(--pd-sidebar-item-hover-bg);
+  --color-od-sidebar-item-active: var(--pd-sidebar-item-active-bg);
+  --color-od-sidebar-item-active-ink: var(--pd-sidebar-item-active-ink);
+  --color-od-sidebar-item-active-icon: var(--pd-sidebar-item-active-icon);
+
+  --color-pastel-sky: var(--pd-pastel-sky-bg);
+  --color-pastel-sky-soft: var(--pd-pastel-sky-soft);
+  --color-pastel-sky-ink: var(--pd-pastel-sky-ink);
+
+  --color-pastel-yellow: var(--pd-pastel-yellow-bg);
+  --color-pastel-yellow-soft: var(--pd-pastel-yellow-soft);
+  --color-pastel-yellow-ink: var(--pd-pastel-yellow-ink);
+
+  --color-pastel-mint: var(--pd-pastel-mint-bg);
+  --color-pastel-mint-soft: var(--pd-pastel-mint-soft);
+  --color-pastel-mint-ink: var(--pd-pastel-mint-ink);
+
+  --color-pastel-blush: var(--pd-pastel-blush-bg);
+  --color-pastel-blush-soft: var(--pd-pastel-blush-soft);
+  --color-pastel-blush-ink: var(--pd-pastel-blush-ink);
+
+  --color-pastel-lavender: var(--pd-pastel-lavender-bg);
+  --color-pastel-lavender-soft: var(--pd-pastel-lavender-soft);
+  --color-pastel-lavender-ink: var(--pd-pastel-lavender-ink);
+
+  --shadow-dc-card: var(--dc-shadow-card);
+  --shadow-dc-raised: var(--dc-shadow-raised);
+  --shadow-dc-sticky: var(--dc-shadow-sticky);
+  --shadow-dc-canvas: var(--dc-shadow-canvas);
+  --shadow-soft: 0 12px 34px -18px rgba(9, 20, 19, 0.32);
+  --shadow-od-sm: var(--pd-shadow-sm);
+  --shadow-od-md: var(--pd-shadow-md);
+  --shadow-od-lg: var(--pd-shadow-lg);
+  --shadow-od-xl: var(--pd-shadow-xl);
+
+  --radius-dc-card: var(--dc-radius-card);
+  --radius-dc-card-sm: var(--dc-radius-card-sm);
+  --radius-dc-banner: var(--dc-radius-banner);
+  --radius-xl2: 1.25rem;
+  --radius-od-sm: 6px;
+  --radius-od: 10px;
+  --radius-od-lg: 16px;
+  --radius-od-xl: 24px;
+
+  --font-display:
+    var(--font-manrope), var(--font-geist-sans), system-ui, sans-serif;
+  --font-serif:
+    var(--font-manrope), var(--font-geist-sans), system-ui, sans-serif;
+  --font-sans:
+    var(--font-manrope), var(--font-geist-sans), ui-sans-serif, system-ui,
+    sans-serif;
+  --font-mono:
+    var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --text-od-display: 36px;
+  --text-od-display--line-height: 44px;
+  --text-od-display--letter-spacing: -0.02em;
+  --text-od-h1: 28px;
+  --text-od-h1--line-height: 36px;
+  --text-od-h1--letter-spacing: -0.018em;
+  --text-od-h2: 22px;
+  --text-od-h2--line-height: 30px;
+  --text-od-h2--letter-spacing: -0.014em;
+  --text-od-h3: 18px;
+  --text-od-h3--line-height: 26px;
+  --text-od-h3--letter-spacing: -0.011em;
+  --text-od-body: 14px;
+  --text-od-body--line-height: 22px;
+  --text-od-small: 13px;
+  --text-od-small--line-height: 20px;
+  --text-od-tiny: 12px;
+  --text-od-tiny--line-height: 18px;
+
+  --animate-od-fade-in: od-fade-in 200ms ease-out;
+  --animate-od-slide-up: od-slide-up 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-od-slide-in: od-slide-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  @keyframes od-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes od-slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes od-slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
 
 :root {
   color-scheme: light;

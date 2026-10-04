@@ -36,7 +36,7 @@ export function LeadStatusControl({
         if (response.ok) router.refresh();
         else setBusy(false);
       }}
-      className="rounded-full border-0 bg-[var(--brand-olive-soft)] px-2.5 py-1 text-[10px] font-extrabold text-[var(--brand-olive)] outline-none ring-[var(--brand-olive)] focus:ring-2 disabled:opacity-60"
+      className="rounded-full border-0 bg-(--brand-olive-soft) px-2.5 py-1 text-[10px] font-extrabold text-(--brand-olive) outline-hidden ring-(--brand-olive) focus:ring-2 disabled:opacity-60"
     >
       {Object.entries(labels).map(([value, label]) => (
         <option key={value} value={value}>

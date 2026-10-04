@@ -57,7 +57,7 @@ export function CoachingPanel(props: CoachingPanelProps) {
           </div>
         </dl>
         {data.sharedNote ? (
-          <p className="mt-4 rounded-[10px] border border-dc-line-soft bg-dc-surface-soft px-3.5 py-3 text-[13.5px] leading-6 text-dc-ink-body">
+          <p className="mt-4 rounded-od border border-dc-line-soft bg-dc-surface-soft px-3.5 py-3 text-[13.5px] leading-6 text-dc-ink-body">
             {data.sharedNote}
           </p>
         ) : (
