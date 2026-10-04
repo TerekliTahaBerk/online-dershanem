@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Self-signup for students and parents at `/kayit` (multi-step: account type, personal, education or children, interests and purchase status, contact preference, KVKK/terms/marketing consent); signup never grants product access and parents' children wait as pending accounts (`PUBLIC_REGISTER_ENABLED`)
+- Post-signup Tally contact form (`/kayit/iletisim-formu`, skippable) with a signed `ref` hidden field and a signed webhook at `/api/integrations/tally` that records responses, creates CRM leads and notifies admins (`TALLY_FORM_ID`, `TALLY_REF_SECRET`, `TALLY_SIGNING_SECRET`)
+- Account settings hub at `/panel/ayarlar` (profile, education, children, contact, billing address, consents, security) with a profile-completion meter and an in-panel reminder banner
+- Admin **Yeni kayıtlar** queue (`/panel/yonetim/basvurular`): call/WhatsApp, contact status and notes, and one-click "Öğrenci hesabı aç" for a parent's pending child that links the parent and opens access for already-paid orders
+- Logged-in purchase: a student's access opens on their own account; a parent picks which child the package is for, and the paying parent's own membership opens automatically
+
 - Build provenance on every deployed artifact: `x-build-*` response headers, a public `/api/version` endpoint, a `build` block on the health and smoke endpoints, and a version/short-SHA stamp in the site footer
 - `npm run verify:production-version` and a scheduled Production Health step that compares the live commit against `main`, so a healthy but stale deploy no longer reads as green
 - Role **Analiz** pages (student, teacher, parent) for combined academic and behavioral gidişat, plus a management analytics **Gidişat** panel sharing the same catalog (`PANEL_FEATURE_PROGRESS_INSIGHTS`, default on)
@@ -19,6 +25,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - Server-side search, filtering and pagination on the admin people list
 
 ### Changed
+
+- After sign-in everyone (admin, teacher, student, parent) chooses the OD / OK / ODK panel at `/panel/urun-sec`; the choice is stored on the session and scopes the menu, with a "Panel değiştir" link in the shell
 
 - Updated Next.js and its ESLint configuration to 16.3.5+ to address critical remote-code-execution advisories
 - Dino AI marketing copy now describes planned rather than live capability
