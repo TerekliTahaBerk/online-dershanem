@@ -11,15 +11,11 @@
  */
 import "server-only";
 import { log } from "@/lib/logger";
+import { buildOperationalAlertRequest, type OperationalAlert } from "@/lib/operational-alert-payload";
+
+export type { OperationalAlert } from "@/lib/operational-alert-payload";
 
 export type ErrorContext = Record<string, unknown>;
-
-export type OperationalAlert = {
-  event: string;
-  severity: "warning" | "critical";
-  summary: string;
-  context?: ErrorContext;
-};
 
 export function captureError(err: unknown, context?: ErrorContext): void {
   log.error("app.error", err, context);
@@ -37,25 +33,23 @@ export async function reportError(err: unknown, context?: ErrorContext): Promise
   });
 }
 
-/** Slack/Teams/özel webhook'lara secretsiz, sağlayıcıdan bağımsız alarm gövdesi yollar. */
+/** Discord'a mesaj, özel webhook'lara mevcut alarm gövdesini yollar. */
 export async function reportOperationalAlert(alert: OperationalAlert): Promise<void> {
   const webhook = process.env.ERROR_ALERT_WEBHOOK_URL;
   if (!webhook || process.env.NODE_ENV !== "production") return;
   try {
-    await fetch(webhook, {
+    const request = buildOperationalAlertRequest(webhook, alert);
+    const response = await fetch(request.url, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        event: alert.event,
-        severity: alert.severity,
-        occurredAt: new Date().toISOString(),
-        summary: alert.summary,
-        context: alert.context,
-      }),
+      body: JSON.stringify(request.body),
       signal: AbortSignal.timeout(3_000),
     });
+    if (!response.ok) {
+      log.warn("app.error_alert_failed", { event: alert.event, status: response.status });
+    }
   } catch (alertError) {
-    log.warn("app.error_alert_failed", { event: alert.event }, alertError);
+    log.warn("app.error_alert_failed", { event: alert.event, errorName: alertError instanceof Error ? alertError.name : "UNKNOWN" });
   }
 }
 

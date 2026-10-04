@@ -107,3 +107,24 @@ test("unknown namespaces are rejected before any remote request", async () => {
   const worker = createCache({ env: productionEnv, fetch: redis.fetch });
   await assert.rejects(worker.get("unknown:key"), /Unknown cache namespace/);
 });
+
+test("Redis DNS failure is reported without leaking the endpoint or token", async () => {
+  const worker = createCache({ env: productionEnv, fetch: async () => {
+    throw new TypeError("fetch failed", { cause: Object.assign(new Error("private endpoint"), { code: "ENOTFOUND" }) });
+  } });
+  const status = await worker.health();
+  assert.equal(status.state, "degraded");
+  assert.equal(status.lastErrorCode, "ENOTFOUND");
+  assert.equal(JSON.stringify(status).includes(productionEnv.UPSTASH_REDIS_REST_TOKEN), false);
+  assert.equal(JSON.stringify(status).includes(productionEnv.UPSTASH_REDIS_REST_URL), false);
+});
+
+test("Redis health requires PONG rather than accepting an empty successful response", async () => {
+  const worker = createCache({ env: productionEnv, fetch: async () => new Response(JSON.stringify({ result: null })) });
+  assert.equal((await worker.health()).state, "degraded");
+});
+
+test("Redis HTTP authentication failure is distinguished from network failure", async () => {
+  const worker = createCache({ env: productionEnv, fetch: async () => new Response("unauthorized", { status: 401 }) });
+  assert.equal((await worker.health()).lastErrorCode, "HTTP_401");
+});

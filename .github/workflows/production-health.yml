@@ -33,6 +33,8 @@ jobs:
           if jq -e '.checks' health.json >/dev/null 2>&1; then
             jq -r '.checks | to_entries[] | "\(.key): \(.value.status)\(if .value.code then " (" + .value.code + ")" else "" end)"' health.json
             jq -r '.checks.cron.jobs[]? | select(.status != "healthy") | "::warning::cron \(.name): \(.status)"' health.json
+            jq -r '.checks.cache | select(.status != "ok") | "::error::Redis hazır değil: \(.code), operation=\(.lastErrorOperation), cause=\(.lastErrorCode // "unknown"). Production Redis REST URL/token ve servis durumunu doğrulayın."' health.json
+            jq -r '.checks.alerts | select(.configured == false) | "::error::Production ERROR_ALERT_WEBHOOK_URL eksik; operasyon alarm kanalını tanımlayıp redeploy edin."' health.json
           else
             echo "::error::Health yanıtı readiness JSON'u değil."
           fi

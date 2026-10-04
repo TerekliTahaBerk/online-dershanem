@@ -151,6 +151,7 @@ jobs:
       MFA_ENCRYPTION_KEY: Y2ktb25seS1tZmEta2V5LTAxMjM0NTY3ODlhYmNkZWY=
       UPSTASH_REDIS_REST_URL: https://ci-cache.invalid
       UPSTASH_REDIS_REST_TOKEN: ci-only-cache-token
+      ERROR_ALERT_WEBHOOK_URL: https://ci-alerts.invalid
       RESEND_API_KEY: re_ci_only
       EMAIL_MODE: receipts
       ODK_ROLLOUT_MODE: general

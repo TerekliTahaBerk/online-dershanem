@@ -23,6 +23,7 @@ export type CacheStatus = {
   memSize: number;
   lastErrorAt: string | null;
   lastErrorOperation: string | null;
+  lastErrorCode?: string | null;
 };
 
 export type CacheLogger = {
@@ -58,6 +59,7 @@ export function createCache(input: {
   const mem = new Map<string, Entry>();
   let lastErrorAt: string | null = null;
   let lastErrorOperation: string | null = null;
+  let lastErrorCode: string | null = null;
 
   function isDisabled() {
     return env.CACHE_DISABLED === "1";
@@ -90,12 +92,20 @@ export function createCache(input: {
   function recordFailure(operation: string, error?: unknown) {
     lastErrorAt = new Date(now()).toISOString();
     lastErrorOperation = operation;
-    logger?.warn(`cache.upstash.${operation}_failed`, {}, error);
+    const cause = error instanceof Error && "cause" in error ? error.cause : null;
+    const causeCode = cause && typeof cause === "object" && "code" in cause ? String(cause.code) : null;
+    lastErrorCode = causeCode && /^(ENOTFOUND|EAI_AGAIN|ECONNREFUSED|ECONNRESET|ETIMEDOUT|UND_ERR_CONNECT_TIMEOUT)$/.test(causeCode)
+      ? causeCode
+      : error instanceof Error && error.name === "TimeoutError" ? "TIMEOUT"
+      : error instanceof Error && /^Upstash returned HTTP \d{3}$/.test(error.message) ? `HTTP_${error.message.slice(-3)}`
+      : "REDIS_REQUEST_FAILED";
+    logger?.warn(`cache.upstash.${operation}_failed`, { code: lastErrorCode });
   }
 
   function recordSuccess() {
     lastErrorAt = null;
     lastErrorOperation = null;
+    lastErrorCode = null;
   }
 
   async function command<T>(operation: string, path: string, init?: RequestInit): Promise<T | null> {
@@ -107,6 +117,7 @@ export function createCache(input: {
         ...init,
         headers: { Authorization: `Bearer ${config.token}`, ...init?.headers },
         cache: "no-store",
+        signal: AbortSignal.timeout(3_000),
       });
       if (!response.ok) throw new Error(`Upstash returned HTTP ${response.status}`);
       const body = await response.json() as { result?: T; error?: string };
@@ -213,14 +224,15 @@ export function createCache(input: {
   function status(): CacheStatus {
     if (isDisabled()) return { backend: "disabled", state: "disabled", configured: false, memSize: mem.size, lastErrorAt, lastErrorOperation };
     const configured = Boolean(upstashConfig());
-    if (configured) return { backend: "upstash", state: lastErrorAt ? "degraded" : "ready", configured, memSize: mem.size, lastErrorAt, lastErrorOperation };
+    if (configured) return { backend: "upstash", state: lastErrorAt ? "degraded" : "ready", configured, memSize: mem.size, lastErrorAt, lastErrorOperation, lastErrorCode };
     if (isProduction()) return { backend: "unavailable", state: "degraded", configured: false, memSize: mem.size, lastErrorAt, lastErrorOperation: "configuration" };
     return { backend: "memory", state: "ready", configured: false, memSize: mem.size, lastErrorAt, lastErrorOperation };
   }
 
   async function health(): Promise<CacheStatus> {
     if (isDisabled() || !upstashConfig()) return status();
-    await command("ping", "ping");
+    const pong = await command<string>("ping", "ping");
+    if (pong !== "PONG" && !lastErrorAt) recordFailure("ping");
     return status();
   }
 

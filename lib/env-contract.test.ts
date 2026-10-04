@@ -14,6 +14,7 @@ const productionEnv = {
   MFA_ENCRYPTION_KEY: Buffer.alloc(32, 11).toString("base64"),
   UPSTASH_REDIS_REST_URL: "https://cache.test.invalid",
   UPSTASH_REDIS_REST_TOKEN: "secret-cache-token",
+  ERROR_ALERT_WEBHOOK_URL: "https://alerts.test.invalid",
   ODK_ROLLOUT_MODE: "disabled",
   ODK_PILOT_KILL_SWITCH: "false",
   ODK_PILOT_ACCEPTANCE_APPROVED: "false",
@@ -138,4 +139,9 @@ test("rate-limit proxy modu yalnız belgelenen topolojileri kabul eder", () => {
     now: new Date("2026-08-11T00:00:00Z"),
   });
   assert.ok(invalid.blockers.some((issue) => issue.key === "RATE_LIMIT_PROXY_MODE" && issue.code === "invalid"));
+});
+
+test("production blocks deployment when the mandatory operational alert channel is missing", () => {
+  const report = evaluateConfiguration({ env: { ...productionEnv, ERROR_ALERT_WEBHOOK_URL: undefined }, environment: "production" });
+  assert.ok(report.blockers.some((issue) => issue.key === "ERROR_ALERT_WEBHOOK_URL" && issue.code === "missing"));
 });

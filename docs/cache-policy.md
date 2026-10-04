@@ -57,7 +57,9 @@ authoritative database or service. Production does not fall back to memory, so a
 serverless instance cannot serve an entry another instance already invalidated.
 
 `/api/health/ready` probes Redis and reports the effective backend, state,
-configuration state, last failed operation, and failure timestamp. Production is
+configuration state, last failed operation, safe failure code (`ENOTFOUND`,
+`HTTP_401`, `TIMEOUT`, etc.), and failure timestamp. Requests time out after
+three seconds; a Redis health probe must return `PONG`. Production is
 not ready when Redis is absent, disabled, or unreachable. `/api/smoke` retains a
 read/write/delete cycle for post-deploy verification.
 
@@ -70,6 +72,21 @@ read/write/delete cycle for post-deploy verification.
 3. Redeploy: environment-variable changes do not alter an existing deployment.
 4. Verify `/api/health/ready` reports `checks.cache.backend: "upstash"` and
    `checks.cache.status: "ok"`, then run the authenticated `/api/smoke` check.
+
+Production also requires `ERROR_ALERT_WEBHOOK_URL`. Deploy validation rejects a
+missing alarm channel, consistent with the readiness contract. Configure the
+actual operational webhook; never point it at a dummy endpoint to silence health.
+
+If Redis reports `ENOTFOUND`, check that the Upstash database still exists and
+that the REST URL/token pair belongs to it. Old Vercel integration variables can
+outlive a removed storage resource. Replace the pair together and redeploy;
+changing variables does not repair a deployment that is already running.
+
+`cron: missing` means no successful heartbeat exists. Inspect the real cron
+schedule and introduction date before treating a new weekly job as failed.
+`coach-plan-approvals` runs Monday at 07:00 UTC (10:00 Europe/Istanbul). Run an
+authorized job or wait for its scheduled run; do not manufacture a successful
+heartbeat or remove it from health checks.
 
 `CACHE_KEY_PREFIX` is optional. Its default includes `VERCEL_ENV`/`NODE_ENV` so
 production, preview, and development keys cannot collide. Never place Redis
