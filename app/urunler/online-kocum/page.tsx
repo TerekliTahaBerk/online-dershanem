@@ -42,6 +42,7 @@ export default function OnlineKocumPage() {
           title="Planını uygula."
           body="Kişisel çalışma planı, birebir koç görüşmesi ve düzenli takip. Ne çalışacağını bilmemek sorun olmaktan çıkar."
           tracks={["LGS", "YKS"]}
+          secondaryCta={{ label: "Ücretsiz Ön Görüşme", href: "/iletisim?urun=onlinekocum#on-gorusme" }}
           note="Planı koç kurar, tüm dersleri kapsar"
           visual={
             <div className="rounded-dc-card border border-dc-line bg-white p-5 shadow-[0_14px_34px_rgba(20,32,28,.07)]">

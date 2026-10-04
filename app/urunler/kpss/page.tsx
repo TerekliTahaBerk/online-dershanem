@@ -52,7 +52,7 @@ export default async function KpssProductPage() {
           body="Hedef tarihini, haftalık çalışma kapasiteni ve konu ilerlemeni tek bir uygulanabilir planda birleştir. Her gün neye odaklanacağını gör, ritmini sürdürülebilir biçimde koru."
           tracks={["KPSS", "Eğitim Bilimleri"]}
           note="Yetişkin ve özerk hazırlık düzeni"
-          secondaryCta={{ label: "Ücretsiz Ön Görüşme", href: "/iletisim" }}
+          secondaryCta={{ label: "Ücretsiz Ön Görüşme", href: "/iletisim#on-gorusme" }}
           visual={
             <div className="rounded-dc-card border border-dc-line bg-white p-5 shadow-[0_14px_34px_rgba(20,32,28,.07)]">
               <div className="flex items-center justify-between gap-3">

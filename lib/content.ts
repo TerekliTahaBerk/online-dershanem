@@ -460,7 +460,7 @@ export const blogPosts = [
       title: "Kişiye özel çalışma programını konuşalım",
       text: "İhtiyacına uygun küçük grup dersinde haftalık planını seviyene göre kuralım.",
       buttonLabel: "Ön Görüşme Talep Et",
-      href: "/iletisim"
+      href: "/iletisim#on-gorusme"
     },
     relatedSlugs: ["yks-online-ders-calisma-plani", "online-dershane-nedir", "lgs-online-ders-net-artirma"]
   },
@@ -495,7 +495,7 @@ export const blogPosts = [
       title: "Uygun seçeneği birlikte seçelim",
       text: "Öğrencinin seviyesine göre özel ders mi küçük grup mu daha verimli, ön görüşmede konuşalım.",
       buttonLabel: "Ön Görüşme Talep Et",
-      href: "/iletisim"
+      href: "/iletisim#on-gorusme"
     },
     relatedSlugs: ["online-ozel-ders-mi-dershane-mi", "online-dershane-nedir", "online-dershane-fiyatlari-2026"]
   },
@@ -603,7 +603,7 @@ export const blogPosts = [
       title: "Deneme analizini düzenli takibe bağla",
       text: "Deneme sonuçlarını birlikte değerlendirip haftalık planı çıkaralım.",
       buttonLabel: "Ön Görüşme Talep Et",
-      href: "/iletisim"
+      href: "/iletisim#on-gorusme"
     },
     relatedSlugs: ["yks-online-ders-calisma-plani", "lgs-online-ders-net-artirma", "online-dershane-nedir"]
   },
@@ -641,7 +641,7 @@ export const blogPosts = [
       title: "Doğru online dershane seçimi için bizimle iletişime geç",
       text: "Öğrencinin seviyesine göre en uygun başlangıcı birlikte konuşalım.",
       buttonLabel: "Ön Görüşme Talep Et",
-      href: "/iletisim"
+      href: "/iletisim#on-gorusme"
     },
     relatedSlugs: ["online-dershane-nedir", "online-dershane-fiyatlari-2026", "online-ozel-ders-mi-dershane-mi"]
   },
@@ -676,7 +676,7 @@ export const blogPosts = [
       title: "Çalışma düzenini birlikte oluşturalım",
       text: "Küçük grup dersinde öğrencinin haftalık çalışma düzenini seviyesine göre tasarlayalım.",
       buttonLabel: "Ön Görüşme Talep Et",
-      href: "/iletisim"
+      href: "/iletisim#on-gorusme"
     },
     relatedSlugs: ["online-ders-calisma-programi", "deneme-analizi-nasil-yapilir", "online-dershane-nedir"]
   }

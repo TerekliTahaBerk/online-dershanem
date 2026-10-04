@@ -313,7 +313,7 @@ const newBlogPosts: BlogPost[] = [
       title: "Nereden başlaman gerektiğini birlikte bulalım",
       text: "Öğrencinin sınıfını, hedefini ve matematikte zorlandığı noktayı ücretsiz ön görüşmede konuşalım.",
       buttonLabel: "Ücretsiz Ön Görüşme",
-      href: "/iletisim"
+      href: "/iletisim#on-gorusme"
     },
     relatedSlugs: ["online-matematik-dersi-nasil-olmali", "lgs-matematikte-zorlananlar-icin", "tyt-matematik-calisma-programi"]
   },

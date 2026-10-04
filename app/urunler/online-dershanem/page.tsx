@@ -44,6 +44,7 @@ export default function OnlineDershanemPage() {
           title="Canlı derste öğretmenle ilerle."
           body="Birebir ya da en fazla 4 kişilik grupta ders. Öğretmen soruyu derste seninle çözer; ders bitince neyi tekrar edeceğin yazılı olarak kalır."
           tracks={["LGS", "YKS"]}
+          secondaryCta={{ label: "Ücretsiz Ön Görüşme", href: "/iletisim?urun=onlinedershanem#on-gorusme" }}
           note="Birebir ya da en fazla 4 kişilik grup"
           visual={
             <div className="rounded-dc-card border border-dc-line bg-white p-3.5 shadow-[0_14px_34px_rgba(20,32,28,.07)]">

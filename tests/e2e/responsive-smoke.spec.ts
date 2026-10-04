@@ -41,7 +41,7 @@ test.describe("public responsive smoke", () => {
     await dialog.getByRole("button", { name: "Menüyü kapat" }).click();
     await expect(dialog).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Paketini Oluştur", exact: true }).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: "Ürünleri Karşılaştır", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Ücretsiz Ön Görüşme", exact: true }).first()).toBeVisible();
   });
 });
 

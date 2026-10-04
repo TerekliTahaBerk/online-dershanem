@@ -33,6 +33,10 @@ async function consentAndSubmit(page: Page) {
 
 test.describe("kendi kendine kayıt", () => {
   test.beforeEach(async ({ page }) => {
+    await page.route("https://tally.so/**", (route) => route.fulfill({
+      contentType: "text/html; charset=utf-8",
+      body: '<!doctype html><html lang="tr"><body><label>Analiz <input></label></body></html>',
+    }));
     await page.setExtraHTTPHeaders({ "x-forwarded-for": uniqueTestClientIp() });
     await page.request.post("/api/auth/logout");
   });
@@ -56,6 +60,7 @@ test.describe("kendi kendine kayıt", () => {
     await expect(page.getByText("KVKK aydınlatma metnini onaylamanız gerekiyor.")).toBeVisible();
     await consentAndSubmit(page);
 
+    await expect(page.getByTitle("Öğrenci Analiz ve Kayıt Formu")).toHaveCount(1);
     const src = await page.getByTitle("Öğrenci Analiz ve Kayıt Formu").getAttribute("src");
     const tally = new URL(src!);
     expect(tally.origin).toBe("https://tally.so");
@@ -85,6 +90,31 @@ test.describe("kendi kendine kayıt", () => {
     await page.goto("/panel/ayarlar");
     await expect(page.getByText("Hesabın tamamlandı.", { exact: true }).first()).toBeVisible();
     await expect(page.getByText(/Hesabını tamamla/)).toHaveCount(0);
+
+    // Atlanan özel form ayarlardan yeniden açılır; public form ile karışmaz.
+    await page.getByRole("link", { name: "Doldur", exact: true }).click();
+    await expect(page).toHaveURL(/\/kayit\/iletisim-formu\?tekrar=1$/);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    const iframe = page.getByTitle("Öğrenci Analiz ve Kayıt Formu");
+    await expect(iframe).toHaveCount(1);
+    await page.frameLocator('iframe[title="Öğrenci Analiz ve Kayıt Formu"]').getByRole("textbox", { name: "Analiz" }).fill("Fixture");
+    const frame = await (await iframe.elementHandle())!.contentFrame();
+    // Güvenilmeyen origin mevcut gönderim akışını tetiklemez.
+    await page.evaluate(() => window.dispatchEvent(new MessageEvent("message", {
+      origin: "https://example.com", data: { event: "Tally.FormSubmitted" },
+    })));
+    const submission = page.waitForResponse((response) => response.url().endsWith("/api/account/contact-form") && response.request().postDataJSON()?.action === "submitted");
+    await frame!.evaluate(() => parent.postMessage(JSON.stringify({ event: "Tally.FormSubmitted", payload: {} }), "*"));
+    expect((await submission).status()).toBe(200);
+    await page.waitForURL(/\/panel\/urun-sec$/);
+    await expect(page.getByText("Sana ulaşabilmemiz için kısa iletişim formunu doldur.")).toHaveCount(0);
+    await page.goto("/kayit/iletisim-formu");
+    await expect(page).toHaveURL(/\/panel\/urun-sec$/);
+    await page.goto("/panel/ayarlar");
+    await page.getByRole("link", { name: "Güncelle", exact: true }).click();
+    await expect(page.getByText("Formu daha önce doldurdun; istersen güncelleyebilirsin.")).toBeVisible();
+    await page.getByRole("button", { name: "Panele dön", exact: true }).click();
+    await page.waitForURL(/\/panel\/urun-sec$/);
   });
 
   test("veli kaydı çocukları bekleyen hesap olarak bildirir", async ({ page }) => {
@@ -118,7 +148,11 @@ test.describe("kendi kendine kayıt", () => {
 
   test("kayıt API'si yönetici rolünü reddeder", async ({ page }) => {
     const response = await page.request.post("/api/auth/register", {
-      headers: { origin: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000" },
+      headers: {
+        origin: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+        // page headers do not propagate to page.request's API context.
+        "x-forwarded-for": uniqueTestClientIp(),
+      },
       data: {
         accountType: "ADMIN",
         fullName: "Yetki Denemesi",

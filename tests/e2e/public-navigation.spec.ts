@@ -98,12 +98,14 @@ test.describe("mobil navigasyon", () => {
     await expect(page.getByRole("dialog", { name: "Mobil menü" })).toHaveCount(0);
   });
 
-  test("hero ikincil CTA keşif sayfasına gider", async ({ page }) => {
+  test("hero ikincil CTA ön görüşme formuna gider", async ({ page }) => {
     await gotoHydrated(page, "/");
-    const heroSecondaryCta = page.getByRole("link", { name: "Ürünleri Karşılaştır", exact: true });
+    const heroSecondaryCta = page.getByRole("link", { name: "Ücretsiz Ön Görüşme", exact: true }).first();
     await expect(heroSecondaryCta).toBeVisible();
     await heroSecondaryCta.click();
-    await expect(page).toHaveURL(/\/urunler\/?$/);
+    await expect(page).toHaveURL(/\/iletisim#on-gorusme$/);
+    await expect(page.locator("#on-gorusme-title")).toBeInViewport();
+    await expect(page.getByTitle("onlinedershanem. Kısa Ön Görüşme Formu")).toBeVisible();
   });
 
   test("ürün sayfaları 390px'te yatay taşma yapmaz", async ({ page }) => {
@@ -142,20 +144,20 @@ test.describe("ürün sayfaları ve footer", () => {
   test("Dino AI yayında olmayan bir yeteneği çalışıyormuş gibi anlatmaz", async ({ page }) => {
     await page.goto("/dino-ai", { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Dino AI");
-    await expect(page.getByText("Dino AI ayrı satılan bir ürün değildir.", { exact: true })).toBeVisible();
+    await expect(page.getByRole("main").getByText("Dino AI ayrı satılan bir ürün değildir.", { exact: true })).toBeVisible();
     const navLink = page.getByRole("navigation", { name: "Ana menü" }).getByRole("link", { name: /^Dino AI ·/ });
     if ((await navLink.textContent())?.includes("Yakında")) {
-      await expect(page.locator("main")).toContainText("henüz yayında değil");
+      await expect(page.getByRole("main")).toContainText("henüz yayında değil");
       await expect(page.getByRole("heading", { level: 1 })).toContainText("hazırlanıyor");
     } else {
-      await expect(page.locator("main")).toContainText("Sınırlı pilot");
+      await expect(page.getByRole("main")).toContainText("Sınırlı pilot");
     }
-    await expect(page.locator("main")).not.toContainText("Aldığın her ürünün içinde çalışır");
+    await expect(page.getByRole("main")).not.toContainText("Aldığın her ürünün içinde çalışır");
   });
 
   test("Online Koçum kayıt durumunu açıkça söyler", async ({ page }) => {
     await page.goto("/urunler/online-kocum", { waitUntil: "domcontentloaded" });
-    await expect(page.getByText("Online Koçum için kayıtlar hazırlanıyor.", { exact: false })).toBeVisible();
+    await expect(page.getByRole("main").getByText("Online Koçum için kayıtlar hazırlanıyor.", { exact: false })).toBeVisible();
   });
 });
 

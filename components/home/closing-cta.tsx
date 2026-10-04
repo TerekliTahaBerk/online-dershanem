@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { PreMeetingLink } from "@/components/forms/pre-meeting-link";
 
 /**
  * 14 KAPANIŞ CTA — onaylı tasarım (Web.dc.html).
@@ -11,11 +12,10 @@ export function ClosingCta() {
       <div className="relative grid items-center gap-6 overflow-hidden rounded-dc-banner border border-dc-brand-soft-line bg-dc-brand-soft px-8 py-12 sm:px-14 sm:py-14 lg:grid-cols-[1fr_320px]">
         <div>
           <h2 className="font-display text-(length:--public-title) leading-[1.12] tracking-tight text-dc-brand-deep">
-            İhtiyacın olan desteği seç.
+            Nereden başlayacağını bilmiyor musun?
           </h2>
           <p className="mt-3.5 max-w-[520px] text-[16.5px] leading-[1.65] text-[#3F5C51]">
-            Canlı ders, koçluk ve denemeyi tek tek ya da birlikte seçebilir,
-            sana uygun paketi tek adımda oluşturabilirsin.
+            Canlı ders, koçluk veya deneme desteğinden hangisinin sana uygun olduğunu birlikte belirleyelim.
           </p>
           <div className="mt-7 flex flex-wrap items-center gap-5">
             <Link
@@ -24,12 +24,10 @@ export function ClosingCta() {
             >
               Paketini Oluştur →
             </Link>
-            <Link
-              href="/urunler"
+            <PreMeetingLink
+              source="home_closing_cta"
               className="text-[15px] font-bold text-dc-brand-hover hover:text-dc-brand-deep"
-            >
-              Tüm Ürünleri Karşılaştır
-            </Link>
+            />
           </div>
         </div>
 
