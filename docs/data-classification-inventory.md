@@ -12,20 +12,20 @@ Sütunlar:
 
 ## Özet
 
-- Taranan model: 149
-- Taranan scalar/enum alan: 1689
-- Olası kişisel veri alanı: 276
-- Çocuk verisi `evet`: 53; `olası`: 77
+- Taranan model: 152
+- Taranan scalar/enum alan: 1753
+- Olası kişisel veri alanı: 293
+- Çocuk verisi `evet`: 88; `olası`: 73
 
 | Kategori | Alan sayısı |
 |---|---:|
-| akademik | 28 |
+| akademik | 30 |
 | finansal | 39 |
-| iletişim | 12 |
-| kimlik | 55 |
+| iletişim | 18 |
+| kimlik | 61 |
 | kimlik doğrulama sırrı | 10 |
-| serbest metin | 82 |
-| yapılandırılmamış (Json) | 50 |
+| serbest metin | 84 |
+| yapılandırılmamış (Json) | 51 |
 
 ## Alanlar
 
@@ -88,16 +88,18 @@ Sütunlar:
 | CoachingSession | sharedNote | serbest metin | orta | evet | yok (DB'de düz) |
 | CoachingSession | privateNote | serbest metin | orta | evet | yok (DB'de düz) |
 | CoachNote | body | serbest metin | orta | evet | yok (DB'de düz) |
-| CommerceOrderLine | productName | kimlik | düşük | hayır | yok (DB'de düz) |
-| CommerceOrderLine | productSnapshot | yapılandırılmamış (Json) | orta | hayır | yok (DB'de düz) |
-| CommerceOrderLine | unitPriceCents | finansal | orta | hayır | yok (DB'de düz) |
-| CommerceOrderLine | subtotalCents | finansal | orta | hayır | yok (DB'de düz) |
-| CommerceOrderLine | discountCents | finansal | orta | hayır | yok (DB'de düz) |
-| CommerceOrderLine | taxCents | finansal | orta | hayır | yok (DB'de düz) |
-| CommerceOrderLine | totalCents | finansal | orta | hayır | yok (DB'de düz) |
-| CommerceOrderLine | fulfillmentOwnerSnapshot | yapılandırılmamış (Json) | orta | hayır | yok (DB'de düz) |
-| CommerceOrderLine | refundedQuantity | finansal | orta | hayır | yok (DB'de düz) |
-| CommerceOrderLine | refundedCents | finansal | orta | hayır | yok (DB'de düz) |
+| CommerceOrderLine | productName | kimlik | düşük | evet | yok (DB'de düz) |
+| CommerceOrderLine | productSnapshot | yapılandırılmamış (Json) | orta | evet | yok (DB'de düz) |
+| CommerceOrderLine | unitPriceCents | finansal | orta | evet | yok (DB'de düz) |
+| CommerceOrderLine | subtotalCents | finansal | orta | evet | yok (DB'de düz) |
+| CommerceOrderLine | discountCents | finansal | orta | evet | yok (DB'de düz) |
+| CommerceOrderLine | taxCents | finansal | orta | evet | yok (DB'de düz) |
+| CommerceOrderLine | totalCents | finansal | orta | evet | yok (DB'de düz) |
+| CommerceOrderLine | fulfillmentOwnerSnapshot | yapılandırılmamış (Json) | orta | evet | yok (DB'de düz) |
+| CommerceOrderLine | refundedQuantity | finansal | orta | evet | yok (DB'de düz) |
+| CommerceOrderLine | refundedCents | finansal | orta | evet | yok (DB'de düz) |
+| ContactFormSubmission | email | iletişim | yüksek | olası (tüm roller) | log/audit redaction anahtarı; DB'de düz |
+| ContactFormSubmission | payload | yapılandırılmamış (Json) | orta | olası (tüm roller) | yok (DB'de düz) |
 | Coupon | description | serbest metin | orta | hayır | yok (DB'de düz) |
 | Coupon | minOrderCents | finansal | orta | hayır | yok (DB'de düz) |
 | Coupon | maxDiscountCents | finansal | orta | hayır | yok (DB'de düz) |
@@ -179,7 +181,7 @@ Sütunlar:
 | OdkAttemptScore | blankCount | akademik | orta | olası (tüm roller) | yok (DB'de düz) |
 | OdkAttemptScore | totalNet | akademik | orta | olası (tüm roller) | yok (DB'de düz) |
 | OdkAttemptScore | sectionBreakdown | yapılandırılmamış (Json) | orta | olası (tüm roller) | yok (DB'de düz) |
-| OdkEntitlement | contractSnapshot | yapılandırılmamış (Json) | orta | olası (tüm roller) | yok (DB'de düz) |
+| OdkEntitlement | contractSnapshot | yapılandırılmamış (Json) | orta | evet | yok (DB'de düz) |
 | OdkExam | description | serbest metin | orta | olası (tüm roller) | yok (DB'de düz) |
 | OdkExam | settings | yapılandırılmamış (Json) | orta | olası (tüm roller) | yok (DB'de düz) |
 | OdkExamAssignment | snapshot | yapılandırılmamış (Json) | orta | olası (tüm roller) | yok (DB'de düz) |
@@ -201,30 +203,30 @@ Sütunlar:
 | OdkExamVersion | settings | yapılandırılmamış (Json) | orta | olası (tüm roller) | yok (DB'de düz) |
 | OdkImportAudit | rawPayload | yapılandırılmamış (Json) | orta | olası (tüm roller) | yok (DB'de düz) |
 | OdkImportAudit | previewSummary | serbest metin | orta | olası (tüm roller) | yok (DB'de düz) |
-| OdkOrder | subtotalCents | finansal | orta | olası (tüm roller) | yok (DB'de düz) |
-| OdkOrder | discountCents | finansal | orta | olası (tüm roller) | yok (DB'de düz) |
-| OdkOrder | totalCents | finansal | orta | olası (tüm roller) | yok (DB'de düz) |
-| OdkOrder | buyerInfo | yapılandırılmamış (Json) | orta | olası (tüm roller) | yok (DB'de düz) |
-| OdkOrder | contractSnapshot | yapılandırılmamış (Json) | orta | olası (tüm roller) | yok (DB'de düz) |
+| OdkOrder | subtotalCents | finansal | orta | evet | yok (DB'de düz) |
+| OdkOrder | discountCents | finansal | orta | evet | yok (DB'de düz) |
+| OdkOrder | totalCents | finansal | orta | evet | yok (DB'de düz) |
+| OdkOrder | buyerInfo | yapılandırılmamış (Json) | orta | evet | yok (DB'de düz) |
+| OdkOrder | contractSnapshot | yapılandırılmamış (Json) | orta | evet | yok (DB'de düz) |
 | OdkPackage | description | serbest metin | orta | hayır | yok (DB'de düz) |
 | OdkPackage | priceCents | finansal | orta | hayır | yok (DB'de düz) |
 | OdkPackage | originalPriceCents | finansal | orta | hayır | yok (DB'de düz) |
 | OdkPackage | ctaText | serbest metin | orta | hayır | yok (DB'de düz) |
 | OdkPackage | contractPolicy | yapılandırılmamış (Json) | orta | hayır | yok (DB'de düz) |
-| OdkPayment | amountCents | finansal | orta | hayır | yok (DB'de düz) |
-| OdkPayment | failureReason | serbest metin | orta | hayır | yok (DB'de düz) |
+| OdkPayment | amountCents | finansal | orta | evet | yok (DB'de düz) |
+| OdkPayment | failureReason | serbest metin | orta | evet | yok (DB'de düz) |
 | OdkPilotRun | name | kimlik | düşük | olası (tüm roller) | yok (DB'de düz) |
 | OdkScoringPolicy | wrongPenalty | akademik | orta | hayır | yok (DB'de düz) |
-| OdOnboarding | blockerReason | serbest metin | orta | olası (tüm roller) | yok (DB'de düz) |
-| OdOnboardingTransition | note | serbest metin | orta | olası (tüm roller) | yok (DB'de düz) |
-| OdOnboardingTransition | metadata | yapılandırılmamış (Json) | orta | olası (tüm roller) | yok (DB'de düz) |
-| OdOrder | packageName | kimlik | düşük | olası (tüm roller) | yok (DB'de düz) |
-| OdOrder | subtotalCents | finansal | orta | olası (tüm roller) | yok (DB'de düz) |
-| OdOrder | discountCents | finansal | orta | olası (tüm roller) | yok (DB'de düz) |
-| OdOrder | totalCents | finansal | orta | olası (tüm roller) | yok (DB'de düz) |
-| OdOrder | buyerInfo | yapılandırılmamış (Json) | orta | olası (tüm roller) | yok (DB'de düz) |
-| OdPayment | amountCents | finansal | orta | hayır | yok (DB'de düz) |
-| OdPayment | failureReason | serbest metin | orta | hayır | yok (DB'de düz) |
+| OdOnboarding | blockerReason | serbest metin | orta | evet | yok (DB'de düz) |
+| OdOnboardingTransition | note | serbest metin | orta | evet | yok (DB'de düz) |
+| OdOnboardingTransition | metadata | yapılandırılmamış (Json) | orta | evet | yok (DB'de düz) |
+| OdOrder | packageName | kimlik | düşük | evet | yok (DB'de düz) |
+| OdOrder | subtotalCents | finansal | orta | evet | yok (DB'de düz) |
+| OdOrder | discountCents | finansal | orta | evet | yok (DB'de düz) |
+| OdOrder | totalCents | finansal | orta | evet | yok (DB'de düz) |
+| OdOrder | buyerInfo | yapılandırılmamış (Json) | orta | evet | yok (DB'de düz) |
+| OdPayment | amountCents | finansal | orta | evet | yok (DB'de düz) |
+| OdPayment | failureReason | serbest metin | orta | evet | yok (DB'de düz) |
 | Package | name | kimlik | düşük | hayır | yok (DB'de düz) |
 | Package | description | serbest metin | orta | hayır | yok (DB'de düz) |
 | Package | price | finansal | orta | hayır | yok (DB'de düz) |
@@ -233,6 +235,13 @@ Sütunlar:
 | PasskeyCredential | publicKey | kimlik doğrulama sırrı | yüksek | olası (tüm roller) | yok (DB'de düz) |
 | PasskeyCredential | name | kimlik | düşük | olası (tüm roller) | yok (DB'de düz) |
 | PasswordResetToken | tokenHash | kimlik doğrulama sırrı | yüksek | olası (tüm roller) | tek yönlü hash |
+| PendingChild | fullName | kimlik | yüksek | evet | log/audit redaction anahtarı; DB'de düz |
+| PendingChild | classLevel | akademik | orta | evet | yok (DB'de düz) |
+| PendingChild | schoolName | kimlik | orta | evet | yok (DB'de düz) |
+| PendingChild | examType | akademik | orta | evet | yok (DB'de düz) |
+| PendingChild | email | iletişim | yüksek | evet | log/audit redaction anahtarı; DB'de düz |
+| PendingChild | phone | iletişim | yüksek | evet | log/audit redaction anahtarı; DB'de düz |
+| PendingChild | relationship | kimlik | orta | evet | yok (DB'de düz) |
 | Product | name | kimlik | düşük | hayır | yok (DB'de düz) |
 | ProductEvent | name | kimlik | düşük | hayır | yok (DB'de düz) |
 | ProductEvent | properties | yapılandırılmamış (Json) | orta | hayır | yok (DB'de düz) |
@@ -261,6 +270,14 @@ Sütunlar:
 | Session | tokenHash | kimlik doğrulama sırrı | yüksek | olası (tüm roller) | tek yönlü hash |
 | Session | userAgent | kimlik | orta | olası (tüm roller) | yok (DB'de düz) |
 | Session | ip | kimlik | orta | olası (tüm roller) | yok (DB'de düz) |
+| SignupProfile | city | kimlik | orta | olası (tüm roller) | yok (DB'de düz) |
+| SignupProfile | note | serbest metin | orta | olası (tüm roller) | yok (DB'de düz) |
+| SignupProfile | guardianName | kimlik | düşük | olası (tüm roller) | yok (DB'de düz) |
+| SignupProfile | guardianPhone | iletişim | yüksek | olası (tüm roller) | log/audit redaction anahtarı; DB'de düz |
+| SignupProfile | guardianEmail | iletişim | yüksek | olası (tüm roller) | log/audit redaction anahtarı; DB'de düz |
+| SignupProfile | relationship | kimlik | orta | olası (tüm roller) | yok (DB'de düz) |
+| SignupProfile | billingAddress | iletişim | yüksek | olası (tüm roller) | yok (DB'de düz) |
+| SignupProfile | contactNote | serbest metin | orta | olası (tüm roller) | yok (DB'de düz) |
 | StudentGoal | subjectName | kimlik | düşük | evet | yok (DB'de düz) |
 | StudentGoal | nearTermNote | serbest metin | orta | evet | yok (DB'de düz) |
 | StudentOutcomeMastery | explanation | serbest metin | orta | evet | yok (DB'de düz) |

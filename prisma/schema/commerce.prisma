@@ -245,12 +245,20 @@ model OdkOrder {
   package              OdkPackage            @relation(fields: [packageId], references: [id], onDelete: Restrict)
   payments             OdkPayment[]
   student              User?                 @relation("OdkOrderStudent", fields: [studentUserId], references: [id], onDelete: SetNull)
+  /// Ödemeyi yapan oturum sahibi (giriş yapmış alıcı). Veli alımında öğrenciden farklıdır.
+  buyerUserId          String?               @map("buyer_user_id")
+  buyer                User?                 @relation("OdkOrderBuyer", fields: [buyerUserId], references: [id], onDelete: SetNull)
+  /// Veli, hesabı henüz açılmamış bir çocuk için aldıysa dolar.
+  pendingChildId       String?               @map("pending_child_id")
+  pendingChild         PendingChild?         @relation(fields: [pendingChildId], references: [id], onDelete: SetNull)
   entitlement          OdkEntitlement?
   lines                CommerceOrderLine[]
 
   @@index([status, createdAt])
   @@index([provisioningStatus, updatedAt])
   @@index([studentUserId, createdAt])
+  @@index([buyerUserId, createdAt])
+  @@index([pendingChildId])
   @@map("odk_orders")
 }
 
@@ -316,6 +324,12 @@ model OdOrder {
   package              Package?             @relation(fields: [packageId], references: [id], onDelete: SetNull)
   payments             OdPayment[]
   user                 User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  /// Ödemeyi yapan oturum sahibi (giriş yapmış alıcı). Veli alımında öğrenciden farklıdır.
+  buyerUserId          String?              @map("buyer_user_id")
+  buyer                User?                @relation("OdOrderBuyer", fields: [buyerUserId], references: [id], onDelete: SetNull)
+  /// Veli, hesabı henüz açılmamış bir çocuk için aldıysa dolar.
+  pendingChildId       String?              @map("pending_child_id")
+  pendingChild         PendingChild?        @relation(fields: [pendingChildId], references: [id], onDelete: SetNull)
   onboarding           OdOnboarding?
   sourcedMemberships   ProductMembership[]
   lines                CommerceOrderLine[]
@@ -324,6 +338,8 @@ model OdOrder {
   @@index([intentId])
   @@index([userId, createdAt])
   @@index([provisioningStatus, updatedAt])
+  @@index([buyerUserId, createdAt])
+  @@index([pendingChildId])
   @@map("od_orders")
 }
 

@@ -16,11 +16,17 @@ export function AuthCard({
   googleLabel,
   children,
   footer,
+  wide = false,
+  description,
 }: {
   title: string;
-  googleLabel: string;
+  /** Verilmezse Google düğmesi ve "veya" ayracı basılmaz. */
+  googleLabel?: string;
   children: ReactNode;
   footer?: ReactNode;
+  /** Çok adımlı kayıt gibi geniş formlar için 560px kolon. */
+  wide?: boolean;
+  description?: ReactNode;
 }) {
   return (
     <main
@@ -28,7 +34,7 @@ export function AuthCard({
       tabIndex={-1}
       className="site-scope grid min-h-dvh place-items-center bg-dc-canvas px-6 py-12"
     >
-      <div className="w-full max-w-[380px]">
+      <div className={wide ? "w-full max-w-[560px]" : "w-full max-w-[380px]"}>
         <Link
           href="/"
           aria-label="Online Dershanem ana sayfa"
@@ -49,29 +55,41 @@ export function AuthCard({
           {title}
         </h1>
 
-        <button
-          type="button"
-          disabled
-          aria-disabled="true"
-          className="mt-7 flex w-full cursor-not-allowed items-center justify-center gap-2.5 rounded-xl border border-[#DDE4E0] bg-white p-3.5 text-[15px] font-semibold text-dc-ink opacity-55"
-        >
-          <span
-            aria-hidden="true"
-            className="text-[15px] font-bold text-[#4285F4]"
-          >
-            G
-          </span>
-          {googleLabel}
-          <span className="rounded-full bg-dc-surface-muted px-2 py-0.5 text-xs font-semibold text-dc-ink-faint">
-            yakında
-          </span>
-        </button>
+        {description ? (
+          <p className="mt-2 text-center text-[13.5px] leading-[1.6] text-dc-ink-muted">
+            {description}
+          </p>
+        ) : null}
 
-        <div className="my-[22px] flex items-center gap-3">
-          <span className="h-px flex-1 bg-dc-line" />
-          <span className="text-[12.5px] text-dc-ink-ghost">veya</span>
-          <span className="h-px flex-1 bg-dc-line" />
-        </div>
+        {googleLabel ? (
+          <>
+            <button
+              type="button"
+              disabled
+              aria-disabled="true"
+              className="mt-7 flex w-full cursor-not-allowed items-center justify-center gap-2.5 rounded-xl border border-[#DDE4E0] bg-white p-3.5 text-[15px] font-semibold text-dc-ink opacity-55"
+            >
+              <span
+                aria-hidden="true"
+                className="text-[15px] font-bold text-[#4285F4]"
+              >
+                G
+              </span>
+              {googleLabel}
+              <span className="rounded-full bg-dc-surface-muted px-2 py-0.5 text-xs font-semibold text-dc-ink-faint">
+                yakında
+              </span>
+            </button>
+
+            <div className="my-[22px] flex items-center gap-3">
+              <span className="h-px flex-1 bg-dc-line" />
+              <span className="text-[12.5px] text-dc-ink-ghost">veya</span>
+              <span className="h-px flex-1 bg-dc-line" />
+            </div>
+          </>
+        ) : (
+          <div className="h-6" />
+        )}
 
         {children}
 

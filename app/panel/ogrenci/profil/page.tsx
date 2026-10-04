@@ -73,7 +73,17 @@ export default async function StudentProfilePage() {
       pageTitle="Profil"
     >
       <div className="max-w-[760px]">
-        <PanelHeading title="Profil ve hesap" />
+        <PanelHeading
+          title="Profil ve hesap"
+          actions={
+            <Link
+              href="/panel/ayarlar"
+              className="rounded-lg bg-dc-brand-strong px-3.5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-dc-brand-hover"
+            >
+              Bilgilerini düzenle
+            </Link>
+          }
+        />
 
         <PanelCard className="mt-[22px]">
           <PanelCardTitle>Bilgilerin</PanelCardTitle>

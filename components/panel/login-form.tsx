@@ -121,7 +121,13 @@ export function LoginForm({
           role="status"
           className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13.5px] text-emerald-800"
         >
-          Hesabınız hazır. Giriş yaparak devam edebilirsiniz.
+          Hesabınız hazır. Giriş yaparak devam edebilirsiniz. Daha önce paket
+          satın aldıysanız hesabınız ödemeyle birlikte açılmış olabilir;
+          parolanızı bilmiyorsanız{" "}
+          <Link href="/parolami-unuttum" className="font-semibold underline">
+            parolamı unuttum
+          </Link>{" "}
+          ile yeni parola belirleyin.
         </p>
       ) : null}
 

@@ -67,7 +67,8 @@ function contentSecurityPolicy(nonce: string) {
       "https://*.tiktok.com",
       "https://www.facebook.com",
     ].join(" "),
-    "frame-src 'self' https://www.paytr.com https://www.youtube.com https://www.youtube-nocookie.com blob:",
+    // tally.so: kayıt sonrası gömülü iletişim formu (/kayit/iletisim-formu).
+    "frame-src 'self' https://www.paytr.com https://www.youtube.com https://www.youtube-nocookie.com https://tally.so blob:",
     "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",

@@ -52,6 +52,22 @@ model User {
   /// Davet bağlantısı bu numaradan iletilebilir — panelde kritik alan.
   phone    String?
 
+  /// Hesap nasıl açıldı. Mevcut satırlar ADMIN_INVITE kabul edilir.
+  registrationSource     RegistrationSource @default(ADMIN_INVITE) @map("registration_source")
+  /// Kayıtta alınan yasal onaylar. `kvkkVersion` metin değişince yeniden onay
+  /// istemek için tutulur.
+  kvkkAcceptedAt         DateTime?          @map("kvkk_accepted_at") @db.Timestamptz(3)
+  kvkkVersion            String?            @map("kvkk_version")
+  termsAcceptedAt        DateTime?          @map("terms_accepted_at") @db.Timestamptz(3)
+  /// Ticari elektronik ileti izni (İYS). Null = izin yok.
+  marketingConsentAt     DateTime?          @map("marketing_consent_at") @db.Timestamptz(3)
+  /// Tally iletişim formu durumu. Form atlanabilir; atlanınca panelde
+  /// hatırlatma bandı kalır.
+  contactFormSubmittedAt DateTime?          @map("contact_form_submitted_at") @db.Timestamptz(3)
+  contactFormSkippedAt   DateTime?          @map("contact_form_skipped_at") @db.Timestamptz(3)
+  /// Ayarlardaki zorunlu alanlar ilk kez tamamlandığında yazılır.
+  profileCompletedAt     DateTime?          @map("profile_completed_at") @db.Timestamptz(3)
+
   failedAttempts Int       @default(0) @map("failed_attempts")
   lockedUntil    DateTime? @map("locked_until") @db.Timestamptz(3)
   lastLoginAt    DateTime? @map("last_login_at") @db.Timestamptz(3)
@@ -74,78 +90,85 @@ model User {
   passkeyCredentials                 PasskeyCredential[]
   mfaRecoveryCodes                   MfaRecoveryCode[]
   mfaChallenges                      MfaChallenge[]
-  assignedCoachings                  CoachAssignment[]            @relation("CoachAssignmentAssigner")
-  authoredStudentGoals               StudentGoal[]                @relation("StudentGoalAuthor")
-  authoredPlanTemplates              WeeklyPlanTemplate[]         @relation("WeeklyPlanTemplateAuthor")
-  planRevisions                      WeeklyPlanRevision[]         @relation("WeeklyPlanRevisionAuthor")
-  authoredCoachNotes                 CoachNote[]                  @relation("CoachNoteAuthor")
-  publishedCoachSummaries            WeeklyCoachSummary[]         @relation("WeeklyCoachSummaryPublisher")
-  reviewedPlanSuggestions            WeeklyPlanSuggestion[]       @relation("WeeklyPlanSuggestionReviewer")
-  dinoAnswers                        DinoAnswer[]                 @relation("DinoAnswerUser")
-  requestedMfaResets                 MfaResetRequest[]            @relation("MfaResetRequester")
-  targetMfaResets                    MfaResetRequest[]            @relation("MfaResetTarget")
-  approvedMfaResets                  MfaResetRequest[]            @relation("MfaResetApprover")
+  assignedCoachings                  CoachAssignment[]              @relation("CoachAssignmentAssigner")
+  authoredStudentGoals               StudentGoal[]                  @relation("StudentGoalAuthor")
+  authoredPlanTemplates              WeeklyPlanTemplate[]           @relation("WeeklyPlanTemplateAuthor")
+  planRevisions                      WeeklyPlanRevision[]           @relation("WeeklyPlanRevisionAuthor")
+  authoredCoachNotes                 CoachNote[]                    @relation("CoachNoteAuthor")
+  publishedCoachSummaries            WeeklyCoachSummary[]           @relation("WeeklyCoachSummaryPublisher")
+  reviewedPlanSuggestions            WeeklyPlanSuggestion[]         @relation("WeeklyPlanSuggestionReviewer")
+  dinoAnswers                        DinoAnswer[]                   @relation("DinoAnswerUser")
+  requestedMfaResets                 MfaResetRequest[]              @relation("MfaResetRequester")
+  targetMfaResets                    MfaResetRequest[]              @relation("MfaResetTarget")
+  approvedMfaResets                  MfaResetRequest[]              @relation("MfaResetApprover")
   studentProfile                     StudentProfile?
   teacherProfile                     TeacherProfile?
-  parentStudents                     ParentStudent[]              @relation("ParentLinks")
-  parentRelationshipHistory          ParentStudentHistory[]       @relation("ParentRelationshipParent")
-  parentRelationshipChanges          ParentStudentHistory[]       @relation("ParentRelationshipActor")
-  taughtGroups                       Group[]                      @relation("GroupTeacher")
-  taughtLessonSeries                 LessonSeries[]               @relation("LessonSeriesTeacher")
-  taughtLessons                      Lesson[]                     @relation("LessonTeacher")
-  studentTeacherAssignments          StudentTeacherAssignment[]   @relation("StudentTeacherTeacher")
-  assignedStudentTeachers            StudentTeacherAssignment[]   @relation("StudentTeacherAssigner")
-  createdAssignments                 Assignment[]                 @relation("AssignmentCreator")
+  parentStudents                     ParentStudent[]                @relation("ParentLinks")
+  parentRelationshipHistory          ParentStudentHistory[]         @relation("ParentRelationshipParent")
+  parentRelationshipChanges          ParentStudentHistory[]         @relation("ParentRelationshipActor")
+  taughtGroups                       Group[]                        @relation("GroupTeacher")
+  taughtLessonSeries                 LessonSeries[]                 @relation("LessonSeriesTeacher")
+  taughtLessons                      Lesson[]                       @relation("LessonTeacher")
+  studentTeacherAssignments          StudentTeacherAssignment[]     @relation("StudentTeacherTeacher")
+  assignedStudentTeachers            StudentTeacherAssignment[]     @relation("StudentTeacherAssigner")
+  createdAssignments                 Assignment[]                   @relation("AssignmentCreator")
   notifications                      Notification[]
   notificationPrefs                  NotificationPreference?
-  createdMaterials                   LearningMaterial[]           @relation("MaterialCreator")
-  noteTemplates                      TeacherNoteTemplate[]        @relation("TeacherNoteTemplateOwner")
-  createdCurriculums                 CurriculumVersion[]          @relation("CurriculumCreator")
-  linkedLessonOutcomes               LessonOutcome[]              @relation("LessonOutcomeLinker")
-  linkedAssignmentOutcomes           AssignmentOutcome[]          @relation("AssignmentOutcomeLinker")
+  createdMaterials                   LearningMaterial[]             @relation("MaterialCreator")
+  noteTemplates                      TeacherNoteTemplate[]          @relation("TeacherNoteTemplateOwner")
+  createdCurriculums                 CurriculumVersion[]            @relation("CurriculumCreator")
+  linkedLessonOutcomes               LessonOutcome[]                @relation("LessonOutcomeLinker")
+  linkedAssignmentOutcomes           AssignmentOutcome[]            @relation("AssignmentOutcomeLinker")
   outcomeFavorites                   OutcomeFavorite[]
-  createdMockExams                   MockExam[]                   @relation("MockExamCreator")
-  reviewedMockExams                  MockExam[]                   @relation("MockExamReviewer")
-  revisedMockExamReasons             MockExamSectionError[]       @relation("MockExamErrorReviser")
-  createdReviewItems                 ReviewItem[]                 @relation("ReviewItemCreator")
-  ownedInterventionCases             InterventionCase[]           @relation("InterventionCaseOwner")
+  createdMockExams                   MockExam[]                     @relation("MockExamCreator")
+  reviewedMockExams                  MockExam[]                     @relation("MockExamReviewer")
+  revisedMockExamReasons             MockExamSectionError[]         @relation("MockExamErrorReviser")
+  createdReviewItems                 ReviewItem[]                   @relation("ReviewItemCreator")
+  ownedInterventionCases             InterventionCase[]             @relation("InterventionCaseOwner")
   interventionActivities             InterventionCaseActivity[]
-  generatedRecoveryPackages          RecoveryPackage[]            @relation("RecoveryPackageGenerator")
-  publishedRecoveryPackages          RecoveryPackage[]            @relation("RecoveryPackagePublisher")
-  reviewedAssignmentSubmissions      AssignmentSubmission[]       @relation("AssignmentSubmissionReviewer")
-  studentHelpResponses               StudentHelpResponse[]        @relation("StudentHelpResponder")
-  accessibilityPreference            AccessibilityPreference?     @relation("AccessibilityPreferenceOwner")
-  updatedAccessibilityProfiles       AccessibilityPreference[]    @relation("AccessibilityPreferenceUpdater")
+  generatedRecoveryPackages          RecoveryPackage[]              @relation("RecoveryPackageGenerator")
+  publishedRecoveryPackages          RecoveryPackage[]              @relation("RecoveryPackagePublisher")
+  reviewedAssignmentSubmissions      AssignmentSubmission[]         @relation("AssignmentSubmissionReviewer")
+  studentHelpResponses               StudentHelpResponse[]          @relation("StudentHelpResponder")
+  accessibilityPreference            AccessibilityPreference?       @relation("AccessibilityPreferenceOwner")
+  updatedAccessibilityProfiles       AccessibilityPreference[]      @relation("AccessibilityPreferenceUpdater")
   networkPreference                  NetworkPreference?
-  teacherAiDrafts                    TeacherAiDraft[]             @relation("TeacherAiDraftOwner")
-  createdPilotCohorts                PilotCohort[]                @relation("PilotCohortCreator")
+  teacherAiDrafts                    TeacherAiDraft[]               @relation("TeacherAiDraftOwner")
+  createdPilotCohorts                PilotCohort[]                  @relation("PilotCohortCreator")
   pilotMemberships                   PilotCohortMember[]
-  createdOdkPilotRuns                OdkPilotRun[]                @relation("OdkPilotRunCreator")
+  createdOdkPilotRuns                OdkPilotRun[]                  @relation("OdkPilotRunCreator")
   odkPilotMemberships                OdkPilotMember[]
   odOrders                           OdOrder[]
-  ownedOdOnboardings                 OdOnboarding[]               @relation("OdOnboardingOwner")
-  odOnboardingTransitions            OdOnboardingTransition[]     @relation("OdOnboardingTransitionActor")
-  productMemberships                 ProductMembership[]          @relation("ProductMembershipOwner")
-  grantedProductMemberships          ProductMembership[]          @relation("ProductMembershipGranter")
+  ownedOdOnboardings                 OdOnboarding[]                 @relation("OdOnboardingOwner")
+  odOnboardingTransitions            OdOnboardingTransition[]       @relation("OdOnboardingTransitionActor")
+  productMemberships                 ProductMembership[]            @relation("ProductMembershipOwner")
+  grantedProductMemberships          ProductMembership[]            @relation("ProductMembershipGranter")
   productContentRoles                ProductContentRoleAssignment[] @relation("ProductContentRoleOwner")
   grantedProductContentRoles         ProductContentRoleAssignment[] @relation("ProductContentRoleGranter")
-  odkOrders                          OdkOrder[]                   @relation("OdkOrderStudent")
+  odkOrders                          OdkOrder[]                     @relation("OdkOrderStudent")
   odkEntitlements                    OdkEntitlement[]
-  createdOdkExamSeries               OdkExamSeries[]              @relation("OdkExamSeriesCreator")
-  createdOdkExams                    OdkExam[]                    @relation("OdkExamCreator")
-  createdOdkExamVersions             OdkExamVersion[]             @relation("OdkExamVersionCreator")
-  uploadedOdkExamFiles               OdkExamFile[]                @relation("OdkExamFileUploader")
-  odkExamAttempts                    OdkExamAttempt[]             @relation("OdkExamAttemptStudent")
-  scoredOdkExamAttempts              OdkAttemptScore[]            @relation("OdkAttemptScoreAdmin")
-  odkExamAssignments                 OdkExamAssignment[]          @relation("OdkExamAssignmentStudent")
-  assignedOdkExams                   OdkExamAssignment[]          @relation("OdkExamAssignmentAssigner")
-  odkAnswerKeyRevisions              OdkAnswerKeyRevision[]       @relation("OdkAnswerKeyRevisionAuthor")
-  odkImportAudits                    OdkImportAudit[]             @relation("OdkImportAuditActor")
+  createdOdkExamSeries               OdkExamSeries[]                @relation("OdkExamSeriesCreator")
+  createdOdkExams                    OdkExam[]                      @relation("OdkExamCreator")
+  createdOdkExamVersions             OdkExamVersion[]               @relation("OdkExamVersionCreator")
+  uploadedOdkExamFiles               OdkExamFile[]                  @relation("OdkExamFileUploader")
+  odkExamAttempts                    OdkExamAttempt[]               @relation("OdkExamAttemptStudent")
+  scoredOdkExamAttempts              OdkAttemptScore[]              @relation("OdkAttemptScoreAdmin")
+  odkExamAssignments                 OdkExamAssignment[]            @relation("OdkExamAssignmentStudent")
+  assignedOdkExams                   OdkExamAssignment[]            @relation("OdkExamAssignmentAssigner")
+  odkAnswerKeyRevisions              OdkAnswerKeyRevision[]         @relation("OdkAnswerKeyRevisionAuthor")
+  odkImportAudits                    OdkImportAudit[]               @relation("OdkImportAuditActor")
   businessRoleAssignments            BusinessRoleAssignment[]
-  createdAutomationRules             AutomationRule[]             @relation("AutomationRuleCreatedBy")
+  createdAutomationRules             AutomationRule[]               @relation("AutomationRuleCreatedBy")
   teacherHomeSnapshot                TeacherHomeSnapshot?
-  crossProductEventsActed            CrossProductEventOutbox[]    @relation("CrossProductEventActor")
-  crossProductRecommendationsDecided CrossProductRecommendation[] @relation("CrossProductRecommendationDecider")
+  crossProductEventsActed            CrossProductEventOutbox[]      @relation("CrossProductEventActor")
+  crossProductRecommendationsDecided CrossProductRecommendation[]   @relation("CrossProductRecommendationDecider")
+  signupProfile                      SignupProfile?                 @relation("SignupProfileOwner")
+  contactedSignupProfiles            SignupProfile[]                @relation("SignupProfileContactedBy")
+  pendingChildren                    PendingChild[]                 @relation("PendingChildParent")
+  resolvedPendingChildren            PendingChild[]                 @relation("PendingChildResolver")
+  contactFormSubmissions             ContactFormSubmission[]
+  paidOdOrders                       OdOrder[]                      @relation("OdOrderBuyer")
+  paidOdkOrders                      OdkOrder[]                     @relation("OdkOrderBuyer")
 
   @@index([role, status])
   @@index([createdById])
@@ -177,6 +200,11 @@ model Session {
   primaryAuthenticatedAt DateTime  @default(now()) @map("primary_authenticated_at") @db.Timestamptz(3)
   mfaVerifiedAt          DateTime? @map("mfa_verified_at") @db.Timestamptz(3)
   stepUpAt               DateTime? @map("step_up_at") @db.Timestamptz(3)
+
+  /// Girişte seçilen ürün paneli (OD / OK / ODK). YALNIZ arayüz kapsamıdır:
+  /// menüyü daraltır, yetki VERMEZ — erişim her istekte guard'larda
+  /// `ProductMembership` ile yeniden doğrulanır.
+  activeProduct ProductCode? @map("active_product")
 
   userAgent String? @map("user_agent")
   ip        String?

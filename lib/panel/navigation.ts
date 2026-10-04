@@ -7,6 +7,10 @@
  * - Ürün erişimi (OD/OK/ODK) öğeyi gizler
  * - Menüyü gizlemek güvenlik sınırı değildir; sayfa `requireRole` + flag guard
  *   çalışmaya devam eder
+ * - ÜRÜN PANELİ KAPSAMI: girişte seçilen ürün (`Session.activeProduct`)
+ *   menüyü o ürüne daraltır. Öğrenci/veli menüsü ürün listesini tek ürüne
+ *   indirerek, öğretmen/yönetim menüsü öğe bazlı `NAV_ITEM_SCOPE` ile süzülür.
+ *   Kapsam verilmezse (eski çağrılar, testler) davranış değişmez.
  *
  * Rol zihinsel modelleri:
  * - ADMIN: Bugün · Kişiler · Eğitim · Denemeler · Sistem
@@ -16,7 +20,7 @@
  */
 
 import type { ProductCode, UserRole } from "@prisma/client";
-import { rolePath, roleStudentsPath } from "@/lib/auth/roles";
+import { ACCOUNT_SETTINGS_PATH, productRolePath, rolePath, roleStudentsPath } from "@/lib/auth/roles";
 import type { PanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PANEL_DOMAIN } from "@/lib/panel/domain-vocabulary";
 
@@ -39,6 +43,7 @@ function section(id: string, title: string, items: PanelNavItem[]): PanelNavSect
 
 function commonItems(flags: PanelFeatureFlags): PanelNavItem[] {
   return [
+    { id: "account-settings", href: ACCOUNT_SETTINGS_PATH, label: "Hesap ayarları" },
     { id: "notifications", href: "/panel/bildirimler", label: PANEL_DOMAIN.bildirimler },
     ...(flags.accessibilityProfile
       ? [{ id: "accessibility", href: "/panel/erisilebilirlik", label: "Erişilebilirlik" }]
@@ -221,6 +226,7 @@ function adminSections(root: string, flags: PanelFeatureFlags): PanelNavSection[
       { id: "provisioning", href: `${root}/isler`, label: PANEL_DOMAIN.provisioning },
     ]),
     ...section("kisiler", "KİŞİLER", [
+      { id: "signups", href: `${root}/basvurular`, label: "Yeni kayıtlar" },
       { id: "people", href: `${root}/kisiler`, label: PANEL_DOMAIN.kisiler },
     ]),
     ...section("egitim", "EĞİTİM", [
@@ -235,6 +241,7 @@ function adminSections(root: string, flags: PanelFeatureFlags): PanelNavSection[
       { id: "odk-exams", href: "/panel/odk/yonetim/sinavlar", label: "Deneme yönetimi" },
       { id: "odk-ops", href: "/panel/odk/yonetim/operasyon", label: "Canlı Operasyon" },
       { id: "odk-reports", href: "/panel/odk/yonetim/raporlar", label: "Sonuç ve kulüp raporları" },
+      { id: "odk-packages", href: "/panel/odk/yonetim/paketler", label: "Kulüp paketleri" },
       ...(flags.mockExamAnalysis
         ? [{ id: "mock-analysis", href: `${root}/denemeler`, label: "Sonuç analizi" }]
         : []),
@@ -250,26 +257,107 @@ function adminSections(root: string, flags: PanelFeatureFlags): PanelNavSection[
   ];
 }
 
+/**
+ * Öğretmen / yönetim menü öğelerinin ürün kapsamı. Listede olmayan öğeler
+ * ORTAKTIR (kişiler, siparişler, ayarlar…) ve her ürün panelinde görünür.
+ * Öğrenci/veli menüsü zaten ürün erişimiyle kurulduğu için bu tabloya ihtiyaç
+ * duymaz.
+ */
+const NAV_ITEM_SCOPE: Partial<Record<"TEACHER" | "ADMIN", Record<string, ProductCode>>> = {
+  TEACHER: {
+    lessons: "OD",
+    assignments: "OD",
+    materials: "OD",
+    "ai-drafts": "OD",
+    recovery: "OD",
+    review: "OD",
+    plan: "OK",
+    help: "OK",
+    interventions: "OK",
+    digests: "OK",
+    "mock-exams": "ODK",
+    "odk-reports": "ODK",
+  },
+  ADMIN: {
+    groups: "OD",
+    calendar: "OD",
+    outcomes: "OD",
+    "mock-analysis": "OD",
+    coaching: "OK",
+    "odk-exams": "ODK",
+    "odk-ops": "ODK",
+    "odk-reports": "ODK",
+    "odk-packages": "ODK",
+  },
+};
+
+/** Bir menü öğesi verilen ürün panelinde görünür mü? */
+export function navItemVisibleInScope(role: UserRole, itemId: string, scope: ProductCode): boolean {
+  const owner = role === "TEACHER" || role === "ADMIN" ? NAV_ITEM_SCOPE[role]?.[itemId] : undefined;
+  return !owner || owner === scope;
+}
+
+/**
+ * Seçili ürün paneli ve kullanıcının erişebildiği ürünlerden menünün gerçek
+ * kapsamını çıkarır. Kullanıcının o ürüne erişimi yoksa (üyelik bitti,
+ * eski oturum) kapsam uygulanmaz — boş menü göstermek yerine tam menü.
+ */
+export function resolveNavScope(
+  role: UserRole,
+  products: readonly ProductCode[],
+  scope: ProductCode | null | undefined,
+): ProductCode | null {
+  if (!scope) return null;
+  if (role === "ADMIN" || role === "TEACHER") return scope;
+  return products.includes(scope) ? scope : null;
+}
+
+function applyScope(
+  role: UserRole,
+  sections: PanelNavSection[],
+  scope: ProductCode,
+): PanelNavSection[] {
+  const scoped = sections
+    .map((navSection) => ({
+      ...navSection,
+      items: navSection.items
+        .filter((item) => navItemVisibleInScope(role, item.id, scope))
+        // ODK'nın kendi ana sayfası var; "Bugün" o panelde ODK köküne gider.
+        .map((item) => (item.id === "today" && scope === "ODK" ? { ...item, href: productRolePath("ODK", role) } : item)),
+    }))
+    .filter((navSection) => navSection.items.length > 0);
+  return scoped;
+}
+
 export function panelNavSections(
   role: UserRole,
   products: ProductCode[],
   flags: PanelFeatureFlags,
   root: string = rolePath(role),
+  scope: ProductCode | null = null,
 ): PanelNavSection[] {
+  const effectiveScope = resolveNavScope(role, products, scope);
+  const scopedProducts = effectiveScope && (role === "STUDENT" || role === "PARENT") ? [effectiveScope] : products;
+  let sections: PanelNavSection[];
   switch (role) {
     case "STUDENT":
-      return studentSections(root, products, flags);
+      sections = studentSections(root, scopedProducts, flags);
+      break;
     case "PARENT":
-      return parentSections(root, products, flags);
+      sections = parentSections(root, scopedProducts, flags);
+      break;
     case "TEACHER":
-      return teacherSections(root, flags);
+      sections = teacherSections(root, flags);
+      break;
     case "ADMIN":
-      return adminSections(root, flags);
+      sections = adminSections(root, flags);
+      break;
     default: {
       const _exhaustive: never = role;
       return _exhaustive;
     }
   }
+  return effectiveScope ? applyScope(role, sections, effectiveScope) : sections;
 }
 
 /**
@@ -278,9 +366,29 @@ export function panelNavSections(
  */
 export function mobilePrimaryNav(
   role: UserRole,
-  products: ProductCode[],
+  allProducts: ProductCode[],
   flags: PanelFeatureFlags,
   root: string = rolePath(role),
+  scope: ProductCode | null = null,
+): PanelNavItem[] {
+  const effectiveScope = resolveNavScope(role, allProducts, scope);
+  if (effectiveScope && (role === "ADMIN" || role === "TEACHER")) {
+    // Personel alt çubuğu: seçili panelin menüsünden ilk dört öğe.
+    return panelNavSections(role, allProducts, flags, root, effectiveScope)
+      .flatMap((navSection) => navSection.items)
+      .slice(0, 4);
+  }
+  const items = baseMobilePrimaryNav(role, effectiveScope ? [effectiveScope] : allProducts, flags, root);
+  return effectiveScope === "ODK"
+    ? items.map((item) => (item.id === "today" ? { ...item, href: productRolePath("ODK", role) } : item))
+    : items;
+}
+
+function baseMobilePrimaryNav(
+  role: UserRole,
+  products: ProductCode[],
+  flags: PanelFeatureFlags,
+  root: string,
 ): PanelNavItem[] {
   const hasOD = products.includes("OD");
   const hasOK = products.includes("OK");

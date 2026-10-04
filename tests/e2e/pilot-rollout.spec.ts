@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { accessibilityScan } from "./helpers/axe";
 import { uniqueTestClientIp } from "./helpers/client-ip";
+import { enterProductPanel } from "./helpers/panel-login";
 
 const password = process.env.PANEL_E2E_TEACHER_PASSWORD || "testpass123";
 const accounts = {
@@ -19,14 +20,18 @@ async function login(page: Page, account: { email?: string; password?: string },
   await page.getByLabel("Şifre").fill(account.password!);
   await page.getByRole("button", { name: /^Giriş Yap$/ }).click();
   await page.waitForURL(/\/panel\//);
-  if (expectPanel && new URL(page.url()).pathname === "/panel/urun-sec") {
-    await page.getByRole("link", { name: "Online Dershanem paneline git" }).click();
-    await page.waitForURL(/\/panel\/(yonetim|ogretmen|ogrenci|veli)/);
-  }
+  if (expectPanel) await enterProductPanel(page);
   if (expectPanel) await expect(page.getByRole("main")).toBeVisible();
 }
 
 async function logout(page: Page) { const status = await page.evaluate(async () => (await fetch("/api/auth/logout", { method: "POST" })).status); expect(status).toBe(200); await page.goto("/giris"); }
+
+/** Seçici açıldıysa OD kartında "Panele gir" bağlantısı olmamalı. */
+async function expectOdPanelClosed(page: Page) {
+  if (new URL(page.url()).pathname !== "/panel/urun-sec") return;
+  await expect(page.getByRole("heading", { name: "Hangi panele girmek istiyorsun?" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Online Dershanem paneline git" })).toHaveCount(0);
+}
 
 test.describe.serial("integrated pilot rollout", () => {
   test.skip(!accounts.admin.email || !accounts.admin.password || !accounts.teacher.email || !accounts.student.email || !accounts.parent.email, "Panel E2E hesapları tanımlı değil.");
@@ -56,9 +61,10 @@ test.describe.serial("integrated pilot rollout", () => {
       await login(page, account); await expect(page).toHaveURL(new RegExp(path)); await logout(page);
     }
     await login(page, accounts.excludedTeacher, false);
-    if (new URL(page.url()).pathname === "/panel/urun-sec") {
-      await page.getByRole("link", { name: "Online Dershanem paneline git" }).click();
-    }
+    // Pilot dışı öğretmenin OD paneli seçicide kapalıdır (ODK genel yayında
+    // olduğu için açık kalabilir); OD köküne doğrudan gidince 404.
+    await expectOdPanelClosed(page);
+    await page.goto("/panel/ogretmen");
     await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
     const apiStatus = await page.evaluate(async () => (await fetch("/api/panel/calendar/export")).status);
     expect(apiStatus).toBe(404);
@@ -71,9 +77,8 @@ test.describe.serial("integrated pilot rollout", () => {
     await cohort.getByRole("button", { name: "Duraklat" }).click();
     await expect(page.getByText(/Pilot erişimi güvenle durduruldu/)).toBeVisible();
     await logout(page); await login(page, accounts.student, false);
-    if (new URL(page.url()).pathname === "/panel/urun-sec") {
-      await page.getByRole("link", { name: "Online Dershanem paneline git" }).click();
-    }
+    await expectOdPanelClosed(page);
+    await page.goto("/panel/ogrenci");
     await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
     const apiStatus = await page.evaluate(async () => (await fetch("/api/panel/calendar/export")).status);
     expect(apiStatus).toBe(404);

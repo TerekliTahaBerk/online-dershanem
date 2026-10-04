@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { OdkOrderStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/auth/guards";
@@ -71,7 +72,17 @@ export default async function ParentAccountPage({
       pageTitle="Hesap ve paket"
     >
       <div className="max-w-[800px]">
-        <PanelHeading title="Hesap ve paket" />
+        <PanelHeading
+          title="Hesap ve paket"
+          actions={
+            <Link
+              href="/panel/ayarlar"
+              className="rounded-lg bg-dc-brand-strong px-3.5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-dc-brand-hover"
+            >
+              Hesap ayarları
+            </Link>
+          }
+        />
 
         {talep === "alindi" ? (
           <p

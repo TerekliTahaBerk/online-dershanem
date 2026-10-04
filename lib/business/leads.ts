@@ -46,6 +46,8 @@ export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
   PURCHASE_STARTED: "Satın alma başladı",
   PURCHASE_COMPLETED: "Satın alma tamamlandı",
   MANUAL: "Manuel",
+  SELF_SIGNUP: "Kendi kaydı",
+  TALLY_FORM: "Tally iletişim formu",
   OTHER: "Diğer",
 };
 

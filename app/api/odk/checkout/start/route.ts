@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 import { createOdkOrderFromCatalog } from "@/lib/odk/product-contract-server";
 import { getPublicOdkPackage, odkAvailabilityLabel } from "@/lib/odk/public-commerce-server";
 import { odkPublicAccessDecision } from "@/lib/odk/pilot-rollout";
 import { log } from "@/lib/logger";
 import { assertRateLimit, getRateLimitKeyFromIp, rateLimitResponseHeaders, RateLimitError } from "@/lib/security/rate-limit";
 import { RATE_LIMIT_POLICIES } from "@/lib/security/rate-limit-policies";
+import { prisma } from "@/lib/prisma";
+import { beneficiarySchema } from "@/lib/commerce/beneficiary";
+import { applyPurchaseContext, contextOrderFields, resolvePurchaseContext } from "@/lib/commerce/account-purchase";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,6 +35,8 @@ const InputSchema = z.object({
   kvkkConsent: z.union([z.string(), z.boolean()]),
   marketingConsent: z.union([z.string(), z.boolean()]).optional(),
   paymentConsent: z.union([z.string(), z.boolean()]),
+  /** Giriş yapmış veli: paketin hangi çocuk için olduğu. */
+  beneficiary: beneficiarySchema,
 });
 
 function asBool(value: unknown) {
@@ -70,12 +76,16 @@ export async function POST(req: Request) {
     return unavailable("KVKK ve ön bilgilendirme onaylarını işaretleyin.", 400);
   }
 
+  // Giriş yapmış öğrenci/veli: erişimin kime açılacağı sipariş anında sabitlenir.
+  const purchase = await resolvePurchaseContext(data.beneficiary ?? null);
+  if (!purchase.ok) return unavailable(purchase.error, purchase.status);
+
   const item = await getPublicOdkPackage(data.packageSlug);
   if (!item) return unavailable("Paket bulunamadı veya artık yayında değil.", 404);
   if (!item.availability.allowed) return unavailable(odkAvailabilityLabel(item.availability.reason));
 
   const normalizedEmail = data.email.toLocaleLowerCase("tr-TR");
-  const buyerInfo = {
+  const baseBuyerInfo = {
     fullName: data.fullName,
     email: normalizedEmail,
     studentFullName: data.fullName,
@@ -100,9 +110,14 @@ export async function POST(req: Request) {
     paymentConsent: true,
     capturedAt: new Date().toISOString(),
   };
+  // Bağlam alanları en sona: formdaki öğrenci/veli alanları oturumdan
+  // doğrulanmış kimliği ezemez.
+  const buyerInfo = applyPurchaseContext(baseBuyerInfo, purchase.context).buyerInfo;
 
   try {
-    const order = await createOdkOrderFromCatalog({ packageId: item.contract.package.id, buyerInfo });
+    const order = await createOdkOrderFromCatalog({ packageId: item.contract.package.id, buyerInfo: buyerInfo as Prisma.InputJsonValue });
+    const orderFields = contextOrderFields(purchase.context);
+    if (orderFields.buyerUserId) await prisma.odkOrder.update({ where: { id: order.id }, data: orderFields });
     log.info("odk.checkout.form_captured", { orderId: order.id, packageId: item.contract.package.id, catalogVersion: item.contract.catalogVersion });
     return NextResponse.json({ ok: true, redirectUrl: `/odk-paketleri/${data.packageSlug}/satin-al/odeme?orderId=${order.id}` });
   } catch (error) {

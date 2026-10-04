@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
+import { SignupProfileCard } from "@/components/panel/signups/signup-profile-card";
 import { productLabel, roleLabel } from "@/lib/auth/roles";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
@@ -307,6 +308,8 @@ export default async function UserDetailPage({
             }}
           />
         </div>
+
+        {user.role === "STUDENT" || user.role === "PARENT" ? <SignupProfileCard userId={user.id} /> : null}
 
         <PanelCard className="mt-5">
           <PanelCardTitle>Hesap yaşam döngüsü</PanelCardTitle>

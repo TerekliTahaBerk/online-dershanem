@@ -1,0 +1,159 @@
+// ============================================================
+// KENDİ KENDİNE KAYIT (self-signup)
+//
+// Kullanıcı /kayit üzerinden Öğrenci ya da Veli olarak hesap açar. Kayıt
+// HİÇBİR ürün erişimi vermez (`ProductMembership` yazılmaz); erişim ödeme
+// (PayTR provisioning) ya da admin eliyle açılır. Buradaki modeller yalnızca
+// "kullanıcıya ulaşabilmemiz" ve hesabın tamamlanması için toplanan bilgileri
+// tutar.
+// ============================================================
+
+enum RegistrationSource {
+  /// Admin davet bağlantısıyla açtı (eski akış; mevcut satırların varsayılanı).
+  ADMIN_INVITE
+  /// Kullanıcı /kayit ile kendisi açtı.
+  SELF_SIGNUP
+  /// PayTR ödemesi sonrası provisioning açtı.
+  PURCHASE
+}
+
+enum SignupHeardFrom {
+  INSTAGRAM
+  GOOGLE
+  YOUTUBE
+  FRIEND
+  SCHOOL
+  OTHER
+}
+
+enum SignupPurchaseStatus {
+  /// "Zaten satın aldım" — yönetim hızlıca ulaşıp hesabı eşleştirir.
+  ALREADY_PURCHASED
+  WANTS_TO_PURCHASE
+  EXPLORING
+}
+
+enum ContactChannel {
+  PHONE
+  WHATSAPP
+  EMAIL
+}
+
+enum ContactTimePreference {
+  MORNING
+  AFTERNOON
+  EVENING
+  ANY
+}
+
+enum SignupContactStatus {
+  NEW
+  CONTACTED
+  UNREACHABLE
+  CONVERTED
+  NOT_INTERESTED
+}
+
+/// Kayıtta ve panel ayarlarında toplanan iletişim/ilgi bilgileri. User ile 1:1.
+model SignupProfile {
+  id     String @id @default(cuid())
+  userId String @unique @map("user_id")
+
+  city                 String?
+  district             String?
+  heardFrom            SignupHeardFrom?      @map("heard_from")
+  interestedProducts   ProductCode[]         @map("interested_products")
+  purchaseStatus       SignupPurchaseStatus  @default(EXPLORING) @map("purchase_status")
+  /// Kullanıcının "zaten satın aldım" derken verdiği sipariş no / e-posta. Serbest metin.
+  existingOrderRef     String?               @map("existing_order_ref")
+  preferredChannel     ContactChannel        @default(PHONE) @map("preferred_channel")
+  preferredContactTime ContactTimePreference @default(ANY) @map("preferred_contact_time")
+  note                 String?
+
+  /// Öğrenci kaydında beyan edilen veli bilgisi. Admin, veli hesabını
+  /// bağlarken kullanır; bu bilgi tek başına hiçbir erişim vermez.
+  guardianName  String? @map("guardian_name")
+  guardianPhone String? @map("guardian_phone")
+  guardianEmail String? @map("guardian_email")
+  /// Velinin çocuğa yakınlığı (Anne / Baba / Vasi / Diğer) — yalnız PARENT.
+  relationship  String?
+
+  /// Ödemede `buyerInfo` ön doldurması için. TC kimlik no BİLEREK tutulmaz
+  /// (KVKK: sipariş başına alınır, profilde saklanmaz).
+  billingAddress String? @map("billing_address")
+
+  contactStatus SignupContactStatus @default(NEW) @map("contact_status")
+  contactNote   String?             @map("contact_note")
+  contactedAt   DateTime?           @map("contacted_at") @db.Timestamptz(3)
+  contactedById String?             @map("contacted_by_id")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user        User  @relation("SignupProfileOwner", fields: [userId], references: [id], onDelete: Cascade)
+  contactedBy User? @relation("SignupProfileContactedBy", fields: [contactedById], references: [id], onDelete: SetNull)
+
+  @@index([contactStatus, createdAt])
+  @@map("signup_profiles")
+}
+
+enum PendingChildStatus {
+  PENDING
+  ACCOUNT_CREATED
+  CANCELLED
+}
+
+/// Velinin bildirdiği, henüz öğrenci hesabı olmayan çocuk. Öğrenci hesabını
+/// yönetim açar ("Öğrenci hesabı aç"), sonra `studentProfileId` bağlanır.
+model PendingChild {
+  id           String @id @default(cuid())
+  parentUserId String @map("parent_user_id")
+
+  fullName     String  @map("full_name")
+  classLevel   String? @map("class_level")
+  schoolName   String? @map("school_name")
+  /// LGS | TYT | AYT | TYT_AYT | OTHER — StudentProfile.examType ile aynı sözlük.
+  examType     String? @map("exam_type")
+  fieldTrack   String? @map("field_track")
+  birthYear    Int?    @map("birth_year")
+  email        String?
+  phone        String?
+  relationship String?
+
+  status           PendingChildStatus @default(PENDING)
+  studentProfileId String?            @map("student_profile_id")
+  resolvedById     String?            @map("resolved_by_id")
+  resolvedAt       DateTime?          @map("resolved_at") @db.Timestamptz(3)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  parent         User            @relation("PendingChildParent", fields: [parentUserId], references: [id], onDelete: Cascade)
+  studentProfile StudentProfile? @relation(fields: [studentProfileId], references: [id], onDelete: SetNull)
+  resolvedBy     User?           @relation("PendingChildResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  odOrders       OdOrder[]
+  odkOrders      OdkOrder[]
+
+  @@index([status, createdAt])
+  @@index([parentUserId, status])
+  @@map("pending_children")
+}
+
+/// Dış iletişim formu (Tally) yanıtları. Webhook idempotent: aynı yanıt iki
+/// kez gelirse `externalResponseId` tekilliği ikinci satırı engeller.
+model ContactFormSubmission {
+  id                 String   @id @default(cuid())
+  provider           String   @default("TALLY")
+  externalResponseId String   @unique @map("external_response_id")
+  formId             String?  @map("form_id")
+  /// İmzalı `ref` gizli alanı doğrulanırsa dolar; doğrulanamazsa yanıt yine saklanır.
+  userId             String?  @map("user_id")
+  email              String?
+  payload            Json
+  receivedAt         DateTime @default(now()) @map("received_at") @db.Timestamptz(3)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, receivedAt])
+  @@map("contact_form_submissions")
+}

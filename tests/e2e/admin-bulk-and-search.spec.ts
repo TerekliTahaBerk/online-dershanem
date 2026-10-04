@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { hasE2EEnv } from "./env-requirements";
 import { uniqueTestClientIp } from "./helpers/client-ip";
+import { enterProductPanel } from "./helpers/panel-login";
 
 const admin = {
   email: process.env.PANEL_E2E_ADMIN_EMAIL,
@@ -15,9 +16,7 @@ async function login(page: Page) {
   await page.getByLabel("Şifre").fill(admin.password!);
   await page.getByRole("button", { name: /^Giriş Yap$/ }).click();
   await page.waitForURL(/\/panel\//);
-  if (new URL(page.url()).pathname === "/panel/urun-sec") {
-    await page.getByRole("link", { name: "Online Dershanem paneline git" }).click();
-  }
+  await enterProductPanel(page);
 }
 
 test.describe("admin bulk operation and entity search", () => {
