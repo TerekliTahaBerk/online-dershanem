@@ -813,7 +813,8 @@ export function PackageBuilder({
             </button>
           ) : (
             <Link
-              href={`/iletisim/${builderContactQuery(selection)}`}
+              href={`/iletisim${builderContactQuery(selection)}#on-gorusme`}
+              onClick={() => trackConversionEvent("trial_cta_click", { source: "package_builder" })}
               className="site-btn site-btn-primary mt-5 w-full"
             >
               {quote.priceResolved ? "Başlangıcı Planla" : "Ön Görüşme Talep Et"}
@@ -870,7 +871,8 @@ export function PackageBuilder({
               </button>
             ) : (
               <Link
-                href={`/iletisim/${builderContactQuery(selection)}`}
+                href={`/iletisim${builderContactQuery(selection)}#on-gorusme`}
+                onClick={() => trackConversionEvent("trial_cta_click", { source: "package_builder_mobile" })}
                 className="site-btn site-btn-primary shrink-0"
               >
                 {quote.priceResolved ? "Başlangıcı Planla" : "Ön Görüşme Talep Et"}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { PreMeetingLink } from "@/components/forms/pre-meeting-link";
 
 /**
  * 02 HERO + 03 FACT LINE — tek kolon, ortalanmış kurulum.
@@ -25,12 +26,10 @@ export function HomeHero() {
             Paketini Oluştur
             <ArrowRight size={17} strokeWidth={2.2} aria-hidden="true" />
           </Link>
-          <Link
-            href="/urunler"
+          <PreMeetingLink
+            source="home_hero"
             className="site-btn site-btn-secondary site-btn-lg"
-          >
-            Ürünleri Karşılaştır
-          </Link>
+          />
         </div>
 
         {/* Doğrulanmış, somut bilgi — rakam/başarı oranı iddiası yok */}

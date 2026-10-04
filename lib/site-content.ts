@@ -119,7 +119,7 @@ export const footerColumns = [
     title: "Destek",
     links: [
       { label: "Sıkça sorulan sorular", href: "/sss" },
-      { label: "Ücretsiz görüşme", href: "/iletisim" },
+      { label: "Ücretsiz Ön Görüşme", href: "/iletisim#on-gorusme" },
       { label: "Öğrenci girişi", href: "/giris" },
       { label: sharedIntelligenceLayer.name, href: sharedIntelligenceLayer.href },
     ],

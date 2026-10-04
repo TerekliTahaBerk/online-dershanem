@@ -11,7 +11,8 @@ import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { PageHero } from "@/components/site/page-hero";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
-import { ContactLeadForm } from "@/components/sections/contact-lead-form";
+import { TallyEmbed } from "@/components/forms/tally-embed";
+import { builderContactContext } from "@/lib/commerce/builder-contact-context";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { contact } from "@/lib/content";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
@@ -19,14 +20,17 @@ import { buildMarketingMetadata } from "@/lib/seo/metadata";
 export const metadata = buildMarketingMetadata({
   title: "İletişim",
   description:
-    "Öğrencinizin matematikte nerede zorlandığını ve uygun ders temposunu konuşmak için bize ulaşabilirsiniz.",
+    "Canlı ders, koçluk veya deneme desteğini konuşmak için kısa ön görüşme formunu doldurun; WhatsApp, telefon veya e-posta ile de ulaşabilirsiniz.",
   canonical: "/iletisim",
-  imageAlt: "Online Dershanem iletişim ve ücretsiz ön görüşme",
+  imageAlt: "onlinedershanem. iletişim ve ücretsiz ön görüşme",
 });
 
 const waHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
 
-export default function ContactPage() {
+export default async function ContactPage({ searchParams }: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const selection = builderContactContext(await searchParams);
   return (
     <div className="site-scope">
       <SchemaJsonLd
@@ -45,21 +49,38 @@ export default function ContactPage() {
               Aklınızdakileri konuşalım.
             </>
           }
-          subtitle="WhatsApp veya telefonla doğrudan ulaşabilirsiniz. Formu tercih ederseniz yaklaşık bir dakikada iletişim, sınıf ve hedef bilgilerini paylaşabilirsiniz."
+          subtitle="Canlı ders, koçluk veya deneme desteğinden hangisinin size uygun olduğunu birlikte belirleyelim. Kısa ön görüşme formunu doldurabilir veya bize doğrudan ulaşabilirsiniz."
         />
 
         <section className="site-container pb-20 pt-10 sm:pb-28 sm:pt-14">
-          {/* Mobilde önce hızlı kanallar (WhatsApp/telefon), sonra form;
-              masaüstünde form solda, kanallar sağda. min-w-0: uzun seçenek
-              metinleri grid kolonunu viewport dışına itmesin. */}
+          {/* Form odaklı yolculuk: mobilde form önce; masaüstünde sol kolon.
+              Hızlı iletişim kanalları sağda ve mobilde formun ardından. */}
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2 *:min-w-0">
-            {/* Sol: çalışan lead formu */}
-            <div className="lg:col-start-1 lg:row-span-2 lg:row-start-1">
-              <ContactLeadForm />
-            </div>
+            <section id="on-gorusme" aria-labelledby="on-gorusme-title" className="scroll-mt-24 lg:col-start-1 lg:row-span-2 lg:row-start-1">
+              <h2 id="on-gorusme-title" className="font-display text-[26px] font-bold leading-tight text-dc-ink sm:text-[30px]">
+                Ücretsiz Ön Görüşme
+              </h2>
+              <p className="mb-6 mt-3 text-[15px] leading-6 text-dc-ink-muted">
+                onlinedershanem., onlinekoçum. veya onlinedenemekulübüm. için ihtiyacınızı paylaşın. Henüz karar vermediyseniz birlikte değerlendirebiliriz.
+              </p>
+              {selection ? (
+                <aside aria-label="Seçiminiz" className="mb-6 rounded-dc-card-sm border border-dc-line bg-dc-surface-muted px-5 py-4">
+                  <h3 className="text-[14px] font-bold text-dc-ink">Seçiminiz</h3>
+                  <p className="mt-1 text-[14px] leading-6 text-dc-ink-body">
+                    {[selection.exam, selection.products.join(" + ")].filter(Boolean).join(" · ")}
+                  </p>
+                  {selection.format ? (
+                    <p className="text-[14px] leading-6 text-dc-ink-muted">
+                      {[selection.format, selection.subjects.join(" + ")].filter(Boolean).join(" · ")}
+                    </p>
+                  ) : null}
+                </aside>
+              ) : null}
+              <TallyEmbed formId="0QpdQB" title="onlinedershanem. Kısa Ön Görüşme Formu" height={820} />
+            </section>
 
             {/* Sağ: kanallar */}
-            <div className="order-first flex flex-col gap-3.5 lg:order-0 lg:col-start-2 lg:row-start-1">
+            <div className="flex flex-col gap-3.5 lg:col-start-2 lg:row-start-1">
               <a
                 href={waHref}
                 className="flex items-center gap-4 rounded-2xl border border-(--site-line) bg-(--brand-orange-soft) px-6 py-5 transition-colors hover:border-(--brand-orange)"
@@ -156,14 +177,13 @@ export default function ContactPage() {
                   Önce paketi incelemek ister misiniz?
                 </div>
                 <p className="mb-4 text-[14.5px] leading-6 text-(--site-body)">
-                  Fiyatı, derslerin kapsamını ve ödeme sonrası süreci tek
-                  sayfada görebilirsiniz.
+                  Canlı ders, koçluk ve deneme seçeneklerini karşılaştırıp size uygun paketi oluşturabilirsiniz.
                 </p>
                 <Link
-                  href="/ders-paketleri"
+                  href="/paketler"
                   className="inline-flex items-center gap-1.5 text-[14.5px] font-semibold text-(--brand-orange-ink) hover:underline"
                 >
-                  Ders Paketi&apos;ni gör
+                  Paketleri incele
                   <ArrowUpRight size={16} aria-hidden="true" />
                 </Link>
               </div>

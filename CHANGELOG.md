@@ -26,6 +26,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Changed
 
+- Public consultation now uses its own Tally form; marketing CTAs reach the form directly and package-builder choices remain visible above it, while the signed private registration flow stays separate
 - Migrated styling to Tailwind CSS 4, preserving the existing theme and component appearance while removing its vulnerable `braces` dependency chain
 - After sign-in everyone (admin, teacher, student, parent) chooses the OD / OK / ODK panel at `/panel/urun-sec`; the choice is stored on the session and scopes the menu, with a "Panel değiştir" link in the shell
 

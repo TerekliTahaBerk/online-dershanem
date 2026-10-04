@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Check } from "lucide-react";
+import { PreMeetingLink } from "@/components/forms/pre-meeting-link";
 
 /**
  * ÜRÜN SAYFASI ORTAK BÖLÜMLERİ — onaylı tasarım (Web.dc.html → isOD / isOK / isDK).
@@ -17,7 +18,7 @@ export function ProductHero({
   body,
   tracks,
   note,
-  secondaryCta = { label: "Ücretsiz Görüşme", href: "/iletisim" },
+  secondaryCta = { label: "Ücretsiz Ön Görüşme", href: "/iletisim#on-gorusme" },
   visual,
 }: {
   eyebrow: string;
@@ -47,12 +48,13 @@ export function ProductHero({
             >
               Paketini Oluştur
             </Link>
-            <Link
-              href={secondaryCta.href}
-              className="rounded-full border border-[#DDE4E0] bg-white px-6 py-[15px] text-[16px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
-            >
-              {secondaryCta.label}
-            </Link>
+            {secondaryCta.label === "Ücretsiz Ön Görüşme" ? (
+              <PreMeetingLink href={secondaryCta.href} source="product_hero" className="site-btn site-btn-secondary site-btn-lg" />
+            ) : (
+              <Link href={secondaryCta.href} className="site-btn site-btn-secondary site-btn-lg">
+                {secondaryCta.label}
+              </Link>
+            )}
           </div>
 
           <div className="mt-5 flex flex-wrap items-center gap-3.5">

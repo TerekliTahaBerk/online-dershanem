@@ -45,7 +45,15 @@ for (const combo of [
     await summary.getByRole("link", { name: "Başlangıcı Planla" }).click();
     await expect(page).toHaveURL(/\/iletisim/);
     expect(new URL(page.url()).searchParams.has("fiyat")).toBe(false);
-    await expect(page.getByRole("textbox", { name: /En çok zorlanılan konu/ })).toHaveValue(/Başlangıcı planlamak istiyorum/);
+    expect(new URL(page.url()).hash).toBe("#on-gorusme");
+    const selection = page.getByRole("complementary", { name: "Seçiminiz" });
+    for (const [selected, label] of [
+      [combo.dershanem, "onlinedershanem."],
+      [combo.kocum, "onlinekoçum."],
+      [combo.denemeKulubum, "onlinedenemekulübüm."],
+    ] as const) {
+      if (selected) await expect(selection).toContainText(label);
+    }
   });
 }
 
@@ -76,6 +84,8 @@ test("grup dersi seçimi mevcut sepet kimliği ve fiyatıyla satın alınır", a
 test("ana ekrana ekleme yönergesi mobilde bulunur; kamplar menü ve sitemap'te görünmez", async ({ page, request }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
+  // Streamed SSR placeholders can briefly duplicate footer content.
+  await expect(page.getByText("Ana ekrana ekle", { exact: true })).toHaveCount(1);
   await expect(page.getByText("Ana ekrana ekle", { exact: true })).toBeVisible();
   await expect(page.getByText(/iPhone.*Safari.*Paylaş.*Android.*Ana ekrana ekle/).first()).toBeVisible();
   await expect(page.locator('header a[href="/kamplar"], footer a[href="/kamplar"]')).toHaveCount(0);

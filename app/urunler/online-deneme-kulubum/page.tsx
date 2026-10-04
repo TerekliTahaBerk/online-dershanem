@@ -41,10 +41,7 @@ export default function OnlineDenemeKulubumPage() {
           title="Sonucun sadece net sayısı olarak kalmasın."
           body="LGS, TYT ve AYT denemeleri. Hangi konuda, hangi soru tipinde ve zaman yönetiminde puan kaybettiğini görürsün; sonraki hafta neye ağırlık vereceğin belli olur."
           tracks={["LGS", "TYT", "AYT"]}
-          // `secondaryCta` bilerek verilmiyor: eski "Örnek Analizi Gör"
-          // bağlantısı `/deneme-kulubu`ya gidiyordu, o da next.config'te 308
-          // ile BU sayfaya dönüyordu — kullanıcı aynı sayfaya geri atılıyordu.
-          // Varsayılan ("Ücretsiz Görüşme") diğer iki ürün sayfasıyla aynı.
+          secondaryCta={{ label: "Ücretsiz Ön Görüşme", href: "/iletisim?urun=onlinedenemekulubum#on-gorusme" }}
           visual={
             <div className="rounded-dc-card border border-dc-line bg-white p-5 shadow-[0_14px_34px_rgba(20,32,28,.07)]">
               <div className="flex items-center justify-between gap-3">
