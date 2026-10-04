@@ -57,7 +57,7 @@ function LoginScreen({
   registered: boolean;
 }) {
   return (
-    <AuthCard title="Tekrar hoş geldin" googleLabel="Google ile giriş yap" showDenemeLigiLogo>
+    <AuthCard title="Tekrar hoş geldin" showDenemeLigiLogo>
       <LoginForm resetSuccess={resetSuccess} registered={registered} />
 
       <p className="mt-5 text-center text-[13px] leading-relaxed text-dc-ink-muted">

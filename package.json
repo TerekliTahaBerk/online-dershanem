@@ -79,6 +79,7 @@
     "test:e2e:smoke": "playwright test --grep @smoke"
   },
   "dependencies": {
+    "@flags-sdk/posthog": "^1.1.0",
     "@prisma/client": "^6.19.3",
     "@prisma/extension-accelerate": "^3.0.1",
     "@simplewebauthn/browser": "^13.3.0",
@@ -87,9 +88,11 @@
     "@vercel/blob": "^2.8.0",
     "@vercel/speed-insights": "^2.0.0",
     "clsx": "^2.1.1",
+    "flags": "^4.3.1",
     "geist": "^1.7.2",
     "lucide-react": "^1.48.0",
     "next": "^16.3.6",
+    "posthog-js": "^1.435.8",
     "prisma": "^6.19.3",
     "qrcode": "^1.5.4",
     "react": "19.3.0",

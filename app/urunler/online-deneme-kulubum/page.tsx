@@ -38,7 +38,7 @@ const faqs = [
 
 function JoinLink() {
   return (
-    <Link href={brand.joinHref} className={styles.join}>
+    <Link href={brand.joinHref} className={styles.join} data-analytics-id="deneme_ligi_application">
       {brand.joinLabel}<ArrowRight size={18} aria-hidden="true" />
     </Link>
   );

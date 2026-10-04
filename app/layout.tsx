@@ -37,6 +37,7 @@ import { seoKeywords, siteUrl } from "@/lib/content";
 
 import { Suspense } from "react";
 import { Pixels } from "@/components/analytics/pixels";
+import { PostHogTracking } from "@/components/analytics/posthog-server";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { ToastProvider } from "@/components/ui/toast";
@@ -143,6 +144,9 @@ export default async function RootLayout({
                 <NavigationProgress />
               </Suspense>
               <Pixels nonce={nonce} />
+              <Suspense fallback={null}>
+                <PostHogTracking />
+              </Suspense>
               {children}
               {vercelTelemetryEnabled ? <Analytics /> : null}
               {vercelTelemetryEnabled ? <SpeedInsights /> : null}
