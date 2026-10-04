@@ -14,6 +14,8 @@ import {
 } from "@/lib/site-content";
 import { contact } from "@/lib/content";
 import type { PublicProduct } from "@/lib/product-architecture";
+import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
+import { DenemeLigiMenuItem } from "./deneme-ligi-menu-item";
 
 type MobileMenuProps = {
   open: boolean;
@@ -126,7 +128,15 @@ export function MobileMenu({
         <div className="border-b border-(--site-line) py-5">
           <h2 className="dc-eyebrow">{productsMenu.label}</h2>
           <ul className="mt-4 flex flex-col gap-4">
-            {products.map((product) => (
+            {products.map((product) => product.href === denemeLigiBrand.href ? (
+              <li key={product.href}>
+                <DenemeLigiMenuItem
+                  active={isActive(product.href)}
+                  onNavigate={onClose}
+                  summary={product.role}
+                />
+              </li>
+            ) : (
               <li key={product.href}>
                 <Link
                   href={product.href}

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { productsMenu } from "@/lib/site-content";
 import type { PublicProduct } from "@/lib/product-architecture";
+import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
+import { DenemeLigiMenuItem } from "./deneme-ligi-menu-item";
 
 type ProductsMenuProps = {
   isActive: (href: string) => boolean;
@@ -98,7 +100,15 @@ export function ProductsMenu({ isActive, products }: ProductsMenuProps) {
             Ekran okuyucuda ürün adı tek başına tanınabilir kalmalı.
           */}
           <ul className="flex flex-col">
-            {items.map((item) => (
+            {items.map((item) => item.href === denemeLigiBrand.href ? (
+              <li key={item.href} className="my-1">
+                <DenemeLigiMenuItem
+                  active={isActive(item.href)}
+                  onNavigate={() => setOpen(false)}
+                  summary={item.summary}
+                />
+              </li>
+            ) : (
               <li
                 key={item.href}
                 className="rounded-od px-3 py-2.5 hover:bg-(--dc-surface-muted)"
