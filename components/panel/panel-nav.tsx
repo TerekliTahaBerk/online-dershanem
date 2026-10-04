@@ -19,17 +19,20 @@ export { mobilePrimaryNav, panelNavSections };
 export function PanelNav({
   role,
   products = [],
+  scope = null,
   onNavigate,
 }: {
   role: UserRole;
   products?: ProductCode[];
+  /** Seçili ürün paneli; menüyü o ürüne daraltır (yetki değil, sunum). */
+  scope?: ProductCode | null;
   onNavigate?: () => void;
 }) {
   const flags = usePanelFeatureFlags();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const root = rolePath(role);
-  const sections = panelNavSections(role, products, flags, root);
+  const sections = panelNavSections(role, products, flags, root, scope);
   const selectedStudentId =
     role === "PARENT" ? searchParams.get("studentId") : null;
 

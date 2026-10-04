@@ -46,9 +46,11 @@ async function login(page: Page, email = account.email) {
   await page.getByRole("textbox", { name: "E-posta" }).fill(email);
   await page.getByLabel("Şifre").fill(account.password!);
   await page.getByRole("button", { name: /^Giriş Yap$/ }).click();
-  // Tek panel: ürün seçici kaldırıldı, öğrenci her zaman rol köküne düşer.
-  // ODK sınav motoruna paneldeki "Denemeler" bağlantısıyla geçilir.
-  await page.waitForURL(/\/panel\/ogrenci$/);
+  // Ürün panelleri: girişten sonra seçici açılır; ODK paneli seçilince menü
+  // ODK'ya daralır ve "Denemeler" sınav motoruna gider.
+  await page.waitForURL(/\/panel\/urun-sec$/);
+  await page.getByRole("link", { name: "Online Deneme Kulübüm paneline git" }).click();
+  await page.waitForURL(/\/panel\/odk\/ogrenci$/);
   await expect(page.getByRole("link", { name: "Denemeler", exact: true })).toHaveAttribute(
     "href",
     "/panel/odk/ogrenci/denemeler",

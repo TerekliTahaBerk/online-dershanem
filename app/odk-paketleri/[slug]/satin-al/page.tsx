@@ -5,6 +5,7 @@ import { BuyerInfoForm } from "@/components/checkout/buyer-info-form";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { formatOdkPrice } from "@/components/odk/public-package-card";
+import { loadCheckoutAccount } from "@/lib/commerce/checkout-account";
 import {
   getPublicOdkPackage,
   odkAvailabilityLabel,
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
 
 export default async function OdkCheckoutPage({ params }: { params: Params }) {
   const { slug } = await params;
-  const item = await getPublicOdkPackage(slug);
+  const [item, checkoutAccount] = await Promise.all([getPublicOdkPackage(slug), loadCheckoutAccount()]);
   if (!item) notFound();
   return (
     <div className="site-scope">
@@ -49,6 +50,8 @@ export default async function OdkCheckoutPage({ params }: { params: Params }) {
               submitMode="redirect"
               submitLabel="Güvenli Ödemeye Geç"
               service="ODK"
+              defaults={checkoutAccount?.defaults}
+              account={checkoutAccount?.account ?? null}
             />
           ) : (
             <section className="rounded-[28px] border border-amber-200 bg-white p-8 text-center">

@@ -179,3 +179,48 @@ test("öğrenci OD yokken Dersler linki üretmez", () => {
   assert.ok(hrefs.includes("/panel/ogrenci/kocluk"));
   assert.ok(hrefs.includes("/panel/ogrenci/plan"));
 });
+
+test("ürün paneli kapsamı: öğrenci menüsü yalnız seçili ürünü gösterir", () => {
+  const scopedIds = (scope: ProductCode) =>
+    panelNavSections("STUDENT", ALL_PRODUCTS, ALL_FLAGS_ON, undefined, scope).flatMap((section) => section.items.map((item) => item.id));
+  const od = scopedIds("OD");
+  assert.equal(od.includes("lessons"), true);
+  assert.equal(od.includes("coaching"), false);
+  assert.equal(od.includes("odk-exams"), false);
+  const ok = scopedIds("OK");
+  assert.equal(ok.includes("coaching"), true);
+  assert.equal(ok.includes("lessons"), false);
+  const odk = panelNavSections("STUDENT", ALL_PRODUCTS, ALL_FLAGS_ON, undefined, "ODK").flatMap((section) => section.items);
+  assert.equal(odk.some((item) => item.id === "odk-exams"), true);
+  assert.equal(odk.find((item) => item.id === "today")?.href, "/panel/odk/ogrenci");
+});
+
+test("ürün paneli kapsamı: sahip olunmayan ürün seçilirse tam menü kalır", () => {
+  const unscoped = labels("STUDENT", ["OD"], ALL_FLAGS_ON);
+  const scoped = panelNavSections("STUDENT", ["OD"], ALL_FLAGS_ON, undefined, "ODK").flatMap((section) => section.items.map((item) => item.label));
+  assert.deepEqual(scoped, unscoped);
+});
+
+test("ürün paneli kapsamı: yönetim menüsünde ortak öğeler her panelde, ürün öğeleri yalnız kendi panelinde", () => {
+  const ids = (scope: ProductCode) =>
+    panelNavSections("ADMIN", [], ALL_FLAGS_ON, undefined, scope).flatMap((section) => section.items.map((item) => item.id));
+  for (const scope of ALL_PRODUCTS) {
+    const items = ids(scope);
+    for (const common of ["today", "signups", "people", "orders", "account-settings"]) assert.equal(items.includes(common), true, `${scope}:${common}`);
+  }
+  assert.equal(ids("OD").includes("groups"), true);
+  assert.equal(ids("OD").includes("odk-exams"), false);
+  assert.equal(ids("OK").includes("coaching"), true);
+  assert.equal(ids("OK").includes("groups"), false);
+  assert.equal(ids("ODK").includes("odk-exams"), true);
+  assert.equal(ids("ODK").includes("coaching"), false);
+});
+
+test("ürün paneli kapsamı: mobil alt çubuk seçili panele göre kurulur", () => {
+  const odk = mobilePrimaryNav("STUDENT", ALL_PRODUCTS, ALL_FLAGS_ON, undefined, "ODK");
+  assert.equal(odk[0]?.href, "/panel/odk/ogrenci");
+  assert.equal(odk.some((item) => item.id === "lessons"), false);
+  const admin = mobilePrimaryNav("ADMIN", [], ALL_FLAGS_ON, undefined, "ODK");
+  assert.equal(admin.length <= 4, true);
+  assert.equal(admin.some((item) => item.id === "groups"), false);
+});

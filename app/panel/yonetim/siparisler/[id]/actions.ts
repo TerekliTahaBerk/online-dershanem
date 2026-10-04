@@ -52,7 +52,11 @@ export async function retryOrderProvisioning(formData: FormData) {
     } else {
       entityType = "OdkOrder";
       const result = await provisionOdkOrder(orderId);
-      outcome = result.alreadyProvisioned ? "already_provisioned" : "succeeded";
+      outcome = result.alreadyProvisioned
+        ? "already_provisioned"
+        : result.awaitingStudentAccount
+          ? "manual_review:öğrenci hesabı yönetim tarafından açılmayı bekliyor"
+          : "succeeded";
     }
   } catch (error) {
     const code =

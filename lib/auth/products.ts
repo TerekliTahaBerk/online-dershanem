@@ -2,7 +2,7 @@ import "server-only";
 
 import type { Prisma, ProductCode, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { PASSWORD_CHANGE_PATH, rolePath } from "@/lib/auth/roles";
+import { PASSWORD_CHANGE_PATH, PRODUCT_SELECTOR_PATH } from "@/lib/auth/roles";
 import { hasProductEntitlement } from "@/lib/auth/product-entitlements";
 import { LEGACY_PRODUCT_ORDER, asLegacyProductCode, isLegacyProductCode, membershipProductCode, sortProductCodes } from "@/lib/products/codes";
 
@@ -83,16 +83,16 @@ export async function hasProductCodeAccess(userId: string, role: UserRole, code:
 /**
  * Girişten sonra gidilecek yer.
  *
- * TEK PANEL: kullanıcı hangi ürünleri aldıysa alsın, aynı panele girer.
- * Ürün seçme adımı YOKTUR — satın alınan ürünler panelin İÇİNDE bölüm olarak
- * açılır ve menü yetkiye göre daralır (bkz. `PanelNav`).
+ * ÜRÜN PANELLERİ: parola ve (yönetici için) MFA adımlarından sonra HERKES
+ * (Yönetim, Öğretmen, Öğrenci, Veli) ürün paneli seçicisine gider ve OD / OK /
+ * ODK'dan gireceği paneli seçer. Seçim `Session.activeProduct`'a yazılır ve
+ * yalnız menüyü daraltır; yetki her sayfada guard'larla yeniden doğrulanır.
  *
- * Eskiden burada `PRODUCT_SELECTOR_PATH` vardı ve birden çok ürünü olan kullanıcı
- * her girişte "hangi panele gireceksin?" sorusuyla karşılaşıyordu; ürün
- * mimarisi tek panele geçtiği için bu adım kaldırıldı.
+ * (Bir dönem "TEK PANEL" mimarisinde bu adım kaldırılmıştı; ürün başına ayrı
+ * panel kararıyla geri geldi.)
  */
 export async function postAuthenticationPath(input: { userId: string; role: UserRole; mustChangePassword: boolean; mfaVerifiedAt?: Date | null }): Promise<string> {
   if (input.mustChangePassword) return PASSWORD_CHANGE_PATH;
   if (input.role === "ADMIN" && !input.mfaVerifiedAt) return "/giris/mfa";
-  return rolePath(input.role);
+  return PRODUCT_SELECTOR_PATH;
 }

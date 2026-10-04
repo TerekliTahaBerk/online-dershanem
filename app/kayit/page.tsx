@@ -26,10 +26,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Public kayıt ekranı — onaylı tasarım (Web.dc.html → isLogin, "KAYIT OL").
+ * Public kayıt ekranı — çok adımlı (Öğrenci / Veli).
  *
- * Kayıt bir hesap açar ama ÜRÜN ERİŞİMİ VERMEZ; erişimi ödeme/onay sonrası
- * admin açar. Bu kural sunucuda `app/api/auth/register/route.ts` içinde
+ * Kayıt bir hesap açar ama ÜRÜN ERİŞİMİ VERMEZ; erişim ödeme sonrası
+ * provisioning ya da admin eliyle açılır. Bu kural sunucuda `app/api/auth/register/route.ts` içinde
  * uygulanır — buradaki ekran yalnızca sunumdur.
  *
  * Panel kapalıyken kayıt da kapalıdır: kimsenin giremeyeceği bir panele hesap
@@ -44,7 +44,11 @@ export default async function RegisterPage() {
   if (session) redirect(await postAuthenticationPath(session));
 
   return (
-    <AuthCard title="Hesap oluştur" googleLabel="Google ile kayıt ol">
+    <AuthCard
+      title="Hesap oluştur"
+      wide
+      description="Öğrenci ya da veli olarak birkaç adımda hesabını aç; seni hemen arayalım."
+    >
       <RegisterForm />
 
       <p className="mt-5 text-center text-[13px] text-dc-ink-muted">
@@ -58,8 +62,8 @@ export default async function RegisterPage() {
       </p>
 
       <p className="mt-4 rounded-xl border border-dc-line bg-white px-4 py-3 text-[12.5px] leading-[1.6] text-dc-ink-muted">
-        Kayıt olmak ürün erişimi başlatmaz. Ders, koçluk ve deneme erişimin
-        paketin tanımlandıktan sonra açılır.
+        Kayıt olmak ürün erişimi başlatmaz. Paket satın aldığında erişimin
+        otomatik açılır; öğretmen ataması için seninle iletişime geçeriz.
       </p>
     </AuthCard>
   );

@@ -30,6 +30,27 @@ export type BuyerInfoFormDefaults = {
   parentFullName?: string;
   parentPhone?: string;
   parentEmail?: string;
+  address?: string;
+};
+
+/**
+ * Giriş yapmış öğrenci/veli bağlamı. Öğrencide erişim kendi hesabına açılır;
+ * velide "bu paket kimin için?" seçimi zorunludur. Kimlik SUNUCUDA
+ * oturumdan doğrulanır — bu yalnız sunum ve seçimdir.
+ */
+export type CheckoutAccount = {
+  role: "STUDENT" | "PARENT";
+  displayName: string;
+  email: string;
+  beneficiaries: Array<{
+    type: "linked" | "pending";
+    id: string;
+    label: string;
+    hint: string;
+    classLevel: string | null;
+    schoolName: string | null;
+    examType: string | null;
+  }>;
 };
 
 export type BuyerInfoFormProps = {
@@ -63,6 +84,8 @@ export type BuyerInfoFormProps = {
    * doğrular), bu yüzden buradaki değer manipüle edilse bile para riski yok.
    */
   couponContext?: { subtotalCents: number };
+  /** Giriş yapmış öğrenci/veli. Verilmezse anonim akış. */
+  account?: CheckoutAccount | null;
 };
 
 type AppliedCoupon = { code: string; discountCents: number; label: string };
@@ -107,7 +130,12 @@ export function BuyerInfoForm({
   onSuccess,
   placementExpectation,
   couponContext,
+  account = null,
 }: BuyerInfoFormProps) {
+  const [beneficiaryKey, setBeneficiaryKey] = useState<string>(() => {
+    const first = account?.beneficiaries[0];
+    return first ? `${first.type}:${first.id}` : "";
+  });
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
   const pendingRef = useRef(false);
@@ -193,6 +221,15 @@ export function BuyerInfoForm({
       .map(String);
     // Yalnız doğrulanmış kod gönderilir; sunucu yine de yeniden doğrular.
     payload.couponCode = appliedCoupon?.code ?? null;
+    delete payload.beneficiaryChoice;
+    if (account?.role === "PARENT") {
+      const [type, id] = beneficiaryKey.split(":");
+      if (!type || !id) {
+        setError("Paketin hangi çocuğunuz için olduğunu seçin.");
+        return;
+      }
+      payload.beneficiary = { type, id };
+    }
     // Merge extraPayload (cart items, etc.) — overrides any flat duplicates.
     if (extraPayload) {
       for (const [k, v] of Object.entries(extraPayload)) {
@@ -394,6 +431,53 @@ export function BuyerInfoForm({
         </div>
       </div>
 
+      {account ? (
+        <div className="rounded-[20px] border border-[var(--site-line)] bg-white px-5 py-4 text-[14px] leading-6 text-[var(--site-body)]">
+          <p className="font-semibold text-[var(--site-ink)]">
+            {account.displayName} hesabıyla satın alıyorsunuz.
+          </p>
+          <p>
+            {account.role === "STUDENT"
+              ? "Ödeme sonrası paket erişimin bu hesapta otomatik açılır."
+              : "Ödeme sonrası sizin erişiminiz otomatik açılır; seçtiğiniz çocuğunuzun erişimi de hesabına tanımlanır."}
+          </p>
+          {account.role === "PARENT" ? (
+            account.beneficiaries.length ? (
+              <fieldset className="mt-3">
+                <legend className="text-[13px] font-semibold text-[var(--site-ink)]">Bu paket kimin için?</legend>
+                <div className="mt-2 flex flex-col gap-2">
+                  {account.beneficiaries.map((child) => {
+                    const key = `${child.type}:${child.id}`;
+                    return (
+                      <label key={key} className="flex items-center gap-2.5">
+                        <input
+                          type="radio"
+                          name="beneficiaryChoice"
+                          value={key}
+                          checked={beneficiaryKey === key}
+                          onChange={() => setBeneficiaryKey(key)}
+                          className="h-4 w-4"
+                        />
+                        <span className="text-[var(--site-ink)]">{child.label}</span>
+                        <span className="text-[12px] text-[var(--site-body)]">· {child.hint}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </fieldset>
+            ) : (
+              <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-[13px] text-amber-900">
+                Satın almadan önce{" "}
+                <Link href="/panel/ayarlar/cocuklarim" className="font-semibold underline">
+                  çocuğunuzu ekleyin
+                </Link>
+                .
+              </p>
+            )
+          ) : null}
+        </div>
+      ) : null}
+
       <Section title="Kişisel Bilgiler">
         <Field
           name="fullName"
@@ -411,7 +495,12 @@ export function BuyerInfoForm({
           defaultValue={defaults.email}
           required
           error={fieldErrors.email}
-          help="Ödeme sonrası hesabınız ekibimiz tarafından bu e-posta ile oluşturulur."
+          readOnly={Boolean(account)}
+          help={
+            account
+              ? "Hesabınızın e-postası; ödeme bu hesaba bağlanır."
+              : "Ödeme sonrası hesabınız ekibimiz tarafından bu e-posta ile oluşturulur."
+          }
         />
         <Field
           name="phone"
@@ -454,6 +543,7 @@ export function BuyerInfoForm({
           name="address"
           label="Açık Adres (fatura için)"
           autoComplete="section-checkout billing street-address"
+          defaultValue={defaults.address}
           textarea
           rows={2}
           required
@@ -885,6 +975,7 @@ type FieldProps = {
   rows?: number;
   maxLength?: number;
   error?: string;
+  readOnly?: boolean;
 };
 
 function Field({
@@ -901,6 +992,7 @@ function Field({
   rows = 3,
   maxLength,
   error,
+  readOnly,
 }: FieldProps) {
   const describedBy =
     [help ? `${name}-help` : null, error ? `${name}-error` : null]
@@ -946,6 +1038,7 @@ function Field({
           defaultValue={defaultValue}
           placeholder={placeholder}
           maxLength={maxLength}
+          readOnly={readOnly}
           aria-invalid={!!error}
           aria-describedby={describedBy}
           className={fieldClass}

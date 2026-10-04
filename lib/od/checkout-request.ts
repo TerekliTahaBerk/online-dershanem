@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { OD_NO_SLOT_VALUES, OD_TIME_RANGE_VALUES } from "./placement";
+import { beneficiarySchema } from "@/lib/commerce/beneficiary";
 
 const cartItemSchema = z.object({
   service: z.enum(["OD", "ODK"]).default("OD"), id: z.string().min(1).max(120),
@@ -25,6 +26,8 @@ export const odCheckoutInputSchema = z.object({
   placementConsent: z.union([z.string(), z.boolean()]).optional(), couponCode: z.string().max(60).optional().nullable(),
   kvkkConsent: z.union([z.string(), z.boolean()]).optional(), marketingConsent: z.union([z.string(), z.boolean()]).optional(),
   paymentConsent: z.union([z.string(), z.boolean()]).optional(),
+  /** Giriş yapmış veli: paketin hangi çocuk için olduğu. */
+  beneficiary: beneficiarySchema,
 });
 
 export function consentValue(value: unknown): boolean {

@@ -18,6 +18,8 @@ export type PanelMobileDrawerAccount = {
   initials: string;
   roleLine: string;
   workspaceSwitch?: { href: string; label: string } | null;
+  /** Seçili ürün paneli ve seçiciye bağlantı ("Panel değiştir"). */
+  productSwitch?: { href: string; label: string } | null;
   accountHref?: string | null;
   showSessionsLink?: boolean;
 };
@@ -30,12 +32,14 @@ export type PanelMobileDrawerAccount = {
 export function PanelMobileNav({
   role,
   products,
+  scope = null,
   nav,
   mobileQuickItems,
   drawerAccount,
 }: {
   role: UserRole;
   products: ProductCode[];
+  scope?: ProductCode | null;
   /** Kendi menüsü olan çalışma alanları için. */
   nav?: React.ReactNode;
   /** Özel menülü alanlarda (İşletme vb.) alt çubuk kısayolları. */
@@ -55,7 +59,7 @@ export function PanelMobileNav({
     role === "PARENT" ? searchParams.get("studentId") : null;
   const quickItems =
     mobileQuickItems ??
-    (nav ? [] : mobilePrimaryNav(role, products, flags, root));
+    (nav ? [] : mobilePrimaryNav(role, products, flags, root, scope));
   const bottomNavColumns = Math.min(4, Math.max(2, quickItems.length + 1));
 
   useEffect(() => setOpen(false), [pathname]);
@@ -181,6 +185,7 @@ export function PanelMobileNav({
                 <PanelNav
                   role={role}
                   products={products}
+                  scope={scope}
                   onNavigate={() => setOpen(false)}
                 />
               )}
@@ -234,6 +239,17 @@ export function PanelMobileNav({
                     </Link>
                   ) : null}
                 </div>
+
+                {drawerAccount.productSwitch ? (
+                  <Link
+                    href={drawerAccount.productSwitch.href}
+                    onClick={() => setOpen(false)}
+                    className="mt-2 flex min-h-11 items-center justify-center gap-1.5 rounded-[10px] border border-dc-line bg-white px-3 text-[12px] font-semibold text-dc-ink"
+                  >
+                    <ArrowLeftRight size={14} aria-hidden="true" />
+                    {drawerAccount.productSwitch.label}
+                  </Link>
+                ) : null}
 
                 {drawerAccount.workspaceSwitch ? (
                   <Link

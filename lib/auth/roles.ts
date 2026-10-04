@@ -20,7 +20,17 @@ export const PASSWORD_CHANGE_PATH = "/panel/parola";
 
 /** Giriş ekranı. Panel kapalıyken burası "yenileniyor" mesajı gösterir. */
 export const LOGIN_PATH = "/giris";
+/**
+ * Ürün paneli seçici: girişten sonra herkes (Yönetim, Öğretmen, Öğrenci, Veli)
+ * OD / OK / ODK'dan hangi panele gireceğini burada seçer.
+ */
 export const PRODUCT_SELECTOR_PATH = "/panel/urun-sec";
+
+/** Kayıt sonrası iletişim formu (Tally). Atlanabilir. */
+export const CONTACT_FORM_PATH = "/kayit/iletisim-formu";
+
+/** Panel içi hesap ayarları merkezi. */
+export const ACCOUNT_SETTINGS_PATH = "/panel/ayarlar";
 
 /**
  * Her rolün panel kökü.
@@ -61,9 +71,9 @@ const ODK_ROLE_HOME: Record<UserRole, string> = {
 /**
  * Ürünün panel kökü.
  *
- * TEK PANEL: OD ve OK aynı panelin bölümleridir, bu yüzden rolün kendi
- * kökünü döndürürler. ODK'nın sınav motoru ayrı route ağacında yaşamaya
- * devam ediyor (aynı panelin bölümü olarak).
+ * OD ve OK aynı rol route ağacını paylaşır (menüyü `Session.activeProduct`
+ * daraltır), bu yüzden rolün kendi kökünü döndürürler. ODK'nın sınav motoru
+ * ayrı route ağacında yaşar.
  *
  * `Record<ProductCode, …>` bilinçli: enum'a yeni ürün eklendiğinde burası
  * DERLEME HATASI verir. Eskiden ternary olduğu için `OK` eklendiğinde

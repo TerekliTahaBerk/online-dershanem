@@ -64,6 +64,13 @@ model StudentProfile {
   /// tutar (ör. "YKS"); sıralama ayrı ve sayısaldır ki karşılaştırılabilsin.
   /// Boşsa ekranda sıralama satırı hiç basılmaz.
   targetRank                  Int?                         @map("target_rank")
+  /// AYT alanı: SAY | EA | SOZ | DIL.
+  fieldTrack                  String?                      @map("field_track")
+  /// DEVLET | OZEL | ACIK_LISE | MEZUN.
+  schoolType                  String?                      @map("school_type")
+  /// Kayıtta beyan edilen zorlandığı dersler (serbest etiket).
+  weakSubjects                String[]                     @map("weak_subjects")
+  weeklyStudyHours            Int?                         @map("weekly_study_hours")
   weeklyGoal                  String?                      @map("weekly_goal")
   weeklyGoalUpdatedAt         DateTime?                    @map("weekly_goal_updated_at") @db.Timestamptz(3)
   createdAt                   DateTime                     @default(now()) @map("created_at") @db.Timestamptz(3)
@@ -91,6 +98,7 @@ model StudentProfile {
   parentRelationshipHistory   ParentStudentHistory[]       @relation("ParentRelationshipStudent")
   coachNotes                  CoachNote[]
   weeklyCoachSummaries        WeeklyCoachSummary[]
+  pendingChildRequests        PendingChild[]
   planSuggestions             WeeklyPlanSuggestion[]
   timelineEvents              StudentTimelineEvent[]
   crossProductEvents          CrossProductEventOutbox[]

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { accessibilityScan } from "./helpers/axe";
 import { uniqueTestClientIp } from "./helpers/client-ip";
+import { enterProductPanel } from "./helpers/panel-login";
 
 const password = process.env.PANEL_E2E_TEACHER_PASSWORD || "testpass123";
 const accounts = {
@@ -19,10 +20,7 @@ async function login(page: Page, account: { email?: string; password?: string },
   await page.getByLabel("Şifre").fill(account.password!);
   await page.getByRole("button", { name: /^Giriş Yap$/ }).click();
   await page.waitForURL(/\/panel\//);
-  if (expectPanel && new URL(page.url()).pathname === "/panel/urun-sec") {
-    await page.getByRole("link", { name: "Online Dershanem paneline git" }).click();
-    await page.waitForURL(/\/panel\/(yonetim|ogretmen|ogrenci|veli)/);
-  }
+  if (expectPanel) await enterProductPanel(page);
   if (expectPanel) await expect(page.getByRole("main")).toBeVisible();
 }
 
@@ -56,9 +54,9 @@ test.describe.serial("integrated pilot rollout", () => {
       await login(page, account); await expect(page).toHaveURL(new RegExp(path)); await logout(page);
     }
     await login(page, accounts.excludedTeacher, false);
-    if (new URL(page.url()).pathname === "/panel/urun-sec") {
-      await page.getByRole("link", { name: "Online Dershanem paneline git" }).click();
-    }
+    // Pilot dışı kullanıcının seçicide açık paneli yok; rol köküne doğrudan gidince 404.
+    await enterProductPanel(page);
+    if (new URL(page.url()).pathname === "/panel/urun-sec") await page.goto("/panel/ogretmen");
     await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
     const apiStatus = await page.evaluate(async () => (await fetch("/api/panel/calendar/export")).status);
     expect(apiStatus).toBe(404);
@@ -71,9 +69,8 @@ test.describe.serial("integrated pilot rollout", () => {
     await cohort.getByRole("button", { name: "Duraklat" }).click();
     await expect(page.getByText(/Pilot erişimi güvenle durduruldu/)).toBeVisible();
     await logout(page); await login(page, accounts.student, false);
-    if (new URL(page.url()).pathname === "/panel/urun-sec") {
-      await page.getByRole("link", { name: "Online Dershanem paneline git" }).click();
-    }
+    await enterProductPanel(page);
+    if (new URL(page.url()).pathname === "/panel/urun-sec") await page.goto("/panel/ogrenci");
     await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
     const apiStatus = await page.evaluate(async () => (await fetch("/api/panel/calendar/export")).status);
     expect(apiStatus).toBe(404);

@@ -110,6 +110,10 @@ enum LeadSource {
   PURCHASE_STARTED
   PURCHASE_COMPLETED
   MANUAL
+  /// /kayit ile kendi hesabını açan kullanıcı.
+  SELF_SIGNUP
+  /// Kayıt sonrası Tally iletişim formu.
+  TALLY_FORM
   OTHER
 }
 

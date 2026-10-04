@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { CartCheckoutClient } from "@/components/cart/cart-checkout-client";
 import { getOdPlacementExpectation } from "@/lib/od/placement-server";
+import { loadCheckoutAccount } from "@/lib/commerce/checkout-account";
 
 export const metadata: Metadata = {
   title: "Güvenli Ödeme",
@@ -14,8 +15,8 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function CartCheckoutPage() {
-  const placementExpectation = await getOdPlacementExpectation();
-  const defaults = {
+  const [placementExpectation, checkoutAccount] = await Promise.all([getOdPlacementExpectation(), loadCheckoutAccount()]);
+  const anonymousDefaults = {
     fullName: "",
     email: "",
     phone: "",
@@ -29,6 +30,8 @@ export default async function CartCheckoutPage() {
     parentFullName: "",
     parentPhone: "",
   };
+  // Giriş yapmış öğrenci/veli: form hesap bilgileriyle ön doldurulur.
+  const defaults = checkoutAccount ? { ...anonymousDefaults, ...checkoutAccount.defaults } : anonymousDefaults;
 
   return (
     <div className="site-scope">
@@ -48,6 +51,7 @@ export default async function CartCheckoutPage() {
           </nav>
           <CartCheckoutClient
             defaults={defaults}
+            account={checkoutAccount?.account ?? null}
             placementExpectation={placementExpectation}
           />
         </div>

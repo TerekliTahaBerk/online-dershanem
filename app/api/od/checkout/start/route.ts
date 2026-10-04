@@ -30,6 +30,7 @@ import { getOdPlacementExpectation } from "@/lib/od/placement-server";
 import { allocateOrderDiscount, assertOrderLineReconciliation } from "@/lib/commerce/order-lines";
 import { getPublicOdkPackage } from "@/lib/odk/public-commerce-server";
 import { consentValue, odCheckoutInputSchema, OD_PENDING_ORDER_REUSE_MS, orderLinesMatch } from "@/lib/od/checkout-request";
+import { applyPurchaseContext, contextOrderFields, resolvePurchaseContext } from "@/lib/commerce/account-purchase";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -80,6 +81,13 @@ export async function POST(req: Request) {
       { ok: false, error: "KVKK ve ön bilgilendirme onaylarını işaretleyin." },
       { status: 400 },
     );
+  }
+
+  // Giriş yapmış öğrenci/veli: erişimin kime açılacağı sipariş anında
+  // sabitlenir (bkz. lib/commerce/account-purchase.ts).
+  const purchase = await resolvePurchaseContext(d.beneficiary ?? null);
+  if (!purchase.ok) {
+    return NextResponse.json({ ok: false, error: purchase.error }, { status: purchase.status });
   }
 
   // ── Determine pricing & summary ──────────────────────────────────────────
@@ -227,9 +235,10 @@ export async function POST(req: Request) {
     }
   }
 
-  const normalizedEmail = d.email.trim().toLowerCase();
+  const ownerOverride = applyPurchaseContext({}, purchase.context);
+  const normalizedEmail = String(ownerOverride.buyerInfo.email ?? d.email.trim().toLowerCase());
   const placementExpectation = await getOdPlacementExpectation(category);
-  const buyerInfo = {
+  const baseBuyerInfo = {
     fullName: d.fullName,
     email: normalizedEmail,
     phone: d.phone,
@@ -262,10 +271,16 @@ export async function POST(req: Request) {
       ? { id: couponId, code: couponCode, discountCents }
       : null,
   };
+  // Bağlam alanları EN SONA uygulanır: formdaki veli/öğrenci alanları
+  // oturumdan doğrulanmış kimliği ezemez.
+  const applied = applyPurchaseContext(baseBuyerInfo, purchase.context);
+  const buyerInfo = applied.buyerInfo;
 
   const lineInputs = allocatedLines.map((money, position) => {
     const item = cartSnapshot?.[position] ?? { service: "OD" as const, id: `${category ?? "legacy"}:${subject ?? packageName}`, name: packageName, category: category ?? "", subject: subject ?? "", priceCents, qty: 1 };
-    const owner = cartSnapshot?.[position]?.owner ?? { fullName: d.fullName, email: normalizedEmail, phone: d.phone };
+    const owner = cartSnapshot?.[position]?.owner ?? (applied.ownerEmail
+      ? { fullName: applied.ownerName ?? d.fullName, email: applied.ownerEmail, phone: applied.ownerPhone ?? d.phone }
+      : { fullName: d.fullName, email: normalizedEmail, phone: d.phone });
     return {
       position,
       product: item.service,
@@ -302,6 +317,7 @@ export async function POST(req: Request) {
       where: { id: order.id },
       data: {
         buyerInfo: buyerInfo as Prisma.InputJsonValue,
+        ...contextOrderFields(purchase.context),
         category,
         subject,
         packageId,
@@ -322,6 +338,7 @@ export async function POST(req: Request) {
         discountCents,
         totalCents,
         buyerInfo: buyerInfo as Prisma.InputJsonValue,
+        ...contextOrderFields(purchase.context),
         lines: { create: lineInputs },
       },
       select: { id: true, lines: { select: { sku: true, quantity: true, unitPriceCents: true, discountCents: true, totalCents: true, fulfillmentOwnerKey: true } } },

@@ -6,6 +6,7 @@ import { ShoppingBag } from "lucide-react";
 import {
   BuyerInfoForm,
   type BuyerInfoFormDefaults,
+  type CheckoutAccount,
 } from "@/components/checkout/buyer-info-form";
 import {
   OrderSummaryCard,
@@ -42,8 +43,10 @@ function tryFormat(cents: number): string {
 export function CartCheckoutClient({
   defaults,
   placementExpectation,
+  account = null,
 }: {
   defaults: BuyerInfoFormDefaults;
+  account?: CheckoutAccount | null;
   placementExpectation: OdPlacementExpectation;
 }) {
   const [snapshot, setSnapshot] = useState<CartSnapshot | null>(null);
@@ -184,6 +187,7 @@ export function CartCheckoutClient({
             })),
           }}
           defaults={defaults}
+          account={account}
           placementExpectation={currentExpectation}
           couponContext={{ subtotalCents: totalCents }}
         />

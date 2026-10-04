@@ -11,9 +11,12 @@ datasource db {
 // ============================================================
 // PANEL — kimlik çekirdeği
 //
-// Public self-register YOKTUR: hesabı yalnızca ADMIN açar ve geçici parolayı
-// elden (WhatsApp/telefon) iletir. Bu yüzden e-posta gönderimine bağlı hiçbir
-// akış yok — parola sıfırlama da admin eliyle yapılır.
+// Hesap üç yoldan açılır (bkz. `User.registrationSource`):
+//  - SELF_SIGNUP: kullanıcı /kayit ile Öğrenci ya da Veli olarak kendisi açar.
+//    Kayıt HİÇBİR ürün erişimi vermez.
+//  - PURCHASE: PayTR ödemesi sonrası provisioning açar.
+//  - ADMIN_INVITE: yönetim davet bağlantısıyla açar (öğretmen/yönetim ve
+//    velinin bildirdiği çocuklar).
 // ============================================================
 
 enum UserRole {
@@ -48,25 +51,25 @@ enum CurriculumExam {
 /// Veri odaklı ürün kataloğu. Legacy ProductCode ve CommerceProduct alanları
 /// kademeli geçiş tamamlanana kadar kaynak modellerde paralel tutulur.
 model Product {
-  id                 String                    @id @default(cuid())
-  code               String                    @unique
-  name               String
-  targetAudience     String?                   @map("target_audience")
-  isActive           Boolean                   @default(true) @map("is_active")
+  id                   String                         @id @default(cuid())
+  code                 String                         @unique
+  name                 String
+  targetAudience       String?                        @map("target_audience")
+  isActive             Boolean                        @default(true) @map("is_active")
   /// Haftalık planın aktif olabilmesi için insan (koç/öğretmen) onayı gerekiyor mu?
   /// `true` (varsayılan) = Online Koçum davranışı: plan DRAFT doğar, onaysız
   /// görev tamamlanamaz. `false` = öğretmensiz/otonom ürün (KPSS): plan üretildiği
   /// anda `autoApproved` işaretiyle APPROVED doğar ve onay ucuna hiç uğramaz.
   /// Yeni bir otonom ürün eklendiğinde kod değil, bu satır değişir.
-  requiresPlanApproval Boolean                 @default(true) @map("requires_plan_approval")
-  createdAt          DateTime                  @default(now()) @map("created_at") @db.Timestamptz(3)
-  examFamilies       ExamFamily[]
-  businessUnits      BusinessUnit[]
-  memberships        ProductMembership[]
-  progressEvidence   StudentProgressEvidence[]
-  commerceOrderLines CommerceOrderLine[]
-  contentRoles       ProductContentRoleAssignment[]
-  weeklyPlans        WeeklyPlan[]
+  requiresPlanApproval Boolean                        @default(true) @map("requires_plan_approval")
+  createdAt            DateTime                       @default(now()) @map("created_at") @db.Timestamptz(3)
+  examFamilies         ExamFamily[]
+  businessUnits        BusinessUnit[]
+  memberships          ProductMembership[]
+  progressEvidence     StudentProgressEvidence[]
+  commerceOrderLines   CommerceOrderLine[]
+  contentRoles         ProductContentRoleAssignment[]
+  weeklyPlans          WeeklyPlan[]
 
   @@map("products")
 }

@@ -4,7 +4,7 @@ import { leadSubmissionSchema } from "@/lib/validators";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getRateLimitKeyFromIp, rateLimitResponseHeaders } from "@/lib/security/rate-limit";
 import { sendLeadSubmissionNotification } from "@/lib/email";
-import { normalizeEmail, normalizePhone } from "@/lib/business/normalization";
+import { notifyActiveAdmins, recordBusinessLead } from "@/lib/leads/create-lead";
 
 /**
  * Public ön görüşme / lead formu kayıt ucu.
@@ -49,15 +49,18 @@ export async function POST(request: Request) {
     });
 
     // Public lead formunu birleşik CRM'e yüksek güvenli telefon eşleşmesiyle yansıt.
-    const unit = await prisma.businessUnit.upsert({ where: { code: "OD" }, update: { isActive: true }, create: { code: "OD", name: "OnlineDershanem", product: "OD" } });
-    const normalizedPhone = normalizePhone(lead.phone);
-    const normalizedEmail = normalizeEmail(email || null);
-    const existingBusinessLead = normalizedPhone ? await prisma.businessLead.findFirst({ where: { businessUnitId: unit.id, normalizedPhone } }) : null;
-    await prisma.businessLead.create({ data: { businessUnitId: unit.id, source: "OD_WEB_FORM", firstName: lead.fullName, phone: lead.phone, normalizedPhone, email: email || null, normalizedEmail, grade: lead.classLevel, examType: lead.examType, consentMetadata: { kvkkConsent: lead.kvkkConsent, sourceSubmissionId: lead.id }, matchSuggestion: existingBusinessLead ? { leadId: existingBusinessLead.id, confidence: 0.78, reasons: ["PHONE"] } : undefined } });
+    await recordBusinessLead({
+      source: "OD_WEB_FORM",
+      fullName: lead.fullName,
+      phone: lead.phone,
+      email: email || null,
+      grade: lead.classLevel,
+      examType: lead.examType,
+      consentMetadata: { kvkkConsent: lead.kvkkConsent, sourceSubmissionId: lead.id },
+    });
 
     // E-posta kapalı veya gecikmiş olsa bile yönetim paneli yeni talebi gösterir.
-    const admins = await prisma.user.findMany({ where: { role: "ADMIN", status: "ACTIVE" }, select: { id: true } });
-    if (admins.length) await prisma.notification.createMany({ data: admins.map((admin) => ({ userId: admin.id, type: "SYSTEM", title: "Yeni ön görüşme talebi", body: `${lead.fullName} · ${lead.examType} · ${lead.classLevel}`, href: "/panel/yonetim/isler" })) });
+    await notifyActiveAdmins({ title: "Yeni ön görüşme talebi", body: `${lead.fullName} · ${lead.examType} · ${lead.classLevel}`, href: "/panel/yonetim/isler" });
 
     // Bildirim e-postası en iyi çaba — başarısızlık kaydı bozmamalı.
     try {

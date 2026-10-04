@@ -63,7 +63,7 @@ jobs:
       META_APP_SECRET: e2e-only-meta-app-secret
       META_VERIFY_TOKEN: e2e-only-meta-verify-token
       META_GRAPH_API_VERSION: v99.0
-      PUBLIC_REGISTER_ENABLED: "false"
+      PUBLIC_REGISTER_ENABLED: "true"
       ODK_ROLLOUT_MODE: general
       ODK_PILOT_KILL_SWITCH: "false"
       ODK_PILOT_ACCEPTANCE_APPROVED: "true"

@@ -3,7 +3,7 @@ import Image from "next/image";
 import { unstable_noStore as noStore } from "next/cache";
 import type { ProductCode, UserRole } from "@prisma/client";
 import { ArrowLeftRight, Bell, ShieldCheck } from "lucide-react";
-import { productRolePath, roleLabel } from "@/lib/auth/roles";
+import { ACCOUNT_SETTINGS_PATH, PRODUCT_SELECTOR_PATH, productLabel, productRolePath, roleLabel } from "@/lib/auth/roles";
 import { getAccessibleProducts } from "@/lib/auth/products";
 import { getSession } from "@/lib/auth/session";
 import { getResolvedAdminPreview } from "@/lib/auth/admin-preview";
@@ -27,7 +27,8 @@ import { OfflineSyncProvider } from "@/components/panel/offline-sync-provider";
 import { offlineSessionScope } from "@/lib/offline-scope";
 import { PanelFeatureProvider } from "@/components/panel/panel-feature-provider";
 import { visibleGlobalSearchCommands } from "@/lib/panel/global-search";
-import type { PanelNavItem } from "@/lib/panel/navigation";
+import { resolveNavScope, type PanelNavItem } from "@/lib/panel/navigation";
+import { AccountCompletionBanner } from "@/components/account/account-completion-banner";
 
 /**
  * PANEL KABUĞU — onaylı tasarım (Panel.dc.html).
@@ -165,9 +166,33 @@ export async function PanelShell({
     storedPreference || defaultAccessibilityViewPreference;
   const offlineScope = session ? offlineSessionScope(session.sessionId) : "";
 
+  /*
+   * ÜRÜN PANELİ KAPSAMI.
+   *
+   * Girişte seçilen ürün (`Session.activeProduct`) menüyü daraltır. ODK'nın
+   * kendi route ağacı olduğu için ODK sayfası açıksa kapsam ODK'dır; OD/OK
+   * sayfalarında seçim ODK ise kapsam kullanıcının sahip olduğu OD/OK'ye
+   * döner. Kapsam yalnız SUNUMDUR — sayfalar kendi guard'larını çalıştırır.
+   */
+  const navScope = (() => {
+    if (isBusinessWorkspace || nav) return null;
+    if (product === "ODK") return resolveNavScope(effectiveRole, products, "ODK");
+    const selected = session?.activeProduct;
+    const candidates: ProductCode[] = [...(selected && selected !== "ODK" ? [selected] : []), "OD", "OK"];
+    for (const candidate of candidates) {
+      const resolved = resolveNavScope(effectiveRole, products, candidate);
+      if (resolved) return resolved;
+    }
+    return null;
+  })();
+  const productSwitch =
+    !isBusinessWorkspace && !preview && navScope
+      ? { href: PRODUCT_SELECTOR_PATH, label: `${productLabel(navScope)} · Panel değiştir` }
+      : null;
+
   const homeHref = isBusinessWorkspace
     ? "/panel/yonetim/isletme/genel-bakis"
-    : productRolePath(product, effectiveRole);
+    : productRolePath(navScope ?? product, effectiveRole);
 
   /*
    * ÇALIŞMA ALANI DEĞİŞTİRME.
@@ -204,11 +229,9 @@ export async function PanelShell({
   const accountHref: string | null =
     isBusinessWorkspace || preview
       ? null
-      : effectiveRole === "STUDENT"
-        ? "/panel/ogrenci/profil"
-        : effectiveRole === "PARENT"
-          ? "/panel/veli/hesap"
-          : "/panel/guvenlik";
+      : effectiveRole === "STUDENT" || effectiveRole === "PARENT"
+        ? ACCOUNT_SETTINGS_PATH
+        : "/panel/guvenlik";
 
   const displayName = shellFullName || shellEmail;
   const initials = displayName
@@ -294,10 +317,18 @@ export async function PanelShell({
             </Link>
 
             <div className="min-h-0 flex-1 overflow-y-auto">
-              {nav ?? <PanelNav role={effectiveRole} products={products} />}
+              {nav ?? <PanelNav role={effectiveRole} products={products} scope={navScope} />}
             </div>
 
             <div className="mt-auto border-t border-dc-line-soft pt-5">
+              {productSwitch ? (
+                <Link
+                  href={productSwitch.href}
+                  className="mb-1 flex items-center gap-1.5 rounded-[10px] px-2.5 py-2 text-[12px] font-semibold text-dc-ink-muted transition-colors hover:bg-dc-surface-muted hover:text-dc-ink"
+                >
+                  <ArrowLeftRight size={13} aria-hidden="true" /> {productSwitch.label}
+                </Link>
+              ) : null}
               {workspaceSwitch ? (
                 <Link
                   href={workspaceSwitch.href}
@@ -349,6 +380,7 @@ export async function PanelShell({
               <PanelMobileNav
                 role={effectiveRole}
                 products={products}
+                scope={navScope}
                 nav={nav}
                 mobileQuickItems={mobileQuickItems}
                 drawerAccount={{
@@ -357,6 +389,7 @@ export async function PanelShell({
                   initials: initials || "?",
                   roleLine: `${roleLabel(effectiveRole)}${preview ? " · önizleme" : teacherMode.enabled ? " · yönetici" : ""}`,
                   workspaceSwitch,
+                  productSwitch,
                   accountHref,
                   showSessionsLink: !preview,
                 }}
@@ -444,6 +477,9 @@ export async function PanelShell({
               tabIndex={-1}
               className="flex-1 px-4 pb-32 pt-6 sm:px-8 sm:pb-10 sm:pt-7"
             >
+              {session && !preview && !isBusinessWorkspace ? (
+                <AccountCompletionBanner userId={session.userId} role={session.role} />
+              ) : null}
               {children}
             </main>
           </div>

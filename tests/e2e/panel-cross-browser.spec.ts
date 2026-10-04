@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { hasE2EEnv, panelAccountGroups } from "./env-requirements";
 import { uniqueTestClientIp } from "./helpers/client-ip";
+import { enterProductPanel } from "./helpers/panel-login";
 
 const accounts = [
   { role: "admin", email: process.env.PANEL_E2E_ADMIN_EMAIL, password: process.env.PANEL_E2E_ADMIN_PASSWORD, path: "/panel/yonetim" },
@@ -18,9 +19,7 @@ async function login(page: Page, email: string, password: string) {
   await page.getByLabel("Şifre").fill(password);
   await page.getByRole("button", { name: /^Giriş Yap$/ }).click();
   await page.waitForURL(/\/panel\//);
-  if (new URL(page.url()).pathname === "/panel/urun-sec") {
-    await page.getByRole("link", { name: "Online Dershanem paneline git" }).click();
-  }
+  await enterProductPanel(page);
 }
 
 test.describe("çapraz tarayıcı panel kabulü", () => {

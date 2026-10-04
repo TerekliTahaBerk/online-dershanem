@@ -3,7 +3,7 @@ import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { cache } from "react";
 import { cookies, headers } from "next/headers";
-import type { UserRole, UserStatus } from "@prisma/client";
+import type { ProductCode, UserRole, UserStatus } from "@prisma/client";
 import { withPrismaResilience } from "@/lib/prisma-resilience";
 import { SESSION_POLICIES, absoluteSessionExpiry, sessionExpiryReason } from "@/lib/auth/session-policy";
 import { parseBearerToken } from "@/lib/auth/bearer-token";
@@ -29,6 +29,11 @@ export type SessionUser = {
   mustChangePassword: boolean;
   mfaVerifiedAt: Date | null;
   stepUpAt: Date | null;
+  /**
+   * Girişte seçilen ürün paneli. YALNIZ menü kapsamıdır, yetki vermez —
+   * erişim her istekte guard'larda üyelikle yeniden doğrulanır.
+   */
+  activeProduct: ProductCode | null;
 };
 
 function hashToken(token: string): string {
@@ -157,6 +162,7 @@ export const getSession = cache(async (): Promise<SessionUser | null> => {
     mustChangePassword: session.user.mustChangePassword,
     mfaVerifiedAt: session.mfaVerifiedAt,
     stepUpAt: session.stepUpAt,
+    activeProduct: session.activeProduct,
   };
 });
 

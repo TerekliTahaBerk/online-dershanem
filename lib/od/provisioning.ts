@@ -12,6 +12,7 @@ import { mergeAccessWindow, parseExamAccessWindow } from "@/lib/commerce/kpss-ac
 import { grantProductMembership } from "@/lib/products/membership-server";
 import { log } from "@/lib/logger";
 import { queueOdAccountSetup, queueOdOnboardingUpdate } from "@/lib/od/onboarding-communication";
+import { parentBuyerId, upsertMergedMembership } from "@/lib/commerce/account-purchase";
 
 export type OdProvisioningFailurePoint = "AFTER_USER" | "AFTER_PROFILE" | "AFTER_MEMBERSHIP";
 
@@ -44,6 +45,15 @@ function injected(point: OdProvisioningFailurePoint | undefined, expected: OdPro
 }
 
 async function provisionRemainingOdLines(orderId: string) {
+  // Veli, hesabı henüz açılmamış çocuk için aldıysa satır sahibi geçici olarak
+  // velinin e-postasıdır (satır anlık görüntüsü değiştirilemez). Admin çocuğun
+  // hesabını açtıktan sonra bu satırlar çocuğun hesabına yönlendirilir.
+  const ownerOrder = await prisma.odOrder.findUnique({
+    where: { id: orderId },
+    select: { buyerInfo: true, pendingChild: { select: { status: true, studentProfile: { select: { userId: true } } } } },
+  });
+  const pendingOwnerKey = ownerOrder?.pendingChild ? normalizeEmail(textField((ownerOrder.buyerInfo ?? {}) as Buyer, "email")) : null;
+  const pendingOwnerUserId = ownerOrder?.pendingChild?.status === "ACCOUNT_CREATED" ? ownerOrder.pendingChild.studentProfile?.userId ?? null : null;
   const lines = await prisma.commerceOrderLine.findMany({
     where: { odOrderId: orderId, fulfillmentStatus: { in: ["PENDING", "RETRY_PENDING"] } },
     orderBy: { position: "asc" },
@@ -59,13 +69,18 @@ async function provisionRemainingOdLines(orderId: string) {
       const owner = line.fulfillmentOwnerSnapshot as Buyer;
       const email = normalizeEmail(line.fulfillmentOwnerKey);
       if (!email) throw new OdProvisioningError("Satır öğrenci e-postası eksik.", "LINE_OWNER_EMAIL_MISSING");
+      if (pendingOwnerKey && email === pendingOwnerKey && !pendingOwnerUserId) {
+        throw new OdProvisioningError("Öğrenci hesabı henüz açılmadı.", "STUDENT_ACCOUNT_PENDING");
+      }
       const passwordHash = await hashPassword(randomBytes(32).toString("base64url"));
-      const user = await prisma.user.upsert({
-        where: { email },
-        create: { email, fullName: textField(owner, "fullName") ?? "OD Öğrencisi", phone: textField(owner, "phone"), role: "STUDENT", status: "ACTIVE", passwordHash, mustChangePassword: true },
-        update: {},
-        select: { id: true, role: true, status: true },
-      });
+      const user = pendingOwnerKey && email === pendingOwnerKey && pendingOwnerUserId
+        ? await prisma.user.findUniqueOrThrow({ where: { id: pendingOwnerUserId }, select: { id: true, role: true, status: true } })
+        : await prisma.user.upsert({
+            where: { email },
+            create: { email, fullName: textField(owner, "fullName") ?? "OD Öğrencisi", phone: textField(owner, "phone"), role: "STUDENT", status: "ACTIVE", passwordHash, mustChangePassword: true, registrationSource: "PURCHASE" },
+            update: {},
+            select: { id: true, role: true, status: true },
+          });
       const conflict = usableIdentity(user, "STUDENT", "Satır öğrenci e-postası");
       if (conflict) throw new OdProvisioningError(conflict, "LINE_OWNER_CONFLICT");
       await prisma.$transaction(async (tx) => {
@@ -129,6 +144,39 @@ async function provisionRemainingOdLines(orderId: string) {
       await prisma.commerceOrderLine.update({ where: { id: line.id }, data: { fulfillmentStatus: "RETRY_PENDING", fulfillmentError: message } });
       throw error;
     }
+  }
+}
+
+/**
+ * Ödeyen VELİNİN kendi ürün üyelikleri. Veli paneli (ders takvimi, koçluk,
+ * deneme raporları) üyelik ister; eskiden bunu admin elle açıyordu. Satır
+ * ürünlerine göre: OD/OK süresiz, ODK sözleşme penceresiyle. KPSS veliye
+ * açılmaz (öğretmen adayı ürünü).
+ */
+async function grantParentMembershipsForOdOrder(tx: DbClient, orderId: string, parentUserId: string) {
+  const lines = await tx.commerceOrderLine.findMany({ where: { odOrderId: orderId }, select: { product: true, productSnapshot: true } });
+  const paid = await tx.odPayment.findFirst({ where: { orderId, status: "SUCCEEDED" }, orderBy: { paidAt: "asc" }, select: { paidAt: true } });
+  const paidAt = paid?.paidAt ?? new Date();
+  const products = lines.length ? lines : [{ product: "OD" as const, productSnapshot: null }];
+  const granted: string[] = [];
+  for (const line of products) {
+    const fulfillment = COMMERCE_FULFILLMENT[line.product];
+    if (fulfillment === "open_membership") {
+      const product = COMMERCE_TO_PRODUCT_CODE[line.product];
+      await upsertMergedMembership(tx, { userId: parentUserId, product, startsAt: paidAt, expiresAt: null, sourceOdOrderId: orderId });
+      granted.push(product);
+    } else if (fulfillment === "odk_contract") {
+      const contract = parseOdkProductContract(line.productSnapshot);
+      if (!contract.success) continue;
+      const window = contractAccessWindow(contract.data.policy, paidAt);
+      await upsertMergedMembership(tx, { userId: parentUserId, product: "ODK", startsAt: window.startsAt, expiresAt: window.expiresAt });
+      granted.push("ODK");
+    }
+  }
+  if (granted.length) {
+    await tx.auditLog.create({
+      data: { actorType: "SYSTEM", entityType: "ProductMembership", entityId: parentUserId, action: "product_membership.parent_purchase_granted", summary: "Ödeyen velinin ürün erişimi açıldı", payload: { orderId, products: [...new Set(granted)] } },
+    });
   }
 }
 
@@ -237,8 +285,39 @@ export async function provisionOdOrder(
   try {
     const passwordHash = await hashPassword(randomBytes(32).toString("base64url"));
     const result = await prisma.$transaction(async (tx) => {
-      const order = await tx.odOrder.findUniqueOrThrow({ where: { id: orderId }, include: { onboarding: true } });
+      const order = await tx.odOrder.findUniqueOrThrow({
+        where: { id: orderId },
+        include: { onboarding: true, pendingChild: { select: { id: true, status: true, fullName: true, studentProfile: { select: { userId: true } } } } },
+      });
       const buyer = (order.buyerInfo ?? {}) as Buyer;
+      const payingParentId = await parentBuyerId(tx, order.buyerUserId);
+
+      // Veli, öğrenci hesabı henüz olmayan bir çocuk için ödedi: velinin kendi
+      // erişimi hemen açılır, öğrenci hesabını yönetim açar ("Yeni kayıtlar").
+      if (order.pendingChild && !options.studentUserId) {
+        if (order.pendingChild.status === "ACCOUNT_CREATED" && order.pendingChild.studentProfile) {
+          options = { ...options, studentUserId: order.pendingChild.studentProfile.userId };
+        } else if (order.pendingChild.status === "PENDING") {
+          if (payingParentId) await grantParentMembershipsForOdOrder(tx, orderId, payingParentId);
+          const admins = await tx.user.findMany({ where: { role: "ADMIN", status: "ACTIVE" }, select: { id: true } });
+          if (admins.length) {
+            await tx.notification.createMany({
+              data: admins.map((admin) => ({
+                userId: admin.id,
+                type: "SYSTEM" as const,
+                title: "Ödeme alındı — öğrenci hesabı açılacak",
+                body: `${textField(buyer, "parentFullName") ?? "Veli"} · ${order.pendingChild!.fullName} · ${order.packageName}`,
+                href: "/panel/yonetim/basvurular?sekme=cocuklar",
+              })),
+            });
+          }
+          return putOnboardingInManualReview(tx, orderId, `Veli ödedi; ${order.pendingChild.fullName} için öğrenci hesabı yönetim tarafından açılacak.`, {
+            code: "STUDENT_ACCOUNT_PENDING",
+            pendingChildId: order.pendingChild.id,
+            parentUserId: payingParentId,
+          });
+        }
+      }
       const rawEmail = textField(buyer, "studentEmail") ?? textField(buyer, "email");
       const email = normalizeEmail(rawEmail);
       if (!email) return putOnboardingInManualReview(tx, orderId, "Öğrenci e-postası eksik veya geçersiz.", { code: "STUDENT_EMAIL_MISSING" });
@@ -274,7 +353,7 @@ export async function provisionOdOrder(
       const phone = textField(buyer, "studentPhone") ?? textField(buyer, "phone");
       const student = existingStudent ?? await tx.user.upsert({
         where: { email },
-        create: { email, fullName, phone, role: "STUDENT", status: "ACTIVE", passwordHash, mustChangePassword: true },
+        create: { email, fullName, phone, role: "STUDENT", status: "ACTIVE", passwordHash, mustChangePassword: true, registrationSource: "PURCHASE" },
         update: {},
         select: { id: true, role: true, status: true },
       });
@@ -328,7 +407,7 @@ export async function provisionOdOrder(
         }
         const parent = parentByEmail ?? parentByPhone ?? await tx.user.upsert({
           where: { email: parentEmail! },
-          create: { email: parentEmail!, fullName: parentFullName ?? "OD Velisi", phone: parentPhone, role: "PARENT", status: "ACTIVE", passwordHash, mustChangePassword: true },
+          create: { email: parentEmail!, fullName: parentFullName ?? "OD Velisi", phone: parentPhone, role: "PARENT", status: "ACTIVE", passwordHash, mustChangePassword: true, registrationSource: "PURCHASE" },
           update: {},
           select: { id: true, role: true, status: true },
         });
@@ -340,6 +419,17 @@ export async function provisionOdOrder(
           update: {},
         });
         parentLinkCreated = !existingLink;
+      }
+
+      if (payingParentId) {
+        await grantParentMembershipsForOdOrder(tx, orderId, payingParentId);
+        // Ödeyen veli formda farklı bir veli bilgisi girmiş olsa bile kendi
+        // hesabı öğrenciye bağlanır.
+        await tx.parentStudent.upsert({
+          where: { parentId_studentId: { parentId: payingParentId, studentId: profile.id } },
+          create: { parentId: payingParentId, studentId: profile.id, relationship: "Veli" },
+          update: { active: true, endedAt: null },
+        });
       }
 
       await tx.odOrder.update({

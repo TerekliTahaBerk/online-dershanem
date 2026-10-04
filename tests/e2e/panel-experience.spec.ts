@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { hasE2EEnv, panelAccountGroups } from "./env-requirements";
 import { accessibilityScan } from "./helpers/axe";
 import { uniqueTestClientIp } from "./helpers/client-ip";
+import { enterProductPanel } from "./helpers/panel-login";
 
 const password = process.env.PANEL_E2E_TEACHER_PASSWORD;
 const accounts = {
@@ -19,10 +20,7 @@ async function login(page: Page, account: { email?: string; password?: string })
   await page.getByLabel("Şifre").fill(account.password!);
   await page.getByRole("button", { name: /^Giriş Yap$/ }).click();
   await page.waitForURL(/\/panel\//);
-  if (new URL(page.url()).pathname === "/panel/urun-sec") {
-    await page.getByRole("link", { name: "Online Dershanem paneline git" }).click();
-    await page.waitForURL(/\/panel\/(yonetim|ogretmen|ogrenci|veli)/);
-  }
+  await enterProductPanel(page);
   await expect(page.getByRole("main")).toBeVisible();
   await expect.poll(() => page.title()).not.toBe("");
 }

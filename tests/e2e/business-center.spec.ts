@@ -3,6 +3,7 @@ import { accessibilityScan } from "./helpers/axe";
 import { createHmac } from "node:crypto";
 import { hasE2EEnv } from "./env-requirements";
 import { uniqueTestClientIp } from "./helpers/client-ip";
+import { enterProductPanel } from "./helpers/panel-login";
 const admin = { email: process.env.PANEL_E2E_ADMIN_EMAIL, password: process.env.PANEL_E2E_ADMIN_PASSWORD };
 const teacher = { email: process.env.PANEL_E2E_TEACHER_EMAIL, password: process.env.PANEL_E2E_TEACHER_PASSWORD };
 async function login(page: Page, account: { email?: string; password?: string }) {
@@ -10,7 +11,7 @@ async function login(page: Page, account: { email?: string; password?: string })
   await page.request.post("/api/auth/logout"); await page.goto("/giris");
   await page.getByRole("textbox", { name: "E-posta" }).fill(account.email!); await page.getByLabel("Şifre").fill(account.password!);
   await page.getByRole("button", { name: /^Giriş Yap$/ }).click(); await page.waitForURL(/\/panel\//);
-  if (new URL(page.url()).pathname === "/panel/urun-sec") await page.getByRole("link", { name: "Online Dershanem paneline git" }).click();
+  await enterProductPanel(page);
 }
 test.describe("Instagram CRM ve finans merkezi", () => {
   test.describe.configure({ timeout: 120_000 });
