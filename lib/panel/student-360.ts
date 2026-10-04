@@ -339,7 +339,7 @@ export function deriveStudent360Issues(input: {
     issues.push({
       code: "GROUP_MISSING",
       title: "Grup ataması eksik",
-      description: "Online Dershanem erişimi var ama aktif grup kaydı yok.",
+      description: "onlinedershanem. erişimi var ama aktif grup kaydı yok.",
       severity: "warning",
     });
   }
@@ -355,7 +355,7 @@ export function deriveStudent360Issues(input: {
     issues.push({
       code: "COACH_MISSING",
       title: "Koç ataması eksik",
-      description: "Online Koçum erişimi var ama aktif koç ataması yok.",
+      description: "onlinekoçum. erişimi var ama aktif koç ataması yok.",
       severity: "warning",
     });
   }

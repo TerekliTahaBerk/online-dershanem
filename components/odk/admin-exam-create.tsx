@@ -261,7 +261,7 @@ export function AdminExamCreate({
             <span className="font-medium text-(--site-muted)">
               (isteğe bağlı)
             </span>
-            <input name="publisher" placeholder="Online Dershanem" />
+            <input name="publisher" placeholder="onlinedershanem." />
           </label>
           <label className="panel-field sm:col-span-2">
             Açıklama{" "}

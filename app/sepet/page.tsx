@@ -6,7 +6,7 @@ import { CartPageClient } from "@/components/cart/cart-page-client";
 export const metadata: Metadata = {
   title: "Sepetim",
   description:
-    "Online Dershanem matematik ders paketi sepetinizi güvenle gözden geçirin.",
+    "onlinedershanem. matematik ders paketi sepetinizi güvenle gözden geçirin.",
   alternates: { canonical: "/sepet" },
   robots: { index: false, follow: false },
 };

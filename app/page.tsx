@@ -14,9 +14,9 @@ import { homeFaqs } from "@/lib/site-content";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "Online Dershanem | Ders, Koçluk ve Deneme Ürünleri",
+  title: "onlinedershanem. | Ders, Koçluk ve Deneme Ürünleri",
   description:
-    "LGS ve YKS öğrencileri için Online Dershanem, Online Koçum ve Online Deneme Kulübüm ürünlerini keşfedin.",
+    "LGS ve YKS öğrencileri için onlinedershanem., onlinekoçum. ve onlinedenemekulübüm. ürünlerini keşfedin.",
   canonical: "/",
 });
 

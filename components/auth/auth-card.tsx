@@ -37,12 +37,12 @@ export function AuthCard({
       <div className={wide ? "w-full max-w-[560px]" : "w-full max-w-[380px]"}>
         <Link
           href="/"
-          aria-label="Online Dershanem ana sayfa"
+          aria-label="onlinedershanem. ana sayfa"
           className="mx-auto block w-12"
         >
           <Image
             src="/design/od-logo.png"
-            alt="Online Dershanem"
+            alt="onlinedershanem."
             width={1254}
             height={1254}
             priority

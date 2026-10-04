@@ -20,9 +20,9 @@ async function gotoHydrated(page: Page, path: string) {
 }
 
 const PRODUCTS = [
-  { name: "Online Dershanem", path: "/urunler/online-dershanem" },
-  { name: "Online Koçum", path: "/urunler/online-kocum" },
-  { name: "Online Deneme Kulübüm", path: "/urunler/online-deneme-kulubum" },
+  { name: "onlinedershanem.", path: "/urunler/online-dershanem" },
+  { name: "onlinekoçum.", path: "/urunler/online-kocum" },
+  { name: "onlinedenemekulübüm.", path: "/urunler/online-deneme-kulubum" },
 ] as const;
 
 test.describe("masaüstü navigasyon", () => {
@@ -49,7 +49,7 @@ test.describe("masaüstü navigasyon", () => {
     }
     await expect(nav.getByRole("link", { name: /Tüm ürünleri karşılaştır/ })).toBeVisible();
 
-    await nav.getByRole("link", { name: "Online Koçum", exact: true }).click();
+    await nav.getByRole("link", { name: "onlinekoçum.", exact: true }).click();
     await expect(page).toHaveURL(/\/urunler\/online-kocum\/?$/);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
@@ -93,7 +93,7 @@ test.describe("mobil navigasyon", () => {
     await expect(dialog.getByRole("link", { name: "Giriş Yap", exact: true })).toBeVisible();
     await expect(dialog.getByRole("link", { name: "Paketini Oluştur", exact: true })).toBeVisible();
 
-    await menu.getByRole("link", { name: "Online Deneme Kulübüm", exact: true }).click();
+    await menu.getByRole("link", { name: "onlinedenemekulübüm.", exact: true }).click();
     await expect(page).toHaveURL(/\/urunler\/online-deneme-kulubum\/?$/);
     await expect(page.getByRole("dialog", { name: "Mobil menü" })).toHaveCount(0);
   });
@@ -155,9 +155,9 @@ test.describe("ürün sayfaları ve footer", () => {
     await expect(page.getByRole("main")).not.toContainText("Aldığın her ürünün içinde çalışır");
   });
 
-  test("Online Koçum kayıt durumunu açıkça söyler", async ({ page }) => {
+  test("onlinekoçum. kayıt durumunu açıkça söyler", async ({ page }) => {
     await page.goto("/urunler/online-kocum", { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("main").getByText("Online Koçum için kayıtlar hazırlanıyor.", { exact: false })).toBeVisible();
+    await expect(page.getByRole("main").getByText("onlinekoçum. için kayıtlar hazırlanıyor.", { exact: false })).toBeVisible();
   });
 });
 

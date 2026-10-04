@@ -87,13 +87,13 @@ export function SiteHeaderClient({
             {/* Orta — marka */}
             <Link
               href="/"
-              aria-label="Online Dershanem ana sayfa"
+              aria-label="onlinedershanem. ana sayfa"
               className="flex min-h-11 min-w-11 shrink-0 items-center justify-center lg:order-2 lg:justify-self-center"
             >
               {/* Handoff: 38×38, radius 10, object-fit cover */}
               <Image
                 src="/design/od-logo.png"
-                alt="Online Dershanem"
+                alt="onlinedershanem."
                 width={1254}
                 height={1254}
                 priority

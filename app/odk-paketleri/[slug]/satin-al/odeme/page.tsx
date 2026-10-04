@@ -100,7 +100,7 @@ export default async function OdkPaymentPage({
             { label: "Bilgiler", href: `/odk-paketleri/${slug}/satin-al` },
             { label: "Ödeme" },
           ]}
-          eyebrow="Online Deneme Kulübüm"
+          eyebrow="onlinedenemekulübüm."
           title={order.package.title}
           totalCents={order.totalCents}
           editHref={`/odk-paketleri/${slug}/satin-al`}

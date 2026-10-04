@@ -96,11 +96,11 @@ export function MobileMenu({
         <Link
           href="/"
           onClick={onClose}
-          aria-label="Online Dershanem ana sayfa"
+          aria-label="onlinedershanem. ana sayfa"
         >
           <Image
             src="/design/od-logo.png"
-            alt="Online Dershanem"
+            alt="onlinedershanem."
             width={1254}
             height={1254}
             sizes="38px"

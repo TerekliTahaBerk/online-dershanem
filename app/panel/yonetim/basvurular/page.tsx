@@ -265,7 +265,7 @@ async function SignupList({ filter, page }: { filter: Filter; page: number }) {
                       ) : null}
                       {user.phone ? (
                         <a
-                          href={whatsAppLink(user.phone, `Merhaba ${user.fullName ?? ""}, Online Dershanem'den ulaşıyoruz.`)}
+                          href={whatsAppLink(user.phone, `Merhaba ${user.fullName ?? ""}, onlinedershanem.'den ulaşıyoruz.`)}
                           target="_blank"
                           rel="noreferrer"
                           className="inline-flex items-center gap-1.5 rounded-lg border border-dc-line bg-white px-3 py-2 text-[13px] font-semibold text-dc-ink"

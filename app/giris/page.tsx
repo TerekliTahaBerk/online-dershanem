@@ -12,7 +12,7 @@ import { postAuthenticationPath } from "@/lib/auth/products";
 export const metadata: Metadata = {
   ...buildMarketingMetadata({
     title: "Giriş",
-    description: "Online Dershanem öğrenci, veli ve öğretmen paneli girişi.",
+    description: "onlinedershanem. öğrenci, veli ve öğretmen paneli girişi.",
     canonical: "/giris",
   }),
   robots: { index: false, follow: false },
@@ -90,7 +90,7 @@ function RenewingNotice() {
       <div className="w-full max-w-[460px]">
         <Image
           src="/panel-yenileniyor-seffaf.png"
-          alt="Bilgisayar başında çalışan Online Dershanem karakteri"
+          alt="Bilgisayar başında çalışan onlinedershanem. karakteri"
           width={1333}
           height={1180}
           priority

@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   }
   return {
     title: "Kayıt Ol",
-    description: "Online Dershanem hesabı oluşturun.",
+    description: "onlinedershanem. hesabı oluşturun.",
     robots: { index: false, follow: false },
   };
 }

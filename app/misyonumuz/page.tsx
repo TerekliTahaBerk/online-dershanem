@@ -9,9 +9,9 @@ import { buildMarketingMetadata } from "@/lib/seo/metadata";
 export const metadata = buildMarketingMetadata({
   title: "Misyonumuz",
   description:
-    "Online Dershanem'in misyonu: matematikte zorlanan öğrenciyi küçük grup canlı derslerle derste görünür hale getirmek.",
+    "onlinedershanem.'in misyonu: matematikte zorlanan öğrenciyi küçük grup canlı derslerle derste görünür hale getirmek.",
   canonical: "/misyonumuz",
-  imageAlt: "Online Dershanem'in matematik eğitimi misyonu",
+  imageAlt: "onlinedershanem.'in matematik eğitimi misyonu",
 });
 
 const principles = [
@@ -58,7 +58,7 @@ export default function MissionPage() {
         <section className="site-container pt-4 sm:pt-6">
           <div className="mx-auto flex max-w-2xl flex-col gap-6 text-[18px] leading-8 text-(--site-body)">
             <p>
-              Online Dershanem, kalabalık dershane sıralarında kaybolan ya da
+              onlinedershanem., kalabalık dershane sıralarında kaybolan ya da
               birebir özel dersin maliyetine ulaşamayan öğrenciler için kuruldu.
               İkisinin arasında, bilinçli bir yer aradık: yeterince küçük ki her
               öğrenci görünür olsun, yeterince erişilebilir ki her aile
@@ -92,7 +92,7 @@ export default function MissionPage() {
               etrafında.&rdquo;
             </p>
             <p className="mt-6 text-[14px] text-(--site-muted)">
-              — Online Dershanem, kurucu ekip
+              — onlinedershanem., kurucu ekip
             </p>
           </div>
         </section>

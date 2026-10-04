@@ -34,7 +34,7 @@ const rows: { key: RowKey; label: string }[] = [
 const columns: Column[] = [
   {
     key: "dershanem",
-    name: "Online Dershanem",
+    name: "onlinedershanem.",
     href: "/urunler/online-dershanem",
     cells: {
       job: "Takıldığın konuyu öğretmenle canlı derste kapatırsın.",
@@ -45,7 +45,7 @@ const columns: Column[] = [
   },
   {
     key: "kocum",
-    name: "Online Koçum",
+    name: "onlinekoçum.",
     href: "/urunler/online-kocum",
     cells: {
       job: "Haftanı koçunla planlar, planın uygulanmasını takip edersin.",
@@ -56,7 +56,7 @@ const columns: Column[] = [
   },
   {
     key: "denemeKulubum",
-    name: "Online Deneme Kulübüm",
+    name: "onlinedenemekulübüm.",
     href: "/urunler/online-deneme-kulubum",
     cells: {
       job: "Denemeyle seviyeni ölçer, puanı nerede kaybettiğini görürsün.",
@@ -104,7 +104,7 @@ export function ProductCompare() {
       <div className="mt-10 hidden overflow-hidden rounded-dc-card border border-dc-line bg-white md:block">
         <table className="w-full table-fixed border-collapse text-left">
           <caption className="sr-only">
-            Online Dershanem, Online Koçum ve Online Deneme Kulübüm karşılaştırması
+            onlinedershanem., onlinekoçum. ve onlinedenemekulübüm. karşılaştırması
           </caption>
           <thead>
             <tr className="border-b border-dc-line bg-dc-surface-muted">

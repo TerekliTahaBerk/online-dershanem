@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { siteUrl } from "@/lib/content";
 
-const SITE_NAME = "Online Dershanem";
+const SITE_NAME = "onlinedershanem.";
 const DEFAULT_IMAGE_PATH = "/og.png?v=2";
-const DEFAULT_IMAGE_ALT = "Online Dershanem — LGS ve YKS için ders, koçluk ve deneme ürünleri";
+const DEFAULT_IMAGE_ALT = "onlinedershanem. — LGS ve YKS için ders, koçluk ve deneme ürünleri";
 
 type MarketingOpenGraphType = "website" | "article";
 

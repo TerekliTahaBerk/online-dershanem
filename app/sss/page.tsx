@@ -11,9 +11,9 @@ import { buildMarketingMetadata } from "@/lib/seo/metadata";
 export const metadata = buildMarketingMetadata({
   title: "Sıkça Sorulanlar",
   description:
-    "Online Dershanem hakkında sık sorulan sorular: ders modeli, seviye ve grup yerleşimi, ödeme ve iade, veli takibi, teknik gereksinimler ve uygunluk.",
+    "onlinedershanem. hakkında sık sorulan sorular: ders modeli, seviye ve grup yerleşimi, ödeme ve iade, veli takibi, teknik gereksinimler ve uygunluk.",
   canonical: "/sss",
-  imageAlt: "Online Dershanem sıkça sorulan sorular",
+  imageAlt: "onlinedershanem. sıkça sorulan sorular",
 });
 
 const waHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;

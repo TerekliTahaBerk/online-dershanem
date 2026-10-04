@@ -483,7 +483,7 @@ const newBlogPosts: BlogPost[] = [
         h2: "Grup büyüklüğünü nasıl değerlendirmelisiniz?",
         paragraphs: [
           "Tek başına kişi sayısı değil, her öğrencinin derse katılma biçimi önemlidir. Kayıt öncesinde öğrencinin soru sorup soramayacağını, çözümünü paylaşmaya ne kadar alan kaldığını ve öğretmenin farklı seviyeleri nasıl yönettiğini sorun.",
-          "Online Dershanem matematik dersleri en fazla dört öğrencilik gruplarda yürütülür; amaç öğrencinin görünür kaldığı bir canlı ders ortamı kurmaktır."
+          "onlinedershanem. matematik dersleri en fazla dört öğrencilik gruplarda yürütülür; amaç öğrencinin görünür kaldığı bir canlı ders ortamı kurmaktır."
         ]
       },
       {
@@ -524,7 +524,7 @@ const newBlogPosts: BlogPost[] = [
     ],
     faq: [
       { q: "Online matematik dersi canlı mı olmalı?", a: "Canlı ders, öğrencinin soru sormasına ve çözüm sırasında geri bildirim almasına imkân verir. Video içerikler tekrar amacıyla destek olabilir; ancak iki deneyim aynı değildir." },
-      { q: "Online matematik dersinde ideal grup kaç kişidir?", a: "Tek bir evrensel sayı yoktur; önemli olan öğrencinin görünür kalması ve geri bildirim alabilmesidir. Online Dershanem grupları en fazla dört öğrencidir." }
+      { q: "Online matematik dersinde ideal grup kaç kişidir?", a: "Tek bir evrensel sayı yoktur; önemli olan öğrencinin görünür kalması ve geri bildirim alabilmesidir. onlinedershanem. grupları en fazla dört öğrencidir." }
     ],
     cta: {
       title: "Ders modelini ve fiyatı şeffaf biçimde inceleyin",

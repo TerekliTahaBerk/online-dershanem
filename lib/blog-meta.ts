@@ -42,16 +42,16 @@ export const blogReviewedAt: Record<string, string> = {
 };
 
 const authorByCategory: Record<string, string> = {
-  "Online Dershane": "Online Dershanem Ekibi",
-  "Online Ders": "Online Dershanem Eğitim Ekibi",
-  YKS: "Online Dershanem Eğitim Ekibi",
-  LGS: "Online Dershanem Eğitim Ekibi",
-  "e-Dershane": "Online Dershanem Ekibi",
-  "Sınav Stratejisi": "Online Dershanem Eğitim Ekibi",
+  "Online Dershane": "onlinedershanem. Ekibi",
+  "Online Ders": "onlinedershanem. Eğitim Ekibi",
+  YKS: "onlinedershanem. Eğitim Ekibi",
+  LGS: "onlinedershanem. Eğitim Ekibi",
+  "e-Dershane": "onlinedershanem. Ekibi",
+  "Sınav Stratejisi": "onlinedershanem. Eğitim Ekibi",
 };
 
 export function getBlogAuthor(category: string): string {
-  return authorByCategory[category] ?? "Online Dershanem Ekibi";
+  return authorByCategory[category] ?? "onlinedershanem. Ekibi";
 }
 
 export function formatBlogDate(iso?: string): string {

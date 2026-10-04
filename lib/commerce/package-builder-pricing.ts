@@ -239,9 +239,9 @@ export type PackageQuote = {
 };
 
 const productLabels: Record<ProductKey, string> = {
-  dershanem: "Online Dershanem",
-  kocum: "Online Koçum",
-  denemeKulubum: "Online Deneme Kulübüm",
+  dershanem: "onlinedershanem.",
+  kocum: "onlinekoçum.",
+  denemeKulubum: "onlinedenemekulübüm.",
 };
 
 /**

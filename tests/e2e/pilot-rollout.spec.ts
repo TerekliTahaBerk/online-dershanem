@@ -30,7 +30,7 @@ async function logout(page: Page) { const status = await page.evaluate(async () 
 async function expectOdPanelClosed(page: Page) {
   if (new URL(page.url()).pathname !== "/panel/urun-sec") return;
   await expect(page.getByRole("heading", { name: "Hangi panele girmek istiyorsun?" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Online Dershanem paneline git" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "onlinedershanem. paneline git" })).toHaveCount(0);
 }
 
 test.describe.serial("integrated pilot rollout", () => {

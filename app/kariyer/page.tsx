@@ -8,13 +8,13 @@ import { contact, siteUrl } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Kariyer",
   description:
-    "Online Dershanem'de açık pozisyonlar. Küçük grup matematik dersini büyütecek ekip arkadaşları arıyoruz.",
+    "onlinedershanem.'de açık pozisyonlar. Küçük grup matematik dersini büyütecek ekip arkadaşları arıyoruz.",
   alternates: { canonical: "/kariyer" },
   robots: { index: false, follow: true },
   openGraph: {
-    title: "Kariyer | Online Dershanem",
+    title: "Kariyer | onlinedershanem.",
     description:
-      "Online Dershanem ekibine katılmak ister misin? Açık pozisyonlara göz at.",
+      "onlinedershanem. ekibine katılmak ister misin? Açık pozisyonlara göz at.",
     url: `${siteUrl}/kariyer`,
     images: [{ url: `${siteUrl}/og.png?v=2`, width: 1200, height: 630 }],
   },
@@ -33,7 +33,7 @@ const openRoles: Role[] = [
     location: "Yerinde · Üniversite kampüsleri",
     type: "Yarı zamanlı",
     summary:
-      "Üniversitende Online Dershanem'i temsil edecek; etkinlikler, birebir görüşmeler ve sosyal medya çalışmalarıyla topluluğu büyütecek öğrenci elçileri arıyoruz.",
+      "Üniversitende onlinedershanem.'i temsil edecek; etkinlikler, birebir görüşmeler ve sosyal medya çalışmalarıyla topluluğu büyütecek öğrenci elçileri arıyoruz.",
   },
 ];
 
@@ -57,7 +57,7 @@ export default function CareersPage() {
             iş yap.
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-[17px] leading-8 text-(--site-body)">
-            Online Dershanem, öğrencinin kalabalıkta kaybolmadığı, öğretmeninin
+            onlinedershanem., öğrencinin kalabalıkta kaybolmadığı, öğretmeninin
             onu adıyla tanıdığı küçük gruplarla çalışıyor. Bunu büyüten küçük
             ama etkili bir ekibiz.
           </p>

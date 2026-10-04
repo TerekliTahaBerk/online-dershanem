@@ -269,7 +269,7 @@ export default async function AdminCoachingPage() {
 
         {kocumSignals.length ? (
           <PanelCard className="mt-5">
-            <PanelCardTitle>Online Koçum operasyon sinyalleri</PanelCardTitle>
+            <PanelCardTitle>onlinekoçum. operasyon sinyalleri</PanelCardTitle>
             <p className="mt-1 text-[12.5px] text-dc-ink-muted">
               Mikro görev listesi değil — plansız, koçsuz, yayınlanmamış veya
               düşük uyumlu öğrenciler.

@@ -3,7 +3,7 @@ import { OgTemplate, OG_SIZE, OG_CONTENT_TYPE } from "@/lib/seo/og-template";
 
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
-export const alt = "YKS Hazırlık — Online Dershanem";
+export const alt = "YKS Hazırlık — onlinedershanem.";
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 

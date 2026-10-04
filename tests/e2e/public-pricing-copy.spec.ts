@@ -59,7 +59,7 @@ for (const combo of [
 
 test("birebir ve ek ders fiyatı kurucunun fiyat kaynağını izler", async ({ page }) => {
   await openBuilder(page);
-  await page.getByRole("button", { name: /Online Dershanem/ }).first().click();
+  await page.getByRole("button", { name: /onlinedershanem./ }).first().click();
   await page.getByRole("button", { name: /LGS sınavına gireceğim/ }).click();
   await page.getByRole("button", { name: /Birebir özel ders/ }).click();
   const summary = page.getByRole("complementary", { name: "Paket özeti" });
@@ -73,7 +73,7 @@ test("birebir ve ek ders fiyatı kurucunun fiyat kaynağını izler", async ({ p
 
 test("grup dersi seçimi mevcut sepet kimliği ve fiyatıyla satın alınır", async ({ page }) => {
   await openBuilder(page);
-  await page.getByRole("button", { name: /Online Dershanem/ }).first().click();
+  await page.getByRole("button", { name: /onlinedershanem./ }).first().click();
   await page.getByRole("button", { name: /LGS sınavına gireceğim/ }).click();
   await page.getByRole("complementary", { name: "Paket özeti" }).getByRole("button", { name: "Bu Paketle Başla" }).click();
   await expect(page).toHaveURL(/\/sepet/);

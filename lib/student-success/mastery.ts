@@ -69,7 +69,7 @@ export type MasteryComputation = {
 const SOURCE_LABELS: Record<ProgressEvidenceInput["sourceType"], string> = {
   LESSON: "Ders",
   ASSIGNMENT: "Ödev",
-  COACHING_TASK: "Koçum",
+  COACHING_TASK: "onlinekoçum.",
   MOCK_EXAM: "Deneme",
   REVIEW: "Tekrar",
   TEACHER_ASSESSMENT: "Öğretmen",

@@ -4,16 +4,16 @@ import { buildMarketingMetadata } from "@/lib/seo/metadata";
 export const metadata = buildMarketingMetadata({
   title: "İade Politikası",
   description:
-    "Online Dershanem ders paketleri için ödeme, iptal ve iade koşulları.",
+    "onlinedershanem. ders paketleri için ödeme, iptal ve iade koşulları.",
   canonical: "/iade",
-  imageAlt: "Online Dershanem İade Politikası",
+  imageAlt: "onlinedershanem. İade Politikası",
 });
 
 export default function RefundPolicyPage() {
   return (
     <LegalPageTemplate
       pageTitle="İade Politikası"
-      intro='Online Dershanem ("Platform"), ders bazlı Grup Özel Ders modeliyle hizmet vermektedir. İşbu politika, satın alınan paketlerin iptal, iade ve telafi süreçlerini; öğrenci mağduriyetini önlemek ve eğitim sürekliliğini korumak amacıyla düzenler.'
+      intro='onlinedershanem. ("Platform"), ders bazlı Grup Özel Ders modeliyle hizmet vermektedir. İşbu politika, satın alınan paketlerin iptal, iade ve telafi süreçlerini; öğrenci mağduriyetini önlemek ve eğitim sürekliliğini korumak amacıyla düzenler.'
       effectiveDate="16 Mart 2026"
       sections={[
         {

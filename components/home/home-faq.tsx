@@ -11,7 +11,7 @@ export function HomeFaq() {
   const faqs = [
     {
       q: "Hangi ürünle başlamalıyım?",
-      a: "Konuyu öğrenme tarafında zorlanıyorsan Online Dershanem ile, planı uygulamada zorlanıyorsan Online Koçum ile, seviyeni ölçmek istiyorsan Online Deneme Kulübüm ile başlayabilirsin.",
+      a: "Konuyu öğrenme tarafında zorlanıyorsan onlinedershanem. ile, planı uygulamada zorlanıyorsan onlinekoçum. ile, seviyeni ölçmek istiyorsan onlinedenemekulübüm. ile başlayabilirsin.",
     },
     {
       q: "Ürünleri ayrı ayrı alabilir miyim?",
@@ -31,7 +31,7 @@ export function HomeFaq() {
     },
     {
       q: "Canlı ders formatı nasıl?",
-      a: "Online Dershanem canlı derslerinde birebir veya en fazla 4 kişilik küçük grup seçenekleri bulunur.",
+      a: "onlinedershanem. canlı derslerinde birebir veya en fazla 4 kişilik küçük grup seçenekleri bulunur.",
     },
     {
       q: "Veli neleri görür?",

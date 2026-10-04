@@ -86,9 +86,9 @@ export const RELATIONSHIP_OPTIONS = [
 export const RELATIONSHIPS = values(RELATIONSHIP_OPTIONS);
 
 export const PRODUCT_INTEREST_OPTIONS = [
-  { value: "OD", label: "Online Dershanem", hint: "Canlı grup dersleri" },
-  { value: "OK", label: "Online Koçum", hint: "Birebir koçluk ve plan" },
-  { value: "ODK", label: "Online Deneme Kulübüm", hint: "Deneme sınavları ve analiz" },
+  { value: "OD", label: "onlinedershanem.", hint: "Canlı grup dersleri" },
+  { value: "OK", label: "onlinekoçum.", hint: "Birebir koçluk ve plan" },
+  { value: "ODK", label: "onlinedenemekulübüm.", hint: "Deneme sınavları ve analiz" },
 ] as const;
 export const PRODUCT_INTERESTS = PRODUCT_INTEREST_OPTIONS.map((option) => option.value) as ["OD", "OK", "ODK"];
 export type InterestProduct = (typeof PRODUCT_INTERESTS)[number];

@@ -83,7 +83,7 @@ export default async function ParentCoachingPage({
       <>
         <PanelHeading title="Koçluk" description={selected.name} />
         <PanelEmpty
-          title="Bu hesapta Online Koçum bulunmuyor."
+          title="Bu hesapta onlinekoçum. bulunmuyor."
           body="Koçluk eklendiğinde haftalık plan, tamamlanma oranı ve koç özeti burada görünür."
         />
       </>,

@@ -54,7 +54,7 @@ export function PackagesExperience({
         {/* Başlık */}
         <section className="bg-white pt-14 sm:pt-20">
           <div className="site-container text-center">
-            <p className="site-eyebrow justify-center">Online Dershanem</p>
+            <p className="site-eyebrow justify-center">onlinedershanem.</p>
             <h1 className="mx-auto mt-4 max-w-5xl font-display text-[clamp(2.65rem,5.5vw,5rem)] leading-[.98] text-(--site-ink)">
               {title}
             </h1>

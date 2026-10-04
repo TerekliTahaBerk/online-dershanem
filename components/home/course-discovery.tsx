@@ -28,7 +28,7 @@ export function CourseDiscovery() {
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <p className="text-[12px] font-semibold tracking-[0.08em] text-(--dc-ink-faint)">
-              ONLINE DERSHANEM İÇİNDE
+              onlinedershanem. içinde
             </p>
             <h3 className="mt-3 font-display text-[26px] leading-[1.15] tracking-[-0.02em] text-dc-ink sm:text-[32px]">
               Hangi dersi alacağını sen seçiyorsun

@@ -87,7 +87,7 @@ export default async function OdCheckoutThankYouPage({
               <ClearCartOnPaymentSuccess />
               <CheckoutResultCard
                 status="success"
-                eyebrow="Online Dershanem"
+                eyebrow="onlinedershanem."
                 description="Ödemeniz alındı. Ekibimiz sizinle iletişime geçip ilk ders planlamasını yapacak."
                 nextStepNote={<OdStartTimeline buyerInfo={order.buyerInfo} />}
                 primaryAction={{
@@ -103,7 +103,7 @@ export default async function OdCheckoutThankYouPage({
           {order && normalizedStatus === "pending" && (
             <CheckoutResultCard
               status="pending"
-              eyebrow="Online Dershanem"
+              eyebrow="onlinedershanem."
               title="Ödeme onayı bekleniyor"
               description="Bankanızdan gelen ödeme onayı kontrol ediliyor. Başarı ekranı yalnızca siparişiniz PayTR bildirimiyle doğrulandıktan sonra gösterilir."
               primaryAction={{
@@ -118,7 +118,7 @@ export default async function OdCheckoutThankYouPage({
           {order && normalizedStatus === "failed" && (
             <CheckoutResultCard
               status="failed"
-              eyebrow="Online Dershanem"
+              eyebrow="onlinedershanem."
               primaryAction={{
                 href: `/paketler/satin-al/odeme?orderId=${encodeURIComponent(order.id)}`,
                 label: "Ödemeyi Tekrar Dene",

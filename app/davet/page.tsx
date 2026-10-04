@@ -8,7 +8,7 @@ import { PANEL_ENABLED } from "@/lib/panel-config";
 export const metadata: Metadata = {
   ...buildMarketingMetadata({
     title: "Hesap Daveti",
-    description: "Online Dershanem hesap davetini tamamlayın.",
+    description: "onlinedershanem. hesap davetini tamamlayın.",
     canonical: "/davet",
   }),
   robots: { index: false, follow: false },

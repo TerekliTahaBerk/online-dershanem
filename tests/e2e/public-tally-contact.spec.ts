@@ -62,8 +62,8 @@ for (const [slug, product] of [
 test("YKS one-to-one multi-product selection retains existing query without sending hidden fields", async ({ page }) => {
   await page.goto("/paketler");
   await page.getByRole("button", { name: /YKS sınavına gireceğim/ }).click();
-  await page.getByRole("button", { name: /Online Dershanem/ }).first().click();
-  await page.getByRole("button", { name: /Online Koçum/ }).first().click();
+  await page.getByRole("button", { name: /onlinedershanem./ }).first().click();
+  await page.getByRole("button", { name: /onlinekoçum./ }).first().click();
   await page.getByRole("button", { name: /Birebir özel ders/ }).click();
   await page.getByRole("button", { name: "+ Fizik", exact: true }).click();
   const cta = page.getByRole("complementary", { name: "Paket özeti" }).getByRole("link", { name: "Başlangıcı Planla" });

@@ -111,7 +111,7 @@ export function AcademicPanel(props: AcademicPanelProps) {
                   ) : null}
                   {row.evidence.coaching ? (
                     <div>
-                      <dt className="font-medium text-dc-ink">Koçum</dt>
+                      <dt className="font-medium text-dc-ink">onlinekoçum.</dt>
                       <dd>{row.evidence.coaching}</dd>
                     </div>
                   ) : null}
