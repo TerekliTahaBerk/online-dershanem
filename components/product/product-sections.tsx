@@ -386,11 +386,13 @@ export function ProductClosingCta({
   body,
   variant = "soft",
   secondaryCta,
+  primaryCta = { href: "/paketler", label: "Paketini Oluştur →" },
 }: {
   title: string;
   body: string;
   variant?: "soft" | "deep";
   secondaryCta?: { href: string; label: string };
+  primaryCta?: { href: string; label: string };
 }) {
   const deep = variant === "deep";
   return (
@@ -420,14 +422,14 @@ export function ProductClosingCta({
         </div>
         <div className="flex flex-none flex-col gap-3 sm:flex-row sm:items-center">
           <Link
-            href="/paketler"
+            href={primaryCta.href}
             className={
               deep
                 ? "flex-none rounded-full bg-white px-[30px] py-[17px] text-[16px] font-bold text-dc-brand-deep transition-opacity hover:opacity-90"
                 : "site-btn site-btn-primary site-btn-lg flex-none"
             }
           >
-            Paketini Oluştur →
+            {primaryCta.label}
           </Link>
           {secondaryCta ? (
             <Link

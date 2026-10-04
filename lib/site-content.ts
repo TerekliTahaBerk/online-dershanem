@@ -1,3 +1,4 @@
+import { application } from "@/lib/application";
 /**
  * PUBLIC MARKETING SITE — içerik kaynağı.
  *
@@ -51,8 +52,8 @@ export function primaryNavForDino(dinoAiEnabled: boolean) {
     : link);
 }
 
-/** Sağ üst birincil CTA — paket kurucuya götürür (self-register yok). */
-export const navCta = { label: "Paketini Oluştur", href: "/paketler" } as const;
+/** Sağ üst birincil CTA — ekibin değerlendireceği başvuru formu. */
+export const navCta = application;
 /** Öğrenci paneli girişi. Panel sıfırdan yazılana kadar `/giris` "yenileniyor" mesajı + destek kanallarını gösterir. */
 export const navLogin = { label: "Giriş Yap", href: "/giris" } as const;
 
@@ -137,6 +138,7 @@ export function footerColumnsForProducts(
           links: [
             ...products.map(({ name, href }) => ({ label: name, href })),
             { label: "Paketini Oluştur", href: "/paketler" },
+            application,
           ],
         }
       : { ...column, links: column.links.map((link) => link.href === sharedIntelligenceLayer.href

@@ -18,6 +18,7 @@ export function AuthCard({
   footer,
   wide = false,
   description,
+  showDenemeLigiLogo = false,
 }: {
   title: string;
   /** Verilmezse Google düğmesi ve "veya" ayracı basılmaz. */
@@ -27,6 +28,7 @@ export function AuthCard({
   /** Çok adımlı kayıt gibi geniş formlar için 560px kolon. */
   wide?: boolean;
   description?: ReactNode;
+  showDenemeLigiLogo?: boolean;
 }) {
   return (
     <main
@@ -35,21 +37,7 @@ export function AuthCard({
       className="site-scope grid min-h-dvh place-items-center bg-dc-canvas px-6 py-12"
     >
       <div className={wide ? "w-full max-w-[560px]" : "w-full max-w-[380px]"}>
-        <Link
-          href="/"
-          aria-label="onlinedershanem. ana sayfa"
-          className="mx-auto block w-12"
-        >
-          <Image
-            src="/design/od-logo.png"
-            alt="onlinedershanem."
-            width={1254}
-            height={1254}
-            priority
-            sizes="48px"
-            className="h-12 w-12 rounded-[13px] object-cover"
-          />
-        </Link>
+        <AuthBrandLogos showDenemeLigiLogo={showDenemeLigiLogo} />
 
         <h1 className="mt-6 text-center text-[22px] font-extrabold tracking-[-0.02em] text-dc-ink">
           {title}
@@ -96,6 +84,45 @@ export function AuthCard({
         {footer ? <div className="mt-4">{footer}</div> : null}
       </div>
     </main>
+  );
+}
+
+/** Aynı marka çifti giriş formunda ve panel kapalı ekranında kullanılır. */
+export function AuthBrandLogos({ showDenemeLigiLogo = false }: { showDenemeLigiLogo?: boolean }) {
+  return (
+        <div className="flex items-center justify-center gap-3">
+          <Link
+          href="/"
+          aria-label="onlinedershanem. ana sayfa"
+          className="block w-12 rounded-[13px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-dc-brand-strong"
+        >
+          <Image
+            src="/design/od-logo.png"
+            alt="onlinedershanem."
+            width={1254}
+            height={1254}
+            priority
+            sizes="48px"
+            className="h-12 w-12 rounded-[13px] object-cover"
+          />
+        </Link>
+          {showDenemeLigiLogo ? (
+            <Link
+              href="/urunler/online-deneme-kulubum"
+              aria-label="Deneme Ligi ürününü incele"
+              className="block rounded-[13px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-purple-700"
+            >
+              <Image
+                src="/deneme-ligi/mascot-d.png"
+                alt="Deneme Ligi taçlı D logosu"
+                width={1254}
+                height={1254}
+                sizes="48px"
+                className="h-12 w-12 rounded-[13px] object-contain"
+              />
+            </Link>
+          ) : null}
+        </div>
   );
 }
 

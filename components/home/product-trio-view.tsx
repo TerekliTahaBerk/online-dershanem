@@ -182,11 +182,11 @@ const productCards = {
     Preview: PlanPreview,
   },
   "online-deneme-kulubum": {
-    eyebrow: "onlinedenemekulübüm.",
+    eyebrow: denemeLigiBrand.name,
     title: "Sadece nete değil, eksiğin nedenine bak.",
     body: "LGS, TYT ve AYT denemelerinde hangi konu ve soru tipinde puan kaybettiğini görürsün.",
     tracks: ["LGS", "TYT", "AYT"],
-    cta: "onlinedenemekulübüm. ürününü incele",
+    cta: "Deneme Ligi’ni incele",
     href: "/urunler/online-deneme-kulubum",
     Preview: ExamPreview,
   },

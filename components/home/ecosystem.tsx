@@ -1,3 +1,4 @@
+import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -21,7 +22,7 @@ const steps = [
   {
     title: "Ölç",
     body: "Deneme sonucu planın işe yarayıp yaramadığını gösterir.",
-    product: "onlinedenemekulübüm.",
+    product: denemeLigiBrand.name,
   },
 ];
 

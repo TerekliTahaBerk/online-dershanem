@@ -10,7 +10,7 @@ import { uniqueTestClientIp } from "./helpers/client-ip";
  * gizli alanlarla gömüldüğü doğrulanır.
  */
 
-test.skip(process.env.PUBLIC_REGISTER_ENABLED !== "true", "Kendi kendine kayıt kapalı.");
+test.skip(true, "Kendi kendine kayıt kalıcı olarak kapalı; başvuru akışı public-applications.spec.ts içinde doğrulanır.");
 
 const PASSWORD = "e2e-kayit-parolasi-2026";
 

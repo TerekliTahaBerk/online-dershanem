@@ -1,3 +1,5 @@
+import { application } from "@/lib/application";
+
 /** Presentation only: never use this identity for commerce or entitlements. */
 export const denemeLigiBrand = {
   name: "onlinedenemekulübüm. X Deneme Ligi",
@@ -7,10 +9,10 @@ export const denemeLigiBrand = {
   description:
     "LGS, TYT ve AYT denemeleriyle seviyeni ölç, sonuçlarını değerlendir ve bir sonraki denemeye daha bilinçli hazırlan.",
   infrastructure: "onlinedershanem. altyapısıyla",
-  joinLabel: "Lige Katıl",
-  joinHref: "/paketler",
+  joinLabel: "Lige Başvur",
+  joinHref: application.href,
   participationNote:
-    "Katılım için mevcut deneme paketini seç; başlangıç ve erişim koşullarını ekibimizle netleştir.",
+    "Başvuru formunda Deneme Ligi’ni belirt; hesabını, başlangıcını ve erişim koşullarını ekibimizle netleştir.",
   meetingHref: "/iletisim?urun=onlinedenemekulubum#on-gorusme",
   imageAlt: "onlinedenemekulübüm. X Deneme Ligi — LGS, TYT ve AYT",
 } as const;

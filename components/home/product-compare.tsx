@@ -1,3 +1,4 @@
+import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 import Link from "next/link";
 import {
   billingPeriods,
@@ -56,7 +57,7 @@ const columns: Column[] = [
   },
   {
     key: "denemeKulubum",
-    name: "onlinedenemekulübüm.",
+    name: denemeLigiBrand.name,
     href: "/urunler/online-deneme-kulubum",
     cells: {
       job: "Denemeyle seviyeni ölçer, puanı nerede kaybettiğini görürsün.",
@@ -115,7 +116,7 @@ export function ProductCompare() {
                   scope="col"
                   className="p-5 text-[17px] font-extrabold text-dc-ink"
                 >
-                  {col.name}
+                  <span className={col.key === "denemeKulubum" ? "wrap-break-word text-purple-800" : undefined}>{col.name}</span>
                 </th>
               ))}
             </tr>
@@ -181,7 +182,7 @@ export function ProductCompare() {
             className="rounded-dc-card border border-dc-line bg-white p-5"
           >
             <h3 className="text-[19px] font-extrabold text-dc-ink">
-              {col.name}
+              <span className={col.key === "denemeKulubum" ? "wrap-break-word text-purple-800" : undefined}>{col.name}</span>
             </h3>
             <dl className="mt-3 divide-y divide-dc-line-soft">
               {rows.map((row) => (

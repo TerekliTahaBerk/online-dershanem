@@ -11,19 +11,19 @@ export function HomeFaq() {
   const faqs = [
     {
       q: "Hangi ürünle başlamalıyım?",
-      a: "Konuyu öğrenme tarafında zorlanıyorsan onlinedershanem. ile, planı uygulamada zorlanıyorsan onlinekoçum. ile, seviyeni ölçmek istiyorsan onlinedenemekulübüm. ile başlayabilirsin.",
+      a: "Konuyu öğrenme tarafında zorlanıyorsan onlinedershanem. ile, planı uygulamada zorlanıyorsan onlinekoçum. ile, seviyeni ölçmek istiyorsan onlinedenemekulübüm. X Deneme Ligi ile başlayabilirsin.",
     },
     {
       q: "Ürünleri ayrı ayrı alabilir miyim?",
-      a: `Evet. ${getPublicPricingCopy().standalone} Online satın alma ders paketinde kullanılabilir; diğer seçimlerin başlangıcını ekibimizle planlayabilirsin.`,
+      a: `Evet. ${getPublicPricingCopy().standalone} Fiyatını paket sayfasında görüp başvuru formuyla başlangıcını ekibimizle planlayabilirsin.`,
     },
     {
       q: "Dino AI nedir?",
       a: getDinoMarketingCopy(getPanelFeatureFlags().dinoAi).description,
     },
     {
-      q: "Online satın alma nasıl oluyor?",
-      a: "Online satın alınabilir ders paketini ödeme adımında tamamlayabilirsin. Diğer seçimlerde fiyatını paket özetinde görüp başlangıcını ekibimizle planlayabilirsin. Fiyatı hesaplanamayan özel kapsamlar için ön görüşmede yazılı teklif paylaşılır.",
+      q: "Nasıl başvurabilirim?",
+      a: "Başvur butonuyla başvuru formunu doldurabilirsin. Seçimini ve fiyatını paket sayfasında incele; formda hedef sınavını ve istediğin paketi belirt. Hesabını ekibimiz açar, başlangıç ve erişim koşullarını seninle netleştirir.",
     },
     {
       q: "Paketimi sonradan değiştirebilir miyim?",

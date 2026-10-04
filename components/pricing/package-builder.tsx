@@ -2,18 +2,16 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { application } from "@/lib/application";
+import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 import { BarChart3, CalendarCheck, Check, Video, type LucideIcon } from "lucide-react";
-import { useCart } from "@/components/cart/cart-provider";
 import { trackConversionEvent } from "@/lib/tracking";
 import {
   billingSuffix,
-  builderContactQuery,
   discountPercent,
   formatCents,
   lessonSubjects,
-  resolveBuilderCheckout,
-  resolveBuilderProductCheckout,
   resolvePackageQuote,
   type BillingPeriod,
   type BuilderSelection,
@@ -71,7 +69,7 @@ const productCopy = {
   },
   denemeKulubum: {
     Icon: BarChart3,
-    title: "onlinedenemekulübüm.",
+    title: denemeLigiBrand.name,
     summary: "Denemeyle seviyeni ölçer, eksiği görürsün.",
     tracks: ["LGS", "TYT", "AYT"],
     points: [
@@ -105,7 +103,7 @@ function crossSellText(
   }
   if (count === 2) {
     if (!selection.denemeKulubum)
-      return "onlinedenemekulübüm.'ü eklediğinde ölçme ve analiz de aynı pakete eklenir.";
+      return "Deneme Ligi’ni eklediğinde ölçme ve analiz de aynı pakete eklenir.";
     if (!selection.kocum)
       return "Koçluğu eklediğinde haftalık plan da aynı pakete eklenir.";
     return "Canlı dersi eklediğinde konu anlatımı da aynı pakete eklenir.";
@@ -113,15 +111,10 @@ function crossSellText(
   return null;
 }
 
-function hintText(count: number, hasDirectCheckout: boolean): string {
+function hintText(count: number): string {
   if (count === 0) return "Nereden başlamak istiyorsun?";
-  if (count === 1) {
-    return hasDirectCheckout
-      ? "Seçimini doğrudan online satın alabilirsin."
-      : "Güncel fiyatını görüp başlangıcını ekibimizle planlayabilirsin.";
-  }
-  if (count === 2)
-    return "Birlikte alım avantajı paket özetine yansır.";
+  if (count === 1) return "Seçimini başvuru formunda belirt; başlangıcını birlikte planlayalım.";
+  if (count === 2) return "Birlikte alım avantajı paket özetine yansır.";
   return "Üç ürünün birlikte alım avantajını aylık ve dönemlik olarak ayrı görürsün.";
 }
 
@@ -148,32 +141,6 @@ export function PackageBuilder({
     quote.oneTimeTotal,
   ].filter((total) => total.selectedLineCount > 0);
   const subjects = selection.exam ? lessonSubjects[selection.exam] : [];
-
-  // Seçim gerçekten satın alınabiliyorsa CTA sepete gider; aksi halde seçimi
-  // taşıyarak ön görüşmeye. Sınır `resolveBuilderCheckout` içinde tanımlıdır.
-  const router = useRouter();
-  const { add } = useCart();
-  const checkoutItem = useMemo(
-    () => resolveBuilderCheckout(selection),
-    [selection],
-  );
-
-  const startCheckout = () => {
-    if (!checkoutItem) return;
-    add({
-      id: checkoutItem.id,
-      name: checkoutItem.name,
-      category: checkoutItem.category,
-      subject: checkoutItem.subject,
-      priceCents: checkoutItem.priceCents,
-      priceLabel: checkoutItem.priceLabel,
-    });
-    trackConversionEvent("purchase_cta_click", {
-      source: "package_builder",
-      packageName: checkoutItem.name,
-    });
-    router.push("/sepet");
-  };
 
   const pickExam = (exam: ExamTrack) =>
     setSelection((s) => ({
@@ -297,16 +264,14 @@ export function PackageBuilder({
             const copy = productCopy[key];
             const line = quote.lines.find((l) => l.product === key)!;
             const active = selection[key];
-            const productCheckout = resolveBuilderProductCheckout(
-              selection,
-              key,
-            );
 
             return (
               <div
                 key={key}
                 className={`rounded-dc-card border bg-white transition-colors ${
-                  active ? "border-2 border-dc-brand" : "border-dc-line"
+                  key === "denemeKulubum"
+                    ? active ? "border-2 border-purple-700" : "border-purple-200"
+                    : active ? "border-2 border-dc-brand" : "border-dc-line"
                 }`}
               >
                 <button
@@ -319,12 +284,19 @@ export function PackageBuilder({
                     aria-hidden="true"
                     className="grid h-[52px] w-[52px] flex-none place-items-center rounded-[14px] bg-dc-brand-soft text-dc-brand-strong"
                   >
-                    <copy.Icon size={24} strokeWidth={1.9} />
+                    {key === "denemeKulubum" || key === "dershanem" ? (
+                      <Image src={key === "dershanem" ? "/design/od-logo.png" : "/deneme-ligi/mascot-d.png"} alt="" width={1254} height={1254} sizes="52px" className="h-[52px] w-[52px] rounded-[14px] object-contain" />
+                    ) : <copy.Icon size={24} strokeWidth={1.9} />}
                   </span>
 
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[21px] font-extrabold text-dc-ink">
-                      {copy.title}
+                    <span className={`block wrap-break-word text-[21px] font-extrabold ${key === "denemeKulubum" ? "text-purple-800" : "text-dc-ink"}`}>
+                      {key === "denemeKulubum" ? (
+                        <>
+                          <span className="block text-[13px] font-semibold leading-normal">onlinedenemekulübüm.</span>
+                          <span className="block">X Deneme Ligi</span>
+                        </>
+                      ) : copy.title}
                     </span>
                     <span className="mt-1 block text-[15px] leading-[1.55] text-dc-ink-muted">
                       {copy.summary}
@@ -380,11 +352,6 @@ export function PackageBuilder({
                           <span className="block text-[12.5px] font-medium text-dc-ink-faint">
                             {billingSuffix(line.billing)}
                           </span>
-                          {productCheckout ? (
-                            <span className="mt-0.5 block text-xs font-semibold text-dc-brand-hover">
-                              Tek başına online alınabilir
-                            </span>
-                          ) : null}
                         </>
                       ) : (
                         <span className="block text-[12.5px] font-medium leading-normal text-dc-ink-faint sm:max-w-[110px]">
@@ -645,7 +612,7 @@ export function PackageBuilder({
                         : "font-medium text-dc-ink-faint"
                     }`}
                   >
-                    {line.label}
+                    {line.product === "denemeKulubum" ? denemeLigiBrand.shortName : line.label}
                   </span>
                   <span className="ml-auto text-[13.5px] font-semibold text-dc-ink-faint">
                     {line.selected && line.cents !== null
@@ -684,7 +651,7 @@ export function PackageBuilder({
           <div className="my-5 h-px bg-dc-line-soft" />
 
           <div className="text-[13.5px] font-medium text-dc-ink-muted">
-            Ödeme özeti
+            Fiyat özeti
           </div>
 
           {quote.priceResolved ? (
@@ -721,13 +688,11 @@ export function PackageBuilder({
           )}
 
           <p className="mt-1.5 text-[12.5px] leading-[1.6] text-dc-ink-faint">
-            {checkoutItem
-              ? "Bu tutar ödeme sayfasında çıkacak güncel fiyatla aynıdır."
-              : count > 0
-                ? quote.priceResolved
-                  ? "Güncel fiyatın burada. Bu seçimin başlangıcını ekibimizle planlayabilirsin."
-                  : "Bu özel seçimin fiyatı için ön görüşmede yazılı teklif paylaşılır."
-                : "Paketini oluşturmak için ürün seç."}
+            {count > 0
+              ? quote.priceResolved
+                ? "Güncel fiyatın burada. Başvuru sonrası başlangıç ve erişim koşullarını ekibimizle netleştir."
+                : "Bu özel seçimin fiyatı başvuru sonrası ekibimizle netleşir."
+              : "Fiyatını görmek için ürün seç."}
           </p>
 
           {/* Her dönem kendi liste, indirim ve ödenecek tutarıyla uzlaşır. */}
@@ -794,45 +759,23 @@ export function PackageBuilder({
               ))
             : null}
 
-          {/* Pasif durum opaklıkla değil, kendi erişilebilir tonuyla:
-              yeşilin üstüne opacity uygulanınca beyaz metin 2.1:1'e düşüyordu. */}
           {count === 0 ? (
-            <span
-              aria-disabled="true"
-              className="mt-5 flex w-full items-center justify-center rounded-full border border-dc-line bg-dc-surface-muted px-5 py-3 text-[15px] font-bold text-dc-ink-muted"
-            >
-              Bu Paketle Başla
+            <span aria-disabled="true" className="mt-5 flex w-full items-center justify-center rounded-full border border-dc-line bg-dc-surface-muted px-5 py-3 text-[15px] font-bold text-dc-ink-muted">
+              Başvur
             </span>
-          ) : checkoutItem ? (
-            <button
-              type="button"
-              onClick={startCheckout}
-              className="site-btn site-btn-primary mt-5 w-full"
-            >
-              Bu Paketle Başla
-            </button>
           ) : (
-            <Link
-              href={`/iletisim${builderContactQuery(selection)}#on-gorusme`}
+            <Link href={application.href}
               onClick={() => trackConversionEvent("trial_cta_click", { source: "package_builder" })}
-              className="site-btn site-btn-primary mt-5 w-full"
-            >
-              {quote.priceResolved ? "Başlangıcı Planla" : "Ön Görüşme Talep Et"}
+              className="site-btn site-btn-primary mt-5 w-full">
+              Başvur
             </Link>
           )}
-
-          {/* Neden bazı yapılandırmalar doğrudan ödemeye gitmiyor — kullanıcı
-              CTA'nın neden değiştiğini görebilsin. */}
-          {count > 0 && !checkoutItem ? (
-            <p className="mt-2.5 text-center text-[12px] leading-normal text-dc-ink-faint">
-              {quote.priceResolved
-                ? "Başlangıç ve kayıt bilgilerini ekibimiz seninle paylaşır."
-                : "Özel kapsamın için hazırlanan yazılı teklifi birlikte değerlendiririz."}
-            </p>
-          ) : null}
-
+          <p className="mt-2.5 text-center text-[12px] leading-normal text-dc-ink-muted">
+            Formda seçtiğin paketi belirt. Başvurun hesap veya ürün erişimi oluşturmaz;
+            hesabını ve başlangıcını ekibimiz planlar.
+          </p>
           <p className="mt-3 text-center text-[12.5px] font-medium leading-normal text-dc-ink-faint">
-            {hintText(count, Boolean(checkoutItem))}
+            {hintText(count)}
           </p>
 
           {crossSellText(selection, count) ? (
@@ -861,23 +804,11 @@ export function PackageBuilder({
                   : "Fiyat teklifle netleşir"}
               </div>
             </div>
-            {checkoutItem ? (
-              <button
-                type="button"
-                onClick={startCheckout}
-                className="site-btn site-btn-primary shrink-0"
-              >
-                Bu Paketle Başla
-              </button>
-            ) : (
-              <Link
-                href={`/iletisim${builderContactQuery(selection)}#on-gorusme`}
-                onClick={() => trackConversionEvent("trial_cta_click", { source: "package_builder_mobile" })}
-                className="site-btn site-btn-primary shrink-0"
-              >
-                {quote.priceResolved ? "Başlangıcı Planla" : "Ön Görüşme Talep Et"}
-              </Link>
-            )}
+            <Link href={application.href}
+              onClick={() => trackConversionEvent("trial_cta_click", { source: "package_builder_mobile" })}
+              className="site-btn site-btn-primary shrink-0">
+              Başvur
+            </Link>
           </div>
         </div>
       ) : null}

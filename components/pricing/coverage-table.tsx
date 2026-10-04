@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 
 /**
  * PAKETLERİN TÜM KAPSAMI — onaylı tasarım (Web.dc.html → isPack #kapsam).
@@ -14,7 +15,7 @@ import { Fragment } from "react";
 const products = [
   "onlinedershanem.",
   "onlinekoçum.",
-  "onlinedenemekulübüm.",
+  denemeLigiBrand.name,
 ] as const;
 
 type Row =
@@ -132,7 +133,7 @@ export function CoverageTable() {
                   scope="col"
                   className="w-[150px] pb-3.5 text-center text-[13px] font-bold text-dc-ink"
                 >
-                  {p}
+                  <span className={p === denemeLigiBrand.name ? "text-purple-800" : undefined}>{p}</span>
                 </th>
               ))}
             </tr>
@@ -187,7 +188,7 @@ export function CoverageTable() {
             className="dc-faq rounded-dc-card-sm border border-dc-line bg-white px-5 py-[18px]"
           >
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[16px] font-bold text-dc-ink">
-              {p}
+              <span className={p === denemeLigiBrand.name ? "text-purple-800" : undefined}>{p}</span>
               <span
                 aria-hidden="true"
                 className="dc-faq-plus flex-none text-[20px] font-normal leading-none text-dc-brand-strong transition-transform"

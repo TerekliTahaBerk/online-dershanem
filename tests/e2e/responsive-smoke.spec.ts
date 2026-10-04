@@ -37,10 +37,10 @@ test.describe("public responsive smoke", () => {
     await gotoHydrated(page, "/");
     await page.getByRole("button", { name: "Menüyü aç" }).click();
     const dialog = page.getByRole("dialog", { name: "Mobil menü" });
-    await expect(dialog.getByRole("link", { name: "Paketini Oluştur", exact: true })).toBeVisible();
+    await expect(dialog.getByRole("link", { name: "Başvur", exact: true })).toBeVisible();
     await dialog.getByRole("button", { name: "Menüyü kapat" }).click();
     await expect(dialog).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Paketini Oluştur", exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Başvur", exact: true }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Ücretsiz Ön Görüşme", exact: true }).first()).toBeVisible();
   });
 });

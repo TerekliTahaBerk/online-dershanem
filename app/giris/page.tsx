@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AuthCard } from "@/components/auth/auth-card";
+import { application } from "@/lib/application";
+import { AuthBrandLogos, AuthCard } from "@/components/auth/auth-card";
 import { LoginForm } from "@/components/panel/login-form";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
-import { PANEL_ENABLED, PUBLIC_REGISTER_ENABLED } from "@/lib/panel-config";
+import { PANEL_ENABLED } from "@/lib/panel-config";
 import { getSession } from "@/lib/auth/session";
 import { postAuthenticationPath } from "@/lib/auth/products";
 
@@ -56,25 +57,16 @@ function LoginScreen({
   registered: boolean;
 }) {
   return (
-    <AuthCard title="Tekrar hoş geldin" googleLabel="Google ile giriş yap">
+    <AuthCard title="Tekrar hoş geldin" googleLabel="Google ile giriş yap" showDenemeLigiLogo>
       <LoginForm resetSuccess={resetSuccess} registered={registered} />
 
-      {/* Kayıt kapalıyken var olmayan bir sayfaya bağlantı gösterme. */}
-      {PUBLIC_REGISTER_ENABLED ? (
-        <p className="mt-5 text-center text-[13px] text-dc-ink-muted">
-          Hesabın yok mu?{" "}
-          <Link
-            href="/kayit"
-            className="font-semibold text-dc-brand-strong hover:text-dc-brand-hover"
-          >
-            Kayıt ol
-          </Link>
-        </p>
-      ) : (
-        <p className="mt-5 text-center text-[13px] text-dc-ink-muted">
-          Hesabınızı ekibimiz açar.
-        </p>
-      )}
+      <p className="mt-5 text-center text-[13px] leading-relaxed text-dc-ink-muted">
+        Henüz hesabın yok mu?{" "}
+        <Link href={application.href} className="font-semibold text-dc-brand-strong underline underline-offset-4">
+          Başvur
+        </Link>
+        <span className="mt-1 block">Başvurunun ardından hesabını ekibimiz açar.</span>
+      </p>
     </AuthCard>
   );
 }
@@ -88,6 +80,7 @@ function RenewingNotice() {
       className="site-scope grid min-h-dvh place-items-center px-6 py-10 text-center"
     >
       <div className="w-full max-w-[460px]">
+        <AuthBrandLogos showDenemeLigiLogo />
         <Image
           src="/panel-yenileniyor-seffaf.png"
           alt="Bilgisayar başında çalışan onlinedershanem. karakteri"

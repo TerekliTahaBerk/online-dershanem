@@ -20,7 +20,7 @@ export const metadata = buildMarketingMetadata({
 });
 
 const steps = [
-  { title: "Mevcut paketi seç", body: "Hedef sınavına uygun deneme paketini mevcut paket akışında seç." },
+  { title: "Başvurunu gönder", body: "Başvuru formunda hedef sınavını ve Deneme Ligi’ne katılmak istediğini belirt." },
   { title: "Katılım ve erişimini netleştir", body: "Başlangıcını ve paketinin erişim koşullarını ekibimizle planla." },
   { title: "Denemeni çöz", body: "Paketinde yer alan denemeye, belirtilen takvim ve koşullarda katıl." },
   { title: "Sonucunu değerlendir", body: "Netlerini, ders dağılımını ve konu bazlı sonuçlarını incele." },
@@ -30,8 +30,8 @@ const steps = [
 const faqs = [
   { q: "Deneme Ligi nedir?", a: "Deneme Ligi, onlinedenemekulübüm. ürününün yeni marka kimliğidir. Online deneme, sonuç analizi ve gelişim takibi onlinedershanem. altyapısı üzerinden sunulur." },
   { q: "Hangi sınavlar için deneme var?", a: "LGS ve YKS öğrencileri için denemeler bulunur. YKS kapsamı TYT ve AYT’dir. Katılacağın denemeler seçtiğin paketin içeriğine bağlıdır." },
-  { q: "Deneme Ligi’ne nasıl katılırım?", a: "Lige Katıl butonuyla mevcut paket sayfasına git, hedef sınavını ve deneme ürününü seç. Başlangıç ve erişim koşullarını ekibimizle netleştir. Katılım ücretsiz veya otomatik değildir; mevcut paket koşulları geçerlidir." },
-  { q: "Hesap açınca denemelere erişebilir miyim?", a: "Hesap açmak tek başına deneme erişimi sağlamaz. Denemelere katılım, hesabına tanımlanan paket ve erişim haklarına bağlıdır." },
+  { q: "Deneme Ligi’ne nasıl katılırım?", a: "Lige Başvur butonuyla başvuru formuna git, hedef sınavını ve Deneme Ligi’ni belirt. Hesabını ekibimiz açar; başlangıç ve erişim koşullarını birlikte netleştiririz. Katılım ücretsiz veya otomatik değildir; mevcut paket koşulları geçerlidir." },
+  { q: "Hesap açınca denemelere erişebilir miyim?", a: "Kendi kendine hesap açma kapalıdır; hesabını başvurunun ardından ekibimiz oluşturur. Başvurmak tek başına deneme erişimi sağlamaz. Denemelere katılım, hesabına tanımlanan paket ve erişim haklarına bağlıdır." },
   { q: "Lig puanı, sezon veya ödül sistemi var mı?", a: "Bu aşamada ayrı bir lig puanı, sezon veya ödül sistemi sunulmuyor. Deneme Ligi’nin odağı denemeye katılım, sonuçlarını değerlendirme ve kişisel gelişimini takip etmedir." },
   { q: "Deneme takvimi ve erişim koşulları nasıl belirleniyor?", a: "Deneme takvimi, katılım zamanı ve erişim süresi seçtiğin paketin koşullarına göre belirlenir. Katılım öncesinde paket içeriğini ve başlangıç koşullarını ekibimizle netleştirebilirsin." },
 ];

@@ -1,3 +1,4 @@
+import { application } from "../../lib/application";
 import { expect, test, type Page } from "@playwright/test";
 import { formatCents, resolvePackageQuote, type BuilderSelection } from "../../lib/commerce/package-builder-pricing";
 
@@ -42,18 +43,10 @@ for (const combo of [
       await expect(summary).toContainText(total.billing === "monthly" ? "Aylık" : "Dönemlik");
     }
     await expect(summary).not.toContainText("Fiyat ön görüşmede netleşir");
-    await summary.getByRole("link", { name: "Başlangıcı Planla" }).click();
-    await expect(page).toHaveURL(/\/iletisim/);
-    expect(new URL(page.url()).searchParams.has("fiyat")).toBe(false);
-    expect(new URL(page.url()).hash).toBe("#on-gorusme");
-    const selection = page.getByRole("complementary", { name: "Seçiminiz" });
-    for (const [selected, label] of [
-      [combo.dershanem, "onlinedershanem."],
-      [combo.kocum, "onlinekoçum."],
-      [combo.denemeKulubum, "onlinedenemekulübüm."],
-    ] as const) {
-      if (selected) await expect(selection).toContainText(label);
-    }
+    const apply = summary.getByRole("link", { name: "Başvur", exact: true });
+    await expect(apply).toHaveAttribute("href", application.href);
+    if (combo.denemeKulubum) await expect(summary).toContainText("Deneme Ligi");
+
   });
 }
 
@@ -71,14 +64,18 @@ test("birebir ve ek ders fiyatı kurucunun fiyat kaynağını izler", async ({ p
   await expect(summary).toContainText(formatCents(extra.monthlyTotal.payableCents!));
 });
 
-test("grup dersi seçimi mevcut sepet kimliği ve fiyatıyla satın alınır", async ({ page }) => {
+test("grup dersi fiyatı korunur, başvuru sepete ürün eklemez", async ({ page }) => {
   await openBuilder(page);
   await page.getByRole("button", { name: /onlinedershanem./ }).first().click();
   await page.getByRole("button", { name: /LGS sınavına gireceğim/ }).click();
-  await page.getByRole("complementary", { name: "Paket özeti" }).getByRole("button", { name: "Bu Paketle Başla" }).click();
-  await expect(page).toHaveURL(/\/sepet/);
-  const items = await page.evaluate(() => JSON.parse(localStorage.getItem("od_cart_v1") ?? "[]"));
-  expect(items[0]).toMatchObject({ category: "LGS", subject: "Matematik Ders Paketi", priceCents: resolvePackageQuote({ ...base, dershanem: true }).monthlyTotal.payableCents });
+  const summary = page.getByRole("complementary", { name: "Paket özeti" });
+  await expect(summary).toContainText(formatCents(resolvePackageQuote({ ...base, dershanem: true }).monthlyTotal.payableCents!));
+  const cartBefore = await page.evaluate(() => localStorage.getItem("od_cart_v1"));
+  await page.route("https://tally.so/**", (route) => route.fulfill({ contentType: "text/html", body: "<h1>Başvuru formu</h1>" }));
+  await summary.getByRole("link", { name: "Başvur", exact: true }).click();
+  await expect(page).toHaveURL(application.href);
+  await page.goBack();
+  expect(await page.evaluate(() => localStorage.getItem("od_cart_v1"))).toBe(cartBefore);
 });
 
 test("ana ekrana ekleme yönergesi mobilde bulunur; kamplar menü ve sitemap'te görünmez", async ({ page, request }) => {

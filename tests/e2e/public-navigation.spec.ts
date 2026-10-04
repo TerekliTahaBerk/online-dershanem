@@ -1,3 +1,4 @@
+import { application } from "../../lib/application";
 import { expect, test, type Page } from "@playwright/test";
 
 /**
@@ -66,10 +67,12 @@ test.describe("masaüstü navigasyon", () => {
     await expect(nav.getByRole("link", { name: "Ders Paketleri", exact: true })).toHaveCount(0);
 
     await expect(header.getByRole("link", { name: "Giriş Yap" })).toBeVisible();
-    const cta = header.getByRole("link", { name: "Paketini Oluştur" });
+    const cta = header.getByRole("link", { name: "Başvur", exact: true });
     await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute("href", application.href);
+    await page.route("https://tally.so/**", (route) => route.fulfill({ contentType: "text/html", body: "<h1>Başvuru formu</h1>" }));
     await cta.click();
-    await expect(page).toHaveURL(/\/paketler\/?$/);
+    await expect(page).toHaveURL(application.href);
   });
 });
 
@@ -91,7 +94,7 @@ test.describe("mobil navigasyon", () => {
     await expect(menu.getByRole("link", { name: "Paketler", exact: true })).toHaveCount(0);
     await expect(menu.getByRole("link", { name: "Ders Paketleri", exact: true })).toHaveCount(0);
     await expect(dialog.getByRole("link", { name: "Giriş Yap", exact: true })).toBeVisible();
-    await expect(dialog.getByRole("link", { name: "Paketini Oluştur", exact: true })).toBeVisible();
+    await expect(dialog.getByRole("link", { name: "Başvur", exact: true })).toBeVisible();
 
     await menu.getByRole("link", { name: "onlinedenemekulübüm. X Deneme Ligi", exact: true }).click();
     await expect(page).toHaveURL(/\/urunler\/online-deneme-kulubum\/?$/);

@@ -11,11 +11,12 @@ import {
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 import { listActivePublicProductCodes } from "@/lib/public-marketing-products-server";
 import { getPublicPricingCopy } from "@/lib/commerce/public-pricing-copy";
+import { application } from "@/lib/application";
 
 export const metadata = buildMarketingMetadata({
   title: "Paketler | Kendi paketini oluştur",
   description:
-    "onlinedershanem., onlinekoçum. ve onlinedenemekulübüm.'ü tek tek ya da birlikte seç; güncel fiyatları ve birlikte alım avantajını gör, başlangıcını planla.",
+    "onlinedershanem., onlinekoçum. ve onlinedenemekulübüm. X Deneme Ligi’ni tek tek ya da birlikte seç; güncel fiyatları ve birlikte alım avantajını gör, başlangıcını planla.",
   canonical: "/paketler",
 });
 
@@ -69,7 +70,7 @@ export default async function PackagesPage() {
           items={[
             {
               q: "Ürünleri ayrı ayrı alabilir miyim?",
-              a: `Evet. ${pricing.standalone} Online satın alma ders paketinde kullanılabilir; diğer seçimlerin başlangıcını ekibimizle planlayabilirsin.`,
+              a: `Evet. ${pricing.standalone} Fiyatını hesapladıktan sonra başvuru formunda seçimini belirt; başlangıcını ekibimizle planlayabilirsin.`,
             },
             {
               q: "Birden fazla ürün aldığımda fiyat nasıl değişiyor?",
@@ -80,19 +81,24 @@ export default async function PackagesPage() {
               a: "Hayır. Hangi dersi seçersen seç, maks. 4 kişilik grup dersi aynı fiyat, birebir özel ders aynı fiyattır. Pakete eklediğin her ek ders aynı ders fiyatından hesaplanır.",
             },
             {
+              q: "Başvuru yaptıktan sonra ne olur?",
+              a: "Formda hedef sınavını ve seçtiğin paketi belirt. Ekibimiz başvurunu değerlendirip seninle iletişime geçer; hesabını oluşturur ve paket erişim koşullarını netleştirir. Formu göndermek otomatik hesap veya ürün erişimi sağlamaz.",
+            },
+            {
               q: "Faturalama nasıl işliyor?",
-              a: "Ders ve onlinekoçum. aylık, onlinedenemekulübüm. dönemliktir. Birlikte seçtiğinde aylık ve dönemlik tutarlar paket özetinde ayrı ayrı görünür.",
+              a: "Ders ve onlinekoçum. aylık, onlinedenemekulübüm. X Deneme Ligi dönemliktir. Birlikte seçtiğinde aylık ve dönemlik tutarlar paket özetinde ayrı ayrı görünür.",
             },
             {
               q: "Paket fiyatımı sonradan değiştirebilir miyim?",
-              a: "Seçimini paket kurucuda güncel fiyatlarla yeniden hesaplayabilirsin. Online satın alma tutarı ödeme adımında da doğrulanır. Fiyatı hesaplanamayan özel bir kapsam için ön görüşmede yazılı teklif paylaşılır.",
+              a: "Seçimini paket kurucuda güncel fiyatlarla yeniden hesaplayabilirsin. Başvuru sonrasında kapsamı ve başlangıç koşullarını ekibimizle netleştirebilirsin. Fiyatı hesaplanamayan özel bir kapsam için yazılı teklif paylaşılır.",
             },
           ]}
         />
 
         <ProductClosingCta
-          title="Hedefine uygun paketi oluştur."
-          body="Ders, koçluk ve denemeyi ihtiyacına göre seç."
+          title="Seçimini yaptın. Birlikte başlayalım."
+          body="Başvuru formunda hedefini ve seçtiğin paketi belirt; hesabını ve başlangıcını ekibimiz planlasın."
+          primaryCta={application}
         />
       </main>
       <SiteFooter />
