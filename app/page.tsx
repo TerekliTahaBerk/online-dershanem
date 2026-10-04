@@ -28,7 +28,7 @@ export default function HomePage() {
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
         <HomeHero />
-        <ProductTrio />
+        <ProductTrio denemeLigiBranding />
         <Ecosystem />
         <PlatformPreview />
         <BundleSection />

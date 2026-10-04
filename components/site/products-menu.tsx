@@ -107,7 +107,7 @@ export function ProductsMenu({ isActive, products }: ProductsMenuProps) {
                   href={item.href}
                   onClick={() => setOpen(false)}
                   aria-current={isActive(item.href) ? "page" : undefined}
-                  className="block text-[14px] font-semibold text-(--dc-ink)"
+                  className="block wrap-break-word text-[14px] font-semibold text-(--dc-ink)"
                 >
                   {item.label}
                 </Link>

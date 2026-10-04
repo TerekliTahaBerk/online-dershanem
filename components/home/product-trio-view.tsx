@@ -1,5 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { PublicProduct } from "@/lib/product-architecture";
+import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 
 /**
  * 04 ÜÇ ÜRÜN — onaylı tasarım (Web.dc.html).
@@ -120,6 +122,14 @@ function ExamPreview() {
   );
 }
 
+function LeaguePreview() {
+  return (
+    <div className="flex h-[172px] items-center justify-center border-b border-[#4D1887] bg-[#350775]">
+      <Image src="/deneme-ligi/logo.png" alt="Deneme Ligi logosu" width={1254} height={1254} sizes="172px" className="h-full w-auto object-contain" />
+    </div>
+  );
+}
+
 function KpssPreview() {
   return (
     <div className="h-[172px] border-b border-dc-line-soft bg-dc-surface-muted p-[18px]">
@@ -195,10 +205,12 @@ export function ProductTrioView({
   products,
   title = "Hangi ürün sana uygun?",
   lede,
+  denemeLigiBranding = false,
 }: {
   products: readonly PublicProduct[];
   title?: string;
   lede?: string;
+  denemeLigiBranding?: boolean;
 }) {
   const resolvedLede =
     lede ??
@@ -224,16 +236,25 @@ export function ProductTrioView({
           }`}
         >
           {products.map((product) => {
-            const { eyebrow, title, body, tracks, cta, href, Preview } =
-              productCards[product.slug];
+            const league = denemeLigiBranding && product.registryCode === "ODK";
+            const { eyebrow, title, body, tracks, cta, href, Preview } = league
+              ? {
+                  ...productCards[product.slug],
+                  eyebrow: denemeLigiBrand.name,
+                  title: denemeLigiBrand.headline,
+                  body: denemeLigiBrand.description,
+                  cta: "Deneme Ligi’ni incele",
+                  Preview: LeaguePreview,
+                }
+              : productCards[product.slug];
             return (
               <article
                 key={eyebrow}
-                className="flex flex-col overflow-hidden rounded-dc-card border border-dc-line bg-white transition-colors hover:border-dc-brand"
+                className={`flex flex-col overflow-hidden rounded-dc-card border bg-white transition-colors ${league ? "border-[#E9E1F3] hover:border-[#5B2599]" : "border-dc-line hover:border-dc-brand"}`}
               >
                 <Preview />
                 <div className="flex flex-1 flex-col gap-3 p-6">
-                  <p className="text-[12px] font-bold tracking-[0.08em] text-dc-brand-strong">
+                  <p className={`text-[12px] font-bold tracking-[0.08em] ${league ? "text-[#5B2599]" : "text-dc-brand-strong"}`}>
                     {eyebrow}
                   </p>
                   <h3 className="font-display text-[25px] leading-tight tracking-[-0.02em] text-dc-ink">
@@ -246,7 +267,7 @@ export function ProductTrioView({
                     {tracks.map((t) => (
                       <span
                         key={t}
-                        className="rounded-full bg-dc-brand-soft px-[11px] py-[5px] text-[12px] font-semibold text-dc-brand-hover"
+                        className={`rounded-full px-[11px] py-[5px] text-[12px] font-semibold ${league ? "bg-[#F0E8FB] text-[#5B2599]" : "bg-dc-brand-soft text-dc-brand-hover"}`}
                       >
                         {t}
                       </span>
@@ -254,7 +275,7 @@ export function ProductTrioView({
                   </div>
                   <Link
                     href={href}
-                    className="mt-auto inline-flex min-h-11 items-center self-start text-[14.5px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
+                    className={`mt-auto inline-flex min-h-11 items-center self-start text-[14.5px] font-bold ${league ? "text-[#5B2599] hover:text-[#350775]" : "text-dc-brand-strong hover:text-dc-brand-hover"}`}
                   >
                     {cta} →
                   </Link>

@@ -9,6 +9,7 @@ import {
 } from "@/lib/site-content";
 import { listActivePublicProducts } from "@/lib/public-marketing-products-server";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { denemeLigiDisplayName } from "@/lib/deneme-ligi-brand";
 
 const socials = [
   {
@@ -46,7 +47,10 @@ const socials = [
  */
 export async function SiteFooter() {
   const products = await listActivePublicProducts();
-  const visibleFooterColumns = footerColumnsForProducts(products, getPanelFeatureFlags().dinoAi);
+  const visibleFooterColumns = footerColumnsForProducts(
+    products.map((product) => ({ ...product, name: denemeLigiDisplayName(product) })),
+    getPanelFeatureFlags().dinoAi,
+  );
   return (
     <footer id="site-footer" className="site-scope dc-surface-deep">
       <div className="site-container py-14 sm:py-16">
@@ -104,7 +108,7 @@ export async function SiteFooter() {
                   <li key={`${col.title}-${l.label}-${l.href}`}>
                     <Link
                       href={l.href}
-                      className="inline-flex min-h-10 items-center text-[14.5px] font-medium text-(--dc-on-deep-body) transition-colors hover:text-white"
+                      className="inline-flex min-h-10 max-w-full wrap-break-word items-center py-2 text-[14.5px] font-medium text-(--dc-on-deep-body) transition-colors hover:text-white"
                     >
                       {l.label}
                     </Link>
@@ -134,7 +138,7 @@ export async function SiteFooter() {
                     <li key={`${col.title}-${l.label}-${l.href}`}>
                       <Link
                         href={l.href}
-                        className="inline-flex min-h-11 items-center text-[15px] font-medium text-(--dc-on-deep-body) transition-colors hover:text-white"
+                        className="inline-flex min-h-11 max-w-full wrap-break-word items-center py-2 text-[15px] font-medium text-(--dc-on-deep-body) transition-colors hover:text-white"
                       >
                         {l.label}
                       </Link>

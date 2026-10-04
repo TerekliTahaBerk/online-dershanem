@@ -22,7 +22,7 @@ async function gotoHydrated(page: Page, path: string) {
 const PRODUCTS = [
   { name: "onlinedershanem.", path: "/urunler/online-dershanem" },
   { name: "onlinekoçum.", path: "/urunler/online-kocum" },
-  { name: "onlinedenemekulübüm.", path: "/urunler/online-deneme-kulubum" },
+  { name: "onlinedenemekulübüm. X Deneme Ligi", path: "/urunler/online-deneme-kulubum" },
 ] as const;
 
 test.describe("masaüstü navigasyon", () => {
@@ -93,7 +93,7 @@ test.describe("mobil navigasyon", () => {
     await expect(dialog.getByRole("link", { name: "Giriş Yap", exact: true })).toBeVisible();
     await expect(dialog.getByRole("link", { name: "Paketini Oluştur", exact: true })).toBeVisible();
 
-    await menu.getByRole("link", { name: "onlinedenemekulübüm.", exact: true }).click();
+    await menu.getByRole("link", { name: "onlinedenemekulübüm. X Deneme Ligi", exact: true }).click();
     await expect(page).toHaveURL(/\/urunler\/online-deneme-kulubum\/?$/);
     await expect(page.getByRole("dialog", { name: "Mobil menü" })).toHaveCount(0);
   });
@@ -120,6 +120,26 @@ test.describe("mobil navigasyon", () => {
 });
 
 test.describe("ürün sayfaları ve footer", () => {
+  test("Deneme Ligi ziyaretçisi katılım koşullarını okuyup mevcut paket akışına geçer", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 844 });
+    await gotoHydrated(page, "/urunler/online-deneme-kulubum");
+    const main = page.getByRole("main");
+    await expect(main.getByRole("heading", { level: 1 })).toHaveText("Denemeye katıl. Gelişimini gör.");
+    await expect(main.getByText("onlinedenemekulübüm. X Deneme Ligi", { exact: true })).toBeVisible();
+
+    await main.getByRole("link", { name: "Nasıl İşler?", exact: true }).click();
+    await expect(page).toHaveURL(/#nasil-isler$/);
+    await expect(main.getByRole("heading", { name: "Deneme Ligi nasıl işler?", exact: true })).toBeInViewport();
+
+    const accessQuestion = main.locator("details").filter({ hasText: "Hesap açınca denemelere erişebilir miyim?" });
+    await accessQuestion.locator("summary").click();
+    await expect(accessQuestion.getByText(/Hesap açmak tek başına deneme erişimi sağlamaz/)).toBeVisible();
+
+    await main.getByRole("link", { name: "Lige Katıl", exact: true }).first().click();
+    await expect(page).toHaveURL(/\/paketler\/?$/);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("İhtiyacın olan desteği seç.");
+  });
+
   test("ürün yüzeyleri yayında ve H1'leri var", async ({ page }) => {
     for (const path of [...PRODUCTS.map((p) => p.path), "/urunler", "/dino-ai"]) {
       const response = await page.goto(path, { waitUntil: "domcontentloaded" });
