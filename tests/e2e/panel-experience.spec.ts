@@ -287,12 +287,9 @@ test.describe("panel deneyimi", () => {
       }
     });
     await login(page, accounts.teacher);
-    /*
-     * Ders kapanışı artık öğretmen ana sayfasında gömülü DEĞİL; dersin kendi
-     * adresinde (`/panel/ogretmen/ders/[id]`). Bağlantıya tıklayarak gidiyoruz
-     * ki ana sayfa → ders kapanışı yönlendirmesi de testin kapsamında kalsın.
-     */
-    await page.locator('a[href^="/panel/ogretmen/ders/"]').first().click();
+    // Bugün listesinin ilk dersi saate ve diğer testlerin kapattığı derslere
+    // göre değişir. Bu akış yalnız kendi hızlı kapanış fixture'ını kullanır.
+    await page.goto("/panel/ogretmen/ders/e2e-lesson");
     await expect(page.getByRole("heading", { name: "E2E Hızlı Ders Özeti" })).toBeVisible();
 
     await page.getByRole("button", { name: /Geçen dersten akıllı öneri/ }).click();
@@ -334,10 +331,12 @@ test.describe("panel deneyimi", () => {
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/plan");
     await expect(page.getByRole("heading", { name: "Bu haftanın planı" })).toBeVisible();
-    await page.getByRole("button", { name: "Sal" }).click();
-    await page.getByRole("button", { name: "Per" }).click();
-    await page.getByRole("button", { name: "Cmt" }).click();
-    await page.getByRole("button", { name: "Paz" }).click();
+    // Varsayılanları körlemesine tersine çevirmek yerine her günü seç:
+    // hafta sonunda da plan üretilebilecek en az bir gün kalmalı.
+    for (const name of ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]) {
+      const day = page.getByRole("button", { name, exact: true });
+      if (await day.getAttribute("aria-pressed") !== "true") await day.click();
+    }
     await page.getByRole("main").getByLabel("Bir günde ayırabileceğim süre").selectOption("45");
     await page.getByRole("main").getByLabel("Bu planın yoğunluğu bana nasıl geliyor?").selectOption("3");
     await page.getByRole("button", { name: "Tercihleri Kaydet" }).click();
@@ -364,7 +363,14 @@ test.describe("panel deneyimi", () => {
     await page.goto("/panel/ogretmen/plan");
     const studentPlan = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).first();
     await expect(studentPlan.getByText(/adaptive-v1/)).toBeVisible();
+    page.once("dialog", async (dialog) => {
+      expect(dialog.type()).toBe("confirm");
+      expect(dialog.message()).toContain("Ada Öğrenci");
+      await dialog.accept();
+    });
+    const approval = page.waitForResponse((response) => response.url().endsWith("/approve") && response.request().method() === "POST");
     await studentPlan.getByRole("button", { name: "Onayla ve kilitle" }).click();
+    expect((await approval).status()).toBe(200);
     await expect(page.getByText(/plan onaylandı ve kilitlendi/i)).toBeVisible();
 
     await page.getByRole("button", { name: /çıkış/i }).click();
@@ -372,7 +378,11 @@ test.describe("panel deneyimi", () => {
     await page.goto("/panel/ogrenci/plan");
     await expect(page.getByRole("main").getByText("Koçun tarafından onaylandı", { exact: true }).first()).toBeVisible();
     // Tamamlama kısa bir form açar; kayıt sonrası kart "Tamamlandı" olur.
-    await page.getByRole("button", { name: "Görevi tamamla" }).first().click();
+    // Pazar günü bugünkü grup boş olabilir; haftanın kalanındaki görev de
+    // aynı tamamlama akışını sunar. Render tamamlanana kadar bekle.
+    const completeTask = page.getByRole("button", { name: "Görevi tamamla" }).first();
+    await expect(completeTask).toBeVisible();
+    await completeTask.click();
     await page.getByRole("main").getByRole("button", { name: "Kaydet", exact: true }).click();
     // Tamamlanan görev "Tamamlananlar" grubuna katlanır; ilerleme çubuğu artar.
     await expect(page.getByRole("progressbar", { name: /Bu hafta [1-9]\d*\/\d+ görev tamamlandı/ })).toBeVisible();
@@ -407,7 +417,7 @@ test.describe("panel deneyimi", () => {
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/takvim?durum=tamamlanan");
     const lessonRow = page.getByRole("row").filter({ hasText: "E2E Devamsızlık Dersi" }).first();
-    await expect(lessonRow.getByText("Katılmadın", { exact: true })).toBeVisible();
+    await expect(lessonRow.getByText("Telafi bekliyor", { exact: true })).toBeVisible();
     await expect(lessonRow.getByRole("link", { name: "Telafi et" })).toBeVisible();
 
     await page.goto("/panel/ogrenci/telafi");

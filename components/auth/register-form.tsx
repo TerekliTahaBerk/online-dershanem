@@ -321,7 +321,7 @@ export function RegisterForm() {
                 >
                   <Icon size={22} aria-hidden="true" className="text-dc-brand-strong" />
                   <span className="text-[15px] font-bold text-dc-ink">{option.label}</span>
-                  <span className="text-[12.5px] leading-[1.5] text-dc-ink-muted">
+                  <span className="text-[12.5px] leading-normal text-dc-ink-muted">
                     {option.value === "PARENT"
                       ? "Çocuğunuz için paket alabilir, gelişimini takip edersiniz. Çocuğunuzun hesabını biz açarız."
                       : "Kendi hesabınla paket alabilir, derslerini ve denemelerini takip edersin."}
@@ -722,7 +722,7 @@ export function RegisterForm() {
                     value={option.value}
                     checked={purchaseStatus === option.value}
                     onChange={() => setPurchaseStatus(option.value)}
-                    className="h-4 w-4 accent-[var(--dc-brand-strong,#1f7a55)]"
+                    className="h-4 w-4 accent-(--dc-brand-strong,#1f7a55)"
                   />
                   {option.label}
                 </label>

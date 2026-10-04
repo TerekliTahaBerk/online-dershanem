@@ -285,10 +285,10 @@ export default async function EducationAdminPage() {
       />
       <section id="odev-merkezi" className="mt-9 scroll-mt-28">
         <div className="mb-4">
-          <h2 className="text-lg font-extrabold text-[var(--site-ink)]">
+          <h2 className="text-lg font-extrabold text-(--site-ink)">
             Ödev merkezi
           </h2>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Admin tarafından verilen ödevler öğretmen, öğrenci ve veli
             ekranlarına aynı anda yansır.
           </p>
@@ -350,10 +350,10 @@ export default async function EducationAdminPage() {
       </section>
       <section className="mt-9">
         <div className="mb-4">
-          <h2 className="text-lg font-extrabold text-[var(--site-ink)]">
+          <h2 className="text-lg font-extrabold text-(--site-ink)">
             Materyal merkezi
           </h2>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Kaynaklar öğretmen ve öğrenci ekranlarıyla aynı veri üzerinden
             çalışır.
           </p>

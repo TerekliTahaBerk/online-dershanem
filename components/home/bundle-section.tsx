@@ -11,11 +11,11 @@ export async function BundleSection() {
   return (
     <section
       id="paket-kurucu"
-      className="scroll-mt-20 border-y border-[#E7EDE9] bg-dc-surface-muted py-[var(--dc-section)]"
+      className="scroll-mt-20 border-y border-[#E7EDE9] bg-dc-surface-muted py-(--dc-section)"
     >
       <div className="site-container">
         <div className="max-w-[660px]">
-          <h2 className="font-display text-[length:var(--public-title)] leading-[1.08] tracking-[-0.025em] text-dc-ink">
+          <h2 className="font-display text-(length:--public-title) leading-[1.08] tracking-tight text-dc-ink">
             Paketini ihtiyacına göre oluştur
           </h2>
           <p className="mt-4 text-[17px] leading-[1.65] text-dc-ink-body">

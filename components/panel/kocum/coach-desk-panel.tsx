@@ -172,7 +172,7 @@ export function CoachDeskPanel({
       className="panel-surface p-5 sm:p-6"
       aria-labelledby={`coach-desk-${studentId}`}
     >
-      <p className="text-xs font-extrabold uppercase tracking-[.07em] text-[var(--brand-olive)]">
+      <p className="text-xs font-extrabold uppercase tracking-[.07em] text-(--brand-olive)">
         Koç masaüstü
       </p>
       <h2
@@ -181,13 +181,13 @@ export function CoachDeskPanel({
       >
         {studentName}
       </h2>
-      <p className="mt-1 text-xs text-[var(--site-muted)]">
+      <p className="mt-1 text-xs text-(--site-muted)">
         Plan sürümü v{planVersion}. Görev ekleyin, şablon uygulayın, özet
         yayınlayın.
       </p>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border border-[var(--site-line)] p-3">
+        <div className="rounded-xl border border-(--site-line) p-3">
           <p className="flex items-center gap-1 text-xs font-extrabold">
             <FilePlus2 size={14} /> Görev ekle
           </p>
@@ -267,7 +267,7 @@ export function CoachDeskPanel({
         </div>
 
         <div className="space-y-3">
-          <div className="rounded-xl border border-[var(--site-line)] p-3">
+          <div className="rounded-xl border border-(--site-line) p-3">
             <p className="flex items-center gap-1 text-xs font-extrabold">
               <ScrollText size={14} /> Şablon uygula
             </p>
@@ -295,17 +295,17 @@ export function CoachDeskPanel({
                 </button>
               </>
             ) : (
-              <p className="mt-2 text-xs text-[var(--site-muted)]">
+              <p className="mt-2 text-xs text-(--site-muted)">
                 Hazır şablon yok.
               </p>
             )}
           </div>
 
-          <div className="rounded-xl border border-[var(--site-line)] p-3">
+          <div className="rounded-xl border border-(--site-line) p-3">
             <p className="flex items-center gap-1 text-xs font-extrabold">
               <CopyPlus size={14} /> Plan kopyala
             </p>
-            <p className="mt-1 text-[11px] text-[var(--site-muted)]">
+            <p className="mt-1 text-[11px] text-(--site-muted)">
               Sonraki haftaya kopyalar; tamamlanmayan görevleri taşır.
             </p>
             <button
@@ -319,7 +319,7 @@ export function CoachDeskPanel({
           </div>
         </div>
 
-        <div className="rounded-xl border border-[var(--site-line)] p-3">
+        <div className="rounded-xl border border-(--site-line) p-3">
           <p className="flex items-center gap-1 text-xs font-extrabold">
             <NotebookPen size={14} /> Koç notu
           </p>
@@ -353,7 +353,7 @@ export function CoachDeskPanel({
           </button>
         </div>
 
-        <div className="rounded-xl border border-[var(--site-line)] p-3">
+        <div className="rounded-xl border border-(--site-line) p-3">
           <p className="text-xs font-extrabold">Haftalık özet</p>
           <label className="mt-2 block">
             <span className="panel-label">Güçlü</span>
@@ -418,7 +418,7 @@ export function CoachDeskPanel({
 
       <p
         aria-live="polite"
-        className="mt-3 text-xs font-bold text-[var(--brand-olive)]"
+        className="mt-3 text-xs font-bold text-(--brand-olive)"
       >
         {message}
       </p>

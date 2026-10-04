@@ -97,24 +97,24 @@ export function TeacherMaterialManager({
           }
         }}
       >
-        <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+        <h2 className="text-sm font-extrabold text-(--site-ink)">
           Yeni materyal
         </h2>
-        <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+        <p className="mt-1 text-xs leading-5 text-(--site-muted)">
           PDF, video veya güvenilir bir kaynak bağlantısı paylaşın.
         </p>
-        <div className="mt-4 grid grid-cols-2 rounded-2xl bg-[var(--site-soft)] p-1">
+        <div className="mt-4 grid grid-cols-2 rounded-2xl bg-(--site-soft) p-1">
           <button
             type="button"
             onClick={() => setSource("LINK")}
-            className={`rounded-xl px-3 py-2 text-xs font-extrabold ${source === "LINK" ? "bg-white text-[var(--brand-olive)] shadow-sm" : "text-[var(--site-muted)]"}`}
+            className={`rounded-xl px-3 py-2 text-xs font-extrabold ${source === "LINK" ? "bg-white text-(--brand-olive) shadow-xs" : "text-(--site-muted)"}`}
           >
             <Link2 size={13} className="mr-1 inline" /> Bağlantı
           </button>
           <button
             type="button"
             onClick={() => setSource("FILE")}
-            className={`rounded-xl px-3 py-2 text-xs font-extrabold ${source === "FILE" ? "bg-white text-[var(--brand-olive)] shadow-sm" : "text-[var(--site-muted)]"}`}
+            className={`rounded-xl px-3 py-2 text-xs font-extrabold ${source === "FILE" ? "bg-white text-(--brand-olive) shadow-xs" : "text-(--site-muted)"}`}
           >
             <Upload size={13} className="mr-1 inline" /> Dosya yükle
           </button>
@@ -165,9 +165,9 @@ export function TeacherMaterialManager({
               type="file"
               accept="application/pdf,video/mp4,.pdf,.mp4"
               required
-              className="panel-input mt-2 file:mr-3 file:rounded-lg file:border-0 file:bg-[var(--brand-olive-soft)] file:px-3 file:py-1 file:text-xs file:font-bold file:text-[var(--brand-olive)]"
+              className="panel-input mt-2 file:mr-3 file:rounded-lg file:border-0 file:bg-(--brand-olive-soft) file:px-3 file:py-1 file:text-xs file:font-bold file:text-(--brand-olive)"
             />
-            <p className="mt-2 text-[10.5px] leading-4 text-[var(--site-muted)]">
+            <p className="mt-2 text-[10.5px] leading-4 text-(--site-muted)">
               PDF veya MP4 · en fazla 4 MB · dosya yalnızca yetkili grup
               üyelerine açılır.
             </p>
@@ -178,7 +178,7 @@ export function TeacherMaterialManager({
           className="panel-input mt-2 min-h-24"
           placeholder="Kısa kullanım yönlendirmesi"
         />
-        <label className="mt-3 flex items-center gap-3 rounded-2xl border border-[var(--site-line)] p-3 text-xs font-bold">
+        <label className="mt-3 flex items-center gap-3 rounded-2xl border border-(--site-line) p-3 text-xs font-bold">
           <input name="captionsAvailable" type="checkbox" /> Video altyazı
           içeriyor
         </label>
@@ -200,13 +200,13 @@ export function TeacherMaterialManager({
         </button>
         <p
           aria-live="polite"
-          className="mt-3 text-xs font-bold text-[var(--brand-olive)]"
+          className="mt-3 text-xs font-bold text-(--brand-olive)"
         >
           {message}
         </p>
       </form>
       <section>
-        <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+        <h2 className="text-sm font-extrabold text-(--site-ink)">
           Paylaşılan kaynaklar
         </h2>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
@@ -215,20 +215,20 @@ export function TeacherMaterialManager({
             return (
               <article
                 key={material.id}
-                className={`rounded-[14px] border border-[var(--site-line)] bg-white p-5 ${material.isActive ? "" : "opacity-55"}`}
+                className={`rounded-[14px] border border-(--site-line) bg-white p-5 ${material.isActive ? "" : "opacity-55"}`}
               >
                 <div className="flex items-start gap-3">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-(--brand-olive-soft) text-(--brand-olive)">
                     <Icon size={17} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] font-bold text-[var(--site-muted)]">
+                    <span className="text-[10px] font-bold text-(--site-muted)">
                       {material.groupName}
                     </span>
-                    <h3 className="mt-1 text-sm font-extrabold text-[var(--site-ink)]">
+                    <h3 className="mt-1 text-sm font-extrabold text-(--site-ink)">
                       {material.title}
                     </h3>
-                    <p className="mt-1 text-xs leading-5 text-[var(--site-body)]">
+                    <p className="mt-1 text-xs leading-5 text-(--site-body)">
                       {material.description || "Açıklama eklenmedi."}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1">
@@ -259,7 +259,7 @@ export function TeacherMaterialManager({
                       type="button"
                       disabled={archiveBusy !== null}
                       onClick={() => void archive(material.id)}
-                      className="text-[10.5px] font-bold text-[var(--site-muted)]"
+                      className="text-[10.5px] font-bold text-(--site-muted)"
                     >
                       <Archive size={12} className="mr-1 inline" />
                       Arşivle
@@ -270,7 +270,7 @@ export function TeacherMaterialManager({
             );
           })}
           {!items.length ? (
-            <p className="text-sm text-[var(--site-muted)]">
+            <p className="text-sm text-(--site-muted)">
               Henüz materyal paylaşılmadı.
             </p>
           ) : null}

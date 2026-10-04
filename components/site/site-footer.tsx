@@ -66,10 +66,10 @@ export async function SiteFooter() {
                 width={1254}
                 height={1254}
                 sizes="36px"
-                className="h-9 w-9 rounded-[10px] object-cover"
+                className="h-9 w-9 rounded-od object-cover"
               />
             </Link>
-            <p className="max-w-[280px] text-[14.5px] leading-[1.7] text-[var(--dc-on-deep-muted)]">
+            <p className="max-w-[280px] text-[14.5px] leading-[1.7] text-(--dc-on-deep-muted)">
               {footerTagline}
             </p>
             <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -82,7 +82,7 @@ export async function SiteFooter() {
                   rel={
                     href.startsWith("http") ? "noopener noreferrer" : undefined
                   }
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--dc-on-deep-line)] text-[var(--dc-on-deep-body)] transition-colors hover:border-white/40 hover:text-white"
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-(--dc-on-deep-line) text-(--dc-on-deep-body) transition-colors hover:border-white/40 hover:text-white"
                 >
                   <Icon size={16} />
                 </a>
@@ -96,7 +96,7 @@ export async function SiteFooter() {
               bu yüzden iki görünüm ayrı render edilir. */}
           {visibleFooterColumns.map((col) => (
             <div key={col.title} className="hidden lg:block">
-              <h2 className="text-[13px] font-semibold text-[var(--dc-on-deep-label)]">
+              <h2 className="text-[13px] font-semibold text-(--dc-on-deep-label)">
                 {col.title}
               </h2>
               <ul className="mt-3 flex flex-col">
@@ -104,7 +104,7 @@ export async function SiteFooter() {
                   <li key={`${col.title}-${l.label}-${l.href}`}>
                     <Link
                       href={l.href}
-                      className="inline-flex min-h-10 items-center text-[14.5px] font-medium text-[var(--dc-on-deep-body)] transition-colors hover:text-white"
+                      className="inline-flex min-h-10 items-center text-[14.5px] font-medium text-(--dc-on-deep-body) transition-colors hover:text-white"
                     >
                       {l.label}
                     </Link>
@@ -117,7 +117,7 @@ export async function SiteFooter() {
             {visibleFooterColumns.map((col) => (
               <details
                 key={col.title}
-                className="group border-b border-[var(--dc-on-deep-line)] first:border-t"
+                className="group border-b border-(--dc-on-deep-line) first:border-t"
               >
                 <summary className="flex cursor-pointer list-none items-center justify-between py-4 [&::-webkit-details-marker]:hidden">
                   <h2 className="text-[15px] font-semibold text-white">
@@ -126,7 +126,7 @@ export async function SiteFooter() {
                   <ChevronDown
                     size={18}
                     aria-hidden="true"
-                    className="text-[var(--dc-on-deep-label)] transition-transform group-open:rotate-180 motion-reduce:transition-none"
+                    className="text-(--dc-on-deep-label) transition-transform group-open:rotate-180 motion-reduce:transition-none"
                   />
                 </summary>
                 <ul className="flex flex-col pb-3">
@@ -134,7 +134,7 @@ export async function SiteFooter() {
                     <li key={`${col.title}-${l.label}-${l.href}`}>
                       <Link
                         href={l.href}
-                        className="inline-flex min-h-11 items-center text-[15px] font-medium text-[var(--dc-on-deep-body)] transition-colors hover:text-white"
+                        className="inline-flex min-h-11 items-center text-[15px] font-medium text-(--dc-on-deep-body) transition-colors hover:text-white"
                       >
                         {l.label}
                       </Link>
@@ -146,7 +146,7 @@ export async function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-[var(--dc-on-deep-line)] pt-5 text-[13px] text-[var(--dc-on-deep-faint)] sm:mt-12 sm:flex-row sm:items-center">
+        <div className="mt-10 flex flex-col items-start justify-between gap-3 border-t border-(--dc-on-deep-line) pt-5 text-[13px] text-(--dc-on-deep-faint) sm:mt-12 sm:flex-row sm:items-center">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span>© {new Date().getFullYear()} Onlinedershanem</span>
           </span>

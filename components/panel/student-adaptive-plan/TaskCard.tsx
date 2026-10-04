@@ -24,7 +24,7 @@ export function TaskCard(props: TaskCardProps) {
   const fields = completionFieldsForKind(task.taskKind || "CUSTOM");
   const plannedVsActual =
     task.actualMinutes != null || task.actualQuestions != null ? (
-      <p className="mt-1 text-xs text-[var(--site-muted)]">
+      <p className="mt-1 text-xs text-(--site-muted)">
         Planlanan
         {task.targetType === "QUESTIONS" && task.targetValue
           ? ` · ${task.targetValue} soru`
@@ -43,13 +43,13 @@ export function TaskCard(props: TaskCardProps) {
         done
           ? "border-emerald-200 bg-emerald-50/60"
           : highlighted
-            ? "border-[var(--brand-olive)] bg-[#FBF7EC]"
-            : "border-[var(--site-line)] bg-white"
+            ? "border-(--brand-olive) bg-[#FBF7EC]"
+            : "border-(--site-line) bg-white"
       }`}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-[var(--site-muted)]">
+          <p className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-(--site-muted)">
             <CalendarDays size={13} />
             <span>{dayHeading.format(new Date(task.scheduledFor))}</span>
             {task.durationMinutes > 0 ? (
@@ -117,7 +117,7 @@ export function TaskCard(props: TaskCardProps) {
 
       {draft ? (
         <form
-          className="mt-4 space-y-3 rounded-xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-3"
+          className="mt-4 space-y-3 rounded-xl border border-(--site-line) bg-(--site-bg-warm) p-3"
           onSubmit={(event) => {
             event.preventDefault();
             onSubmitComplete(task);

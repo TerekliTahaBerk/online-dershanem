@@ -33,7 +33,7 @@ export function AdminTeacherModeBanner() {
     <div
       role="status"
       aria-live="polite"
-      className="sticky top-0 z-[60] border-b border-sky-300/80 bg-sky-50 px-4 py-2.5 text-sky-950 sm:px-7"
+      className="sticky top-0 z-60 border-b border-sky-300/80 bg-sky-50 px-4 py-2.5 text-sky-950 sm:px-7"
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
@@ -54,7 +54,7 @@ export function AdminTeacherModeBanner() {
           type="button"
           onClick={exitMode}
           disabled={pending}
-          className="rounded-[10px] bg-sky-900 px-3 py-2 text-[12px] font-bold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-od bg-sky-900 px-3 py-2 text-[12px] font-bold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pending ? "Dönülüyor…" : "Yönetim paneline dön"}
         </button>
@@ -101,8 +101,8 @@ export function AdminTeacherModeSwitchButton({
         title={error || undefined}
         className={
           compact
-            ? "inline-flex items-center gap-1.5 rounded-[10px] border border-dc-line bg-white px-2.5 py-1.5 text-[12px] font-bold text-dc-ink transition-colors hover:border-dc-brand disabled:opacity-60"
-            : "inline-flex items-center gap-1.5 rounded-[10px] border border-dc-line bg-white px-3 py-2 text-[12.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand disabled:opacity-60"
+            ? "inline-flex items-center gap-1.5 rounded-od border border-dc-line bg-white px-2.5 py-1.5 text-[12px] font-bold text-dc-ink transition-colors hover:border-dc-brand disabled:opacity-60"
+            : "inline-flex items-center gap-1.5 rounded-od border border-dc-line bg-white px-3 py-2 text-[12.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand disabled:opacity-60"
         }
       >
         <GraduationCap size={14} aria-hidden="true" />

@@ -30,7 +30,7 @@ export function GidisatHero({
         </p>
       ) : null}
       {rest.length ? (
-        <ul className="mt-3 max-w-[54ch] space-y-1.5 text-[14px] leading-[1.5] text-dc-ink-muted">
+        <ul className="mt-3 max-w-[54ch] space-y-1.5 text-[14px] leading-normal text-dc-ink-muted">
           {rest.map((line) => (
             <li key={line}>{line}</li>
           ))}

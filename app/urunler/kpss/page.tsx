@@ -56,7 +56,7 @@ export default async function KpssProductPage() {
           visual={
             <div className="rounded-dc-card border border-dc-line bg-white p-5 shadow-[0_14px_34px_rgba(20,32,28,.07)]">
               <div className="flex items-center justify-between gap-3">
-                <p className="font-mono text-xs font-semibold text-[var(--dc-ink-faint)]">
+                <p className="font-mono text-xs font-semibold text-(--dc-ink-faint)">
                   BU HAFTANIN PLANI
                 </p>
                 <span className="text-[12px] font-semibold text-dc-brand-hover">

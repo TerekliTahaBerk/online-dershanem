@@ -98,11 +98,11 @@ function RenewingNotice() {
           className="mx-auto h-auto w-full"
         />
         <h1 className="sr-only">Panelimizi yeniliyoruz</h1>
-        <p className="mt-3 text-sm leading-6 text-[var(--site-body)]">
+        <p className="mt-3 text-sm leading-6 text-(--site-body)">
           Panelimizi yeniliyoruz, çok yakında buradayız.{" "}
           <Link
             href="/"
-            className="font-semibold text-[var(--brand-olive)] underline underline-offset-4"
+            className="font-semibold text-(--brand-olive) underline underline-offset-4"
           >
             Ana sayfaya dön
           </Link>

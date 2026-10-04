@@ -105,7 +105,7 @@ export function TeacherOffboardingForm({ teacherId }: { teacherId: string }) {
   return (
     <div className="space-y-3">
       {preview.blockers.length ? (
-        <div className="rounded-[10px] border border-amber-200 bg-amber-50 p-3">
+        <div className="rounded-od border border-amber-200 bg-amber-50 p-3">
           <p className="text-[12.5px] font-semibold text-amber-900">
             Askıya alma için önce aşağıdaki sorumluluklar devredilecek:
           </p>
@@ -173,7 +173,7 @@ export function TeacherOffboardingForm({ teacherId }: { teacherId: string }) {
         type="button"
         disabled={busy || !transferTeacherId}
         onClick={() => void execute()}
-        className="rounded-[10px] bg-[#C2493D] px-3.5 py-2 text-[12.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-od bg-[#C2493D] px-3.5 py-2 text-[12.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
         {busy ? "Devrediliyor..." : "Devret ve askıya al"}
       </button>

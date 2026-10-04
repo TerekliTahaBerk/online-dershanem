@@ -114,23 +114,23 @@ export function StudentReviewQueue({
     <div className="space-y-5">
       <section className="grid gap-3 sm:grid-cols-3">
         <article className="panel-metric-card">
-          <RotateCcw size={18} className="text-[var(--brand-olive)]" />
+          <RotateCcw size={18} className="text-(--brand-olive)" />
           <p className="mt-4 text-3xl font-extrabold">{items.length}</p>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Bugünkü küçük tekrar
           </p>
         </article>
         <article className="panel-metric-card">
           <CalendarClock size={18} className="text-sky-700" />
           <p className="mt-4 text-3xl font-extrabold">{activeCount}</p>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Zamana yayılmış aktif öğe
           </p>
         </article>
         <article className="panel-metric-card">
           <CheckCircle2 size={18} className="text-emerald-700" />
           <p className="mt-4 text-3xl font-extrabold">{masteredCount}</p>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             30 günlük dönüşü tamamlanan
           </p>
         </article>
@@ -138,7 +138,7 @@ export function StudentReviewQueue({
       {message ? (
         <p
           role="status"
-          className="rounded-2xl bg-[var(--brand-olive-soft)] p-4 text-xs font-bold leading-5 text-[var(--brand-olive)]"
+          className="rounded-2xl bg-(--brand-olive-soft) p-4 text-xs font-bold leading-5 text-(--brand-olive)"
         >
           {message}
         </p>
@@ -148,7 +148,7 @@ export function StudentReviewQueue({
           <article key={item.id} className="panel-surface p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <span className="text-[9px] font-extrabold uppercase tracking-wide text-[var(--brand-olive)]">
+                <span className="text-[9px] font-extrabold uppercase tracking-wide text-(--brand-olive)">
                   Bugünün {index + 1}. tekrarı ·{" "}
                   {item.sourceType === "MOCK_EXAM_SECTION"
                     ? "Deneme dönüşü"
@@ -159,13 +159,13 @@ export function StudentReviewQueue({
                 <h2 className="mt-2 text-sm font-extrabold leading-6">
                   {item.title}
                 </h2>
-                <p className="mt-1 text-xs text-[var(--site-muted)]">
+                <p className="mt-1 text-xs text-(--site-muted)">
                   Kaynak: {item.sourceReference}
                 </p>
               </div>
               <HelpCircle
                 size={18}
-                className="shrink-0 text-[var(--brand-olive)]"
+                className="shrink-0 text-(--brand-olive)"
               />
             </div>
             <label className="panel-field mt-4">
@@ -220,7 +220,7 @@ export function StudentReviewQueue({
             <h2 className="mt-3 text-sm font-extrabold">
               Bugünün küçük tekrarları tamam.
             </h2>
-            <p className="mt-2 text-xs leading-5 text-[var(--site-muted)]">
+            <p className="mt-2 text-xs leading-5 text-(--site-muted)">
               Yeni bir öğe zamanı geldiğinde burada en fazla beş çalışma
               göreceksin.
             </p>

@@ -51,7 +51,7 @@ function Chip({
     <Link
       href={href}
       aria-current={active ? "true" : undefined}
-      className={`rounded-[10px] border px-3.5 py-2.5 text-[13.5px] font-semibold transition-colors ${
+      className={`rounded-od border px-3.5 py-2.5 text-[13.5px] font-semibold transition-colors ${
         active
           ? "border-dc-brand bg-dc-brand-soft text-dc-brand-hover"
           : "border-[#DDE4E0] bg-white text-dc-ink hover:border-dc-brand"
@@ -196,7 +196,7 @@ export default async function StudentsPage({
           actions={
             <Link
               href="/panel/yonetim/kullanicilar#yeni-hesap"
-              className="rounded-[10px] bg-dc-brand-strong px-[18px] py-[11px] text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+              className="rounded-od bg-dc-brand-strong px-[18px] py-[11px] text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
             >
               Öğrenci hesabı aç
             </Link>
@@ -217,13 +217,13 @@ export default async function StudentsPage({
             name="q"
             defaultValue={q}
             placeholder="Ad, e-posta ya da telefon ara"
-            className="min-w-[240px] rounded-[10px] border border-[#DDE4E0] bg-white px-3.5 py-2.5 text-[14px] text-dc-ink placeholder:text-dc-ink-ghost"
+            className="min-w-[240px] rounded-od border border-[#DDE4E0] bg-white px-3.5 py-2.5 text-[14px] text-dc-ink placeholder:text-dc-ink-ghost"
           />
           {urun ? <input type="hidden" name="urun" value={urun} /> : null}
           {durum ? <input type="hidden" name="durum" value={durum} /> : null}
           <button
             type="submit"
-            className="rounded-[10px] border border-[#DDE4E0] bg-white px-3.5 py-2.5 text-[13.5px] font-semibold text-dc-ink transition-colors hover:border-dc-brand"
+            className="rounded-od border border-[#DDE4E0] bg-white px-3.5 py-2.5 text-[13.5px] font-semibold text-dc-ink transition-colors hover:border-dc-brand"
           >
             Ara
           </button>

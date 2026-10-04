@@ -60,7 +60,7 @@ export function TeacherReviewMonitor({ students }: { students: StudentRow[] }) {
         <h2 className="flex items-center gap-2 text-sm font-extrabold">
           <Plus size={16} /> Kendi materyalimden tekrar ekle
         </h2>
-        <p className="mt-1 text-xs text-[var(--site-muted)]">
+        <p className="mt-1 text-xs text-(--site-muted)">
           Telifli soruyu kopyalamayın; kitap/föy ve soru numarası gibi
           erişilebilir bir referans verin.
         </p>
@@ -117,15 +117,15 @@ export function TeacherReviewMonitor({ students }: { students: StudentRow[] }) {
         </div>
       </section>
       <section className="panel-surface overflow-hidden">
-        <div className="border-b border-[var(--site-line)] p-5">
+        <div className="border-b border-(--site-line) p-5">
           <h2 className="flex items-center gap-2 text-sm font-extrabold">
             <RotateCcw size={16} /> Kuyruk gözetimi
           </h2>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Sıralama değil; yalnız büyüyen kuyruk ve kalıcı zorlanma sinyalleri.
           </p>
         </div>
-        <div className="divide-y divide-[var(--site-line)]">
+        <div className="divide-y divide-(--site-line)">
           {students.map((student) => {
             const needsAttention =
               student.activeCount > 20 ||
@@ -145,12 +145,12 @@ export function TeacherReviewMonitor({ students }: { students: StudentRow[] }) {
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-1 text-xs text-[var(--site-muted)]">
+                  <p className="mt-1 text-xs text-(--site-muted)">
                     {student.activeCount} aktif · bugün {student.dueCount} ·
                     kalıcı zorlanma {student.persistentCount}
                   </p>
                 </div>
-                <p className="text-[10.5px] text-[var(--site-muted)]">
+                <p className="text-[10.5px] text-(--site-muted)">
                   {student.lastReviewedAt
                     ? `Son dönüş ${new Intl.DateTimeFormat("tr-TR").format(new Date(student.lastReviewedAt))}`
                     : "Henüz yeniden çözüm yok"}
@@ -159,7 +159,7 @@ export function TeacherReviewMonitor({ students }: { students: StudentRow[] }) {
             );
           })}
           {!students.length ? (
-            <p className="p-8 text-center text-sm text-[var(--site-muted)]">
+            <p className="p-8 text-center text-sm text-(--site-muted)">
               Aktif öğrenciniz bulunmuyor.
             </p>
           ) : null}

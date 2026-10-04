@@ -90,7 +90,7 @@ export function InterventionCreateForm({
 
   if (!students.length) {
     return (
-      <p className="rounded-xl border border-dashed border-[var(--site-line)] px-4 py-3 text-sm text-[var(--site-muted)]">
+      <p className="rounded-xl border border-dashed border-(--site-line) px-4 py-3 text-sm text-(--site-muted)">
         Müdahale oluşturmak için kapsamınızda aktif öğrenci olmalı.
       </p>
     );
@@ -100,13 +100,13 @@ export function InterventionCreateForm({
     <div className={compact ? "" : "panel-surface p-5 sm:p-6"}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-[.06em] text-[var(--brand-olive)]">
+          <p className="text-xs font-extrabold uppercase tracking-[.06em] text-(--brand-olive)">
             Elle kayıt
           </p>
-          <h2 className="mt-1 text-lg font-extrabold text-[var(--site-ink)]">
+          <h2 className="mt-1 text-lg font-extrabold text-(--site-ink)">
             Müdahale oluştur
           </h2>
-          <p className="mt-1 text-sm text-[var(--site-muted)]">
+          <p className="mt-1 text-sm text-(--site-muted)">
             Sorun tipi, kısa açıklama, aksiyon ve takip tarihi — tanı koymaz.
           </p>
         </div>
@@ -126,7 +126,7 @@ export function InterventionCreateForm({
             <select
               value={studentId}
               onChange={(event) => setStudentId(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-[var(--site-line)] bg-white px-3 py-2 text-sm"
+              className="mt-2 w-full rounded-xl border border-(--site-line) bg-white px-3 py-2 text-sm"
             >
               {students.map((student) => (
                 <option key={student.id} value={student.id}>
@@ -142,7 +142,7 @@ export function InterventionCreateForm({
               onChange={(event) =>
                 setReasonCode(event.target.value as typeof reasonCode)
               }
-              className="mt-2 w-full rounded-xl border border-[var(--site-line)] bg-white px-3 py-2 text-sm"
+              className="mt-2 w-full rounded-xl border border-(--site-line) bg-white px-3 py-2 text-sm"
             >
               {REASON_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -159,7 +159,7 @@ export function InterventionCreateForm({
               maxLength={500}
               rows={3}
               placeholder="Ne gördünüz? (öğrenci/veli görmez)"
-              className="mt-2 w-full rounded-2xl border border-[var(--site-line)] bg-white p-3 text-sm"
+              className="mt-2 w-full rounded-2xl border border-(--site-line) bg-white p-3 text-sm"
             />
           </label>
           <label className="panel-field text-xs font-bold">
@@ -169,7 +169,7 @@ export function InterventionCreateForm({
               onChange={(event) => setSuggestedAction(event.target.value)}
               maxLength={300}
               placeholder="Örn. Kısa görüşme planla"
-              className="mt-2 w-full rounded-xl border border-[var(--site-line)] bg-white px-3 py-2 text-sm"
+              className="mt-2 w-full rounded-xl border border-(--site-line) bg-white px-3 py-2 text-sm"
             />
           </label>
           <label className="panel-field text-xs font-bold">
@@ -178,7 +178,7 @@ export function InterventionCreateForm({
               type="date"
               value={followUpDate}
               onChange={(event) => setFollowUpDate(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-[var(--site-line)] bg-white px-3 py-2 text-sm"
+              className="mt-2 w-full rounded-xl border border-(--site-line) bg-white px-3 py-2 text-sm"
             />
           </label>
           <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
@@ -193,7 +193,7 @@ export function InterventionCreateForm({
             {message ? (
               <p
                 role="status"
-                className="text-sm font-bold text-[var(--brand-olive)]"
+                className="text-sm font-bold text-(--brand-olive)"
               >
                 {message}
               </p>

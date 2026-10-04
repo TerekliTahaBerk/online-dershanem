@@ -249,7 +249,7 @@ export function UserBulkOperations({
           type="button"
           disabled={!canPreview || busy !== null}
           onClick={() => void call("PREVIEW")}
-          className="rounded-[10px] border border-[#DDE4E0] bg-white px-3.5 py-2 text-[12.5px] font-bold text-dc-ink hover:border-dc-brand disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-od border border-[#DDE4E0] bg-white px-3.5 py-2 text-[12.5px] font-bold text-dc-ink hover:border-dc-brand disabled:cursor-not-allowed disabled:opacity-60"
         >
           {busy === "preview" ? (
             <span className="inline-flex items-center gap-1.5">
@@ -267,7 +267,7 @@ export function UserBulkOperations({
           type="button"
           disabled={!preview || preview.matched < 1 || busy !== null}
           onClick={() => void call("EXECUTE")}
-          className="rounded-[10px] bg-dc-brand-strong px-3.5 py-2 text-[12.5px] font-bold text-white hover:bg-dc-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-od bg-dc-brand-strong px-3.5 py-2 text-[12.5px] font-bold text-white hover:bg-dc-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
           {busy === "execute" ? (
             <span className="inline-flex items-center gap-1.5">
@@ -288,7 +288,7 @@ export function UserBulkOperations({
       ) : null}
 
       {preview ? (
-        <div className="mt-3 rounded-[10px] border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-900">
+        <div className="mt-3 rounded-od border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-900">
           <p className="font-semibold">
             Önizleme: {preview.matched} kayıt eşleşti
             {preview.capped ? " (ilk 500 kayıtla sınırlı)" : ""}.
@@ -305,7 +305,7 @@ export function UserBulkOperations({
       ) : null}
 
       {result ? (
-        <div className="mt-3 rounded-[10px] border border-[#DDE4E0] bg-slate-50 p-3 text-[12px] text-dc-ink">
+        <div className="mt-3 rounded-od border border-[#DDE4E0] bg-slate-50 p-3 text-[12px] text-dc-ink">
           <p className="font-semibold">
             Sonuç: {result.succeeded} başarılı, {result.failed} başarısız
             {result.capped ? " (ilk 500 kayıt işlendi)" : ""}.

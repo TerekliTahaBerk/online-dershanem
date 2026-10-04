@@ -7,10 +7,10 @@ import Link from "next/link";
  */
 export function ClosingCta() {
   return (
-    <section className="site-container pb-[var(--dc-section-tight)] pt-[var(--dc-section-tight)]">
+    <section className="site-container pb-(--dc-section-tight) pt-(--dc-section-tight)">
       <div className="relative grid items-center gap-6 overflow-hidden rounded-dc-banner border border-dc-brand-soft-line bg-dc-brand-soft px-8 py-12 sm:px-14 sm:py-14 lg:grid-cols-[1fr_320px]">
         <div>
-          <h2 className="font-display text-[length:var(--public-title)] leading-[1.12] tracking-[-0.025em] text-dc-brand-deep">
+          <h2 className="font-display text-(length:--public-title) leading-[1.12] tracking-tight text-dc-brand-deep">
             İhtiyacın olan desteği seç.
           </h2>
           <p className="mt-3.5 max-w-[520px] text-[16.5px] leading-[1.65] text-[#3F5C51]">

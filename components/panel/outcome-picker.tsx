@@ -112,17 +112,17 @@ export function OutcomePicker({
   }
 
   return (
-    <div className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
+    <div className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-extrabold text-[var(--site-ink)]">
+          <p className="text-xs font-extrabold text-(--site-ink)">
             Kazanım kanıtı
           </p>
-          <p className="mt-1 text-[10.5px] text-[var(--site-muted)]">
+          <p className="mt-1 text-[10.5px] text-(--site-muted)">
             En fazla 3 kazanım; seçmeden devam edebilirsiniz.
           </p>
         </div>
-        <span className="text-[10px] font-bold text-[var(--site-muted)]">
+        <span className="text-[10px] font-bold text-(--site-muted)">
           {value.length}/3
         </span>
       </div>
@@ -135,14 +135,14 @@ export function OutcomePicker({
           return (
             <div
               key={selected.outcomeId}
-              className="rounded-xl border border-[var(--site-line)] bg-white p-3"
+              className="rounded-xl border border-(--site-line) bg-white p-3"
             >
               <div className="flex items-start gap-2">
                 <div className="min-w-0 flex-1">
-                  <span className="text-[9px] font-extrabold text-[var(--brand-olive)]">
+                  <span className="text-[9px] font-extrabold text-(--brand-olive)">
                     {outcome.code} · {outcome.unit}
                   </span>
-                  <p className="mt-1 text-xs font-bold leading-5 text-[var(--site-ink)]">
+                  <p className="mt-1 text-xs font-bold leading-5 text-(--site-ink)">
                     {outcome.title}
                   </p>
                 </div>
@@ -156,7 +156,7 @@ export function OutcomePicker({
                       ),
                     )
                   }
-                  className="p-1 text-[var(--site-muted)]"
+                  className="p-1 text-(--site-muted)"
                 >
                   <X size={14} />
                 </button>
@@ -196,7 +196,7 @@ export function OutcomePicker({
           <label className="relative mt-3 block">
             <Search
               size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--site-muted)]"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-(--site-muted)"
             />
             <input
               value={query}
@@ -224,14 +224,14 @@ export function OutcomePicker({
                     }}
                     className="min-w-0 flex-1 text-left"
                   >
-                    <span className="text-[9px] font-extrabold text-[var(--brand-olive)]">
+                    <span className="text-[9px] font-extrabold text-(--brand-olive)">
                       {outcome.code} · {outcome.subject} / {outcome.unit}
                     </span>
                     <span className="mt-1 block text-xs font-bold leading-5">
                       {outcome.title}
                     </span>
                     {outcome.skills.length ? (
-                      <span className="mt-1 block text-[9.5px] text-[var(--site-muted)]">
+                      <span className="mt-1 block text-[9.5px] text-(--site-muted)">
                         {outcome.skills.join(" · ")}
                       </span>
                     ) : null}
@@ -255,18 +255,18 @@ export function OutcomePicker({
                 </div>
               ))}
               {loading ? (
-                <p className="p-3 text-center text-xs text-[var(--site-muted)]">
+                <p className="p-3 text-center text-xs text-(--site-muted)">
                   Aranıyor…
                 </p>
               ) : null}
               {!loading && !results.length ? (
-                <p className="p-3 text-center text-xs text-[var(--site-muted)]">
+                <p className="p-3 text-center text-xs text-(--site-muted)">
                   Eşleşen aktif kazanım yok.
                 </p>
               ) : null}
             </div>
           ) : (
-            <p className="mt-2 text-[10px] text-[var(--site-muted)]">
+            <p className="mt-2 text-[10px] text-(--site-muted)">
               Aramaya başlayın; favoriler ve son kullanılanlar önce gösterilir.
             </p>
           )}

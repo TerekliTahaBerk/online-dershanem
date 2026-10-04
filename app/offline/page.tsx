@@ -9,7 +9,7 @@ export const metadata = {
 export default function OfflinePage() {
   return (
     <main className="grid min-h-dvh place-items-center bg-[#fbfaf5] p-6">
-      <section className="w-full max-w-lg rounded-[28px] border border-[#deddd5] bg-white p-7 text-center shadow-sm">
+      <section className="w-full max-w-lg rounded-[28px] border border-[#deddd5] bg-white p-7 text-center shadow-xs">
         <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#eef2e8] text-[#3a4a2c]">
           <CloudOff size={25} />
         </span>

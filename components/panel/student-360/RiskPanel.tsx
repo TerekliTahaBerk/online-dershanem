@@ -35,7 +35,7 @@ export function RiskPanel(props: RiskPanelProps) {
             data.summary.items.map((item) => (
               <article
                 key={`${item.code}-${item.reason}`}
-                className="rounded-[10px] border border-dc-line-soft px-3.5 py-3"
+                className="rounded-od border border-dc-line-soft px-3.5 py-3"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-[13.5px] font-bold text-dc-ink">
@@ -75,7 +75,7 @@ export function RiskPanel(props: RiskPanelProps) {
             data.cases.map((item) => (
               <article
                 key={item.id}
-                className="rounded-[10px] border border-dc-line-soft px-3.5 py-3"
+                className="rounded-od border border-dc-line-soft px-3.5 py-3"
               >
                 <p className="text-[13px] font-bold text-dc-ink">
                   {item.reasonCode} · {item.status}

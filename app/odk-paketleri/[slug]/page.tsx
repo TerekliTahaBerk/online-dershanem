@@ -98,26 +98,26 @@ export default async function OdkPackageDetailPage({
       />
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
-        <section className="bg-[var(--site-bg-warm)] py-16 sm:py-24">
+        <section className="bg-(--site-bg-warm) py-16 sm:py-24">
           <div className="site-container grid gap-10 lg:grid-cols-[1fr_380px]">
             <div>
               <Link
                 href="/deneme-kulubu#paketler"
-                className="text-sm font-bold text-[var(--brand-orange-ink)]"
+                className="text-sm font-bold text-(--brand-orange-ink)"
               >
                 ← Paketlere dön
               </Link>
-              <p className="mt-8 text-xs font-bold uppercase tracking-[.16em] text-[var(--brand-olive)]">
+              <p className="mt-8 text-xs font-bold uppercase tracking-[.16em] text-(--brand-olive)">
                 Online Deneme Kulübüm
               </p>
-              <h1 className="mt-3 max-w-3xl font-display text-[clamp(2.6rem,6vw,4.8rem)] leading-[1] tracking-[-.05em] text-[var(--site-ink)]">
+              <h1 className="mt-3 max-w-3xl font-display text-[clamp(2.6rem,6vw,4.8rem)] leading-none tracking-tighter text-(--site-ink)">
                 {contract.package.title}
               </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--site-body)]">
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-(--site-body)">
                 {description}
               </p>
             </div>
-            <aside className="rounded-[28px] border border-[var(--site-line)] bg-white p-6 shadow-xl shadow-slate-900/5">
+            <aside className="rounded-[28px] border border-(--site-line) bg-white p-6 shadow-xl shadow-slate-900/5">
               <span
                 className={`inline-flex rounded-full px-3 py-1.5 text-xs font-bold ${availability.allowed ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-900"}`}
               >
@@ -128,7 +128,7 @@ export default async function OdkPackageDetailPage({
                   {formatOdkPrice(contract.package.priceCents)}
                 </strong>
                 {contract.package.originalPriceCents ? (
-                  <del className="ml-3 text-sm text-[var(--site-muted)]">
+                  <del className="ml-3 text-sm text-(--site-muted)">
                     {formatOdkPrice(contract.package.originalPriceCents)}
                   </del>
                 ) : null}
@@ -148,13 +148,13 @@ export default async function OdkPackageDetailPage({
                   >
                     Ödeme şu anda kapalı
                   </button>
-                  <p className="mt-3 text-center text-xs leading-5 text-[var(--site-muted)]">
+                  <p className="mt-3 text-center text-xs leading-5 text-(--site-muted)">
                     Satış, ödeme ve operasyon koşulları hazır olduğunda bu buton
                     otomatik açılır.
                   </p>
                   <Link
                     href="/iletisim"
-                    className="mt-4 block text-center text-sm font-bold text-[var(--brand-orange-ink)]"
+                    className="mt-4 block text-center text-sm font-bold text-(--brand-orange-ink)"
                   >
                     {availability.reason === "SOLD_OUT"
                       ? "Bekleme listesine katıl"
@@ -202,11 +202,11 @@ export default async function OdkPackageDetailPage({
               return (
                 <article
                   key={String(title)}
-                  className="rounded-[22px] border border-[var(--site-line)] p-5"
+                  className="rounded-[22px] border border-(--site-line) p-5"
                 >
-                  <CardIcon className="text-[var(--brand-orange)]" />
+                  <CardIcon className="text-(--brand-orange)" />
                   <h2 className="mt-4 font-display text-xl">{String(title)}</h2>
-                  <p className="mt-2 text-sm leading-6 text-[var(--site-body)]">
+                  <p className="mt-2 text-sm leading-6 text-(--site-body)">
                     {String(body)}
                   </p>
                 </article>
@@ -215,7 +215,7 @@ export default async function OdkPackageDetailPage({
           </div>
         </section>
 
-        <section className="bg-[var(--site-bg-warm)] py-16 sm:py-20">
+        <section className="bg-(--site-bg-warm) py-16 sm:py-20">
           <div className="site-container">
             <h2 className="font-display text-4xl tracking-[-.04em]">
               Paketin deneme takvimi
@@ -224,23 +224,23 @@ export default async function OdkPackageDetailPage({
               {contract.exams.map((exam, index) => (
                 <article
                   key={exam.id}
-                  className="grid gap-4 rounded-[24px] border border-[var(--site-line)] bg-white p-5 sm:grid-cols-[auto_1fr_auto] sm:items-center"
+                  className="grid gap-4 rounded-od-xl border border-(--site-line) bg-white p-5 sm:grid-cols-[auto_1fr_auto] sm:items-center"
                 >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--brand-orange-tint)] font-bold text-[var(--brand-orange-ink)]">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-(--brand-orange-tint) font-bold text-(--brand-orange-ink)">
                     {index + 1}
                   </span>
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--brand-olive)]">
+                    <p className="text-xs font-bold uppercase tracking-wider text-(--brand-olive)">
                       {exam.family}
                       {exam.seriesTitle ? ` · ${exam.seriesTitle}` : ""}
                     </p>
                     <h3 className="mt-1 font-display text-xl">{exam.title}</h3>
-                    <p className="mt-1 text-sm text-[var(--site-body)]">
+                    <p className="mt-1 text-sm text-(--site-body)">
                       Başlangıç: {formatOdkDate(exam.startsAt)} · Bitiş:{" "}
                       {formatOdkDate(exam.endsAt)}
                     </p>
                   </div>
-                  <span className="text-sm font-semibold text-[var(--site-body)]">
+                  <span className="text-sm font-semibold text-(--site-body)">
                     {exam.attemptLimit} giriş hakkı
                   </span>
                 </article>
@@ -270,7 +270,7 @@ export default async function OdkPackageDetailPage({
                 ].map(([enabled, label]) => (
                   <li
                     key={String(label)}
-                    className="flex gap-3 text-[var(--site-body)]"
+                    className="flex gap-3 text-(--site-body)"
                   >
                     <CheckCircle2
                       className={
@@ -291,12 +291,12 @@ export default async function OdkPackageDetailPage({
                 {faq.map((item) => (
                   <details
                     key={item.q}
-                    className="rounded-[20px] border border-[var(--site-line)] p-5"
+                    className="rounded-[20px] border border-(--site-line) p-5"
                   >
                     <summary className="cursor-pointer font-semibold">
                       {item.q}
                     </summary>
-                    <p className="mt-3 leading-7 text-[var(--site-body)]">
+                    <p className="mt-3 leading-7 text-(--site-body)">
                       {item.a}
                     </p>
                   </details>

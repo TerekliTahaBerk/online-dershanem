@@ -116,7 +116,7 @@ export function CoachWeekCalendar({
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-[.07em] text-[var(--brand-olive)]">
+          <p className="text-xs font-extrabold uppercase tracking-[.07em] text-(--brand-olive)">
             Koç takvimi
           </p>
           <h2
@@ -125,7 +125,7 @@ export function CoachWeekCalendar({
           >
             {studentName}
           </h2>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Sürükleyerek taşıyın veya her görevde Tarihi Değiştir kullanın.
           </p>
         </div>
@@ -147,7 +147,7 @@ export function CoachWeekCalendar({
           return (
             <div
               key={key}
-              className="min-h-[140px] rounded-xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-2"
+              className="min-h-[140px] rounded-xl border border-(--site-line) bg-(--site-bg-warm) p-2"
               onDragOver={(event) => event.preventDefault()}
               onDrop={(event) => {
                 event.preventDefault();
@@ -155,7 +155,7 @@ export function CoachWeekCalendar({
                 if (taskId) onDrop(day, taskId);
               }}
             >
-              <p className="flex items-center gap-1 text-[10px] font-extrabold text-[var(--site-muted)]">
+              <p className="flex items-center gap-1 text-[10px] font-extrabold text-(--site-muted)">
                 <CalendarDays size={12} />
                 {dayFmt.format(day)}
               </p>
@@ -168,17 +168,17 @@ export function CoachWeekCalendar({
                       event.dataTransfer.setData("text/task-id", task.id);
                       event.dataTransfer.effectAllowed = "move";
                     }}
-                    className="rounded-lg border border-[var(--site-line)] bg-white p-2 text-xs shadow-sm"
+                    className="rounded-lg border border-(--site-line) bg-white p-2 text-xs shadow-xs"
                   >
                     <p className="flex items-start gap-1 font-extrabold">
                       <GripVertical
                         size={12}
-                        className="mt-0.5 shrink-0 text-[var(--site-muted)]"
+                        className="mt-0.5 shrink-0 text-(--site-muted)"
                         aria-hidden
                       />
                       <span>{task.title}</span>
                     </p>
-                    <p className="mt-1 text-[10px] text-[var(--site-muted)]">
+                    <p className="mt-1 text-[10px] text-(--site-muted)">
                       {task.durationMinutes} dk · {task.status}
                     </p>
                     <label className="mt-2 block">
@@ -223,7 +223,7 @@ export function CoachWeekCalendar({
       </div>
       <p
         aria-live="polite"
-        className="mt-3 text-xs font-bold text-[var(--brand-olive)]"
+        className="mt-3 text-xs font-bold text-(--brand-olive)"
       >
         {message}
       </p>

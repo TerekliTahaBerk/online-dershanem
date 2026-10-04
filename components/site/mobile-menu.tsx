@@ -90,9 +90,9 @@ export function MobileMenu({
       role="dialog"
       aria-modal="true"
       aria-label="Mobil menü"
-      className="fixed inset-0 z-[100] flex flex-col bg-white text-[var(--site-ink)] lg:hidden"
+      className="fixed inset-0 z-100 flex flex-col bg-white text-(--site-ink) lg:hidden"
     >
-      <div className="flex h-[68px] shrink-0 items-center justify-between border-b border-[var(--site-line)] px-[clamp(20px,6vw,28px)]">
+      <div className="flex h-[68px] shrink-0 items-center justify-between border-b border-(--site-line) px-[clamp(20px,6vw,28px)]">
         <Link
           href="/"
           onClick={onClose}
@@ -104,7 +104,7 @@ export function MobileMenu({
             width={1254}
             height={1254}
             sizes="38px"
-            className="h-[38px] w-[38px] rounded-[10px] object-cover"
+            className="h-[38px] w-[38px] rounded-od object-cover"
           />
         </Link>
         <button
@@ -112,7 +112,7 @@ export function MobileMenu({
           type="button"
           onClick={onClose}
           aria-label="Menüyü kapat"
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--site-line)] text-[var(--site-ink)]"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-(--site-line) text-(--site-ink)"
         >
           <X size={20} strokeWidth={1.7} aria-hidden="true" />
         </button>
@@ -123,7 +123,7 @@ export function MobileMenu({
         className="flex-1 overflow-y-auto px-[clamp(20px,6vw,28px)] py-2"
       >
         {/* Ürünler — masaüstündeki açılır menünün mobil karşılığı */}
-        <div className="border-b border-[var(--site-line)] py-5">
+        <div className="border-b border-(--site-line) py-5">
           <h2 className="dc-eyebrow">{productsMenu.label}</h2>
           <ul className="mt-4 flex flex-col gap-4">
             {products.map((product) => (
@@ -132,15 +132,15 @@ export function MobileMenu({
                   href={product.href}
                   onClick={onClose}
                   aria-current={isActive(product.href) ? "page" : undefined}
-                  className={`block break-words font-display text-[clamp(1.2rem,5vw,1.45rem)] leading-tight ${
+                  className={`block wrap-break-word font-display text-[clamp(1.2rem,5vw,1.45rem)] leading-tight ${
                     isActive(product.href)
-                      ? "text-[var(--brand-orange-ink)]"
-                      : "text-[var(--site-ink)]"
+                      ? "text-(--brand-orange-ink)"
+                      : "text-(--site-ink)"
                   }`}
                 >
                   {product.name}
                 </Link>
-                <span className="mt-0.5 block text-[13.5px] text-[var(--site-muted)]">
+                <span className="mt-0.5 block text-[13.5px] text-(--site-muted)">
                   {product.role}
                 </span>
               </li>
@@ -154,10 +154,10 @@ export function MobileMenu({
             aria-label={link.accessibleLabel}
             onClick={onClose}
             aria-current={isActive(link.href) ? "page" : undefined}
-            className={`block break-words border-b border-[var(--site-line)] py-5 font-display text-[clamp(1.35rem,6vw,1.65rem)] leading-tight ${
+            className={`block wrap-break-word border-b border-(--site-line) py-5 font-display text-[clamp(1.35rem,6vw,1.65rem)] leading-tight ${
               isActive(link.href)
-                ? "text-[var(--brand-orange-ink)]"
-                : "text-[var(--site-ink)]"
+                ? "text-(--brand-orange-ink)"
+                : "text-(--site-ink)"
             }`}
           >
             {link.label}
@@ -167,17 +167,17 @@ export function MobileMenu({
           href={navLogin.href}
           onClick={onClose}
           aria-current={isActive(navLogin.href) ? "page" : undefined}
-          className={`block break-words border-b border-[var(--site-line)] py-5 font-display text-[clamp(1.35rem,6vw,1.65rem)] leading-tight ${
+          className={`block wrap-break-word border-b border-(--site-line) py-5 font-display text-[clamp(1.35rem,6vw,1.65rem)] leading-tight ${
             isActive(navLogin.href)
-              ? "text-[var(--brand-orange-ink)]"
-              : "text-[var(--site-ink)]"
+              ? "text-(--brand-orange-ink)"
+              : "text-(--site-ink)"
           }`}
         >
           {navLogin.label}
         </Link>
       </nav>
 
-      <div className="flex shrink-0 flex-col gap-3 border-t border-[var(--site-line)] px-[clamp(20px,6vw,28px)] pb-[max(24px,env(safe-area-inset-bottom))] pt-5">
+      <div className="flex shrink-0 flex-col gap-3 border-t border-(--site-line) px-[clamp(20px,6vw,28px)] pb-[max(24px,env(safe-area-inset-bottom))] pt-5">
         <Link
           href={navCta.href}
           onClick={onClose}
@@ -188,7 +188,7 @@ export function MobileMenu({
         <div className="flex gap-3">
           <a
             href={telHref}
-            className="flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--site-line)] px-4 py-3 text-[14px] font-medium text-[var(--site-ink)]"
+            className="flex flex-1 items-center justify-center gap-2 rounded-full border border-(--site-line) px-4 py-3 text-[14px] font-medium text-(--site-ink)"
           >
             <Phone size={16} strokeWidth={1.7} aria-hidden="true" />
             Ara
@@ -197,13 +197,13 @@ export function MobileMenu({
             href={waHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--site-line)] px-4 py-3 text-[14px] font-medium text-[var(--site-ink)]"
+            className="flex flex-1 items-center justify-center gap-2 rounded-full border border-(--site-line) px-4 py-3 text-[14px] font-medium text-(--site-ink)"
           >
             <MessageCircle size={16} strokeWidth={1.7} aria-hidden="true" />
             WhatsApp
           </a>
         </div>
-        <p className="pt-1 text-center text-[12.5px] text-[var(--site-muted)]">
+        <p className="pt-1 text-center text-[12.5px] text-(--site-muted)">
           {contact.phone}
         </p>
       </div>

@@ -74,8 +74,8 @@ export function ProductsMenu({ isActive, products }: ProductsMenuProps) {
         aria-label={productsMenu.accessibleLabel}
         className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[14.5px] font-semibold transition-colors ${
           anyProductActive || open
-            ? "text-[var(--site-ink)]"
-            : "text-[var(--site-body)] hover:text-[var(--site-ink)]"
+            ? "text-(--site-ink)"
+            : "text-(--site-body) hover:text-(--site-ink)"
         }`}
       >
         {productsMenu.label}
@@ -83,14 +83,14 @@ export function ProductsMenu({ isActive, products }: ProductsMenuProps) {
           size={13}
           strokeWidth={2.2}
           aria-hidden="true"
-          className={`text-[var(--dc-ink-faint)] transition-transform ${open ? "rotate-180" : ""}`}
+          className={`text-(--dc-ink-faint) transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
 
       {open ? (
         <div
           id={menuId}
-          className="absolute left-0 top-[calc(100%+10px)] z-50 w-[320px] rounded-[var(--dc-radius-card-sm)] border border-[var(--dc-line)] bg-white p-2 shadow-[var(--dc-shadow-sticky)]"
+          className="absolute left-0 top-[calc(100%+10px)] z-50 w-[320px] rounded-(--dc-radius-card-sm) border border-(--dc-line) bg-white p-2 shadow-dc-sticky"
         >
           {/*
             Özet metni bağlantının DIŞINDA duruyor: içeride olsaydı bağlantının
@@ -101,17 +101,17 @@ export function ProductsMenu({ isActive, products }: ProductsMenuProps) {
             {items.map((item) => (
               <li
                 key={item.href}
-                className="rounded-[10px] px-3 py-2.5 hover:bg-[var(--dc-surface-muted)]"
+                className="rounded-od px-3 py-2.5 hover:bg-(--dc-surface-muted)"
               >
                 <Link
                   href={item.href}
                   onClick={() => setOpen(false)}
                   aria-current={isActive(item.href) ? "page" : undefined}
-                  className="block text-[14px] font-semibold text-[var(--dc-ink)]"
+                  className="block text-[14px] font-semibold text-(--dc-ink)"
                 >
                   {item.label}
                 </Link>
-                <span className="mt-0.5 block text-[13px] leading-[1.5] text-[var(--dc-ink-muted)]">
+                <span className="mt-0.5 block text-[13px] leading-normal text-(--dc-ink-muted)">
                   {item.summary}
                 </span>
               </li>
@@ -120,7 +120,7 @@ export function ProductsMenu({ isActive, products }: ProductsMenuProps) {
           <Link
             href={productsMenu.href}
             onClick={() => setOpen(false)}
-            className="mt-1 block border-t border-[var(--dc-line-soft)] px-3 pb-1 pt-3 text-[13.5px] font-semibold text-[var(--dc-brand-strong)] hover:text-[var(--dc-brand-hover)]"
+            className="mt-1 block border-t border-(--dc-line-soft) px-3 pb-1 pt-3 text-[13.5px] font-semibold text-(--dc-brand-strong) hover:text-(--dc-brand-hover)"
           >
             Tüm ürünleri karşılaştır →
           </Link>

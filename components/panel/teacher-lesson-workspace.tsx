@@ -539,27 +539,27 @@ export function TeacherLessonWorkspace({
 
   return (
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
-      <section className="overflow-hidden rounded-[14px] border border-[var(--site-line)] bg-white shadow-[0_18px_55px_-35px_rgba(20,20,15,.28)]">
-        <div className="flex flex-col gap-4 border-b border-[var(--site-line)] bg-[linear-gradient(135deg,#f7f8f1_0%,#fff_58%,#fff8dd_100%)] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+      <section className="overflow-hidden rounded-[14px] border border-(--site-line) bg-white shadow-[0_18px_55px_-35px_rgba(20,20,15,.28)]">
+        <div className="flex flex-col gap-4 border-b border-(--site-line) bg-[linear-gradient(135deg,#f7f8f1_0%,#fff_58%,#fff8dd_100%)] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
           <div>
-            <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-[var(--brand-olive)]">
-              <span className="rounded-full bg-[var(--brand-olive-soft)] px-3 py-1">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-(--brand-olive)">
+              <span className="rounded-full bg-(--brand-olive-soft) px-3 py-1">
                 {form.groupName}
               </span>
               <span className="flex items-center gap-1.5">
                 <Clock3 size={13} /> {form.timeLabel}
               </span>
             </div>
-            <h1 className="mt-3 text-[clamp(1.45rem,3vw,2.15rem)] font-semibold tracking-[-.04em] text-[var(--site-ink)]">
+            <h1 className="mt-3 text-[clamp(1.45rem,3vw,2.15rem)] font-semibold tracking-[-.04em] text-(--site-ink)">
               {form.title}
             </h1>
-            <p className="mt-1 text-sm text-[var(--site-body)]">
+            <p className="mt-1 text-sm text-(--site-body)">
               {form.subject} · 60 dakikalık ders özeti
             </p>
           </div>
           <div
             aria-live="polite"
-            className={`flex min-w-[118px] items-center justify-center gap-2 rounded-full px-3.5 py-2 text-xs font-bold ${saveState === "error" ? "bg-rose-50 text-rose-700" : "bg-white/85 text-[var(--site-body)] shadow-sm"}`}
+            className={`flex min-w-[118px] items-center justify-center gap-2 rounded-full px-3.5 py-2 text-xs font-bold ${saveState === "error" ? "bg-rose-50 text-rose-700" : "bg-white/85 text-(--site-body) shadow-xs"}`}
           >
             {saveState === "saving" ? (
               <>
@@ -629,12 +629,12 @@ export function TeacherLessonWorkspace({
             {templates.map((template) => (
               <span
                 key={template.id}
-                className="inline-flex overflow-hidden rounded-xl border border-[var(--site-line)]"
+                className="inline-flex overflow-hidden rounded-xl border border-(--site-line)"
               >
                 <button
                   type="button"
                   onClick={() => applyTemplate(template)}
-                  className="bg-white px-3 py-2 text-xs font-bold text-[var(--site-body)]"
+                  className="bg-white px-3 py-2 text-xs font-bold text-(--site-body)"
                 >
                   {template.title}
                 </button>
@@ -642,14 +642,14 @@ export function TeacherLessonWorkspace({
                   type="button"
                   onClick={() => void deleteTemplate(template.id)}
                   aria-label={`${template.title} şablonunu sil`}
-                  className="border-l border-[var(--site-line)] bg-white px-2 text-rose-600"
+                  className="border-l border-(--site-line) bg-white px-2 text-rose-600"
                 >
                   <Trash2 size={12} />
                 </button>
               </span>
             ))}
           </div>
-          <div className="flex flex-col gap-2 rounded-2xl border border-dashed border-[var(--site-line)] p-3 sm:flex-row">
+          <div className="flex flex-col gap-2 rounded-2xl border border-dashed border-(--site-line) p-3 sm:flex-row">
             <input
               value={templateTitle}
               onChange={(event) => setTemplateTitle(event.target.value)}
@@ -691,13 +691,13 @@ export function TeacherLessonWorkspace({
               aria-label="Kapanış varsayımları"
             >
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[.07em] text-[var(--brand-olive)]">
+                <p className="text-[10px] font-extrabold uppercase tracking-[.07em] text-(--brand-olive)">
                   Grup varsayımı
                 </p>
                 <p className="mt-1 text-sm font-bold">Herkes burada</p>
               </div>
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[.07em] text-[var(--brand-olive)]">
+                <p className="text-[10px] font-extrabold uppercase tracking-[.07em] text-(--brand-olive)">
                   Önceki bağlam
                 </p>
                 <p className="mt-1 line-clamp-2 text-sm">
@@ -706,7 +706,7 @@ export function TeacherLessonWorkspace({
                 </p>
               </div>
               <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[.07em] text-[var(--brand-olive)]">
+                <p className="text-[10px] font-extrabold uppercase tracking-[.07em] text-(--brand-olive)">
                   Çalışma biçimi
                 </p>
                 <p className="mt-1 text-sm">Yalnız farklı olanı düzenleyin</p>
@@ -848,10 +848,10 @@ export function TeacherLessonWorkspace({
               ) : null}
             </div>
           ) : null}
-          <div className="flex flex-col gap-3 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4 sm:flex-row sm:items-center sm:justify-between">
             <p
               aria-live="polite"
-              className="text-xs font-bold text-[var(--brand-olive)]"
+              className="text-xs font-bold text-(--brand-olive)"
             >
               {actionMessage ||
                 (completed
@@ -907,16 +907,16 @@ export function TeacherLessonWorkspace({
       <aside className="space-y-3">
         <div className="flex items-center justify-between gap-2 px-1">
           <div>
-            <p className="text-sm font-bold text-[var(--site-ink)]">
+            <p className="text-sm font-bold text-(--site-ink)">
               Öğrenciler
             </p>
-            <p className="mt-0.5 text-xs text-[var(--site-muted)]">
+            <p className="mt-0.5 text-xs text-(--site-muted)">
               {quickLessonCloseEnabled
                 ? `${exceptionCount} istisna · diğerleri burada`
                 : "Sadece farklıysa not ekleyin"}
             </p>
           </div>
-          <span className="flex items-center gap-1 rounded-full bg-[var(--brand-olive-soft)] px-2.5 py-1 text-xs font-bold text-[var(--brand-olive)]">
+          <span className="flex items-center gap-1 rounded-full bg-(--brand-olive-soft) px-2.5 py-1 text-xs font-bold text-(--brand-olive)">
             <UserCheck size={13} /> {form.students.length}/
             {form.students.length}
           </span>
@@ -945,7 +945,7 @@ export function TeacherLessonWorkspace({
           form.students.map((student, index) => (
             <div
               key={student.id}
-              className="rounded-[14px] border border-[var(--site-line)] bg-white p-4 shadow-[0_10px_35px_-30px_rgba(20,20,15,.35)]"
+              className="rounded-[14px] border border-(--site-line) bg-white p-4 shadow-[0_10px_35px_-30px_rgba(20,20,15,.35)]"
             >
               <div className="flex items-center gap-3">
                 <span
@@ -953,7 +953,7 @@ export function TeacherLessonWorkspace({
                 >
                   {student.name.charAt(0)}
                 </span>
-                <p className="min-w-0 flex-1 truncate text-sm font-bold text-[var(--site-ink)]">
+                <p className="min-w-0 flex-1 truncate text-sm font-bold text-(--site-ink)">
                   {student.name}
                 </p>
               </div>
@@ -972,7 +972,7 @@ export function TeacherLessonWorkspace({
                   ))}
                 </ul>
               ) : null}
-              <div className="mt-3 grid grid-cols-4 gap-1 rounded-xl bg-[var(--site-bg-warm)] p-1">
+              <div className="mt-3 grid grid-cols-4 gap-1 rounded-xl bg-(--site-bg-warm) p-1">
                 {attendanceOptions.map((option) => (
                   <button
                     key={option.value}
@@ -982,7 +982,7 @@ export function TeacherLessonWorkspace({
                     onClick={() =>
                       patchStudent(student.id, { attendance: option.value })
                     }
-                    className={`min-h-11 rounded-lg px-1 text-xs font-bold transition ${student.attendance === option.value ? option.active : "text-[var(--site-muted)] hover:bg-white"}`}
+                    className={`min-h-11 rounded-lg px-1 text-xs font-bold transition ${student.attendance === option.value ? option.active : "text-(--site-muted) hover:bg-white"}`}
                   >
                     {option.label}
                   </button>
@@ -1003,7 +1003,7 @@ export function TeacherLessonWorkspace({
           <div className="rounded-[14px] border border-dashed border-[#cbd7a8] bg-[#f8faef] p-5 text-center">
             <CheckCircle2 size={20} className="mx-auto text-emerald-700" />
             <p className="mt-2 text-sm font-bold">Grup varsayımı hazır</p>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Farklı bir durum yoksa öğrenci kartlarını açmanız gerekmez.
             </p>
           </div>

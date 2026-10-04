@@ -152,7 +152,7 @@ export function AdminLearningForms({
           {students.map((item) => (
             <label
               key={item.id}
-              className="flex cursor-pointer items-center gap-2 rounded-xl border border-[var(--site-line)] px-3 py-2 text-xs"
+              className="flex cursor-pointer items-center gap-2 rounded-xl border border-(--site-line) px-3 py-2 text-xs"
             >
               <input type="checkbox" name="studentIds" value={item.id} />
               {item.name}
@@ -189,7 +189,7 @@ export function AdminLearningForms({
         <div className="mt-4 flex gap-2 text-xs font-semibold">
           <button
             type="button"
-            className={`rounded-lg border px-3 py-1.5 ${targetType === "GROUP" ? "border-dc-brand bg-dc-brand-soft" : "border-[var(--site-line)]"}`}
+            className={`rounded-lg border px-3 py-1.5 ${targetType === "GROUP" ? "border-dc-brand bg-dc-brand-soft" : "border-(--site-line)"}`}
             onClick={() => {
               setTargetType("GROUP");
               setPreview(null);
@@ -199,7 +199,7 @@ export function AdminLearningForms({
           </button>
           <button
             type="button"
-            className={`rounded-lg border px-3 py-1.5 ${targetType === "STUDENT" ? "border-dc-brand bg-dc-brand-soft" : "border-[var(--site-line)]"}`}
+            className={`rounded-lg border px-3 py-1.5 ${targetType === "STUDENT" ? "border-dc-brand bg-dc-brand-soft" : "border-(--site-line)"}`}
             onClick={() => {
               setTargetType("STUDENT");
               setPreview(null);
@@ -283,7 +283,7 @@ export function AdminLearningForms({
           ].map(([value, label]) => (
             <label
               key={String(value)}
-              className="inline-flex items-center gap-1 rounded-lg border border-[var(--site-line)] px-2 py-1"
+              className="inline-flex items-center gap-1 rounded-lg border border-(--site-line) px-2 py-1"
             >
               <input type="checkbox" name="weekdays" value={String(value)} />
               {label}
@@ -340,12 +340,12 @@ export function AdminLearningForms({
           Seriyi önizle
         </button>
         {preview ? (
-          <div className="mt-3 rounded-xl border border-[var(--site-line)] bg-white p-3 text-xs">
-            <p className="font-bold text-[var(--site-ink)]">
+          <div className="mt-3 rounded-xl border border-(--site-line) bg-white p-3 text-xs">
+            <p className="font-bold text-(--site-ink)">
               {preview.count} ders oluşacak
               {preview.hasConflicts ? " · çakışma var" : " · çakışma yok"}
             </p>
-            <ul className="mt-2 max-h-28 space-y-1 overflow-auto text-[var(--site-muted)]">
+            <ul className="mt-2 max-h-28 space-y-1 overflow-auto text-(--site-muted)">
               {preview.occurrences.slice(0, 8).map((item) => (
                 <li key={item.startsAt}>{item.label}</li>
               ))}
@@ -448,7 +448,7 @@ export function AdminLearningForms({
       {message ? (
         <p
           aria-live="polite"
-          className="xl:col-span-3 rounded-xl bg-[var(--brand-olive-soft)] px-4 py-3 text-sm font-semibold text-[var(--brand-olive)]"
+          className="xl:col-span-3 rounded-xl bg-(--brand-olive-soft) px-4 py-3 text-sm font-semibold text-(--brand-olive)"
         >
           {message}
         </p>

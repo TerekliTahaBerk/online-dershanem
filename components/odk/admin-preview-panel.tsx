@@ -67,7 +67,7 @@ export function AdminPreviewPanel({ examId }: { examId: string }) {
         </span>
         <div>
           <h2 className="text-sm font-extrabold">9. Önizleme</h2>
-          <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+          <p className="mt-1 text-xs leading-5 text-(--site-muted)">
             Gerçek attempt oluşturmaz. Öğrenci önizlemesiyle yanlışlıkla sınava
             başlanamaz.
           </p>
@@ -78,7 +78,7 @@ export function AdminPreviewPanel({ examId }: { examId: string }) {
           <button
             key={item.id}
             type="button"
-            className={`rounded-xl px-3 py-2 text-xs font-extrabold ${kind === item.id ? "bg-[var(--brand-olive)] text-white" : "bg-[var(--site-bg-warm)]"}`}
+            className={`rounded-xl px-3 py-2 text-xs font-extrabold ${kind === item.id ? "bg-(--brand-olive) text-white" : "bg-(--site-bg-warm)"}`}
             onClick={() => {
               setKind(item.id);
               void load(item.id);
@@ -104,14 +104,14 @@ export function AdminPreviewPanel({ examId }: { examId: string }) {
       {error ? (
         <p
           role="alert"
-          className="mt-3 rounded-xl bg-[var(--pd-pastel-blush-soft)] p-3 text-xs font-bold text-[var(--pd-pastel-blush-ink)]"
+          className="mt-3 rounded-xl bg-(--pd-pastel-blush-soft) p-3 text-xs font-bold text-(--pd-pastel-blush-ink)"
         >
           {error}
         </p>
       ) : null}
       {preview ? (
-        <div className="mt-4 rounded-2xl border border-dashed border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
-          <p className="text-xs font-bold text-[var(--brand-olive)]">
+        <div className="mt-4 rounded-2xl border border-dashed border-(--site-line) bg-(--site-bg-warm) p-4">
+          <p className="text-xs font-bold text-(--brand-olive)">
             {preview.disclaimer}
           </p>
           {preview.studentExam ? (
@@ -132,7 +132,7 @@ export function AdminPreviewPanel({ examId }: { examId: string }) {
                   <li key={note}>• {note}</li>
                 ))}
               </ul>
-              <p className="font-extrabold text-[var(--pd-pastel-blush-ink)]">
+              <p className="font-extrabold text-(--pd-pastel-blush-ink)">
                 {preview.studentExam.startBlockedReason}
               </p>
             </div>

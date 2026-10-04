@@ -280,7 +280,7 @@ export async function PanelShell({
           ) : null}
           <a
             href="#panel-content"
-            className="fixed left-4 top-3 z-[400] -translate-y-24 rounded-full bg-dc-ink px-5 py-3 text-sm font-semibold text-white shadow-lg transition-transform focus:translate-y-0"
+            className="fixed left-4 top-3 z-400 -translate-y-24 rounded-full bg-dc-ink px-5 py-3 text-sm font-semibold text-white shadow-lg transition-transform focus:translate-y-0"
           >
             Ana içeriğe geç
           </a>
@@ -324,7 +324,7 @@ export async function PanelShell({
               {productSwitch ? (
                 <Link
                   href={productSwitch.href}
-                  className="mb-1 flex items-center gap-1.5 rounded-[10px] px-2.5 py-2 text-[12px] font-semibold text-dc-ink-muted transition-colors hover:bg-dc-surface-muted hover:text-dc-ink"
+                  className="mb-1 flex items-center gap-1.5 rounded-od px-2.5 py-2 text-[12px] font-semibold text-dc-ink-muted transition-colors hover:bg-dc-surface-muted hover:text-dc-ink"
                 >
                   <ArrowLeftRight size={13} aria-hidden="true" /> {productSwitch.label}
                 </Link>
@@ -332,7 +332,7 @@ export async function PanelShell({
               {workspaceSwitch ? (
                 <Link
                   href={workspaceSwitch.href}
-                  className="mb-3 flex items-center gap-1.5 rounded-[10px] px-2.5 py-2 text-[12px] font-semibold text-dc-ink-muted transition-colors hover:bg-dc-surface-muted hover:text-dc-ink"
+                  className="mb-3 flex items-center gap-1.5 rounded-od px-2.5 py-2 text-[12px] font-semibold text-dc-ink-muted transition-colors hover:bg-dc-surface-muted hover:text-dc-ink"
                 >
                   <ArrowLeftRight size={13} aria-hidden="true" />{" "}
                   {workspaceSwitch.label}
@@ -396,7 +396,7 @@ export async function PanelShell({
               />
 
               {pageTitle ? (
-                <p className="hidden min-w-0 max-w-[34%] truncate text-[14px] font-bold text-dc-ink sm:block sm:max-w-[12rem] sm:text-[15px] lg:max-w-xs xl:max-w-none">
+                <p className="hidden min-w-0 max-w-[34%] truncate text-[14px] font-bold text-dc-ink sm:block sm:max-w-48 sm:text-[15px] lg:max-w-xs xl:max-w-none">
                   {pageTitle}
                 </p>
               ) : null}

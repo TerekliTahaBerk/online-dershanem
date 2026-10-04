@@ -100,10 +100,10 @@ export default async function OdkAdminExamsPage({
       <section className="mt-9">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h2 className="text-lg font-extrabold text-[var(--site-ink)]">
+            <h2 className="text-lg font-extrabold text-(--site-ink)">
               Denemeler
             </h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               {exams.length} kayıt gösteriliyor
             </p>
           </div>
@@ -116,7 +116,7 @@ export default async function OdkAdminExamsPage({
               <span className="relative">
                 <Search
                   size={14}
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--site-muted)]"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--site-muted)"
                 />
                 <input
                   name="q"
@@ -150,9 +150,9 @@ export default async function OdkAdminExamsPage({
           </form>
         </div>
 
-        <div className="mt-4 overflow-x-auto rounded-3xl border border-[var(--site-line)] bg-white">
+        <div className="mt-4 overflow-x-auto rounded-3xl border border-(--site-line) bg-white">
           <table className="w-full min-w-[960px] text-left text-xs">
-            <thead className="bg-[var(--site-bg-warm)] text-[10px] uppercase tracking-wide text-[var(--site-muted)]">
+            <thead className="bg-(--site-bg-warm) text-[10px] uppercase tracking-wide text-(--site-muted)">
               <tr>
                 <th className="px-4 py-3">Deneme</th>
                 <th className="px-3 py-3">Tür</th>
@@ -186,20 +186,20 @@ export default async function OdkAdminExamsPage({
                 return (
                   <tr
                     key={exam.id}
-                    className="border-t border-[var(--site-line)] hover:bg-[var(--site-bg-warm)]/60"
+                    className="border-t border-(--site-line) hover:bg-(--site-bg-warm)/60"
                   >
                     <td className="px-4 py-3">
                       <Link
                         href={`/panel/odk/yonetim/sinavlar/${exam.id}`}
-                        className="font-bold text-[var(--site-ink)] hover:text-[var(--brand-olive)]"
+                        className="font-bold text-(--site-ink) hover:text-(--brand-olive)"
                       >
                         {exam.title}
                       </Link>
-                      <p className="mt-0.5 text-[10px] text-[var(--site-muted)]">
+                      <p className="mt-0.5 text-[10px] text-(--site-muted)">
                         {exam.series?.title || "Serisiz"}
                       </p>
                     </td>
-                    <td className="px-3 py-3 font-extrabold text-[var(--brand-olive)]">
+                    <td className="px-3 py-3 font-extrabold text-(--brand-olive)">
                       {getOdkExamFamilyCode(exam)}
                     </td>
                     <td className="px-3 py-3">
@@ -232,12 +232,12 @@ export default async function OdkAdminExamsPage({
             <div className="p-8 text-center">
               <ClipboardCheck
                 size={22}
-                className="mx-auto text-[var(--site-muted)]"
+                className="mx-auto text-(--site-muted)"
               />
               <h3 className="mt-3 text-sm font-extrabold">
                 Filtreye uygun deneme bulunamadı.
               </h3>
-              <p className="mt-1 text-xs text-[var(--site-muted)]">
+              <p className="mt-1 text-xs text-(--site-muted)">
                 Filtreleri temizleyin veya yeni bir taslak oluşturun.
               </p>
               <Link

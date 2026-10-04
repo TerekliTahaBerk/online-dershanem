@@ -134,13 +134,13 @@ export function LeadDetailPanel({
       <header className="panel-surface p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-extrabold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+            <p className="text-[11px] font-extrabold uppercase tracking-[.08em] text-(--brand-olive)">
               Aday detayı
             </p>
             <h2 className="mt-1 text-2xl font-semibold tracking-[-.03em]">
               {leadDisplayName(lead)}
             </h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               {LEAD_SOURCE_LABELS[lead.source]} ·{" "}
               {PRODUCT_INTEREST_LABELS[lead.productInterest]} ·{" "}
               {LEAD_PRIORITY_LABELS[lead.priority]}
@@ -149,7 +149,7 @@ export function LeadDetailPanel({
                 : ""}
             </p>
             <p
-              className={`mt-2 text-xs font-bold ${lifecycle.tone === "critical" ? "text-rose-700" : lifecycle.tone === "warning" ? "text-amber-800" : "text-[var(--site-muted)]"}`}
+              className={`mt-2 text-xs font-bold ${lifecycle.tone === "critical" ? "text-rose-700" : lifecycle.tone === "warning" ? "text-amber-800" : "text-(--site-muted)"}`}
             >
               {lifecycle.label} — {lifecycle.nextAction}
             </p>
@@ -224,33 +224,33 @@ export function LeadDetailPanel({
           <h3 className="text-xs font-extrabold">Profil</h3>
           <dl className="grid grid-cols-2 gap-2 text-xs">
             <div>
-              <dt className="text-[var(--site-muted)]">Telefon</dt>
+              <dt className="text-(--site-muted)">Telefon</dt>
               <dd className="font-bold">{lead.phone || "—"}</dd>
             </div>
             <div>
-              <dt className="text-[var(--site-muted)]">E-posta</dt>
+              <dt className="text-(--site-muted)">E-posta</dt>
               <dd className="font-bold">{lead.email || "—"}</dd>
             </div>
             <div>
-              <dt className="text-[var(--site-muted)]">Öğrenci</dt>
+              <dt className="text-(--site-muted)">Öğrenci</dt>
               <dd className="font-bold">{lead.studentName || "—"}</dd>
             </div>
             <div>
-              <dt className="text-[var(--site-muted)]">Veli</dt>
+              <dt className="text-(--site-muted)">Veli</dt>
               <dd className="font-bold">{lead.parentName || "—"}</dd>
             </div>
             <div>
-              <dt className="text-[var(--site-muted)]">Sınıf / Sınav</dt>
+              <dt className="text-(--site-muted)">Sınıf / Sınav</dt>
               <dd className="font-bold">
                 {[lead.grade, lead.examType].filter(Boolean).join(" · ") || "—"}
               </dd>
             </div>
             <div>
-              <dt className="text-[var(--site-muted)]">Şehir</dt>
+              <dt className="text-(--site-muted)">Şehir</dt>
               <dd className="font-bold">{lead.city || "—"}</dd>
             </div>
             <div>
-              <dt className="text-[var(--site-muted)]">Kampanya</dt>
+              <dt className="text-(--site-muted)">Kampanya</dt>
               <dd className="font-bold">
                 {lead.campaign?.name ||
                   lead.attributions[0]?.campaign?.name ||
@@ -258,7 +258,7 @@ export function LeadDetailPanel({
               </dd>
             </div>
             <div>
-              <dt className="text-[var(--site-muted)]">Etiketler</dt>
+              <dt className="text-(--site-muted)">Etiketler</dt>
               <dd className="font-bold">
                 {lead.tags.length ? lead.tags.join(", ") : "—"}
               </dd>
@@ -349,7 +349,7 @@ export function LeadDetailPanel({
                   placeholder="Kayıp detayı"
                   className="rounded-xl border px-2 py-2 text-xs"
                 />
-                <button className="rounded-xl bg-[var(--brand-olive)] px-3 py-2 text-xs font-bold text-white">
+                <button className="rounded-xl bg-(--brand-olive) px-3 py-2 text-xs font-bold text-white">
                   Aşamayı kaydet
                 </button>
               </form>
@@ -402,7 +402,7 @@ export function LeadDetailPanel({
                     </option>
                   ))}
                 </select>
-                <button className="rounded-xl bg-[var(--brand-olive)] px-3 py-2 text-xs font-bold text-white">
+                <button className="rounded-xl bg-(--brand-olive) px-3 py-2 text-xs font-bold text-white">
                   Takip planla
                 </button>
               </form>
@@ -452,11 +452,11 @@ export function LeadDetailPanel({
                   <div>
                     <p className="font-bold">{task.title}</p>
                     {task.note ? (
-                      <p className="mt-1 text-[10px] text-[var(--site-muted)]">
+                      <p className="mt-1 text-[10px] text-(--site-muted)">
                         {task.note}
                       </p>
                     ) : null}
-                    <p className="mt-1 text-[10px] text-[var(--site-muted)]">
+                    <p className="mt-1 text-[10px] text-(--site-muted)">
                       {task.completedAt
                         ? `Tamamlandı ${dt.format(task.completedAt)}`
                         : task.dueAt
@@ -487,7 +487,7 @@ export function LeadDetailPanel({
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
             <Link
               href={createSaleHref}
-              className="rounded-xl bg-[var(--brand-olive)] px-3 py-2 font-bold text-white"
+              className="rounded-xl bg-(--brand-olive) px-3 py-2 font-bold text-white"
             >
               Sipariş / satış oluştur
             </Link>
@@ -508,7 +508,7 @@ export function LeadDetailPanel({
               </Link>
             ) : null}
           </div>
-          <p className="mt-2 text-[11px] text-[var(--site-muted)]">
+          <p className="mt-2 text-[11px] text-(--site-muted)">
             Provisioning: OD{" "}
             {provisioning?.odStatus ||
               (lead.relatedOdOrderId ? "bağlı" : "yok")}{" "}
@@ -553,7 +553,7 @@ export function LeadDetailPanel({
             <>
               <Link
                 href={`/panel/yonetim/isletme/mesaj-kutusu?conversation=${lead.conversation.id}`}
-                className="mt-2 inline-block text-xs font-bold text-[var(--brand-olive)] underline"
+                className="mt-2 inline-block text-xs font-bold text-(--brand-olive) underline"
               >
                 Mesaj kutusunda aç
               </Link>
@@ -561,7 +561,7 @@ export function LeadDetailPanel({
                 {[...lead.conversation.messages].reverse().map((message) => (
                   <article
                     key={message.id}
-                    className={`rounded-xl px-3 py-2 text-xs ${message.direction === "OUTBOUND" ? "ml-6 bg-[var(--brand-olive)] text-white" : "mr-6 bg-[var(--site-bg-warm)]"}`}
+                    className={`rounded-xl px-3 py-2 text-xs ${message.direction === "OUTBOUND" ? "ml-6 bg-(--brand-olive) text-white" : "mr-6 bg-(--site-bg-warm)"}`}
                   >
                     <p>{message.body || "Medya"}</p>
                     <p className="mt-1 text-[9px] opacity-70">
@@ -572,7 +572,7 @@ export function LeadDetailPanel({
               </div>
             </>
           ) : (
-            <p className="mt-2 text-xs text-[var(--site-muted)]">
+            <p className="mt-2 text-xs text-(--site-muted)">
               Bağlı Instagram konuşması yok.
             </p>
           )}
@@ -587,7 +587,7 @@ export function LeadDetailPanel({
               </p>
             ))
           ) : (
-            <p className="mt-2 text-xs text-[var(--site-muted)]">
+            <p className="mt-2 text-xs text-(--site-muted)">
               Ödeme kaydı yok.
             </p>
           )}
@@ -597,7 +597,7 @@ export function LeadDetailPanel({
               <li key={item.id} className="border-t pt-2 text-[11px]">
                 <strong>{item.label}</strong>
                 {item.detail ? ` · ${item.detail}` : ""}
-                <span className="block text-[var(--site-muted)]">
+                <span className="block text-(--site-muted)">
                   {dt.format(item.at)}
                 </span>
               </li>

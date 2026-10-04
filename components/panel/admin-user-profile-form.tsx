@@ -25,11 +25,11 @@ export function AdminUserProfileForm({ user }: Props) {
   const [message, setMessage] = useState("");
   return (
     <details className="panel-surface mt-5" open>
-      <summary className="cursor-pointer list-none px-5 py-4 text-sm font-extrabold text-[var(--site-ink)]">
+      <summary className="cursor-pointer list-none px-5 py-4 text-sm font-extrabold text-(--site-ink)">
         Profil bilgilerini düzenle
       </summary>
       <form
-        className="border-t border-[var(--site-line)] p-5"
+        className="border-t border-(--site-line) p-5"
         onSubmit={async (event) => {
           event.preventDefault();
           setBusy(true);
@@ -123,7 +123,7 @@ export function AdminUserProfileForm({ user }: Props) {
         <div className="mt-3 flex items-center justify-between gap-3">
           <p
             aria-live="polite"
-            className="text-xs font-bold text-[var(--brand-olive)]"
+            className="text-xs font-bold text-(--brand-olive)"
           >
             {message}
           </p>

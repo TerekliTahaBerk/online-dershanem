@@ -42,15 +42,15 @@ export function AdminSetupWizard({
       id="hizli-kurulum"
       className="panel-surface scroll-mt-24 overflow-hidden"
     >
-      <div className="flex flex-col gap-4 border-b border-[var(--site-line)] bg-[linear-gradient(135deg,#f0f5ec,#fff_60%,#fff7d7)] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+      <div className="flex flex-col gap-4 border-b border-(--site-line) bg-[linear-gradient(135deg,#f0f5ec,#fff_60%,#fff7d7)] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div>
-          <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+          <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[.08em] text-(--brand-olive)">
             <Rocket size={15} /> Hızlı kurulum
           </p>
-          <h2 className="mt-2 text-xl font-semibold tracking-[-.04em] text-[var(--site-ink)]">
+          <h2 className="mt-2 text-xl font-semibold tracking-[-.04em] text-(--site-ink)">
             Bir grubu üç adımda canlıya alın.
           </h2>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Hesapları burada açın; grup, veli bağlantıları ve haftalık dersleri
             aynı akışta hazırlayın.
           </p>
@@ -59,7 +59,7 @@ export function AdminSetupWizard({
           {[1, 2, 3].map((item) => (
             <span
               key={item}
-              className={`grid h-8 w-8 place-items-center rounded-full text-xs font-extrabold ${item <= step ? "bg-[var(--brand-olive)] text-white" : "bg-white text-[var(--site-muted)]"}`}
+              className={`grid h-8 w-8 place-items-center rounded-full text-xs font-extrabold ${item <= step ? "bg-(--brand-olive) text-white" : "bg-white text-(--site-muted)"}`}
             >
               {item}
             </span>
@@ -67,12 +67,12 @@ export function AdminSetupWizard({
         </div>
       </div>
 
-      <div className="border-b border-[var(--site-line)] bg-[var(--site-soft)] p-5 sm:p-6">
+      <div className="border-b border-(--site-line) bg-(--site-soft) p-5 sm:p-6">
         <div className="mb-3">
-          <h3 className="flex items-center gap-2 text-sm font-extrabold text-[var(--site-ink)]">
+          <h3 className="flex items-center gap-2 text-sm font-extrabold text-(--site-ink)">
             <Plus size={15} /> Bu kurulum için yeni hesap aç
           </h3>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             Hesap anında aşağıdaki seçimlere eklenir. Mevcut hesaplarla devam
             edecekseniz bu alanı atlayın.
           </p>
@@ -173,7 +173,7 @@ export function AdminSetupWizard({
         </form>
         <p
           aria-live="polite"
-          className="mt-2 text-xs font-bold text-[var(--brand-olive)]"
+          className="mt-2 text-xs font-bold text-(--brand-olive)"
         >
           {accountMessage}
         </p>
@@ -187,14 +187,14 @@ export function AdminSetupWizard({
               {invitations.map((item) => (
                 <div
                   key={item.email}
-                  className="rounded-xl bg-white px-3 py-2 text-xs text-[var(--site-body)]"
+                  className="rounded-xl bg-white px-3 py-2 text-xs text-(--site-body)"
                 >
                   <strong>{item.name}</strong>
                   <br />
                   {item.email}
                   <br />
                   <a
-                    className="font-semibold text-[var(--brand-olive)] underline"
+                    className="font-semibold text-(--brand-olive) underline"
                     href={item.inviteUrl}
                     target="_blank"
                     rel="noreferrer noopener"
@@ -302,9 +302,9 @@ export function AdminSetupWizard({
             return (
               <div
                 key={student.id}
-                className={`rounded-2xl border p-3 ${active ? "border-[var(--brand-olive)] bg-[var(--brand-olive-soft)]" : "border-[var(--site-line)]"}`}
+                className={`rounded-2xl border p-3 ${active ? "border-(--brand-olive) bg-(--brand-olive-soft)" : "border-(--site-line)"}`}
               >
-                <label className="flex cursor-pointer items-center gap-3 text-sm font-bold text-[var(--site-ink)]">
+                <label className="flex cursor-pointer items-center gap-3 text-sm font-bold text-(--site-ink)">
                   <input
                     type="checkbox"
                     checked={active}
@@ -343,7 +343,7 @@ export function AdminSetupWizard({
               </div>
             );
           })}
-          <p className="md:col-span-2 text-xs text-[var(--site-muted)]">
+          <p className="md:col-span-2 text-xs text-(--site-muted)">
             <UsersRound size={13} className="mr-1 inline" /> {selected.length}/
             {DEFAULT_GROUP_CAPACITY} öğrenci seçildi
           </p>
@@ -392,7 +392,7 @@ export function AdminSetupWizard({
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
           <p
             aria-live="polite"
-            className="flex items-center gap-2 text-xs font-bold text-[var(--brand-olive)]"
+            className="flex items-center gap-2 text-xs font-bold text-(--brand-olive)"
           >
             {message ? (
               <>

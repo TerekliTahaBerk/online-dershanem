@@ -63,7 +63,7 @@ export function OrderLinkForm({
       </div>
       <button
         disabled={busy}
-        className="rounded-xl bg-[var(--brand-olive)] px-3 text-xs font-bold text-white disabled:opacity-60"
+        className="rounded-xl bg-(--brand-olive) px-3 text-xs font-bold text-white disabled:opacity-60"
       >
         Bağla
       </button>

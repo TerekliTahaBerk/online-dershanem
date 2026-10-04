@@ -88,7 +88,7 @@ export function TeacherHelpRequests({ rows }: { rows: Row[] }) {
                 className={`px-4 py-4 ${index < items.length - 1 ? "border-b border-dc-line-soft" : ""}`}
               >
                 <PanelActionRow
-                  className="!border-0 !px-0 !py-0"
+                  className="border-0! px-0! py-0!"
                   title={row.studentName}
                   description={`${checkInLabels.energy[row.energy]} · ${checkInLabels.confidence[row.confidence]}`}
                   meta={`${row.groupName} · Engel: ${checkInLabels.barrier[row.barrier]}`}

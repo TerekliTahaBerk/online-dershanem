@@ -66,10 +66,10 @@ export function NotificationPreferences({
   }
   return (
     <section className="panel-surface p-5">
-      <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+      <h2 className="text-sm font-extrabold text-(--site-ink)">
         Bildirim tercihleri
       </h2>
-      <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+      <p className="mt-1 text-xs leading-5 text-(--site-muted)">
         Panel içi ve e-posta bildirimleri kullanıma hazırdır. WhatsApp izni
         saklanır; kurumsal WhatsApp sağlayıcısı bağlandığında aynı tercihler
         kullanılacaktır.
@@ -92,7 +92,7 @@ export function NotificationPreferences({
             disabled={!ready || busy !== null}
             aria-pressed={prefs[key]}
             onClick={() => toggle(key)}
-            className={`flex w-full items-center justify-between rounded-2xl border p-3 text-xs font-bold ${prefs[key] ? "border-[var(--brand-olive)] bg-[var(--brand-olive-soft)]" : "border-[var(--site-line)]"}`}
+            className={`flex w-full items-center justify-between rounded-2xl border p-3 text-xs font-bold ${prefs[key] ? "border-(--brand-olive) bg-(--brand-olive-soft)" : "border-(--site-line)"}`}
           >
             <span className="flex items-center gap-2">
               <Icon size={15} />
@@ -102,9 +102,9 @@ export function NotificationPreferences({
           </button>
         ))}
       </div>
-      <fieldset className="mt-4 space-y-3 border-t border-[var(--site-line)] pt-4" disabled={!ready || busy !== null}>
+      <fieldset className="mt-4 space-y-3 border-t border-(--site-line) pt-4" disabled={!ready || busy !== null}>
         <legend className="text-xs font-bold">Sessiz saatler · İstanbul saati</legend>
-        <p className="text-xs leading-5 text-[var(--site-muted)]">Ders ve koçluk hatırlatmaları bu saatler bittikten sonra iletilir. Bu tercih yeni hatırlatmalarda kullanılır; hesap ve ödeme e-postaları kendi akışını izler.</p>
+        <p className="text-xs leading-5 text-(--site-muted)">Ders ve koçluk hatırlatmaları bu saatler bittikten sonra iletilir. Bu tercih yeni hatırlatmalarda kullanılır; hesap ve ödeme e-postaları kendi akışını izler.</p>
         <div className="grid grid-cols-2 gap-3">
           {([{ key: "quietStartMinute", label: "Başlangıç saati" }, { key: "quietEndMinute", label: "Bitiş saati" }] as const).map(({ key, label }) => (
             <label key={key} className="text-xs font-bold">{label}<input type="time" className="mt-1 block w-full rounded-lg border p-2" value={toTime(prefs[key])} onChange={(event) => setPrefs((current) => ({ ...current, [key]: toMinute(event.target.value) }))} /></label>
@@ -126,7 +126,7 @@ export function NotificationPreferences({
         ).map(({ key, label }) => (
           <label
             key={key}
-            className="flex cursor-pointer items-center gap-2 rounded-xl bg-[var(--site-bg-warm)] p-3 text-[11px] font-bold"
+            className="flex cursor-pointer items-center gap-2 rounded-xl bg-(--site-bg-warm) p-3 text-[11px] font-bold"
           >
             <input
               type="checkbox"
@@ -141,7 +141,7 @@ export function NotificationPreferences({
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
         <p
           aria-live="polite"
-          className="text-xs font-bold text-[var(--brand-olive)]"
+          className="text-xs font-bold text-(--brand-olive)"
         >
           {message}
         </p>

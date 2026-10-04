@@ -39,13 +39,13 @@ export default async function AccessibilityPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
           <Accessibility size={16} /> Erişilebilirlik
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em]">
+        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
           Paneli çalışma biçiminize uyarlayın.
         </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--site-body)]">
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-(--site-body)">
           Tercihler hesabınıza bağlıdır ve kullandığınız cihazlar arasında
           uygulanır. Sağlık tanısı veya engel adı istemeyiz.
         </p>
@@ -68,17 +68,17 @@ export default async function AccessibilityPage() {
                   {preference.breaksAllowed ? <li>Planlı kısa mola</li> : null}
                 </ul>
               ) : (
-                <p className="mt-3 text-sm leading-6 text-[var(--site-body)]">
+                <p className="mt-3 text-sm leading-6 text-(--site-body)">
                   Admin tarafından atanmış ek süre veya mola düzenlemesi yok.
                 </p>
               )}
-              <p className="mt-4 text-xs leading-5 text-[var(--site-muted)]">
+              <p className="mt-4 text-xs leading-5 text-(--site-muted)">
                 Değişiklik gerekiyorsa yöneticinizle iletişime geçin. Burada
                 tanı paylaşmanız gerekmez.
               </p>
             </>
           ) : (
-            <p className="mt-3 text-sm leading-6 text-[var(--site-body)]">
+            <p className="mt-3 text-sm leading-6 text-(--site-body)">
               Ek süre ve mola yalnız öğrenci hesaplarında admin tarafından
               yönetilir.
             </p>

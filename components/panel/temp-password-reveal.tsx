@@ -40,21 +40,21 @@ export function InviteLinkReveal({
   }
 
   return (
-    <div className="rounded-[16px] border border-[var(--brand-olive-soft)] bg-[var(--brand-olive-tint)] p-5">
-      <p className="text-[11px] font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+    <div className="rounded-od-lg border border-(--brand-olive-soft) bg-(--brand-olive-tint) p-5">
+      <p className="text-[11px] font-bold uppercase tracking-[.08em] text-(--brand-olive)">
         Davet hazır
       </p>
-      <p className="mt-2 text-[14px] leading-6 text-[var(--site-body)]">
-        <strong className="text-[var(--site-ink)]">{fullName || email}</strong>{" "}
+      <p className="mt-2 text-[14px] leading-6 text-(--site-body)">
+        <strong className="text-(--site-ink)">{fullName || email}</strong>{" "}
         için tek kullanımlık davet bağlantısı üretildi. Bu bağlantı{" "}
         <strong>{formattedExpiry}</strong> tarihine kadar geçerlidir.
       </p>
 
-      <div className="mt-4 rounded-[12px] border border-[var(--site-line)] bg-white px-4 py-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[.06em] text-[var(--site-muted)]">
+      <div className="mt-4 rounded-[12px] border border-(--site-line) bg-white px-4 py-3">
+        <p className="text-[11px] font-semibold uppercase tracking-[.06em] text-(--site-muted)">
           Davet bağlantısı
         </p>
-        <p className="mt-1 break-all font-mono text-[12.5px] font-bold text-[var(--site-ink)]">
+        <p className="mt-1 break-all font-mono text-[12.5px] font-bold text-(--site-ink)">
           {inviteUrl}
         </p>
       </div>
@@ -96,7 +96,7 @@ export function InviteLinkReveal({
         <button
           type="button"
           onClick={onDone}
-          className="ml-auto text-[13px] font-semibold text-[var(--site-body)] underline underline-offset-2 hover:text-[var(--site-ink)]"
+          className="ml-auto text-[13px] font-semibold text-(--site-body) underline underline-offset-2 hover:text-(--site-ink)"
         >
           İlettim, kapat
         </button>

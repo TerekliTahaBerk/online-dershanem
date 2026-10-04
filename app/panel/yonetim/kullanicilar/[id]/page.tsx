@@ -260,7 +260,7 @@ export default async function UserDetailPage({
                 {blocked ? (
                   <Link
                     href={`/panel/yonetim/siparisler/${blocked.id}`}
-                    className="rounded-[10px] bg-dc-brand-strong px-[18px] py-[11px] text-[13.5px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+                    className="rounded-od bg-dc-brand-strong px-[18px] py-[11px] text-[13.5px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
                   >
                     Erişim sorununu çöz
                   </Link>
@@ -468,7 +468,7 @@ export default async function UserDetailPage({
                     <Link
                       key={enrollment.id}
                       href={`/panel/yonetim/gruplar/${enrollment.group.id}`}
-                      className="rounded-[10px] border border-dc-line p-3 transition-colors hover:border-dc-brand"
+                      className="rounded-od border border-dc-line p-3 transition-colors hover:border-dc-brand"
                     >
                       <p className="text-[13.5px] font-bold text-dc-ink">
                         {enrollment.group.name} · {enrollment.group.subject}
@@ -494,7 +494,7 @@ export default async function UserDetailPage({
                     <Link
                       key={link.id}
                       href={`/panel/yonetim/kullanicilar/${link.parent.id}`}
-                      className="rounded-[10px] border border-dc-line p-3 transition-colors hover:border-dc-brand"
+                      className="rounded-od border border-dc-line p-3 transition-colors hover:border-dc-brand"
                     >
                       <p className="text-[13.5px] font-bold text-dc-ink">
                         {link.parent.fullName || link.parent.email}
@@ -519,7 +519,7 @@ export default async function UserDetailPage({
                 {student.notes.map((note) => (
                   <article
                     key={note.id}
-                    className="rounded-[10px] border border-dc-line p-4"
+                    className="rounded-od border border-dc-line p-4"
                   >
                     <p className="text-[11px] font-bold uppercase tracking-[.06em] text-dc-brand-strong">
                       {note.lesson.group.subject} ·{" "}
@@ -606,7 +606,7 @@ export default async function UserDetailPage({
                     <Link
                       key={group.id}
                       href={`/panel/yonetim/gruplar/${group.id}`}
-                      className="flex items-center justify-between rounded-[10px] border border-dc-line p-3 transition-colors hover:border-dc-brand"
+                      className="flex items-center justify-between rounded-od border border-dc-line p-3 transition-colors hover:border-dc-brand"
                     >
                       <span>
                         <span className="block text-[13.5px] font-bold text-dc-ink">
@@ -635,7 +635,7 @@ export default async function UserDetailPage({
                   {teacherStudentLinks.map((link) => (
                     <div
                       key={link.id}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-[10px] border border-dc-line p-3"
+                      className="flex flex-wrap items-center justify-between gap-2 rounded-od border border-dc-line p-3"
                     >
                       <div>
                         <p className="text-[12px] font-semibold uppercase tracking-wide text-dc-ink-faint">
@@ -669,7 +669,7 @@ export default async function UserDetailPage({
                   {user.taughtLessons.map((lesson) => (
                     <div
                       key={lesson.id}
-                      className="rounded-[10px] border border-dc-line p-3"
+                      className="rounded-od border border-dc-line p-3"
                     >
                       <p className="text-[13.5px] font-bold text-dc-ink">
                         {lesson.title}
@@ -698,7 +698,7 @@ export default async function UserDetailPage({
                 <Link
                   key={link.id}
                   href={`/panel/yonetim/kullanicilar/${link.student.user.id}`}
-                  className="rounded-[10px] border border-dc-line p-4 transition-colors hover:border-dc-brand"
+                  className="rounded-od border border-dc-line p-4 transition-colors hover:border-dc-brand"
                 >
                   <span className="block text-[13.5px] font-bold text-dc-ink">
                     {link.student.user.fullName || link.student.user.email}

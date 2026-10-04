@@ -159,7 +159,7 @@ export default async function OdkOperationsPage({
       </section>
 
       <form
-        className="mt-6 grid gap-2 rounded-2xl border border-[var(--site-line)] bg-white p-3 sm:grid-cols-[minmax(220px,1fr)_180px_auto]"
+        className="mt-6 grid gap-2 rounded-2xl border border-(--site-line) bg-white p-3 sm:grid-cols-[minmax(220px,1fr)_180px_auto]"
         method="get"
       >
         <label className="panel-field">
@@ -167,7 +167,7 @@ export default async function OdkOperationsPage({
           <span className="relative">
             <Search
               size={14}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--site-muted)]"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-(--site-muted)"
             />
             <input
               name="q"
@@ -243,14 +243,14 @@ export default async function OdkOperationsPage({
                   return (
                     <article
                       key={attempt.id}
-                      className={`grid gap-3 rounded-2xl border p-4 md:grid-cols-[minmax(180px,1.4fr)_1fr_.7fr_1.2fr_1fr] md:items-center ${isStale ? "border-[var(--pd-pastel-yellow-ink)]/35 bg-[var(--pd-pastel-yellow-soft)]" : "border-dc-line bg-white"}`}
+                      className={`grid gap-3 rounded-2xl border p-4 md:grid-cols-[minmax(180px,1.4fr)_1fr_.7fr_1.2fr_1fr] md:items-center ${isStale ? "border-(--pd-pastel-yellow-ink)/35 bg-(--pd-pastel-yellow-soft)" : "border-dc-line bg-white"}`}
                     >
                       <div>
                         <p className="text-sm font-bold text-dc-ink">
                           {attempt.student.fullName || attempt.student.email}
                         </p>
                         {isStale ? (
-                          <p className="mt-1 flex items-center gap-1 text-[10px] font-extrabold text-[var(--pd-pastel-yellow-ink)]">
+                          <p className="mt-1 flex items-center gap-1 text-[10px] font-extrabold text-(--pd-pastel-yellow-ink)">
                             <AlertTriangle size={11} /> Bağlantıyı kontrol edin
                           </p>
                         ) : null}
@@ -277,7 +277,7 @@ export default async function OdkOperationsPage({
                           Tarayıcı bağlantısı
                         </span>
                         <p
-                          className={`text-xs ${isStale ? "font-bold text-[var(--pd-pastel-yellow-ink)]" : "text-dc-ink-body"}`}
+                          className={`text-xs ${isStale ? "font-bold text-(--pd-pastel-yellow-ink)" : "text-dc-ink-body"}`}
                         >
                           {isStale ? "Gecikiyor · " : ""}
                           {time.format(attempt.lastActivityAt)}

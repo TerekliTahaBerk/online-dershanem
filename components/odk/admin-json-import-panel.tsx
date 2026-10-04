@@ -82,7 +82,7 @@ export function AdminJsonImportPanel({ examId }: { examId: string }) {
         </span>
         <div>
           <h2 className="text-sm font-extrabold">JSON içe aktarma</h2>
-          <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+          <p className="mt-1 text-xs leading-5 text-(--site-muted)">
             Cevap anahtarı veya kazanım JSON’unu önce önizleyin; hata yoksa
             onaylayarak yazın. Doğrudan DB’ye yazılmaz.
           </p>
@@ -91,14 +91,14 @@ export function AdminJsonImportPanel({ examId }: { examId: string }) {
       <div className="mt-4 flex flex-wrap gap-2">
         <button
           type="button"
-          className={`rounded-xl px-3 py-2 text-xs font-extrabold ${kind === "answer-key" ? "bg-[var(--brand-olive)] text-white" : "bg-[var(--site-bg-warm)]"}`}
+          className={`rounded-xl px-3 py-2 text-xs font-extrabold ${kind === "answer-key" ? "bg-(--brand-olive) text-white" : "bg-(--site-bg-warm)"}`}
           onClick={() => setKind("answer-key")}
         >
           Cevap anahtarı
         </button>
         <button
           type="button"
-          className={`rounded-xl px-3 py-2 text-xs font-extrabold ${kind === "outcomes" ? "bg-[var(--brand-olive)] text-white" : "bg-[var(--site-bg-warm)]"}`}
+          className={`rounded-xl px-3 py-2 text-xs font-extrabold ${kind === "outcomes" ? "bg-(--brand-olive) text-white" : "bg-(--site-bg-warm)"}`}
           onClick={() => setKind("outcomes")}
         >
           Kazanımlar
@@ -135,7 +135,7 @@ export function AdminJsonImportPanel({ examId }: { examId: string }) {
       {summary ? (
         <p
           role="status"
-          className="mt-3 rounded-xl bg-[var(--brand-olive-soft)] p-3 text-xs font-bold text-[var(--brand-olive)]"
+          className="mt-3 rounded-xl bg-(--brand-olive-soft) p-3 text-xs font-bold text-(--brand-olive)"
         >
           {summary}
         </p>
@@ -143,7 +143,7 @@ export function AdminJsonImportPanel({ examId }: { examId: string }) {
       {error ? (
         <p
           role="alert"
-          className="mt-3 rounded-xl bg-[var(--pd-pastel-blush-soft)] p-3 text-xs font-bold text-[var(--pd-pastel-blush-ink)]"
+          className="mt-3 rounded-xl bg-(--pd-pastel-blush-soft) p-3 text-xs font-bold text-(--pd-pastel-blush-ink)"
         >
           {error}
         </p>

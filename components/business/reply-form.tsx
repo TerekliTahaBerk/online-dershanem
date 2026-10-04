@@ -43,12 +43,12 @@ export function ReplyForm({
         onChange={(e) => setText(e.target.value)}
         maxLength={1500}
         required
-        className="min-w-0 flex-1 rounded-xl border border-[var(--site-line)] bg-white px-3 py-2 text-sm"
+        className="min-w-0 flex-1 rounded-xl border border-(--site-line) bg-white px-3 py-2 text-sm"
         placeholder="Yanıtınızı yazın…"
       />
       <button
         disabled={state === "sending"}
-        className="rounded-xl bg-[var(--brand-olive)] px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
+        className="rounded-xl bg-(--brand-olive) px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
       >
         {state === "sending"
           ? "Gönderiliyor…"

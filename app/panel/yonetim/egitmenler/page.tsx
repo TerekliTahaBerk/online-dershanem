@@ -70,7 +70,7 @@ export default async function AdminEducatorsPage() {
           actions={
             <Link
               href="/panel/yonetim/kullanicilar"
-              className="rounded-[10px] bg-dc-brand-strong px-[18px] py-[11px] text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+              className="rounded-od bg-dc-brand-strong px-[18px] py-[11px] text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
             >
               Öğretmen ekle
             </Link>

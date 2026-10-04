@@ -27,10 +27,10 @@ export default async function TeacherMaterialsPage() {
       email={session.email}
     >
       <header className="mb-7">
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
           <Library size={15} /> Kaynak kütüphanesi
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em] text-[var(--site-ink)]">
+        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-(--site-ink)">
           Doğru kaynak, doğru grubun önünde.
         </h1>
       </header>

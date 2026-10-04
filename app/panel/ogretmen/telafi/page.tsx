@@ -88,13 +88,13 @@ export default async function TeacherRecoveryPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
           <PackageCheck size={15} /> 72 saatlik telafi
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em]">
+        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
           Kaçırılan dersi tek onayla küçük bir sıraya koy.
         </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--site-body)]">
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-(--site-body)">
           Ortak özet, aktif kaynak, çalışma ve mini kontrol. Öğrenciye özel
           notlar taslağa hiçbir zaman girmez.
         </p>

@@ -24,10 +24,10 @@ export function CourseDiscovery() {
 
   return (
     <section className="border-y border-dc-line-soft bg-white">
-      <div className="site-container py-[var(--dc-section-tight)]">
+      <div className="site-container py-(--dc-section-tight)">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="text-[12px] font-semibold tracking-[0.08em] text-[var(--dc-ink-faint)]">
+            <p className="text-[12px] font-semibold tracking-[0.08em] text-(--dc-ink-faint)">
               ONLINE DERSHANEM İÇİNDE
             </p>
             <h3 className="mt-3 font-display text-[26px] leading-[1.15] tracking-[-0.02em] text-dc-ink sm:text-[32px]">

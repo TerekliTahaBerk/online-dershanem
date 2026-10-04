@@ -26,16 +26,16 @@ export function PublicOdkPackageCard({ item }: { item: PublicOdkPackage }) {
   const { contract, availability } = item;
   const rights = contract.policy.rights;
   return (
-    <article className="flex h-full flex-col rounded-[28px] border border-[var(--site-line)] bg-white p-6 shadow-[0_18px_55px_-38px_rgba(36,45,28,.45)] sm:p-7">
+    <article className="flex h-full flex-col rounded-[28px] border border-(--site-line) bg-white p-6 shadow-[0_18px_55px_-38px_rgba(36,45,28,.45)] sm:p-7">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[.16em] text-[var(--brand-olive)]">
+          <p className="text-xs font-bold uppercase tracking-[.16em] text-(--brand-olive)">
             {contract.exams
               .map((exam) => exam.family)
               .filter((value, index, all) => all.indexOf(value) === index)
               .join(" + ") || "Online deneme"}
           </p>
-          <h2 className="mt-2 font-display text-3xl tracking-[-.035em] text-[var(--site-ink)]">
+          <h2 className="mt-2 font-display text-3xl tracking-[-.035em] text-(--site-ink)">
             {contract.package.title}
           </h2>
         </div>
@@ -46,32 +46,32 @@ export function PublicOdkPackageCard({ item }: { item: PublicOdkPackage }) {
         </span>
       </div>
       {contract.package.description ? (
-        <p className="mt-4 leading-7 text-[var(--site-body)]">
+        <p className="mt-4 leading-7 text-(--site-body)">
           {contract.package.description}
         </p>
       ) : null}
       <div className="mt-6 flex items-end gap-3">
-        <strong className="font-display text-4xl tracking-[-.04em] text-[var(--site-ink)]">
+        <strong className="font-display text-4xl tracking-[-.04em] text-(--site-ink)">
           {formatOdkPrice(contract.package.priceCents)}
         </strong>
         {contract.package.originalPriceCents ? (
-          <del className="pb-1 text-sm text-[var(--site-muted)]">
+          <del className="pb-1 text-sm text-(--site-muted)">
             {formatOdkPrice(contract.package.originalPriceCents)}
           </del>
         ) : null}
       </div>
-      <ul className="mt-6 space-y-3 text-sm text-[var(--site-body)]">
+      <ul className="mt-6 space-y-3 text-sm text-(--site-body)">
         <li className="flex gap-3">
           <CalendarDays
             size={18}
-            className="mt-0.5 shrink-0 text-[var(--brand-orange)]"
+            className="mt-0.5 shrink-0 text-(--brand-orange)"
           />
           {contract.exams.length} planlı deneme
         </li>
         <li className="flex gap-3">
           <FileChartColumn
             size={18}
-            className="mt-0.5 shrink-0 text-[var(--brand-orange)]"
+            className="mt-0.5 shrink-0 text-(--brand-orange)"
           />
           {rights.studentReports
             ? "Öğrenci sonuç ve kazanım raporu"
@@ -80,7 +80,7 @@ export function PublicOdkPackageCard({ item }: { item: PublicOdkPackage }) {
         <li className="flex gap-3">
           <Users
             size={18}
-            className="mt-0.5 shrink-0 text-[var(--brand-orange)]"
+            className="mt-0.5 shrink-0 text-(--brand-orange)"
           />
           {rights.parentReports && rights.teacherReports
             ? "Veli ve öğretmen rapor erişimi"
@@ -90,7 +90,7 @@ export function PublicOdkPackageCard({ item }: { item: PublicOdkPackage }) {
           <li className="flex gap-3">
             <Check
               size={18}
-              className="mt-0.5 shrink-0 text-[var(--brand-orange)]"
+              className="mt-0.5 shrink-0 text-(--brand-orange)"
             />
             Canlı sınav hizmeti
           </li>

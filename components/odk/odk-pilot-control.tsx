@@ -205,7 +205,7 @@ export function OdkPilotControl({
     <div className="grid gap-5 xl:grid-cols-[390px_minmax(0,1fr)]">
       <section className="panel-surface h-fit p-5 sm:p-6">
         <h2 className="text-sm font-extrabold">Açık katılımcı listesi</h2>
-        <p className="mt-2 text-xs leading-5 text-[var(--site-muted)]">
+        <p className="mt-2 text-xs leading-5 text-(--site-muted)">
           Her rol bilinçli seçilir. Öğrenci ve veliler için aktif ODK ürün
           erişimi zorunludur.
         </p>
@@ -221,7 +221,7 @@ export function OdkPilotControl({
           {roles.map((role) => (
             <div
               key={role}
-              className={`rounded-xl p-2 text-center ${selectedCoverage[role] ? "bg-[var(--pd-pastel-mint-soft)] text-[var(--pd-pastel-mint-ink)]" : "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]"}`}
+              className={`rounded-xl p-2 text-center ${selectedCoverage[role] ? "bg-(--pd-pastel-mint-soft) text-(--pd-pastel-mint-ink)" : "bg-(--pd-pastel-blush-soft) text-(--pd-pastel-blush-ink)"}`}
             >
               <strong className="block text-sm">
                 {selectedCoverage[role]}
@@ -233,14 +233,14 @@ export function OdkPilotControl({
         <div className="mt-4 max-h-[430px] space-y-4 overflow-y-auto pr-1">
           {groups.map((group) => (
             <fieldset key={group.role}>
-              <legend className="text-[11px] font-extrabold uppercase text-[var(--brand-olive)]">
+              <legend className="text-[11px] font-extrabold uppercase text-(--brand-olive)">
                 {roleLabels[group.role]} · {group.users.length}
               </legend>
               <div className="mt-2 space-y-1">
                 {group.users.map((user) => (
                   <label
                     key={user.id}
-                    className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-[var(--site-line)] px-3 py-2 text-xs"
+                    className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-(--site-line) px-3 py-2 text-xs"
                   >
                     <input
                       type="checkbox"
@@ -262,7 +262,7 @@ export function OdkPilotControl({
         {missingRoles.length || needsSecondStudent ? (
           <p
             role="status"
-            className="mt-3 rounded-xl bg-[var(--pd-pastel-blush-soft)] p-3 text-[10px] font-bold text-[var(--pd-pastel-blush-ink)]"
+            className="mt-3 rounded-xl bg-(--pd-pastel-blush-soft) p-3 text-[10px] font-bold text-(--pd-pastel-blush-ink)"
           >
             {missingRoles.length
               ? `Eksik roller: ${missingRoles.map((role) => roleLabels[role]).join(", ")}. `
@@ -273,7 +273,7 @@ export function OdkPilotControl({
         {hasOpenRun ? (
           <p
             role="status"
-            className="mt-3 rounded-xl bg-[var(--pd-pastel-yellow-soft)] p-3 text-[10px] font-bold text-[var(--pd-pastel-yellow-ink)]"
+            className="mt-3 rounded-xl bg-(--pd-pastel-yellow-soft) p-3 text-[10px] font-bold text-(--pd-pastel-yellow-ink)"
           >
             Yeni taslak için mevcut açık koşuyu tamamlayın veya geri alın.
           </p>
@@ -292,7 +292,7 @@ export function OdkPilotControl({
         >
           Pilot taslağı oluştur
         </button>
-        <p className="mt-3 text-[10px] leading-4 text-[var(--site-muted)]">
+        <p className="mt-3 text-[10px] leading-4 text-(--site-muted)">
           Seçim tek başına erişim açmaz. Aktivasyon env, restore, özel PDF
           deposu ve hazır deneme kapılarından geçer; canlı kabul, güvenlik ve
           operasyon onayları yalnız gerçek tur kanıtından sonra genişlemeyi
@@ -304,7 +304,7 @@ export function OdkPilotControl({
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-sm font-extrabold">ODK yayın yaşam döngüsü</h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Aynı anda yalnız bir açık pilot koşusu bulunabilir.
             </p>
           </div>
@@ -325,7 +325,7 @@ export function OdkPilotControl({
         {message ? (
           <p
             role={message.error ? "alert" : "status"}
-            className={`mt-3 rounded-2xl p-3 text-xs font-bold ${message.error ? "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]" : "bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]"}`}
+            className={`mt-3 rounded-2xl p-3 text-xs font-bold ${message.error ? "bg-(--pd-pastel-blush-soft) text-(--pd-pastel-blush-ink)" : "bg-(--brand-olive-soft) text-(--brand-olive)"}`}
           >
             {message.text}
           </p>
@@ -344,7 +344,7 @@ export function OdkPilotControl({
                         tone={presentation.tone}
                       />
                     </div>
-                    <p className="mt-2 text-xs text-[var(--site-muted)]">
+                    <p className="mt-2 text-xs text-(--site-muted)">
                       {run.memberCount} kişi · Admin {run.coverage.ADMIN} ·
                       Öğretmen {run.coverage.TEACHER} · Öğrenci{" "}
                       {run.coverage.STUDENT} · Veli {run.coverage.PARENT} · v
@@ -410,7 +410,7 @@ export function OdkPilotControl({
             );
           })}
           {!rows.length ? (
-            <p className="rounded-2xl border border-dashed border-[var(--site-line)] p-8 text-center text-sm text-[var(--site-muted)]">
+            <p className="rounded-2xl border border-dashed border-(--site-line) p-8 text-center text-sm text-(--site-muted)">
               Henüz ODK pilot koşusu yok.
             </p>
           ) : null}

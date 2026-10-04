@@ -164,7 +164,7 @@ export function Student360View({
             <Link
               key={action.id}
               href={action.href}
-              className="rounded-[10px] border border-[#DDE4E0] bg-white px-3.5 py-2 text-[12.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
+              className="rounded-od border border-[#DDE4E0] bg-white px-3.5 py-2 text-[12.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
             >
               {action.label}
             </Link>

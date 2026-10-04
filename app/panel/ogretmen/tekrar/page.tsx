@@ -66,13 +66,13 @@ export default async function TeacherReviewPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
           <RotateCcw size={15} /> Kalıcılık gözetimi
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em]">
+        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
           Kuyruk büyürse insan bakışı devreye girsin.
         </h1>
-        <p className="mt-2 text-sm leading-6 text-[var(--site-body)]">
+        <p className="mt-2 text-sm leading-6 text-(--site-body)">
           Öğrencileri sıralamadan yalnız biriken çalışma ve üç kez tekrarlayan
           zorlanma sinyalini görün.
         </p>

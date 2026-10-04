@@ -67,7 +67,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
     <div>
       <p
         aria-live="polite"
-        className="mb-4 text-sm font-bold text-[var(--brand-olive)]"
+        className="mb-4 text-sm font-bold text-(--brand-olive)"
       >
         {message}
       </p>
@@ -83,14 +83,14 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
             <article key={row.id} className="panel-surface p-5 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-extrabold uppercase tracking-[.06em] text-[var(--brand-olive)]">
+                  <p className="text-xs font-extrabold uppercase tracking-[.06em] text-(--brand-olive)">
                     {new Date(row.lessonDate).toLocaleDateString("tr-TR")} ·{" "}
                     {row.lessonTitle}
                   </p>
                   <h2 className="mt-2 text-xl font-semibold">
                     Bu dersi kaçırdın
                   </h2>
-                  <p className="mt-1 text-sm text-[var(--site-muted)]">
+                  <p className="mt-1 text-sm text-(--site-muted)">
                     25 dakikada toparlayabilirsin
                   </p>
                 </div>
@@ -104,8 +104,8 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
               </div>
 
               <div className="mt-4 space-y-3">
-                <section className="rounded-2xl border border-[var(--site-line)] p-4">
-                  <p className="text-xs font-extrabold text-[var(--brand-olive)]">
+                <section className="rounded-2xl border border-(--site-line) p-4">
+                  <p className="text-xs font-extrabold text-(--brand-olive)">
                     1. Konuyu gözden geçir
                   </p>
                   <p className="mt-2 text-sm font-bold">{row.summaryTopic}</p>
@@ -113,14 +113,14 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                     <p className="mt-2 text-sm leading-6">{row.sharedNote}</p>
                   ) : null}
                   {row.outcomeTitles.length ? (
-                    <p className="mt-2 text-xs text-[var(--site-muted)]">
+                    <p className="mt-2 text-xs text-(--site-muted)">
                       Kazanımlar: {row.outcomeTitles.join(" · ")}
                     </p>
                   ) : null}
                 </section>
 
-                <section className="rounded-2xl border border-[var(--site-line)] p-4">
-                  <p className="text-xs font-extrabold text-[var(--brand-olive)]">
+                <section className="rounded-2xl border border-(--site-line) p-4">
+                  <p className="text-xs font-extrabold text-(--brand-olive)">
                     2. Materyali Aç
                   </p>
                   {materials.length ? (
@@ -142,7 +142,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                                 Materyali Aç <ExternalLink size={13} />
                               </a>
                             ) : (
-                              <span className="text-xs text-[var(--site-muted)]">
+                              <span className="text-xs text-(--site-muted)">
                                 Materyal artık aktif değil
                               </span>
                             )}
@@ -162,14 +162,14 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                       ))}
                     </div>
                   ) : (
-                    <p className="mt-2 text-sm text-[var(--site-muted)]">
+                    <p className="mt-2 text-sm text-(--site-muted)">
                       Bu ders için aktif materyal yok.
                     </p>
                   )}
                 </section>
 
-                <section className="rounded-2xl border border-[var(--site-line)] p-4">
-                  <p className="text-xs font-extrabold text-[var(--brand-olive)]">
+                <section className="rounded-2xl border border-(--site-line) p-4">
+                  <p className="text-xs font-extrabold text-(--brand-olive)">
                     3. Küçük çalışmayı tamamla
                   </p>
                   <p className="mt-2 text-sm leading-6">
@@ -192,7 +192,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                                 Çalışmayı Aç <ExternalLink size={13} />
                               </a>
                             ) : (
-                              <span className="text-xs text-[var(--site-muted)]">
+                              <span className="text-xs text-(--site-muted)">
                                 Çalışma artık aktif değil
                               </span>
                             )}
@@ -215,9 +215,9 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                 </section>
               </div>
 
-              <div className="mt-5 border-t border-[var(--site-line)] pt-5">
+              <div className="mt-5 border-t border-(--site-line) pt-5">
                 <p className="text-sm font-extrabold">Mini kontrol</p>
-                <p className="mt-1 text-sm leading-6 text-[var(--site-body)]">
+                <p className="mt-1 text-sm leading-6 text-(--site-body)">
                   {row.checkpointPrompt}
                 </p>
                 {row.status === "PUBLISHED" ? (
@@ -258,7 +258,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                     Yanıtın kaydedildi; tüm küçük adımlar tamamlandı.
                   </p>
                 )}
-                <p className="mt-3 text-[11px] text-[var(--site-muted)]">
+                <p className="mt-3 text-[11px] text-(--site-muted)">
                   72 saat hedefi: {new Date(row.dueAt).toLocaleString("tr-TR")}.
                 </p>
               </div>
@@ -267,7 +267,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
         })}
         {!rows.length ? (
           <div className="panel-surface p-10 text-center">
-            <PackageCheck className="mx-auto text-[var(--site-muted)]" />
+            <PackageCheck className="mx-auto text-(--site-muted)" />
             <p className="mt-3 text-sm font-bold">
               Yayınlanmış telafi paketin yok.
             </p>

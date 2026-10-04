@@ -180,7 +180,7 @@ export function StudentAssignmentList({
     <>
       <p
         aria-live="polite"
-        className="mb-3 min-h-5 text-xs font-bold text-[var(--brand-olive)]"
+        className="mb-3 min-h-5 text-xs font-bold text-(--brand-olive)"
       >
         {message}
       </p>
@@ -197,10 +197,10 @@ export function StudentAssignmentList({
           return (
             <article
               key={assignment.id}
-              className="rounded-[14px] border border-[var(--site-line)] bg-white p-5 shadow-[var(--panel-card-shadow)]"
+              className="rounded-[14px] border border-(--site-line) bg-white p-5 shadow-(--panel-card-shadow)"
             >
               <div className="flex items-start justify-between gap-3">
-                <span className="rounded-full bg-[var(--brand-olive-soft)] px-2.5 py-1 text-[10px] font-bold text-[var(--brand-olive)]">
+                <span className="rounded-full bg-(--brand-olive-soft) px-2.5 py-1 text-[10px] font-bold text-(--brand-olive)">
                   {assignment.groupName} · {assignment.subject}
                 </span>
                 <span
@@ -209,13 +209,13 @@ export function StudentAssignmentList({
                   {overdue ? "Süresi geçti" : statusCopy[assignment.status]}
                 </span>
               </div>
-              <h2 className="mt-4 text-base font-extrabold text-[var(--site-ink)]">
+              <h2 className="mt-4 text-base font-extrabold text-(--site-ink)">
                 {assignment.title}
               </h2>
-              <p className="mt-2 min-h-10 text-sm leading-6 text-[var(--site-body)]">
+              <p className="mt-2 min-h-10 text-sm leading-6 text-(--site-body)">
                 {assignment.description || "Öğretmenin açıklama eklemedi."}
               </p>
-              <p className="mt-4 flex items-center gap-1.5 text-xs font-bold text-[var(--site-muted)]">
+              <p className="mt-4 flex items-center gap-1.5 text-xs font-bold text-(--site-muted)">
                 <Clock3 size={13} />{" "}
                 {new Intl.DateTimeFormat("tr-TR", {
                   dateStyle: "medium",
@@ -223,11 +223,11 @@ export function StudentAssignmentList({
                 }).format(new Date(assignment.dueAt))}
               </p>
               {assignment.evidenceRequired && evidenceEnabled ? (
-                <div className="mt-4 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
+                <div className="mt-4 rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4">
                   <p className="text-xs font-extrabold">
                     Kanıtlı teslim · ölçütler
                   </p>
-                  <ul className="mt-2 space-y-1 text-xs text-[var(--site-body)]">
+                  <ul className="mt-2 space-y-1 text-xs text-(--site-body)">
                     {assignment.criteria.map((criterion) => (
                       <li key={criterion.id}>
                         • {criterion.label}
@@ -289,7 +289,7 @@ export function StudentAssignmentList({
                       >
                         {latest ? "Yeni denemeyi gönder" : "Kanıtı gönder"}
                       </button>
-                      <p className="mt-2 text-xs text-[var(--site-muted)]">
+                      <p className="mt-2 text-xs text-(--site-muted)">
                         En az 20 karakter yaz (
                         {evidence[assignment.id]?.trim().length || 0}/20).
                         Şimdilik yalnızca yazılı açıklama kabul ediliyor;
@@ -299,7 +299,7 @@ export function StudentAssignmentList({
                   ) : null}
                 </div>
               ) : (
-                <div className="mt-5 grid grid-cols-3 gap-1 rounded-2xl bg-[var(--site-bg-warm)] p-1">
+                <div className="mt-5 grid grid-cols-3 gap-1 rounded-2xl bg-(--site-bg-warm) p-1">
                   {(["TODO", "IN_PROGRESS", "DONE"] as Status[]).map(
                     (status) => (
                       <button
@@ -308,7 +308,7 @@ export function StudentAssignmentList({
                         disabled={busy === assignment.id}
                         aria-pressed={assignment.status === status}
                         onClick={() => void setStatus(assignment.id, status)}
-                        className={`flex min-h-10 items-center justify-center gap-1 rounded-xl px-2 text-xs font-bold transition ${assignment.status === status ? "bg-[var(--brand-olive)] text-white shadow-sm" : "text-[var(--site-muted)] hover:bg-white"}`}
+                        className={`flex min-h-10 items-center justify-center gap-1 rounded-xl px-2 text-xs font-bold transition ${assignment.status === status ? "bg-(--brand-olive) text-white shadow-xs" : "text-(--site-muted) hover:bg-white"}`}
                       >
                         {busy === assignment.id &&
                         assignment.status !== status ? (
@@ -330,7 +330,7 @@ export function StudentAssignmentList({
           );
         })}
         {!items.length ? (
-          <div className="rounded-[14px] border border-dashed border-[var(--site-line)] p-10 text-center text-sm text-[var(--site-muted)] lg:col-span-2">
+          <div className="rounded-[14px] border border-dashed border-(--site-line) p-10 text-center text-sm text-(--site-muted) lg:col-span-2">
             Aktif ödeviniz yok. Güzel bir nefes arası!
           </div>
         ) : null}

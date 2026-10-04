@@ -64,14 +64,14 @@ export function LegalPageTemplate({
           title={pageTitle}
           subtitle={intro}
           actions={
-            <p className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[var(--site-line)] bg-white px-4 py-2 text-[13px] text-[var(--site-muted)]">
+            <p className="inline-flex min-h-11 items-center gap-2 rounded-full border border-(--site-line) bg-white px-4 py-2 text-[13px] text-(--site-muted)">
               <ShieldCheck
                 size={15}
-                className="text-[var(--brand-olive)]"
+                className="text-(--brand-olive)"
                 aria-hidden="true"
               />
               Yürürlük tarihi:
-              <strong className="font-semibold text-[var(--site-ink)]">
+              <strong className="font-semibold text-(--site-ink)">
                 {effectiveDate}
               </strong>
             </p>
@@ -84,55 +84,55 @@ export function LegalPageTemplate({
               <p className="site-kicker">Bu metinde</p>
               <nav
                 aria-label={`${pageTitle} bölüm başlıkları`}
-                className="mt-4 border-y border-[var(--site-line)]"
+                className="mt-4 border-y border-(--site-line)"
               >
                 {sections.map((section, index) => (
                   <Link
                     key={section.title}
                     href={`#${sectionId(section.title)}`}
-                    className="flex min-h-12 items-center gap-3 border-b border-[var(--site-line)] py-3 text-[13.5px] leading-5 text-[var(--site-body)] last:border-b-0 hover:text-[var(--brand-olive)]"
+                    className="flex min-h-12 items-center gap-3 border-b border-(--site-line) py-3 text-[13.5px] leading-5 text-(--site-body) last:border-b-0 hover:text-(--brand-olive)"
                   >
-                    <span className="text-xs font-bold text-[var(--site-muted)]">
+                    <span className="text-xs font-bold text-(--site-muted)">
                       {String(index + 1).padStart(2, "0")}
                     </span>
                     {section.title.replace(/^\d+\.\s*/, "")}
                   </Link>
                 ))}
               </nav>
-              <div className="mt-5 rounded-[18px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
+              <div className="mt-5 rounded-[18px] border border-(--site-line) bg-(--site-bg-warm) p-4">
                 <Mail
                   size={17}
-                  className="text-[var(--brand-olive)]"
+                  className="text-(--brand-olive)"
                   aria-hidden="true"
                 />
-                <p className="mt-3 text-[12.5px] leading-6 text-[var(--site-body)]">
+                <p className="mt-3 text-[12.5px] leading-6 text-(--site-body)">
                   Bu metinle ilgili bir sorunuz varsa ekibimize yazabilirsiniz.
                 </p>
                 <Link
                   href="/iletisim"
-                  className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[var(--brand-olive)] hover:underline"
+                  className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-(--brand-olive) hover:underline"
                 >
                   İletişime geç <ArrowRight size={14} aria-hidden="true" />
                 </Link>
               </div>
             </aside>
 
-            <div className="overflow-hidden rounded-[26px] border border-[var(--site-line)] bg-white px-6 sm:px-10">
+            <div className="overflow-hidden rounded-[26px] border border-(--site-line) bg-white px-6 sm:px-10">
               {sections.map((section, idx) => (
                 <article
                   key={section.title}
                   id={sectionId(section.title)}
-                  className="scroll-mt-28 border-b border-[var(--site-line)] py-8 last:border-b-0 sm:py-10"
+                  className="scroll-mt-28 border-b border-(--site-line) py-8 last:border-b-0 sm:py-10"
                 >
                   <div className="flex items-start gap-4">
-                    <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand-olive-soft)] text-xs font-bold text-[var(--brand-olive)]">
+                    <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-(--brand-olive-soft) text-xs font-bold text-(--brand-olive)">
                       {String(idx + 1).padStart(2, "0")}
                     </span>
-                    <h2 className="font-display text-[22px] font-normal leading-tight tracking-[-0.01em] text-[var(--site-ink)] sm:text-[27px]">
+                    <h2 className="font-display text-[22px] font-normal leading-tight tracking-[-0.01em] text-(--site-ink) sm:text-[27px]">
                       {section.title}
                     </h2>
                   </div>
-                  <div className="mt-5 space-y-4 pl-0 text-[15px] leading-7 text-[var(--site-body)] sm:pl-12">
+                  <div className="mt-5 space-y-4 pl-0 text-[15px] leading-7 text-(--site-body) sm:pl-12">
                     {section.paragraphs.map((paragraph) => (
                       <p key={paragraph}>{paragraph}</p>
                     ))}

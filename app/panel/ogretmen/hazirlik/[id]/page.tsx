@@ -282,7 +282,7 @@ export default async function CoachPrepPage({
                 </span>
                 <select
                   name="kind"
-                  className="rounded-[10px] border border-[#DDE4E0] bg-white px-3 py-2.5 text-[13.5px] font-semibold text-dc-ink"
+                  className="rounded-od border border-[#DDE4E0] bg-white px-3 py-2.5 text-[13.5px] font-semibold text-dc-ink"
                 >
                   <option value="SUBJECT_NET">Ders neti</option>
                   <option value="PLAN_COMPLETION">Plan tamamlama %</option>
@@ -293,7 +293,7 @@ export default async function CoachPrepPage({
                 <span className="text-[12.5px] text-dc-ink-faint">Ders</span>
                 <select
                   name="subjectName"
-                  className="rounded-[10px] border border-[#DDE4E0] bg-white px-3 py-2.5 text-[13.5px] font-semibold text-dc-ink"
+                  className="rounded-od border border-[#DDE4E0] bg-white px-3 py-2.5 text-[13.5px] font-semibold text-dc-ink"
                 >
                   <option value="">— (plan hedefi için boş)</option>
                   {examSubjects.map((subject) => (
@@ -312,7 +312,7 @@ export default async function CoachPrepPage({
                   name="targetValue"
                   required
                   inputMode="decimal"
-                  className="w-[96px] rounded-[10px] border border-[#DDE4E0] bg-white px-3 py-2.5 text-[13.5px] text-dc-ink"
+                  className="w-[96px] rounded-od border border-[#DDE4E0] bg-white px-3 py-2.5 text-[13.5px] text-dc-ink"
                 />
               </label>
 
@@ -324,13 +324,13 @@ export default async function CoachPrepPage({
                   name="nearTermNote"
                   maxLength={300}
                   placeholder="Örn. bir sonraki denemede 21 net"
-                  className="min-w-[200px] rounded-[10px] border border-[#DDE4E0] bg-white px-3 py-2.5 text-[13.5px] text-dc-ink"
+                  className="min-w-[200px] rounded-od border border-[#DDE4E0] bg-white px-3 py-2.5 text-[13.5px] text-dc-ink"
                 />
               </label>
 
               <button
                 type="submit"
-                className="rounded-[10px] border border-[#DDE4E0] bg-white px-4 py-2.5 text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
+                className="rounded-od border border-[#DDE4E0] bg-white px-4 py-2.5 text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
               >
                 Hedefi kaydet
               </button>
@@ -353,7 +353,7 @@ export default async function CoachPrepPage({
           </p>
           <Link
             href="/panel/ogretmen/plan"
-            className="mt-3.5 inline-block rounded-[10px] bg-dc-brand-strong px-5 py-3 text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+            className="mt-3.5 inline-block rounded-od bg-dc-brand-strong px-5 py-3 text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
           >
             Plan ekranını aç
           </Link>

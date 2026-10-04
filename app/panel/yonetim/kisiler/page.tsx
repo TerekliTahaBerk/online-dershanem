@@ -221,7 +221,7 @@ export default async function PeopleHubPage({
             key={item.id}
             href={tabHref(item.id, q)}
             aria-current={tab === item.id ? "true" : undefined}
-            className={`rounded-[10px] border px-3.5 py-2.5 text-[13.5px] font-semibold ${
+            className={`rounded-od border px-3.5 py-2.5 text-[13.5px] font-semibold ${
               tab === item.id
                 ? "border-dc-brand bg-dc-brand-soft text-dc-brand-hover"
                 : "border-[#DDE4E0] bg-white text-dc-ink"
@@ -244,7 +244,7 @@ export default async function PeopleHubPage({
             name="q"
             defaultValue={q}
             placeholder="Hızlı ara…"
-            className="rounded-[10px] border border-[#DDE4E0] px-3.5 py-2.5 text-[13.5px]"
+            className="rounded-od border border-[#DDE4E0] px-3.5 py-2.5 text-[13.5px]"
           />
           <button className="site-btn site-btn-secondary site-btn-sm">
             Ara

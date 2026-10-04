@@ -56,7 +56,7 @@ export default function MissionPage() {
 
         {/* PROSE */}
         <section className="site-container pt-4 sm:pt-6">
-          <div className="mx-auto flex max-w-2xl flex-col gap-6 text-[18px] leading-8 text-[var(--site-body)]">
+          <div className="mx-auto flex max-w-2xl flex-col gap-6 text-[18px] leading-8 text-(--site-body)">
             <p>
               Online Dershanem, kalabalık dershane sıralarında kaybolan ya da
               birebir özel dersin maliyetine ulaşamayan öğrenciler için kuruldu.
@@ -66,7 +66,7 @@ export default function MissionPage() {
             </p>
             <p>
               Matematiğin bir yetenek meselesi değil, bir{" "}
-              <em className="font-display italic text-[var(--site-ink)]">
+              <em className="font-display italic text-(--site-ink)">
                 düzen
               </em>{" "}
               meselesi olduğuna inanıyoruz. Doğru büyüklükte bir grup, takip
@@ -84,14 +84,14 @@ export default function MissionPage() {
         </section>
 
         {/* PULL QUOTE */}
-        <section className="mt-14 border-y border-[var(--site-line)] bg-[var(--site-bg-warm)]">
+        <section className="mt-14 border-y border-(--site-line) bg-(--site-bg-warm)">
           <div className="site-container py-16 text-center sm:py-20">
-            <p className="mx-auto max-w-3xl font-display text-[clamp(1.5rem,3.5vw,2.3rem)] font-normal italic leading-[1.35] tracking-[-0.01em] text-[var(--site-ink)]">
+            <p className="mx-auto max-w-3xl font-display text-[clamp(1.5rem,3.5vw,2.3rem)] font-normal italic leading-[1.35] tracking-[-0.01em] text-(--site-ink)">
               &ldquo;Çocuğun dersten eli boş kalkmasın. Ne çalışacağını bilsin,
               veli de süreci görsün. Kurduğumuz her şey bu basit cümlenin
               etrafında.&rdquo;
             </p>
-            <p className="mt-6 text-[14px] text-[var(--site-muted)]">
+            <p className="mt-6 text-[14px] text-(--site-muted)">
               — Online Dershanem, kurucu ekip
             </p>
           </div>
@@ -99,22 +99,22 @@ export default function MissionPage() {
 
         {/* DEĞERLER */}
         <section className="site-container py-16 sm:py-20">
-          <h2 className="mb-10 font-display text-[clamp(1.8rem,3.4vw,2.6rem)] leading-tight tracking-[-0.02em] text-[var(--site-ink)]">
+          <h2 className="mb-10 font-display text-[clamp(1.8rem,3.4vw,2.6rem)] leading-tight tracking-[-0.02em] text-(--site-ink)">
             Bize yön veren üç ilke
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {principles.map((p) => (
               <div
                 key={p.n}
-                className="rounded-[24px] border border-[var(--site-line)] bg-white p-7"
+                className="rounded-od-xl border border-(--site-line) bg-white p-7"
               >
-                <div className="mb-5 font-display text-[30px] text-[var(--brand-orange-ink)]">
+                <div className="mb-5 font-display text-[30px] text-(--brand-orange-ink)">
                   {p.n}
                 </div>
-                <h3 className="mb-2.5 text-[18px] font-semibold text-[var(--site-ink)]">
+                <h3 className="mb-2.5 text-[18px] font-semibold text-(--site-ink)">
                   {p.title}
                 </h3>
-                <p className="text-[15px] leading-7 text-[var(--site-body)]">
+                <p className="text-[15px] leading-7 text-(--site-body)">
                   {p.body}
                 </p>
               </div>

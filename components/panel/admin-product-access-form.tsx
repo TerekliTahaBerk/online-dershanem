@@ -42,17 +42,17 @@ export function AdminProductAccessForm({
 
   return (
     <section className="panel-surface mt-5 p-5">
-      <h2 className="flex items-center gap-2 text-sm font-extrabold text-[var(--site-ink)]">
+      <h2 className="flex items-center gap-2 text-sm font-extrabold text-(--site-ink)">
         <Boxes size={16} /> Ürün erişimi
       </h2>
-      <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+      <p className="mt-1 text-xs leading-5 text-(--site-muted)">
         Hesabın hangi panel ürünlerini açabileceğini belirler.
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         {(["OD", "OK", "ODK"] as ProductCode[]).map((product) => (
           <label
             key={product}
-            className="inline-flex items-center gap-2 rounded-xl border border-[var(--site-line)] bg-white px-3 py-2 text-xs font-bold"
+            className="inline-flex items-center gap-2 rounded-xl border border-(--site-line) bg-white px-3 py-2 text-xs font-bold"
           >
             <input
               type="checkbox"
@@ -73,7 +73,7 @@ export function AdminProductAccessForm({
       <div className="mt-4 flex items-center justify-between gap-3">
         <p
           role="status"
-          className="text-xs font-bold text-[var(--brand-olive)]"
+          className="text-xs font-bold text-(--brand-olive)"
         >
           {staff ? "Personel üç ürüne otomatik erişir." : message}
         </p>

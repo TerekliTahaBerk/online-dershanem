@@ -37,13 +37,13 @@ export default async function TeacherMockExamsPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
           <ChartNoAxesCombined size={15} /> Denemeden eyleme
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em]">
+        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
           Neti değil, nedeni görün.
         </h1>
-        <p className="mt-2 text-sm text-[var(--site-body)]">
+        <p className="mt-2 text-sm text-(--site-body)">
           Öğrencinin kendi eğilimini izleyin; hata nedenini düzeltin ve yalnız
           bir küçük sonraki adımı onaylayın.
         </p>

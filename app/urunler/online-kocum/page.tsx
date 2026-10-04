@@ -45,7 +45,7 @@ export default function OnlineKocumPage() {
           note="Planı koç kurar, tüm dersleri kapsar"
           visual={
             <div className="rounded-dc-card border border-dc-line bg-white p-5 shadow-[0_14px_34px_rgba(20,32,28,.07)]">
-              <p className="font-mono text-xs font-semibold text-[var(--dc-ink-faint)]">
+              <p className="font-mono text-xs font-semibold text-(--dc-ink-faint)">
                 HAFTALIK PLAN
               </p>
               <div className="mt-3 grid grid-cols-7 gap-1.5">
@@ -115,8 +115,8 @@ export default function OnlineKocumPage() {
         />
 
         {/* Dino AI · koçluk önerisi — sağda öncelik listesi */}
-        <section className="mt-[var(--dc-section-tight)] border-y border-dc-line-soft bg-white">
-          <div className="site-container grid items-center gap-10 py-[var(--dc-section-tight)] lg:grid-cols-2">
+        <section className="mt-(--dc-section-tight) border-y border-dc-line-soft bg-white">
+          <div className="site-container grid items-center gap-10 py-(--dc-section-tight) lg:grid-cols-2">
             <div>
               <p className="dc-eyebrow">Dino AI · Koçluk önerisi</p>
               <h2 className="mt-3.5 font-display text-[28px] leading-[1.14] tracking-[-0.02em] text-dc-ink sm:text-[36px]">
@@ -129,7 +129,7 @@ export default function OnlineKocumPage() {
             </div>
 
             <div className="rounded-[20px] border border-dc-line bg-[#FCFDFC] p-5 sm:p-[22px]">
-              <p className="font-mono text-xs font-semibold text-[var(--dc-ink-faint)]">
+              <p className="font-mono text-xs font-semibold text-(--dc-ink-faint)">
                 ÖNERİLEN ODAK
               </p>
               <ul className="mt-3.5 flex flex-col gap-2.5">
@@ -140,10 +140,10 @@ export default function OnlineKocumPage() {
                 ].map((r) => (
                   <li
                     key={r.label}
-                    className={`flex items-center justify-between gap-3 rounded-[10px] px-3.5 py-3 text-[14.5px] font-semibold ${
+                    className={`flex items-center justify-between gap-3 rounded-od px-3.5 py-3 text-[14.5px] font-semibold ${
                       r.top
                         ? "bg-dc-brand-soft text-dc-brand-deep"
-                        : "bg-dc-surface-muted text-[var(--pd-ink-3)]"
+                        : "bg-dc-surface-muted text-(--pd-ink-3)"
                     }`}
                   >
                     <span>{r.label}</span>
@@ -151,7 +151,7 @@ export default function OnlineKocumPage() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-[12px] font-medium text-[var(--dc-ink-muted)]">
+              <p className="mt-3 text-[12px] font-medium text-(--dc-ink-muted)">
                 Örnek metin — gerçek öneri öğrencinin kendi verisinden üretilir.
               </p>
             </div>

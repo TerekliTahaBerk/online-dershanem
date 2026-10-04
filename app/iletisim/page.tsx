@@ -52,19 +52,19 @@ export default function ContactPage() {
           {/* Mobilde önce hızlı kanallar (WhatsApp/telefon), sonra form;
               masaüstünde form solda, kanallar sağda. min-w-0: uzun seçenek
               metinleri grid kolonunu viewport dışına itmesin. */}
-          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2 [&>*]:min-w-0">
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2 *:min-w-0">
             {/* Sol: çalışan lead formu */}
             <div className="lg:col-start-1 lg:row-span-2 lg:row-start-1">
               <ContactLeadForm />
             </div>
 
             {/* Sağ: kanallar */}
-            <div className="order-first flex flex-col gap-3.5 lg:order-none lg:col-start-2 lg:row-start-1">
+            <div className="order-first flex flex-col gap-3.5 lg:order-0 lg:col-start-2 lg:row-start-1">
               <a
                 href={waHref}
-                className="flex items-center gap-4 rounded-2xl border border-[var(--site-line)] bg-[var(--brand-orange-soft)] px-6 py-5 transition-colors hover:border-[var(--brand-orange)]"
+                className="flex items-center gap-4 rounded-2xl border border-(--site-line) bg-(--brand-orange-soft) px-6 py-5 transition-colors hover:border-(--brand-orange)"
               >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-[var(--brand-orange-ink)]">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-(--brand-orange-ink)">
                   <MessageCircle
                     size={18}
                     strokeWidth={1.8}
@@ -72,76 +72,76 @@ export default function ContactPage() {
                   />
                 </span>
                 <div>
-                  <div className="text-[16px] font-semibold text-[var(--site-ink)]">
+                  <div className="text-[16px] font-semibold text-(--site-ink)">
                     WhatsApp
                   </div>
-                  <div className="text-[14px] text-[var(--site-body)]">
+                  <div className="text-[14px] text-(--site-body)">
                     En hızlısı — buradan yazabilirsiniz
                   </div>
                 </div>
                 <ArrowRight
                   size={18}
                   strokeWidth={1.8}
-                  className="ml-auto text-[var(--brand-orange-ink)]"
+                  className="ml-auto text-(--brand-orange-ink)"
                   aria-hidden="true"
                 />
               </a>
 
               <a
                 href={`tel:${contact.phone.replace(/[^\d+]/g, "")}`}
-                className="flex items-center gap-4 rounded-2xl border border-[var(--site-line)] bg-white px-6 py-5 transition-colors hover:border-[var(--brand-orange)]"
+                className="flex items-center gap-4 rounded-2xl border border-(--site-line) bg-white px-6 py-5 transition-colors hover:border-(--brand-orange)"
               >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--site-bg-warm)] text-[var(--brand-orange-ink)]">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-(--site-bg-warm) text-(--brand-orange-ink)">
                   <Phone size={18} strokeWidth={1.8} aria-hidden="true" />
                 </span>
                 <div>
-                  <div className="text-[16px] font-semibold text-[var(--site-ink)]">
+                  <div className="text-[16px] font-semibold text-(--site-ink)">
                     Telefon
                   </div>
-                  <div className="text-[14px] text-[var(--site-body)]">
+                  <div className="text-[14px] text-(--site-body)">
                     {contact.phone}
                   </div>
                 </div>
                 <ArrowRight
                   size={18}
                   strokeWidth={1.8}
-                  className="ml-auto text-[var(--site-muted)]"
+                  className="ml-auto text-(--site-muted)"
                   aria-hidden="true"
                 />
               </a>
 
               <a
                 href={`mailto:${contact.email}`}
-                className="flex items-center gap-4 rounded-2xl border border-[var(--site-line)] bg-white px-6 py-5 transition-colors hover:border-[var(--brand-orange)]"
+                className="flex items-center gap-4 rounded-2xl border border-(--site-line) bg-white px-6 py-5 transition-colors hover:border-(--brand-orange)"
               >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--site-bg-warm)] text-[var(--brand-orange-ink)]">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-(--site-bg-warm) text-(--brand-orange-ink)">
                   <Mail size={18} strokeWidth={1.8} aria-hidden="true" />
                 </span>
                 <div className="min-w-0">
-                  <div className="text-[16px] font-semibold text-[var(--site-ink)]">
+                  <div className="text-[16px] font-semibold text-(--site-ink)">
                     E-posta
                   </div>
-                  <div className="truncate text-[14px] text-[var(--site-body)]">
+                  <div className="truncate text-[14px] text-(--site-body)">
                     {contact.email}
                   </div>
                 </div>
                 <ArrowRight
                   size={18}
                   strokeWidth={1.8}
-                  className="ml-auto shrink-0 text-[var(--site-muted)]"
+                  className="ml-auto shrink-0 text-(--site-muted)"
                   aria-hidden="true"
                 />
               </a>
 
-              <div className="flex items-center gap-4 rounded-2xl border border-[var(--site-line)] bg-white px-6 py-5">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--site-bg-warm)] text-[var(--brand-orange-ink)]">
+              <div className="flex items-center gap-4 rounded-2xl border border-(--site-line) bg-white px-6 py-5">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-(--site-bg-warm) text-(--brand-orange-ink)">
                   <MapPin size={18} strokeWidth={1.8} aria-hidden="true" />
                 </span>
                 <div>
-                  <div className="text-[16px] font-semibold text-[var(--site-ink)]">
+                  <div className="text-[16px] font-semibold text-(--site-ink)">
                     Konum
                   </div>
-                  <div className="text-[14px] text-[var(--site-body)]">
+                  <div className="text-[14px] text-(--site-body)">
                     {contact.address}
                   </div>
                 </div>
@@ -151,17 +151,17 @@ export default function ContactPage() {
 
             {/* Cross-sell */}
             <div className="lg:col-start-2 lg:row-start-2">
-              <div className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-6 py-6">
-                <div className="mb-1.5 text-[15.5px] font-semibold text-[var(--site-ink)]">
+              <div className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) px-6 py-6">
+                <div className="mb-1.5 text-[15.5px] font-semibold text-(--site-ink)">
                   Önce paketi incelemek ister misiniz?
                 </div>
-                <p className="mb-4 text-[14.5px] leading-6 text-[var(--site-body)]">
+                <p className="mb-4 text-[14.5px] leading-6 text-(--site-body)">
                   Fiyatı, derslerin kapsamını ve ödeme sonrası süreci tek
                   sayfada görebilirsiniz.
                 </p>
                 <Link
                   href="/ders-paketleri"
-                  className="inline-flex items-center gap-1.5 text-[14.5px] font-semibold text-[var(--brand-orange-ink)] hover:underline"
+                  className="inline-flex items-center gap-1.5 text-[14.5px] font-semibold text-(--brand-orange-ink) hover:underline"
                 >
                   Ders Paketi&apos;ni gör
                   <ArrowUpRight size={16} aria-hidden="true" />

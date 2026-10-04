@@ -33,7 +33,7 @@ export function ProductHero({
       <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-12">
         <div>
           <p className="dc-eyebrow">{eyebrow}</p>
-          <h1 className="mt-4 font-display text-[length:var(--public-display)] leading-[1.1] tracking-[-0.03em] text-dc-ink">
+          <h1 className="mt-4 font-display text-(length:--public-display) leading-[1.1] tracking-[-0.03em] text-dc-ink">
             {title}
           </h1>
           <p className="mt-4 max-w-[480px] text-[17px] leading-[1.65] text-dc-ink-body sm:text-[18px]">
@@ -94,8 +94,8 @@ export function StepCards({
         : "sm:grid-cols-2 lg:grid-cols-4";
 
   return (
-    <section className="site-container pt-[var(--dc-section-tight)]">
-      <h2 className="max-w-[560px] font-display text-[length:var(--public-title)] leading-[1.1] tracking-[-0.025em] text-dc-ink">
+    <section className="site-container pt-(--dc-section-tight)">
+      <h2 className="max-w-[560px] font-display text-(length:--public-title) leading-[1.1] tracking-tight text-dc-ink">
         {title}
       </h2>
       <ol className={`mt-8 grid gap-4 ${grid}`}>
@@ -106,7 +106,7 @@ export function StepCards({
           >
             <span
               className={`font-mono text-xs font-semibold ${
-                i === 0 ? "text-dc-brand-strong" : "text-[var(--dc-ink-faint)]"
+                i === 0 ? "text-dc-brand-strong" : "text-(--dc-ink-faint)"
               }`}
             >
               {String(i + 1).padStart(2, "0")}
@@ -167,7 +167,7 @@ export function ProductDinoBand({
           <p className="mt-2 text-[14.5px] leading-[1.6] text-[#3F5C51]">
             {quoteBody}
           </p>
-          <p className="mt-2.5 text-[12px] font-medium text-[var(--dc-ink-muted)]">
+          <p className="mt-2.5 text-[12px] font-medium text-(--dc-ink-muted)">
             Örnek metin — gerçek çıktı öğrencinin kendi verisinden üretilir.
           </p>
         </div>
@@ -176,11 +176,11 @@ export function ProductDinoBand({
   );
 
   return onWhite ? (
-    <section className="border-y border-dc-line-soft bg-white py-[var(--dc-section-tight)]">
+    <section className="border-y border-dc-line-soft bg-white py-(--dc-section-tight)">
       {inner}
     </section>
   ) : (
-    <section className="pt-[var(--dc-section-tight)]">{inner}</section>
+    <section className="pt-(--dc-section-tight)">{inner}</section>
   );
 }
 
@@ -218,7 +218,7 @@ export function CrossSellWithPrice({
   priceFootnote: string;
 }) {
   return (
-    <section className="site-container grid items-start gap-6 pt-[var(--dc-section-tight)] lg:grid-cols-[1fr_400px]">
+    <section className="site-container grid items-start gap-6 pt-(--dc-section-tight) lg:grid-cols-[1fr_400px]">
       <div>
         <h2 className="font-display text-[28px] leading-[1.12] tracking-[-0.02em] text-dc-ink sm:text-[36px]">
           Bunu da eklediğinde ne değişir?
@@ -247,7 +247,7 @@ export function CrossSellWithPrice({
       </div>
 
       <aside className="rounded-dc-card border-2 border-dc-brand bg-white p-6 shadow-[0_12px_30px_rgba(20,151,107,.10)]">
-        <p className="font-mono text-xs font-semibold uppercase text-[var(--dc-ink-faint)]">
+        <p className="font-mono text-xs font-semibold uppercase text-(--dc-ink-faint)">
           Tek ürün fiyatı
         </p>
 
@@ -278,7 +278,7 @@ export function CrossSellWithPrice({
             </p>
           </>
         ) : (
-          <p className="mt-2.5 text-[15px] font-semibold leading-[1.5] text-dc-ink">
+          <p className="mt-2.5 text-[15px] font-semibold leading-normal text-dc-ink">
             Fiyat ön görüşmede netleşir
           </p>
         )}
@@ -306,7 +306,7 @@ export function CrossSellWithPrice({
 
         <div className="my-[18px] h-px bg-dc-line-soft" />
 
-        <ul className="flex flex-col gap-2 text-[14.5px] font-medium text-[var(--pd-ink-3)]">
+        <ul className="flex flex-col gap-2 text-[14.5px] font-medium text-(--pd-ink-3)">
           {features.map((f) => (
             <li key={f} className="flex items-start gap-2">
               <Check
@@ -342,7 +342,7 @@ export function ProductFaq({
   title?: string;
 }) {
   return (
-    <section className="site-container grid gap-10 pt-[var(--dc-section-tight)] lg:grid-cols-[340px_1fr] lg:gap-12">
+    <section className="site-container grid gap-10 pt-(--dc-section-tight) lg:grid-cols-[340px_1fr] lg:gap-12">
       <h2 className="font-display text-[28px] leading-[1.1] tracking-[-0.02em] text-dc-ink sm:text-[34px]">
         {title}
       </h2>
@@ -392,7 +392,7 @@ export function ProductClosingCta({
 }) {
   const deep = variant === "deep";
   return (
-    <section className="site-container pb-[var(--dc-section-tight)] pt-[var(--dc-section-tight)]">
+    <section className="site-container pb-(--dc-section-tight) pt-(--dc-section-tight)">
       <div
         className={`flex flex-col items-start gap-8 rounded-dc-banner px-8 py-12 sm:px-14 lg:flex-row lg:items-center ${
           deep
@@ -432,7 +432,7 @@ export function ProductClosingCta({
               href={secondaryCta.href}
               className={
                 deep
-                  ? "flex-none rounded-full border border-[var(--dc-on-deep-line)] px-[30px] py-[17px] text-center text-[16px] font-bold text-white transition-colors hover:bg-white/10"
+                  ? "flex-none rounded-full border border-(--dc-on-deep-line) px-[30px] py-[17px] text-center text-[16px] font-bold text-white transition-colors hover:bg-white/10"
                   : "site-btn site-btn-secondary site-btn-lg flex-none"
               }
             >

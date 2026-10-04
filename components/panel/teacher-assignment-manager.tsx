@@ -178,12 +178,12 @@ function SubmissionReview({
     feedback.trim().length >= 2 &&
     assignment.criteria!.every((criterion) => Boolean(scores[criterion.id]));
   return (
-    <article className="mt-3 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4">
+    <article className="mt-3 rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4">
       <div className="flex flex-wrap justify-between gap-2">
         <p className="text-xs font-extrabold">
           {submission.studentName} · {submission.attemptNumber}. deneme
         </p>
-        <span className="text-[10px] font-bold text-[var(--site-muted)]">
+        <span className="text-[10px] font-bold text-(--site-muted)">
           {new Date(submission.submittedAt).toLocaleString("tr-TR")}
         </span>
       </div>
@@ -329,13 +329,13 @@ export function TeacherAssignmentManager({
           );
         }}
       >
-        <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]">
+        <span className="grid h-10 w-10 place-items-center rounded-2xl bg-(--brand-olive-soft) text-(--brand-olive)">
           <ClipboardPlus size={19} />
         </span>
-        <h2 className="mt-4 text-base font-extrabold text-[var(--site-ink)]">
+        <h2 className="mt-4 text-base font-extrabold text-(--site-ink)">
           Yeni ödev
         </h2>
-        <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+        <p className="mt-1 text-xs leading-5 text-(--site-muted)">
           Gruba gönderdiğiniz anda öğrenci ve veli panelinde görünür.
         </p>
         <select
@@ -390,7 +390,7 @@ export function TeacherAssignmentManager({
           aria-label="Teslim zamanı"
         />
         {assignmentEvidenceEnabled ? (
-          <div className="mt-3 rounded-2xl border border-[var(--site-line)] p-3">
+          <div className="mt-3 rounded-2xl border border-(--site-line) p-3">
             <label className="flex items-center gap-2 text-xs font-extrabold">
               <input
                 type="checkbox"
@@ -401,7 +401,7 @@ export function TeacherAssignmentManager({
             </label>
             {evidenceRequired ? (
               <div className="mt-3 space-y-2">
-                <p className="text-[10px] text-[var(--site-muted)]">
+                <p className="text-[10px] text-(--site-muted)">
                   2–4 gözlenebilir ölçüt; puan veya sıralama yok.
                 </p>
                 {criteria.map((criterion, index) => (
@@ -425,7 +425,7 @@ export function TeacherAssignmentManager({
                     <button
                       type="button"
                       onClick={() => setCriteria((current) => [...current, ""])}
-                      className="text-[10px] font-bold text-[var(--brand-olive)]"
+                      className="text-[10px] font-bold text-(--brand-olive)"
                     >
                       + Ölçüt ekle
                     </button>
@@ -488,7 +488,7 @@ export function TeacherAssignmentManager({
         {message ? (
           <p
             aria-live="polite"
-            className="mt-3 rounded-xl bg-[var(--brand-olive-soft)] px-3 py-2 text-xs font-bold text-[var(--brand-olive)]"
+            className="mt-3 rounded-xl bg-(--brand-olive-soft) px-3 py-2 text-xs font-bold text-(--brand-olive)"
           >
             {message}
           </p>
@@ -498,14 +498,14 @@ export function TeacherAssignmentManager({
       <section>
         <div className="flex items-end justify-between gap-3">
           <div>
-            <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+            <h2 className="text-sm font-extrabold text-(--site-ink)">
               Aktif ödevler
             </h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Tamamlanma durumunu grup bazında izleyin.
             </p>
           </div>
-          <span className="text-xs font-bold text-[var(--site-muted)]">
+          <span className="text-xs font-bold text-(--site-muted)">
             {items.filter((item) => item.isActive).length} aktif
           </span>
         </div>
@@ -517,12 +517,12 @@ export function TeacherAssignmentManager({
             return (
               <article
                 key={assignment.id}
-                className={`rounded-[14px] border border-[var(--site-line)] bg-white p-5 shadow-[var(--panel-card-shadow)] ${assignment.isActive ? "" : "opacity-60"}`}
+                className={`rounded-[14px] border border-(--site-line) bg-white p-5 shadow-(--panel-card-shadow) ${assignment.isActive ? "" : "opacity-60"}`}
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-[var(--brand-olive-soft)] px-2.5 py-1 text-[9.5px] font-bold text-[var(--brand-olive)]">
+                      <span className="rounded-full bg-(--brand-olive-soft) px-2.5 py-1 text-[9.5px] font-bold text-(--brand-olive)">
                         {assignment.groupName}
                       </span>
                       {!assignment.isActive ? (
@@ -531,10 +531,10 @@ export function TeacherAssignmentManager({
                         </span>
                       ) : null}
                     </div>
-                    <h3 className="mt-3 text-sm font-extrabold text-[var(--site-ink)]">
+                    <h3 className="mt-3 text-sm font-extrabold text-(--site-ink)">
                       {assignment.title}
                     </h3>
-                    <p className="mt-1 text-xs leading-5 text-[var(--site-body)]">
+                    <p className="mt-1 text-xs leading-5 text-(--site-body)">
                       {assignment.description || "Açıklama eklenmedi."}
                     </p>
                     {assignment.outcomes?.length ? (
@@ -556,7 +556,7 @@ export function TeacherAssignmentManager({
                         onSaved={() => router.refresh()}
                       />
                     ) : null}
-                    <p className="mt-3 text-[10.5px] font-bold text-[var(--site-muted)]">
+                    <p className="mt-3 text-[10.5px] font-bold text-(--site-muted)">
                       Son tarih:{" "}
                       {new Intl.DateTimeFormat("tr-TR", {
                         dateStyle: "medium",
@@ -565,7 +565,7 @@ export function TeacherAssignmentManager({
                     </p>
                   </div>
                   <div className="shrink-0 sm:w-40">
-                    <div className="flex items-center justify-between text-[10.5px] font-bold text-[var(--site-muted)]">
+                    <div className="flex items-center justify-between text-[10.5px] font-bold text-(--site-muted)">
                       <span>Teslim</span>
                       <span>
                         {assignment.submitted ?? assignment.done}/
@@ -585,7 +585,7 @@ export function TeacherAssignmentManager({
                         style={{ width: `${percent}%` }}
                       />
                     </div>
-                    <p className="mt-2 text-[10px] font-bold text-[var(--site-muted)]">
+                    <p className="mt-2 text-[10px] font-bold text-(--site-muted)">
                       Bekleyen{" "}
                       {assignment.waiting ??
                         Math.max(0, assignment.total - assignment.done)}{" "}
@@ -612,7 +612,7 @@ export function TeacherAssignmentManager({
                             "Ödev arşivlendi.",
                           )
                         }
-                        className="mt-3 inline-flex items-center gap-1 text-[10.5px] font-bold text-[var(--site-muted)] hover:text-rose-700"
+                        className="mt-3 inline-flex items-center gap-1 text-[10.5px] font-bold text-(--site-muted) hover:text-rose-700"
                       >
                         <Archive size={12} /> Arşivle
                       </button>
@@ -627,7 +627,7 @@ export function TeacherAssignmentManager({
             );
           })}
           {!items.length ? (
-            <p className="rounded-[14px] border border-dashed border-[var(--site-line)] p-8 text-center text-sm text-[var(--site-muted)]">
+            <p className="rounded-[14px] border border-dashed border-(--site-line) p-8 text-center text-sm text-(--site-muted)">
               Henüz ödev oluşturmadınız.
             </p>
           ) : null}

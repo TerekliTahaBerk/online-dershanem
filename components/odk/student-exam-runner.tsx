@@ -381,7 +381,7 @@ export function StudentExamRunner({
     window.addEventListener("online", onOnline);
     return () => {
       document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("blur", onBlur);
+      window.removeEventListener("blur-sm", onBlur);
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("copy", onCopy);
       document.removeEventListener("paste", onPaste);
@@ -470,17 +470,17 @@ export function StudentExamRunner({
 
   return (
     <div
-      className="odk-panel-scope min-h-dvh bg-[#f5f3ec] text-[var(--site-ink)]"
+      className="odk-panel-scope min-h-dvh bg-[#f5f3ec] text-(--site-ink)"
       data-odk-exam-surface
     >
-      <header className="sticky top-0 z-30 border-b border-black/10 bg-white/95 px-3 py-2.5 backdrop-blur sm:px-5">
+      <header className="sticky top-0 z-30 border-b border-black/10 bg-white/95 px-3 py-2.5 backdrop-blur-sm sm:px-5">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-2 sm:gap-4">
           <div className="min-w-0">
-            <p className="truncate text-[10px] font-extrabold uppercase tracking-[.09em] text-[var(--brand-olive)] sm:text-xs">
+            <p className="truncate text-[10px] font-extrabold uppercase tracking-[.09em] text-(--brand-olive) sm:text-xs">
               Online Deneme
             </p>
             <p
-              className="mt-0.5 text-[11px] font-bold text-[var(--site-body)] sm:text-sm"
+              className="mt-0.5 text-[11px] font-bold text-(--site-body) sm:text-sm"
               aria-live="polite"
             >
               {answered}/{questions.length} cevaplandı · {blank} boş · {marked}{" "}
@@ -489,7 +489,7 @@ export function StudentExamRunner({
           </div>
           <div className="flex items-center gap-2">
             <div
-              className={`rounded-xl px-3 py-2 text-base font-black tabular-nums sm:px-4 sm:text-lg ${remaining < 5 * 60_000 ? "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]" : "bg-[var(--panel-nav-active)] text-[var(--site-ink)]"}`}
+              className={`rounded-xl px-3 py-2 text-base font-black tabular-nums sm:px-4 sm:text-lg ${remaining < 5 * 60_000 ? "bg-(--pd-pastel-blush-soft) text-(--pd-pastel-blush-ink)" : "bg-(--panel-nav-active) text-(--site-ink)"}`}
               aria-label={`Kalan süre ${formatRemaining(remaining)}`}
               aria-live="off"
             >
@@ -500,7 +500,7 @@ export function StudentExamRunner({
               aria-label="Denemeyi teslim et"
               onClick={confirmSubmit}
               disabled={submitting}
-              className="panel-primary-button bg-[var(--site-ink)] px-3 sm:px-4"
+              className="panel-primary-button bg-(--site-ink) px-3 sm:px-4"
             >
               {submitting ? (
                 <Loader2 size={16} className="animate-spin" />
@@ -513,7 +513,7 @@ export function StudentExamRunner({
         </div>
         {!online || errorCount || submitError ? (
           <div
-            className="mx-auto mt-2 max-w-[1600px] rounded-xl bg-[var(--pd-pastel-yellow-soft)] px-3 py-2 text-xs font-bold text-[var(--pd-pastel-yellow-ink)]"
+            className="mx-auto mt-2 max-w-[1600px] rounded-xl bg-(--pd-pastel-yellow-soft) px-3 py-2 text-xs font-bold text-(--pd-pastel-yellow-ink)"
             role={submitError ? "alert" : "status"}
           >
             {submitError ||
@@ -526,13 +526,13 @@ export function StudentExamRunner({
 
       <nav
         aria-label="Mobil sınav görünümü"
-        className="sticky top-[65px] z-20 grid grid-cols-2 gap-2 border-b border-[var(--site-line)] bg-white p-2 lg:hidden"
+        className="sticky top-[65px] z-20 grid grid-cols-2 gap-2 border-b border-(--site-line) bg-white p-2 lg:hidden"
       >
         <button
           type="button"
           onClick={() => setMobileView("booklet")}
           aria-pressed={mobileView === "booklet"}
-          className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-xs font-extrabold ${mobileView === "booklet" ? "bg-[var(--brand-olive)] text-white" : "bg-[var(--site-bg-warm)] text-[var(--site-body)]"}`}
+          className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-xs font-extrabold ${mobileView === "booklet" ? "bg-(--brand-olive) text-white" : "bg-(--site-bg-warm) text-(--site-body)"}`}
         >
           <FileText size={15} /> Kitapçık
         </button>
@@ -540,7 +540,7 @@ export function StudentExamRunner({
           type="button"
           onClick={() => setMobileView("answers")}
           aria-pressed={mobileView === "answers"}
-          className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-xs font-extrabold ${mobileView === "answers" ? "bg-[var(--brand-olive)] text-white" : "bg-[var(--site-bg-warm)] text-[var(--site-body)]"}`}
+          className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-xs font-extrabold ${mobileView === "answers" ? "bg-(--brand-olive) text-white" : "bg-(--site-bg-warm) text-(--site-body)"}`}
         >
           <ListChecks size={15} /> Cevaplar ({answered}/{questions.length})
         </button>
@@ -553,7 +553,7 @@ export function StudentExamRunner({
           <iframe
             title="Deneme kitapçığı"
             src={`/api/odk/student/exams/${examId}/booklet#toolbar=1&navpanes=0`}
-            className="h-[calc(100dvh-132px)] min-h-[620px] w-full rounded-xl bg-white shadow-sm lg:h-[calc(100dvh-102px)]"
+            className="h-[calc(100dvh-132px)] min-h-[620px] w-full rounded-xl bg-white shadow-xs lg:h-[calc(100dvh-102px)]"
           />
           <a
             href={`/api/odk/student/exams/${examId}/booklet`}
@@ -569,7 +569,7 @@ export function StudentExamRunner({
           className={`${mobileView === "answers" ? "block" : "hidden"} bg-white p-4 sm:p-5 lg:block`}
         >
           <div
-            className={`mb-4 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold ${!online || errorCount ? "bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]" : "bg-[var(--site-bg-warm)] text-[var(--site-muted)]"}`}
+            className={`mb-4 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold ${!online || errorCount ? "bg-(--pd-pastel-yellow-soft) text-(--pd-pastel-yellow-ink)" : "bg-(--site-bg-warm) text-(--site-muted)"}`}
           >
             {!online ? <WifiOff size={14} /> : <Wifi size={14} />}
             {!online
@@ -583,17 +583,17 @@ export function StudentExamRunner({
 
           <div>
             <div className="flex items-center justify-between gap-2">
-              <h2 className="text-xs font-extrabold uppercase tracking-[.08em] text-[var(--site-muted)]">
+              <h2 className="text-xs font-extrabold uppercase tracking-[.08em] text-(--site-muted)">
                 Soru navigatörü
               </h2>
               <span
-                className="text-[10px] text-[var(--site-muted)]"
+                className="text-[10px] text-(--site-muted)"
                 aria-hidden
               >
                 ✓
               </span>
             </div>
-            <p className="mt-1 text-[10px] text-[var(--site-muted)]">
+            <p className="mt-1 text-[10px] text-(--site-muted)">
               ✓ cevaplı · ? işaretli · ● görüldü · - boş
             </p>
             <div
@@ -627,14 +627,14 @@ export function StudentExamRunner({
                     }`}
                     className={`relative grid h-11 w-11 shrink-0 place-items-center rounded-xl border text-xs font-extrabold ${
                       selected
-                        ? "border-[var(--brand-olive)] bg-[var(--brand-olive)] text-white"
+                        ? "border-(--brand-olive) bg-(--brand-olive) text-white"
                         : answer?.selectedOption
-                          ? "border-[var(--brand-olive)] bg-[var(--panel-nav-active)] text-[var(--brand-olive)]"
+                          ? "border-(--brand-olive) bg-(--panel-nav-active) text-(--brand-olive)"
                           : answer?.isMarked
                             ? "border-amber-400 bg-amber-50 text-amber-900"
                             : visited[question.id]
                               ? "border-slate-400 bg-slate-50 text-slate-700"
-                              : "border-[var(--site-line)] bg-white text-[var(--site-body)]"
+                              : "border-(--site-line) bg-white text-(--site-body)"
                     }`}
                   >
                     <span className="sr-only">{symbol}</span>
@@ -654,11 +654,11 @@ export function StudentExamRunner({
 
           {currentQuestion && currentAnswer ? (
             <article
-              className={`mt-5 rounded-2xl border p-4 ${currentAnswer.isMarked ? "border-amber-300 bg-amber-50" : "border-[var(--site-line)] bg-white"}`}
+              className={`mt-5 rounded-2xl border p-4 ${currentAnswer.isMarked ? "border-amber-300 bg-amber-50" : "border-(--site-line) bg-white"}`}
             >
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-[10px] font-extrabold uppercase text-[var(--brand-olive)]">
+                  <p className="text-[10px] font-extrabold uppercase text-(--brand-olive)">
                     {currentIndex + 1}/{questions.length}
                   </p>
                   <h2 className="mt-1 text-lg font-extrabold">
@@ -667,7 +667,7 @@ export function StudentExamRunner({
                 </div>
                 <div className="flex items-center gap-2">
                   <span
-                    className={`text-[11px] font-bold ${currentState === "error" ? "text-red-700" : "text-[var(--site-muted)]"}`}
+                    className={`text-[11px] font-bold ${currentState === "error" ? "text-red-700" : "text-(--site-muted)"}`}
                   >
                     {currentState === "saving"
                       ? "Kaydediliyor…"
@@ -711,7 +711,7 @@ export function StudentExamRunner({
                       save(currentQuestion.id, { selectedOption: option })
                     }
                     aria-pressed={currentAnswer.selectedOption === option}
-                    className={`h-12 rounded-xl text-sm font-black ${currentAnswer.selectedOption === option ? "bg-[var(--brand-olive)] text-white" : "bg-slate-100 text-[var(--site-ink)] hover:bg-slate-200"}`}
+                    className={`h-12 rounded-xl text-sm font-black ${currentAnswer.selectedOption === option ? "bg-(--brand-olive) text-white" : "bg-slate-100 text-(--site-ink) hover:bg-slate-200"}`}
                   >
                     {currentAnswer.selectedOption === option ? (
                       <Check size={13} className="mr-1 inline" />
@@ -736,7 +736,7 @@ export function StudentExamRunner({
                   onClick={() =>
                     save(currentQuestion.id, { selectedOption: null })
                   }
-                  className="min-h-11 px-2 text-xs font-bold text-[var(--site-muted)]"
+                  className="min-h-11 px-2 text-xs font-bold text-(--site-muted)"
                 >
                   Cevabı temizle
                 </button>

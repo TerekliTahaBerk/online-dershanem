@@ -59,19 +59,19 @@ export default async function StudentMaterialsPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
           <Library size={15} /> Kaynaklarım
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em] text-[var(--site-ink)]">
+        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-(--site-ink)">
           İhtiyacın olan her şey burada.
         </h1>
         {lowDataMode ? (
-          <p className="mt-2 text-sm font-bold text-[var(--brand-olive)]">
+          <p className="mt-2 text-sm font-bold text-(--brand-olive)">
             Düşük veri açık: metin dökümleri ve bağlantılar önce; büyük dosyalar
             yalnız siz açarsanız yüklenir.
           </p>
         ) : preference?.captionsPreferred || preference?.transcriptPreferred ? (
-          <p className="mt-2 text-sm text-[var(--site-body)]">
+          <p className="mt-2 text-sm text-(--site-body)">
             Altyazı ve metin tercihinle eşleşen kaynaklar önce gösterilir.
           </p>
         ) : null}
@@ -88,10 +88,10 @@ export default async function StudentMaterialsPage() {
           return (
             <article
               key={material.id}
-              className="rounded-[14px] border border-[var(--site-line)] bg-white p-5 shadow-[var(--panel-card-shadow)]"
+              className="rounded-[14px] border border-(--site-line) bg-white p-5 shadow-(--panel-card-shadow)"
             >
               <div className="flex items-start justify-between gap-2">
-                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]">
+                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-(--brand-olive-soft) text-(--brand-olive)">
                   <Icon size={19} />
                 </span>
                 {preferred ? (
@@ -100,13 +100,13 @@ export default async function StudentMaterialsPage() {
                   </span>
                 ) : null}
               </div>
-              <p className="mt-4 text-[10px] font-bold uppercase text-[var(--site-muted)]">
+              <p className="mt-4 text-[10px] font-bold uppercase text-(--site-muted)">
                 {material.group.name} · {material.group.subject}
               </p>
-              <h2 className="mt-2 text-base font-extrabold text-[var(--site-ink)]">
+              <h2 className="mt-2 text-base font-extrabold text-(--site-ink)">
                 {material.title}
               </h2>
-              <p className="mt-2 min-h-10 text-xs leading-5 text-[var(--site-body)]">
+              <p className="mt-2 min-h-10 text-xs leading-5 text-(--site-body)">
                 {material.description ||
                   "Öğretmeninin paylaştığı çalışma kaynağı."}
               </p>
@@ -125,12 +125,12 @@ export default async function StudentMaterialsPage() {
               {material.transcript ? (
                 <details
                   open={lowDataMode || undefined}
-                  className="mt-3 rounded-2xl border border-[var(--site-line)] p-3"
+                  className="mt-3 rounded-2xl border border-(--site-line) p-3"
                 >
                   <summary className="cursor-pointer text-xs font-bold">
                     Metin dökümünü oku
                   </summary>
-                  <p className="mt-3 whitespace-pre-wrap text-xs leading-6 text-[var(--site-body)]">
+                  <p className="mt-3 whitespace-pre-wrap text-xs leading-6 text-(--site-body)">
                     {material.transcript}
                   </p>
                 </details>
@@ -150,7 +150,7 @@ export default async function StudentMaterialsPage() {
           );
         })}
         {!ordered.length ? (
-          <p className="rounded-[14px] border border-dashed border-[var(--site-line)] p-10 text-center text-sm text-[var(--site-muted)] md:col-span-2 xl:col-span-3">
+          <p className="rounded-[14px] border border-dashed border-(--site-line) p-10 text-center text-sm text-(--site-muted) md:col-span-2 xl:col-span-3">
             Henüz paylaşılmış materyal yok.
           </p>
         ) : null}

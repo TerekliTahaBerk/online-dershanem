@@ -14,31 +14,31 @@ export function AnalyticsFilterForm({
       action={action}
       className="panel-surface flex flex-wrap gap-3 p-4"
     >
-      <label className="text-xs font-bold text-[var(--site-muted)]">
+      <label className="text-xs font-bold text-(--site-muted)">
         Başlangıç
         <input
           name="from"
           type="date"
           defaultValue={formatIstanbulDateInput(filters.from)}
-          className="ml-2 rounded-xl border border-[var(--site-line)] bg-white p-2 text-[var(--site-ink)]"
+          className="ml-2 rounded-xl border border-(--site-line) bg-white p-2 text-(--site-ink)"
         />
       </label>
-      <label className="text-xs font-bold text-[var(--site-muted)]">
+      <label className="text-xs font-bold text-(--site-muted)">
         Bitiş
         <input
           name="to"
           type="date"
           defaultValue={formatIstanbulDateInput(filters.to)}
-          className="ml-2 rounded-xl border border-[var(--site-line)] bg-white p-2 text-[var(--site-ink)]"
+          className="ml-2 rounded-xl border border-(--site-line) bg-white p-2 text-(--site-ink)"
         />
       </label>
-      <label className="text-xs font-bold text-[var(--site-muted)]">
+      <label className="text-xs font-bold text-(--site-muted)">
         Sınav
         <select
           name="examType"
           defaultValue={filters.examType}
           aria-label="Sınav türü"
-          className="ml-2 rounded-xl border border-[var(--site-line)] bg-white px-3 py-2 text-[var(--site-ink)]"
+          className="ml-2 rounded-xl border border-(--site-line) bg-white px-3 py-2 text-(--site-ink)"
         >
           <option value="ALL">Tümü</option>
           <option value="LGS">LGS</option>
@@ -47,23 +47,23 @@ export function AnalyticsFilterForm({
           <option value="YDT">YDT</option>
         </select>
       </label>
-      <label className="text-xs font-bold text-[var(--site-muted)]">
+      <label className="text-xs font-bold text-(--site-muted)">
         Sınıf
         <input
           name="classLevel"
           type="text"
           defaultValue={filters.classLevel ?? ""}
           placeholder="örn. 11"
-          className="ml-2 w-24 rounded-xl border border-[var(--site-line)] bg-white p-2 text-[var(--site-ink)]"
+          className="ml-2 w-24 rounded-xl border border-(--site-line) bg-white p-2 text-(--site-ink)"
         />
       </label>
-      <label className="text-xs font-bold text-[var(--site-muted)]">
+      <label className="text-xs font-bold text-(--site-muted)">
         Ürün
         <select
           name="product"
           defaultValue={filters.product}
           aria-label="Ürün"
-          className="ml-2 rounded-xl border border-[var(--site-line)] bg-white px-3 py-2 text-[var(--site-ink)]"
+          className="ml-2 rounded-xl border border-(--site-line) bg-white px-3 py-2 text-(--site-ink)"
         >
           <option value="ALL">Tüm ürünler</option>
           <option value="OD">OD</option>
@@ -71,27 +71,27 @@ export function AnalyticsFilterForm({
           <option value="ODK">ODK</option>
         </select>
       </label>
-      <label className="text-xs font-bold text-[var(--site-muted)]">
+      <label className="text-xs font-bold text-(--site-muted)">
         Grup ID
         <input
           name="groupId"
           type="text"
           defaultValue={filters.groupId ?? ""}
-          className="ml-2 w-36 rounded-xl border border-[var(--site-line)] bg-white p-2 font-mono text-[11px] text-[var(--site-ink)]"
+          className="ml-2 w-36 rounded-xl border border-(--site-line) bg-white p-2 font-mono text-[11px] text-(--site-ink)"
         />
       </label>
-      <label className="text-xs font-bold text-[var(--site-muted)]">
+      <label className="text-xs font-bold text-(--site-muted)">
         Öğretmen ID
         <input
           name="teacherId"
           type="text"
           defaultValue={filters.teacherId ?? ""}
-          className="ml-2 w-36 rounded-xl border border-[var(--site-line)] bg-white p-2 font-mono text-[11px] text-[var(--site-ink)]"
+          className="ml-2 w-36 rounded-xl border border-(--site-line) bg-white p-2 font-mono text-[11px] text-(--site-ink)"
         />
       </label>
       <button
         type="submit"
-        className="rounded-xl bg-[var(--brand-olive)] px-4 py-2 text-xs font-bold text-white"
+        className="rounded-xl bg-(--brand-olive) px-4 py-2 text-xs font-bold text-white"
       >
         Uygula
       </button>

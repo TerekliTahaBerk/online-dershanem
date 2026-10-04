@@ -39,15 +39,15 @@ export default async function CartCheckoutPage() {
       <main
         id="main-content"
         tabIndex={-1}
-        className="min-h-screen bg-[var(--site-bg-warm)] py-10"
+        className="min-h-screen bg-(--site-bg-warm) py-10"
       >
         <div className="mx-auto max-w-[1080px] px-5 sm:px-8">
-          <nav className="text-[12px] text-[var(--site-body)] mb-4 uppercase tracking-wider">
-            <Link href="/sepet" className="hover:text-[var(--site-ink)]">
+          <nav className="text-[12px] text-(--site-body) mb-4 uppercase tracking-wider">
+            <Link href="/sepet" className="hover:text-(--site-ink)">
               Sepet
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-[var(--site-ink)]">Güvenli Ödeme</span>
+            <span className="text-(--site-ink)">Güvenli Ödeme</span>
           </nav>
           <CartCheckoutClient
             defaults={defaults}

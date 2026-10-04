@@ -94,7 +94,7 @@ export function OverviewPanel(props: OverviewPanelProps) {
               data.openInterventions.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-[10px] border border-dc-line-soft px-3 py-2.5"
+                  className="rounded-od border border-dc-line-soft px-3 py-2.5"
                 >
                   <p className="text-[13px] font-semibold text-dc-ink">
                     {item.status}

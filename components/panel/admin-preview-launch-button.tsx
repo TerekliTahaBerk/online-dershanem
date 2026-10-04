@@ -42,7 +42,7 @@ export function AdminPreviewLaunchButton({
     >
       <button
         type="submit"
-        className="rounded-[10px] border border-[#DDE4E0] bg-white px-3.5 py-2 text-[12.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
+        className="rounded-od border border-[#DDE4E0] bg-white px-3.5 py-2 text-[12.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
       >
         {label}
       </button>

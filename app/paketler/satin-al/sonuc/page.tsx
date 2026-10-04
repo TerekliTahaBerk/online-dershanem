@@ -65,7 +65,7 @@ export default async function OdCheckoutThankYouPage({
       <main
         id="main-content"
         tabIndex={-1}
-        className="min-h-screen bg-[var(--site-bg-warm)] py-16"
+        className="min-h-screen bg-(--site-bg-warm) py-16"
       >
         <div className="px-4">
           {!order && (

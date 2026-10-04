@@ -12,7 +12,7 @@ export default async function AdminMfaEnrollPage() {
     redirect("/giris/mfa");
   return (
     <main className="mx-auto flex min-h-dvh max-w-lg items-center px-4 py-8 sm:px-5 sm:py-12">
-      <section className="w-full rounded-3xl border bg-white p-5 shadow-sm sm:p-7">
+      <section className="w-full rounded-3xl border bg-white p-5 shadow-xs sm:p-7">
         <p className="text-sm font-bold uppercase tracking-wider text-emerald-700">
           Zorunlu kurulum
         </p>

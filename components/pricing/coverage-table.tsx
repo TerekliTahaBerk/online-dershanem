@@ -153,7 +153,7 @@ export function CoverageTable() {
                   <tr key={r.label} className="border-b border-dc-line-soft">
                     <th
                       scope="row"
-                      className="py-3.5 pr-6 text-left text-[15px] font-medium text-[var(--pd-ink-3)]"
+                      className="py-3.5 pr-6 text-left text-[15px] font-medium text-(--pd-ink-3)"
                     >
                       {r.label}
                     </th>

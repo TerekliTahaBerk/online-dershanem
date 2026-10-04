@@ -92,13 +92,13 @@ export default async function NotificationsPage({
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-[var(--brand-olive)]">
+        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
           <Bell size={15} /> Bildirim merkezi
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-[1.25] tracking-[-0.02em] text-[var(--site-ink)]">
+        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-(--site-ink)">
           Önemli gelişmeler tek yerde.
         </h1>
-        <p className="mt-2 text-sm text-[var(--site-body)]">
+        <p className="mt-2 text-sm text-(--site-body)">
           Ders, çalışma ve operasyon hareketlerini kaçırmadan takip edin.
         </p>
       </header>
@@ -111,7 +111,7 @@ export default async function NotificationsPage({
             key={item.value}
             href={href({ type: item.value })}
             aria-current={selectedType === item.value ? "page" : undefined}
-            className={`min-w-fit rounded-full px-3 py-2 text-xs font-bold ${selectedType === item.value ? "bg-[var(--brand-olive)] text-white" : "border border-[var(--site-line)] bg-white text-[var(--site-body)]"}`}
+            className={`min-w-fit rounded-full px-3 py-2 text-xs font-bold ${selectedType === item.value ? "bg-(--brand-olive) text-white" : "border border-(--site-line) bg-white text-(--site-body)"}`}
           >
             {item.label}
           </Link>
@@ -121,14 +121,14 @@ export default async function NotificationsPage({
         <Link
           href={href({ status: "all" })}
           aria-current={selectedStatus === "all" ? "page" : undefined}
-          className={`rounded-full px-3 py-1.5 text-[11px] font-bold ${selectedStatus === "all" ? "bg-[var(--site-ink)] text-white" : "border border-[var(--site-line)] bg-white"}`}
+          className={`rounded-full px-3 py-1.5 text-[11px] font-bold ${selectedStatus === "all" ? "bg-(--site-ink) text-white" : "border border-(--site-line) bg-white"}`}
         >
           Tüm durumlar
         </Link>
         <Link
           href={href({ status: "unread" })}
           aria-current={selectedStatus === "unread" ? "page" : undefined}
-          className={`rounded-full px-3 py-1.5 text-[11px] font-bold ${selectedStatus === "unread" ? "bg-[var(--site-ink)] text-white" : "border border-[var(--site-line)] bg-white"}`}
+          className={`rounded-full px-3 py-1.5 text-[11px] font-bold ${selectedStatus === "unread" ? "bg-(--site-ink) text-white" : "border border-(--site-line) bg-white"}`}
         >
           Okunmamış ({unreadTotal})
         </Link>
@@ -166,7 +166,7 @@ export default async function NotificationsPage({
               >
                 ← Önceki
               </Link>
-              <span className="text-xs font-bold text-[var(--site-muted)]">
+              <span className="text-xs font-bold text-(--site-muted)">
                 {page}/{totalPages}
               </span>
               <Link

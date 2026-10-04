@@ -120,29 +120,29 @@ export function CartCheckoutClient({
 
   if (!loaded) {
     return (
-      <div className="h-40 animate-pulse rounded-[24px] bg-[var(--site-bg-warm)]" />
+      <div className="h-40 animate-pulse rounded-od-xl bg-(--site-bg-warm)" />
     );
   }
 
   if (!snapshot || snapshot.items.length === 0) {
     return (
-      <div className="rounded-[24px] border border-[var(--site-line)] bg-white p-10 text-center">
-        <div className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-[16px] bg-[var(--brand-orange-soft)]">
+      <div className="rounded-od-xl border border-(--site-line) bg-white p-10 text-center">
+        <div className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-od-lg bg-(--brand-orange-soft)">
           <ShoppingBag
             size={28}
-            className="text-[var(--brand-orange-ink)]"
+            className="text-(--brand-orange-ink)"
             strokeWidth={1.6}
           />
         </div>
-        <h1 className="mt-5 font-display text-[26px] text-[var(--site-ink)]">
+        <h1 className="mt-5 font-display text-[26px] text-(--site-ink)">
           Sepet bilgisi bulunamadı.
         </h1>
-        <p className="mt-2 text-[14px] text-[var(--site-body)]">
+        <p className="mt-2 text-[14px] text-(--site-body)">
           Lütfen önce sepetinize ürün ekleyin.
         </p>
         <Link
           href="/sepet"
-          className="mt-6 inline-flex min-h-12 items-center rounded-full bg-[var(--brand-orange)] px-6 py-3 text-[14px] font-semibold text-white shadow-[0_14px_30px_-12px_rgba(44,58,32,0.5)] transition-colors hover:bg-[var(--brand-orange-hover)]"
+          className="mt-6 inline-flex min-h-12 items-center rounded-full bg-(--brand-orange) px-6 py-3 text-[14px] font-semibold text-white shadow-[0_14px_30px_-12px_rgba(44,58,32,0.5)] transition-colors hover:bg-(--brand-orange-hover)"
         >
           Sepete Dön
         </Link>

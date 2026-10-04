@@ -1,0 +1,9 @@
+{
+  "name": "@online-dershanem/next-glob-compat",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.cjs",
+  "dependencies": {
+    "tinyglobby": "0.2.17"
+  }
+}

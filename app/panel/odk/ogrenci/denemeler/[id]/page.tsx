@@ -45,18 +45,18 @@ export default async function OdkStudentExamDetailPage({
     >
       <Link
         href="/panel/odk/ogrenci/denemeler"
-        className="inline-flex items-center gap-2 text-sm font-bold text-[var(--site-body)]"
+        className="inline-flex items-center gap-2 text-sm font-bold text-(--site-body)"
       >
         <ArrowLeft size={15} /> Denemeler
       </Link>
       <header className="mt-6">
-        <p className="text-xs font-extrabold uppercase tracking-[.1em] text-[var(--brand-olive)]">
+        <p className="text-xs font-extrabold uppercase tracking-widest text-(--brand-olive)">
           Online Deneme Kulübüm
         </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-[-.04em] text-[var(--site-ink)]">
+        <h1 className="mt-3 text-3xl font-semibold tracking-[-.04em] text-(--site-ink)">
           {exam.title}
         </h1>
-        <p className="mt-3 text-sm text-[var(--site-body)]">
+        <p className="mt-3 text-sm text-(--site-body)">
           {startWindowCopy}
         </p>
       </header>
@@ -79,11 +79,11 @@ export default async function OdkStudentExamDetailPage({
           },
         ].map(({ icon: Icon, label, value }) => (
           <article key={label} className="panel-metric-card">
-            <Icon size={18} className="text-[var(--brand-olive)]" />
-            <p className="mt-3 font-extrabold text-[var(--site-ink)]">
+            <Icon size={18} className="text-(--brand-olive)" />
+            <p className="mt-3 font-extrabold text-(--site-ink)">
               {value}
             </p>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">{label}</p>
+            <p className="mt-1 text-xs text-(--site-muted)">{label}</p>
           </article>
         ))}
       </section>

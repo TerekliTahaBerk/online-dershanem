@@ -135,7 +135,7 @@ export function AdminAssignmentPanel({
         </span>
         <div>
           <h2 className="text-sm font-extrabold">7. Öğrenci atama</h2>
-          <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+          <p className="mt-1 text-xs leading-5 text-(--site-muted)">
             Atama anında snapshot alınır; öğrenci sonra grup değiştirse eski
             deneme kaydı kaybolmaz. Aktif atama:{" "}
             {assignments.filter((item) => item.isActive).length}
@@ -151,7 +151,7 @@ export function AdminAssignmentPanel({
                 <button
                   key={item}
                   type="button"
-                  className={`rounded-xl px-3 py-2 text-xs font-extrabold ${mode === item ? "bg-[var(--brand-olive)] text-white" : "bg-[var(--site-bg-warm)]"}`}
+                  className={`rounded-xl px-3 py-2 text-xs font-extrabold ${mode === item ? "bg-(--brand-olive) text-white" : "bg-(--site-bg-warm)"}`}
                   onClick={() => setMode(item)}
                 >
                   {item === "GROUP"
@@ -257,7 +257,7 @@ export function AdminAssignmentPanel({
           </button>
         </div>
       ) : (
-        <p className="mt-3 text-xs text-[var(--site-muted)]">
+        <p className="mt-3 text-xs text-(--site-muted)">
           Deneme arşivlendikten sonra yeni atama yapılamaz; mevcut snapshot’lar
           korunur.
         </p>
@@ -266,7 +266,7 @@ export function AdminAssignmentPanel({
       {message ? (
         <p
           role={message.error ? "alert" : "status"}
-          className={`mt-3 rounded-xl p-3 text-xs font-bold ${message.error ? "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]" : "bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]"}`}
+          className={`mt-3 rounded-xl p-3 text-xs font-bold ${message.error ? "bg-(--pd-pastel-blush-soft) text-(--pd-pastel-blush-ink)" : "bg-(--brand-olive-soft) text-(--brand-olive)"}`}
         >
           {message.text}
         </p>
@@ -297,7 +297,7 @@ export function AdminAssignmentPanel({
             <ResponsiveDataTableRow key={item.id}>
               <ResponsiveDataTableCell label="Öğrenci">
                 <strong>{item.studentName || "Öğrenci"}</strong>
-                <p className="text-[10px] text-[var(--site-muted)]">
+                <p className="text-[10px] text-(--site-muted)">
                   {item.studentEmail}
                 </p>
               </ResponsiveDataTableCell>
@@ -315,12 +315,12 @@ export function AdminAssignmentPanel({
         </ResponsiveDataTableBody>
       </ResponsiveDataTable>
       {!assignments.length ? (
-        <p className="mt-3 text-xs text-[var(--site-muted)]">
+        <p className="mt-3 text-xs text-(--site-muted)">
           Henüz atama yok.
         </p>
       ) : null}
       {assignments.length > 50 ? (
-        <p className="mt-2 text-[10px] text-[var(--site-muted)]">
+        <p className="mt-2 text-[10px] text-(--site-muted)">
           İlk 50 kayıt gösteriliyor · toplam {assignments.length}
         </p>
       ) : null}

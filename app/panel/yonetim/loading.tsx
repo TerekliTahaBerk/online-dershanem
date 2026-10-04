@@ -1,7 +1,7 @@
 export default function AdminLoading() {
   return (
     <main
-      className="min-h-screen bg-[var(--site-bg-warm)] px-4 py-8 sm:px-6 lg:px-10"
+      className="min-h-screen bg-(--site-bg-warm) px-4 py-8 sm:px-6 lg:px-10"
       aria-busy="true"
       aria-label="Yönetim paneli yükleniyor"
     >

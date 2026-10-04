@@ -166,7 +166,7 @@ export default async function ParentCoachingPage({
         ) : null}
       </dl>
       {coaching.sharedNote ? (
-        <p className="mt-3.5 rounded-[10px] border border-dc-line-soft bg-[#FCFDFC] px-3.5 py-3 text-[14px] leading-[1.6] text-dc-ink-body">
+        <p className="mt-3.5 rounded-od border border-dc-line-soft bg-[#FCFDFC] px-3.5 py-3 text-[14px] leading-[1.6] text-dc-ink-body">
           {coaching.sharedNote}
         </p>
       ) : null}

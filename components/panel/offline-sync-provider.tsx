@@ -359,7 +359,7 @@ export function OfflineSyncProvider({
       {!online || queuedCount || conflictCount ? (
         <div
           role="status"
-          className={`sticky top-0 z-[60] flex flex-wrap items-center justify-center gap-2 px-4 py-2 text-xs font-bold ${conflictCount ? "bg-amber-100 text-amber-950" : "bg-sky-100 text-sky-950"}`}
+          className={`sticky top-0 z-60 flex flex-wrap items-center justify-center gap-2 px-4 py-2 text-xs font-bold ${conflictCount ? "bg-amber-100 text-amber-950" : "bg-sky-100 text-sky-950"}`}
         >
           {!online ? (
             <>

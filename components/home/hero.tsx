@@ -9,10 +9,10 @@ export function HomeHero() {
   return (
     <section className="site-container pb-14 pt-16 sm:pb-[72px] sm:pt-[88px]">
       <div className="mx-auto flex max-w-[780px] flex-col items-center text-center">
-        <h1 className="font-display text-[length:var(--public-display)] leading-[1.08] tracking-[-0.03em] text-dc-ink [text-wrap:balance]">
+        <h1 className="font-display text-(length:--public-display) leading-[1.08] tracking-[-0.03em] text-dc-ink text-balance">
           Canlı derste öğren. Haftanı planla. Denemeyle ölç.
         </h1>
-        <p className="mt-5 max-w-[560px] text-[17px] leading-[1.65] text-dc-ink-body [text-wrap:pretty] sm:text-[18.5px]">
+        <p className="mt-5 max-w-[560px] text-[17px] leading-[1.65] text-dc-ink-body text-pretty sm:text-[18.5px]">
           LGS ve YKS için canlı ders, eğitim koçluğu ve online deneme. İhtiyacın
           olan ürünü tek başına veya birlikte kullan.
         </p>

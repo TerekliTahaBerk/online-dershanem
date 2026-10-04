@@ -34,7 +34,7 @@ export default async function AdminStudent360Page({
         <div className="mt-3 flex flex-wrap gap-2">
           <Link
             href={`/panel/yonetim/kullanicilar/${bundle.access.studentUserId}`}
-            className="rounded-[10px] border border-[#DDE4E0] bg-white px-3.5 py-2 text-[12.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
+            className="rounded-od border border-[#DDE4E0] bg-white px-3.5 py-2 text-[12.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
           >
             Kişi detayını aç
           </Link>
@@ -48,7 +48,7 @@ export default async function AdminStudent360Page({
 
         <form
           action={assignCoach}
-          className="mt-4 rounded-[10px] border border-dc-line-soft bg-white p-3.5"
+          className="mt-4 rounded-od border border-dc-line-soft bg-white p-3.5"
         >
           <p className="text-[12.5px] font-bold text-dc-ink">
             {bundle.currentCoachId ? "Koç devret" : "Koç ata"}
@@ -99,7 +99,7 @@ export default async function AdminStudent360Page({
             <button
               type="submit"
               disabled={bundle.coachOptions.length === 0}
-              className="rounded-[10px] border border-[#DDE4E0] bg-white px-3 py-2 text-[12px] font-bold text-dc-ink transition-colors hover:border-dc-brand disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-od border border-[#DDE4E0] bg-white px-3 py-2 text-[12px] font-bold text-dc-ink transition-colors hover:border-dc-brand disabled:cursor-not-allowed disabled:opacity-60"
             >
               {bundle.currentCoachId ? "Devret" : "Koç ata"}
             </button>
@@ -122,7 +122,7 @@ export default async function AdminStudent360Page({
                   <input type="hidden" name="orderId" value={order.id} />
                   <button
                     type="submit"
-                    className="rounded-[10px] border border-[#DDE4E0] bg-white px-3 py-2 text-[12px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
+                    className="rounded-od border border-[#DDE4E0] bg-white px-3 py-2 text-[12px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
                   >
                     {order.packageName} erişimini yeniden dene
                   </button>

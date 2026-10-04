@@ -102,7 +102,7 @@ function ExamSection({ title, exams }: { title: string; exams: ExamItem[] }) {
   if (!exams.length) return null;
   return (
     <section className="mt-8">
-      <h2 className="text-sm font-extrabold uppercase tracking-[.08em] text-[var(--site-muted)]">
+      <h2 className="text-sm font-extrabold uppercase tracking-[.08em] text-(--site-muted)">
         {title}
       </h2>
       <div className="mt-3 space-y-3">
@@ -113,7 +113,7 @@ function ExamSection({ title, exams }: { title: string; exams: ExamItem[] }) {
             <Link
               key={exam.id}
               href={info.href}
-              className="flex flex-col gap-4 rounded-3xl border border-[var(--site-line)] bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-4 rounded-3xl border border-(--site-line) bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex min-w-0 gap-4">
                 <span
@@ -123,14 +123,14 @@ function ExamSection({ title, exams }: { title: string; exams: ExamItem[] }) {
                 </span>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="break-words font-extrabold text-[var(--site-ink)]">
+                    <h3 className="wrap-break-word font-extrabold text-(--site-ink)">
                       {exam.title}
                     </h3>
                     <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-black text-slate-600">
                       {exam.family}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm leading-6 text-[var(--site-body)]">
+                  <p className="mt-1 text-sm leading-6 text-(--site-body)">
                     {examMeta(exam)}
                   </p>
                 </div>
@@ -141,7 +141,7 @@ function ExamSection({ title, exams }: { title: string; exams: ExamItem[] }) {
                 >
                   {info.label}
                 </span>
-                <span className="text-xs font-bold text-[var(--brand-olive)]">
+                <span className="text-xs font-bold text-(--brand-olive)">
                   {info.actionLabel}
                 </span>
               </div>
@@ -173,20 +173,20 @@ export default async function OdkStudentExamsPage() {
       product="ODK"
     >
       <header>
-        <p className="text-xs font-extrabold uppercase tracking-[.1em] text-[var(--brand-olive)]">
+        <p className="text-xs font-extrabold uppercase tracking-widest text-(--brand-olive)">
           Online Deneme Kulübüm
         </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-[-.04em] text-[var(--site-ink)]">
+        <h1 className="mt-3 text-3xl font-semibold tracking-[-.04em] text-(--site-ink)">
           Denemeler
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--site-body)]">
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-(--site-body)">
           Devam eden denemeni, başlayabileceğin denemeleri, yaklaşan sınavlarını
           ve açıklanan sonuçlarını buradan yönetebilirsin.
         </p>
       </header>
 
       {exams.length === 0 ? (
-        <section className="mt-8 rounded-3xl border border-dashed border-[var(--site-line)] bg-white p-8 text-center text-sm text-[var(--site-muted)]">
+        <section className="mt-8 rounded-3xl border border-dashed border-(--site-line) bg-white p-8 text-center text-sm text-(--site-muted)">
           Henüz yayınlanmış bir denemen yok.
         </section>
       ) : (

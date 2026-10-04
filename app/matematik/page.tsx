@@ -142,16 +142,16 @@ export default function MathematicsHubPage() {
       />
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
-        <section className="border-b border-[var(--site-line)] bg-[var(--site-bg-warm)]">
+        <section className="border-b border-(--site-line) bg-(--site-bg-warm)">
           <div className="site-container grid gap-10 py-16 sm:py-20 lg:grid-cols-[1.08fr_.92fr] lg:items-center">
             <div>
               <span className="site-eyebrow">LGS · TYT · AYT matematik</span>
-              <h1 className="mt-4 max-w-3xl font-display text-[clamp(2.5rem,5.6vw,4.5rem)] leading-[1.02] tracking-[-0.035em] text-[var(--site-ink)]">
+              <h1 className="mt-4 max-w-3xl font-display text-[clamp(2.5rem,5.6vw,4.5rem)] leading-[1.02] tracking-[-0.035em] text-(--site-ink)">
                 Online matematik dersinde öğrenci{" "}
                 çözümünü göstermeli, sadece
                 dinlememeli.
               </h1>
-              <p className="mt-6 max-w-2xl text-[17px] leading-8 text-[var(--site-body)]">
+              <p className="mt-6 max-w-2xl text-[17px] leading-8 text-(--site-body)">
                 En fazla dört öğrencilik canlı matematik dersinde öğrenci
                 sorusunu sorar, çözümünü gösterir ve ders sonrasında LGS veya
                 YKS hedefi için ne çalışacağını bilir.
@@ -171,13 +171,13 @@ export default function MathematicsHubPage() {
                   Ücretsiz ön görüşme
                 </LeadFunnelTrigger>
               </div>
-              <p className="mt-5 text-[13px] font-semibold text-[var(--site-muted)]">
+              <p className="mt-5 text-[13px] font-semibold text-(--site-muted)">
                 Ayda {lessonPackage.lessonsPerMonth} × {lessonPackage.lessonDurationMinutes} dakika · {lessonPackage.quota} · {lessonPackage.priceLabel} · Taahhütsüz
               </p>
             </div>
 
             <aside
-              className="rounded-[28px] border border-[var(--site-line)] bg-white p-7 shadow-[0_38px_85px_-58px_rgba(17,19,17,.35)] sm:p-9"
+              className="rounded-[28px] border border-(--site-line) bg-white p-7 shadow-[0_38px_85px_-58px_rgba(17,19,17,.35)] sm:p-9"
               aria-label="Ders sonrası çalışma akışı"
             >
               <p className="site-kicker">Dört adımda ders akışı</p>
@@ -190,12 +190,12 @@ export default function MathematicsHubPage() {
                 ].map(([number, text]) => (
                   <li
                     key={number}
-                    className="flex items-center gap-4 rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4"
+                    className="flex items-center gap-4 rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4"
                   >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--brand-olive)] text-xs font-bold text-white">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-(--brand-olive) text-xs font-bold text-white">
                       {number}
                     </span>
-                    <span className="text-[14.5px] font-semibold leading-6 text-[var(--site-ink)]">
+                    <span className="text-[14.5px] font-semibold leading-6 text-(--site-ink)">
                       {text}
                     </span>
                   </li>
@@ -208,10 +208,10 @@ export default function MathematicsHubPage() {
         <section className="site-container py-16 sm:py-24">
           <div className="max-w-3xl">
             <span className="site-eyebrow">Matematikte ilk adım</span>
-            <h2 className="mt-4 font-display text-[clamp(2rem,4vw,3.2rem)] leading-tight tracking-[-.025em] text-[var(--site-ink)]">
+            <h2 className="mt-4 font-display text-[clamp(2rem,4vw,3.2rem)] leading-tight tracking-tight text-(--site-ink)">
               Daha çok soru değil, eksiğe göre çalışma.
             </h2>
-            <p className="mt-5 text-[16px] leading-8 text-[var(--site-body)]">
+            <p className="mt-5 text-[16px] leading-8 text-(--site-body)">
               Matematikte ilerleme tek bir yönteme bağlı değildir. Öğrencinin
               temel bilgisi, soru dili, işlem alışkanlığı ve süre kullanımı ayrı
               ayrı görülmeli; haftalık plan bu ihtiyaca göre sadeleşmelidir.
@@ -221,20 +221,20 @@ export default function MathematicsHubPage() {
             {learningPaths.map(({ Icon, title, text, href, label }) => (
               <article
                 key={title}
-                className="flex flex-col rounded-[24px] border border-[var(--site-line)] bg-white p-6 sm:p-7"
+                className="flex flex-col rounded-od-xl border border-(--site-line) bg-white p-6 sm:p-7"
               >
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]">
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-(--brand-olive-soft) text-(--brand-olive)">
                   <Icon size={20} aria-hidden="true" />
                 </span>
-                <h3 className="mt-5 font-display text-[22px] leading-tight text-[var(--site-ink)]">
+                <h3 className="mt-5 font-display text-[22px] leading-tight text-(--site-ink)">
                   {title}
                 </h3>
-                <p className="mt-3 flex-1 text-[14.5px] leading-7 text-[var(--site-body)]">
+                <p className="mt-3 flex-1 text-[14.5px] leading-7 text-(--site-body)">
                   {text}
                 </p>
                 <Link
                   href={href}
-                  className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[var(--brand-olive)] hover:underline"
+                  className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-(--brand-olive) hover:underline"
                 >
                   {label}
                   <ArrowRight size={15} aria-hidden="true" />
@@ -244,22 +244,22 @@ export default function MathematicsHubPage() {
           </div>
         </section>
 
-        <section className="border-y border-[var(--site-line)] bg-[var(--site-bg-warm)]">
+        <section className="border-y border-(--site-line) bg-(--site-bg-warm)">
           <div className="site-container py-16 sm:py-24">
             <div className="grid gap-5 md:grid-cols-2">
               <Link
                 href="/lgs"
-                className="group rounded-[26px] border border-[var(--site-line)] bg-white p-7 transition-colors hover:border-[var(--brand-olive)] sm:p-9"
+                className="group rounded-[26px] border border-(--site-line) bg-white p-7 transition-colors hover:border-(--brand-olive) sm:p-9"
               >
                 <p className="site-kicker">8. sınıf</p>
-                <h2 className="mt-4 font-display text-[clamp(1.8rem,3.5vw,2.6rem)] leading-tight text-[var(--site-ink)]">
+                <h2 className="mt-4 font-display text-[clamp(1.8rem,3.5vw,2.6rem)] leading-tight text-(--site-ink)">
                   LGS matematik dersi
                 </h2>
-                <p className="mt-4 max-w-lg text-[15px] leading-7 text-[var(--site-body)]">
+                <p className="mt-4 max-w-lg text-[15px] leading-7 text-(--site-body)">
                   Yeni nesil soru, temel eksik ve deneme geri bildirimini
                   öğrencinin seviyesine göre ele alın.
                 </p>
-                <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[var(--brand-olive)]">
+                <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-(--brand-olive)">
                   LGS matematiği incele{" "}
                   <ArrowRight
                     size={16}
@@ -270,17 +270,17 @@ export default function MathematicsHubPage() {
               </Link>
               <Link
                 href="/yks"
-                className="group rounded-[26px] border border-[var(--site-line)] bg-white p-7 transition-colors hover:border-[var(--brand-olive)] sm:p-9"
+                className="group rounded-[26px] border border-(--site-line) bg-white p-7 transition-colors hover:border-(--brand-olive) sm:p-9"
               >
                 <p className="site-kicker">TYT ve AYT</p>
-                <h2 className="mt-4 font-display text-[clamp(1.8rem,3.5vw,2.6rem)] leading-tight text-[var(--site-ink)]">
+                <h2 className="mt-4 font-display text-[clamp(1.8rem,3.5vw,2.6rem)] leading-tight text-(--site-ink)">
                   YKS matematik dersi
                 </h2>
-                <p className="mt-4 max-w-lg text-[15px] leading-7 text-[var(--site-body)]">
+                <p className="mt-4 max-w-lg text-[15px] leading-7 text-(--site-body)">
                   TYT hızını, AYT konu derinliğini ve deneme analizini
                   öğrencinin hedefine göre dengeleyin.
                 </p>
-                <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[var(--brand-olive)]">
+                <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-(--brand-olive)">
                   YKS matematiği incele{" "}
                   <ArrowRight
                     size={16}
@@ -296,32 +296,32 @@ export default function MathematicsHubPage() {
         <section className="site-container py-16 sm:py-24">
           <div className="flex items-center gap-3">
             <BookOpen
-              className="text-[var(--brand-olive)]"
+              className="text-(--brand-olive)"
               aria-hidden="true"
             />
             <span className="site-eyebrow">Matematik rehberleri</span>
           </div>
-          <h2 className="mt-4 max-w-3xl font-display text-[clamp(2rem,4vw,3.2rem)] leading-tight tracking-[-.025em] text-[var(--site-ink)]">
+          <h2 className="mt-4 max-w-3xl font-display text-[clamp(2rem,4vw,3.2rem)] leading-tight tracking-tight text-(--site-ink)">
             Öğrencinin ihtiyacına göre okumaya başlayın.
           </h2>
           <div className="mt-10 grid gap-5 lg:grid-cols-2">
             {resourceGroups.map((group) => (
               <article
                 key={group.title}
-                className="rounded-[24px] border border-[var(--site-line)] bg-white p-6 sm:p-8"
+                className="rounded-od-xl border border-(--site-line) bg-white p-6 sm:p-8"
               >
-                <h3 className="font-display text-[24px] text-[var(--site-ink)]">
+                <h3 className="font-display text-[24px] text-(--site-ink)">
                   {group.title}
                 </h3>
-                <p className="mt-3 text-[14.5px] leading-7 text-[var(--site-body)]">
+                <p className="mt-3 text-[14.5px] leading-7 text-(--site-body)">
                   {group.text}
                 </p>
-                <ul className="mt-6 divide-y divide-[var(--site-line)] border-y border-[var(--site-line)]">
+                <ul className="mt-6 divide-y divide-(--site-line) border-y border-(--site-line)">
                   {group.links.map((item) => (
                     <li key={item.href}>
                       <Link
                         href={item.href}
-                        className="group flex min-h-14 items-center justify-between gap-4 py-3 text-[14.5px] font-semibold text-[var(--site-ink)] hover:text-[var(--brand-olive)]"
+                        className="group flex min-h-14 items-center justify-between gap-4 py-3 text-[14.5px] font-semibold text-(--site-ink) hover:text-(--brand-olive)"
                       >
                         {item.label}
                         <ArrowRight
@@ -338,14 +338,14 @@ export default function MathematicsHubPage() {
           </div>
         </section>
 
-        <section className="border-y border-[var(--site-line)] bg-[var(--site-bg-warm)]">
+        <section className="border-y border-(--site-line) bg-(--site-bg-warm)">
           <div className="site-container py-16 sm:py-20">
             <div className="max-w-3xl">
               <span className="site-eyebrow">Ders modeli seçimi</span>
-              <h2 className="mt-4 font-display text-[clamp(2rem,4vw,3rem)] leading-tight text-[var(--site-ink)]">
+              <h2 className="mt-4 font-display text-[clamp(2rem,4vw,3rem)] leading-tight text-(--site-ink)">
                 Online dershane mi, matematik özel ders mi?
               </h2>
-              <p className="mt-4 text-[16px] leading-8 text-[var(--site-body)]">
+              <p className="mt-4 text-[16px] leading-8 text-(--site-body)">
                 Kararı yalnız ders adına göre değil; grup büyüklüğü, canlı
                 etkileşim, ders sonrası yönlendirme ve aile bütçesine göre
                 verin.
@@ -356,7 +356,7 @@ export default function MathematicsHubPage() {
                   iç bağlantı doğrudan hedefe verilir. */}
               <Link
                 href="/urunler/online-dershanem"
-                className="group flex items-center justify-between gap-4 rounded-[20px] border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] hover:border-[var(--brand-olive)]"
+                className="group flex items-center justify-between gap-4 rounded-[20px] border border-(--site-line) bg-white p-5 text-[15px] font-semibold text-(--site-ink) hover:border-(--brand-olive)"
               >
                 Online dershane modelini incele{" "}
                 <ArrowRight
@@ -367,7 +367,7 @@ export default function MathematicsHubPage() {
               </Link>
               <Link
                 href="/online-ozel-ders"
-                className="group flex items-center justify-between gap-4 rounded-[20px] border border-[var(--site-line)] bg-white p-5 text-[15px] font-semibold text-[var(--site-ink)] hover:border-[var(--brand-olive)]"
+                className="group flex items-center justify-between gap-4 rounded-[20px] border border-(--site-line) bg-white p-5 text-[15px] font-semibold text-(--site-ink) hover:border-(--brand-olive)"
               >
                 Online matematik özel dersi karşılaştır{" "}
                 <ArrowRight
@@ -384,23 +384,23 @@ export default function MathematicsHubPage() {
           <div className="grid gap-10 lg:grid-cols-[.8fr_1.2fr]">
             <div>
               <span className="site-eyebrow">Sık sorulanlar</span>
-              <h2 className="mt-4 font-display text-[clamp(2rem,4vw,3rem)] leading-tight text-[var(--site-ink)]">
+              <h2 className="mt-4 font-display text-[clamp(2rem,4vw,3rem)] leading-tight text-(--site-ink)">
                 Online matematik dersi hakkında.
               </h2>
             </div>
-            <div className="divide-y divide-[var(--site-line)] border-y border-[var(--site-line)]">
+            <div className="divide-y divide-(--site-line) border-y border-(--site-line)">
               {mathFaqs.map((item) => (
                 <details key={item.q} className="group py-1">
-                  <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 py-4 text-[15.5px] font-semibold text-[var(--site-ink)] marker:content-none">
+                  <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 py-4 text-[15.5px] font-semibold text-(--site-ink) marker:content-none">
                     {item.q}
                     <span
                       aria-hidden="true"
-                      className="text-xl font-normal text-[var(--brand-olive)] group-open:rotate-45"
+                      className="text-xl font-normal text-(--brand-olive) group-open:rotate-45"
                     >
                       +
                     </span>
                   </summary>
-                  <p className="max-w-2xl pb-6 pr-8 text-[14.5px] leading-7 text-[var(--site-body)]">
+                  <p className="max-w-2xl pb-6 pr-8 text-[14.5px] leading-7 text-(--site-body)">
                     {item.a}
                   </p>
                 </details>
@@ -410,7 +410,7 @@ export default function MathematicsHubPage() {
         </section>
 
         <section className="site-container pb-20 sm:pb-28">
-          <div className="rounded-[28px] border border-[var(--site-line)] bg-[var(--brand-olive)] p-8 text-white sm:p-12">
+          <div className="rounded-[28px] border border-(--site-line) bg-(--brand-olive) p-8 text-white sm:p-12">
             <div className="grid gap-7 sm:grid-cols-[1fr_auto] sm:items-center">
               <div>
                 <h2 className="font-display text-[clamp(2rem,4vw,3rem)] leading-tight">
@@ -424,7 +424,7 @@ export default function MathematicsHubPage() {
               <LeadFunnelTrigger
                 source="matematik_hub_final_cta"
                 eventName="landing_cta_click"
-                className="site-btn bg-white text-[var(--brand-olive)] hover:bg-[var(--site-bg-warm)]"
+                className="site-btn bg-white text-(--brand-olive) hover:bg-(--site-bg-warm)"
               >
                 Ücretsiz görüşme
               </LeadFunnelTrigger>

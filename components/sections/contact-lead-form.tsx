@@ -187,17 +187,17 @@ export function ContactLeadForm() {
     const message = buildMessage(form);
     return (
       <div
-        className="rounded-[24px] border border-[var(--site-line)] bg-white p-8 sm:p-10"
+        className="rounded-od-xl border border-(--site-line) bg-white p-8 sm:p-10"
         role="status"
         aria-live="polite"
       >
-        <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[var(--brand-orange-soft)] text-[var(--brand-orange-ink)]">
+        <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-(--brand-orange-soft) text-(--brand-orange-ink)">
           <Check size={24} strokeWidth={2.2} aria-hidden="true" />
         </span>
-        <h2 className="mt-5 font-display text-[26px] leading-tight text-[var(--site-ink)]">
+        <h2 className="mt-5 font-display text-[26px] leading-tight text-(--site-ink)">
           Talebiniz bize ulaştı.
         </h2>
-        <p className="mt-2 max-w-md text-[14.5px] leading-7 text-[var(--site-body)]">
+        <p className="mt-2 max-w-md text-[14.5px] leading-7 text-(--site-body)">
           Talebinizi aldık. Ekibimiz tercih ettiğiniz kanaldan size dönecek;
           isterseniz aşağıdan doğrudan da yazabilirsiniz.
         </p>
@@ -213,7 +213,7 @@ export function ContactLeadForm() {
           </a>
           <a
             href={`mailto:${contact.email}?subject=${encodeURIComponent("Ön görüşme talebi — Online Dershanem")}&body=${encodeURIComponent(message)}`}
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--site-line)] bg-white px-6 py-3 text-[14px] font-semibold text-[var(--site-ink)] transition hover:bg-[var(--site-bg-warm)]"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-(--site-line) bg-white px-6 py-3 text-[14px] font-semibold text-(--site-ink) transition hover:bg-(--site-bg-warm)"
           >
             <Mail size={16} aria-hidden="true" />
             E-posta ile gönder
@@ -225,7 +225,7 @@ export function ContactLeadForm() {
             setForm(initial);
             setStatus("idle");
           }}
-          className="mt-5 text-[13px] text-[var(--site-body)] underline-offset-2 hover:text-[var(--site-ink)] hover:underline"
+          className="mt-5 text-[13px] text-(--site-body) underline-offset-2 hover:text-(--site-ink) hover:underline"
         >
           Yeni talep oluştur
         </button>
@@ -238,12 +238,12 @@ export function ContactLeadForm() {
       ref={formRef}
       onSubmit={handleSubmit}
       noValidate
-      className="rounded-[24px] border border-[var(--site-line)] bg-white p-7 sm:p-9"
+      className="rounded-od-xl border border-(--site-line) bg-white p-7 sm:p-9"
     >
-      <h2 className="font-display text-[26px] leading-tight text-[var(--site-ink)] sm:text-[30px]">
+      <h2 className="font-display text-[26px] leading-tight text-(--site-ink) sm:text-[30px]">
         Kısa ön görüşme talebi
       </h2>
-      <p className="mt-2 text-[14px] leading-7 text-[var(--site-body)]">
+      <p className="mt-2 text-[14px] leading-7 text-(--site-body)">
         Bilgilerinizi paylaşırsanız tercih ettiğiniz kanaldan size döneriz. Bu
         form bir ödeme adımı değildir.
       </p>
@@ -391,7 +391,7 @@ export function ContactLeadForm() {
       <div className="mt-6">
         <label
           htmlFor="kvkk"
-          className="flex items-start gap-3 text-[13.5px] leading-6 text-[var(--site-body)]"
+          className="flex items-start gap-3 text-[13.5px] leading-6 text-(--site-body)"
         >
           <input
             id="kvkk"
@@ -402,12 +402,12 @@ export function ContactLeadForm() {
             aria-required="true"
             aria-invalid={!!errors.kvkk}
             aria-describedby={errors.kvkk ? "kvkk-error" : undefined}
-            className="mt-0.5 h-4 w-4 shrink-0 rounded border-[var(--site-line)] accent-[var(--brand-orange)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-orange)]"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded-sm border-(--site-line) accent-(--brand-orange) focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--brand-orange)"
           />
           <span>
             <Link
               href="/kvkk"
-              className="font-medium text-[var(--brand-orange-ink)] underline-offset-2 hover:underline"
+              className="font-medium text-(--brand-orange-ink) underline-offset-2 hover:underline"
             >
               KVKK Aydınlatma Metni
             </Link>{" "}
@@ -450,7 +450,7 @@ export function ContactLeadForm() {
       <button
         type="submit"
         disabled={status === "loading"}
-        className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--brand-orange)] px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_30px_-12px_rgba(44,58,32,0.5)] transition hover:bg-[var(--brand-orange-hover)] disabled:opacity-60 sm:w-auto sm:px-8"
+        className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-(--brand-orange) px-6 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_30px_-12px_rgba(44,58,32,0.5)] transition hover:bg-(--brand-orange-hover) disabled:opacity-60 sm:w-auto sm:px-8"
       >
         {status === "loading" ? "Hazırlanıyor…" : "Ön görüşme talebi gönder"}
       </button>
@@ -475,7 +475,7 @@ function Field({
     <div>
       <label
         htmlFor={id}
-        className="block text-[13px] font-medium text-[var(--site-ink)]"
+        className="block text-[13px] font-medium text-(--site-ink)"
       >
         {label}
         {required ? <span className="text-rose-600"> *</span> : null}
@@ -496,9 +496,9 @@ function Field({
 }
 
 function inputClass(hasError: boolean): string {
-  return `w-full rounded-2xl border px-4 py-2.5 text-[14.5px] text-[var(--site-ink)] transition-[border-color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-orange)] focus-visible:ring-offset-1 ${
+  return `w-full rounded-2xl border px-4 py-2.5 text-[14.5px] text-(--site-ink) transition-[border-color,background-color,box-shadow] duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-(--brand-orange) focus-visible:ring-offset-1 ${
     hasError
       ? "border-rose-400 bg-rose-50 focus-visible:ring-rose-400/20"
-      : "border-[var(--site-line)] bg-[var(--site-bg-warm)] hover:border-[var(--brand-orange)]/40"
+      : "border-(--site-line) bg-(--site-bg-warm) hover:border-(--brand-orange)/40"
   }`;
 }

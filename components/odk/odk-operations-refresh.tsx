@@ -42,7 +42,7 @@ export function OdkOperationsRefresh({
   }, [intervalSeconds, router]);
 
   return (
-    <div className="flex flex-wrap items-center gap-2 text-[10.5px] text-[var(--site-muted)]">
+    <div className="flex flex-wrap items-center gap-2 text-[10.5px] text-(--site-muted)">
       <span>Son yenileme {time.format(new Date(renderedAt))}</span>
       <span aria-hidden="true">·</span>
       <span>{remaining} sn sonra</span>

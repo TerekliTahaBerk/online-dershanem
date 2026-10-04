@@ -83,7 +83,7 @@ function Chip({
     <Link
       href={href}
       aria-current={active ? "true" : undefined}
-      className={`rounded-[10px] border px-3.5 py-2.5 text-[13.5px] font-semibold transition-colors ${
+      className={`rounded-od border px-3.5 py-2.5 text-[13.5px] font-semibold transition-colors ${
         active
           ? "border-dc-brand bg-dc-brand-soft text-dc-brand-hover"
           : "border-[#DDE4E0] bg-white text-dc-ink hover:border-dc-brand"
@@ -260,7 +260,7 @@ export default async function UsersPage({
           actions={
             <Link
               href="#yeni-hesap"
-              className="rounded-[10px] bg-dc-brand-strong px-[18px] py-[11px] text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+              className="rounded-od bg-dc-brand-strong px-[18px] py-[11px] text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
             >
               Hesap ekle
             </Link>
@@ -330,14 +330,14 @@ export default async function UsersPage({
             name="q"
             defaultValue={q}
             placeholder="Ad, e-posta ya da telefon ara"
-            className="min-w-[240px] rounded-[10px] border border-[#DDE4E0] bg-white px-3.5 py-2.5 text-[14px] text-dc-ink placeholder:text-dc-ink-ghost"
+            className="min-w-[240px] rounded-od border border-[#DDE4E0] bg-white px-3.5 py-2.5 text-[14px] text-dc-ink placeholder:text-dc-ink-ghost"
           />
           {rol ? <input type="hidden" name="rol" value={rol} /> : null}
           {urun ? <input type="hidden" name="urun" value={urun} /> : null}
           {durum ? <input type="hidden" name="durum" value={durum} /> : null}
           <button
             type="submit"
-            className="rounded-[10px] border border-[#DDE4E0] bg-white px-3.5 py-2.5 text-[13.5px] font-semibold text-dc-ink transition-colors hover:border-dc-brand"
+            className="rounded-od border border-[#DDE4E0] bg-white px-3.5 py-2.5 text-[13.5px] font-semibold text-dc-ink transition-colors hover:border-dc-brand"
           >
             Ara
           </button>
@@ -548,7 +548,7 @@ export default async function UsersPage({
                 return (
                   <li
                     key={reset.id}
-                    className="flex flex-wrap items-start justify-between gap-3 rounded-[10px] border border-dc-line p-4"
+                    className="flex flex-wrap items-start justify-between gap-3 rounded-od border border-dc-line p-4"
                   >
                     <div className="min-w-[220px] flex-1">
                       <p className="text-[13.5px] font-bold text-dc-ink">
@@ -588,14 +588,14 @@ export default async function UsersPage({
         {/* ── Veli operasyonları ── */}
         <PanelCard className="mt-5">
           <PanelCardTitle>Veli ve ilişki operasyonları</PanelCardTitle>
-          <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-dc-line p-4">
+          <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 rounded-od border border-dc-line p-4">
             <p className="text-[13px] text-dc-ink-muted">
               Veli dizini, öğrenci bağlantıları ve ilişki geçmişi artık ayrı
               operasyon ekranında yönetilir.
             </p>
             <Link
               href="/panel/yonetim/veliler"
-              className="rounded-[10px] bg-dc-brand-strong px-3.5 py-2 text-[12.5px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
+              className="rounded-od bg-dc-brand-strong px-3.5 py-2 text-[12.5px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
             >
               Veliler ekranını aç
             </Link>

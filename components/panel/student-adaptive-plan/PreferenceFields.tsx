@@ -28,8 +28,8 @@ export function PreferenceFields({
               }
               className={`rounded-xl px-2 py-2 text-xs font-bold ${
                 preference.availableDays.includes(day.id)
-                  ? "bg-[var(--brand-olive)] text-white"
-                  : "bg-[var(--site-bg-warm)]"
+                  ? "bg-(--brand-olive) text-white"
+                  : "bg-(--site-bg-warm)"
               }`}
             >
               {day.label}
@@ -115,7 +115,7 @@ export function PreferenceFields({
           <option value="5">Fazla</option>
         </select>
       </label>
-      <label className="mt-4 flex items-start gap-3 rounded-xl bg-[var(--site-bg-warm)] p-3 text-xs">
+      <label className="mt-4 flex items-start gap-3 rounded-xl bg-(--site-bg-warm) p-3 text-xs">
         <input
           type="checkbox"
           checked={preference.planningEnabled}
@@ -128,7 +128,7 @@ export function PreferenceFields({
         />
         <span>
           <strong className="block">Haftalık plan önerisi açık</strong>
-          <span className="mt-1 block text-[var(--site-muted)]">
+          <span className="mt-1 block text-(--site-muted)">
             İstediğin zaman kapatabilirsin; mevcut akademik kayıtların silinmez.
           </span>
         </span>

@@ -112,7 +112,7 @@ export function AccessibilityPreferencesForm({
   return (
     <section className="panel-surface p-5">
       <h2 className="text-lg font-extrabold">Benim panel tercihlerim</h2>
-      <p className="mt-2 text-sm leading-6 text-[var(--site-body)]">
+      <p className="mt-2 text-sm leading-6 text-(--site-body)">
         Bunlar tanı veya sağlık kaydı değildir. İstediğiniz zaman açıp
         kapatabilirsiniz.
       </p>
@@ -126,7 +126,7 @@ export function AccessibilityPreferencesForm({
               key={choice.key}
               aria-pressed={active}
               onClick={() => toggle(choice.key)}
-              className={`min-h-24 rounded-2xl border p-4 text-left ${active ? "border-[var(--brand-olive)] bg-[var(--panel-nav-active)]" : "border-[var(--site-line)] bg-white"}`}
+              className={`min-h-24 rounded-2xl border p-4 text-left ${active ? "border-(--brand-olive) bg-(--panel-nav-active)" : "border-(--site-line) bg-white"}`}
             >
               <span className="flex items-center gap-2 text-sm font-extrabold">
                 <Icon size={17} aria-hidden="true" />
@@ -135,7 +135,7 @@ export function AccessibilityPreferencesForm({
                   {active ? "Açık" : "Kapalı"}
                 </span>
               </span>
-              <span className="mt-2 block text-xs leading-5 text-[var(--site-body)]">
+              <span className="mt-2 block text-xs leading-5 text-(--site-body)">
                 {choice.body}
               </span>
             </button>
@@ -145,7 +145,7 @@ export function AccessibilityPreferencesForm({
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
         <p
           role="status"
-          className="text-sm font-bold text-[var(--brand-olive)]"
+          className="text-sm font-bold text-(--brand-olive)"
         >
           {message}
         </p>

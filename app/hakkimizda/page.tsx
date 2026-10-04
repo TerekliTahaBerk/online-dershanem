@@ -48,7 +48,7 @@ export default function HakkimizdaPage() {
               {/* `<br/>` textContent'e boşluk EKLEMEZ: başlık ekran okuyucuda
                   ve arama sonucunda "yalnızbırakmayan" olarak okunuyordu.
                   Satır kırığı korunur, kelime arası boşluk açıkça yazılır. */}
-              <h1 className="mt-4 font-display text-[length:var(--public-display)] leading-[1.08] tracking-[-0.03em] text-dc-ink">
+              <h1 className="mt-4 font-display text-(length:--public-display) leading-[1.08] tracking-[-0.03em] text-dc-ink">
                 Öğrenciyi yalnız <br />
                 bırakmayan bir sistem.
               </h1>
@@ -88,8 +88,8 @@ export default function HakkimizdaPage() {
         </section>
 
         <section className="mt-16 border-y border-dc-line-soft bg-white">
-          <div className="site-container py-[var(--dc-section-tight)]">
-            <h2 className="font-display text-[length:var(--public-title)] leading-[1.1] tracking-[-0.025em] text-dc-ink">
+          <div className="site-container py-(--dc-section-tight)">
+            <h2 className="font-display text-(length:--public-title) leading-[1.1] tracking-tight text-dc-ink">
               Nasıl çalışıyoruz?
             </h2>
             <div className="mt-8 grid gap-5 md:grid-cols-3">
@@ -110,7 +110,7 @@ export default function HakkimizdaPage() {
           </div>
         </section>
 
-        <section className="site-container pt-[var(--dc-section-tight)]">
+        <section className="site-container pt-(--dc-section-tight)">
           <div className="max-w-[640px]">
             <h2 className="font-display text-[28px] leading-[1.14] tracking-[-0.02em] text-dc-ink sm:text-[36px]">
               Ekip

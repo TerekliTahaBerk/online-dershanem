@@ -17,10 +17,10 @@ const sampleRows = [
 
 export function ParentVisibility() {
   return (
-    <section className="site-container py-[var(--dc-section-tight)]">
+    <section className="site-container py-(--dc-section-tight)">
       <div className="grid items-center gap-10 lg:grid-cols-[1fr_440px] lg:gap-16">
         <div className="max-w-[560px]">
-          <h2 className="font-display text-[28px] leading-[1.12] tracking-[-0.025em] text-dc-ink sm:text-[36px]">
+          <h2 className="font-display text-[28px] leading-[1.12] tracking-tight text-dc-ink sm:text-[36px]">
             Süreci takip et, öğrencinin alanını koru.
           </h2>
           <p className="mt-3.5 text-[16.5px] leading-[1.65] text-dc-ink-body">
@@ -30,7 +30,7 @@ export function ParentVisibility() {
           </p>
         </div>
 
-        <figure className="rounded-dc-card border border-dc-line bg-white p-5 shadow-[var(--dc-shadow-raised)] sm:p-6">
+        <figure className="rounded-dc-card border border-dc-line bg-white p-5 shadow-dc-raised sm:p-6">
           <figcaption className="flex items-center justify-between gap-3 border-b border-dc-line pb-4">
             <span className="text-[15px] font-bold text-dc-ink">
               Haftalık veli özeti
@@ -48,7 +48,7 @@ export function ParentVisibility() {
                 <dt className="text-[13.5px] font-semibold text-dc-ink-muted">
                   {row.label}
                 </dt>
-                <dd className="text-[15px] leading-[1.5] text-dc-ink">
+                <dd className="text-[15px] leading-normal text-dc-ink">
                   {row.value}
                 </dd>
               </div>

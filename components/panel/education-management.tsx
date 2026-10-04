@@ -76,14 +76,14 @@ export function EducationManagement({
       <section>
         <div className="flex items-end justify-between">
           <div>
-            <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+            <h2 className="text-sm font-extrabold text-(--site-ink)">
               Grup yönetimi
             </h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Meta bilgileri güncelle, detay ekrandan öğrenci yönet.
             </p>
           </div>
-          <span className="text-xs font-bold text-[var(--site-muted)]">
+          <span className="text-xs font-bold text-(--site-muted)">
             {groups.length} grup
           </span>
         </div>
@@ -91,7 +91,7 @@ export function EducationManagement({
           {groups.map((group) => (
             <details
               key={group.id}
-              className="group rounded-[14px] border border-[var(--site-line)] bg-white shadow-[var(--panel-card-shadow)]"
+              className="group rounded-[14px] border border-(--site-line) bg-white shadow-(--panel-card-shadow)"
             >
               <summary className="flex cursor-pointer list-none items-center gap-3 p-4">
                 <span
@@ -101,7 +101,7 @@ export function EducationManagement({
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
-                    <span className="truncate text-[13px] font-bold text-[var(--site-ink)]">
+                    <span className="truncate text-[13px] font-bold text-(--site-ink)">
                       {group.name}
                     </span>
                     {!group.isActive ? (
@@ -110,19 +110,19 @@ export function EducationManagement({
                       </span>
                     ) : null}
                   </span>
-                  <span className="mt-1 block truncate text-[11px] text-[var(--site-muted)]">
+                  <span className="mt-1 block truncate text-[11px] text-(--site-muted)">
                     {group.subject} · {group.teacherName} · {group.studentCount}
                     /{group.capacity}
                   </span>
                 </span>
                 <ChevronDown
                   size={16}
-                  className="text-[var(--site-muted)] transition group-open:rotate-180"
+                  className="text-(--site-muted) transition group-open:rotate-180"
                 />
               </summary>
 
               <form
-                className="border-t border-[var(--site-line)] p-4"
+                className="border-t border-(--site-line) p-4"
                 onSubmit={(event) => {
                   event.preventDefault();
                   const data = new FormData(event.currentTarget);
@@ -194,7 +194,7 @@ export function EducationManagement({
             </details>
           ))}
           {!groups.length ? (
-            <p className="rounded-2xl border border-dashed border-[var(--site-line)] p-6 text-center text-sm text-[var(--site-muted)]">
+            <p className="rounded-2xl border border-dashed border-(--site-line) p-6 text-center text-sm text-(--site-muted)">
               Henüz grup yok.
             </p>
           ) : null}
@@ -204,14 +204,14 @@ export function EducationManagement({
       <section>
         <div className="flex items-end justify-between">
           <div>
-            <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+            <h2 className="text-sm font-extrabold text-(--site-ink)">
               Ders yönetimi
             </h2>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Tek ders veya seri kapsamıyla güncelle
             </p>
           </div>
-          <span className="text-xs font-bold text-[var(--site-muted)]">
+          <span className="text-xs font-bold text-(--site-muted)">
             {lessons.length} ders
           </span>
         </div>
@@ -219,17 +219,17 @@ export function EducationManagement({
           {lessons.map((lesson) => (
             <details
               key={lesson.id}
-              className="group rounded-[14px] border border-[var(--site-line)] bg-white shadow-[var(--panel-card-shadow)]"
+              className="group rounded-[14px] border border-(--site-line) bg-white shadow-(--panel-card-shadow)"
             >
               <summary className="flex cursor-pointer list-none items-center gap-3 p-4">
                 <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#e8f2fa] text-[#24527c]">
                   <CalendarClock size={17} />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[13px] font-bold text-[var(--site-ink)]">
+                  <span className="block truncate text-[13px] font-bold text-(--site-ink)">
                     {lesson.title}
                   </span>
-                  <span className="mt-1 block truncate text-[11px] text-[var(--site-muted)]">
+                  <span className="mt-1 block truncate text-[11px] text-(--site-muted)">
                     {new Intl.DateTimeFormat("tr-TR", {
                       day: "numeric",
                       month: "short",
@@ -250,11 +250,11 @@ export function EducationManagement({
                 </span>
                 <ChevronDown
                   size={16}
-                  className="text-[var(--site-muted)] transition group-open:rotate-180"
+                  className="text-(--site-muted) transition group-open:rotate-180"
                 />
               </summary>
               <form
-                className="border-t border-[var(--site-line)] p-4"
+                className="border-t border-(--site-line) p-4"
                 onSubmit={(event) => {
                   event.preventDefault();
                   const data = new FormData(event.currentTarget);
@@ -397,7 +397,7 @@ export function EducationManagement({
                   </select>
                 </div>
                 <div className="mt-3 flex items-center justify-between gap-3">
-                  <p className="text-[10.5px] text-[var(--site-muted)]">
+                  <p className="text-[10.5px] text-(--site-muted)">
                     {lesson.teacherName}
                   </p>
                   <button
@@ -412,7 +412,7 @@ export function EducationManagement({
             </details>
           ))}
           {!lessons.length ? (
-            <p className="rounded-2xl border border-dashed border-[var(--site-line)] p-6 text-center text-sm text-[var(--site-muted)]">
+            <p className="rounded-2xl border border-dashed border-(--site-line) p-6 text-center text-sm text-(--site-muted)">
               Ders bulunmuyor.
             </p>
           ) : null}
@@ -422,7 +422,7 @@ export function EducationManagement({
       {message ? (
         <p
           aria-live="polite"
-          className="xl:col-span-2 rounded-2xl bg-[var(--brand-olive-soft)] px-4 py-3 text-sm font-bold text-[var(--brand-olive)]"
+          className="xl:col-span-2 rounded-2xl bg-(--brand-olive-soft) px-4 py-3 text-sm font-bold text-(--brand-olive)"
         >
           {message}
         </p>

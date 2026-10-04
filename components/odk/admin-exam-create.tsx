@@ -163,7 +163,7 @@ export function AdminExamCreate({
           </span>
           <div>
             <h2 className="text-sm font-extrabold">Yeni deneme</h2>
-            <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+            <p className="mt-1 text-xs leading-5 text-(--site-muted)">
               Legacy ailelerde sabit şablon, katalog ailelerinde müfredat
               bölümleri kullanılır. İçerik ve kazanımlar sonraki adımda eklenir.
             </p>
@@ -251,21 +251,21 @@ export function AdminExamCreate({
           ) : null}
           <label className="panel-field">
             İç kod{" "}
-            <span className="font-medium text-[var(--site-muted)]">
+            <span className="font-medium text-(--site-muted)">
               (isteğe bağlı)
             </span>
             <input name="internalCode" placeholder="ODK-TYT-2026-01" />
           </label>
           <label className="panel-field">
             Yayın / yayıncı{" "}
-            <span className="font-medium text-[var(--site-muted)]">
+            <span className="font-medium text-(--site-muted)">
               (isteğe bağlı)
             </span>
             <input name="publisher" placeholder="Online Dershanem" />
           </label>
           <label className="panel-field sm:col-span-2">
             Açıklama{" "}
-            <span className="font-medium text-[var(--site-muted)]">
+            <span className="font-medium text-(--site-muted)">
               (isteğe bağlı)
             </span>
             <textarea
@@ -277,8 +277,8 @@ export function AdminExamCreate({
           </label>
         </div>
         {template ? (
-          <p className="mt-3 rounded-xl bg-[var(--site-bg-warm)] p-3 text-xs text-[var(--site-body)]">
-            <span className="font-extrabold text-[var(--brand-olive)]">
+          <p className="mt-3 rounded-xl bg-(--site-bg-warm) p-3 text-xs text-(--site-body)">
+            <span className="font-extrabold text-(--brand-olive)">
               {template.label}
             </span>{" "}
             · {templateTotalQuestions(template)} soru · {sectionPreview}
@@ -304,7 +304,7 @@ export function AdminExamCreate({
           </span>
           <div>
             <h2 className="text-sm font-extrabold">Yeni seri</h2>
-            <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+            <p className="mt-1 text-xs leading-5 text-(--site-muted)">
               Aynı ailede tekrarlanan denemeleri bir seri altında toplayın.
             </p>
           </div>
@@ -348,7 +348,7 @@ export function AdminExamCreate({
           </div>
           <label className="panel-field">
             Sınıf düzeyi{" "}
-            <span className="font-medium text-[var(--site-muted)]">
+            <span className="font-medium text-(--site-muted)">
               (isteğe bağlı)
             </span>
             <input name="classLevel" placeholder="Örn. 12. Sınıf" />
@@ -369,7 +369,7 @@ export function AdminExamCreate({
       {message ? (
         <p
           role={message.error ? "alert" : "status"}
-          className={`rounded-2xl p-3 text-xs font-bold xl:col-span-2 ${message.error ? "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]" : "bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]"}`}
+          className={`rounded-2xl p-3 text-xs font-bold xl:col-span-2 ${message.error ? "bg-(--pd-pastel-blush-soft) text-(--pd-pastel-blush-ink)" : "bg-(--brand-olive-soft) text-(--brand-olive)"}`}
         >
           {message.text}
         </p>

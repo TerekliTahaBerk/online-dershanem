@@ -45,14 +45,14 @@ export function ForgotPasswordForm() {
     return (
       <div role="status" aria-live="polite" className="text-center">
         <MailCheck
-          className="mx-auto text-[var(--brand-olive)]"
+          className="mx-auto text-(--brand-olive)"
           size={36}
           aria-hidden="true"
         />
-        <p className="mt-4 text-[15px] leading-7 text-[var(--site-body)]">
+        <p className="mt-4 text-[15px] leading-7 text-(--site-body)">
           {message}
         </p>
-        <p className="mt-2 text-[13px] leading-6 text-[var(--site-muted)]">
+        <p className="mt-2 text-[13px] leading-6 text-(--site-muted)">
           E-postadaki bağlantı 60 dakika geçerlidir. Gelen kutunuzda yoksa spam
           klasörünü de kontrol edin.
         </p>
@@ -61,7 +61,7 @@ export function ForgotPasswordForm() {
           parola e-postası ulaşmadığında kullanıcı kilitli kalıyordu. Parolayı
           admin de sıfırlayabiliyor; o kanalı burada açıkça söylüyoruz.
         */}
-        <p className="mt-4 rounded-[12px] border border-[var(--site-line)] bg-[var(--site-bg-warm)] px-4 py-3 text-[13px] leading-6 text-[var(--site-body)]">
+        <p className="mt-4 rounded-[12px] border border-(--site-line) bg-(--site-bg-warm) px-4 py-3 text-[13px] leading-6 text-(--site-body)">
           Birkaç dakika içinde e-posta ulaşmazsa bize yazın; hesabınızı
           doğrulayıp parolanızı biz sıfırlayalım.
         </p>
@@ -87,7 +87,7 @@ export function ForgotPasswordForm() {
       <div className="flex flex-col gap-2">
         <label
           htmlFor="reset-email"
-          className="text-[13px] font-semibold text-[var(--site-ink)]"
+          className="text-[13px] font-semibold text-(--site-ink)"
         >
           E-posta
         </label>
@@ -101,7 +101,7 @@ export function ForgotPasswordForm() {
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           disabled={pending}
-          className="rounded-[12px] border border-[var(--site-line)] bg-white px-4 py-3 text-[15px] text-[var(--site-ink)] outline-none focus-visible:border-[var(--brand-olive)] focus-visible:ring-2 focus-visible:ring-[var(--brand-olive-soft)] disabled:opacity-60"
+          className="rounded-[12px] border border-(--site-line) bg-white px-4 py-3 text-[15px] text-(--site-ink) outline-hidden focus-visible:border-(--brand-olive) focus-visible:ring-2 focus-visible:ring-(--brand-olive-soft) disabled:opacity-60"
         />
       </div>
       {error ? (
@@ -134,7 +134,7 @@ export function ForgotPasswordForm() {
       </button>
       <Link
         href="/giris"
-        className="mt-1 inline-flex items-center justify-center gap-1.5 text-[13px] font-semibold text-[var(--brand-olive)] hover:underline"
+        className="mt-1 inline-flex items-center justify-center gap-1.5 text-[13px] font-semibold text-(--brand-olive) hover:underline"
       >
         <ArrowLeft size={14} aria-hidden="true" /> Girişe dön
       </Link>

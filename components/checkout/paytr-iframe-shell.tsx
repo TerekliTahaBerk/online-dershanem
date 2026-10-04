@@ -46,7 +46,7 @@ export function PaytrIframeShell({
       {/* Breadcrumb */}
       <nav
         aria-label="Breadcrumb"
-        className="text-xs uppercase tracking-[0.18em] text-[var(--site-body)] mb-6"
+        className="text-xs uppercase tracking-[0.18em] text-(--site-body) mb-6"
       >
         <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
           {breadcrumb.map((item, idx) => {
@@ -59,12 +59,12 @@ export function PaytrIframeShell({
                 {item.href && !isLast ? (
                   <Link
                     href={item.href}
-                    className="hover:text-[var(--site-ink)] transition-colors"
+                    className="hover:text-(--site-ink) transition-colors"
                   >
                     {item.label}
                   </Link>
                 ) : (
-                  <span className={isLast ? "text-[var(--site-ink)]" : ""}>
+                  <span className={isLast ? "text-(--site-ink)" : ""}>
                     {item.label}
                   </span>
                 )}
@@ -78,23 +78,23 @@ export function PaytrIframeShell({
       {/* Order summary header */}
       <section
         aria-label="Sipariş özeti"
-        className="mb-6 rounded-[24px] border border-[var(--site-line)] bg-white p-6 shadow-[0_1px_2px_rgba(20,20,15,0.04)] sm:p-8"
+        className="mb-6 rounded-od-xl border border-(--site-line) bg-white p-6 shadow-[0_1px_2px_rgba(20,20,15,0.04)] sm:p-8"
       >
         {eyebrow && (
-          <p className="text-xs uppercase tracking-[0.22em] text-[var(--brand-orange-ink)] font-semibold mb-2">
+          <p className="text-xs uppercase tracking-[0.22em] text-(--brand-orange-ink) font-semibold mb-2">
             {eyebrow}
           </p>
         )}
-        <h1 className="font-display text-2xl sm:text-[28px] leading-tight text-[var(--site-ink)] mb-4">
+        <h1 className="font-display text-2xl sm:text-[28px] leading-tight text-(--site-ink) mb-4">
           {title}
         </h1>
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
-          <span className="font-display text-3xl sm:text-[34px] text-[var(--site-ink)]">
+          <span className="font-display text-3xl sm:text-[34px] text-(--site-ink)">
             {formatPrice(totalCents)}
           </span>
           <Link
             href={editHref}
-            className="inline-flex items-center gap-1.5 text-xs text-[var(--site-body)] hover:text-[var(--site-ink)] underline-offset-4 hover:underline transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-(--site-body) hover:text-(--site-ink) underline-offset-4 hover:underline transition-colors"
           >
             <Pencil className="size-3.5" aria-hidden />
             Bilgilerimi düzenle
@@ -106,10 +106,10 @@ export function PaytrIframeShell({
       {!paytrReady && (
         <div
           role="alert"
-          className="mb-6 flex gap-4 rounded-[16px] border border-amber-200 bg-amber-50/70 p-6"
+          className="mb-6 flex gap-4 rounded-od-lg border border-amber-200 bg-amber-50/70 p-6"
         >
           <Wrench
-            className="size-5 text-amber-700 flex-shrink-0 mt-0.5"
+            className="size-5 text-amber-700 shrink-0 mt-0.5"
             aria-hidden
           />
           <div>
@@ -130,10 +130,10 @@ export function PaytrIframeShell({
       {checkout && !checkout.ok && (
         <div
           role="alert"
-          className="mb-6 flex gap-4 rounded-[16px] border border-rose-200 bg-rose-50/70 p-6"
+          className="mb-6 flex gap-4 rounded-od-lg border border-rose-200 bg-rose-50/70 p-6"
         >
           <AlertTriangle
-            className="size-5 text-rose-700 flex-shrink-0 mt-0.5"
+            className="size-5 text-rose-700 shrink-0 mt-0.5"
             aria-hidden
           />
           <div>
@@ -155,7 +155,7 @@ export function PaytrIframeShell({
       {checkout && checkout.ok && (
         <section
           aria-label="Güvenli ödeme"
-          className="overflow-hidden rounded-[24px] border border-[var(--site-line)] bg-white shadow-[0_1px_2px_rgba(20,20,15,0.04)]"
+          className="overflow-hidden rounded-od-xl border border-(--site-line) bg-white shadow-[0_1px_2px_rgba(20,20,15,0.04)]"
         >
           <iframe
             src={checkout.iframeUrl}
@@ -163,13 +163,13 @@ export function PaytrIframeShell({
             scrolling="no"
             style={{ width: "100%", minHeight: 720, border: 0 }}
           />
-          <div className="px-5 sm:px-6 py-4 bg-[var(--site-bg-warm)] border-t border-[var(--site-line)] flex items-start gap-3 text-xs text-[var(--site-body)]">
+          <div className="px-5 sm:px-6 py-4 bg-(--site-bg-warm) border-t border-(--site-line) flex items-start gap-3 text-xs text-(--site-body)">
             <ShieldCheck
-              className="size-4 text-[var(--brand-orange-ink)] flex-shrink-0 mt-px"
+              className="size-4 text-(--brand-orange-ink) shrink-0 mt-px"
               aria-hidden
             />
             <p>
-              Ödemeniz <strong className="text-[var(--site-ink)]">PayTR</strong>{" "}
+              Ödemeniz <strong className="text-(--site-ink)">PayTR</strong>{" "}
               güvenli ödeme altyapısı üzerinden gerçekleştirilir. Kart
               bilgileriniz sitemizde saklanmaz; 3D Secure desteklenir.
             </p>

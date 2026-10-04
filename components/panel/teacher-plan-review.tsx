@@ -82,9 +82,9 @@ export function TeacherPlanReview({ plans: initial }: { plans: Plan[] }) {
   if (!plans.length)
     return (
       <div className="panel-surface p-8 text-center">
-        <ListChecks className="mx-auto text-[var(--site-muted)]" />
+        <ListChecks className="mx-auto text-(--site-muted)" />
         <h2 className="mt-3 font-extrabold">İncelenecek plan yok.</h2>
-        <p className="mt-1 text-sm text-[var(--site-muted)]">
+        <p className="mt-1 text-sm text-(--site-muted)">
           Öğrenci öneri oluşturduğunda burada görünür.
         </p>
       </div>
@@ -96,7 +96,7 @@ export function TeacherPlanReview({ plans: initial }: { plans: Plan[] }) {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="text-lg font-extrabold">{plan.studentName}</h2>
-              <p className="mt-1 text-xs text-[var(--site-muted)]">
+              <p className="mt-1 text-xs text-(--site-muted)">
                 Haftalık kapasite {plan.capacityMinutes} dk ·{" "}
                 {plan.tasks.length} iş · kural adaptive-v1
               </p>
@@ -127,9 +127,9 @@ export function TeacherPlanReview({ plans: initial }: { plans: Plan[] }) {
             {plan.tasks.map((task) => (
               <div
                 key={task.id}
-                className="rounded-xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-3"
+                className="rounded-xl border border-(--site-line) bg-(--site-bg-warm) p-3"
               >
-                <p className="flex items-center gap-1 text-[10px] font-bold text-[var(--site-muted)]">
+                <p className="flex items-center gap-1 text-[10px] font-bold text-(--site-muted)">
                   <Clock3 size={12} />
                   {date.format(new Date(task.scheduledFor))} ·{" "}
                   {task.durationMinutes} dk
@@ -155,7 +155,7 @@ export function TeacherPlanReview({ plans: initial }: { plans: Plan[] }) {
       ))}
       <p
         aria-live="polite"
-        className="text-xs font-bold text-[var(--brand-olive)]"
+        className="text-xs font-bold text-(--brand-olive)"
       >
         {message}
       </p>

@@ -20,7 +20,7 @@ import Link from "next/link";
  */
 export default function PanelNotFound() {
   return (
-    <main className="grid min-h-screen place-items-center bg-[var(--dc-surface-muted)] px-5 py-16">
+    <main className="grid min-h-screen place-items-center bg-(--dc-surface-muted) px-5 py-16">
       <div className="w-full max-w-[440px] rounded-[14px] border border-dc-line bg-white p-8 text-center">
         <p
           aria-hidden="true"

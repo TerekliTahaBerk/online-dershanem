@@ -69,7 +69,7 @@ export function OdOnboardingControl({
         }
       }}
     >
-      <label className="text-[10.5px] font-bold text-[var(--site-muted)]">
+      <label className="text-[10.5px] font-bold text-(--site-muted)">
         Sıradaki işlem sonucu
         <select
           name="toState"
@@ -84,7 +84,7 @@ export function OdOnboardingControl({
           ))}
         </select>
       </label>
-      <label className="text-[10.5px] font-bold text-[var(--site-muted)]">
+      <label className="text-[10.5px] font-bold text-(--site-muted)">
         İş sorumlusu
         <select
           name="ownerId"
@@ -100,7 +100,7 @@ export function OdOnboardingControl({
           ))}
         </select>
       </label>
-      <label className="text-[10.5px] font-bold text-[var(--site-muted)]">
+      <label className="text-[10.5px] font-bold text-(--site-muted)">
         Bloker (gerekliyse)
         <input
           name="blockerReason"
@@ -109,7 +109,7 @@ export function OdOnboardingControl({
           className="panel-input mt-1 py-2 text-xs"
         />
       </label>
-      <label className="text-[10.5px] font-bold text-[var(--site-muted)]">
+      <label className="text-[10.5px] font-bold text-(--site-muted)">
         Operasyon notu
         <input
           name="note"
@@ -128,7 +128,7 @@ export function OdOnboardingControl({
       ) : null}
       <button
         disabled={busy}
-        className="rounded-xl bg-[var(--brand-olive)] px-3 py-2 text-xs font-bold text-white disabled:opacity-60 sm:col-start-2 xl:col-start-4"
+        className="rounded-xl bg-(--brand-olive) px-3 py-2 text-xs font-bold text-white disabled:opacity-60 sm:col-start-2 xl:col-start-4"
       >
         {busy ? "Kaydediliyor…" : "İşlemi kaydet"}
       </button>

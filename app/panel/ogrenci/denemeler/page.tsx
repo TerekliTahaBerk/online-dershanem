@@ -160,7 +160,7 @@ export default async function StudentExamResultPage({
       <div className="mt-5 flex flex-wrap items-end gap-9 border-b border-dc-line pb-5">
         <div>
           <p className="text-[13px] text-dc-ink-faint">Toplam net</p>
-          <p className="text-[40px] font-extrabold tracking-[-0.025em] text-dc-ink">
+          <p className="text-[40px] font-extrabold tracking-tight text-dc-ink">
             {fmt(total)}
           </p>
         </div>
@@ -282,7 +282,7 @@ export default async function StudentExamResultPage({
           <h2 className="text-[15px] font-bold text-dc-ink">
             Bir sonraki denemeye kadar
           </h2>
-          <p className="mt-2 text-[14.5px] leading-[1.65] text-[var(--pd-ink-3)]">
+          <p className="mt-2 text-[14.5px] leading-[1.65] text-(--pd-ink-3)">
             {current.nextAction}
           </p>
         </PanelCard>

@@ -106,7 +106,7 @@ export function PanelMobileNav({
     <>
       <nav
         aria-label="Mobil hızlı menü"
-        className="fixed inset-x-0 bottom-0 z-[90] border-t border-dc-line bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur supports-[backdrop-filter]:bg-white/85 lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-90 border-t border-dc-line bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-sm supports-backdrop-filter:bg-white/85 lg:hidden"
       >
         <ul
           className="grid gap-1"
@@ -131,7 +131,7 @@ export function PanelMobileNav({
                   href={href}
                   prefetch
                   aria-current={active ? "page" : undefined}
-                  className={`block min-h-11 rounded-[10px] px-1.5 py-2 text-center text-[11.5px] font-semibold leading-tight transition-colors sm:px-2 sm:text-[12.5px] ${
+                  className={`block min-h-11 rounded-od px-1.5 py-2 text-center text-[11.5px] font-semibold leading-tight transition-colors sm:px-2 sm:text-[12.5px] ${
                     active
                       ? "bg-dc-brand-soft text-dc-brand-deep"
                       : "text-dc-ink-muted hover:bg-dc-surface-muted hover:text-dc-ink"
@@ -150,7 +150,7 @@ export function PanelMobileNav({
               aria-label="Panel menüsünü aç"
               aria-expanded={open}
               aria-controls="panel-mobile-nav"
-              className="flex min-h-11 w-full items-center justify-center gap-1 rounded-[10px] border border-dc-line px-2 py-2 text-[12.5px] font-semibold text-dc-ink"
+              className="flex min-h-11 w-full items-center justify-center gap-1 rounded-od border border-dc-line px-2 py-2 text-[12.5px] font-semibold text-dc-ink"
             >
               <Menu size={14} strokeWidth={2} aria-hidden="true" /> Menü
             </button>
@@ -165,7 +165,7 @@ export function PanelMobileNav({
           role="dialog"
           aria-modal="true"
           aria-label="Panel menüsü"
-          className="fixed inset-0 z-[120] flex flex-col bg-white lg:hidden"
+          className="fixed inset-0 z-120 flex flex-col bg-white lg:hidden"
         >
           <div className="flex h-16 shrink-0 items-center justify-between border-b border-dc-line px-5">
             <span className="text-[14.5px] font-bold text-dc-ink">Menü</span>
@@ -174,7 +174,7 @@ export function PanelMobileNav({
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Menüyü kapat"
-              className="grid h-10 w-10 place-items-center rounded-[10px] border border-dc-line text-dc-ink"
+              className="grid h-10 w-10 place-items-center rounded-od border border-dc-line text-dc-ink"
             >
               <X size={18} strokeWidth={2} aria-hidden="true" />
             </button>
@@ -217,7 +217,7 @@ export function PanelMobileNav({
                   <Link
                     href="/panel/bildirimler"
                     onClick={() => setOpen(false)}
-                    className="flex min-h-11 items-center justify-center gap-1.5 rounded-[10px] border border-dc-line bg-white px-3 text-[12px] font-semibold text-dc-ink"
+                    className="flex min-h-11 items-center justify-center gap-1.5 rounded-od border border-dc-line bg-white px-3 text-[12px] font-semibold text-dc-ink"
                   >
                     <Bell size={14} aria-hidden="true" /> Bildirimler
                   </Link>
@@ -225,7 +225,7 @@ export function PanelMobileNav({
                     <Link
                       href="/panel/oturumlar"
                       onClick={() => setOpen(false)}
-                      className="flex min-h-11 items-center justify-center gap-1.5 rounded-[10px] border border-dc-line bg-white px-3 text-[12px] font-semibold text-dc-ink"
+                      className="flex min-h-11 items-center justify-center gap-1.5 rounded-od border border-dc-line bg-white px-3 text-[12px] font-semibold text-dc-ink"
                     >
                       <ShieldCheck size={14} aria-hidden="true" /> Oturumlar
                     </Link>
@@ -233,7 +233,7 @@ export function PanelMobileNav({
                     <Link
                       href={drawerAccount.accountHref}
                       onClick={() => setOpen(false)}
-                      className="flex min-h-11 items-center justify-center rounded-[10px] border border-dc-line bg-white px-3 text-[12px] font-semibold text-dc-ink"
+                      className="flex min-h-11 items-center justify-center rounded-od border border-dc-line bg-white px-3 text-[12px] font-semibold text-dc-ink"
                     >
                       Hesabım
                     </Link>
@@ -244,7 +244,7 @@ export function PanelMobileNav({
                   <Link
                     href={drawerAccount.productSwitch.href}
                     onClick={() => setOpen(false)}
-                    className="mt-2 flex min-h-11 items-center justify-center gap-1.5 rounded-[10px] border border-dc-line bg-white px-3 text-[12px] font-semibold text-dc-ink"
+                    className="mt-2 flex min-h-11 items-center justify-center gap-1.5 rounded-od border border-dc-line bg-white px-3 text-[12px] font-semibold text-dc-ink"
                   >
                     <ArrowLeftRight size={14} aria-hidden="true" />
                     {drawerAccount.productSwitch.label}
@@ -255,7 +255,7 @@ export function PanelMobileNav({
                   <Link
                     href={drawerAccount.workspaceSwitch.href}
                     onClick={() => setOpen(false)}
-                    className="mt-2 flex min-h-11 items-center justify-center gap-1.5 rounded-[10px] border border-dc-line-soft bg-white px-3 text-[12px] font-semibold text-dc-ink-muted transition-colors hover:text-dc-ink"
+                    className="mt-2 flex min-h-11 items-center justify-center gap-1.5 rounded-od border border-dc-line-soft bg-white px-3 text-[12px] font-semibold text-dc-ink-muted transition-colors hover:text-dc-ink"
                   >
                     <ArrowLeftRight size={13} aria-hidden="true" />
                     {drawerAccount.workspaceSwitch.label}
@@ -266,7 +266,7 @@ export function PanelMobileNav({
                   <Link
                     href={drawerAccount.accountHref}
                     onClick={() => setOpen(false)}
-                    className="mt-2 flex min-h-11 items-center justify-center rounded-[10px] border border-dc-line-soft bg-white px-3 text-[12px] font-semibold text-dc-ink"
+                    className="mt-2 flex min-h-11 items-center justify-center rounded-od border border-dc-line-soft bg-white px-3 text-[12px] font-semibold text-dc-ink"
                   >
                     Profil ve hesap
                   </Link>

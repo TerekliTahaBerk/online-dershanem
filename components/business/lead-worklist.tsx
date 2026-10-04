@@ -161,12 +161,12 @@ export function LeadWorklist({
             className="mt-1 w-full rounded-xl border px-3 py-2 text-xs"
           />
         </label>
-        <button className="rounded-xl bg-[var(--brand-olive)] px-3 py-2 text-xs font-bold text-white xl:col-span-4">
+        <button className="rounded-xl bg-(--brand-olive) px-3 py-2 text-xs font-bold text-white xl:col-span-4">
           Filtrele
         </button>
       </form>
 
-      <p className="text-xs text-[var(--site-muted)]">
+      <p className="text-xs text-(--site-muted)">
         {filters.focus === "today"
           ? "Bugün ilgilenmen gereken adaylar — gecikenler üstte."
           : `${leads.length} aday listeleniyor.`}
@@ -174,7 +174,7 @@ export function LeadWorklist({
 
       <div className="space-y-2">
         {leads.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[var(--site-line)] px-5 py-10 text-center text-sm text-[var(--site-muted)]">
+          <div className="rounded-2xl border border-dashed border-(--site-line) px-5 py-10 text-center text-sm text-(--site-muted)">
             Bu filtreyle aday yok. Takip tarihi planlayın veya &quot;Tüm
             adaylar&quot;a geçin.
           </div>
@@ -192,7 +192,7 @@ export function LeadWorklist({
               <Link
                 key={lead.id}
                 href={href}
-                className={`panel-surface block p-4 transition hover:bg-[var(--site-bg-warm)] ${selectedLeadId === lead.id ? "ring-2 ring-[var(--brand-olive)]" : ""} ${overdue ? "border-rose-300" : ""}`}
+                className={`panel-surface block p-4 transition hover:bg-(--site-bg-warm) ${selectedLeadId === lead.id ? "ring-2 ring-(--brand-olive)" : ""} ${overdue ? "border-rose-300" : ""}`}
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -216,14 +216,14 @@ export function LeadWorklist({
                         </span>
                       ) : null}
                     </div>
-                    <p className="mt-1 text-xs text-[var(--site-muted)]">
+                    <p className="mt-1 text-xs text-(--site-muted)">
                       İstiyor: {PRODUCT_INTEREST_LABELS[lead.productInterest]}
                       {campaignName ? ` · ${campaignName}` : ""}
                       {" · "}
                       {LEAD_SOURCE_LABELS[lead.source]}
                     </p>
                   </div>
-                  <div className="text-right text-[10px] text-[var(--site-muted)]">
+                  <div className="text-right text-[10px] text-(--site-muted)">
                     <p>Son temas</p>
                     <time dateTime={lead.lastContactAt.toISOString()}>
                       {dt.format(lead.lastContactAt)}
@@ -231,7 +231,7 @@ export function LeadWorklist({
                   </div>
                 </div>
                 <p
-                  className={`mt-3 text-xs font-bold ${overdue ? "text-rose-700" : "text-[var(--brand-olive)]"}`}
+                  className={`mt-3 text-xs font-bold ${overdue ? "text-rose-700" : "text-(--brand-olive)"}`}
                 >
                   Sıradaki: {action}
                   {lead.nextFollowUpAt

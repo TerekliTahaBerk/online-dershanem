@@ -165,7 +165,7 @@ export function Group360View({ bundle }: { bundle: Group360Bundle }) {
             <Link
               key={action.id}
               href={action.href}
-              className="rounded-[10px] border border-[#DDE4E0] bg-white px-3.5 py-2 text-[12.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
+              className="rounded-od border border-[#DDE4E0] bg-white px-3.5 py-2 text-[12.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
             >
               {action.label}
             </Link>
@@ -265,7 +265,7 @@ function OverviewPanel({
             {data.issues.map((issue) => (
               <div
                 key={issue.code}
-                className="rounded-[10px] border border-dc-line-soft p-3"
+                className="rounded-od border border-dc-line-soft p-3"
               >
                 <p className="text-[13px] font-bold text-dc-ink">
                   {issue.title}
@@ -492,7 +492,7 @@ function StudentsPanel({
               {candidates.map((student) => (
                 <div
                   key={student.id}
-                  className="rounded-[10px] border border-dc-line-soft p-3"
+                  className="rounded-od border border-dc-line-soft p-3"
                 >
                   <p className="text-[13px] font-bold text-dc-ink">
                     {student.name}
@@ -691,7 +691,7 @@ function StudentsPanel({
         </div>
 
         {preview ? (
-          <div className="mt-4 rounded-[10px] border border-dc-line-soft p-3 text-[12.5px]">
+          <div className="mt-4 rounded-od border border-dc-line-soft p-3 text-[12.5px]">
             <p className="font-bold text-dc-ink">
               Transfer önizleme · {preview.targetGroupName} · koltuk{" "}
               {preview.capacity.available}/{preview.capacity.capacity}
@@ -727,7 +727,7 @@ function StudentsPanel({
         ) : null}
 
         {removePreview ? (
-          <div className="mt-4 rounded-[10px] border border-dc-line-soft p-3 text-[12.5px]">
+          <div className="mt-4 rounded-od border border-dc-line-soft p-3 text-[12.5px]">
             <p className="font-bold text-dc-ink">Çıkarma önizleme</p>
             <ul className="mt-2 space-y-1">
               {removePreview.items.map((item) => (
@@ -743,7 +743,7 @@ function StudentsPanel({
         ) : null}
 
         {notifyPreview ? (
-          <div className="mt-4 rounded-[10px] border border-dc-line-soft p-3 text-[12.5px]">
+          <div className="mt-4 rounded-od border border-dc-line-soft p-3 text-[12.5px]">
             <p className="font-bold text-dc-ink">
               Bildirim · {notifyPreview.matchedStudents} öğrenci ·{" "}
               {notifyPreview.recipientCount} alıcı
@@ -755,7 +755,7 @@ function StudentsPanel({
       </PanelCard>
 
       {message ? (
-        <p className="rounded-xl bg-[var(--brand-olive-soft)] px-3 py-2 text-xs font-bold text-[var(--brand-olive)]">
+        <p className="rounded-xl bg-(--brand-olive-soft) px-3 py-2 text-xs font-bold text-(--brand-olive)">
           {message}
         </p>
       ) : null}
@@ -797,7 +797,7 @@ function ProgramPanel({
           {data.series.map((item) => (
             <div
               key={item.id}
-              className="rounded-[10px] border border-dc-line-soft p-3"
+              className="rounded-od border border-dc-line-soft p-3"
             >
               <p className="text-[13px] font-bold text-dc-ink">{item.title}</p>
               <p className="mt-1 text-[12px] text-dc-ink-muted">
@@ -818,7 +818,7 @@ function ProgramPanel({
           {data.conflicts.map((conflict, index) => (
             <div
               key={`${conflict.lessonId}-${conflict.otherLessonId}-${conflict.kind}-${index}`}
-              className="rounded-[10px] border border-dc-line-soft p-3"
+              className="rounded-od border border-dc-line-soft p-3"
             >
               <p className="text-[13px] font-bold text-dc-ink">
                 {SCHEDULE_CONFLICT_KIND_LABELS[conflict.kind]}
@@ -940,7 +940,7 @@ function OpsPanel({
           {data.issues.map((issue) => (
             <div
               key={issue.code}
-              className="rounded-[10px] border border-dc-line-soft p-3"
+              className="rounded-od border border-dc-line-soft p-3"
             >
               <p className="text-[13px] font-bold text-dc-ink">{issue.title}</p>
               <p className="mt-1 text-[12.5px] text-dc-ink-muted">
@@ -1085,7 +1085,7 @@ function OpsPanel({
       </PanelCard>
 
       {message ? (
-        <p className="rounded-xl bg-[var(--brand-olive-soft)] px-3 py-2 text-xs font-bold text-[var(--brand-olive)]">
+        <p className="rounded-xl bg-(--brand-olive-soft) px-3 py-2 text-xs font-bold text-(--brand-olive)">
           {message}
         </p>
       ) : null}

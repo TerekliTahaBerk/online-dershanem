@@ -72,15 +72,15 @@ function DayColumn({ day, lessons }: { day: Date; lessons: CalendarLesson[] }) {
 
   return (
     <section
-      className={`min-h-0 rounded-[14px] border bg-white p-2.5 shadow-[var(--panel-card-shadow)] lg:min-h-[480px] ${
-        today ? "border-[var(--brand-olive)]" : "border-[var(--site-line)]"
+      className={`min-h-0 rounded-[14px] border bg-white p-2.5 shadow-(--panel-card-shadow) lg:min-h-[480px] ${
+        today ? "border-(--brand-olive)" : "border-(--site-line)"
       }`}
     >
       <div
         className={`rounded-xl px-2.5 py-2 ${
           today
-            ? "bg-[var(--brand-olive)] text-white"
-            : "bg-[var(--site-bg-warm)] text-[var(--site-ink)]"
+            ? "bg-(--brand-olive) text-white"
+            : "bg-(--site-bg-warm) text-(--site-ink)"
         }`}
       >
         <p className="text-[11px] font-extrabold capitalize">
@@ -97,14 +97,14 @@ function DayColumn({ day, lessons }: { day: Date; lessons: CalendarLesson[] }) {
                 ? "border-rose-100 bg-rose-50/70 opacity-65"
                 : lesson.status === "COMPLETED"
                   ? "border-emerald-100 bg-emerald-50/70"
-                  : "border-[var(--site-line)] bg-white"
+                  : "border-(--site-line) bg-white"
             }`}
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[10.5px] font-extrabold tabular-nums text-[var(--brand-olive)]">
+              <span className="text-[10.5px] font-extrabold tabular-nums text-(--brand-olive)">
                 {time.format(lesson.startsAt)}
               </span>
-              <span className="text-[8.5px] font-bold uppercase text-[var(--site-muted)]">
+              <span className="text-[8.5px] font-bold uppercase text-(--site-muted)">
                 {lesson.status === "CANCELLED"
                   ? "İptal"
                   : lesson.status === "COMPLETED"
@@ -112,10 +112,10 @@ function DayColumn({ day, lessons }: { day: Date; lessons: CalendarLesson[] }) {
                     : "Planlı"}
               </span>
             </div>
-            <p className="mt-2 text-[11.5px] font-bold leading-4 text-[var(--site-ink)]">
+            <p className="mt-2 text-[11.5px] font-bold leading-4 text-(--site-ink)">
               {lesson.title}
             </p>
-            <p className="mt-1 text-[9.5px] leading-4 text-[var(--site-muted)]">
+            <p className="mt-1 text-[9.5px] leading-4 text-(--site-muted)">
               {lesson.group.name}
               <br />
               {lesson.teacher.fullName || lesson.teacher.email}
@@ -123,7 +123,7 @@ function DayColumn({ day, lessons }: { day: Date; lessons: CalendarLesson[] }) {
           </Link>
         ))}
         {!items.length ? (
-          <p className="px-2 py-6 text-center text-[10.5px] text-[var(--site-muted)] lg:py-8">
+          <p className="px-2 py-6 text-center text-[10.5px] text-(--site-muted) lg:py-8">
             Ders yok
           </p>
         ) : null}
@@ -186,7 +186,7 @@ export default async function CalendarPage({
           <Download size={14} /> Tüm programı indir (.ics)
         </a>
       </div>
-      <div className="mt-6 flex flex-col gap-3 rounded-[14px] border border-[var(--site-line)] bg-white p-3 shadow-[var(--panel-card-shadow)] lg:flex-row lg:items-center lg:justify-between">
+      <div className="mt-6 flex flex-col gap-3 rounded-[14px] border border-(--site-line) bg-white p-3 shadow-(--panel-card-shadow) lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center justify-between gap-2">
           <Link
             href={query(week - 1)}
@@ -196,11 +196,11 @@ export default async function CalendarPage({
             <ChevronLeft size={16} />
           </Link>
           <div className="min-w-[190px] text-center">
-            <p className="text-[12.5px] font-extrabold text-[var(--site-ink)]">
+            <p className="text-[12.5px] font-extrabold text-(--site-ink)">
               {rangeDate.format(start)} –{" "}
               {rangeDate.format(new Date(end.getTime() - 1))}
             </p>
-            <p className="mt-0.5 text-[10.5px] text-[var(--site-muted)]">
+            <p className="mt-0.5 text-[10.5px] text-(--site-muted)">
               {week === 0
                 ? "Bu hafta"
                 : week > 0

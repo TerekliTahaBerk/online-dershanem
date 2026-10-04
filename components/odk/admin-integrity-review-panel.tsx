@@ -111,7 +111,7 @@ export function AdminIntegrityReviewPanel({
         </span>
         <div>
           <h2 className="text-sm font-extrabold">Integrity inceleme</h2>
-          <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+          <p className="mt-1 text-xs leading-5 text-(--site-muted)">
             Otomatik suçlama yok. {flagged.length} oturumda sinyal var · deneme{" "}
             {examId.slice(0, 8)}…
           </p>
@@ -119,7 +119,7 @@ export function AdminIntegrityReviewPanel({
       </div>
 
       {!flagged.length ? (
-        <p className="mt-4 rounded-xl bg-[var(--pd-pastel-mint-soft)] p-3 text-xs font-bold text-[var(--pd-pastel-mint-ink)]">
+        <p className="mt-4 rounded-xl bg-(--pd-pastel-mint-soft) p-3 text-xs font-bold text-(--pd-pastel-mint-ink)">
           İnceleme bekleyen integrity sinyali yok.
         </p>
       ) : (
@@ -133,7 +133,7 @@ export function AdminIntegrityReviewPanel({
                   <button
                     type="button"
                     onClick={() => setSelectedId(item.id)}
-                    className={`w-full rounded-xl border px-3 py-3 text-left ${selectedId === item.id ? "border-[var(--brand-olive)] bg-[var(--brand-olive-soft)]" : "border-[var(--site-line)] bg-white"}`}
+                    className={`w-full rounded-xl border px-3 py-3 text-left ${selectedId === item.id ? "border-(--brand-olive) bg-(--brand-olive-soft)" : "border-(--site-line) bg-white"}`}
                   >
                     <strong className="block text-xs">
                       {item.studentName}
@@ -150,9 +150,9 @@ export function AdminIntegrityReviewPanel({
             })}
           </ul>
 
-          <div className="rounded-2xl border border-[var(--site-line)] bg-white p-4">
+          <div className="rounded-2xl border border-(--site-line) bg-white p-4">
             {!detail ? (
-              <p className="text-xs text-[var(--site-muted)]">Oturum seçin.</p>
+              <p className="text-xs text-(--site-muted)">Oturum seçin.</p>
             ) : (
               <>
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -160,7 +160,7 @@ export function AdminIntegrityReviewPanel({
                     <h3 className="text-sm font-extrabold">
                       {detail.student.fullName || detail.student.email}
                     </h3>
-                    <p className="mt-1 text-xs text-[var(--site-muted)]">
+                    <p className="mt-1 text-xs text-(--site-muted)">
                       {detail.assessment.label}
                     </p>
                   </div>
@@ -190,19 +190,19 @@ export function AdminIntegrityReviewPanel({
                   {detail.assessment.reasons.map((reason) => (
                     <li
                       key={reason}
-                      className="text-xs text-[var(--site-body)]"
+                      className="text-xs text-(--site-body)"
                     >
                       • {reason}
                     </li>
                   ))}
                   {!detail.assessment.reasons.length ? (
-                    <li className="text-xs text-[var(--site-muted)]">
+                    <li className="text-xs text-(--site-muted)">
                       Açıklanabilir sinyal yok.
                     </li>
                   ) : null}
                 </ul>
-                <div className="mt-4 max-h-56 overflow-auto rounded-xl bg-[var(--site-bg-warm)] p-3">
-                  <p className="text-[10px] font-extrabold uppercase text-[var(--site-muted)]">
+                <div className="mt-4 max-h-56 overflow-auto rounded-xl bg-(--site-bg-warm) p-3">
+                  <p className="text-[10px] font-extrabold uppercase text-(--site-muted)">
                     Event timeline
                   </p>
                   <ul className="mt-2 space-y-1 font-mono text-[10px]">
@@ -232,7 +232,7 @@ export function AdminIntegrityReviewPanel({
       {message ? (
         <p
           role="status"
-          className="mt-3 rounded-xl bg-[var(--site-bg-warm)] p-3 text-xs font-bold"
+          className="mt-3 rounded-xl bg-(--site-bg-warm) p-3 text-xs font-bold"
         >
           {message}
         </p>

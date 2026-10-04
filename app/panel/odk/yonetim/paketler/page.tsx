@@ -72,10 +72,10 @@ export default async function OdkAdminPackagesPage() {
           const parsed = parseOdkPackagePolicy(pkg.contractPolicy);
           return (
             <article key={pkg.id} className="panel-surface overflow-hidden">
-              <div className="flex flex-col gap-4 border-b border-[var(--site-line)] p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6">
+              <div className="flex flex-col gap-4 border-b border-(--site-line) p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-[var(--brand-olive-soft)] px-2.5 py-1 text-[10px] font-extrabold text-[var(--brand-olive)]">
+                    <span className="rounded-full bg-(--brand-olive-soft) px-2.5 py-1 text-[10px] font-extrabold text-(--brand-olive)">
                       v{pkg.contractVersion}
                     </span>
                     {parsed.success ? (
@@ -90,67 +90,67 @@ export default async function OdkAdminPackagesPage() {
                       </span>
                     )}
                   </div>
-                  <h2 className="mt-2 text-lg font-extrabold text-[var(--site-ink)]">
+                  <h2 className="mt-2 text-lg font-extrabold text-(--site-ink)">
                     {pkg.title}
                   </h2>
-                  <p className="mt-1 text-xs text-[var(--site-muted)]">
+                  <p className="mt-1 text-xs text-(--site-muted)">
                     /{pkg.slug} ·{" "}
                     {(pkg.priceCents / 100).toLocaleString("tr-TR")} ₺ ·{" "}
                     {pkg._count.orders} sipariş · {pkg._count.entitlements} hak
                   </p>
                 </div>
                 <div className="text-left sm:text-right">
-                  <p className="text-[10px] font-bold uppercase text-[var(--site-muted)]">
+                  <p className="text-[10px] font-bold uppercase text-(--site-muted)">
                     Deneme kapsamı
                   </p>
-                  <p className="mt-1 text-2xl font-black text-[var(--site-ink)]">
+                  <p className="mt-1 text-2xl font-black text-(--site-ink)">
                     {pkg.examLinks.length}
                   </p>
                 </div>
               </div>
               {parsed.success ? (
                 <>
-                  <dl className="grid gap-px bg-[var(--site-line)] sm:grid-cols-2 xl:grid-cols-4">
+                  <dl className="grid gap-px bg-(--site-line) sm:grid-cols-2 xl:grid-cols-4">
                     <div className="bg-white p-4">
-                      <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-[var(--site-muted)]">
+                      <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-(--site-muted)">
                         <CalendarClock size={13} /> Erişim
                       </dt>
-                      <dd className="mt-2 text-xs font-bold text-[var(--site-ink)]">
+                      <dd className="mt-2 text-xs font-bold text-(--site-ink)">
                         {parsed.data.access.starts === "PURCHASED_AT"
                           ? "Satın alındığında"
                           : displayDate(parsed.data.access.startsAt)}
                       </dd>
-                      <dd className="mt-1 text-[10.5px] text-[var(--site-muted)]">
+                      <dd className="mt-1 text-[10.5px] text-(--site-muted)">
                         {parsed.data.access.durationDays
                           ? `${parsed.data.access.durationDays} gün`
                           : displayDate(parsed.data.access.endsAt)}
                       </dd>
                     </div>
                     <div className="bg-white p-4">
-                      <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-[var(--site-muted)]">
+                      <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-(--site-muted)">
                         <UsersRound size={13} /> Rapor hakları
                       </dt>
-                      <dd className="mt-2 text-xs font-bold text-[var(--site-ink)]">
+                      <dd className="mt-2 text-xs font-bold text-(--site-ink)">
                         Öğrenci {parsed.data.rights.studentReports ? "✓" : "—"}{" "}
                         · Veli {parsed.data.rights.parentReports ? "✓" : "—"} ·
                         Öğretmen {parsed.data.rights.teacherReports ? "✓" : "—"}
                       </dd>
                     </div>
                     <div className="bg-white p-4">
-                      <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-[var(--site-muted)]">
+                      <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-(--site-muted)">
                         <Video size={13} /> Canlı hizmet
                       </dt>
-                      <dd className="mt-2 text-xs font-bold text-[var(--site-ink)]">
+                      <dd className="mt-2 text-xs font-bold text-(--site-ink)">
                         {parsed.data.rights.liveService
                           ? "Dahil"
                           : "Dahil değil"}
                       </dd>
                     </div>
                     <div className="bg-white p-4">
-                      <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-[var(--site-muted)]">
+                      <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-(--site-muted)">
                         <CheckCircle2 size={13} /> İstisna politikası
                       </dt>
-                      <dd className="mt-2 text-[10.5px] leading-5 text-[var(--site-body)]">
+                      <dd className="mt-2 text-[10.5px] leading-5 text-(--site-body)">
                         Tükenme:{" "}
                         {exceptionLabel[parsed.data.exceptions.soldOut]}
                         <br />
@@ -171,7 +171,7 @@ export default async function OdkAdminPackagesPage() {
                     </div>
                   </dl>
                   <div className="p-5 sm:p-6">
-                    <h3 className="text-xs font-extrabold text-[var(--site-ink)]">
+                    <h3 className="text-xs font-extrabold text-(--site-ink)">
                       Paket → hak → deneme eşlemesi
                     </h3>
                     <div
@@ -181,7 +181,7 @@ export default async function OdkAdminPackagesPage() {
                       aria-label="Paket, hak ve deneme eşlemesi"
                     >
                       <table className="w-full min-w-[760px] text-left text-xs">
-                        <thead className="text-[10px] uppercase text-[var(--site-muted)]">
+                        <thead className="text-[10px] uppercase text-(--site-muted)">
                           <tr>
                             <th className="pb-2">Deneme</th>
                             <th className="pb-2">Takvim</th>
@@ -191,14 +191,14 @@ export default async function OdkAdminPackagesPage() {
                             <th className="pb-2">Meet</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[var(--site-line)]">
+                        <tbody className="divide-y divide-(--site-line)">
                           {pkg.examLinks.map(({ exam }) => (
                             <tr key={exam.id}>
                               <td className="py-3 pr-3">
-                                <strong className="block text-[var(--site-ink)]">
+                                <strong className="block text-(--site-ink)">
                                   {exam.title}
                                 </strong>
-                                <span className="text-[10px] text-[var(--site-muted)]">
+                                <span className="text-[10px] text-(--site-muted)">
                                   {exam.series?.title || "Serisiz"} ·{" "}
                                   {exam.family}
                                 </span>
@@ -253,7 +253,7 @@ export default async function OdkAdminPackagesPage() {
           );
         })}
         {!packages.length ? (
-          <p className="rounded-3xl border border-dashed border-[var(--site-line)] p-10 text-center text-sm text-[var(--site-muted)]">
+          <p className="rounded-3xl border border-dashed border-(--site-line) p-10 text-center text-sm text-(--site-muted)">
             Henüz ODK paketi tanımlanmadı.
           </p>
         ) : null}

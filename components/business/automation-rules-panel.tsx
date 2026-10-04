@@ -49,7 +49,7 @@ function UnitField({ units }: { units: Unit[] }) {
   if (units.length === 1)
     return <input type="hidden" name="businessUnitId" value={units[0].id} />;
   return (
-    <label className="text-xs font-bold text-[var(--site-muted)]">
+    <label className="text-xs font-bold text-(--site-muted)">
       İş birimi
       <select
         name="businessUnitId"
@@ -104,7 +104,7 @@ export function AutomationRulesPanel({
   return (
     <div className="space-y-4">
       {dryRunNotice ? (
-        <p className="rounded-xl border border-[var(--brand-olive)]/30 bg-[var(--brand-olive)]/5 px-4 py-3 text-sm">
+        <p className="rounded-xl border border-(--brand-olive)/30 bg-(--brand-olive)/5 px-4 py-3 text-sm">
           Dry-run sonucu: <strong>{dryRunNotice.result}</strong>
           {dryRunNotice.matched ? " · koşul eşleşti" : " · koşul eşleşmedi"} ·
           kural {dryRunNotice.ruleId.slice(0, 8)}…
@@ -120,7 +120,7 @@ export function AutomationRulesPanel({
             Yeni otomasyon kuralı
           </h2>
           <UnitField units={units} />
-          <label className="text-xs font-bold text-[var(--site-muted)]">
+          <label className="text-xs font-bold text-(--site-muted)">
             Kural adı
             <input
               aria-label="Kural adı"
@@ -132,7 +132,7 @@ export function AutomationRulesPanel({
               className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
             />
           </label>
-          <label className="text-xs font-bold text-[var(--site-muted)]">
+          <label className="text-xs font-bold text-(--site-muted)">
             Tetikleyici
             <select
               aria-label="Tetikleyici"
@@ -148,7 +148,7 @@ export function AutomationRulesPanel({
           </label>
 
           <fieldset className="rounded-xl border p-3 sm:col-span-2 xl:col-span-3">
-            <legend className="px-1 text-xs font-bold text-[var(--site-muted)]">
+            <legend className="px-1 text-xs font-bold text-(--site-muted)">
               Koşullar (AND)
             </legend>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
@@ -210,7 +210,7 @@ export function AutomationRulesPanel({
             </div>
           </fieldset>
 
-          <label className="text-xs font-bold text-[var(--site-muted)]">
+          <label className="text-xs font-bold text-(--site-muted)">
             Aksiyon
             <select
               aria-label="Aksiyon"
@@ -233,7 +233,7 @@ export function AutomationRulesPanel({
               </optgroup>
             </select>
           </label>
-          <label className="text-xs font-bold text-[var(--site-muted)]">
+          <label className="text-xs font-bold text-(--site-muted)">
             Etiket / görev başlığı
             <input
               aria-label="Etiket"
@@ -248,7 +248,7 @@ export function AutomationRulesPanel({
               className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
             />
           </label>
-          <label className="text-xs font-bold text-[var(--site-muted)]">
+          <label className="text-xs font-bold text-(--site-muted)">
             Onaylı e-posta şablonu
             <select
               name="templateKey"
@@ -261,7 +261,7 @@ export function AutomationRulesPanel({
               ))}
             </select>
           </label>
-          <label className="text-xs font-bold text-[var(--site-muted)] sm:col-span-2">
+          <label className="text-xs font-bold text-(--site-muted) sm:col-span-2">
             Bildirim metni
             <input
               name="notificationTitle"
@@ -283,7 +283,7 @@ export function AutomationRulesPanel({
             />
             Kaydı aktif oluştur
           </label>
-          <button className="rounded-xl bg-[var(--brand-olive)] p-2 text-sm font-bold text-white sm:col-span-2 xl:col-span-3">
+          <button className="rounded-xl bg-(--brand-olive) p-2 text-sm font-bold text-white sm:col-span-2 xl:col-span-3">
             Kural ekle
           </button>
         </form>
@@ -296,14 +296,14 @@ export function AutomationRulesPanel({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <strong>{rule.name}</strong>
-                  <p className="text-xs text-[var(--site-muted)]">
+                  <p className="text-xs text-(--site-muted)">
                     {AUTOMATION_TRIGGER_LABELS[
                       rule.triggerType as keyof typeof AUTOMATION_TRIGGER_LABELS
                     ] || rule.triggerType}
                     {" · "}
                     {actionSummary(rule.actions)}
                   </p>
-                  <p className="mt-1 text-[10px] text-[var(--site-muted)]">
+                  <p className="mt-1 text-[10px] text-(--site-muted)">
                     Son çalıştırma:{" "}
                     {rule.lastRunAt ? dt.format(rule.lastRunAt) : "Henüz yok"} ·
                     Çalıştırma: {rule.runCount} · Hata (son 5):{" "}
@@ -373,7 +373,7 @@ export function AutomationRulesPanel({
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-[var(--site-line)] px-5 py-10 text-center text-sm text-[var(--site-muted)]">
+        <div className="rounded-2xl border border-dashed border-(--site-line) px-5 py-10 text-center text-sm text-(--site-muted)">
           Otomasyon kuralı yok.
         </div>
       )}

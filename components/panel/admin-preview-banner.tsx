@@ -47,7 +47,7 @@ export function AdminPreviewBanner({
     <div
       role="status"
       aria-live="polite"
-      className="sticky top-0 z-[60] border-b border-amber-300/80 bg-amber-50 px-4 py-2.5 text-amber-950 sm:px-7"
+      className="sticky top-0 z-60 border-b border-amber-300/80 bg-amber-50 px-4 py-2.5 text-amber-950 sm:px-7"
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
@@ -76,7 +76,7 @@ export function AdminPreviewBanner({
         <div className="flex flex-wrap gap-2">
           <a
             href="/panel/yonetim?onizleme=1"
-            className="rounded-[10px] border border-amber-400 bg-white px-3 py-2 text-[12px] font-bold text-amber-950 transition-colors hover:border-amber-600"
+            className="rounded-od border border-amber-400 bg-white px-3 py-2 text-[12px] font-bold text-amber-950 transition-colors hover:border-amber-600"
           >
             {copy.switchLabel}
           </a>
@@ -84,7 +84,7 @@ export function AdminPreviewBanner({
             type="button"
             onClick={exitPreview}
             disabled={pending}
-            className="rounded-[10px] bg-amber-900 px-3 py-2 text-[12px] font-bold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-od bg-amber-900 px-3 py-2 text-[12px] font-bold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pending ? "Çıkılıyor…" : "Önizlemeden Çık"}
           </button>

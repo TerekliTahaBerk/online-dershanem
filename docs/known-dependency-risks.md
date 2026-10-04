@@ -43,3 +43,17 @@ geçince CI yeniden kırmızı olur.
   mümkün değildir.
 - Yeniden değerlendirme: 14 Ekim 2026 veya Storybook adaptörü bu bağımlılığı
   kaldırdığında (hangisi önceyse).
+
+## Kaldırılan braces zinciri
+
+- `GHSA-vfj7-8cjw-p6xm` için yeni bir audit istisnası eklenmedi. Tailwind 4
+  geçişi Tailwind 3'ün `braces` zincirini kaldırır.
+- Next ESLint halen `fast-glob` kullanır. Bu depodaki tek tüketicisinin
+  `globSync(pattern, { onlyDirectories: true })` çağrısı,
+  `tools/next-glob-compat` içindeki `tinyglobby` uyarlamasıyla karşılanır.
+  Uyarlama literal dizinlerde alt dizin taramasını kapatır, mutlak yolları ve
+  brace desenlerini korur, dizin sonundaki slash'i kaldırır.
+- `lib/next-glob-compat.test.ts` gerçek kurulu Next ESLint modülü üzerinden
+  bu davranışı sınar. Başka bir `fast-glob` tüketicisi eklenirse veya Next
+  ESLint farklı bir API kullanmaya başlarsa override yeniden değerlendirilmeli;
+  bu uyarlama genel amaçlı `fast-glob` yerine geçmez.

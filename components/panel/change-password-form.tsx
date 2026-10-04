@@ -50,14 +50,14 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
   }
 
   const field =
-    "rounded-[12px] border border-[var(--site-line)] bg-white px-4 py-3 text-[15px] text-[var(--site-ink)] outline-none transition-colors focus-visible:border-[var(--brand-olive)] focus-visible:ring-2 focus-visible:ring-[var(--brand-olive-soft)] disabled:opacity-60";
+    "rounded-[12px] border border-(--site-line) bg-white px-4 py-3 text-[15px] text-(--site-ink) outline-hidden transition-colors focus-visible:border-(--brand-olive) focus-visible:ring-2 focus-visible:ring-(--brand-olive-soft) disabled:opacity-60";
 
   return (
     <form onSubmit={onSubmit} className="mt-7 flex flex-col gap-4" noValidate>
       <div className="flex flex-col gap-2">
         <label
           htmlFor="currentPassword"
-          className="text-[13px] font-semibold text-[var(--site-ink)]"
+          className="text-[13px] font-semibold text-(--site-ink)"
         >
           {forced ? "Mevcut parola" : "Mevcut parolanız"}
         </label>
@@ -76,7 +76,7 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
       <div className="flex flex-col gap-2">
         <label
           htmlFor="newPassword"
-          className="text-[13px] font-semibold text-[var(--site-ink)]"
+          className="text-[13px] font-semibold text-(--site-ink)"
         >
           Yeni parola
         </label>
@@ -93,7 +93,7 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
         />
         <p
           id="password-hint"
-          className="text-[12.5px] leading-5 text-[var(--site-muted)]"
+          className="text-[12.5px] leading-5 text-(--site-muted)"
         >
           En az {PASSWORD_MIN_LENGTH} karakter. Büyük harf veya sembol zorunlu
           değil — uzun ve hatırlayabileceğiniz bir cümle en iyisidir.
@@ -103,7 +103,7 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
       <div className="flex flex-col gap-2">
         <label
           htmlFor="repeat"
-          className="text-[13px] font-semibold text-[var(--site-ink)]"
+          className="text-[13px] font-semibold text-(--site-ink)"
         >
           Yeni parola (tekrar)
         </label>

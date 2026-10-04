@@ -50,9 +50,9 @@ export default async function OdkAdminResultsHubPage() {
         description="Puanlama tamamlanması sonucu öğrenciye açmaz. Yayın ayrı bir yönetim aksiyonudur."
         icon={BarChart3}
       />
-      <div className="mt-7 overflow-x-auto rounded-3xl border border-[var(--site-line)] bg-white">
+      <div className="mt-7 overflow-x-auto rounded-3xl border border-(--site-line) bg-white">
         <table className="w-full min-w-[860px] text-left text-xs">
-          <thead className="bg-[var(--site-bg-warm)] text-[10px] uppercase tracking-wide text-[var(--site-muted)]">
+          <thead className="bg-(--site-bg-warm) text-[10px] uppercase tracking-wide text-(--site-muted)">
             <tr>
               <th className="px-4 py-3">Deneme</th>
               <th className="px-3 py-3">Tür</th>
@@ -74,17 +74,17 @@ export default async function OdkAdminResultsHubPage() {
               return (
                 <tr
                   key={exam.id}
-                  className="border-t border-[var(--site-line)] hover:bg-[var(--site-bg-warm)]/60"
+                  className="border-t border-(--site-line) hover:bg-(--site-bg-warm)/60"
                 >
                   <td className="px-4 py-3">
                     <Link
                       href={`/panel/odk/yonetim/sinavlar/${exam.id}#adim-sonuc`}
-                      className="font-bold text-[var(--site-ink)] hover:text-[var(--brand-olive)]"
+                      className="font-bold text-(--site-ink) hover:text-(--brand-olive)"
                     >
                       {exam.title}
                     </Link>
                   </td>
-                  <td className="px-3 py-3 font-extrabold text-[var(--brand-olive)]">
+                  <td className="px-3 py-3 font-extrabold text-(--brand-olive)">
                     {exam.family}
                   </td>
                   <td className="px-3 py-3">
@@ -114,7 +114,7 @@ export default async function OdkAdminResultsHubPage() {
           <div className="p-8 text-center">
             <ClipboardCheck
               size={22}
-              className="mx-auto text-[var(--site-muted)]"
+              className="mx-auto text-(--site-muted)"
             />
             <h3 className="mt-3 text-sm font-extrabold">
               Henüz kapanmış deneme yok.

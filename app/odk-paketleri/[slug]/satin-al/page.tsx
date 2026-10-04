@@ -28,13 +28,13 @@ export default async function OdkCheckoutPage({ params }: { params: Params }) {
       <main
         id="main-content"
         tabIndex={-1}
-        className="min-h-screen bg-[var(--site-bg-warm)] py-10"
+        className="min-h-screen bg-(--site-bg-warm) py-10"
       >
         <div className="mx-auto max-w-[860px] px-5 sm:px-8">
-          <nav className="mb-5 text-xs uppercase tracking-wider text-[var(--site-body)]">
+          <nav className="mb-5 text-xs uppercase tracking-wider text-(--site-body)">
             <Link
               href={`/odk-paketleri/${slug}`}
-              className="hover:text-[var(--site-ink)]"
+              className="hover:text-(--site-ink)"
             >
               {item.contract.package.title}
             </Link>
@@ -58,7 +58,7 @@ export default async function OdkCheckoutPage({ params }: { params: Params }) {
               <h1 className="font-display text-3xl">
                 {odkAvailabilityLabel(item.availability.reason)}
               </h1>
-              <p className="mx-auto mt-4 max-w-xl leading-7 text-[var(--site-body)]">
+              <p className="mx-auto mt-4 max-w-xl leading-7 text-(--site-body)">
                 Bu paket için yeni sipariş açmıyoruz. Eksik veya kapalı bir
                 akışa ödeme göndermemek için checkout güvenli biçimde
                 durduruldu.

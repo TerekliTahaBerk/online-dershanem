@@ -57,7 +57,7 @@ export default async function OdkPilotPage() {
       description: "Aktivasyondan önce tamamlanmalı",
       icon: AlertTriangle,
       className:
-        "bg-[var(--pd-pastel-blush-soft)] text-[var(--pd-pastel-blush-ink)]",
+        "bg-(--pd-pastel-blush-soft) text-(--pd-pastel-blush-ink)",
     },
     {
       status: "WAIT" as const,
@@ -65,7 +65,7 @@ export default async function OdkPilotPage() {
       description: "İlk pilotu durdurmaz; genişlemeyi durdurur",
       icon: Clock3,
       className:
-        "bg-[var(--pd-pastel-yellow-soft)] text-[var(--pd-pastel-yellow-ink)]",
+        "bg-(--pd-pastel-yellow-soft) text-(--pd-pastel-yellow-ink)",
     },
     {
       status: "PASS" as const,
@@ -73,7 +73,7 @@ export default async function OdkPilotPage() {
       description: "Kanıtı güncel",
       icon: CheckCircle2,
       className:
-        "bg-[var(--pd-pastel-mint-soft)] text-[var(--pd-pastel-mint-ink)]",
+        "bg-(--pd-pastel-mint-soft) text-(--pd-pastel-mint-ink)",
     },
   ].map((group) => ({
     ...group,
@@ -102,7 +102,7 @@ export default async function OdkPilotPage() {
             </span>
             <p className="mt-4 text-2xl font-black">{group.checks.length}</p>
             <p className="mt-1 text-xs font-bold">{group.label} kapı</p>
-            <p className="mt-1 text-[10px] leading-4 text-[var(--site-muted)]">
+            <p className="mt-1 text-[10px] leading-4 text-(--site-muted)">
               {group.description}
             </p>
           </article>
@@ -111,12 +111,12 @@ export default async function OdkPilotPage() {
 
       <section className="mt-5 panel-surface p-5 sm:p-6">
         <div className="flex items-start gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[var(--panel-nav-active)] text-[var(--brand-olive)]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-(--panel-nav-active) text-(--brand-olive)">
             <ShieldCheck size={19} />
           </span>
           <div>
             <h2 className="text-sm font-extrabold">ODK yayın kapıları</h2>
-            <p className="mt-1 text-xs leading-5 text-[var(--site-muted)]">
+            <p className="mt-1 text-xs leading-5 text-(--site-muted)">
               {readiness.canActivate
                 ? "Pilot aktivasyonu için bloke kapı kalmadı."
                 : "Bloke kapılar tamamlanmadan pilot erişimi açılamaz."}{" "}
@@ -150,7 +150,7 @@ export default async function OdkPilotPage() {
                   {group.checks.map((check) => (
                     <article
                       key={check.key}
-                      className="rounded-2xl border border-[var(--site-line)] bg-[var(--site-bg-warm)] p-4"
+                      className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4"
                     >
                       <span
                         className={`rounded-full px-2 py-1 text-[10px] font-extrabold ${group.className}`}
@@ -160,7 +160,7 @@ export default async function OdkPilotPage() {
                       <h4 className="mt-3 text-xs font-extrabold">
                         {check.label}
                       </h4>
-                      <p className="mt-2 text-[11px] leading-5 text-[var(--site-muted)]">
+                      <p className="mt-2 text-[11px] leading-5 text-(--site-muted)">
                         {check.detail}
                       </p>
                     </article>

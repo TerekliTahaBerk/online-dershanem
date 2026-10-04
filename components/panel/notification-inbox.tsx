@@ -76,12 +76,12 @@ export function NotificationInbox({
 
   return (
     <section className="panel-surface overflow-hidden">
-      <div className="flex items-center justify-between gap-3 border-b border-[var(--site-line)] p-5">
+      <div className="flex items-center justify-between gap-3 border-b border-(--site-line) p-5">
         <div>
-          <h2 className="text-sm font-extrabold text-[var(--site-ink)]">
+          <h2 className="text-sm font-extrabold text-(--site-ink)">
             Son bildirimler
           </h2>
-          <p className="mt-1 text-xs text-[var(--site-muted)]">
+          <p className="mt-1 text-xs text-(--site-muted)">
             {unread
               ? `${unread} okunmamış · ${total} eşleşen kayıt`
               : `${total} kayıt · hepsini gördünüz`}
@@ -103,13 +103,13 @@ export function NotificationInbox({
           </button>
         ) : null}
       </div>
-      <div className="divide-y divide-[var(--site-line)]">
+      <div className="divide-y divide-(--site-line)">
         {items.map((item) => {
           const Icon = icons[item.type];
           return (
             <article
               key={item.id}
-              className={`relative flex items-start gap-2 p-5 transition ${item.href ? "hover:bg-[var(--site-bg-warm)]" : ""} ${item.read ? "opacity-75" : "bg-[#fbfcf8]"}`}
+              className={`relative flex items-start gap-2 p-5 transition ${item.href ? "hover:bg-(--site-bg-warm)" : ""} ${item.read ? "opacity-75" : "bg-[#fbfcf8]"}`}
             >
               {!item.read ? (
                 <span
@@ -131,18 +131,18 @@ export function NotificationInbox({
                 }
               >
                 <span
-                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${item.read ? "bg-slate-100 text-slate-500" : "bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]"}`}
+                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${item.read ? "bg-slate-100 text-slate-500" : "bg-(--brand-olive-soft) text-(--brand-olive)"}`}
                 >
                   <Icon size={17} />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <strong className="block text-xs text-[var(--site-ink)]">
+                  <strong className="block text-xs text-(--site-ink)">
                     {item.title}
                   </strong>
-                  <span className="mt-1 block text-xs leading-5 text-[var(--site-body)]">
+                  <span className="mt-1 block text-xs leading-5 text-(--site-body)">
                     {item.body}
                   </span>
-                  <time className="mt-1 block text-[10px] text-[var(--site-muted)]">
+                  <time className="mt-1 block text-[10px] text-(--site-muted)">
                     {item.dateLabel}
                   </time>
                 </span>
@@ -155,7 +155,7 @@ export function NotificationInbox({
                     event.stopPropagation();
                     void markRead(item.id);
                   }}
-                  className="self-start inline-flex min-h-11 items-center rounded-lg px-3 text-xs font-bold text-[var(--brand-olive)] hover:bg-white"
+                  className="self-start inline-flex min-h-11 items-center rounded-lg px-3 text-xs font-bold text-(--brand-olive) hover:bg-white"
                   aria-label={`${item.title} bildirimini okundu yap`}
                 >
                   {busy === item.id ? (
@@ -170,13 +170,13 @@ export function NotificationInbox({
         })}
         {!items.length ? (
           <div className="p-10 text-center">
-            <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[var(--brand-olive-soft)] text-[var(--brand-olive)]">
+            <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-(--brand-olive-soft) text-(--brand-olive)">
               <Bell size={20} />
             </span>
-            <p className="mt-4 text-sm font-bold text-[var(--site-ink)]">
+            <p className="mt-4 text-sm font-bold text-(--site-ink)">
               Şimdilik yeni bildirim yok
             </p>
-            <p className="mt-1 text-xs text-[var(--site-muted)]">
+            <p className="mt-1 text-xs text-(--site-muted)">
               Ders, ödev ve önemli sistem gelişmeleri burada görünecek.
             </p>
           </div>

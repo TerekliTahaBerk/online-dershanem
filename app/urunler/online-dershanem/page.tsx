@@ -53,9 +53,9 @@ export default function OnlineDershanemPage() {
         />
 
         {/* Derste ve ders sonrasında ne oluyor? */}
-        <section className="mt-[var(--dc-section-tight)] border-y border-dc-line-soft bg-white">
-          <div className="site-container py-[var(--dc-section-tight)]">
-            <h2 className="max-w-[560px] font-display text-[length:var(--public-title)] leading-[1.1] tracking-[-0.025em] text-dc-ink">
+        <section className="mt-(--dc-section-tight) border-y border-dc-line-soft bg-white">
+          <div className="site-container py-(--dc-section-tight)">
+            <h2 className="max-w-[560px] font-display text-(length:--public-title) leading-[1.1] tracking-tight text-dc-ink">
               Derste ve ders sonrasında ne oluyor?
             </h2>
 
