@@ -529,8 +529,8 @@ export function LeadDetailPanel({
                 }
                 className="rounded-xl border px-2 py-2 text-xs"
               >
-                <option value="OD">OnlineDershanem siparişi</option>
-                <option value="ODK">Online Deneme Kulübüm siparişi</option>
+                <option value="OD">onlinedershanem. siparişi</option>
+                <option value="ODK">onlinedenemekulübüm. siparişi</option>
               </select>
               <input
                 name="orderId"

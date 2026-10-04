@@ -23,7 +23,7 @@ import {
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "Online Dershanem | Canlı derste öğretmenle ilerle",
+  title: "onlinedershanem. | Canlı derste öğretmenle ilerle",
   description:
     "LGS ve YKS için birebir ya da en fazla 4 kişilik grupta canlı ders, ders takibi, veli özeti ve Dino AI ders analizi.",
   canonical: "/urunler/online-dershanem",
@@ -37,10 +37,10 @@ export default function OnlineDershanemPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
-      <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: "Online Dershanem", url: "/urunler/online-dershanem" }])} />
+      <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: "onlinedershanem.", url: "/urunler/online-dershanem" }])} />
       <main id="main-content" tabIndex={-1}>
         <ProductHero
-          eyebrow="Ürün · Online Dershanem"
+          eyebrow="Ürün · onlinedershanem."
           title="Canlı derste öğretmenle ilerle."
           body="Birebir ya da en fazla 4 kişilik grupta ders. Öğretmen soruyu derste seninle çözer; ders bitince neyi tekrar edeceğin yazılı olarak kalır."
           tracks={["LGS", "YKS"]}
@@ -137,12 +137,12 @@ export default function OnlineDershanemPage() {
         <CrossSellWithPrice
           cards={[
             {
-              eyebrow: "+ Online Koçum",
+              eyebrow: "+ onlinekoçum.",
               title: "Haftalık plan ve takip",
               body: "Derste öğrendiğini hangi gün, ne kadar çalışacağın netleşir.",
             },
             {
-              eyebrow: "+ Online Deneme Kulübüm",
+              eyebrow: "+ onlinedenemekulübüm.",
               title: "Ölçme ve analiz",
               body: "Öğrendiğin konunun sınavda karşılığını görürsün.",
             },

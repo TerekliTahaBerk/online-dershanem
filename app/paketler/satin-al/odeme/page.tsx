@@ -93,7 +93,7 @@ export default async function OdPaymentPage({
             { label: "Bilgiler", href: editHref },
             { label: "Ödeme" },
           ]}
-          eyebrow="Online Dershanem"
+          eyebrow="onlinedershanem."
           title={order.packageName}
           totalCents={order.totalCents}
           editHref={editHref}

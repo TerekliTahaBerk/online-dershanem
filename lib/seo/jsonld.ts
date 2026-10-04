@@ -42,7 +42,7 @@ export function courseJsonLd(input: CourseInput) {
     inLanguage: input.inLanguage ?? "tr-TR",
     provider: {
       "@type": "Organization",
-      name: input.provider?.name ?? "Online Dershanem",
+      name: input.provider?.name ?? "onlinedershanem.",
       sameAs: input.provider?.url ?? siteUrl,
     },
   };
@@ -70,7 +70,7 @@ export function productJsonLd(input: ProductInput) {
     url: input.url.startsWith("http") ? input.url : `${siteUrl}${input.url}`,
     image: input.image ? (input.image.startsWith("http") ? input.image : `${siteUrl}${input.image}`) : undefined,
     sku: input.sku,
-    brand: { "@type": "Brand", name: "Online Dershanem" },
+    brand: { "@type": "Brand", name: "onlinedershanem." },
     offers: {
       "@type": "Offer",
       price: (input.priceCents / 100).toFixed(2),
@@ -106,12 +106,12 @@ export function articleJsonLd(input: ArticleInput) {
     dateModified: new Date(input.dateModified ?? input.datePublished).toISOString(),
     author: {
       "@type": "Organization",
-      name: input.authorName ?? "Online Dershanem",
+      name: input.authorName ?? "onlinedershanem.",
       url: `${siteUrl}/hakkimizda`,
     },
     publisher: {
       "@type": "Organization",
-      name: "Online Dershanem",
+      name: "onlinedershanem.",
       logo: { "@type": "ImageObject", url: `${siteUrl}/logo.png` },
     },
   };
@@ -127,7 +127,7 @@ export function organizationJsonLd() {
       "@context": "https://schema.org",
       "@type": "Organization",
       "@id": `${siteUrl}/#organization`,
-      name: "Online Dershanem",
+      name: "onlinedershanem.",
       url: `${siteUrl}/`,
       logo: {
         "@type": "ImageObject",
@@ -140,7 +140,7 @@ export function organizationJsonLd() {
       "@context": "https://schema.org",
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
-      name: "Online Dershanem",
+      name: "onlinedershanem.",
       url: `${siteUrl}/`,
       inLanguage: "tr-TR",
       publisher: { "@id": `${siteUrl}/#organization` },

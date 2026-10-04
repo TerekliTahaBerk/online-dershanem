@@ -9,12 +9,12 @@ import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "Online Dershanem Blog",
+  title: "onlinedershanem. Blog",
   description:
     "Online dershane ve online özel ders rehberleri: LGS-YKS çalışma planı, küçük grup ders modeli ve haftalık takip sistemi üzerine yazılar.",
   canonical: "/blog",
   imagePath: "/blog/opengraph-image",
-  imageAlt: "Online Dershanem Blog",
+  imageAlt: "onlinedershanem. Blog",
 });
 
 /** BLOG — onaylı tasarım (Web.dc.html → isBlog), gerçek yazılara bağlı. */

@@ -120,7 +120,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               <span className="font-semibold text-(--site-ink)">
                 Editoryal kontrol:
               </span>
-              <span>Online Dershanem Eğitim Ekibi</span>
+              <span>onlinedershanem. Eğitim Ekibi</span>
               <span aria-hidden="true">·</span>
               <span>Son kontrol {formatBlogDate(reviewedAt)}</span>
             </div>

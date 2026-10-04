@@ -4,11 +4,11 @@ export const dynamic = "force-static";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Online Dershanem",
-    short_name: "Online Dershanem",
+    name: "onlinedershanem.",
+    short_name: "onlinedershanem.",
     // Açıklama math-only dönemden kalmıştı; site artık üç ürünlü ve çok dersli.
     description:
-      "LGS ve YKS için canlı ders, koçluk ve deneme analizi: Online Dershanem, Online Koçum ve Online Deneme Kulübüm.",
+      "LGS ve YKS için canlı ders, koçluk ve deneme analizi: onlinedershanem., onlinekoçum. ve onlinedenemekulübüm.",
     start_url: "/",
     display: "standalone",
     // Onaylı tasarımın zemini (`--dc-canvas`). Eski krem #FBFAF5 buradan

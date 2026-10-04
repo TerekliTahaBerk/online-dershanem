@@ -15,7 +15,7 @@ import { getPublicPricingCopy } from "@/lib/commerce/public-pricing-copy";
 export const metadata = buildMarketingMetadata({
   title: "Paketler | Kendi paketini oluştur",
   description:
-    "Online Dershanem, Online Koçum ve Online Deneme Kulübüm'ü tek tek ya da birlikte seç; güncel fiyatları ve birlikte alım avantajını gör, başlangıcını planla.",
+    "onlinedershanem., onlinekoçum. ve onlinedenemekulübüm.'ü tek tek ya da birlikte seç; güncel fiyatları ve birlikte alım avantajını gör, başlangıcını planla.",
   canonical: "/paketler",
 });
 
@@ -81,7 +81,7 @@ export default async function PackagesPage() {
             },
             {
               q: "Faturalama nasıl işliyor?",
-              a: "Ders ve Online Koçum aylık, Online Deneme Kulübüm dönemliktir. Birlikte seçtiğinde aylık ve dönemlik tutarlar paket özetinde ayrı ayrı görünür.",
+              a: "Ders ve onlinekoçum. aylık, onlinedenemekulübüm. dönemliktir. Birlikte seçtiğinde aylık ve dönemlik tutarlar paket özetinde ayrı ayrı görünür.",
             },
             {
               q: "Paket fiyatımı sonradan değiştirebilir miyim?",

@@ -4,19 +4,19 @@ import { breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "LGS Matematik Canlı Ders | Online Dershanem",
+  title: "LGS Matematik Canlı Ders | onlinedershanem.",
   description:
     "LGS matematik kursu: en fazla 4 öğrencilik online canlı ders, yeni nesil soru çözümü, çalışma programı ve ders sonrası öğretmen yönlendirmesi.",
   canonical: "/lgs",
   imagePath: "/lgs/opengraph-image",
-  imageAlt: "LGS matematik canlı ders — Online Dershanem",
+  imageAlt: "LGS matematik canlı ders — onlinedershanem.",
 });
 
 export default function LGSLandingPage() {
   const lgsFaq = [
     {
       q: "LGS öğrencisi için hangi paket var?",
-      a: "LGS öğrencisi için Online Dershanem içinde LGS Matematik Ders Paketi var. Öğrenci seviyesi ve hedefi konuşulduktan sonra uygun küçük gruba yerleştirilir.",
+      a: "LGS öğrencisi için onlinedershanem. içinde LGS Matematik Ders Paketi var. Öğrenci seviyesi ve hedefi konuşulduktan sonra uygun küçük gruba yerleştirilir.",
     },
     {
       q: "Dersler kalabalık sınıf şeklinde mi?",
@@ -36,14 +36,14 @@ export default function LGSLandingPage() {
     },
   ];
   const courseLd = courseJsonLd({
-    name: "Online Dershanem LGS Matematik Canlı Ders",
+    name: "onlinedershanem. LGS Matematik Canlı Ders",
     description:
       "LGS matematik için küçük grup canlı ders (en fazla 4 öğrenci), ders sonrası çalışma yönü ve kazanım odaklı çalışma.",
     url: "/lgs/",
   });
   const breadcrumbLd = breadcrumbJsonLd([
     { name: "Ana Sayfa", url: "/" },
-    { name: "Online Dershanem", url: "/urunler/online-dershanem/" },
+    { name: "onlinedershanem.", url: "/urunler/online-dershanem/" },
     { name: "LGS Matematik Canlı Ders", url: "/lgs/" },
   ]);
   return (
@@ -56,7 +56,7 @@ export default function LGSLandingPage() {
           heroTitle:
             "LGS matematikte öğrencinin çözümünün görüldüğü küçük grup.",
           heroText:
-            "LGS öğrencisi derste çözümünü gösterir, sorusunu bekletmeden sorar ve hafta içinde hangi çalışmayla devam edeceğini bilir. İhtiyaç olursa bu akış, Online Koçum plan takibi ve Online Deneme Kulübüm deneme analiziyle desteklenebilir.",
+            "LGS öğrencisi derste çözümünü gösterir, sorusunu bekletmeden sorar ve hafta içinde hangi çalışmayla devam edeceğini bilir. İhtiyaç olursa bu akış, onlinekoçum. plan takibi ve onlinedenemekulübüm. deneme analiziyle desteklenebilir.",
           highlights: [
             "En fazla 4 öğrencilik matematik grubunda daha fazla bireysel temas",
             "Yeni nesil sorularda birlikte çözüm ve soru-cevap",

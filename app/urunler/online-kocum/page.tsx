@@ -13,7 +13,7 @@ import { singleProductPriceLabel } from "@/lib/commerce/package-builder-pricing"
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "Online Koçum | Planını uygula",
+  title: "onlinekoçum. | Planını uygula",
   description:
     "Kişisel haftalık çalışma planı, birebir koç görüşmesi ve düzenli takip. LGS ve YKS için, tüm dersleri kapsar.",
   canonical: "/urunler/online-kocum",
@@ -35,10 +35,10 @@ export default function OnlineKocumPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
-      <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: "Online Koçum", url: "/urunler/online-kocum" }])} />
+      <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: "onlinekoçum.", url: "/urunler/online-kocum" }])} />
       <main id="main-content" tabIndex={-1}>
         <ProductHero
-          eyebrow="Ürün · Online Koçum"
+          eyebrow="Ürün · onlinekoçum."
           title="Planını uygula."
           body="Kişisel çalışma planı, birebir koç görüşmesi ve düzenli takip. Ne çalışacağını bilmemek sorun olmaktan çıkar."
           tracks={["LGS", "YKS"]}
@@ -162,17 +162,17 @@ export default function OnlineKocumPage() {
         <CrossSellWithPrice
           cards={[
             {
-              eyebrow: "+ Online Dershanem",
+              eyebrow: "+ onlinedershanem.",
               title: "Konuyu öğretmenle kapat",
               body: "Plan hazır ama konu eksikse, canlı ders bu boşluğu kapatır.",
             },
             {
-              eyebrow: "+ Online Deneme Kulübüm",
+              eyebrow: "+ onlinedenemekulübüm.",
               title: "Planın işe yaradığını gör",
               body: "Deneme sonuçları planın bir sonraki haftasını besler.",
             },
           ]}
-          advantageNote="Online Dershanem ile birlikte daha avantajlı."
+          advantageNote="onlinedershanem. ile birlikte daha avantajlı."
           price={singleProductPriceLabel("kocum")}
           priceSuffix="/ ay"
           features={[
@@ -187,7 +187,7 @@ export default function OnlineKocumPage() {
             Durum açıkça yazılır; sayfa satın alınabilirmiş gibi davranmaz. */}
         <section className="site-container pt-6">
           <p className="rounded-dc-card-sm border border-dc-line bg-white px-5 py-4 text-[14.5px] leading-[1.6] text-dc-ink-muted">
-            Online Koçum için kayıtlar hazırlanıyor. Koçluk kontenjanı ve
+            onlinekoçum. için kayıtlar hazırlanıyor. Koçluk kontenjanı ve
             başlangıç tarihini ekibimizle planlayabilirsin; online kayıt akışı yayına
             alınmadan ödeme almıyoruz.
           </p>
@@ -205,7 +205,7 @@ export default function OnlineKocumPage() {
             },
             {
               q: "Ders almadan koçluk alabilir miyim?",
-              a: "Evet, Online Koçum tek başına planlanabilir. Güncel fiyatı bu sayfada ve paket kurucuda görebilirsin. Kontenjan ve başlangıç tarihini ekibimizle planlayabilirsin; online kayıt akışı açılmadan ödeme alınmaz.",
+              a: "Evet, onlinekoçum. tek başına planlanabilir. Güncel fiyatı bu sayfada ve paket kurucuda görebilirsin. Kontenjan ve başlangıç tarihini ekibimizle planlayabilirsin; online kayıt akışı açılmadan ödeme alınmaz.",
             },
           ]}
         />

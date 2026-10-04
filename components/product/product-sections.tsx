@@ -33,7 +33,7 @@ export function ProductHero({
     <section className="site-container pt-14 sm:pt-[72px]">
       <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-12">
         <div>
-          <p className="dc-eyebrow">{eyebrow}</p>
+          <p className="dc-eyebrow normal-case!">{eyebrow}</p>
           <h1 className="mt-4 font-display text-(length:--public-display) leading-[1.1] tracking-[-0.03em] text-dc-ink">
             {title}
           </h1>
@@ -145,7 +145,7 @@ export function ProductDinoBand({
   const inner = (
     <div className="site-container grid items-center gap-10 lg:grid-cols-2">
       <div>
-        <p className="dc-eyebrow">{eyebrow}</p>
+        <p className="dc-eyebrow normal-case!">{eyebrow}</p>
         <h2 className="mt-3.5 font-display text-[28px] leading-[1.14] tracking-[-0.02em] text-dc-ink sm:text-[36px]">
           {title}
         </h2>
@@ -231,7 +231,7 @@ export function CrossSellWithPrice({
               key={c.eyebrow}
               className="rounded-[18px] border border-dc-line bg-white p-5 sm:p-[22px]"
             >
-              <p className="font-mono text-xs font-semibold uppercase text-dc-brand-strong">
+              <p className="font-mono text-xs font-semibold text-dc-brand-strong">
                 {c.eyebrow}
               </p>
               <h3 className="mt-2.5 text-[19px] font-bold text-dc-ink">

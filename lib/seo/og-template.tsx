@@ -67,7 +67,7 @@ export function OgTemplate({ title, subtitle, badge, variant = "default" }: OgPr
           OD
         </div>
         <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: -0.3 }}>
-          Online Dershanem
+          onlinedershanem.
         </div>
       </div>
 

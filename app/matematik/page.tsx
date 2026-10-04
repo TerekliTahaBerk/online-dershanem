@@ -20,7 +20,7 @@ export const metadata = buildMarketingMetadata({
   description:
     "LGS, TYT ve AYT için en fazla 4 öğrencilik online matematik dersi; canlı soru çözümü, çalışma planı, deneme analizi ve açık paket fiyatları.",
   canonical: "/matematik",
-  imageAlt: "LGS ve YKS için online matematik dersi — Online Dershanem",
+  imageAlt: "LGS ve YKS için online matematik dersi — onlinedershanem.",
 });
 
 const mathFaqs = [
@@ -30,7 +30,7 @@ const mathFaqs = [
   },
   {
     q: "Matematik dersleri kaç kişilik?",
-    a: "Online Dershanem matematik gruplarında en fazla 4 öğrenci bulunur. Amaç, öğrencinin kalabalık sınıfta kaybolmadan çözümünü gösterebilmesi ve geri bildirim alabilmesidir.",
+    a: "onlinedershanem. matematik gruplarında en fazla 4 öğrenci bulunur. Amaç, öğrencinin kalabalık sınıfta kaybolmadan çözümünü gösterebilmesi ve geri bildirim alabilmesidir.",
   },
   {
     q: "LGS ve YKS matematik dersleri ayrı mı?",
@@ -123,7 +123,7 @@ export default function MathematicsHubPage() {
     ],
     publisher: {
       "@type": "Organization",
-      name: "Online Dershanem",
+      name: "onlinedershanem.",
       url: siteUrl,
     },
   };

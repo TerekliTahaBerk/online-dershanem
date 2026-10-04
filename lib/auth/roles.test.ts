@@ -65,9 +65,9 @@ test("OD mevcut rol yollarını korur, ODK ayrı ve benzersiz rol kökleri kulla
 test("ürün etiketleri kullanıcıya gösterilecek kadar açık", () => {
   // Etiketler public sitedeki ticari adlarla birebir aynı olmalı; kullanıcı
   // panelde başka, sitede başka bir ürün adı görmemeli.
-  assert.equal(productLabel("OD"), "Online Dershanem");
-  assert.equal(productLabel("OK"), "Online Koçum");
-  assert.equal(productLabel("ODK"), "Online Deneme Kulübüm");
+  assert.equal(productLabel("OD"), "onlinedershanem.");
+  assert.equal(productLabel("OK"), "onlinekoçum.");
+  assert.equal(productLabel("ODK"), "onlinedenemekulübüm.");
 });
 
 test("öğrenciler menüsü rol bazında doğru hedefe gider", () => {

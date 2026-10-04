@@ -111,7 +111,7 @@ export default async function TeacherPlanPage() {
     >
       <header>
         <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
-          <ListChecks size={15} /> Online Koçum planı
+          <ListChecks size={15} /> onlinekoçum. planı
         </p>
         <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
           Haftayı görün, düzenleyin, kilitleyin.

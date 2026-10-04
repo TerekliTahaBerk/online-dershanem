@@ -4,16 +4,16 @@ import { buildMarketingMetadata } from "@/lib/seo/metadata";
 export const metadata = buildMarketingMetadata({
   title: "Gizlilik Politikası",
   description:
-    "Online Dershanem gizlilik politikası, veri güvenliği ve kullanıcı hakları.",
+    "onlinedershanem. gizlilik politikası, veri güvenliği ve kullanıcı hakları.",
   canonical: "/gizlilik",
-  imageAlt: "Online Dershanem Gizlilik Politikası",
+  imageAlt: "onlinedershanem. Gizlilik Politikası",
 });
 
 export default function PrivacyPolicyPage() {
   return (
     <LegalPageTemplate
       pageTitle="Gizlilik Politikası"
-      intro="Online Dershanem (Platform), kullanıcılarının gizliliğine en yüksek düzeyde önem verir. Bu metin, kişisel verilerin hangi ilkelere göre toplandığını, işlendiğini, korunduğunu ve hangi amaçlarla kullanıldığını açıklar."
+      intro="onlinedershanem. (Platform), kullanıcılarının gizliliğine en yüksek düzeyde önem verir. Bu metin, kişisel verilerin hangi ilkelere göre toplandığını, işlendiğini, korunduğunu ve hangi amaçlarla kullanıldığını açıklar."
       effectiveDate="16 Mart 2026"
       sections={[
         {

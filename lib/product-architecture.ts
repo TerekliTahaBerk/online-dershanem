@@ -19,8 +19,8 @@ export const publicProducts = [
   {
     slug: "online-dershanem",
     registryCode: "OD",
-    name: "Online Dershanem",
-    label: "Dershanem",
+    name: "onlinedershanem.",
+    label: "onlinedershanem.",
     href: "/urunler/online-dershanem",
     role: "Çok dersli canlı öğrenme",
     eyebrow: "Birlikte öğren",
@@ -32,8 +32,8 @@ export const publicProducts = [
   {
     slug: "online-kocum",
     registryCode: "OK",
-    name: "Online Koçum",
-    label: "Koçum",
+    name: "onlinekoçum.",
+    label: "onlinekoçum.",
     href: "/urunler/online-kocum",
     role: "Planlama ve sürdürülebilir takip",
     eyebrow: "Düzenini kur",
@@ -45,8 +45,8 @@ export const publicProducts = [
   {
     slug: "online-deneme-kulubum",
     registryCode: "ODK",
-    name: "Online Deneme Kulübüm",
-    label: "Online Deneme Kulübüm",
+    name: "onlinedenemekulübüm.",
+    label: "onlinedenemekulübüm.",
     href: "/urunler/online-deneme-kulubum",
     role: "Ölçme, analiz ve sonraki adım",
     eyebrow: "Nerede olduğunu gör",

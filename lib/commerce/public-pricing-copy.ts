@@ -32,7 +32,7 @@ export function getPublicPricingCopy() {
     : coachCents - lessonAndCoach.monthlyTotal.bundleDiscountCents;
 
   return {
-    standalone: `Grup dersi ${label(formats.grup.campaignCents, "ay")}, birebir ders ${label(formats.birebir.campaignCents, "ay")}, Online Koçum ${label(coachCents, "ay")} ve Online Deneme Kulübüm ${label(singleProductPrice("denemeKulubum")?.campaignCents, "dönem")}.`,
-    bundles: `Dersle birlikte Online Koçum ${label(coachWithLesson, "ay")}, Online Deneme Kulübüm ${label(lessonAndExam.periodTotal.payableCents, "dönem")}. Yalnız koçlukla birlikte Online Deneme Kulübüm ${label(coachAndExam.periodTotal.payableCents, "dönem")}. Aylık ve dönemlik tutarlar ayrı gösterilir.`,
+    standalone: `Grup dersi ${label(formats.grup.campaignCents, "ay")}, birebir ders ${label(formats.birebir.campaignCents, "ay")}, onlinekoçum. ${label(coachCents, "ay")} ve onlinedenemekulübüm. ${label(singleProductPrice("denemeKulubum")?.campaignCents, "dönem")}.`,
+    bundles: `Dersle birlikte onlinekoçum. ${label(coachWithLesson, "ay")}, onlinedenemekulübüm. ${label(lessonAndExam.periodTotal.payableCents, "dönem")}. Yalnız koçlukla birlikte onlinedenemekulübüm. ${label(coachAndExam.periodTotal.payableCents, "dönem")}. Aylık ve dönemlik tutarlar ayrı gösterilir.`,
   };
 }

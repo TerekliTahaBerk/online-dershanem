@@ -4,22 +4,22 @@ import { buildMarketingMetadata } from "@/lib/seo/metadata";
 export const metadata = buildMarketingMetadata({
   title: "KVKK Aydınlatma Metni",
   description:
-    "Online Dershanem KVKK aydınlatma metni ve kişisel veri işleme esasları.",
+    "onlinedershanem. KVKK aydınlatma metni ve kişisel veri işleme esasları.",
   canonical: "/kvkk",
-  imageAlt: "Online Dershanem KVKK Aydınlatma Metni",
+  imageAlt: "onlinedershanem. KVKK Aydınlatma Metni",
 });
 
 export default function KVKKPage() {
   return (
     <LegalPageTemplate
       pageTitle="KVKK Aydınlatma Metni"
-      intro="6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) uyarınca, kişisel verileriniz veri sorumlusu sıfatıyla Online Dershanem (Platform) tarafından aşağıda açıklanan kapsamda işlenebilecektir."
+      intro="6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) uyarınca, kişisel verileriniz veri sorumlusu sıfatıyla onlinedershanem. (Platform) tarafından aşağıda açıklanan kapsamda işlenebilecektir."
       effectiveDate="16 Mart 2026"
       sections={[
         {
           title: "1. Veri Sorumlusu",
           paragraphs: [
-            "KVKK uyarınca veri sorumlusu Online Dershanem'dir (Platform).",
+            "KVKK uyarınca veri sorumlusu onlinedershanem.'dir (Platform).",
             "Kişisel verilerinizin işlenmesine ilişkin tüm soru ve talepleriniz için iletisim@onlinedershanem.com adresinden bizimle iletişime geçebilirsiniz.",
           ],
         },

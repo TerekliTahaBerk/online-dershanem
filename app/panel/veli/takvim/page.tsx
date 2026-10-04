@@ -74,7 +74,7 @@ export default async function ParentLessonsPage({
         <PanelHeading title="Dersler" description={selected.name} />
         <PanelEmpty
           title="Bu hesapta canlı ders ürünü bulunmuyor."
-          body="Online Dershanem eklendiğinde ders takvimi ve katılım burada görünür."
+          body="onlinedershanem. eklendiğinde ders takvimi ve katılım burada görünür."
         />
       </>,
     );

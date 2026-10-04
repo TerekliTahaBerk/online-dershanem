@@ -14,7 +14,7 @@ import { singleProductPriceLabel } from "@/lib/commerce/package-builder-pricing"
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "Online Deneme Kulübüm | Deneme ve analiz",
+  title: "onlinedenemekulübüm. | Deneme ve analiz",
   description:
     "LGS, TYT ve AYT denemeleri; konu ve soru tipine göre kayıp analizi, denemeler arası gelişim takibi ve Dino AI deneme yorumu.",
   canonical: "/urunler/online-deneme-kulubum",
@@ -34,10 +34,10 @@ export default function OnlineDenemeKulubumPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
-      <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: "Online Deneme Kulübüm", url: "/urunler/online-deneme-kulubum" }])} />
+      <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: "onlinedenemekulübüm.", url: "/urunler/online-deneme-kulubum" }])} />
       <main id="main-content" tabIndex={-1}>
         <ProductHero
-          eyebrow="Ürün · Online Deneme Kulübüm"
+          eyebrow="Ürün · onlinedenemekulübüm."
           title="Sonucun sadece net sayısı olarak kalmasın."
           body="LGS, TYT ve AYT denemeleri. Hangi konuda, hangi soru tipinde ve zaman yönetiminde puan kaybettiğini görürsün; sonraki hafta neye ağırlık vereceğin belli olur."
           tracks={["LGS", "TYT", "AYT"]}
@@ -118,12 +118,12 @@ export default function OnlineDenemeKulubumPage() {
         <CrossSellWithPrice
           cards={[
             {
-              eyebrow: "+ Online Dershanem",
+              eyebrow: "+ onlinedershanem.",
               title: "Eksiği derste kapat",
               body: "Analizde çıkan zayıf konu, canlı derste öğretmenle çalışılır.",
             },
             {
-              eyebrow: "+ Online Koçum",
+              eyebrow: "+ onlinekoçum.",
               title: "Analizi plana çevir",
               body: "Koç, deneme sonucuna göre haftalık planı güncelleyebilir.",
             },

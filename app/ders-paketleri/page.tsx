@@ -8,7 +8,7 @@ import { lessonPackage, lessonPackages } from "@/lib/pricing-content";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "LGS ve YKS Matematik Ders Paketleri | Online Dershanem",
+  title: "LGS ve YKS Matematik Ders Paketleri | onlinedershanem.",
   description:
     `LGS ve YKS online matematik ders paketleri: ayda ${lessonPackage.lessonsPerMonth} × ${lessonPackage.lessonDurationMinutes} dakika canlı ders, en fazla 4 öğrenci, ${lessonPackage.priceLabel} ve taahhütsüz ödeme.`,
   canonical: "/ders-paketleri",
@@ -21,7 +21,7 @@ export default function LessonPackagesPage() {
         schema={[
           breadcrumbJsonLd([
             { name: "Ana Sayfa", url: "/" },
-            { name: "Online Dershanem", url: "/urunler/online-dershanem/" },
+            { name: "onlinedershanem.", url: "/urunler/online-dershanem/" },
             { name: "Ders Seçenekleri", url: "/ders-paketleri/" },
           ]),
           ...lessonPackages.map((pkg) =>
@@ -46,10 +46,10 @@ export default function LessonPackagesPage() {
         title={
           <>
             Canlı ders seçenekleri,{" "}
-            Online Dershanem kapsamında.
+            onlinedershanem. kapsamında.
           </>
         }
-        subtitle="Bu sayfa Online Dershanem içindeki doğrudan satın alınabilir LGS ve YKS matematik ders seçeneklerini gösterir."
+        subtitle="Bu sayfa onlinedershanem. içindeki doğrudan satın alınabilir LGS ve YKS matematik ders seçeneklerini gösterir."
       />
       <SiteFooter />
     </div>

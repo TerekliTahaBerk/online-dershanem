@@ -75,5 +75,5 @@ export async function POST(request: Request) {
       },
     }, auth.session.role);
   }
-  return NextResponse.json({ created: true, checkIn: { id: created.checkIn.id, createdAt: created.checkIn.createdAt, groupName: enrollment?.group.name ?? "Koçum", energy: parsed.data.energy, confidence: parsed.data.confidence, barrier: parsed.data.barrier, shared: parsed.data.shareWithTeacher, request: created.helpRequest ? { id: created.helpRequest.id, status: created.helpRequest.status, version: created.helpRequest.version, helpful: null, action: null } : null }, remaining: STUDENT_CHECK_IN_WEEKLY_LIMIT - created.weeklyCount }, { status: 201 });
+  return NextResponse.json({ created: true, checkIn: { id: created.checkIn.id, createdAt: created.checkIn.createdAt, groupName: enrollment?.group.name ?? "onlinekoçum.", energy: parsed.data.energy, confidence: parsed.data.confidence, barrier: parsed.data.barrier, shared: parsed.data.shareWithTeacher, request: created.helpRequest ? { id: created.helpRequest.id, status: created.helpRequest.status, version: created.helpRequest.version, helpful: null, action: null } : null }, remaining: STUDENT_CHECK_IN_WEEKLY_LIMIT - created.weeklyCount }, { status: 201 });
 }

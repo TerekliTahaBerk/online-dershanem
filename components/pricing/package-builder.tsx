@@ -54,7 +54,7 @@ const billingCopy: Record<
 const productCopy = {
   dershanem: {
     Icon: Video,
-    title: "Online Dershanem",
+    title: "onlinedershanem.",
     summary: "Canlı derste öğrenme eksiğini kapatırsın.",
     tracks: ["LGS", "YKS"],
     points: [
@@ -64,14 +64,14 @@ const productCopy = {
   },
   kocum: {
     Icon: CalendarCheck,
-    title: "Online Koçum",
+    title: "onlinekoçum.",
     summary: "Haftalık planı kurar ve düzeni korursun.",
     tracks: ["LGS", "YKS"],
     points: ["Haftalık çalışma planı", "Koç görüşmeleriyle uygulama takibi"],
   },
   denemeKulubum: {
     Icon: BarChart3,
-    title: "Online Deneme Kulübüm",
+    title: "onlinedenemekulübüm.",
     summary: "Denemeyle seviyeni ölçer, eksiği görürsün.",
     tracks: ["LGS", "TYT", "AYT"],
     points: [
@@ -105,7 +105,7 @@ function crossSellText(
   }
   if (count === 2) {
     if (!selection.denemeKulubum)
-      return "Online Deneme Kulübüm'ü eklediğinde ölçme ve analiz de aynı pakete eklenir.";
+      return "onlinedenemekulübüm.'ü eklediğinde ölçme ve analiz de aynı pakete eklenir.";
     if (!selection.kocum)
       return "Koçluğu eklediğinde haftalık plan da aynı pakete eklenir.";
     return "Canlı dersi eklediğinde konu anlatımı da aynı pakete eklenir.";

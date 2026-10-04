@@ -10,9 +10,9 @@ export type PanelLoginFixture = {
 export type PanelChoice = "OD" | "OK" | "ODK";
 
 const PANEL_LINK_NAME: Record<PanelChoice, string> = {
-  OD: "Online Dershanem paneline git",
-  OK: "Online Koçum paneline git",
-  ODK: "Online Deneme Kulübüm paneline git",
+  OD: "onlinedershanem. paneline git",
+  OK: "onlinekoçum. paneline git",
+  ODK: "onlinedenemekulübüm. paneline git",
 };
 
 /**

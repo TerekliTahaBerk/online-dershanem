@@ -91,9 +91,9 @@ export function productRolePath(product: ProductCode, role: UserRole): string {
 }
 
 const PRODUCT_LABEL: Record<ProductCode, string> = {
-  OD: "Online Dershanem",
-  OK: "Online Koçum",
-  ODK: "Online Deneme Kulübüm",
+  OD: "onlinedershanem.",
+  OK: "onlinekoçum.",
+  ODK: "onlinedenemekulübüm.",
   KPSS: "KPSS",
 };
 

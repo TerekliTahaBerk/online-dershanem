@@ -646,7 +646,7 @@ export default async function BusinessSectionPage({
                 className="rounded-xl border px-3 text-xs"
               >
                 <option value="ALL">Tüm ürünler</option>
-                <option value="OD">OnlineDershanem</option>
+                <option value="OD">onlinedershanem.</option>
                 <option value="ODK">OnlineDenemeKulübü</option>
               </select>
               <button className="rounded-xl bg-(--brand-olive) px-4 text-xs font-bold text-white">
@@ -1186,8 +1186,8 @@ export default async function BusinessSectionPage({
                   className="rounded-xl border px-3 py-2 text-sm"
                 >
                   <option value="UNKNOWN">Ürün bilinmiyor</option>
-                  <option value="ONLINE_DERSHANEM">OnlineDershanem</option>
-                  <option value="ONLINE_DENEME_KULUBU">Online Deneme Kulübüm</option>
+                  <option value="ONLINE_DERSHANEM">onlinedershanem.</option>
+                  <option value="ONLINE_DENEME_KULUBU">onlinedenemekulübüm.</option>
                 </select>
                 <button className="rounded-xl bg-(--brand-olive) px-3 py-2 text-sm font-bold text-white">
                   Aday ekle

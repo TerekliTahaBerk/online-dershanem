@@ -55,14 +55,14 @@ export async function SiteFooter() {
           <div className="flex max-w-sm flex-col gap-4">
             <Link
               href="/"
-              aria-label="Online Dershanem ana sayfa"
+              aria-label="onlinedershanem. ana sayfa"
               className="inline-flex min-h-11 min-w-11 items-center"
             >
               {/* Handoff: 36×36, radius 10. Renkli marka işareti — koyu zeminde
                   ters çevrilmez. */}
               <Image
                 src="/design/od-logo.png"
-                alt="Online Dershanem"
+                alt="onlinedershanem."
                 width={1254}
                 height={1254}
                 sizes="36px"

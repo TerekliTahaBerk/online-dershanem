@@ -206,7 +206,7 @@ export const blogPosts = [
     cta: {
       title: "Küçük grup yaklaşımını yakından incele",
       text: "Öğrencinin seviyesine göre en uygun grubu birlikte seçelim.",
-      buttonLabel: "Online Dershanem'i İncele",
+      buttonLabel: "onlinedershanem. ürününü incele",
       href: "/online-dershane"
     },
     relatedSlugs: ["online-dershane-nedir", "yks-online-ders-calisma-plani", "online-dershane-fiyatlari-2026"]
@@ -265,7 +265,7 @@ export const blogPosts = [
     cta: {
       title: "TYT + AYT dengesini konuşalım",
       text: "Tek başına denge kurmakta zorlanıyorsan haftalık planı küçük grup dersinde birlikte hazırlayalım.",
-      buttonLabel: "Online Dershanem'i İncele",
+      buttonLabel: "onlinedershanem. ürününü incele",
       href: "/urunler/online-dershanem"
     },
     relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "online-dershane-fiyatlari-2026"]
@@ -684,8 +684,8 @@ export const blogPosts = [
 
 export const faq = [
   {
-    q: "Online Dershanem sadece matematik mi?",
-    a: "Evet. Online Dershanem'de odak matematik. Dersi, ödevi ve veli bilgilendirmesini aynı çizgide tutuyoruz."
+    q: "onlinedershanem. sadece matematik mi?",
+    a: "Evet. onlinedershanem.'de odak matematik. Dersi, ödevi ve veli bilgilendirmesini aynı çizgide tutuyoruz."
   },
   {
     q: "Gruplar kaç kişilik?",
@@ -721,8 +721,8 @@ export const faqCategories = [
     category: "Ders modeli",
     items: [
       {
-        q: "Online Dershanem sadece matematik mi?",
-        a: "Evet. Online Dershanem'de odak matematik. Dersi, ödevi ve veli bilgilendirmesini aynı çizgide tutuyoruz.",
+        q: "onlinedershanem. sadece matematik mi?",
+        a: "Evet. onlinedershanem.'de odak matematik. Dersi, ödevi ve veli bilgilendirmesini aynı çizgide tutuyoruz.",
       },
       {
         q: "Dersler LGS ve YKS odaklı mı?",

@@ -52,8 +52,8 @@ export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
 };
 
 export const PRODUCT_INTEREST_LABELS: Record<ProductInterest, string> = {
-  ONLINE_DERSHANEM: "OnlineDershanem",
-  ONLINE_DENEME_KULUBU: "Online Deneme Kulübüm",
+  ONLINE_DERSHANEM: "onlinedershanem.",
+  ONLINE_DENEME_KULUBU: "onlinedenemekulübüm.",
   UNKNOWN: "Ürün bilinmiyor",
 };
 

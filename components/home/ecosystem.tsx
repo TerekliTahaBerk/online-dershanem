@@ -11,17 +11,17 @@ const steps = [
   {
     title: "Öğren",
     body: "Canlı derste zorlandığın konuyu öğretmenle kapatırsın.",
-    product: "Online Dershanem",
+    product: "onlinedershanem.",
   },
   {
     title: "Planla",
     body: "Koçun bu hafta hangi konuya ne kadar zaman ayıracağını planlar.",
-    product: "Online Koçum",
+    product: "onlinekoçum.",
   },
   {
     title: "Ölç",
     body: "Deneme sonucu planın işe yarayıp yaramadığını gösterir.",
-    product: "Online Deneme Kulübüm",
+    product: "onlinedenemekulübüm.",
   },
 ];
 

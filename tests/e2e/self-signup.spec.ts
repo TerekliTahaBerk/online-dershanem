@@ -52,7 +52,7 @@ test.describe("kendi kendine kayıt", () => {
     await page.getByLabel("Hedef sınav").selectOption("TYT_AYT");
     await page.getByRole("button", { name: "Matematik" }).click();
     await page.getByRole("button", { name: "Devam et" }).click();
-    await page.getByRole("button", { name: /Online Dershanem/ }).click();
+    await page.getByRole("button", { name: /onlinedershanem./ }).click();
     await page.getByRole("button", { name: "Devam et" }).click();
 
     // Onaysız gönderim engellenir.
@@ -133,7 +133,7 @@ test.describe("kendi kendine kayıt", () => {
     await page.locator("#child-1-class").selectOption("12");
     await page.locator("#child-1-exam").selectOption("TYT");
     await page.getByRole("button", { name: "Devam et" }).click();
-    await page.getByRole("button", { name: /Online Koçum/ }).click();
+    await page.getByRole("button", { name: /onlinekoçum./ }).click();
     await page.getByLabel("Zaten satın alım yaptım").check();
     await page.getByRole("button", { name: "Devam et" }).click();
     await consentAndSubmit(page);

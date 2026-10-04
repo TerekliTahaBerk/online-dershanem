@@ -65,8 +65,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   manifest: "/manifest.webmanifest",
   title: {
-    default: "Online Dershanem | Ders, Koçluk ve Deneme Ürünleri",
-    template: "%s | Online Dershanem",
+    default: "onlinedershanem. | Ders, Koçluk ve Deneme Ürünleri",
+    template: "%s | onlinedershanem.",
   },
   description:
     "LGS ve YKS öğrencileri için canlı ders, çalışma düzeni ve online deneme ürünleri.",
@@ -75,11 +75,11 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Ders, Koçluk ve Deneme Ürünleri | Online Dershanem",
+    title: "Ders, Koçluk ve Deneme Ürünleri | onlinedershanem.",
     description:
-      "Online Dershanem, Online Koçum ve Online Deneme Kulübüm ile LGS ve YKS yolculuğuna uygun desteği seçin.",
+      "onlinedershanem., onlinekoçum. ve onlinedenemekulübüm. ile LGS ve YKS yolculuğuna uygun desteği seçin.",
     url: `${siteUrl}/`,
-    siteName: "Online Dershanem",
+    siteName: "onlinedershanem.",
     locale: "tr_TR",
     type: "website",
     images: [
@@ -87,13 +87,13 @@ export const metadata: Metadata = {
         url: "/og.png?v=2",
         width: 1200,
         height: 630,
-        alt: "Online Dershanem ders, koçluk ve deneme ürünleri",
+        alt: "onlinedershanem. ders, koçluk ve deneme ürünleri",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ders, Koçluk ve Deneme Ürünleri | Online Dershanem",
+    title: "Ders, Koçluk ve Deneme Ürünleri | onlinedershanem.",
     description: "LGS ve YKS öğrencileri için üç açık eğitim ürünü.",
     images: ["/og.png?v=2"],
   },

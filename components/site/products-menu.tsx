@@ -94,7 +94,7 @@ export function ProductsMenu({ isActive, products }: ProductsMenuProps) {
         >
           {/*
             Özet metni bağlantının DIŞINDA duruyor: içeride olsaydı bağlantının
-            erişilebilir adı "Online Dershanem Çok dersli canlı öğrenme" olurdu.
+            erişilebilir adı "onlinedershanem. Çok dersli canlı öğrenme" olurdu.
             Ekran okuyucuda ürün adı tek başına tanınabilir kalmalı.
           */}
           <ul className="flex flex-col">

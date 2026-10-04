@@ -63,7 +63,7 @@ export type Faq = { q: string; a: string };
 export const homeFaqs: Faq[] = [
   {
     q: "Üç ürün arasındaki fark ne?",
-    a: "Online Dershanem konuyu öğretir: öğretmenle canlı ders. Online Koçum haftanı planlar ve planın ne kadarını yaptığını takip eder. Online Deneme Kulübüm nerede durduğunu ölçer. Biri öğretir, biri düzen kurar, biri ölçer.",
+    a: "onlinedershanem. konuyu öğretir: öğretmenle canlı ders. onlinekoçum. haftanı planlar ve planın ne kadarını yaptığını takip eder. onlinedenemekulübüm. nerede durduğunu ölçer. Biri öğretir, biri düzen kurar, biri ölçer.",
   },
   {
     q: "Üçünü birden almak zorunda mıyım?",

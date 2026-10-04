@@ -10,7 +10,7 @@ import { ProductCompare } from "@/components/home/product-compare";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "Ürünler | Online Dershanem, Koçum ve Deneme Kulübüm",
+  title: "Ürünler | onlinedershanem., onlinekoçum. ve onlinedenemekulübüm.",
   description:
     "LGS ve YKS için canlı ders, haftalık koçluk ve deneme analizi. Üç ürünü tek tek ya da birlikte alabilirsin.",
   canonical: "/urunler",

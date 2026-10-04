@@ -51,7 +51,7 @@ export default async function OdkStudentExamDetailPage({
       </Link>
       <header className="mt-6">
         <p className="text-xs font-extrabold uppercase tracking-widest text-(--brand-olive)">
-          Online Deneme Kulübüm
+          onlinedenemekulübüm.
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-[-.04em] text-(--site-ink)">
           {exam.title}
