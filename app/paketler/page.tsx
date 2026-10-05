@@ -16,7 +16,7 @@ import { application } from "@/lib/application";
 export const metadata = buildMarketingMetadata({
   title: "Paketler | Kendi paketini oluştur",
   description:
-    "onlinedershanem., onlinekoçum. ve onlinedenemekulübüm. X Deneme Ligi’ni tek tek ya da birlikte seç; güncel fiyatları ve birlikte alım avantajını gör, başlangıcını planla.",
+    "onlinedershanem., onlinekoçum. × Yön Koçluk ve onlinedenemekulübüm. × Deneme Ligi’ni tek tek ya da birlikte seç; güncel fiyatları ve birlikte alım avantajını gör, başlangıcını planla.",
   canonical: "/paketler",
 });
 
@@ -86,7 +86,7 @@ export default async function PackagesPage() {
             },
             {
               q: "Faturalama nasıl işliyor?",
-              a: "Ders ve onlinekoçum. aylık, onlinedenemekulübüm. X Deneme Ligi dönemliktir. Birlikte seçtiğinde aylık ve dönemlik tutarlar paket özetinde ayrı ayrı görünür.",
+              a: "Ders ve onlinekoçum. × Yön Koçluk aylık, onlinedenemekulübüm. × Deneme Ligi dönemliktir. Birlikte seçtiğinde aylık ve dönemlik tutarlar paket özetinde ayrı ayrı görünür.",
             },
             {
               q: "Paket fiyatımı sonradan değiştirebilir miyim?",

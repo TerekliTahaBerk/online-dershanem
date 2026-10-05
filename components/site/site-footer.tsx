@@ -1,3 +1,4 @@
+import { publicProductBrand, publicProductDisplayName } from "@/lib/public-product-brands";
 import Image from "next/image";
 import Link from "next/link";
 import { MessageCircle, Mail, ChevronDown } from "lucide-react";
@@ -9,7 +10,6 @@ import {
 } from "@/lib/site-content";
 import { listActivePublicProducts } from "@/lib/public-marketing-products-server";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
-import { denemeLigiDisplayName } from "@/lib/deneme-ligi-brand";
 
 const socials = [
   {
@@ -48,7 +48,7 @@ const socials = [
 export async function SiteFooter() {
   const products = await listActivePublicProducts();
   const visibleFooterColumns = footerColumnsForProducts(
-    products.map((product) => ({ ...product, name: denemeLigiDisplayName(product) })),
+    products.map((product) => ({ ...product, name: publicProductDisplayName(product, true) })),
     getPanelFeatureFlags().dinoAi,
   );
   return (
@@ -108,6 +108,7 @@ export async function SiteFooter() {
                   <li key={`${col.title}-${l.label}-${l.href}`}>
                     <Link
                       href={l.href}
+                      aria-label={publicProductBrand(l.href)?.name}
                       className="inline-flex min-h-10 max-w-full wrap-break-word items-center py-2 text-[14.5px] font-medium text-(--dc-on-deep-body) transition-colors hover:text-white"
                     >
                       {l.label}
@@ -138,6 +139,7 @@ export async function SiteFooter() {
                     <li key={`${col.title}-${l.label}-${l.href}`}>
                       <Link
                         href={l.href}
+                        aria-label={publicProductBrand(l.href)?.name}
                         className="inline-flex min-h-11 max-w-full wrap-break-word items-center py-2 text-[15px] font-medium text-(--dc-on-deep-body) transition-colors hover:text-white"
                       >
                         {l.label}

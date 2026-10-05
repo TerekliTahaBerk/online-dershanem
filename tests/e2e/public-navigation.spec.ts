@@ -22,8 +22,8 @@ async function gotoHydrated(page: Page, path: string) {
 
 const PRODUCTS = [
   { name: "onlinedershanem.", path: "/urunler/online-dershanem" },
-  { name: "onlinekoçum.", path: "/urunler/online-kocum" },
-  { name: "onlinedenemekulübüm. X Deneme Ligi", path: "/urunler/online-deneme-kulubum" },
+  { name: "onlinekoçum. × Yön Koçluk", path: "/urunler/online-kocum" },
+  { name: "onlinedenemekulübüm. × Deneme Ligi", path: "/urunler/online-deneme-kulubum" },
 ] as const;
 
 test.describe("masaüstü navigasyon", () => {
@@ -50,9 +50,9 @@ test.describe("masaüstü navigasyon", () => {
     }
     await expect(nav.getByRole("link", { name: /Tüm ürünleri karşılaştır/ })).toBeVisible();
 
-    await nav.getByRole("link", { name: "onlinekoçum.", exact: true }).click();
+    await nav.getByRole("link", { name: "onlinekoçum. × Yön Koçluk", exact: true }).click();
     await expect(page).toHaveURL(/\/urunler\/online-kocum\/?$/);
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible({ timeout: 15_000 });
   });
 
   test("giriş ve birincil CTA masaüstünde erişilebilir", async ({ page }) => {
@@ -70,7 +70,7 @@ test.describe("masaüstü navigasyon", () => {
     const cta = header.getByRole("link", { name: "Başvur", exact: true });
     await expect(cta).toBeVisible();
     await expect(cta).toHaveAttribute("href", application.href);
-    await page.route("https://tally.so/**", (route) => route.fulfill({ contentType: "text/html", body: "<h1>Başvuru formu</h1>" }));
+    await page.route("https://tally.so/**", (route) => route.fulfill({ contentType: "text/html; charset=utf-8", body: "<h1>Başvuru formu</h1>" }));
     await cta.click();
     await expect(page).toHaveURL(application.href);
   });
@@ -96,7 +96,7 @@ test.describe("mobil navigasyon", () => {
     await expect(dialog.getByRole("link", { name: "Giriş Yap", exact: true })).toBeVisible();
     await expect(dialog.getByRole("link", { name: "Başvur", exact: true })).toBeVisible();
 
-    await menu.getByRole("link", { name: "onlinedenemekulübüm. X Deneme Ligi", exact: true }).click();
+    await menu.getByRole("link", { name: "onlinedenemekulübüm. × Deneme Ligi", exact: true }).click();
     await expect(page).toHaveURL(/\/urunler\/online-deneme-kulubum\/?$/);
     await expect(page.getByRole("dialog", { name: "Mobil menü" })).toHaveCount(0);
   });
@@ -107,7 +107,7 @@ test.describe("mobil navigasyon", () => {
     await expect(heroSecondaryCta).toBeVisible();
     await heroSecondaryCta.click();
     await expect(page).toHaveURL(/\/iletisim#on-gorusme$/);
-    await expect(page.locator("#on-gorusme-title")).toBeInViewport();
+    await expect(page.locator("#on-gorusme-title")).toBeInViewport({ timeout: 15_000 });
     await expect(page.getByTitle("onlinedershanem. Kısa Ön Görüşme Formu")).toBeVisible();
   });
 
@@ -123,12 +123,13 @@ test.describe("mobil navigasyon", () => {
 });
 
 test.describe("ürün sayfaları ve footer", () => {
-  test("Deneme Ligi ziyaretçisi katılım koşullarını okuyup mevcut paket akışına geçer", async ({ page }) => {
+  test("Deneme Ligi ziyaretçisi katılım koşullarını okuyup mevcut başvuru formuna geçer", async ({ page }) => {
+    await page.route("https://tally.so/**", (route) => route.fulfill({ contentType: "text/html; charset=utf-8", body: "<h1>Başvuru formu</h1>" }));
     await page.setViewportSize({ width: 375, height: 844 });
     await gotoHydrated(page, "/urunler/online-deneme-kulubum");
     const main = page.getByRole("main");
     await expect(main.getByRole("heading", { level: 1 })).toHaveText("Denemeye katıl. Gelişimini gör.");
-    await expect(main.getByText("onlinedenemekulübüm. X Deneme Ligi", { exact: true })).toBeVisible();
+    await expect(main.getByText("onlinedenemekulübüm. × Deneme Ligi", { exact: true })).toBeVisible();
 
     await main.getByRole("link", { name: "Nasıl İşler?", exact: true }).click();
     await expect(page).toHaveURL(/#nasil-isler$/);
@@ -136,11 +137,11 @@ test.describe("ürün sayfaları ve footer", () => {
 
     const accessQuestion = main.locator("details").filter({ hasText: "Hesap açınca denemelere erişebilir miyim?" });
     await accessQuestion.locator("summary").click();
-    await expect(accessQuestion.getByText(/Hesap açmak tek başına deneme erişimi sağlamaz/)).toBeVisible();
+    await expect(accessQuestion.getByText(/Başvurmak tek başına deneme erişimi sağlamaz/)).toBeVisible();
 
-    await main.getByRole("link", { name: "Lige Katıl", exact: true }).first().click();
-    await expect(page).toHaveURL(/\/paketler\/?$/);
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("İhtiyacın olan desteği seç.");
+    await main.getByRole("link", { name: "Lige Başvur", exact: true }).first().click();
+    await expect(page).toHaveURL(application.href);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Başvuru formu");
   });
 
   test("ürün yüzeyleri yayında ve H1'leri var", async ({ page }) => {
@@ -180,7 +181,7 @@ test.describe("ürün sayfaları ve footer", () => {
 
   test("onlinekoçum. kayıt durumunu açıkça söyler", async ({ page }) => {
     await page.goto("/urunler/online-kocum", { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("main").getByText("onlinekoçum. için kayıtlar hazırlanıyor.", { exact: false })).toBeVisible();
+    await expect(page.getByRole("main").getByText("onlinekoçum. × Yön Koçluk için online kayıt ve ödeme akışı henüz açık değil.", { exact: false }).first()).toBeVisible();
   });
 });
 

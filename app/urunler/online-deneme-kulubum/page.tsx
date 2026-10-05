@@ -1,3 +1,4 @@
+import { yonBrand } from "@/lib/yon-brand";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Check, Plus } from "lucide-react";
@@ -156,7 +157,7 @@ export default function OnlineDenemeKulubumPage() {
               <p className={styles.label}>HAZIRLIĞINI TAMAMLA</p>
               <h3>Ders ve koçlukla birlikte de kullanabilirsin.</h3>
               <Link href="/urunler/online-dershanem"><span><strong>onlinedershanem.</strong><span>Eksiğini canlı derste öğretmenle çalış.</span></span><ArrowRight size={18} aria-hidden="true" /></Link>
-              <Link href="/urunler/online-kocum"><span><strong>onlinekoçum.</strong><span>Deneme sonucunu haftalık planına taşı.</span></span><ArrowRight size={18} aria-hidden="true" /></Link>
+              <Link href="/urunler/online-kocum"><span><strong>{yonBrand.name}</strong><span>Deneme sonucunu haftalık planına taşı.</span></span><ArrowRight size={18} aria-hidden="true" /></Link>
             </aside>
           </div>
         </section>

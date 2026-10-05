@@ -1,3 +1,5 @@
+import { publicProductDisplayName } from "@/lib/public-product-brands";
+import { yonBrand } from "@/lib/yon-brand";
 import { application } from "@/lib/application";
 /**
  * PUBLIC MARKETING SITE — içerik kaynağı.
@@ -29,7 +31,7 @@ export const productsMenu = {
   accessibleLabel: "Ürünler menüsü",
   href: "/urunler",
   items: publicProducts.map(({ name, href, role }) => ({
-    label: name,
+    label: publicProductDisplayName({ name, href }),
     href,
     summary: role,
   })),
@@ -64,7 +66,7 @@ export type Faq = { q: string; a: string };
 export const homeFaqs: Faq[] = [
   {
     q: "Üç ürün arasındaki fark ne?",
-    a: "onlinedershanem. konuyu öğretir: öğretmenle canlı ders. onlinekoçum. haftanı planlar ve planın ne kadarını yaptığını takip eder. onlinedenemekulübüm. nerede durduğunu ölçer. Biri öğretir, biri düzen kurar, biri ölçer.",
+    a: `onlinedershanem. konuyu öğretir: öğretmenle canlı ders. ${yonBrand.name} haftanı planlar ve planın ne kadarını yaptığını takip eder. onlinedenemekulübüm. × Deneme Ligi nerede durduğunu ölçer. Biri öğretir, biri düzen kurar, biri ölçer.`,
   },
   {
     q: "Üçünü birden almak zorunda mıyım?",
@@ -102,7 +104,7 @@ export const footerColumns = [
   {
     title: "Ürünler",
     links: [
-      ...publicProducts.map(({ name, href }) => ({ label: name, href })),
+      ...publicProducts.map(({ name, href }) => ({ label: publicProductDisplayName({ name, href }, true), href })),
       { label: "Paketini Oluştur", href: "/paketler" },
     ],
   },
@@ -136,7 +138,7 @@ export function footerColumnsForProducts(
       ? {
           ...column,
           links: [
-            ...products.map(({ name, href }) => ({ label: name, href })),
+            ...products.map(({ name, href }) => ({ label: publicProductDisplayName({ name, href }, true), href })),
             { label: "Paketini Oluştur", href: "/paketler" },
             application,
           ],

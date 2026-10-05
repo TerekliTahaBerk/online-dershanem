@@ -11,7 +11,7 @@
 .league h2 { font-size: clamp(1.85rem, 3.1vw, 2.75rem); line-height: 1.16; letter-spacing: -.04em; }
 .league :is(a, summary):focus-visible { outline: 3px solid #8150ca; outline-offset: 5px; }
 .hero :is(a):focus-visible, .closing :is(a):focus-visible { outline-color: var(--league-yellow); }
-.hero { background: var(--league-purple); color: white; }
+.hero { background: #34066b; color: white; }
 .heroGrid { display: grid; grid-template-columns: 1.2fr 1fr; align-items: center; gap: 64px; padding-block: 72px; }
 .brandName { font-size: 14px; font-weight: 700; line-height: 1.7; color: #eee2ff; margin-bottom: 24px; overflow-wrap: anywhere; }
 .hero h1 { font-size: clamp(2.65rem, 4.6vw, 4.25rem); line-height: 1.12; letter-spacing: -.045em; }
@@ -25,7 +25,7 @@
 .outline:hover { background: #ffffff12; }
 .participation { max-width: 475px; margin-top: 18px; font-size: 12px; line-height: 1.8; color: #e0cdef; }
 .infrastructure { margin-top: 24px; font-size: 12px; font-weight: 600; color: #e0cdef; }
-.heroMedia { width: 100%; max-width: 440px; justify-self: end; overflow: hidden; border-radius: 28px; }
+.heroMedia { width: 100%; max-width: 440px; justify-self: end; overflow: hidden; }
 .squareImage { width: 100%; height: auto; object-fit: contain; }
 .section { padding-block: 80px; }
 .sectionHeading { margin-bottom: 40px; max-width: 720px; }
@@ -154,3 +154,6 @@
 @media (prefers-reduced-motion: reduce) {
   .league :is(a, summary svg) { transition: none; }
 }
+
+/* Blend the supplied opaque logo into the hero without a separate square tile. */
+.heroMedia .squareImage { mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent), linear-gradient(to bottom, transparent, black 6%, black 94%, transparent); mask-composite: intersect; }

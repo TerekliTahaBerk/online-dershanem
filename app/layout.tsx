@@ -78,7 +78,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Ders, Koçluk ve Deneme Ürünleri | onlinedershanem.",
     description:
-      "onlinedershanem., onlinekoçum. ve onlinedenemekulübüm. ile LGS ve YKS yolculuğuna uygun desteği seçin.",
+      "onlinedershanem., onlinekoçum. × Yön Koçluk ve onlinedenemekulübüm. × Deneme Ligi ile LGS ve YKS yolculuğuna uygun desteği seçin.",
     url: `${siteUrl}/`,
     siteName: "onlinedershanem.",
     locale: "tr_TR",

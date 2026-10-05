@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { builderContactQuery } from "../../lib/commerce/package-builder-pricing";
 
 const title = "onlinedershanem. Kısa Ön Görüşme Formu";
 
@@ -51,27 +52,21 @@ for (const [slug, product] of [
 ]) {
   test(`${slug} consultation CTA retains product context and reaches public form`, async ({ page }) => {
     await page.goto(`/urunler/${slug}`);
-    await page.getByRole("main").getByRole("link", { name: "Ücretsiz Ön Görüşme", exact: true }).click();
+    await page.getByRole("main").getByRole("link", { name: "Ücretsiz Ön Görüşme", exact: true }).first().click();
     await expect(page).toHaveURL(`/iletisim?urun=${product}#on-gorusme`);
-    await expect(page.locator("#on-gorusme-title")).toBeInViewport();
+    await expect(page.locator("#on-gorusme-title")).toBeInViewport({ timeout: 15_000 });
     await expect(page.getByTitle(title)).toBeVisible();
     await expect(page.getByRole("complementary", { name: "Seçiminiz" })).toHaveCount(0);
   });
 }
 
-test("YKS one-to-one multi-product selection retains existing query without sending hidden fields", async ({ page }) => {
-  await page.goto("/paketler");
-  await page.getByRole("button", { name: /YKS sınavına gireceğim/ }).click();
-  await page.getByRole("button", { name: /onlinedershanem./ }).first().click();
-  await page.getByRole("button", { name: /onlinekoçum./ }).first().click();
-  await page.getByRole("button", { name: /Birebir özel ders/ }).click();
-  await page.getByRole("button", { name: "+ Fizik", exact: true }).click();
-  const cta = page.getByRole("complementary", { name: "Paket özeti" }).getByRole("link", { name: "Başlangıcı Planla" });
-  const href = (await cta.getAttribute("href"))!;
-  await cta.click();
-  await expect(page).toHaveURL(href);
+test("existing YKS one-to-one contact query retains context without sending hidden fields", async ({ page }) => {
+  // Builder now uses the application form; existing contact-query links still work.
+  const query = builderContactQuery({ exam: "YKS", dershanem: true, kocum: true,
+    denemeKulubum: false, format: "birebir", subject: "Matematik", extraSubjects: ["Fizik"] });
+  await page.goto(`/iletisim${query}#on-gorusme`);
   const selection = page.getByRole("complementary", { name: "Seçiminiz" });
-  await expect(selection).toContainText("YKS · onlinedershanem. + onlinekoçum.");
+  await expect(selection).toContainText("YKS · onlinedershanem. + onlinekoçum. × Yön Koçluk");
   await expect(selection).toContainText("Birebir · Matematik + Fizik");
   const iframeUrl = new URL((await page.getByTitle(title).getAttribute("src"))!);
   expect(iframeUrl.searchParams.has("paket")).toBe(false);

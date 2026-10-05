@@ -1,3 +1,5 @@
+import { yonBrand } from "@/lib/yon-brand";
+import { ProductBrandLabel } from "@/components/product/product-brand-label";
 import { Fragment } from "react";
 import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 
@@ -14,7 +16,7 @@ import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 
 const products = [
   "onlinedershanem.",
-  "onlinekoçum.",
+  yonBrand.shortName,
   denemeLigiBrand.name,
 ] as const;
 
@@ -127,13 +129,13 @@ export function CoverageTable() {
           <thead>
             <tr>
               <th scope="col" className="w-auto pb-3.5" />
-              {products.map((p) => (
+              {products.map((p, pi) => (
                 <th
                   key={p}
                   scope="col"
                   className="w-[150px] pb-3.5 text-center text-[13px] font-bold text-dc-ink"
                 >
-                  <span className={p === denemeLigiBrand.name ? "text-purple-800" : undefined}>{p}</span>
+                  <ProductBrandLabel href={pi === 1 ? yonBrand.href : pi === 2 ? denemeLigiBrand.href : "/urunler/online-dershanem"} fallback={p} />
                 </th>
               ))}
             </tr>
@@ -188,7 +190,7 @@ export function CoverageTable() {
             className="dc-faq rounded-dc-card-sm border border-dc-line bg-white px-5 py-[18px]"
           >
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[16px] font-bold text-dc-ink">
-              <span className={p === denemeLigiBrand.name ? "text-purple-800" : undefined}>{p}</span>
+                  <ProductBrandLabel href={pi === 1 ? yonBrand.href : pi === 2 ? denemeLigiBrand.href : "/urunler/online-dershanem"} fallback={p} />
               <span
                 aria-hidden="true"
                 className="dc-faq-plus flex-none text-[20px] font-normal leading-none text-dc-brand-strong transition-transform"

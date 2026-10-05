@@ -1,3 +1,4 @@
+import { yonBrand } from "@/lib/yon-brand";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { ClipboardCheck, MessagesSquare, Users } from "lucide-react";
@@ -137,12 +138,12 @@ export default function OnlineDershanemPage() {
         <CrossSellWithPrice
           cards={[
             {
-              eyebrow: "+ onlinekoçum.",
+              eyebrow: `+ ${yonBrand.name}`,
               title: "Haftalık plan ve takip",
               body: "Derste öğrendiğini hangi gün, ne kadar çalışacağın netleşir.",
             },
             {
-              eyebrow: "+ onlinedenemekulübüm.",
+              eyebrow: "+ onlinedenemekulübüm. × Deneme Ligi",
               title: "Ölçme ve analiz",
               body: "Öğrendiğin konunun sınavda karşılığını görürsün.",
             },

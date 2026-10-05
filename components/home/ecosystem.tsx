@@ -1,3 +1,5 @@
+import { yonBrand } from "@/lib/yon-brand";
+import { ProductBrandLabel } from "@/components/product/product-brand-label";
 import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,8 +18,8 @@ const steps = [
   },
   {
     title: "Planla",
-    body: "Koçun bu hafta hangi konuya ne kadar zaman ayıracağını planlar.",
-    product: "onlinekoçum.",
+    body: "Koçunla haftalık yönünü belirler, planını uygular ve ilerlemeni takip edersin.",
+    product: yonBrand.mediumName,
   },
   {
     title: "Ölç",
@@ -60,7 +62,7 @@ export function Ecosystem({
                 />
               ) : null}
             </div>
-            <h3 className="mt-4 text-[20px] font-bold text-dc-ink">{product}</h3>
+            <h3 className="mt-4 text-[20px] font-bold text-dc-ink"><ProductBrandLabel href={i === 1 ? yonBrand.href : i === 2 ? denemeLigiBrand.href : "/urunler/online-dershanem"} fallback={product} /></h3>
             <p className="mt-2 max-w-[34ch] text-[15.5px] leading-[1.65] text-dc-ink-muted">
               {body}
             </p>

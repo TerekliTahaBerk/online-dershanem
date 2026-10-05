@@ -1,3 +1,5 @@
+import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
+import { yonBrand } from "@/lib/yon-brand";
 import Link from "next/link";
 import {
   Phone,
@@ -61,13 +63,13 @@ export default async function ContactPage({ searchParams }: {
                 Ücretsiz Ön Görüşme
               </h2>
               <p className="mb-6 mt-3 text-[15px] leading-6 text-dc-ink-muted">
-                onlinedershanem., onlinekoçum. veya onlinedenemekulübüm. için ihtiyacınızı paylaşın. Henüz karar vermediyseniz birlikte değerlendirebiliriz.
+                onlinedershanem., onlinekoçum. × Yön Koçluk veya onlinedenemekulübüm. × Deneme Ligi için ihtiyacınızı paylaşın. Henüz karar vermediyseniz birlikte değerlendirebiliriz.
               </p>
               {selection ? (
                 <aside aria-label="Seçiminiz" className="mb-6 rounded-dc-card-sm border border-dc-line bg-dc-surface-muted px-5 py-4">
                   <h3 className="text-[14px] font-bold text-dc-ink">Seçiminiz</h3>
                   <p className="mt-1 text-[14px] leading-6 text-dc-ink-body">
-                    {[selection.exam, selection.products.join(" + ")].filter(Boolean).join(" · ")}
+                    {[selection.exam, selection.products.map((name) => name === "onlinekoçum." ? yonBrand.name : name === "onlinedenemekulübüm." ? denemeLigiBrand.name : name).join(" + ")].filter(Boolean).join(" · ")}
                   </p>
                   {selection.format ? (
                     <p className="text-[14px] leading-6 text-dc-ink-muted">

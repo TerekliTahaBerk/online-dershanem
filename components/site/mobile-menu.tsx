@@ -1,5 +1,7 @@
 "use client";
 
+import { yonBrand } from "@/lib/yon-brand";
+
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,8 +16,8 @@ import {
 } from "@/lib/site-content";
 import { contact } from "@/lib/content";
 import type { PublicProduct } from "@/lib/product-architecture";
-import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
-import { DenemeLigiMenuItem } from "./deneme-ligi-menu-item";
+import { publicProductBrand } from "@/lib/public-product-brands";
+import { BrandedProductMenuItem } from "./branded-product-menu-item";
 
 type MobileMenuProps = {
   open: boolean;
@@ -128,9 +130,10 @@ export function MobileMenu({
         <div className="border-b border-(--site-line) py-5">
           <h2 className="dc-eyebrow">{productsMenu.label}</h2>
           <ul className="mt-4 flex flex-col gap-4">
-            {products.map((product) => product.href === denemeLigiBrand.href ? (
+            {products.map((product) => publicProductBrand(product.href) ? (
               <li key={product.href}>
-                <DenemeLigiMenuItem
+                <BrandedProductMenuItem
+                  href={product.href}
                   active={isActive(product.href)}
                   onNavigate={onClose}
                   summary={product.role}
@@ -141,6 +144,7 @@ export function MobileMenu({
                 <Link
                   href={product.href}
                   onClick={onClose}
+                  aria-label={product.href === yonBrand.href ? yonBrand.name : undefined}
                   aria-current={isActive(product.href) ? "page" : undefined}
                   className={`block wrap-break-word font-display text-[clamp(1.2rem,5vw,1.45rem)] leading-tight ${
                     isActive(product.href)

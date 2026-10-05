@@ -1,3 +1,4 @@
+import { yonBrand } from "@/lib/yon-brand";
 /**
  * 13 SIKÇA SORULAN SORULAR — onaylı tasarım (Web.dc.html).
  * 340px başlık kolonu + esnek liste; details/summary, "+" ikonu açıkken "×"e döner.
@@ -7,11 +8,11 @@ import { getPublicPricingCopy } from "@/lib/commerce/public-pricing-copy";
 import { getDinoMarketingCopy } from "@/lib/dino-marketing";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 
-export function HomeFaq() {
-  const faqs = [
+export function getHomePageFaqs() {
+  return [
     {
       q: "Hangi ürünle başlamalıyım?",
-      a: "Konuyu öğrenme tarafında zorlanıyorsan onlinedershanem. ile, planı uygulamada zorlanıyorsan onlinekoçum. ile, seviyeni ölçmek istiyorsan onlinedenemekulübüm. X Deneme Ligi ile başlayabilirsin.",
+      a: `Konuyu öğrenme tarafında zorlanıyorsan onlinedershanem. ile, planı uygulamada zorlanıyorsan ${yonBrand.name} ile, seviyeni ölçmek istiyorsan onlinedenemekulübüm. × Deneme Ligi ile başlayabilirsin.`,
     },
     {
       q: "Ürünleri ayrı ayrı alabilir miyim?",
@@ -42,7 +43,10 @@ export function HomeFaq() {
       a: "Platformu mobil tarayıcıdan açıp ana ekranına ekleyebilirsin. iPhone'da Safari'nin Paylaş menüsünden, Android'de tarayıcı menüsünden Ana ekrana ekle seçeneğini kullan.",
     },
   ];
+}
 
+export function HomeFaq() {
+  const faqs = getHomePageFaqs();
   return (
     <section className="border-t border-dc-line-soft bg-white">
       <div className="site-container grid gap-10 py-(--dc-section-tight) lg:grid-cols-[340px_1fr] lg:gap-12">

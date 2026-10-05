@@ -81,7 +81,7 @@ export default async function OdkPackageDetailPage({
         schema={[
           breadcrumbJsonLd([
             { name: "Ana Sayfa", url: "/" },
-            { name: "onlinedenemekulübüm.", url: "/deneme-kulubu" },
+            { name: "onlinedenemekulübüm. × Deneme Ligi", url: "/deneme-kulubu" },
             { name: contract.package.title, url: `/odk-paketleri/${slug}` },
           ]),
           productJsonLd({
@@ -108,7 +108,7 @@ export default async function OdkPackageDetailPage({
                 ← Paketlere dön
               </Link>
               <p className="mt-8 text-xs font-bold tracking-[.16em] text-(--brand-olive)">
-                onlinedenemekulübüm.
+                onlinedenemekulübüm. × Deneme Ligi
               </p>
               <h1 className="mt-3 max-w-3xl font-display text-[clamp(2.6rem,6vw,4.8rem)] leading-none tracking-tighter text-(--site-ink)">
                 {contract.package.title}

@@ -12,7 +12,7 @@ export default async function OpenGraphImage() {
   return new ImageResponse(
     <div style={{ display: "flex", width: "100%", height: "100%", background: "#350775", color: "white", padding: "60px", alignItems: "center", gap: "30px" }}>
       <div style={{ display: "flex", flexDirection: "column", width: "620px" }}>
-        <div style={{ display: "flex", fontSize: 23, marginBottom: 42 }}>onlinedenemekulübüm. X Deneme Ligi</div>
+        <div style={{ display: "flex", fontSize: 23, marginBottom: 42 }}>onlinedenemekulübüm. × Deneme Ligi</div>
         <div style={{ display: "flex", fontSize: 57, fontWeight: 700, lineHeight: 1.15 }}>Denemeye katıl.</div>
         <div style={{ display: "flex", fontSize: 57, fontWeight: 700, color: "#ffda24", lineHeight: 1.15 }}>Gelişimini gör.</div>
         <div style={{ display: "flex", fontSize: 24, color: "#eee2ff", marginTop: 30 }}>LGS · TYT · AYT</div>

@@ -6,17 +6,16 @@ import { Ecosystem } from "@/components/home/ecosystem";
 import { BundleSection } from "@/components/home/bundle-section";
 import { PlatformPreview } from "@/components/home/platform-preview";
 import { ParentVisibility } from "@/components/home/parent-visibility";
-import { HomeFaq } from "@/components/home/home-faq";
+import { HomeFaq, getHomePageFaqs } from "@/components/home/home-faq";
 import { ClosingCta } from "@/components/home/closing-cta";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { faqJsonLd, organizationJsonLd } from "@/lib/seo/jsonld";
-import { homeFaqs } from "@/lib/site-content";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
   title: "onlinedershanem. | Ders, Koçluk ve Deneme Ürünleri",
   description:
-    "LGS ve YKS öğrencileri için onlinedershanem., onlinekoçum. ve onlinedenemekulübüm. ürünlerini keşfedin.",
+    "LGS ve YKS öğrencileri için onlinedershanem., onlinekoçum. × Yön Koçluk ve onlinedenemekulübüm. × Deneme Ligi ürünlerini keşfedin.",
   canonical: "/",
 });
 
@@ -24,11 +23,11 @@ export const metadata = buildMarketingMetadata({
 export default function HomePage() {
   return (
     <div className="site-scope">
-      <SchemaJsonLd schema={[...organizationJsonLd(), faqJsonLd(homeFaqs)]} />
+      <SchemaJsonLd schema={[...organizationJsonLd(), faqJsonLd(getHomePageFaqs())]} />
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
         <HomeHero />
-        <ProductTrio denemeLigiBranding />
+        <ProductTrio />
         <Ecosystem />
         <PlatformPreview />
         <BundleSection />

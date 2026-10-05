@@ -55,7 +55,7 @@ export default function TYTLandingPage() {
           heroBadge: "YKS Matematik",
           heroTitle: "YKS matematikte TYT ve AYT birlikte, dengeli ilerlesin.",
           heroText:
-            "YKS öğrencisi derste yalnızca dinlemez; çözümünü gösterir, sorusunu sorar ve ders sonunda TYT-AYT çalışmasında hangi adımla devam edeceğini bilir. İhtiyaç olursa bu akış, onlinekoçum. plan takibi ve onlinedenemekulübüm. deneme analiziyle desteklenebilir.",
+            "YKS öğrencisi derste yalnızca dinlemez; çözümünü gösterir, sorusunu sorar ve ders sonunda TYT-AYT çalışmasında hangi adımla devam edeceğini bilir. İhtiyaç olursa bu akış, onlinekoçum. × Yön Koçluk plan takibi ve onlinedenemekulübüm. × Deneme Ligi deneme analiziyle desteklenebilir.",
           highlights: [
             "En fazla 4 öğrencilik matematik grubu",
             "Ders sonrası ödevlendirme ve açık bir çalışma yönü",

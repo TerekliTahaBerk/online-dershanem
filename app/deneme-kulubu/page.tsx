@@ -14,12 +14,12 @@ import {
 export const dynamic = "force-dynamic";
 
 export const metadata = buildMarketingMetadata({
-  title: "onlinedenemekulübüm. | LGS, TYT ve AYT",
+  title: "onlinedenemekulübüm. × Deneme Ligi | LGS, TYT ve AYT",
   description:
     "LGS, TYT ve AYT için planlı online denemeler, kazanım analizi ve gelişimi takip etmeye yardımcı raporlar.",
   canonical: "/urunler/online-deneme-kulubum",
   imagePath: "/deneme-kulubu/opengraph-image",
-  imageAlt: "onlinedenemekulübüm. — LGS, TYT ve AYT",
+  imageAlt: "onlinedenemekulübüm. × Deneme Ligi — LGS, TYT ve AYT",
 });
 
 export default async function DenemeKulubuPage() {
@@ -32,7 +32,7 @@ export default async function DenemeKulubuPage() {
             { name: "Ana Sayfa", url: "/" },
             { name: "Ürünler", url: "/urunler/" },
             {
-              name: "onlinedenemekulübüm.",
+              name: "onlinedenemekulübüm. × Deneme Ligi",
               url: "/urunler/online-deneme-kulubum/",
             },
           ]),
@@ -45,7 +45,7 @@ export default async function DenemeKulubuPage() {
           <div className="site-container grid items-center gap-12 lg:grid-cols-[1.12fr_.88fr]">
             <div>
               <span className="site-eyebrow">
-                onlinedenemekulübüm. · LGS, TYT ve AYT
+                onlinedenemekulübüm. × Deneme Ligi · LGS, TYT ve AYT
               </span>
               <h1 className="mt-5 max-w-3xl font-display text-[clamp(2.7rem,6vw,5.25rem)] leading-[.98] tracking-[-.055em] text-(--site-ink)">
                 Sadece puanı değil, bir sonraki adımı da görün.

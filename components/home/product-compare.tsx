@@ -1,3 +1,5 @@
+import { yonBrand } from "@/lib/yon-brand";
+import { ProductBrandLabel } from "@/components/product/product-brand-label";
 import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 import Link from "next/link";
 import {
@@ -46,7 +48,7 @@ const columns: Column[] = [
   },
   {
     key: "kocum",
-    name: "onlinekoçum.",
+    name: yonBrand.shortName,
     href: "/urunler/online-kocum",
     cells: {
       job: "Haftanı koçunla planlar, planın uygulanmasını takip edersin.",
@@ -105,7 +107,7 @@ export function ProductCompare() {
       <div className="mt-10 hidden overflow-hidden rounded-dc-card border border-dc-line bg-white md:block">
         <table className="w-full table-fixed border-collapse text-left">
           <caption className="sr-only">
-            onlinedershanem., onlinekoçum. ve onlinedenemekulübüm. karşılaştırması
+            onlinedershanem., onlinekoçum. × Yön Koçluk ve onlinedenemekulübüm. × Deneme Ligi karşılaştırması
           </caption>
           <thead>
             <tr className="border-b border-dc-line bg-dc-surface-muted">
@@ -116,7 +118,7 @@ export function ProductCompare() {
                   scope="col"
                   className="p-5 text-[17px] font-extrabold text-dc-ink"
                 >
-                  <span className={col.key === "denemeKulubum" ? "wrap-break-word text-purple-800" : undefined}>{col.name}</span>
+                  <ProductBrandLabel href={col.href} fallback={col.name} />
                 </th>
               ))}
             </tr>
@@ -162,7 +164,7 @@ export function ProductCompare() {
                 <td key={col.key} className="px-5 pb-5 pt-1">
                   <Link
                     href={col.href}
-                    aria-label={`${col.name} ürününü incele`}
+                    aria-label={`${col.key === "kocum" ? yonBrand.name : col.name} ürününü incele`}
                     className="inline-flex min-h-11 items-center rounded-full border border-dc-line px-5 text-[14.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand hover:text-dc-brand-strong"
                   >
                     İncele
@@ -182,7 +184,7 @@ export function ProductCompare() {
             className="rounded-dc-card border border-dc-line bg-white p-5"
           >
             <h3 className="text-[19px] font-extrabold text-dc-ink">
-              <span className={col.key === "denemeKulubum" ? "wrap-break-word text-purple-800" : undefined}>{col.name}</span>
+                  <ProductBrandLabel href={col.href} fallback={col.name} />
             </h3>
             <dl className="mt-3 divide-y divide-dc-line-soft">
               {rows.map((row) => (
@@ -206,7 +208,7 @@ export function ProductCompare() {
             </dl>
             <Link
               href={col.href}
-              aria-label={`${col.name} ürününü incele`}
+              aria-label={`${col.key === "kocum" ? yonBrand.name : col.name} ürününü incele`}
               className="mt-4 inline-flex min-h-11 items-center rounded-full border border-dc-line px-5 text-[14.5px] font-bold text-dc-ink"
             >
               İncele

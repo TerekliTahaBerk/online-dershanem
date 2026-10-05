@@ -1,5 +1,11 @@
 "use client";
 
+import { ProductBrandLabel } from "@/components/product/product-brand-label";
+
+import { yonBrand } from "@/lib/yon-brand";
+import yonStyles from "@/components/product/yon-brand.module.css";
+import { YonMascot } from "@/components/product/yon-mascot";
+
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -62,8 +68,8 @@ const productCopy = {
   },
   kocum: {
     Icon: CalendarCheck,
-    title: "onlinekoçum.",
-    summary: "Haftalık planı kurar ve düzeni korursun.",
+    title: yonBrand.name,
+    summary: yonBrand.cardDescription,
     tracks: ["LGS", "YKS"],
     points: ["Haftalık çalışma planı", "Koç görüşmeleriyle uygulama takibi"],
   },
@@ -269,8 +275,10 @@ export function PackageBuilder({
               <div
                 key={key}
                 className={`rounded-dc-card border bg-white transition-colors ${
-                  key === "denemeKulubum"
-                    ? active ? "border-2 border-purple-700" : "border-purple-200"
+                  key === "kocum"
+                    ? `${yonStyles.root} ${active ? yonStyles.selected : yonStyles.card}`
+                    : key === "denemeKulubum"
+                    ? `[--color-dc-brand:#7E3BB5] [--color-dc-brand-strong:#5B2599] [--color-dc-brand-hover:#350775] [--color-dc-brand-soft:#F0E8FB] [--color-dc-brand-soft-line:#E9E1F3] motion-reduce:transition-none ${active ? "border-2 border-purple-700 bg-purple-50!" : "border-purple-200"}`
                     : active ? "border-2 border-dc-brand" : "border-dc-line"
                 }`}
               >
@@ -286,17 +294,12 @@ export function PackageBuilder({
                   >
                     {key === "denemeKulubum" || key === "dershanem" ? (
                       <Image src={key === "dershanem" ? "/design/od-logo.png" : "/deneme-ligi/mascot-d.png"} alt="" width={1254} height={1254} sizes="52px" className="h-[52px] w-[52px] rounded-[14px] object-contain" />
-                    ) : <copy.Icon size={24} strokeWidth={1.9} />}
+                    ) : key === "kocum" ? <YonMascot size={52} /> : <copy.Icon size={24} strokeWidth={1.9} />}
                   </span>
 
                   <span className="min-w-0 flex-1">
-                    <span className={`block wrap-break-word text-[21px] font-extrabold ${key === "denemeKulubum" ? "text-purple-800" : "text-dc-ink"}`}>
-                      {key === "denemeKulubum" ? (
-                        <>
-                          <span className="block text-[13px] font-semibold leading-normal">onlinedenemekulübüm.</span>
-                          <span className="block">X Deneme Ligi</span>
-                        </>
-                      ) : copy.title}
+                    <span className={`block wrap-break-word text-[21px] font-extrabold ${key === "kocum" ? yonStyles.name : key === "denemeKulubum" ? "text-purple-800" : "text-dc-ink"}`}>
+                      <ProductBrandLabel href={key === "kocum" ? yonBrand.href : key === "denemeKulubum" ? denemeLigiBrand.href : "/urunler/online-dershanem"} fallback={copy.title} />
                     </span>
                     <span className="mt-1 block text-[15px] leading-[1.55] text-dc-ink-muted">
                       {copy.summary}
@@ -612,7 +615,7 @@ export function PackageBuilder({
                         : "font-medium text-dc-ink-faint"
                     }`}
                   >
-                    {line.product === "denemeKulubum" ? denemeLigiBrand.shortName : line.label}
+                    <ProductBrandLabel href={line.product === "kocum" ? yonBrand.href : line.product === "denemeKulubum" ? denemeLigiBrand.href : "/urunler/online-dershanem"} fallback={line.label} compact />
                   </span>
                   <span className="ml-auto text-[13.5px] font-semibold text-dc-ink-faint">
                     {line.selected && line.cents !== null

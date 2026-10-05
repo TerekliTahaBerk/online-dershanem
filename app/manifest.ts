@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "onlinedershanem.",
     // Açıklama math-only dönemden kalmıştı; site artık üç ürünlü ve çok dersli.
     description:
-      "LGS ve YKS için canlı ders, koçluk ve deneme analizi: onlinedershanem., onlinekoçum. ve onlinedenemekulübüm.",
+      "LGS ve YKS için canlı ders, koçluk ve deneme analizi: onlinedershanem., onlinekoçum. × Yön Koçluk ve onlinedenemekulübüm. × Deneme Ligi",
     start_url: "/",
     display: "standalone",
     // Onaylı tasarımın zemini (`--dc-canvas`). Eski krem #FBFAF5 buradan

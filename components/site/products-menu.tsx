@@ -1,12 +1,14 @@
 "use client";
 
+import { yonBrand } from "@/lib/yon-brand";
+
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { productsMenu } from "@/lib/site-content";
 import type { PublicProduct } from "@/lib/product-architecture";
-import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
-import { DenemeLigiMenuItem } from "./deneme-ligi-menu-item";
+import { publicProductBrand } from "@/lib/public-product-brands";
+import { BrandedProductMenuItem } from "./branded-product-menu-item";
 
 type ProductsMenuProps = {
   isActive: (href: string) => boolean;
@@ -100,9 +102,10 @@ export function ProductsMenu({ isActive, products }: ProductsMenuProps) {
             Ekran okuyucuda ürün adı tek başına tanınabilir kalmalı.
           */}
           <ul className="flex flex-col">
-            {items.map((item) => item.href === denemeLigiBrand.href ? (
+            {items.map((item) => publicProductBrand(item.href) ? (
               <li key={item.href} className="my-1">
-                <DenemeLigiMenuItem
+                <BrandedProductMenuItem
+                  href={item.href}
                   active={isActive(item.href)}
                   onNavigate={() => setOpen(false)}
                   summary={item.summary}
@@ -116,6 +119,7 @@ export function ProductsMenu({ isActive, products }: ProductsMenuProps) {
                 <Link
                   href={item.href}
                   onClick={() => setOpen(false)}
+                  aria-label={item.href === yonBrand.href ? yonBrand.name : undefined}
                   aria-current={isActive(item.href) ? "page" : undefined}
                   className="block wrap-break-word text-[14px] font-semibold text-(--dc-ink)"
                 >

@@ -1,219 +1,98 @@
+import Link from "next/link";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
-import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
+import { breadcrumbJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
+import { StepCards, ProductFaq } from "@/components/product/product-sections";
 import {
-  ProductHero,
-  StepCards,
-  CrossSellWithPrice,
-  ProductFaq,
-  ProductClosingCta,
-} from "@/components/product/product-sections";
-import { singleProductPriceLabel } from "@/lib/commerce/package-builder-pricing";
+  YonHero, YonIntroduction, YonCoach, YonWeeklyPlan,
+  YonProgress, YonPrice, YonClosing,
+} from "@/components/product/yon-sections";
+import styles from "@/components/product/yon-brand.module.css";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
+import { yonBrand } from "@/lib/yon-brand";
+import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
+import { getDinoMarketingCopy } from "@/lib/dino-marketing";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 
 export const metadata = buildMarketingMetadata({
-  title: "onlinekoçum. | Planını uygula",
-  description:
-    "Kişisel haftalık çalışma planı, birebir koç görüşmesi ve düzenli takip. LGS ve YKS için, tüm dersleri kapsar.",
-  canonical: "/urunler/online-kocum",
+  title: `${yonBrand.name} | LGS ve YKS`,
+  description: "onlinekoçum. × Yön Koçluk ile LGS ve YKS için tüm derslerini kapsayan kişisel çalışma planı, birebir insan koç görüşmesi ve düzenli uygulama takibi.",
+  canonical: yonBrand.href,
+  imagePath: yonBrand.ogImage,
+  imageAlt: yonBrand.imageAlt,
 });
 
-const planDays = ["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz"];
-const planCells = [
-  "#DFEBE5",
-  "#14976B",
-  "#EDF4F0",
-  "#DFEBE5",
-  "#14976B",
-  "#EDF4F0",
-  "",
-];
+const headingClass = `font-display text-(length:--public-title) leading-[1.12] tracking-tight ${styles.title}`;
 
-/** ÜRÜN · ONLINE KOÇUM — onaylı tasarım (Web.dc.html → isOK). */
 export default function OnlineKocumPage() {
+  const dino = getDinoMarketingCopy(getPanelFeatureFlags().dinoAi);
+  const faqs = [
+    { q: "Yön Koçluk, onlinekoçum.’dan farklı bir ürün mü?", a: "Hayır. Yön Koçluk, mevcut onlinekoçum. koçluk deneyiminin yeni marka adıdır. Kişisel plan, birebir koç görüşmesi ve uygulama takibi aynı ürünün kapsamındadır." },
+    { q: "Koçum gerçek bir insan mı?", a: "Evet. Planını seni tanıyan insan koçunla kurarsın. Dino AI, pilot kapsamında veri ve önerilerle koçun kararını desteklemek için hazırlanıyor; koçunun yerini almaz." },
+    { q: "Görüşme sıklığı ne?", a: "Görüşme sıklığı öğrencinin ihtiyaçlarına ve programına göre ön görüşmede belirlenir." },
+    { q: "Plan hangi dersleri kapsıyor?", a: "Kişisel haftalık çalışma planı LGS veya YKS hedefin doğrultusunda tüm derslerini kapsar. Öncelikler ve çalışma kapasiten koçunla birlikte değerlendirilir." },
+    { q: "Ders almadan koçluk alabilir miyim?", a: "Evet, onlinekoçum. × Yön Koçluk tek başına planlanabilir. Güncel fiyatı bu sayfada ve paket kurucuda görebilirsin; kontenjan ve başlangıç tarihini ekibimizle netleştirebilirsin." },
+    { q: "Nasıl kayıt olabilirim?", a: yonBrand.registrationNote },
+    { q: "Dino AI şu anda kullanılabilir mi?", a: dino.description },
+  ];
   return (
     <div className="site-scope">
       <SiteHeader />
-      <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: "onlinekoçum.", url: "/urunler/online-kocum" }])} />
-      <main id="main-content" tabIndex={-1}>
-        <ProductHero
-          eyebrow="Ürün · onlinekoçum."
-          title="Planını uygula."
-          body="Kişisel çalışma planı, birebir koç görüşmesi ve düzenli takip. Ne çalışacağını bilmemek sorun olmaktan çıkar."
-          tracks={["LGS", "YKS"]}
-          secondaryCta={{ label: "Ücretsiz Ön Görüşme", href: "/iletisim?urun=onlinekocum#on-gorusme" }}
-          note="Planı koç kurar, tüm dersleri kapsar"
-          visual={
-            <div className="rounded-dc-card border border-dc-line bg-white p-5 shadow-[0_14px_34px_rgba(20,32,28,.07)]">
-              <p className="font-mono text-xs font-semibold text-(--dc-ink-faint)">
-                HAFTALIK PLAN
-              </p>
-              <div className="mt-3 grid grid-cols-7 gap-1.5">
-                {planDays.map((d) => (
-                  <span
-                    key={d}
-                    className="text-center text-xs font-semibold text-dc-ink-faint"
-                  >
-                    {d}
-                  </span>
-                ))}
-                {planCells.map((c, i) => (
-                  <span
-                    key={i}
-                    className={`h-16 rounded-lg ${
-                      c
-                        ? ""
-                        : "border border-dashed border-[#D6E2DC] bg-dc-surface-muted"
-                    }`}
-                    style={
-                      c
-                        ? { background: c, opacity: i === 4 ? 0.7 : 1 }
-                        : undefined
-                    }
-                  />
-                ))}
-              </div>
-              <div className="mt-4 border-t border-dc-line-soft pt-4">
-                <p className="text-[14px] font-bold text-dc-ink">
-                  Bu haftanın durumu
-                </p>
-                <p className="mt-1 text-[13.5px] leading-[1.55] text-dc-ink-muted">
-                  Planın ne kadarının yapıldığı koç görüşmesinde birlikte
-                  işaretlenir.
-                </p>
-                <span className="mt-3 block h-1.5 overflow-hidden rounded-full bg-[#E4EBE7]">
-                  <span
-                    aria-hidden="true"
-                    className="block h-full w-[58%] rounded-full bg-dc-brand"
-                  />
-                </span>
-              </div>
-            </div>
-          }
-        />
-
-        <StepCards
-          title="Koçluk nasıl işliyor?"
-          steps={[
-            {
-              title: "Tanışma ve hedef",
-              body: "Mevcut durum, hedef sınav ve haftalık kapasite belirlenir.",
-            },
-            {
-              title: "Haftalık plan",
-              body: "Gerçekçi, uygulanabilir plan; ders ve deneme takvimiyle uyumlu.",
-            },
-            {
-              title: "Birebir görüşme",
-              body: "Düzenli görüşmede plan gözden geçirilir, tıkanan yer açılır.",
-            },
-            {
-              title: "Takip ve veli görünürlüğü",
-              body: "İlerleme kayıtlı; veli özeti paylaşılabilir.",
-            },
-          ]}
-        />
-
-        {/* Dino AI · koçluk önerisi — sağda öncelik listesi */}
-        <section className="mt-(--dc-section-tight) border-y border-dc-line-soft bg-white">
-          <div className="site-container grid items-center gap-10 py-(--dc-section-tight) lg:grid-cols-2">
+      <SchemaJsonLd schema={[
+        breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: yonBrand.mediumName, url: yonBrand.href }]),
+        faqJsonLd(faqs),
+      ]} />
+      <main id="main-content" tabIndex={-1} className={styles.root}>
+        <YonHero />
+        <YonIntroduction />
+        <div id="nasil-calisir" className="scroll-mt-24">
+          <StepCards title="Hedefinden haftalık planına, birlikte." steps={[
+            { title: "Tanışma ve hedef", body: "Mevcut durumunu, hedef sınavını ve haftalık kapasiteni koçunla netleştir." },
+            { title: "Kişisel plan", body: "Tüm derslerini kapsayan, ders ve deneme takviminle uyumlu bir haftalık plan kur." },
+            { title: "Birebir görüşme", body: "Planın nasıl ilerlediğini ve zorlandığın noktaları koçunla değerlendir." },
+            { title: "Takip ve güncelleme", body: "Uygulama durumuna göre planını güncelle; gerektiğinde veliye uygun özet paylaşılır." },
+          ]} />
+        </div>
+        <YonCoach />
+        <YonWeeklyPlan />
+        <YonProgress />
+        <section className={`site-container ${styles.section}`}>
+          <div className="grid items-center gap-8 border-y border-dc-line-soft py-8 lg:grid-cols-2">
             <div>
-              <p className="dc-eyebrow">Dino AI · Koçluk önerisi</p>
-              <h2 className="mt-3.5 font-display text-[28px] leading-[1.14] tracking-[-0.02em] text-dc-ink sm:text-[36px]">
-                Koçun kararı, Dino AI&apos;ın bağlamı.
-              </h2>
-              <p className="mt-3.5 text-[16.5px] leading-[1.65] text-dc-ink-body">
-                Dino AI ders ve deneme verisinden bu haftanın odak konularını
-                önerir. Planı kuran ve öğrenciyi tanıyan yine koçtur.
-              </p>
+              <p className={styles.eyebrow}>Dino AI · {dino.status}</p>
+              <h2 className={`mt-3 ${headingClass}`}>Koçun kararı, Dino AI’ın bağlamı.</h2>
+              <p className="mt-4 text-[16px] leading-[1.65] text-dc-ink-body">{dino.description}</p>
+              <p className="mt-3 text-[15px] leading-[1.65] text-dc-ink-muted">Ders ve deneme verisi planın odağını destekleyebilir. Planı kuran ve öğrenciyi tanıyan yine insan koçtur.</p>
+              <Link href="/dino-ai" className="mt-3 inline-flex min-h-11 items-center text-[15px] font-bold text-dc-brand-strong">Dino AI’ı tanı →</Link>
             </div>
-
-            <div className="rounded-[20px] border border-dc-line bg-[#FCFDFC] p-5 sm:p-[22px]">
-              <p className="font-mono text-xs font-semibold text-(--dc-ink-faint)">
-                ÖNERİLEN ODAK
-              </p>
-              <ul className="mt-3.5 flex flex-col gap-2.5">
-                {[
-                  { label: "Paragraf · hız", rank: "öncelik 1", top: true },
-                  { label: "Türev kuralları", rank: "öncelik 2", top: false },
-                  { label: "Deneme tekrarı", rank: "öncelik 3", top: false },
-                ].map((r) => (
-                  <li
-                    key={r.label}
-                    className={`flex items-center justify-between gap-3 rounded-od px-3.5 py-3 text-[14.5px] font-semibold ${
-                      r.top
-                        ? "bg-dc-brand-soft text-dc-brand-deep"
-                        : "bg-dc-surface-muted text-(--pd-ink-3)"
-                    }`}
-                  >
-                    <span>{r.label}</span>
-                    <span>{r.rank}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-3 text-[12px] font-medium text-(--dc-ink-muted)">
-                Örnek metin — gerçek öneri öğrencinin kendi verisinden üretilir.
-              </p>
+            <div className={`rounded-dc-card p-6 ${styles.surface}`}>
+              <span className={styles.yellowLabel}>Örnek görünüm</span>
+              <h3 className="mt-4 text-[18px] font-bold text-dc-ink">Görüşmede değerlendirilebilecek odaklar</h3>
+              <ul className="mt-4 space-y-3 text-[15px] text-dc-ink-body"><li>Paragraf çalışmasında süre yönetimi</li><li>Denemede zorlanılan konuların tekrarı</li><li>Haftalık çalışma kapasitesi</li></ul>
+              <p className="mt-4 text-[13px] leading-[1.6] text-dc-ink-muted">Temsili içerik; kişisel önerilere erişim Dino AI pilotunun kapsamına bağlıdır.</p>
             </div>
           </div>
         </section>
-
-        <CrossSellWithPrice
-          cards={[
-            {
-              eyebrow: "+ onlinedershanem.",
-              title: "Konuyu öğretmenle kapat",
-              body: "Plan hazır ama konu eksikse, canlı ders bu boşluğu kapatır.",
-            },
-            {
-              eyebrow: "+ onlinedenemekulübüm.",
-              title: "Planın işe yaradığını gör",
-              body: "Deneme sonuçları planın bir sonraki haftasını besler.",
-            },
-          ]}
-          advantageNote="onlinedershanem. ile birlikte daha avantajlı."
-          price={singleProductPriceLabel("kocum")}
-          priceSuffix="/ ay"
-          features={[
-            "Haftalık plan",
-            "Birebir koç görüşmesi",
-            "Dino AI plan önerileri",
-          ]}
-          priceFootnote="Üç ürünü birleştirdiğinde en avantajlı toplam."
-        />
-
-        {/* DOĞRULUK: koçluk için online kayıt akışı henüz yayında değil.
-            Durum açıkça yazılır; sayfa satın alınabilirmiş gibi davranmaz. */}
-        <section className="site-container pt-6">
-          <p className="rounded-dc-card-sm border border-dc-line bg-white px-5 py-4 text-[14.5px] leading-[1.6] text-dc-ink-muted">
-            onlinekoçum. için kayıtlar hazırlanıyor. Koçluk kontenjanı ve
-            başlangıç tarihini ekibimizle planlayabilirsin; online kayıt akışı yayına
-            alınmadan ödeme almıyoruz.
-          </p>
+        <section className={`site-container ${styles.section}`}>
+          <h2 className={headingClass}>Öğren, planla, ölç.</h2>
+          <p className="mt-4 max-w-[680px] text-[16px] leading-[1.65] text-dc-ink-body">Koçunla planını oluşturur, deneme sonuçlarını sonraki haftanın planına taşırsın. İhtiyaç duyduğun desteği tek başına veya diğer ürünlerle birlikte değerlendirebilirsin.</p>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            {[
+              { href: "/urunler/online-dershanem", name: "onlinedershanem.", title: "Konuyu öğretmenle kapat", body: "Planda eksik kalan konuyu canlı derste öğretmeninle çalış." },
+              { href: denemeLigiBrand.href, name: denemeLigiBrand.name, title: "Planın sonucunu ölç", body: "Deneme sonuçlarıyla zorlandığın konuları gör; sonraki haftanın odağını koçunla belirle." },
+            ].map((card) => (
+              <Link key={card.href} href={card.href} className="rounded-dc-card border border-dc-line bg-white p-6">
+                <p className="wrap-break-word text-[12px] font-bold text-dc-ink-muted">{card.name}</p>
+                <h3 className="mt-3 text-[20px] font-bold text-dc-ink">{card.title} →</h3>
+                <p className="mt-2 text-[15px] leading-[1.6] text-dc-ink-muted">{card.body}</p>
+              </Link>
+            ))}
+          </div>
         </section>
-
-        <ProductFaq
-          items={[
-            {
-              q: "Koçum gerçek bir insan mı?",
-              a: "Evet. Koçluk insan koç tarafından yürütülür; Dino AI yalnızca veri ve öneri sağlar.",
-            },
-            {
-              q: "Görüşme sıklığı ne?",
-              a: "Görüşme sıklığı öğrencinin programına göre ön görüşmede belirlenir.",
-            },
-            {
-              q: "Ders almadan koçluk alabilir miyim?",
-              a: "Evet, onlinekoçum. tek başına planlanabilir. Güncel fiyatı bu sayfada ve paket kurucuda görebilirsin. Kontenjan ve başlangıç tarihini ekibimizle planlayabilirsin; online kayıt akışı açılmadan ödeme alınmaz.",
-            },
-          ]}
-        />
-
-        <ProductClosingCta
-          title="Planını koçunla kur."
-          body="Tek ürün olarak ya da ders ve denemeyle birlikte."
-        />
+        <YonPrice />
+        <ProductFaq title="Yön hakkında merak ettiklerin." items={faqs} />
+        <YonClosing />
       </main>
       <SiteFooter />
     </div>

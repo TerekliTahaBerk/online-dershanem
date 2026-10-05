@@ -56,7 +56,7 @@ export default function LGSLandingPage() {
           heroTitle:
             "LGS matematikte öğrencinin çözümünün görüldüğü küçük grup.",
           heroText:
-            "LGS öğrencisi derste çözümünü gösterir, sorusunu bekletmeden sorar ve hafta içinde hangi çalışmayla devam edeceğini bilir. İhtiyaç olursa bu akış, onlinekoçum. plan takibi ve onlinedenemekulübüm. deneme analiziyle desteklenebilir.",
+            "LGS öğrencisi derste çözümünü gösterir, sorusunu bekletmeden sorar ve hafta içinde hangi çalışmayla devam edeceğini bilir. İhtiyaç olursa bu akış, onlinekoçum. × Yön Koçluk plan takibi ve onlinedenemekulübüm. × Deneme Ligi deneme analiziyle desteklenebilir.",
           highlights: [
             "En fazla 4 öğrencilik matematik grubunda daha fazla bireysel temas",
             "Yeni nesil sorularda birlikte çözüm ve soru-cevap",

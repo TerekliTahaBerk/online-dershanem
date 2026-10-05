@@ -1,3 +1,5 @@
+import { yonBrand } from "@/lib/yon-brand";
+import { ProductBrandLabel } from "@/components/product/product-brand-label";
 import Link from "next/link";
 import Image from "next/image";
 import type { PublicProduct } from "@/lib/product-architecture";
@@ -6,8 +8,8 @@ import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 /**
  * 04 ÜÇ ÜRÜN — onaylı tasarım (Web.dc.html).
  * Beyaz zemin, 3 kolon ProductCard; her kartın üstünde ürüne özgü,
- * saf CSS ile çizilmiş 172px'lik bir önizleme alanı vardır (tasarımdaki
- * "canlı ders ekranı" / "haftalık plan" / "deneme grafiği" eskizleri).
+ * 172px önizleme alanı vardır. Yön ve Deneme Ligi onaylı marka
+ * logolarını aynı ölçüde gösterir; ders ve KPSS kendi önizlemelerini korur.
  * Mobilde dikey; hover'da kenarlık markaya döner.
  */
 
@@ -35,97 +37,19 @@ function LivePreview() {
   );
 }
 
-const planRow1 = [
-  "#DFEBE5",
-  "#14976B",
-  "#EDF4F0",
-  "#DFEBE5",
-  "#14976B",
-  "#EDF4F0",
-  "",
-];
-const planRow2 = [
-  "#EDF4F0",
-  "#DFEBE5",
-  "#14976B",
-  "#EDF4F0",
-  "#DFEBE5",
-  "#EDF4F0",
-  "",
-];
-
-function PlanPreview() {
-  return (
-    <div className="h-[172px] border-b border-dc-line-soft bg-dc-surface-muted p-[18px]">
-      <div className="flex h-full flex-col gap-2 rounded-xl border border-dc-line bg-white p-3">
-        <div className="font-mono text-xs font-semibold text-(--dc-ink-faint)">
-          haftalık plan
-        </div>
-        <div className="grid grid-cols-7 gap-[5px] text-center text-xs font-semibold text-(--dc-ink-faint)">
-          {["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pz"].map((d) => (
-            <span key={d}>{d}</span>
-          ))}
-        </div>
-        {[planRow1, planRow2].map((row, i) => (
-          <div key={i} className="grid grid-cols-7 gap-[5px]">
-            {row.map((c, j) => (
-              <span
-                key={j}
-                className={`h-[22px] rounded-[5px] ${
-                  c
-                    ? ""
-                    : "border border-dashed border-[#D6E2DC] bg-dc-surface-muted"
-                }`}
-                style={
-                  c
-                    ? {
-                        background: c,
-                        opacity:
-                          i === 0 && j === 4
-                            ? 0.7
-                            : i === 1 && j === 2
-                              ? 0.55
-                              : 1,
-                      }
-                    : undefined
-                }
-              />
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-const bars = [
-  { h: "38%", c: "#DFEBE5" },
-  { h: "62%", c: "#BFDDD0" },
-  { h: "48%", c: "#DFEBE5" },
-  { h: "80%", c: "#14976B" },
-  { h: "66%", c: "#BFDDD0" },
-];
-
-function ExamPreview() {
-  return (
-    <div className="h-[172px] border-b border-dc-line-soft bg-dc-surface-muted p-[18px]">
-      <div className="flex h-full items-end gap-2 rounded-xl border border-dc-line bg-white p-3">
-        {bars.map((b, i) => (
-          <span
-            key={i}
-            className="flex-1 rounded-t-md"
-            style={{ height: b.h, background: b.c }}
-          />
-        ))}
-      </div>
-    </div>
-  );
+function YonPreview() {
+  // Continue the source image's edge colors so its square background has no seam.
+  return <div className="flex h-[172px] items-stretch border-b border-[#CADDF8]">
+    <span aria-hidden="true" className="flex-1" style={{ background: "linear-gradient(to bottom, #001d75 0%, #011d71 6.25%, #011c6f 12.5%, #001e75 18.75%, #002586 25%, #002fa0 31.25%, #0043c2 37.5%, #015de1 43.75%, #0877f4 50%, #1491fc 56.25%, #21a4fd 62.5%, #169dfd 68.75%, #0887fd 75%, #026efa 81.25%, #0055eb 87.5%, #003ed1 93.75%, #002dbb 100%)" }} />
+    <Image src={yonBrand.logo} alt="" width={1254} height={1254} sizes="172px" className="h-full w-auto shrink-0 object-contain" />
+    <span aria-hidden="true" className="flex-1" style={{ background: "linear-gradient(to bottom, #28c1fd 0%, #1db6fd 6.25%, #129cfd 12.5%, #0880fd 18.75%, #026cf7 25%, #015ceb 31.25%, #0052df 37.5%, #0045cd 43.75%, #003bbb 50%, #0034ac 56.25%, #002d9c 62.5%, #002892 68.75%, #002284 75%, #001e7a 81.25%, #001c73 87.5%, #011a6f 93.75%, #01176c 100%)" }} />
+  </div>;
 }
 
 function LeaguePreview() {
   return (
-    <div className="flex h-[172px] items-center justify-center border-b border-[#4D1887] bg-[#350775]">
-      <Image src="/deneme-ligi/logo.png" alt="Deneme Ligi logosu" width={1254} height={1254} sizes="172px" className="h-full w-auto object-contain" />
+    <div className="flex h-[172px] items-center justify-center border-b border-[#4D1887] bg-[#34066B]">
+      <Image src="/deneme-ligi/logo.png" alt="" width={1254} height={1254} sizes="172px" className="h-full w-auto object-contain" style={{ maskImage: "linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent)" }} />
     </div>
   );
 }
@@ -173,13 +97,13 @@ const productCards = {
     Preview: LivePreview,
   },
   "online-kocum": {
-    eyebrow: "onlinekoçum.",
-    title: "Haftanı plansız bırakma.",
-    body: "Koçun haftalık planını kurar ve görüşmelerde uygulama durumunu takip eder.",
+    eyebrow: yonBrand.mediumName,
+    title: yonBrand.cardHeadline,
+    body: yonBrand.cardDescription,
     tracks: ["LGS", "YKS"],
-    cta: "onlinekoçum. ürününü incele",
+    cta: yonBrand.inspectLabel,
     href: "/urunler/online-kocum",
-    Preview: PlanPreview,
+    Preview: YonPreview,
   },
   "online-deneme-kulubum": {
     eyebrow: denemeLigiBrand.name,
@@ -188,7 +112,7 @@ const productCards = {
     tracks: ["LGS", "TYT", "AYT"],
     cta: "Deneme Ligi’ni incele",
     href: "/urunler/online-deneme-kulubum",
-    Preview: ExamPreview,
+    Preview: LeaguePreview,
   },
   kpss: {
     eyebrow: "KPSS",
@@ -205,12 +129,10 @@ export function ProductTrioView({
   products,
   title = "Hangi ürün sana uygun?",
   lede,
-  denemeLigiBranding = false,
 }: {
   products: readonly PublicProduct[];
   title?: string;
   lede?: string;
-  denemeLigiBranding?: boolean;
 }) {
   const resolvedLede =
     lede ??
@@ -236,7 +158,8 @@ export function ProductTrioView({
           }`}
         >
           {products.map((product) => {
-            const league = denemeLigiBranding && product.registryCode === "ODK";
+            const league = product.registryCode === "ODK";
+            const yon = product.slug === "online-kocum";
             const { eyebrow, title, body, tracks, cta, href, Preview } = league
               ? {
                   ...productCards[product.slug],
@@ -249,13 +172,13 @@ export function ProductTrioView({
               : productCards[product.slug];
             return (
               <article
-                key={eyebrow}
-                className={`flex flex-col overflow-hidden rounded-dc-card border bg-white transition-colors ${league ? "border-[#E9E1F3] hover:border-[#5B2599]" : "border-dc-line hover:border-dc-brand"}`}
+                key={product.slug}
+                className={`flex flex-col overflow-hidden rounded-dc-card border bg-white transition-colors ${yon ? "border-[#CADDF8] hover:border-[#0754C9] [--color-dc-brand:#0673F5] [--color-dc-brand-strong:#0754C9] [--color-dc-brand-hover:#0644A2] [--color-dc-brand-soft:#EFF6FF] [--color-dc-brand-soft-line:#CADDF8] motion-reduce:transition-none" : league ? "border-[#E9E1F3] hover:border-[#5B2599]" : "border-dc-line hover:border-dc-brand"}`}
               >
                 <Preview />
                 <div className="flex flex-1 flex-col gap-3 p-6">
                   <p className={`text-[12px] font-bold tracking-[0.08em] ${league ? "text-[#5B2599]" : "text-dc-brand-strong"}`}>
-                    {eyebrow}
+                    <ProductBrandLabel href={href} fallback={eyebrow} />
                   </p>
                   <h3 className="font-display text-[25px] leading-tight tracking-[-0.02em] text-dc-ink">
                     {title}
