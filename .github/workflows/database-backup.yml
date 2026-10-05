@@ -35,8 +35,16 @@ jobs:
 
       - name: Require backup secrets
         run: |
-          test -n "$DATABASE_DIRECT_URL"
-          test -n "$BACKUP_PASSWORD"
+          missing=0
+          if [ -z "$DATABASE_DIRECT_URL" ]; then
+            echo "::error::Missing Actions secret PRODUCTION_DATABASE_DIRECT_URL. Configure the production direct PostgreSQL connection in repository Settings > Secrets and variables > Actions."
+            missing=1
+          fi
+          if [ -z "$BACKUP_PASSWORD" ]; then
+            echo "::error::Missing Actions secret BACKUP_ENCRYPTION_PASSWORD. Store a durable encryption password in Actions and keep a recovery copy in your password manager."
+            missing=1
+          fi
+          test "$missing" = "0"
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
