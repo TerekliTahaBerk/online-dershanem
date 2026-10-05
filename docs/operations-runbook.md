@@ -10,11 +10,14 @@ GitHub repository **Settings → Secrets and variables → Actions** altında ş
 | --- | --- |
 | `PRODUCTION_DATABASE_DIRECT_URL` | Yedekleme, saklama raporu ve ödeme mutabakatı için doğrudan production PostgreSQL bağlantısı; Prisma Accelerate URL'si kullanılmaz. |
 | `BACKUP_ENCRYPTION_PASSWORD` | Dump ve tombstone defterinin şifrelenmesi. Kalıcı parolayı parola yöneticisinde de saklayın; eski yedekler önceki parolayı gerektirir. |
+| `PRODUCTION_CRON_SECRET` | Production Smoke için Vercel Production kapsamındaki `CRON_SECRET` ile aynı değer. Anahtar değiştirilirse iki platformu birlikte güncelleyin ve Vercel'i yeniden deploy edin. |
 | `BLOB_READ_WRITE_TOKEN` | Saklama motorunda gerçek Blob silme işlemleri için gereklidir. |
 
 Production `/api/health` yanıtında `cache: down`, `CACHE_UNAVAILABLE` ve `lastErrorCode: ENOTFOUND` birlikteyse Redis REST adresi DNS'te çözülemiyordur. Upstash panelindeki etkin veritabanının REST URL/token çiftini Vercel **Production** kapsamındaki `UPSTASH_REDIS_REST_URL` ve `UPSTASH_REDIS_REST_TOKEN` alanlarına kaydedip yeniden deploy edin. `ready: true`, cache `status: ok` ve HTTP 200 ile doğrulayın; sağlık kontrolünü gevşetmeyin.
 
 Düzeltme yeni commit'e girdikten sonra workflow'ları yeni commit üzerinden çalıştırın. Eski çalıştırmada “Re-run” eski commit'in lock dosyasını kullanır. Saklama kontrolünü `dry_run=true` ile çalıştırın.
+
+Lighthouse yerel production build'ini denetler. Workflow ortamında `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` ve `ERROR_ALERT_WEBHOOK_URL` için CI test değerleri bulunmalıdır; build yapılandırma kontrolü bunları zorunlu tutar. Production erişim bilgilerini bu denetime eklemeyin.
 
 ## Webhook
 

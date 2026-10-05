@@ -17,5 +17,8 @@ jobs:
         env:
           CRON_SECRET: ${{ secrets.PRODUCTION_CRON_SECRET }}
         run: |
-          test -n "$CRON_SECRET"
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::Missing GitHub Actions secret PRODUCTION_CRON_SECRET. Set it to the Vercel production CRON_SECRET value."
+            exit 1
+          fi
           curl --fail --silent --show-error --retry 2 --max-time 30 -H "Authorization: Bearer $CRON_SECRET" https://www.onlinedershanem.com/api/smoke
