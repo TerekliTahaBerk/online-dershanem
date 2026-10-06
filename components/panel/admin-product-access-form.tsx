@@ -75,7 +75,7 @@ export function AdminProductAccessForm({
           role="status"
           className="text-xs font-bold text-(--brand-olive)"
         >
-          {staff ? "Personel üç ürüne otomatik erişir." : message}
+          {staff ? "Yönetici tüm ürünlere erişir." : message}
         </p>
         {staff ? null : (
           <button

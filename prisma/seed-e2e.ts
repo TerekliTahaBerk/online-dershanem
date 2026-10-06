@@ -200,6 +200,32 @@ async function main() {
   // öğretmeni olmak yetmez (P0-3).
   await prisma.teacherProfile.upsert({ where: { userId: ids.teacher }, create: { id: ids.teacherProfile, userId: ids.teacher, subjects: ["Matematik"], isCoach: true }, update: { subjects: ["Matematik"], isCoach: true } });
   await prisma.teacherProfile.upsert({ where: { userId: ids.otherTeacher }, create: { id: ids.otherTeacherProfile, userId: ids.otherTeacher, subjects: ["Fen"] }, update: { subjects: ["Fen"] } });
+  // Ürün personel sorumlulukları (Phase 1): E2E öğretmeni OD ders öğretmeni,
+  // Yön koçu ve Deneme Ligi rapor okuyucusudur — eski `STAFF_PRODUCTS`
+  // kapsamıyla aynı; böylece shadow ve enforce modunda aynı ekranları görür.
+  // Başka öğretmen yalnız OD öğretmenidir. Satırlar aktifse yeniden yazılmaz.
+  const staffProducts = new Map((await prisma.product.findMany({ where: { code: { in: ["OD", "OK", "ODK"] } }, select: { id: true, code: true } })).map((row) => [row.code, row.id]));
+  const staffSeed = [
+    { userId: ids.teacher, code: "OD", role: "TEACHER" },
+    { userId: ids.teacher, code: "OK", role: "COACH" },
+    { userId: ids.teacher, code: "ODK", role: "REPORT_VIEWER" },
+    { userId: ids.otherTeacher, code: "OD", role: "TEACHER" },
+  ] as const;
+  for (const row of staffSeed) {
+    const productId = staffProducts.get(row.code);
+    if (!productId) throw new Error(`E2E seed: product ${row.code} missing`);
+    const active = await prisma.productStaffAssignment.findFirst({ where: { userId: row.userId, productId, role: row.role, revokedAt: null }, select: { id: true } });
+    if (!active) await prisma.productStaffAssignment.create({ data: { userId: row.userId, productId, role: row.role, source: "MANUAL", grantedById: ids.admin, grantReason: "E2E seed" } });
+  }
+  // Önceki koşulardan kalan ek (ayrıcalıklı) roller kapatılır: seed tanımı tek kaynaktır.
+  await prisma.productStaffAssignment.updateMany({
+    where: {
+      userId: { in: [ids.teacher, ids.otherTeacher] },
+      revokedAt: null,
+      NOT: { OR: staffSeed.map((row) => ({ userId: row.userId, role: row.role, productId: staffProducts.get(row.code)! })) },
+    },
+    data: { revokedAt: new Date(), revokeReason: "E2E seed reset" },
+  });
 
   const profiles = [
     { id: ids.studentProfile, userId: ids.student },

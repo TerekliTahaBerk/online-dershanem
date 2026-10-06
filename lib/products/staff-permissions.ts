@@ -15,6 +15,7 @@ import {
   type StaffProductCode,
   type StaffRoleName,
 } from "@/lib/products/staff-permission-matrix";
+import { teachersWithOdkReportRelationship } from "@/lib/products/staff-assignment-backfill-server";
 import { LEGACY_STAFF_PRODUCTS, legacyStaffPermission, staffAssignmentMode } from "@/lib/products/staff-mode";
 
 /**
@@ -91,21 +92,7 @@ export async function staffProductRelationshipEvidence(userId: string, product: 
   if (product === "OK") {
     return Boolean(await prisma.coachAssignment.findFirst({ where: { endedAt: null, coach: { userId } }, select: { id: true } }));
   }
-  const now = new Date();
-  return Boolean(
-    await prisma.enrollment.findFirst({
-      where: {
-        endedAt: null,
-        group: { teacherId: userId, isActive: true },
-        student: {
-          user: {
-            productMemberships: { some: { product: "ODK", revokedAt: null, startsAt: { lte: now }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] } },
-          },
-        },
-      },
-      select: { id: true },
-    }),
-  );
+  return (await teachersWithOdkReportRelationship([userId])).has(userId);
 }
 
 /* ------------------------------------------------------------------ *

@@ -38,12 +38,15 @@ export function AdminMfaForm({
   hasPlatformPasskey,
   totpEnabled,
   allowRecovery = true,
+  stepUpReturnTo = "/panel/yonetim",
 }: {
   purpose: Purpose;
   passkeyCount: number;
   hasPlatformPasskey: boolean;
   totpEnabled: boolean;
   allowRecovery?: boolean;
+  /** Adım yükseltme sonrası dönüş (yönetici: yönetim; ürün personeli: kendi çalışma alanı). */
+  stepUpReturnTo?: string;
 }) {
   const isMobile = useCoarsePointer();
   const [code, setCode] = useState("");
@@ -95,7 +98,7 @@ export function AdminMfaForm({
         throw new Error(verified.error || "Geçiş anahtarı doğrulanamadı.");
       }
       window.location.replace(
-        purpose === "STEP_UP" ? "/panel/yonetim" : verified.redirect,
+        purpose === "STEP_UP" ? stepUpReturnTo : verified.redirect,
       );
     } catch (cause) {
       setError(mapWebAuthnClientError(cause));
@@ -123,7 +126,7 @@ export function AdminMfaForm({
       return;
     }
     window.location.replace(
-      purpose === "STEP_UP" ? "/panel/yonetim" : data.redirect || "/panel",
+      purpose === "STEP_UP" ? stepUpReturnTo : data.redirect || "/panel",
     );
   }
 

@@ -26,7 +26,7 @@ export default async function AdminStepUpPage() {
           Kimliğinizi yeniden doğrulayın
         </h1>
         <p className="mb-7 mt-3 text-sm leading-6 text-slate-600">
-          Hassas yönetici işlemleri için doğrulama 10 dakika geçerlidir.
+          Hassas işlemler (yönetim, sonuç yayını, istisnai erişim) için doğrulama 10 dakika geçerlidir.
           Telefondan uygulama kodunu veya bu cihaza kayıtlı geçiş anahtarını
           kullanın.
         </p>
@@ -36,6 +36,7 @@ export default async function AdminStepUpPage() {
           hasPlatformPasskey={passkeys.hasPlatformPasskey}
           totpEnabled={Boolean(config?.totpEnabledAt)}
           allowRecovery={false}
+          stepUpReturnTo={session.role === "ADMIN" ? "/panel/yonetim" : "/panel/odk"}
         />
       </section>
     </main>
