@@ -20,7 +20,9 @@ for (const width of [320, 375, 390, 768, 1024, 1440]) {
     expect(response?.ok()).toBe(true);
     await expect(page).toHaveTitle(/onlinekoçum\. × Yön Koçluk/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Yönünü belirle.Planını uygula.");
-    const heroImage = page.locator("main picture img");
+    // Streamed HTML can briefly contain a hidden replacement tree before React
+    // commits it. Check the rendered page, including its single visible asset.
+    const heroImage = page.locator("main:visible picture img");
     await expect(heroImage).toBeVisible();
     await expect.poll(() => heroImage.evaluate((node: HTMLImageElement) => node.complete && node.naturalWidth > 0)).toBe(true);
     const expectedAsset = width < 768 ? yonBrand.mascot : yonBrand.logo;
@@ -41,6 +43,8 @@ test("Yön anchor, FAQ, structured data and existing consultation form work", as
   await page.route("https://tally.so/**", (route) => route.fulfill({ contentType: "text/html", body: "<h1>Ön görüşme formu</h1>" }));
   await page.goto(yonBrand.href);
   const main = page.getByRole("main");
+  await expect(main).toBeVisible();
+  await expect(page.getByRole("status", { name: "Sayfa yükleniyor", includeHidden: true })).toHaveCount(0);
   await main.getByRole("link", { name: "Koçluk nasıl çalışır?", exact: true }).click();
   await expect(page).toHaveURL(/#nasil-calisir$/);
   await expect(main.getByRole("heading", { name: "Hedefinden haftalık planına, birlikte." })).toBeInViewport();
@@ -112,7 +116,7 @@ for (const width of [320, 375, 390, 768, 1024, 1440]) {
         await expect(card).toHaveCount(1);
         await expect(card.locator("img")).toHaveCount(1);
         await expect(card.getByRole("link", { name: yonBrand.inspectLabel })).toHaveAttribute("href", yonBrand.href);
-        await expect(page.locator("article").filter({ hasText: "Deneme Ligi" }).locator('img[src*="deneme-ligi"]')).toBeVisible();
+        await expect(page.locator("article:visible").filter({ hasText: "Deneme Ligi" }).locator('img[src*="deneme-ligi"]')).toBeVisible();
       }
       if (width === 1440 && route === "/urunler") await page.screenshot({ path: "/tmp/yon-products-1440.png", fullPage: true });
       if (width === 390 && route === "/paketler") await page.screenshot({ path: "/tmp/yon-packages-390.png", fullPage: true });
@@ -122,10 +126,11 @@ for (const width of [320, 375, 390, 768, 1024, 1440]) {
 
 test("homepage FAQ schema exactly matches the visible FAQ", async ({ page }) => {
   await page.goto("/");
+  await expect(page.locator("main:visible")).toHaveCount(1);
   const schemas = await page.locator('script[type="application/ld+json"]').allTextContents();
   const faq = schemas.map((text) => JSON.parse(text)).find((schema) => schema["@type"] === "FAQPage");
-  const questions = await page.locator("main details summary").allTextContents();
+  const questions = await page.locator("main:visible details summary").allTextContents();
   expect(questions.map((text) => text.replace(/\s*\+\s*$/, "").trim())).toEqual(faq.mainEntity.map((entry: { name: string }) => entry.name));
-  const answers = await page.locator("main details p").allTextContents();
+  const answers = await page.locator("main:visible details p").allTextContents();
   expect(answers.map((text) => text.trim())).toEqual(faq.mainEntity.map((entry: { acceptedAnswer: { text: string } }) => entry.acceptedAnswer.text));
 });

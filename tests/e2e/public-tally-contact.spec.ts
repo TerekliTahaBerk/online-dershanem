@@ -68,7 +68,7 @@ test("existing YKS one-to-one contact query retains context without sending hidd
   const selection = page.getByRole("complementary", { name: "Seçiminiz" });
   await expect(selection).toContainText("YKS · onlinedershanem. + onlinekoçum. × Yön Koçluk");
   await expect(selection).toContainText("Birebir · Matematik + Fizik");
-  const iframeUrl = new URL((await page.getByTitle(title).getAttribute("src"))!);
+  const iframeUrl = new URL((await page.locator("main:visible").getByTitle(title).getAttribute("src"))!);
   expect(iframeUrl.searchParams.has("paket")).toBe(false);
   expect(iframeUrl.searchParams.has("ref")).toBe(false);
 });

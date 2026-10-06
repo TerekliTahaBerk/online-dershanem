@@ -1,3 +1,4 @@
+import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
@@ -8,7 +9,7 @@ type Params = Promise<{ slug: string }>;
 type Search = Promise<{ status?: string; orderId?: string }>;
 
 export const metadata: Metadata = {
-  title: "Ödeme Sonucu · ODK",
+  title: `Ödeme Sonucu · ${denemeLigiBrand.shortName}`,
   robots: { index: false, follow: false },
 };
 
@@ -44,11 +45,11 @@ export default async function OdkCheckoutResultPage({
           {isSuccess ? (
             <CheckoutResultCard
               status="success"
-              eyebrow="onlinedenemekulübüm."
+              eyebrow={denemeLigiBrand.shortName}
               title="Ödemeniz alındı"
               description={
                 order.provisioningStatus === "SUCCEEDED"
-                  ? "Ödemeniz kaydedildi ve onlinedenemekulübüm. erişiminiz hazırlandı."
+                  ? `Ödemeniz kaydedildi ve ${denemeLigiBrand.shortName} erişiminiz hazırlandı.`
                   : "Ödemeniz kaydedildi. Erişiminiz hazırlanıyor; tamamlandığında hesabınızdan giriş yapabilirsiniz."
               }
               nextStepNote={
@@ -71,7 +72,7 @@ export default async function OdkCheckoutResultPage({
           ) : isPending ? (
             <CheckoutResultCard
               status="pending"
-              eyebrow="onlinedenemekulübüm."
+              eyebrow={denemeLigiBrand.shortName}
               title="Ödeme doğrulanıyor"
               description="Banka bildirimi henüz ulaşmadı. Bu sayfayı kısa süre sonra yenileyin; doğrulama tamamlanmadan erişim açılmaz."
               primaryAction={{
@@ -84,7 +85,7 @@ export default async function OdkCheckoutResultPage({
           ) : (
             <CheckoutResultCard
               status="failed"
-              eyebrow="onlinedenemekulübüm."
+              eyebrow={denemeLigiBrand.shortName}
               description="İşleminiz banka tarafından onaylanmadı ya da yarıda kaldı. Hesabınızdan herhangi bir tutar çekilmediyse tekrar deneyebilirsiniz."
               primaryAction={{
                 href: `/odk-paketleri/${slug}/satin-al`,

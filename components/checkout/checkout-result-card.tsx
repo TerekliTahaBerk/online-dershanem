@@ -17,7 +17,7 @@ type ResultAction = {
 
 type Props = {
   status: CheckoutResultStatus;
-  /** Üst eyebrow yazısı — örn. "OD" veya "ODK" */
+  /** Üst eyebrow yazısı — örn. "onlinedershanem." veya "Deneme Ligi" */
   eyebrow?: string;
   /** Başlık override — yoksa status'a göre default kullanılır */
   title?: string;

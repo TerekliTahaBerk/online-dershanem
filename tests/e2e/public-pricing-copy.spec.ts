@@ -81,10 +81,11 @@ test("grup dersi fiyatı korunur, başvuru sepete ürün eklemez", async ({ page
 test("ana ekrana ekleme yönergesi mobilde bulunur; kamplar menü ve sitemap'te görünmez", async ({ page, request }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  // Streamed SSR placeholders can briefly duplicate footer content.
-  await expect(page.getByText("Ana ekrana ekle", { exact: true })).toHaveCount(1);
-  await expect(page.getByText("Ana ekrana ekle", { exact: true })).toBeVisible();
-  await expect(page.getByText(/iPhone.*Safari.*Paylaş.*Android.*Ana ekrana ekle/).first()).toBeVisible();
+  // Streamed SSR placeholders can briefly duplicate the page content.
+  const main = page.locator("main:visible");
+  await expect(main.getByText("Ana ekrana ekle", { exact: true })).toHaveCount(1);
+  await expect(main.getByText("Ana ekrana ekle", { exact: true })).toBeVisible();
+  await expect(main.getByText(/iPhone.*Safari.*Paylaş.*Android.*Ana ekrana ekle/).first()).toBeVisible();
   await expect(page.locator('header a[href="/kamplar"], footer a[href="/kamplar"]')).toHaveCount(0);
   await expect(page.locator("body")).not.toContainText("Mobil uygulama yakında");
   const sitemap = await request.get("/sitemap.xml");

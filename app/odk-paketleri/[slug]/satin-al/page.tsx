@@ -1,3 +1,4 @@
+import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -14,7 +15,7 @@ import {
 type Params = Promise<{ slug: string }>;
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Satın Alma Bilgileri · onlinedenemekulübüm.",
+  title: `Satın Alma Bilgileri · ${denemeLigiBrand.shortName}`,
   robots: { index: false, follow: false },
 };
 

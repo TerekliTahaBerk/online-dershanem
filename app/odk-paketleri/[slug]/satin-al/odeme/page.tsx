@@ -1,3 +1,4 @@
+import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
@@ -12,7 +13,7 @@ type Params = Promise<{ slug: string }>;
 type Search = Promise<{ orderId?: string }>;
 
 export const metadata: Metadata = {
-  title: "Güvenli Ödeme · ODK",
+  title: `Güvenli Ödeme · ${denemeLigiBrand.shortName}`,
   robots: { index: false, follow: false },
 };
 
@@ -96,11 +97,11 @@ export default async function OdkPaymentPage({
       >
         <PaytrIframeShell
           breadcrumb={[
-            { label: "Deneme Ligi", href: "/urunler/online-deneme-kulubum" },
+            { label: denemeLigiBrand.shortName, href: denemeLigiBrand.href },
             { label: "Bilgiler", href: `/odk-paketleri/${slug}/satin-al` },
             { label: "Ödeme" },
           ]}
-          eyebrow="onlinedenemekulübüm."
+          eyebrow={denemeLigiBrand.shortName}
           title={order.package.title}
           totalCents={order.totalCents}
           editHref={`/odk-paketleri/${slug}/satin-al`}

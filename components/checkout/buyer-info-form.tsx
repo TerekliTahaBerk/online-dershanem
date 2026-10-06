@@ -1,5 +1,7 @@
 "use client";
 
+import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
+
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -885,7 +887,7 @@ export function BuyerInfoForm({
         <strong>Bilgi:</strong>{" "}
         {service === "OD"
           ? "Satın almak için hesap oluşturmanız gerekmez. Ödeme sonrası ekibimiz sizinle iletişime geçer, öğrencinin seviyesini değerlendirir ve ilk ders planlamasını yapar. Bu form sonrasında güvenli ödeme sayfasına yönlendirileceksiniz."
-          : "Ödeme tamamlandığında ODK erişiminiz otomatik aktive olur. Deneme planınız için hocalarımız sizinle iletişime geçecektir."}
+          : `Ödemeniz doğrulandıktan sonra ${denemeLigiBrand.shortName} paketinizin erişim koşulları uygulanır. Erişim durumunu hesabınızdan takip edebilirsiniz.`}
       </div>
       <button
         type="submit"

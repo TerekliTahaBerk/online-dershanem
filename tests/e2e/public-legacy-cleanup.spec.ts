@@ -47,7 +47,7 @@ for (const width of [320, 390, 768, 1440, 1920]) {
 test("FAQ category navigation and keyboard disclosure expose answers matching JSON-LD", async ({ page }) => {
   await page.goto("/sss");
   await page.getByRole("link", { name: "Dino AI · Ortak destek katmanı", exact: true }).click();
-  const item = page.locator("details").filter({ hasText: "Dino AI ayrı bir ürün mü?" });
+  const item = page.locator("main:visible details").filter({ hasText: "Dino AI ayrı bir ürün mü?" });
   await item.locator("summary").focus();
   await page.keyboard.press("Enter");
   await expect(item).toHaveAttribute("open", "");

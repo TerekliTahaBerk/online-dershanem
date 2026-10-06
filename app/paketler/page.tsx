@@ -18,6 +18,8 @@ export const metadata = buildMarketingMetadata({
   description:
     "onlinedershanem., onlinekoçum. × Yön Koçluk ve onlinedenemekulübüm. × Deneme Ligi’ni tek tek ya da birlikte seç; güncel fiyatları ve birlikte alım avantajını gör, başlangıcını planla.",
   canonical: "/paketler",
+  imagePath: "/paketler/opengraph-image",
+  imageAlt: "Paketini Oluştur — Canlı ders, Yön Koçluk ve Deneme Ligi",
 });
 
 export default async function PackagesPage() {

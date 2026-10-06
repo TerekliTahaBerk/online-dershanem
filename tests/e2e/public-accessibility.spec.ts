@@ -65,6 +65,9 @@ test("mobile navigation traps and restores keyboard focus", async ({ page }) => 
 test("ana sayfa reduced-motion tercihine uyar", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
+  // Verify the homepage after the streamed loading skeleton is removed.
+  await expect(page.getByRole("main")).toBeVisible();
+  await expect(page.getByRole("status", { name: "Sayfa yükleniyor", includeHidden: true })).toHaveCount(0);
   const animated = await page.evaluate(() =>
     [...document.querySelectorAll("*")].filter((el) => {
       const name = getComputedStyle(el).animationName;

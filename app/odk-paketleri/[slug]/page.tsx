@@ -1,3 +1,4 @@
+import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -42,11 +43,11 @@ export async function generateMetadata({
     item.contract.package.description ||
     `${item.contract.package.title}: deneme takvimi, erişim hakları ve raporlama ayrıntıları.`;
   const metadata = buildMarketingMetadata({
-    title: item.contract.package.title,
+    title: `${item.contract.package.title} | ${denemeLigiBrand.shortName}`,
     description,
     canonical: `/odk-paketleri/${slug}`,
     imagePath: "/odk-paketleri/opengraph-image",
-    imageAlt: item.contract.package.title,
+    imageAlt: `${denemeLigiBrand.shortName} paketleri — ${item.contract.package.title}`,
   });
   return !item.catalogReady
     ? { ...metadata, robots: { index: false, follow: true } }
@@ -81,7 +82,7 @@ export default async function OdkPackageDetailPage({
         schema={[
           breadcrumbJsonLd([
             { name: "Ana Sayfa", url: "/" },
-            { name: "onlinedenemekulübüm. × Deneme Ligi", url: "/urunler/online-deneme-kulubum" },
+            { name: denemeLigiBrand.name, url: denemeLigiBrand.href },
             { name: contract.package.title, url: `/odk-paketleri/${slug}` },
           ]),
           productJsonLd({
@@ -102,13 +103,13 @@ export default async function OdkPackageDetailPage({
           <div className="site-container grid gap-10 lg:grid-cols-[1fr_380px]">
             <div>
               <Link
-                href="/urunler/online-deneme-kulubum#paketler"
+                href={`${denemeLigiBrand.href}#paketler`}
                 className="text-sm font-bold text-(--brand-orange-ink)"
               >
                 ← Paketlere dön
               </Link>
               <p className="mt-8 text-xs font-bold tracking-[.16em] text-(--brand-olive)">
-                onlinedenemekulübüm. × Deneme Ligi
+                {denemeLigiBrand.name}
               </p>
               <h1 className="mt-3 max-w-3xl font-display text-[clamp(2.6rem,6vw,4.8rem)] leading-none tracking-tighter text-(--site-ink)">
                 {contract.package.title}
