@@ -30,20 +30,6 @@
   --color-dc-on-deep-faint: var(--dc-on-deep-faint);
   --color-dc-on-deep-line: var(--dc-on-deep-line);
 
-  /* Panel token katmanı — değerler yalnız `.pn-scope` içinde tanımlıdır. */
-  --color-pn-canvas: var(--pn-canvas);
-  --color-pn-sidebar: var(--pn-sidebar);
-  --color-pn-surface-subtle: var(--pn-surface-subtle);
-  --color-pn-hover: var(--pn-hover);
-  --color-pn-selected: var(--pn-selected);
-  --color-pn-border: var(--pn-border);
-  --color-pn-border-strong: var(--pn-border-strong);
-  --color-pn-text: var(--pn-text);
-  --color-pn-text-secondary: var(--pn-text-secondary);
-  --color-pn-text-muted: var(--pn-text-muted);
-  --color-pn-accent: var(--pn-accent);
-  --color-pn-accent-soft: var(--pn-accent-soft);
-  --color-pn-accent-marker: var(--pn-accent-marker);
 
   --color-anchor: #091413;
   --color-ink: #111111;
@@ -183,6 +169,26 @@
       transform: translateX(0);
     }
   }
+}
+
+/* Panel token katmanı — değerler yalnız `.pn-scope` içinde tanımlıdır.
+   `inline`: yardımcı sınıflar `var(--pn-*)`'ı DOĞRUDAN kullanır. Normal @theme
+   değişkenleri :root'ta çözülür; orada --pn-* tanımsız olduğu için renkler
+   boşa düşerdi. */
+@theme inline {
+  --color-pn-canvas: var(--pn-canvas);
+  --color-pn-sidebar: var(--pn-sidebar);
+  --color-pn-surface-subtle: var(--pn-surface-subtle);
+  --color-pn-hover: var(--pn-hover);
+  --color-pn-selected: var(--pn-selected);
+  --color-pn-border: var(--pn-border);
+  --color-pn-border-strong: var(--pn-border-strong);
+  --color-pn-text: var(--pn-text);
+  --color-pn-text-secondary: var(--pn-text-secondary);
+  --color-pn-text-muted: var(--pn-text-muted);
+  --color-pn-accent: var(--pn-accent);
+  --color-pn-accent-soft: var(--pn-accent-soft);
+  --color-pn-accent-marker: var(--pn-accent-marker);
 }
 
 /*
@@ -573,6 +579,15 @@ a {
 
   /* Yoğunluk: satır yüksekliği */
   --pn-row-h: 40px;
+}
+/* Panel kabuğu: beyaz çalışma alanı. `.site-scope` zeminini ve turuncu odak
+   halkasını panel içinde ezer (özgüllük 0,2,0). */
+.site-scope.pn-scope {
+  background: var(--pn-canvas);
+  color: var(--pn-text);
+}
+.site-scope.pn-scope :where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline-color: var(--pn-focus);
 }
 .pn-scope[data-product="yon"] {
   --pn-accent: var(--pn-accent-yon);

@@ -27,6 +27,55 @@ function normalizeTone(tone: PanelTone): Exclude<PanelTone, "danger"> {
 
 /* ── Sayfa başlığı ────────────────────────────────────────────────────── */
 
+/**
+ * PAGE HEADER — tüm panel sayfalarının tek başlık ölçeği (roadmap §5.3, §8.1).
+ *
+ * `PanelHeading`, `PanelPageHeader` ve `AdminPageHeader` bu görünümü çizer;
+ * sayfalar tek tek yeniden yazılmadan aynı sakin hiyerarşiye geçer:
+ * 24px / 700 başlık, büyük harfsiz küçük bağlam satırı, 14px açıklama, sağda
+ * tek birincil eylem alanı. Sayfanın tek `<h1>`'i buradadır.
+ */
+export function PageHeader({
+  title,
+  description,
+  eyebrow,
+  icon: Icon,
+  actions,
+  metadata,
+}: {
+  title: string;
+  description?: ReactNode;
+  eyebrow?: string;
+  icon?: LucideIcon;
+  actions?: ReactNode;
+  metadata?: ReactNode;
+}) {
+  return (
+    <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+      <div className="min-w-0">
+        {eyebrow ? (
+          <p className="mb-1.5 flex items-center gap-1.5 text-[12.5px] font-medium text-dc-ink-muted">
+            {Icon ? <Icon size={14} aria-hidden="true" /> : null}
+            {eyebrow}
+          </p>
+        ) : null}
+        <h1 className="max-w-4xl text-[20px] font-bold leading-[1.3] tracking-[-0.015em] text-dc-ink sm:text-[24px]">
+          {title}
+        </h1>
+        {description ? (
+          <p className="mt-1.5 max-w-3xl text-[14px] leading-[1.6] text-dc-ink-body">
+            {description}
+          </p>
+        ) : null}
+        {metadata ? (
+          <div className="mt-2 text-[12px] text-dc-ink-muted">{metadata}</div>
+        ) : null}
+      </div>
+      {actions ? <div className="flex shrink-0 flex-wrap gap-2">{actions}</div> : null}
+    </header>
+  );
+}
+
 export function PanelHeading({
   title,
   description,
@@ -39,26 +88,12 @@ export function PanelHeading({
   actions?: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        {eyebrow ? (
-          <p className="text-[13px] text-dc-ink-faint">{eyebrow}</p>
-        ) : null}
-        <h1
-          className={`text-[22px] font-extrabold leading-tight tracking-[-0.02em] text-dc-ink sm:text-[26px] ${
-            eyebrow ? "mt-2" : ""
-          }`}
-        >
-          {title}
-        </h1>
-        {description ? (
-          <p className="mt-1.5 text-[14.5px] text-dc-ink-muted">
-            {description}
-          </p>
-        ) : null}
-      </div>
-      {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
-    </div>
+    <PageHeader
+      title={title}
+      description={description}
+      eyebrow={eyebrow}
+      actions={actions}
+    />
   );
 }
 
@@ -66,7 +101,7 @@ export function PanelPageHeader({
   eyebrow,
   title,
   description,
-  icon: Icon,
+  icon,
   action,
   actions,
   metadata,
@@ -79,37 +114,15 @@ export function PanelPageHeader({
   actions?: ReactNode;
   metadata?: ReactNode;
 }) {
-  const actionNode = actions ?? action;
   return (
-    <header className="flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-end lg:justify-between">
-      <div className="min-w-0">
-        {eyebrow ? (
-          <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[.09em] text-dc-brand-strong">
-            {Icon ? <Icon size={15} aria-hidden="true" /> : null}
-            {eyebrow}
-          </p>
-        ) : null}
-        <h1
-          className={cn(
-            "max-w-4xl font-semibold tracking-[-.04em] text-dc-ink",
-            eyebrow
-              ? "mt-2.5 text-2xl sm:text-3xl lg:text-4xl"
-              : "text-[22px] sm:text-[26px] lg:text-[28px]",
-          )}
-        >
-          {title}
-        </h1>
-        {description ? (
-          <p className="mt-2.5 max-w-3xl text-sm leading-7 text-dc-ink-body">
-            {description}
-          </p>
-        ) : null}
-        {metadata ? (
-          <div className="mt-2.5 text-xs text-dc-ink-muted">{metadata}</div>
-        ) : null}
-      </div>
-      {actionNode ? <div className="shrink-0">{actionNode}</div> : null}
-    </header>
+    <PageHeader
+      eyebrow={eyebrow}
+      title={title}
+      description={description}
+      icon={icon}
+      actions={actions ?? action}
+      metadata={metadata}
+    />
   );
 }
 

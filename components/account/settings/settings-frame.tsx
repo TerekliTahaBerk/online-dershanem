@@ -4,6 +4,8 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelHeading, PanelProgress } from "@/components/panel/ui";
 import type { SessionUser } from "@/lib/auth/session";
 import type { AccountStatus } from "@/lib/account/account-status";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { userRequiresMfa } from "@/lib/products/staff-permissions";
 
 export type SettingsSection = "profil" | "egitim" | "cocuklarim" | "iletisim" | "fatura" | "onaylar" | "guvenlik";
 
@@ -32,7 +34,24 @@ export function settingsSectionLabel(section: SettingsSection): string {
  * Hesap ayarları ortak çerçevesi: panel kabuğu, başlık, tamamlama çubuğu ve
  * bölüm sekmeleri.
  */
-export function SettingsFrame({
+/**
+ * Panel tercihleri — menüden kaldırılan ortak öğeler burada toplanır
+ * (docs/panel-design-roadmap.md §6.2). Bayrağa bağlı sayfalar bayrak kapalıyken
+ * gösterilmez; MFA sayfası yalnız MFA gerektiren hesaplarda açılır.
+ */
+function panelPreferenceLinks(requiresMfa: boolean) {
+  const flags = getPanelFeatureFlags();
+  return [
+    { href: "/panel/bildirimler", label: "Bildirimler ve tercihleri" },
+    ...(flags.accessibilityProfile ? [{ href: "/panel/erisilebilirlik", label: "Erişilebilirlik" }] : []),
+    ...(flags.offlineMode ? [{ href: "/panel/veri-kullanimi", label: "Veri kullanımı" }] : []),
+    ...(requiresMfa ? [{ href: "/panel/guvenlik", label: "İki adımlı doğrulama" }] : []),
+    { href: "/panel/oturumlar", label: "Aktif oturumlar" },
+    { href: "/panel/parola", label: "Parola" },
+  ];
+}
+
+export async function SettingsFrame({
   session,
   status,
   active,
@@ -44,6 +63,7 @@ export function SettingsFrame({
   children: React.ReactNode;
 }) {
   const sections = settingsSectionsFor(session.role);
+  const preferenceLinks = panelPreferenceLinks(await userRequiresMfa(session.userId, session.role));
   return (
     <PanelShell role={session.role} fullName={session.fullName} email={session.email} pageTitle="Hesap ayarları">
       <div className="max-w-[820px]">
@@ -70,6 +90,14 @@ export function SettingsFrame({
               }`}
             >
               {SECTION_LABEL[section]}
+            </Link>
+          ))}
+        </nav>
+        <nav aria-label="Panel tercihleri" className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13px]">
+          <span className="text-dc-ink-muted">Panel tercihleri:</span>
+          {preferenceLinks.map((link) => (
+            <Link key={link.href} href={link.href} className="font-medium text-dc-brand-strong hover:underline">
+              {link.label}
             </Link>
           ))}
         </nav>

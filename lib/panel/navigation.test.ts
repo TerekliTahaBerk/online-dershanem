@@ -207,7 +207,7 @@ test("ürün paneli kapsamı: yönetim menüsünde ortak öğeler her panelde, �
     panelNavSections("ADMIN", [], ALL_FLAGS_ON, undefined, scope).flatMap((section) => section.items.map((item) => item.id));
   for (const scope of ALL_PRODUCTS) {
     const items = ids(scope);
-    for (const common of ["today", "signups", "people", "orders", "account-settings"]) assert.equal(items.includes(common), true, `${scope}:${common}`);
+    for (const common of ["today", "signups", "people", "orders"]) assert.equal(items.includes(common), true, `${scope}:${common}`);
   }
   assert.equal(ids("OD").includes("groups"), true);
   assert.equal(ids("OD").includes("odk-exams"), false);
@@ -251,4 +251,16 @@ test("giriş noktası olmayan sayfalar menüye bağlanır (yetim rota kalmaz)", 
   // Öğrencinin haftalık özeti, sayfayla aynı bayrağa bağlıdır.
   assert.ok(panelNavHrefs("STUDENT", ALL_PRODUCTS, ALL_FLAGS_ON).includes("/panel/ogrenci/haftalik"));
   assert.ok(!panelNavHrefs("STUDENT", ALL_PRODUCTS, ALL_FLAGS_OFF).includes("/panel/ogrenci/haftalik"));
+});
+
+test("hesap ve panel tercihleri menüde değil, Ayarlar merkezindedir", () => {
+  for (const role of ["ADMIN", "TEACHER", "STUDENT", "PARENT"] as UserRole[]) {
+    const hrefs = panelNavHrefs(role, ALL_PRODUCTS, ALL_FLAGS_ON);
+    for (const href of ["/panel/ayarlar", "/panel/bildirimler", "/panel/erisilebilirlik", "/panel/veri-kullanimi"]) {
+      assert.ok(!hrefs.includes(href), `${role}: ${href}`);
+    }
+    const titles = sectionTitles(role, ALL_PRODUCTS, ALL_FLAGS_ON);
+    assert.ok(!titles.includes("AYARLAR"), role);
+    assert.ok(!titles.includes("GENEL"), role);
+  }
 });

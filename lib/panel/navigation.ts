@@ -12,6 +12,11 @@
  *   indirerek, öğretmen/yönetim menüsü öğe bazlı `NAV_ITEM_SCOPE` ile süzülür.
  *   Kapsam verilmezse (eski çağrılar, testler) davranış değişmez.
  *
+ * AYARLAR menüde değildir: hesap ayarları, bildirim tercihleri, erişilebilirlik,
+ * veri kullanımı, güvenlik ve oturumlar kenar çubuğunun alt bloğundaki
+ * "Ayarlar" merkezinden (`/panel/ayarlar`) açılır; Bildirimler kenar çubuğunun
+ * global bloğundadır (docs/panel-design-roadmap.md §6.2).
+ *
  * Rol zihinsel modelleri:
  * - ADMIN: Bugün · Kişiler · Eğitim · Denemeler · Sistem
  * - TEACHER: Bugün · Dersler · Öğrenciler · Koçluk · Ölçme · Kaynaklar
@@ -20,7 +25,7 @@
  */
 
 import type { ProductCode, UserRole } from "@prisma/client";
-import { ACCOUNT_SETTINGS_PATH, productRolePath, rolePath, roleStudentsPath } from "@/lib/auth/roles";
+import { productRolePath, rolePath, roleStudentsPath } from "@/lib/auth/roles";
 import type { PanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PANEL_DOMAIN } from "@/lib/panel/domain-vocabulary";
 import { ODK_REPORT_WORKSPACE, odkStaffModules, resolveOdkStaffHome, type StaffPermission } from "@/lib/products/staff-permission-matrix";
@@ -40,19 +45,6 @@ export type PanelNavSection = {
 
 function section(id: string, title: string, items: PanelNavItem[]): PanelNavSection[] {
   return items.length ? [{ id, title, items }] : [];
-}
-
-function commonItems(flags: PanelFeatureFlags): PanelNavItem[] {
-  return [
-    { id: "account-settings", href: ACCOUNT_SETTINGS_PATH, label: "Hesap ayarları" },
-    { id: "notifications", href: "/panel/bildirimler", label: PANEL_DOMAIN.bildirimler },
-    ...(flags.accessibilityProfile
-      ? [{ id: "accessibility", href: "/panel/erisilebilirlik", label: "Erişilebilirlik" }]
-      : []),
-    ...(flags.offlineMode
-      ? [{ id: "data-usage", href: "/panel/veri-kullanimi", label: "Veri kullanımı" }]
-      : []),
-  ];
 }
 
 function studentSections(
@@ -105,7 +97,6 @@ function studentSections(
         : []),
       ...(flags.dinoAi ? [{ id: "dino", href: `${root}/dino`, label: "Dino AI" }] : []),
     ]),
-    ...section("ayarlar", "AYARLAR", commonItems(flags)),
   ];
 }
 
@@ -152,7 +143,6 @@ function parentSections(
     ...section("hesap", "HESAP", [
       ...(flags.dinoAi ? [{ id: "dino", href: `${root}/dino`, label: "Dino AI" }] : []),
       { id: "account", href: `${root}/hesap`, label: "Hesap ve paket" },
-      ...commonItems(flags),
     ]),
   ];
 }
@@ -216,7 +206,6 @@ function teacherSections(root: string, flags: PanelFeatureFlags): PanelNavSectio
         ? [{ id: "ai-drafts", href: `${root}/ai-yardimci`, label: "AI yardımcı" }]
         : []),
     ]),
-    ...section("ayarlar", "AYARLAR", commonItems(flags)),
   ];
 }
 
@@ -263,7 +252,6 @@ function adminSections(root: string, flags: PanelFeatureFlags): PanelNavSection[
         ? [{ id: "quality", href: `${root}/kalite`, label: "Öğrenme kalitesi" }]
         : []),
     ]),
-    ...section("genel", "GENEL", commonItems(flags)),
   ];
 }
 
@@ -376,7 +364,6 @@ export function panelNavSections(
   if (role === "TEACHER" && effectiveScope === "ODK" && staffOdkPermissions) {
     return [
       ...section("denemeler", "DENEME LİGİ", staffOdkNavItems(staffOdkPermissions)),
-      ...section("ayarlar", "AYARLAR", commonItems(flags)),
     ];
   }
   const scopedProducts = effectiveScope && (role === "STUDENT" || role === "PARENT") ? [effectiveScope] : products;

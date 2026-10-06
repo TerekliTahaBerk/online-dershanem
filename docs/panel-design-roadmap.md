@@ -9,7 +9,8 @@
 | Phase | State |
 |---|---|
 | Design Phase 0 | **Partly done.** Done: MFA reset approval queue restored on `/panel/yonetim/kisiler` (`components/panel/pending-mfa-reset-queue.tsx`); menu entries for `/panel/odk/yonetim/sonuclar`, both pilot pages, `/panel/yonetim/kalite`, `/panel/ogrenci/haftalik`; §19.7 copy fixes; `lib/panel/status-vocabulary.ts`; `.pn-scope` token layer + `data-product` on the shell; `tests/e2e/panel-design-phase0.spec.ts`. **Open:** visual-regression screenshot baseline, preservation checklist fixture. |
-| Design Phases 1–8 | Not started. |
+| Design Phase 1 | **Partly done.** Done: shell restructure (gray 240px sidebar, `WorkspaceSwitcher`, global Bildirimler with count, bottom block with Ayarlar / İşletme / account), 48px context bar with `ContextBreadcrumb`, white canvas, `.pn-scope` focus ring, nav accent bar, one `PageHeader` scale behind `PanelHeading` / `PanelPageHeader` / `AdminPageHeader`, account and panel preferences moved out of menus into the Ayarlar hub, panel-wide `error.tsx`, new loading skeleton, mobile bottom bar fits on one row. **Open:** collapsible sidebar rail, `CommandMenu` for every persona with permission predicates, remaining primitives (§18.2), ~20 hand-written `<h1>`s, staff-only bottom bar decision. |
+| Design Phases 2–8 | Not started. |
 
 **How to use this document:** §2, §3, §19 and §21 are the inventory and safety net. §5–§8 define the system. §9–§15 define each workspace. §22–§23 are the implementation order with file paths. Every proposed feature has a dependency tag:
 
