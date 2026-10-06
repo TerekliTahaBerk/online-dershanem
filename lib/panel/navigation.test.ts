@@ -264,3 +264,12 @@ test("hesap ve panel tercihleri menüde değil, Ayarlar merkezindedir", () => {
     assert.ok(!titles.includes("GENEL"), role);
   }
 });
+
+test("öğrenci OD menüsü tekrar ve telafiye bağlanır, kapalı bayrakla bağlanmaz", () => {
+  assert.ok(panelNavHrefs("STUDENT", ["OD"], ALL_FLAGS_ON).includes("/panel/ogrenci/tekrar"));
+  assert.ok(panelNavHrefs("STUDENT", ["OD"], { ...ALL_FLAGS_OFF, recoveryPackage: true }).includes("/panel/ogrenci/telafi"));
+  const closed = panelNavHrefs("STUDENT", ["OD"], ALL_FLAGS_OFF);
+  assert.ok(!closed.includes("/panel/ogrenci/tekrar"));
+  assert.ok(!closed.includes("/panel/ogrenci/telafi"));
+  assert.ok(!panelNavHrefs("STUDENT", ["OK"], ALL_FLAGS_ON).includes("/panel/ogrenci/tekrar"));
+});

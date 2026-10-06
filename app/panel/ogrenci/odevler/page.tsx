@@ -5,7 +5,6 @@ import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   PanelHeading,
-  PanelSectionLabel,
   PanelEmpty,
 } from "@/components/panel/ui";
 
@@ -98,9 +97,9 @@ export default async function StudentTasksPage() {
           body="Öğretmenin yeni bir ödev eklediğinde burada görünecek. Haftalık çalışma planın Plan sayfasında."
         />
       ) : (
-        <div className="mt-6">
-          <PanelSectionLabel>Dershanem ödevleri</PanelSectionLabel>
-          <div className="mt-2.5">
+        <div className="mt-6 max-w-[880px]">
+          <h2 className="mb-1 text-[15px] font-semibold text-pn-text">Öğretmeninin verdiği ödevler</h2>
+          <div>
             <StudentAssignmentList
               evidenceEnabled={evidenceEnabled}
               assignments={assignments.map((item) => ({

@@ -2,7 +2,15 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelHeading, PanelCard } from "@/components/panel/ui";
+import {
+  List,
+  ListRow,
+  PageHeader,
+  PropertyList,
+  PropertyRow,
+  Section,
+  StatusBadge,
+} from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -93,100 +101,77 @@ export default async function StudentLessonDetailPage({
       email={session.email}
       pageTitle="Ders detayı"
     >
-      <div className="max-w-[900px]">
-        <PanelHeading
-          eyebrow={`Dersler · ${FULL.format(lesson.startsAt)}`}
-          title={lesson.title}
-        />
+      <div className="max-w-[760px]">
+        <PageHeader eyebrow="Dersler" title={lesson.title} />
 
-        <div className="mt-4 flex flex-wrap gap-x-8 gap-y-2 border-b border-dc-line pb-5 text-[14px] font-medium text-(--pd-ink-3)">
-          <span>Öğretmen: {lesson.teacher.fullName || "—"}</span>
-          <span>Grup: {lesson.group.name}</span>
-          <span
-            className={
-              attendance === "ABSENT" ? "text-[#8A5F37]" : "text-dc-brand-hover"
-            }
-          >
-            {attendanceLabel}
-          </span>
-        </div>
+        <PropertyList className="mt-5">
+          <PropertyRow label="Tarih">{FULL.format(lesson.startsAt)}</PropertyRow>
+          <PropertyRow label="Öğretmen">{lesson.teacher.fullName || "—"}</PropertyRow>
+          <PropertyRow label="Grup">{lesson.group.name}</PropertyRow>
+          <PropertyRow label="Katılım">
+            <StatusBadge
+              label={attendanceLabel}
+              tone={
+                attendance === "ABSENT"
+                  ? "warning"
+                  : attendance === "PRESENT" || attendance === "LATE"
+                    ? "success"
+                    : "neutral"
+              }
+            />
+          </PropertyRow>
+        </PropertyList>
 
-        <section className="mt-6">
-          <h2 className="text-[16px] font-bold text-dc-ink">
-            Derste ne işlendi?
-          </h2>
-          <p className="mt-2 text-[14.5px] leading-[1.7] text-(--pd-ink-3)">
+        <Section title="Derste ne işlendi?">
+          <p className="text-[14.5px] leading-[1.7] text-pn-text-secondary">
             {shared?.topic ||
               "Öğretmen bu dersin özetini henüz eklemedi. Eklendiğinde burada görünecek."}
           </p>
-        </section>
+        </Section>
 
         {personal?.note ? (
-          <section className="mt-6">
-            <h2 className="text-[16px] font-bold text-dc-ink">Öğretmen notu</h2>
-            <PanelCard className="mt-2">
-              <p className="text-[14.5px] leading-[1.65] text-(--pd-ink-3)">
-                &ldquo;{personal.note}&rdquo;
-              </p>
-            </PanelCard>
-          </section>
+          <Section title="Öğretmen notu">
+            <blockquote className="border-l-2 border-pn-accent pl-4 text-[14.5px] leading-[1.65] text-pn-text-secondary">
+              &ldquo;{personal.note}&rdquo;
+            </blockquote>
+          </Section>
         ) : null}
 
-        <section className="mt-6">
-          <h2 className="text-[16px] font-bold text-dc-ink">Verilen çalışma</h2>
+        <Section title="Verilen çalışma">
           {shared?.homework ? (
-            <p className="mt-2 text-[14.5px] leading-[1.7] text-(--pd-ink-3)">
-              {shared.homework}
-            </p>
+            <p className="mb-3 text-[14.5px] leading-[1.7] text-pn-text-secondary">{shared.homework}</p>
           ) : null}
-
           {assignments.length ? (
-            <div className="mt-2 flex flex-col gap-2.5">
+            <List label="Bu derste verilen çalışmalar">
               {assignments.map((a) => {
                 const done = a.progress[0]?.status === "DONE";
                 return (
-                  <PanelCard
+                  <ListRow
                     key={a.id}
-                    className="flex flex-wrap items-center gap-4"
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-[14.5px] font-semibold text-dc-ink">
-                        {a.title}
-                      </span>
-                      <span className="mt-0.5 block text-[13px] text-dc-ink-faint">
-                        {a.dueAt
-                          ? `Teslim: ${new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" }).format(a.dueAt)}`
-                          : "Teslim tarihi yok"}
-                      </span>
-                    </span>
-                    <span
-                      className={`shrink-0 text-[13.5px] font-semibold ${
-                        done ? "text-dc-brand-hover" : "text-dc-ink-muted"
-                      }`}
-                    >
-                      {done ? "✓ Tamamlandı" : "Bekliyor"}
-                    </span>
-                  </PanelCard>
+                    title={a.title}
+                    href="/panel/ogrenci/odevler"
+                    meta={
+                      a.dueAt
+                        ? `Teslim: ${new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long" }).format(a.dueAt)}`
+                        : "Teslim tarihi yok"
+                    }
+                    status={<StatusBadge label={done ? "Tamamlandı" : "Bekliyor"} tone={done ? "success" : "neutral"} />}
+                  />
                 );
               })}
-            </div>
+            </List>
           ) : (
-            <p className="mt-2 text-[14.5px] text-dc-ink-muted">
-              Bu ders için çalışma verilmedi.
-            </p>
+            <p className="text-[14.5px] text-pn-text-muted">Bu ders için çalışma verilmedi.</p>
           )}
-        </section>
+        </Section>
 
         {shared?.nextGoal ? (
-          <section className="mt-6">
-            <h2 className="text-[16px] font-bold text-dc-ink">Sonraki hedef</h2>
-            <p className="mt-2 text-[14.5px] leading-[1.7] text-(--pd-ink-3)">
-              {shared.nextGoal}
-            </p>
-          </section>
+          <Section title="Sonraki hedef">
+            <p className="text-[14.5px] leading-[1.7] text-pn-text-secondary">{shared.nextGoal}</p>
+          </Section>
         ) : null}
 
-        <p className="mt-4 text-[12.5px] leading-[1.6] text-dc-ink-faint">
+        <p className="mt-8 border-t border-pn-border pt-4 text-[12.5px] leading-[1.6] text-pn-text-muted">
           Bu dersin veliye açık özeti: işlenen konu, katılım ve verilen çalışma.
           Öğretmenin sana özel notu veliyle paylaşılmaz.
         </p>

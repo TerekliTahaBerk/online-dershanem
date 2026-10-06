@@ -1,4 +1,5 @@
 import { PanelCard, PanelCardTitle } from "@/components/panel/ui";
+import { PAGE_TITLE_CLASS } from "@/components/panel/ui";
 
 /**
  * Gidişat hero — dönem + birincil durum cümleleri.
@@ -21,7 +22,7 @@ export function GidisatHero({
       <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-dc-ink-faint">
         {periodLabel}
       </p>
-      <h1 className="mt-1.5 text-[26px] font-extrabold tracking-[-0.02em] text-dc-ink sm:text-[30px]">
+      <h1 className={`mt-1.5 ${PAGE_TITLE_CLASS}`}>
         {title}
       </h1>
       {lead ? (

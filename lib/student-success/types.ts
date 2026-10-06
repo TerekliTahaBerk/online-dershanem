@@ -7,10 +7,11 @@
 
 import type { ProductCode } from "@prisma/client";
 
+/** Kullanıcıya dönük kısa ürün adları (`productLabel` ile aynı; iç kodlar arayüze çıkmaz). */
 export const STUDENT_SUCCESS_PRODUCT_LABELS: Record<ProductCode, string> = {
   OD: "onlinedershanem.",
-  OK: "onlinekoçum.",
-  ODK: "onlinedenemekulübüm.",
+  OK: "Yön Koçluk",
+  ODK: "Deneme Ligi",
   KPSS: "KPSS",
 };
 

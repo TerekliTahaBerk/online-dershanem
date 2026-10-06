@@ -1,37 +1,40 @@
-import Link from "next/link";
 import { CompleteHomeAction } from "@/components/panel/complete-home-action";
 import { requirePanelRole } from "@/lib/auth/guards";
 import { productLabel } from "@/lib/auth/roles";
 import { getStudentHomeData } from "@/lib/panel/student-home-server";
 import { ISTANBUL_TIME_ZONE } from "@/lib/istanbul-time";
-import { buildStudentHomeActionPlan } from "@/lib/panel/student-home-actions";
+import { buildStudentHomeActionPlan, type StudentHomeAction } from "@/lib/panel/student-home-actions";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { NoProductAccess } from "@/components/panel/no-product-access";
 import { OdStartCard } from "@/components/panel/od-start-card";
 import { getCustomerOdStart } from "@/lib/od/onboarding-customer-server";
 import {
-  PanelPageHeader,
-  PanelCard,
-  PanelAttentionCard,
-  PanelActionRow,
-  PanelMetric,
+  ButtonLink,
+  EmptyState,
+  List,
+  ListRow,
+  PageHeader,
+  PanelProgress,
+  Section,
+  Sparkline,
+  buttonClass,
 } from "@/components/panel/ui";
 import { TrackedPanelLink } from "@/components/panel/tracked-panel-link";
 import { DinoExplanationAction } from "@/components/panel/dino-explanation-action";
-import {
-  WeeklyPlanCard,
-  LatestExamCard,
-  NetTrendCard,
-  type PlanTaskRow,
-  type TrendPoint,
-} from "@/components/panel/student/home-cards";
 
 export const dynamic = "force-dynamic";
 
 /**
- * TEK PANEL öğrenci ana sayfası. API ile aynı domain service'ini kullanır;
- * erişimi olmayan ürünün sorgusu çalışmaz ve bölümü render edilmez.
+ * ÖĞRENCİ · BUGÜN (docs/panel-design-roadmap.md §9.1).
+ *
+ * Ana soru: "Şimdi ne yapmalıyım?" Yapı: tek "Şimdi" bloğu → tek ve tekrarsız
+ * "Bugün" listesi (sonraki adımlar + birleşik bugün akışı) → tek satır
+ * "Bu hafta" özeti → yalnız erişilen ürünlerin sade bölümleri. Büyük sayı
+ * kutuları ve kart yığını yok.
+ *
+ * Aynı domain servisini kullanır; erişimi olmayan ürünün sorgusu çalışmaz ve
+ * bölümü çizilmez. Ürün olay adları ve özellikleri değişmedi.
  */
 
 const TR_DATE = new Intl.DateTimeFormat("tr-TR", {
@@ -44,6 +47,12 @@ const TR_SHORT = new Intl.DateTimeFormat("tr-TR", {
   timeZone: ISTANBUL_TIME_ZONE,
   day: "numeric",
   month: "long",
+});
+const TR_TIME = new Intl.DateTimeFormat("tr-TR", {
+  timeZone: ISTANBUL_TIME_ZONE,
+  weekday: "short",
+  hour: "2-digit",
+  minute: "2-digit",
 });
 
 function greeting(now: Date): string {
@@ -59,58 +68,78 @@ function greeting(now: Date): string {
   return "İyi akşamlar";
 }
 
+function actionProductLabel(action: StudentHomeAction): string {
+  return action.product === "SHARED" ? "Genel" : productLabel(action.product);
+}
+
+function trackedEvent(name: "student_next_action_clicked", action: StudentHomeAction) {
+  return {
+    name,
+    properties: {
+      product: action.product,
+      actionKind: action.actionKind,
+      reasonCode: action.reasonCode,
+      ageBand: action.ageBand,
+      evidenceBand: "NA" as const,
+      role: "STUDENT" as const,
+    },
+  };
+}
+
 export default async function StudentHomePage() {
   const session = await requirePanelRole("STUDENT");
   const now = new Date();
-  const [data, start] = await Promise.all([getStudentHomeData({
-    userId: session.userId,
-    role: session.role,
-    now,
-  }), getCustomerOdStart({ userId: session.userId, role: "STUDENT", now })]);
-
+  const [data, start] = await Promise.all([
+    getStudentHomeData({ userId: session.userId, role: session.role, now }),
+    getCustomerOdStart({ userId: session.userId, role: "STUDENT", now }),
+  ]);
   const shell = (children: React.ReactNode) => (
-    <PanelShell
-      role={session.role}
-      fullName={session.fullName}
-      email={session.email}
-      pageTitle="Bugün"
-    >
+    <PanelShell role={session.role} fullName={session.fullName} email={session.email} pageTitle="Bugün">
       {children}
     </PanelShell>
   );
-
-  if (data.products.length === 0)
-    return shell(<NoProductAccess role="STUDENT" start={start} />);
-  if (!data.profile) {
-    return shell(
-      <OdStartCard start={start} />,
-    );
-  }
+  if (data.products.length === 0) return shell(<NoProductAccess role="STUDENT" start={start} />);
+  if (!data.profile) return shell(<OdStartCard start={start} />);
 
   const od = data.productData.OD;
   const ok = data.productData.OK;
   const odk = data.productData.ODK;
   const latest = odk?.latestExam ?? null;
   const plan = ok?.weeklyPlan ?? null;
-  const actionPlan = buildStudentHomeActionPlan({
-    now,
-    productData: data.productData,
-    products: data.products,
-  });
+  const actionPlan = buildStudentHomeActionPlan({ now, productData: data.productData, products: data.products });
   const primaryAction = actionPlan.nowAction;
-  const nextActions = actionPlan.nextActions;
 
-  const planTasks: PlanTaskRow[] = (plan?.tasks ?? []).map((task) => ({
-    id: task.id,
-    title: `${task.title} · ${task.durationMinutes} dk`,
-    meta: TR_SHORT.format(task.scheduledFor),
-    done: task.done,
-  }));
+  /*
+   * TEK "BUGÜN" LİSTESİ. Eskiden "Sonra" ve "Bugünün tamamı" aynı işi iki
+   * kez gösteriyordu. Önce öncelikli sonraki adımlar (olay takibiyle), ardından
+   * birleşik akıştaki kalan öğeler; aynı hedefe giden ikinci satır basılmaz.
+   */
+  const usedHrefs = new Set<string>(primaryAction ? [primaryAction.href] : []);
+  const nextRows = actionPlan.nextActions.filter((action) => {
+    if (usedHrefs.has(action.href)) return false;
+    usedHrefs.add(action.href);
+    return true;
+  });
+  const feedRows = (data.unifiedToday?.items ?? []).filter((item) => {
+    if (item.href && usedHrefs.has(item.href)) return false;
+    if (item.href) usedHrefs.add(item.href);
+    return true;
+  });
+  const todayRowCount = nextRows.length + feedRows.length;
+  const feedLimit = Math.max(0, 8 - nextRows.length);
 
-  const trend: TrendPoint[] = (odk?.trend ?? []).map((point, index) => ({
-    label: `D${index + 1}`,
-    net: point.net,
-  }));
+  const upcomingLessons = (od?.todayLessons ?? []).filter((lesson) => lesson.startsAt > now).length;
+  const weekFacts = [
+    plan ? `Plan ${plan.done}/${plan.total} görev` : null,
+    od ? (upcomingLessons ? `Bugün ${upcomingLessons} ders kaldı` : "Bugün kalan ders yok") : null,
+    odk?.upcomingExam
+      ? odk.upcomingExam.startsAt
+        ? `Sıradaki deneme ${TR_TIME.format(odk.upcomingExam.startsAt)}`
+        : `Sıradaki deneme: ${odk.upcomingExam.title}`
+      : null,
+  ].filter((fact): fact is string => Boolean(fact));
+
+  const trend = odk?.trend ?? [];
   const trendCaption =
     trend.length >= 2
       ? `Toplam netin ${trend[0].net.toLocaleString("tr-TR")}'ten ${trend[trend.length - 1].net.toLocaleString("tr-TR")}'e ${
@@ -122,12 +151,8 @@ export default async function StudentHomePage() {
     actionPlan.allActions.length
       ? `bugün ${Math.min(3, actionPlan.allActions.length)} öncelikli adımın hazır`
       : "bugün için bekleyen bir çalışma görünmüyor",
-    plan?.total
-      ? `planında ${Math.max(0, plan.total - plan.done)} görev kaldı`
-      : null,
-    od?.todayLessons.length
-      ? `${od.todayLessons.length} canlı ders görünümü var`
-      : null,
+    plan?.total ? `planında ${Math.max(0, plan.total - plan.done)} görev kaldı` : null,
+    od?.todayLessons.length ? `${od.todayLessons.length} canlı ders görünümü var` : null,
   ].filter(Boolean);
 
   if (primaryAction) {
@@ -148,225 +173,175 @@ export default async function StudentHomePage() {
   }
 
   return shell(
-    <div className="max-w-[1040px]">
+    <div className="max-w-[960px]">
       {start && <OdStartCard start={start} />}
-      <PanelPageHeader
+      <PageHeader
         title={`${greeting(now)}, ${session.fullName?.split(" ")[0] || "hoş geldin"}.`}
-        description={
-          summaryParts.length ? `${summaryParts.join(" · ")}.` : undefined
-        }
+        description={summaryParts.length ? `${summaryParts.join(" · ")}.` : undefined}
+        metadata={TR_DATE.format(now)}
       />
 
-      {primaryAction ? (
-        <PanelAttentionCard
-          className="mt-6"
-          tone="warning"
-          title={`Şimdi · ${primaryAction.title}`}
-          body={`${primaryAction.description ? `${primaryAction.description} ` : ""}${primaryAction.reason}`}
-          action={
-            <span className="flex flex-wrap items-start gap-2">
+      {/* ŞİMDİ — tek öncelikli eylem; uyarı rengi değil, nötr blok. */}
+      <section aria-labelledby="simdi-baslik" className="mt-6 rounded-[10px] border border-pn-border px-5 py-4">
+        <p className="text-[12px] font-semibold text-pn-text-muted">
+          Şimdi{primaryAction ? ` · ${actionProductLabel(primaryAction)}` : ""}
+        </p>
+        {primaryAction ? (
+          <>
+            <h2 id="simdi-baslik" className="mt-1 text-[17px] font-semibold leading-snug text-pn-text">
+              {primaryAction.title}
+            </h2>
+            <p className="mt-1 text-[14px] leading-[1.6] text-pn-text-secondary">
+              {primaryAction.description ? `${primaryAction.description} ` : ""}
+              {primaryAction.reason}
+            </p>
+            <div className="mt-3 flex flex-wrap items-start gap-2">
               <TrackedPanelLink
                 href={primaryAction.href}
-                className="panel-quick-action panel-quick-action-primary inline-flex"
-                event={{
-                  name: "student_next_action_clicked",
-                  properties: {
-                    product: primaryAction.product,
-                    actionKind: primaryAction.actionKind,
-                    reasonCode: primaryAction.reasonCode,
-                    ageBand: primaryAction.ageBand,
-                    evidenceBand: "NA",
-                    role: "STUDENT",
-                  },
-                }}
+                className={buttonClass("primary")}
+                event={trackedEvent("student_next_action_clicked", primaryAction)}
               >
                 {primaryAction.ctaLabel}
               </TrackedPanelLink>
-              {primaryAction.completionTaskId && (
-                <CompleteHomeAction taskId={primaryAction.completionTaskId} />
-              )}
-            </span>
-          }
-        />
-      ) : (
-        <PanelAttentionCard
-          className="mt-6"
-          tone="info"
-          title="Şimdi · Bekleyen bir çalışma görünmüyor"
-          body="Haftana göz atabilir veya gelişimini inceleyebilirsin."
-          action={
-            <div className="flex flex-wrap gap-2">
-              {data.products.includes("OK") ? (
-                <Link href="/panel/ogrenci/plan" className="panel-quick-action">
-                  Haftayı Gör
-                </Link>
-              ) : null}
-              {data.products.includes("OD") ? (
-                <Link
-                  href="/panel/ogrenci/analiz"
-                  className="panel-quick-action"
-                >
-                  Gidişatıma Bak
-                </Link>
-              ) : null}
-              {data.products.includes("ODK") ? (
-                <Link
-                  href="/panel/odk/ogrenci/denemeler"
-                  className="panel-quick-action"
-                >
-                  Denemelerime Bak
-                </Link>
+              {primaryAction.completionTaskId ? <CompleteHomeAction taskId={primaryAction.completionTaskId} /> : null}
+            </div>
+            <div className="mt-3">
+              <DinoExplanationAction deterministicReason={primaryAction.reason} questionKey="student_nba_reason" />
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 id="simdi-baslik" className="mt-1 text-[17px] font-semibold leading-snug text-pn-text">
+              Bekleyen bir çalışma görünmüyor
+            </h2>
+            <p className="mt-1 text-[14px] text-pn-text-secondary">Haftana göz atabilir veya gelişimini inceleyebilirsin.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {data.products.includes("OK") ? <ButtonLink href="/panel/ogrenci/plan">Haftayı Gör</ButtonLink> : null}
+              {data.products.includes("OD") ? <ButtonLink href="/panel/ogrenci/analiz">Gidişatıma Bak</ButtonLink> : null}
+              {data.products.includes("ODK") ? <ButtonLink href="/panel/odk/ogrenci/denemeler">Denemelerime Bak</ButtonLink> : null}
+            </div>
+          </>
+        )}
+      </section>
+
+      <Section title="Bugün" description="Dersler, ödevler, plan görevleri ve denemeler tek listede.">
+        {todayRowCount ? (
+          <List label="Bugünün çalışmaları">
+            {nextRows.map((action) => (
+              <ListRow
+                key={action.id}
+                title={action.title}
+                description={action.reason}
+                meta={actionProductLabel(action)}
+                action={
+                  <TrackedPanelLink
+                    href={action.href}
+                    className={buttonClass("secondary", "sm")}
+                    event={trackedEvent("student_next_action_clicked", action)}
+                  >
+                    {action.ctaLabel}
+                  </TrackedPanelLink>
+                }
+              />
+            ))}
+            {feedRows.slice(0, feedLimit).map((item) => (
+              <ListRow
+                key={item.id}
+                title={item.title}
+                description={item.subtitle ?? undefined}
+                meta={[item.productLabel, item.timeLabel].filter(Boolean).join(" · ")}
+                action={item.href ? <ButtonLink href={item.href} size="sm">Aç</ButtonLink> : undefined}
+              />
+            ))}
+          </List>
+        ) : (
+          <EmptyState title="Bugün için planlanmış bir şey yok." body="Yeni ders, ödev veya plan görevi geldiğinde burada görünecek." />
+        )}
+      </Section>
+
+      {weekFacts.length ? (
+        <Section title="Bu hafta">
+          <p className="text-[14px] text-pn-text-secondary">{weekFacts.join(" · ")}</p>
+        </Section>
+      ) : null}
+
+      {plan ? (
+        <Section
+          title="Haftalık plan"
+          actions={<ButtonLink href="/panel/ogrenci/plan" size="sm">Planı aç</ButtonLink>}
+        >
+          <PanelProgress
+            label={`Haftalık plan ${plan.done}/${plan.total} görev tamamlandı`}
+            value={plan.done}
+            max={Math.max(1, plan.total)}
+            text={`${plan.done}/${plan.total} görev tamamlandı`}
+            className="max-w-sm"
+          />
+          {plan.tasks.length ? (
+            <ul className="mt-3 border-t border-pn-border">
+              {plan.tasks.slice(0, 5).map((task) => (
+                <li key={task.id} className="flex items-center gap-3 border-b border-pn-border py-2 text-[14px] last:border-b-0">
+                  <span
+                    aria-hidden="true"
+                    className={`grid h-4 w-4 shrink-0 place-items-center rounded-[4px] text-[10px] font-bold ${
+                      task.done ? "bg-dc-ink text-white" : "border border-pn-border-strong"
+                    }`}
+                  >
+                    {task.done ? "✓" : ""}
+                  </span>
+                  <span className={`min-w-0 flex-1 truncate ${task.done ? "text-pn-text-muted line-through" : "text-pn-text"}`}>
+                    {task.done ? <span className="sr-only">Tamamlandı: </span> : null}
+                    {task.title} · {task.durationMinutes} dk
+                  </span>
+                  <span className="shrink-0 text-[12px] text-pn-text-muted">{TR_SHORT.format(task.scheduledFor)}</span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </Section>
+      ) : null}
+
+      {odk ? (
+        <Section
+          title="Deneme Ligi"
+          actions={<ButtonLink href="/panel/odk/ogrenci/denemeler" size="sm">Denemelerim</ButtonLink>}
+        >
+          {latest ? (
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <div className="min-w-0">
+                <p className="text-[13px] text-pn-text-muted">
+                  Son deneme · {latest.title} · {TR_SHORT.format(latest.takenAt)}
+                </p>
+                <p className="mt-0.5 text-[22px] font-bold tabular-nums text-pn-text">
+                  {latest.net.toLocaleString("tr-TR")} net
+                  {latest.delta !== null ? (
+                    <span className="ml-2 text-[13px] font-semibold text-pn-text-muted">
+                      {latest.delta >= 0 ? "▲" : "▼"} {Math.abs(latest.delta).toLocaleString("tr-TR")}
+                    </span>
+                  ) : null}
+                </p>
+              </div>
+              {trend.length >= 2 ? (
+                <Sparkline
+                  values={trend.map((point) => point.net)}
+                  label={`Toplam net gelişimi: ${trend.map((point, index) => `D${index + 1} ${point.net}`).join(", ")}`}
+                />
               ) : null}
             </div>
-          }
-        />
-      )}
-      {primaryAction ? (
-        <div className="mt-3">
-          <DinoExplanationAction
-            deterministicReason={primaryAction.reason}
-            questionKey="student_nba_reason"
-          />
-        </div>
-      ) : null}
-
-      {nextActions.length ? (
-        <PanelCard className="mt-5" padded={false}>
-          <div className="border-b border-dc-line-soft px-4 py-3 sm:px-5">
-            <h2 className="text-sm font-bold text-dc-ink">Sonra</h2>
-          </div>
-          {nextActions.map((action, index) => (
-            <PanelActionRow
-              key={action.id}
-              title={action.title}
-              description={action.reason}
-              status={
-                <span className="text-xs text-dc-ink-faint">
-                  {action.product === "SHARED" ? "Genel" : productLabel(action.product)}
-                </span>
-              }
-              cta={
-                <TrackedPanelLink
-                  href={action.href}
-                  className="panel-quick-action inline-flex"
-                  event={{
-                    name: "student_next_action_clicked",
-                    properties: {
-                      product: action.product,
-                      actionKind: action.actionKind,
-                      reasonCode: action.reasonCode,
-                      ageBand: action.ageBand,
-                      evidenceBand: "NA",
-                      role: "STUDENT",
-                    },
-                  }}
-                >
-                  {action.ctaLabel}
-                </TrackedPanelLink>
-              }
-              last={index === nextActions.length - 1}
-            />
-          ))}
-        </PanelCard>
-      ) : null}
-
-      {data.unifiedToday?.items.length ? (
-        <PanelCard className="mt-5" padded={false}>
-          <div className="border-b border-dc-line-soft px-4 py-3 sm:px-5">
-            <h2 className="text-sm font-bold text-dc-ink">
-              Bugünün tamamı
-            </h2>
-            <p className="mt-0.5 text-[12.5px] text-dc-ink-faint">
-              Dersler, ödevler, plan görevleri ve denemeler tek listede.
-            </p>
-          </div>
-          {data.unifiedToday.items.slice(0, 8).map((item, index) => (
-            <PanelActionRow
-              key={item.id}
-              title={item.title}
-              description={item.subtitle ?? undefined}
-              status={
-                <span className="text-xs text-dc-ink-faint">
-                  {item.productLabel}
-                  {item.timeLabel ? ` · ${item.timeLabel}` : ""}
-                </span>
-              }
-              cta={
-                item.href ? (
-                  <Link
-                    href={item.href}
-                    className="panel-quick-action inline-flex"
-                  >
-                    Aç
-                  </Link>
-                ) : undefined
-              }
-              last={index === Math.min(data.unifiedToday!.items.length, 8) - 1}
-            />
-          ))}
-        </PanelCard>
-      ) : null}
-
-      <PanelCard className="mt-5" variant="subtle">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-dc-ink">Bu hafta</h2>
-          <span className="text-[12.5px] text-dc-ink-faint">
-            {TR_DATE.format(now)}
-          </span>
-        </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          <PanelMetric
-            label="Plan tamamlanan"
-            value={plan ? `${plan.done}/${plan.total}` : "—"}
-            tone="info"
-          />
-          <PanelMetric
-            label="Yaklaşan ders"
-            value={
-              (od?.todayLessons ?? []).filter((lesson) => lesson.startsAt > now)
-                .length
-            }
-            tone="neutral"
-          />
-          <PanelMetric
-            label="Yaklaşan deneme"
-            value={odk?.upcomingExam ? 1 : 0}
-            tone="warning"
-          />
-        </div>
-      </PanelCard>
-
-      <div className="mt-5 grid gap-5 lg:grid-cols-2">
-        {plan ? (
-          <WeeklyPlanCard
-            done={plan.done}
-            total={plan.total}
-            tasks={planTasks}
-            href="/panel/ogrenci/plan"
-          />
-        ) : null}
-
-        {latest ? (
-          <LatestExamCard
-            net={latest.net}
-            delta={latest.delta}
-            title={latest.title}
-            dateLabel={TR_SHORT.format(latest.takenAt)}
-            subjects={latest.sections}
-            href="/panel/odk/ogrenci/denemeler"
-          />
-        ) : null}
-      </div>
-
-      {trend.length >= 2 ? (
-        <NetTrendCard points={trend} caption={trendCaption} />
-      ) : null}
-
-      {odk && !latest ? (
-        <p className="mt-5 text-[14px] text-dc-ink-muted">
-          Deneme Ligi sonuçların açıklandığında net gelişimin ve analizin burada
-          görünür.
-        </p>
+          ) : (
+            <EmptyState title="Henüz açıklanmış bir Deneme Ligi sonucun yok." body="Deneme Ligi sonuçların açıklandığında net gelişimin ve analizin burada görünür." />
+          )}
+          {trendCaption ? <p className="mt-3 max-w-[720px] text-[13.5px] leading-[1.6] text-pn-text-secondary">{trendCaption}</p> : null}
+          {latest?.sections.length ? (
+            <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-pn-text-secondary">
+              {latest.sections.map((section) => (
+                <li key={section.name}>
+                  {section.name} <span className="font-semibold tabular-nums text-pn-text">{section.net.toLocaleString("tr-TR")}</span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </Section>
       ) : null}
     </div>,
   );

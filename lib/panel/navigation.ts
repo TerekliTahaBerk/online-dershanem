@@ -66,6 +66,17 @@ function studentSections(
       ...(hasOD
         ? [{ id: "materials", href: `${root}/materyaller`, label: PANEL_DOMAIN.kaynaklar }]
         : []),
+      // Tekrar kuyruğu ve kaçırılan ders telafisi OD çalışma alanının parçasıdır;
+      // eskiden yalnız ana sayfa önerilerinden açılabiliyordu.
+      ...(hasOD && (flags.reviewQueue || flags.recoveryPackage)
+        ? [
+            {
+              id: "review-recovery",
+              href: flags.reviewQueue ? `${root}/tekrar` : `${root}/telafi`,
+              label: "Tekrar ve telafi",
+            },
+          ]
+        : []),
     ]),
     ...section("plan", "PLAN", [
       ...(hasOK ? [{ id: "coaching", href: `${root}/kocluk`, label: PANEL_DOMAIN.kocluk }] : []),

@@ -39,6 +39,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Changed
 
+- Student home (Design Phase 2) is one calm page: a neutral "Şimdi" block, a single deduplicated "Bugün" list instead of the separate "Sonra" and "Bugünün tamamı" lists, a one-line week summary, and plain plan and Deneme Ligi sections with a small net trend line; product event names and the home completion flow are unchanged
+- Student lessons, lesson detail, assignments and materials use the panel's list, property and status components; the lesson detail reads as a document and the floating celebration banner on assignment completion was removed (the completion message is still announced)
+- Teacher home, the Yön signal block and the teacher student roster use sections, rows and a table with view tabs; the admin education page is split into tabs (Gruplar, Kurulum ve ders planlama, Ödevler, Materyaller) and links to its anchors open the right tab
+- Students reach "Tekrar ve telafi" from the menu, with tabs between the review queue and missed-lesson recovery; unified-today and calendar product labels use "Yön Koçluk" and "Deneme Ligi"
 - All panel page headers share one scale (24px title, no uppercase eyebrow, 14px description) through `PageHeader`; `PanelHeading`, `PanelPageHeader` and `AdminPageHeader` render it, and the 23 hand-written page headers use the same scale
 - Account settings, notification preferences, accessibility, data usage, sessions and password are no longer menu items: they open from the sidebar's Ayarlar entry, and the settings hub links the panel preferences
 - The panel focus ring uses the panel green instead of the public site's orange; the mobile bottom bar keeps its four shortcuts and the menu button on one row

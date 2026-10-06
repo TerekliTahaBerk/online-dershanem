@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Circle, Clock3, Loader2 } from "lucide-react";
 import { useOfflineSync } from "@/components/panel/offline-sync-provider";
+import { EmptyState, StatusBadge, buttonClass } from "@/components/panel/primitives";
 
 type Status = "TODO" | "IN_PROGRESS" | "DONE";
 type Submission = {
@@ -154,14 +155,8 @@ export function StudentAssignmentList({
             ? "Harika! Çalışma tamamlandı, serin büyüyor."
             : "İlerlemen kaydedildi.",
       );
-      if (status === "DONE" && result.state === "synced") {
-        const banner = document.createElement("div");
-        banner.className = "panel-celebration";
-        banner.setAttribute("role", "status");
-        banner.textContent = "🎉 Bir adım daha tamam! ⭐";
-        document.body.append(banner);
-        window.setTimeout(() => banner.remove(), 2200);
-      }
+      // Tamamlama, canlı bölgedeki mesajla duyurulur; uçan kutlama bandı
+      // panelin sakin diliyle uyuşmadığı için kaldırıldı (roadmap §5.8).
       if (result.state === "synced") router.refresh();
     } else if (result.state === "conflict") {
       setMessage(
@@ -180,11 +175,11 @@ export function StudentAssignmentList({
     <>
       <p
         aria-live="polite"
-        className="mb-3 min-h-5 text-xs font-bold text-(--brand-olive)"
+        className="mb-2 min-h-5 text-[13px] font-medium text-pn-text-secondary"
       >
         {message}
       </p>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="border-t border-pn-border">
         {items.map((assignment) => {
           const overdue =
             assignment.status !== "DONE" &&
@@ -197,33 +192,34 @@ export function StudentAssignmentList({
           return (
             <article
               key={assignment.id}
-              className="rounded-[14px] border border-(--site-line) bg-white p-5 shadow-(--panel-card-shadow)"
+              className="border-b border-pn-border py-4"
             >
-              <div className="flex items-start justify-between gap-3">
-                <span className="rounded-full bg-(--brand-olive-soft) px-2.5 py-1 text-[10px] font-bold text-(--brand-olive)">
-                  {assignment.groupName} · {assignment.subject}
-                </span>
-                <span
-                  className={`rounded-full px-2.5 py-1 text-[9.5px] font-extrabold ${assignment.status === "DONE" ? "bg-emerald-50 text-emerald-700" : overdue ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-800"}`}
-                >
-                  {overdue ? "Süresi geçti" : statusCopy[assignment.status]}
-                </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-[15px] font-semibold text-pn-text">
+                  {assignment.title}
+                </h2>
+                <StatusBadge
+                  label={overdue ? "Süresi geçti" : statusCopy[assignment.status]}
+                  tone={assignment.status === "DONE" ? "success" : overdue ? "critical" : assignment.status === "IN_PROGRESS" ? "info" : "neutral"}
+                />
               </div>
-              <h2 className="mt-4 text-base font-extrabold text-(--site-ink)">
-                {assignment.title}
-              </h2>
-              <p className="mt-2 min-h-10 text-sm leading-6 text-(--site-body)">
+              <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[12.5px] text-pn-text-muted">
+                <span>{assignment.groupName} · {assignment.subject}</span>
+                <span aria-hidden="true">·</span>
+                <Clock3 size={12} aria-hidden="true" />
+                <span>
+                  Teslim{" "}
+                  {new Intl.DateTimeFormat("tr-TR", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  }).format(new Date(assignment.dueAt))}
+                </span>
+              </p>
+              <p className="mt-2 max-w-[720px] text-[14px] leading-[1.6] text-pn-text-secondary">
                 {assignment.description || "Öğretmenin açıklama eklemedi."}
               </p>
-              <p className="mt-4 flex items-center gap-1.5 text-xs font-bold text-(--site-muted)">
-                <Clock3 size={13} />{" "}
-                {new Intl.DateTimeFormat("tr-TR", {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                }).format(new Date(assignment.dueAt))}
-              </p>
               {assignment.evidenceRequired && evidenceEnabled ? (
-                <div className="mt-4 rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4">
+                <div className="mt-3 max-w-[720px] rounded-[10px] border border-pn-border bg-pn-surface-subtle p-4">
                   <p className="text-xs font-extrabold">
                     Kanıtlı teslim · ölçütler
                   </p>
@@ -240,7 +236,7 @@ export function StudentAssignmentList({
                     ))}
                   </ul>
                   {latest ? (
-                    <div className="mt-3 rounded-xl bg-white p-3 text-xs">
+                    <div className="mt-3 rounded-md border border-pn-border bg-white p-3 text-xs">
                       <p className="font-extrabold">
                         {latest.attemptNumber}. deneme ·{" "}
                         {latest.status === "SUBMITTED"
@@ -285,7 +281,7 @@ export function StudentAssignmentList({
                           (evidence[assignment.id]?.trim().length || 0) < 20
                         }
                         onClick={() => void submitEvidence(assignment.id)}
-                        className="panel-quick-action panel-quick-action-primary mt-2"
+                        className={buttonClass("primary", "sm", "mt-2")}
                       >
                         {latest ? "Yeni denemeyi gönder" : "Kanıtı gönder"}
                       </button>
@@ -299,7 +295,11 @@ export function StudentAssignmentList({
                   ) : null}
                 </div>
               ) : (
-                <div className="mt-5 grid grid-cols-3 gap-1 rounded-2xl bg-(--site-bg-warm) p-1">
+                <div
+                  role="group"
+                  aria-label={`${assignment.title} durumu`}
+                  className="mt-3 inline-grid grid-cols-3 gap-0.5 rounded-md border border-pn-border bg-pn-surface-subtle p-0.5"
+                >
                   {(["TODO", "IN_PROGRESS", "DONE"] as Status[]).map(
                     (status) => (
                       <button
@@ -308,7 +308,7 @@ export function StudentAssignmentList({
                         disabled={busy === assignment.id}
                         aria-pressed={assignment.status === status}
                         onClick={() => void setStatus(assignment.id, status)}
-                        className={`flex min-h-10 items-center justify-center gap-1 rounded-xl px-2 text-xs font-bold transition ${assignment.status === status ? "bg-(--brand-olive) text-white shadow-xs" : "text-(--site-muted) hover:bg-white"}`}
+                        className={`flex min-h-9 items-center justify-center gap-1 rounded-[5px] px-3 text-[12.5px] font-semibold transition-colors ${assignment.status === status ? "bg-dc-ink text-white" : "text-pn-text-secondary hover:bg-white"}`}
                       >
                         {busy === assignment.id &&
                         assignment.status !== status ? (
@@ -330,9 +330,11 @@ export function StudentAssignmentList({
           );
         })}
         {!items.length ? (
-          <div className="rounded-[14px] border border-dashed border-(--site-line) p-10 text-center text-sm text-(--site-muted) lg:col-span-2">
-            Aktif ödeviniz yok. Güzel bir nefes arası!
-          </div>
+          <EmptyState
+            className="mt-4"
+            title="Aktif ödevin yok."
+            body="Öğretmenin yeni bir ödev verdiğinde burada görünecek."
+          />
         ) : null}
       </div>
     </>

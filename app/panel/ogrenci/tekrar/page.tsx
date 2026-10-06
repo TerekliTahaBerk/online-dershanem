@@ -12,6 +12,7 @@ import {
   PAGE_TITLE_CLASS,
   PAGE_DESCRIPTION_CLASS,
 } from "@/components/panel/ui";
+import { ReviewRecoveryTabs } from "@/components/panel/student/review-recovery-tabs";
 
 export const dynamic = "force-dynamic";
 export default async function StudentReviewPage() {
@@ -75,6 +76,7 @@ export default async function StudentReviewPage() {
           olmamak ilerlemeni silmez; yalnız sonraki dönüşü yaklaştırır.
         </p>
       </header>
+      <ReviewRecoveryTabs active="tekrar" />
       <div className="mt-7">
         <StudentReviewQueue
           initialItems={items.map((item) => ({

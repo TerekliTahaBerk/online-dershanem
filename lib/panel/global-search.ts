@@ -108,14 +108,14 @@ export const GLOBAL_SEARCH_COMMANDS: readonly GlobalSearchCommand[] = [
     id: "create-group",
     label: "Yeni grup oluştur",
     detail: "En fazla dört öğrencilik grup kur",
-    href: "/panel/yonetim/egitim#yeni-grup",
+    href: "/panel/yonetim/egitim?sekme=planlama#yeni-grup",
     roles: ["ADMIN"],
   },
   {
     id: "schedule-lesson",
     label: "Ders planla",
     detail: "Gruba 60 dakikalık ders oturumu ekle",
-    href: "/panel/yonetim/egitim#ders-planla",
+    href: "/panel/yonetim/egitim?sekme=planlama#ders-planla",
     roles: ["ADMIN"],
   },
   {

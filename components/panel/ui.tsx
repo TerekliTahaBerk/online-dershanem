@@ -18,6 +18,7 @@ export {
   ViewTabs,
   type ViewTab,
 } from "@/components/panel/primitives";
+export { Sparkline } from "@/components/panel/primitives/sparkline";
 
 type PanelTone =
   | "neutral"
