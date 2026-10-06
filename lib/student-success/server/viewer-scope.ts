@@ -43,7 +43,9 @@ export async function resolveStudentScopeForViewer(
 
   if (role === "PARENT") {
     const link = await prisma.parentStudent.findFirst({
-      where: { parentId: viewerUserId, studentId, active: true, endedAt: null },
+      // Akademik veri: bağlantı aktif + bitmemiş + `canViewAcademic`. Bağlantının
+      // varlığı tek başına yetmez; ödeme izni (`canViewPayments`) ayrı bir kapıdır.
+      where: { parentId: viewerUserId, studentId, active: true, endedAt: null, canViewAcademic: true },
       select: { id: true },
     });
     // Veli-free ürün politikası: yalnızca KPSS üyeliği olan öğrenci veliye kapalı.

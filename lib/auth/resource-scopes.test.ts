@@ -32,7 +32,7 @@ test("parent material scope requires both a live parent link and active enrollme
       enrollments: {
         some: {
           endedAt: null,
-          student: { parents: { some: { parentId: "parent-1" } } },
+          student: { parents: { some: { parentId: "parent-1", active: true, endedAt: null, canViewAcademic: true } } },
         },
       },
     },
@@ -48,7 +48,7 @@ test("enrollment scopes reject ended enrollment and inactive accounts", () => {
     endedAt: null,
     student: {
       user: { status: "ACTIVE" },
-      parents: { some: { parentId: "parent-1", parent: { status: "ACTIVE" } } },
+      parents: { some: { parentId: "parent-1", active: true, endedAt: null, canViewAcademic: true, parent: { status: "ACTIVE" } } },
     },
   });
 });

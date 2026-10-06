@@ -36,25 +36,13 @@ export default async function TeacherPlanPage() {
       // Otomatik onaylı bir plan burada "onayla" düğmesiyle gösterilseydi,
       // düğme uçta 409 ile reddedilirdi.
       productRef: { requiresPlanApproval: true },
-      OR: [
-        {
-          student: {
-            enrollments: {
-              some: {
-                endedAt: null,
-                group: { isActive: true, teacherId: session.userId },
-              },
-            },
-          },
+      // Koç masası Yön yazma yüzeyidir: yalnız AKTİF koçluk ataması olan
+      // öğrencilerin planları. OD grup öğretmenliği koçluk yetkisi vermez.
+      student: {
+        coachAssignments: {
+          some: { endedAt: null, coach: { userId: session.userId } },
         },
-        {
-          student: {
-            coachAssignments: {
-              some: { endedAt: null, coach: { userId: session.userId } },
-            },
-          },
-        },
-      ],
+      },
     },
     orderBy: { updatedAt: "desc" },
     // 50 öğrencili bir öğretmende bu sorgu sınırsızdı: 50 planın TÜM görevleri

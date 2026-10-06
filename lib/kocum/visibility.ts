@@ -35,6 +35,44 @@ export function canViewerSeeTimelineEvent(
   return false;
 }
 
+const TIMELINE_VISIBILITIES: readonly TimelineVisibility[] = ["INTERNAL", "STAFF", "STUDENT", "PARENT"];
+
+/**
+ * İzleyicinin görebildiği zaman çizelgesi görünürlükleri — DB sorgusunda
+ * `visibility: { in: … }` süzgeci için. Karar `canViewerSeeTimelineEvent`
+ * ile TEK yerde kalır; burası yalnız onu listeye çevirir.
+ */
+export function timelineVisibilitiesForViewer(viewer: ViewerRole): TimelineVisibility[] {
+  return TIMELINE_VISIBILITIES.filter((visibility) => canViewerSeeTimelineEvent(visibility, viewer));
+}
+
+/**
+ * Çapraz ürün olay kutusundaki (`CrossProductEventOutbox`) olayların zaman
+ * çizelgesi görünürlüğü. Olay kutusunun kendi görünürlük alanı yoktur; ham
+ * olay tipi personel bağlamı taşıyabilir (müdahale, kazanım yeniden puanlama).
+ *
+ * Bilinmeyen / yeni olay tipi varsayılan olarak STAFF'tır: yeni bir tip
+ * eklendiğinde öğrenci ve veliye ancak bilinçli olarak açılır.
+ */
+const CROSS_PRODUCT_EVENT_VISIBILITY: Record<string, TimelineVisibility> = {
+  LESSON_COMPLETED: "PARENT",
+  LESSON_MISSED: "PARENT",
+  ASSIGNMENT_CREATED: "PARENT",
+  ASSIGNMENT_COMPLETED: "PARENT",
+  ASSIGNMENT_EVALUATED: "PARENT",
+  COACHING_PLAN_PUBLISHED: "PARENT",
+  COACHING_TASK_COMPLETED: "PARENT",
+  MOCK_EXAM_ASSIGNED: "PARENT",
+  MOCK_EXAM_COMPLETED: "PARENT",
+  MOCK_EXAM_RESULT_PUBLISHED: "PARENT",
+  OUTCOME_MASTERY_CHANGED: "STAFF",
+  INTERVENTION_CREATED: "STAFF",
+};
+
+export function crossProductEventTimelineVisibility(eventType: string): TimelineVisibility {
+  return Object.hasOwn(CROSS_PRODUCT_EVENT_VISIBILITY, eventType) ? CROSS_PRODUCT_EVENT_VISIBILITY[eventType] : "STAFF";
+}
+
 /** Parent-facing weekly summary — operational task lists excluded. */
 export type ParentKocumSummary = {
   planCompletionPct: number | null;

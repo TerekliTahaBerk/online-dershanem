@@ -4,7 +4,8 @@ import type { ProductCode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { netScore } from "@/lib/goals";
 import { istanbulWeekStart } from "@/lib/istanbul-time";
-import type { GroupLearningGap, OutcomeProfileRow, StudentProgressSummary, TeacherLearningSignal, UnifiedTimelineEntry } from "@/lib/student-success/types";
+import type { GroupLearningGap, OutcomeProfileRow, StudentProgressSummary, TeacherLearningSignal, UnifiedTimelineEntry, ViewerRole } from "@/lib/student-success/types";
+import { canViewerSeeTimelineEvent, crossProductEventTimelineVisibility, timelineVisibilitiesForViewer } from "@/lib/kocum/visibility";
 import { OUTCOME_MASTERY_LABELS } from "@/lib/student-success/types";
 import { getStudentProducts } from "@/lib/student-success/server/event-processor";
 
@@ -178,13 +179,25 @@ export async function getStudentOutcomeProfile(studentId: string): Promise<Outco
   });
 }
 
+/**
+ * Birleşik etkinlik zaman çizelgesi.
+ *
+ * GÜVENLİK: `viewer` ZORUNLUDUR. Zaman çizelgesi öğrenci ve veliye de döner;
+ * STAFF / INTERNAL olaylar (koç görev tamamlama, müdahale, kazanım yeniden
+ * puanlama) yalnız personele gider. Süzgeç sorguda uygulanır ve karar
+ * `lib/kocum/visibility.ts` içindeki tek politikadan gelir — ön yüz gizlemesine
+ * güvenilmez. Kapsam (bu izleyici bu öğrenciyi görebilir mi?) çağıranın
+ * `resolveStudentScopeForViewer` sorumluluğudur.
+ */
 export async function getUnifiedActivityTimeline(
   studentId: string,
+  viewer: ViewerRole,
   limit = 50,
 ): Promise<UnifiedTimelineEntry[]> {
+  const visibilities = timelineVisibilitiesForViewer(viewer);
   const [timelineEvents, crossEvents] = await Promise.all([
     prisma.studentTimelineEvent.findMany({
-      where: { studentId },
+      where: { studentId, visibility: { in: visibilities } },
       orderBy: { occurredAt: "desc" },
       take: limit,
       // `metadata` BİLEREK seçilmiyor: zaman çizelgesi veliye de dönüyor ve
@@ -210,17 +223,19 @@ export async function getUnifiedActivityTimeline(
     MOCK_EXAM_RESULT_PUBLISHED: "ODK",
   };
 
-  const fromCross: UnifiedTimelineEntry[] = crossEvents.map((e) => ({
-    id: e.id,
-    occurredAt: e.occurredAt,
-    title: e.eventType.replace(/_/g, " ").toLowerCase(),
-    summary: e.entityType,
-    product: productMap[e.eventType] ?? null,
-    productLabel: productMap[e.eventType]
-      ? { OD: "onlinedershanem.", OK: "onlinekoçum.", ODK: "onlinedenemekulübüm.", KPSS: "KPSS" }[productMap[e.eventType]!]
-      : null,
-    kind: e.eventType,
-  }));
+  const fromCross: UnifiedTimelineEntry[] = crossEvents
+    .filter((e) => canViewerSeeTimelineEvent(crossProductEventTimelineVisibility(e.eventType), viewer))
+    .map((e) => ({
+      id: e.id,
+      occurredAt: e.occurredAt,
+      title: e.eventType.replace(/_/g, " ").toLowerCase(),
+      summary: e.entityType,
+      product: productMap[e.eventType] ?? null,
+      productLabel: productMap[e.eventType]
+        ? { OD: "onlinedershanem.", OK: "onlinekoçum.", ODK: "onlinedenemekulübüm.", KPSS: "KPSS" }[productMap[e.eventType]!]
+        : null,
+      kind: e.eventType,
+    }));
 
   const fromTimeline: UnifiedTimelineEntry[] = timelineEvents.map((e) => ({
     id: e.id,

@@ -198,7 +198,7 @@ integration("KPSS registry'de pasifken üyelik açılamaz (satış kilidi) — d
   }
 });
 
-integration("regresyon: OD-only ve OK-only siparişlerde callback eski yetkileri aynen açar", async () => {
+integration("regresyon: OD-only siparişi OD açar; OK-only siparişi yalnız OK açar (P0-5)", async () => {
   const od = await createPendingOrder("od", [
     { product: "OD", sku: "LGS:Matematik Ders Paketi", name: "LGS Matematik Ders Paketi", unitPriceCents: 300_000, snapshot: { id: "LGS:Matematik Ders Paketi" } },
   ]);
@@ -222,8 +222,8 @@ integration("regresyon: OD-only ve OK-only siparişlerde callback eski yetkileri
       assert.equal(okOrder.provisioningStatus, "SUCCEEDED", okOrder.provisioningError ?? undefined);
       assert.equal(okOrder.lines[0]?.fulfillmentStatus, "SUCCEEDED", okOrder.lines[0]?.fulfillmentError ?? undefined);
       const okMemberships = await db.productMembership.findMany({ where: { userId: okOrder.userId! }, orderBy: { product: "asc" }, include: { productRef: true } });
-      // Tarihsel davranış korunur: OD siparişi alıcıya OD de açar (ORDER_GRANTS_BUYER_OD_MEMBERSHIP.OK === true).
-      assert.deepEqual(okMemberships.map((row) => [row.product, row.productRef?.code]), [["OD", "OD"], ["OK", "OK"]]);
+      // P0-5: yalnız Yön Koçluk alan öğrenciye OD açılmaz (ORDER_GRANTS_BUYER_OD_MEMBERSHIP.OK === false).
+      assert.deepEqual(okMemberships.map((row) => [row.product, row.productRef?.code]), [["OK", "OK"]]);
     });
   } finally {
     await cleanup([od.order.id, ok.order.id], [od.email, ok.email]);

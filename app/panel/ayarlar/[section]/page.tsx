@@ -313,7 +313,7 @@ export default async function AccountSettingsSectionPage({ params }: { params: P
 async function ChildrenSection({ parentUserId }: { parentUserId: string }) {
   const [linked, pending] = await Promise.all([
     prisma.parentStudent.findMany({
-      where: { parentId: parentUserId, active: true },
+      where: { parentId: parentUserId, active: true, endedAt: null },
       select: { student: { select: { classLevel: true, examType: true, user: { select: { fullName: true, email: true } } } } },
       orderBy: { createdAt: "asc" },
     }),

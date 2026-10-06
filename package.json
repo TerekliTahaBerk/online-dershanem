@@ -45,6 +45,7 @@
     "release:migrate": "prisma migrate deploy",
     "inspect:odk-pilot": "node scripts/check-odk-pilot-config.mjs",
     "payments:reconcile:report": "node --conditions react-server --import tsx scripts/find-stuck-payments.mjs",
+    "commerce:report:od-without-od-line": "node --conditions react-server --import tsx scripts/report-od-memberships-without-od-line.mjs",
     "data:retention:enforce": "node --conditions react-server --import tsx scripts/enforce-retention.mjs",
     "data:dsr": "node --conditions react-server --import tsx scripts/dsr-request.mjs",
     "data:tombstones": "node --conditions react-server --import tsx scripts/tombstone-ledger.mjs",

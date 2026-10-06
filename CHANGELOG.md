@@ -36,8 +36,16 @@ All notable changes to this project are documented here. The format follows [Kee
 - The admin "Siparişler" entry now opens a dedicated order list; the wider operations queue moved to its own entry
 - Parent exam and weekly-digest screens now use the shared parent scope and child switcher
 
+### Security
+
+- Student-success timeline (`/api/panel/student-success/progress/[studentId]?view=timeline`) now filters events by viewer visibility on the server; staff-only and internal events (including intervention and mastery-rescore outbox events) no longer reach students or parents
+- Yön Koçluk writes (coach notes, tasks, templates, plan copy, suggestion review, weekly summaries, plan approval, recovery-driven plan rebuilds) now require ADMIN or the student's active `CoachAssignment`; being the student's OD group teacher is no longer enough
+- Parent academic access now requires an active, unended link with `canViewAcademic`, across parent pages, student-success APIs, Deneme Ligi parent reports, material access, weekly-digest feedback and lesson notifications; the account and package screen keeps working for links without academic access
+
 ### Fixed
 
+- The admin product-access form no longer rewrites existing memberships: a purchased, time-limited membership keeps its source, window and order link; missing products are granted as MANUAL and removed products are revoked, never deleted
+- OK-only and ODK-only cart orders no longer grant an open-ended OD membership; existing affected rows can be reviewed with the read-only `npm run commerce:report:od-without-od-line`
 - Stabilized panel plan approval and lesson recovery E2E fixtures across weekdays and repeated runs
 - Group detail reported capacity as a fixed four regardless of the group's actual capacity
 - Progress bars in reports, group detail, the assignment manager and the ODK outcome breakdown had no accessible role, value or label

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { buildRecoveryDraft } from "@/lib/recovery-package";
 import { buildAdaptiveWeek, plannedTaskRows } from "@/lib/adaptive-plan";
 import { collectPlanCandidates } from "@/lib/adaptive-plan-server";
+import { findCoachAssignmentForCoach } from "@/lib/panel/coaching";
 import { activePlanSourceKeys, planSourceKey } from "@/lib/kocum";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
 
@@ -95,12 +96,21 @@ export async function publishRecoveryPackage(input: {
   return { kind: "PUBLISHED", itemCount: item.items.length, publishDelayMs, planRebalanced };
 }
 
-/** Yayın onayı, kilitli planı telafi önceliğiyle fakat aynı günlük kapasite sınırlarıyla yeniden kurar. */
+/**
+ * Yayın onayı, kilitli planı telafi önceliğiyle fakat aynı günlük kapasite sınırlarıyla yeniden kurar.
+ *
+ * YÖN YETKİSİ: insan onayı gerektiren (Yön/OK) bir planı yeniden kurmak ve
+ * onaylayan olarak işaretlenmek bir Yön yazmasıdır. Telafi paketini yayınlayan
+ * OD öğretmeni öğrencinin AKTİF koçu değilse plana dokunulmaz (`false`): koç
+ * onayladığı görevler sessizce SKIPPED olmaz. Telafi adayları planlayıcının
+ * aday listesinde kalır; koç bir sonraki planda görür.
+ */
 export async function rebalanceApprovedPlanForRecovery(studentId: string, approvedById: string): Promise<boolean> {
   const preference = await prisma.studentPlanPreference.findUnique({ where: { studentId } });
   if (!preference?.planningEnabled) return false;
-  const plan = await prisma.weeklyPlan.findFirst({ where: { studentId, status: "APPROVED" }, orderBy: { weekStart: "desc" }, include: { tasks: true } });
+  const plan = await prisma.weeklyPlan.findFirst({ where: { studentId, status: "APPROVED" }, orderBy: { weekStart: "desc" }, include: { tasks: true, productRef: { select: { requiresPlanApproval: true } } } });
   if (!plan) return false;
+  if (plan.productRef.requiresPlanApproval && !(await findCoachAssignmentForCoach(approvedById, studentId))) return false;
   // Telafi dengelemesi yalnız `PLANNED` görevleri emekliye ayırır; başlanmış
   // veya kısmen bitmiş görevler ayakta kalır. Onların kaynağı da aday
   // listesinden düşülmeli, yoksa aynı iş için ikinci bir görev doğuyordu.

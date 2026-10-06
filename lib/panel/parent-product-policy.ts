@@ -15,15 +15,37 @@ export type ParentChild = {
 };
 
 /**
+ * Veli kapsamının amacı.
+ *
+ * - `academic` (varsayılan): ders, ödev, gelişim, koçluk, deneme… Bağlantı
+ *   `canViewAcademic = true` olmalıdır.
+ * - `account`: hesap/paket ekranı (bağlı öğrenci adı + ürün listesi, paket
+ *   görüşmesi talebi). Akademik veri DEĞİLDİR; `canViewAcademic = false` olan
+ *   ama ödeme/hesap ilişkisini sürdüren veli bu ekranı kullanmaya devam eder.
+ */
+export type ParentScopePurpose = "academic" | "account";
+
+/**
  * Velinin aktif bağlantılarından veliye GÖRÜNÜR çocuklar.
  *
  * VELİ-FREE ÜRÜNLER: yalnızca KPSS üyeliği olan öğrenci listeye HİÇ girmez.
  * KPSS + OD öğrencisi yalnız OD bağlamıyla görünür; KPSS kodu `products`
  * listesine sızmaz. (`next/navigation` içermez; `resolveParentScope` bunu sarar.)
+ *
+ * AKADEMİK İZİN: varsayılan amaç `academic`tır ve `canViewAcademic = false`
+ * bağlantıları listeye almaz. Bağlantının varlığı akademik veri için yetmez.
  */
-export async function listParentVisibleChildren(parentUserId: string): Promise<ParentChild[]> {
+export async function listParentVisibleChildren(
+  parentUserId: string,
+  purpose: ParentScopePurpose = "academic",
+): Promise<ParentChild[]> {
   const links = await prisma.parentStudent.findMany({
-    where: { parentId: parentUserId, active: true, endedAt: null },
+    where: {
+      parentId: parentUserId,
+      active: true,
+      endedAt: null,
+      ...(purpose === "academic" ? { canViewAcademic: true } : {}),
+    },
     include: {
       student: {
         select: {

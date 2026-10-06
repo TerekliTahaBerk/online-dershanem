@@ -95,14 +95,20 @@ export const COMMERCE_FULFILLMENT: Record<CommerceProduct, CommerceFulfillment> 
 /**
  * `OdOrder` provizyonu siparişin alıcısına OD üyeliği açar mı?
  *
- * Tarihsel olarak `provisionOdOrder` satırlara bakmadan HER OD siparişine OD
- * üyeliği açıyordu. OK/ODK için bu davranış bu görevde DEĞİŞTİRİLMEDİ (true);
- * KPSS-only siparişin alıcısı K-12 ders erişimi almamalıdır (false).
+ * YALNIZ siparişte gerçekten bir OD satırı varsa. Eskiden OK ve ODK da `true`
+ * idi: yalnız Yön Koçluk ya da yalnız Deneme Ligi alan öğrenciye süresiz,
+ * PURCHASE kaynaklı bir OD üyeliği de açılıyordu (satın alınmamış ürün).
+ * Her satır kendi ürününü `COMMERCE_FULFILLMENT` ile zaten açar; OK/ODK/KPSS
+ * satırı tek başına OD açmaz. Satırsız (satır tablosu öncesi) eski siparişler
+ * tarihsel davranışı korur (bkz. `orderGrantsBuyerOdMembership`).
+ *
+ * Bu kuraldan önce açılmış olası hatalı OD üyelikleri OTOMATİK geri alınmaz;
+ * salt-okunur rapor: `scripts/report-od-memberships-without-od-line.mjs`.
  */
 export const ORDER_GRANTS_BUYER_OD_MEMBERSHIP: Record<CommerceProduct, boolean> = {
   OD: true,
-  OK: true,
-  ODK: true,
+  OK: false,
+  ODK: false,
   KPSS: false,
 };
 

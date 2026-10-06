@@ -45,7 +45,8 @@ export async function GET(request: Request, context: { params: Promise<{ student
   }
 
   if (view === "timeline") {
-    const timeline = await getUnifiedActivityTimeline(studentId);
+    // Görünürlük süzgeci sunucuda: STAFF/INTERNAL olaylar öğrenci ve veliye dönmez.
+    const timeline = await getUnifiedActivityTimeline(studentId, role);
     return NextResponse.json({ timeline, computedAt: now.toISOString() });
   }
 

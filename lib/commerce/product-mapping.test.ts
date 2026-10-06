@@ -80,12 +80,20 @@ test("satır stratejisi: KPSS pencereli üyelikle açılır, asla ODK sözleşme
   }
 });
 
-test("KPSS-only sipariş alıcıya OD üyeliği açmaz; OD/OK/ODK ve satırsız siparişte davranış aynı", () => {
+test("yalnız OD satırı alıcıya OD açar; OK/ODK/KPSS-only sipariş OD açmaz; satırsız sipariş tarihsel", () => {
   assert.equal(ORDER_GRANTS_BUYER_OD_MEMBERSHIP.KPSS, false);
   assert.equal(orderGrantsBuyerOdMembership([]), true, "satır tablosu öncesi siparişler");
   assert.equal(orderGrantsBuyerOdMembership(["OD"]), true);
-  assert.equal(orderGrantsBuyerOdMembership(["OK"]), true);
-  assert.equal(orderGrantsBuyerOdMembership(["ODK"]), true);
+  // P0-5: yalnız Yön Koçluk / yalnız Deneme Ligi siparişi OD açmaz.
+  assert.equal(ORDER_GRANTS_BUYER_OD_MEMBERSHIP.OD, true);
+  assert.equal(ORDER_GRANTS_BUYER_OD_MEMBERSHIP.OK, false);
+  assert.equal(ORDER_GRANTS_BUYER_OD_MEMBERSHIP.ODK, false);
+  assert.equal(orderGrantsBuyerOdMembership(["OK"]), false);
+  assert.equal(orderGrantsBuyerOdMembership(["ODK"]), false);
+  assert.equal(orderGrantsBuyerOdMembership(["OK", "ODK"]), false);
+  assert.equal(orderGrantsBuyerOdMembership(["OD", "OK"]), true);
+  assert.equal(orderGrantsBuyerOdMembership(["OD", "ODK"]), true);
+  assert.equal(orderGrantsBuyerOdMembership(["OD", "OK", "ODK"]), true);
   assert.equal(orderGrantsBuyerOdMembership(["KPSS"]), false);
   assert.equal(orderGrantsBuyerOdMembership(["KPSS", "KPSS"]), false);
   assert.equal(orderGrantsBuyerOdMembership(["KPSS", "OD"]), true);
