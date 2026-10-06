@@ -100,6 +100,9 @@ function studentSections(
       ...(flags.studentCheckIn
         ? [{ id: "check-in", href: `${root}/check-in`, label: PANEL_DOMAIN.checkIn }]
         : []),
+      ...(flags.parentWeeklyDigest
+        ? [{ id: "weekly-digest", href: `${root}/haftalik`, label: "Haftalık özet" }]
+        : []),
       ...(flags.dinoAi ? [{ id: "dino", href: `${root}/dino`, label: "Dino AI" }] : []),
     ]),
     ...section("ayarlar", "AYARLAR", commonItems(flags)),
@@ -202,7 +205,7 @@ function teacherSections(root: string, flags: PanelFeatureFlags): PanelNavSectio
             {
               id: "odk-reports",
               href: "/panel/odk/ogretmen/raporlar",
-              label: "Kulüp deneme raporları",
+              label: "Deneme Ligi raporları",
             },
           ]
         : []),
@@ -241,8 +244,10 @@ function adminSections(root: string, flags: PanelFeatureFlags): PanelNavSection[
     ...section("denemeler", "DENEMELER", [
       { id: "odk-exams", href: "/panel/odk/yonetim/sinavlar", label: "Deneme yönetimi" },
       { id: "odk-ops", href: "/panel/odk/yonetim/operasyon", label: "Canlı Operasyon" },
-      { id: "odk-reports", href: "/panel/odk/yonetim/raporlar", label: "Sonuç ve kulüp raporları" },
-      { id: "odk-packages", href: "/panel/odk/yonetim/paketler", label: "Kulüp paketleri" },
+      { id: "odk-results", href: "/panel/odk/yonetim/sonuclar", label: "Puanlama ve yayın" },
+      { id: "odk-reports", href: "/panel/odk/yonetim/raporlar", label: "Sonuç raporları" },
+      { id: "odk-packages", href: "/panel/odk/yonetim/paketler", label: "Deneme Ligi paketleri" },
+      { id: "odk-pilot", href: "/panel/odk/yonetim/pilot", label: "Deneme Ligi kontrollü yayın" },
       ...(flags.mockExamAnalysis
         ? [{ id: "mock-analysis", href: `${root}/denemeler`, label: "Sonuç analizi" }]
         : []),
@@ -253,6 +258,10 @@ function adminSections(root: string, flags: PanelFeatureFlags): PanelNavSection[
       { id: "features", href: `${root}/ozellikler`, label: "Özellikler" },
       { id: "audit", href: `${root}/kayitlar`, label: "İşlem geçmişi" },
       { id: "reports", href: `${root}/raporlar`, label: "Operasyon ve denetim raporları" },
+      { id: "pilot", href: `${root}/pilot`, label: "Kontrollü yayın" },
+      ...(flags.cohortQuality
+        ? [{ id: "quality", href: `${root}/kalite`, label: "Öğrenme kalitesi" }]
+        : []),
     ]),
     ...section("genel", "GENEL", commonItems(flags)),
   ];
@@ -288,8 +297,10 @@ const NAV_ITEM_SCOPE: Partial<Record<"TEACHER" | "ADMIN", Record<string, Product
     coaching: "OK",
     "odk-exams": "ODK",
     "odk-ops": "ODK",
+    "odk-results": "ODK",
     "odk-reports": "ODK",
     "odk-packages": "ODK",
+    "odk-pilot": "ODK",
   },
 };
 

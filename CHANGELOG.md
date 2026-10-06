@@ -6,6 +6,9 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Panel design roadmap (`docs/panel-design-roadmap.md`): inventory of every panel route and capability, a functionality preservation matrix, the Notion-inspired design system, per-persona navigation and a phased migration plan
+- Panel token layer (`.pn-scope` in `app/globals.css`) with neutral surfaces, semantic status tones and product accents (onlinedershanem. green, Yön Koçluk blue, Deneme Ligi purple) selected by `data-product` on the panel shell; additive, no visual change yet
+- `lib/panel/status-vocabulary.ts`: one source for user, order payment, readiness, plan-suggestion and Deneme Ligi exam status labels
 - Product staff responsibilities (`ProductStaffAssignment`): TEACHER@OD, COACH@OK and Deneme Ligi EXAM_EDITOR / EXAM_OPERATOR / RESULT_PUBLISHER / REPORT_VIEWER / PRODUCT_MANAGER are granted per product instead of through new global roles; rows keep full grant/revoke history with one active row per user, product and role (SQL partial unique index)
 - **Ürün sorumlulukları** in the admin user detail (Erişim Merkezi): grant and revoke with a required reason and step-up, coach capacity, history, an "MFA kurulumu bekleniyor" badge and a non-blocking last-holder warning; new teachers get TEACHER@OD automatically
 - Deneme Ligi staff land on the workspace their permissions allow (single module, staff home with permitted tiles only, or the report workspace), and the Deneme Ligi menu is built from the same permissions
@@ -31,6 +34,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Changed
 
+- Panel product names follow the public short names: `productLabel()` now returns "Yön Koçluk" and "Deneme Ligi" instead of "onlinekoçum." / "onlinedenemekulübüm."; remaining panel copy, "Kulüp" labels and "ODK" eyebrows were renamed accordingly
+- Internal terms in panel copy were replaced: "Provisioning" → "Aktivasyon masası" / "Erişim açılışı", "Integrity inceleme" → "Bütünlük incelemesi"; raw enum values (user status, order status, readiness, plan suggestion kind, exam status in search) are shown as Turkish labels
 - Public consultation now uses its own Tally form; marketing CTAs reach the form directly and package-builder choices remain visible above it, while the signed private registration flow stays separate
 - Migrated styling to Tailwind CSS 4, preserving the existing theme and component appearance while removing its vulnerable `braces` dependency chain
 - After sign-in everyone (admin, teacher, student, parent) chooses the OD / OK / ODK panel at `/panel/urun-sec`; the choice is stored on the session and scopes the menu, with a "Panel değiştir" link in the shell
@@ -52,6 +57,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Fixed
 
+- The two-admin MFA reset approval queue is visible again on `/panel/yonetim/kisiler`; it lived only on the `/panel/yonetim/kullanicilar` list, which `next.config.ts` redirects, so no admin could see or approve pending resets. Expiry now shows the time, not only the date (requests last 30 minutes)
+- Pages without an entry point are linked from the menu: Deneme Ligi "Puanlama ve yayın" for admins, OD and Deneme Ligi controlled rollout (`/panel/yonetim/pilot`, `/panel/odk/yonetim/pilot`), learning quality (`/panel/yonetim/kalite`, behind `cohortQuality`) and the student weekly summary (`/panel/ogrenci/haftalik`, behind `parentWeeklyDigest`)
 - The admin product-access form no longer rewrites existing memberships: a purchased, time-limited membership keeps its source, window and order link; missing products are granted as MANUAL and removed products are revoked, never deleted
 - OK-only and ODK-only cart orders no longer grant an open-ended OD membership; existing affected rows can be reviewed with the read-only `npm run commerce:report:od-without-od-line`
 - Stabilized panel plan approval and lesson recovery E2E fixtures across weekdays and repeated runs

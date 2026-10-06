@@ -28,7 +28,7 @@ export const dynamic = "force-dynamic";
 const LOCKED_CTA: Record<(typeof PANEL_PRODUCTS)[number], { href: string; label: string }> = {
   OD: { href: "/paketler", label: "Paketleri incele" },
   OK: { href: "/urunler/online-kocum", label: "İncele ve görüşme iste" },
-  ODK: { href: "/odk-paketleri", label: "Kulüp paketlerini incele" },
+  ODK: { href: "/odk-paketleri", label: "Deneme Ligi paketlerini incele" },
 };
 
 const PANEL_BRANDS: Record<(typeof PANEL_PRODUCTS)[number], ProductPanelCardModel["brand"]> = {

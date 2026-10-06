@@ -91,7 +91,7 @@ function ActionQueue({
           href="/panel/yonetim/isler"
           className="mt-3 inline-block text-[13px] font-semibold text-dc-brand-strong hover:underline"
         >
-          Provisioning ve işleri incele
+          Aktivasyon masasını incele
         </Link>
       </PanelCard>
     );

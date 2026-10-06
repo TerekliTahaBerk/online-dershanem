@@ -44,7 +44,8 @@ export const PANEL_DOMAIN = {
   siparis: "Sipariş",
   siparisler: "Siparişler",
   paket: "Paket",
-  provisioning: "Provisioning",
+  /** Ödeme sonrası erişim açılışı / aktivasyon masası (`/panel/yonetim/isler`). */
+  provisioning: "Aktivasyon masası",
   odeme: "Ödeme",
   bildirim: "Bildirim",
   bildirimler: "Bildirimler",
@@ -80,6 +81,7 @@ export const PANEL_TERM_ALIASES = {
   "Yardım İsteyenler": "Yardım isteyenler",
   "Müdahale kutusu": PANEL_DOMAIN.mudahale,
   "İşler / Provisioning": PANEL_DOMAIN.provisioning,
+  Provisioning: PANEL_DOMAIN.provisioning,
   "Özellikler / Sistem": "Özellikler",
   "Dersler & Gruplar": `${PANEL_DOMAIN.gruplar} ve ${PANEL_DOMAIN.dersler}`,
   Ödevler: PANEL_DOMAIN.calismalar,

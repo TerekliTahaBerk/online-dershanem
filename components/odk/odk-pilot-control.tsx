@@ -43,7 +43,7 @@ export function OdkPilotControl({
   const router = useRouter();
   const [rows, setRows] = useState(runs);
   const [selected, setSelected] = useState<string[]>([currentAdminId]);
-  const [name, setName] = useState("ODK kontrollü pilot");
+  const [name, setName] = useState("Deneme Ligi kontrollü pilot");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{
     text: string;
@@ -102,7 +102,7 @@ export function OdkPilotControl({
       const body = await response.json().catch(() => ({}));
       if (!response.ok)
         return setMessage({
-          text: body.error || "ODK pilot taslağı oluşturulamadı.",
+          text: body.error || "Deneme Ligi pilot taslağı oluşturulamadı.",
           error: true,
         });
       const run = body.run;
@@ -126,7 +126,7 @@ export function OdkPilotControl({
         ...current,
       ]);
       setMessage({
-        text: "ODK pilot taslağı oluşturuldu; yayın kapıları geçmeden erişim açılmaz.",
+        text: "Deneme Ligi pilot taslağı oluşturuldu; yayın kapıları geçmeden erişim açılmaz.",
         error: false,
       });
       router.refresh();
@@ -145,7 +145,7 @@ export function OdkPilotControl({
   ) {
     const confirmations: Partial<Record<typeof action, string>> = {
       ACTIVATE:
-        "Tüm yayın kapıları sunucuda yeniden doğrulanacak ve seçili katılımcıların ODK erişimi açılacak. Devam edilsin mi?",
+        "Tüm yayın kapıları sunucuda yeniden doğrulanacak ve seçili katılımcıların Deneme Ligi erişimi açılacak. Devam edilsin mi?",
       PAUSE:
         "Pilot erişimi duraklatılacak. Sınav ve cevap verileri korunacak. Devam edilsin mi?",
       COMPLETE:
@@ -184,10 +184,10 @@ export function OdkPilotControl({
       setMessage({
         text:
           action === "ACTIVATE" || action === "RESUME"
-            ? "ODK pilot erişimi açıldı."
+            ? "Deneme Ligi pilot erişimi açıldı."
             : action === "COMPLETE"
               ? "Pilot tamamlandı; audit kayıtları korundu."
-              : "ODK pilot erişimi durduruldu; sınav verileri korundu.",
+              : "Deneme Ligi pilot erişimi durduruldu; sınav verileri korundu.",
         error: false,
       });
       router.refresh();
@@ -206,7 +206,7 @@ export function OdkPilotControl({
       <section className="panel-surface h-fit p-5 sm:p-6">
         <h2 className="text-sm font-extrabold">Açık katılımcı listesi</h2>
         <p className="mt-2 text-xs leading-5 text-(--site-muted)">
-          Her rol bilinçli seçilir. Öğrenci ve veliler için aktif ODK ürün
+          Her rol bilinçli seçilir. Öğrenci ve veliler için aktif Deneme Ligi ürün
           erişimi zorunludur.
         </p>
         <label className="panel-field mt-4">
@@ -303,7 +303,7 @@ export function OdkPilotControl({
       <section>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-sm font-extrabold">ODK yayın yaşam döngüsü</h2>
+            <h2 className="text-sm font-extrabold">Deneme Ligi yayın yaşam döngüsü</h2>
             <p className="mt-1 text-xs text-(--site-muted)">
               Aynı anda yalnız bir açık pilot koşusu bulunabilir.
             </p>
@@ -411,7 +411,7 @@ export function OdkPilotControl({
           })}
           {!rows.length ? (
             <p className="rounded-2xl border border-dashed border-(--site-line) p-8 text-center text-sm text-(--site-muted)">
-              Henüz ODK pilot koşusu yok.
+              Henüz Deneme Ligi pilot koşusu yok.
             </p>
           ) : null}
         </div>

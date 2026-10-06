@@ -90,10 +90,16 @@ export function productRolePath(product: ProductCode, role: UserRole): string {
   return byProduct[product];
 }
 
+/**
+ * Panelde görünen ürün adları. Kullanıcıya dönük adlar public sitedeki kısa
+ * ürün adlarıyla aynıdır (`yonBrand.shortName`, `denemeLigiBrand.shortName`);
+ * iç kodlar (OD / OK / ODK) arayüze çıkmaz. Eski ana marka adları
+ * (onlinekoçum. / onlinedenemekulübüm.) yalnız public marka satırlarında kalır.
+ */
 const PRODUCT_LABEL: Record<ProductCode, string> = {
   OD: "onlinedershanem.",
-  OK: "onlinekoçum.",
-  ODK: "onlinedenemekulübüm.",
+  OK: "Yön Koçluk",
+  ODK: "Deneme Ligi",
   KPSS: "KPSS",
 };
 

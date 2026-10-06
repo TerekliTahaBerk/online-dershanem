@@ -20,7 +20,7 @@ import {
 } from "@/components/panel/ui";
 import { CreateUserForm } from "@/components/panel/create-user-form";
 import { UserRowActions } from "@/components/panel/user-row-actions";
-import { ApproveMfaResetButton } from "@/components/panel/mfa-reset-controls";
+import { PendingMfaResetQueue } from "@/components/panel/pending-mfa-reset-queue";
 import { UserBulkOperations } from "@/components/panel/user-bulk-operations";
 
 export const dynamic = "force-dynamic";
@@ -44,16 +44,7 @@ export const dynamic = "force-dynamic";
  * Korunan bölümler: yeni hesap formu ve MFA sıfırlama onay kuyruğu.
  */
 
-const DATE = new Intl.DateTimeFormat("tr-TR", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-});
 const PAGE_SIZE = 25;
-
-function formatDate(value: Date | null): string {
-  return value ? DATE.format(value) : "—";
-}
 
 /** Filtre çipi — seçili değeri koruyarak yeni sorgu dizesi kurar. */
 function chipHref(
@@ -115,7 +106,6 @@ export default async function UsersPage({
   const [
     total,
     users,
-    pendingMfaResets,
     attentionCount,
     activeGroups,
     activeTeachers,
@@ -168,16 +158,6 @@ export default async function UsersPage({
           },
         },
         teacherProfile: { select: { id: true } },
-      },
-    }),
-    // Çift kontrollü MFA sıfırlama kuyruğu — onayı isteği açandan BAŞKA bir
-    // yönetici verir, o yüzden liste tüm yöneticilere gösterilir.
-    prisma.mfaResetRequest.findMany({
-      where: { status: "PENDING", expiresAt: { gt: new Date() } },
-      orderBy: { createdAt: "desc" },
-      include: {
-        target: { select: { id: true, fullName: true, email: true } },
-        requestedBy: { select: { id: true, fullName: true, email: true } },
       },
     }),
     prisma.user.count({
@@ -530,52 +510,7 @@ export default async function UsersPage({
         )}
 
         {/* ── Bekleyen MFA sıfırlama onayları ── */}
-        {pendingMfaResets.length ? (
-          <section className="mt-7 rounded-[14px] border border-dc-line border-l-[3px] border-l-[#C2493D] bg-white p-[22px]">
-            <h2 className="text-[16px] font-bold text-dc-ink">
-              Bekleyen MFA sıfırlama onayı ({pendingMfaResets.length})
-            </h2>
-            <p className="mt-1.5 text-[13px] leading-[1.6] text-dc-ink-muted">
-              Onayı, isteği açan ve hedef yöneticiden farklı bir yönetici
-              vermelidir. Onaylandığında hedefin tüm doğrulama yöntemleri
-              silinir ve oturumları kapatılır.
-            </p>
-            <ul className="mt-4 flex flex-col gap-2">
-              {pendingMfaResets.map((reset) => {
-                const blocked =
-                  reset.targetUserId === session.userId ||
-                  reset.requestedById === session.userId;
-                return (
-                  <li
-                    key={reset.id}
-                    className="flex flex-wrap items-start justify-between gap-3 rounded-od border border-dc-line p-4"
-                  >
-                    <div className="min-w-[220px] flex-1">
-                      <p className="text-[13.5px] font-bold text-dc-ink">
-                        {reset.target.fullName || reset.target.email}
-                      </p>
-                      <p className="mt-1 text-[12.5px] text-dc-ink-faint">
-                        İsteyen:{" "}
-                        {reset.requestedBy.fullName || reset.requestedBy.email}{" "}
-                        · son geçerlilik {formatDate(reset.expiresAt)}
-                      </p>
-                      <p className="mt-1.5 text-[13px] leading-[1.6] text-dc-ink-body">
-                        {reset.reason}
-                      </p>
-                    </div>
-                    {blocked ? (
-                      <p className="text-[12.5px] font-semibold text-[#C2493D]">
-                        Bu isteği siz onaylayamazsınız.
-                      </p>
-                    ) : (
-                      <ApproveMfaResetButton requestId={reset.id} />
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        ) : null}
+        <PendingMfaResetQueue viewerUserId={session.userId} className="mt-7" />
 
         {/* ── Yeni hesap ── */}
         <PanelCard id="yeni-hesap" className="mt-7 scroll-mt-28">

@@ -53,7 +53,7 @@ export default async function StudentCheckInPage() {
   });
   const history = profile.checkIns.map((item) => ({
     id: item.id,
-    groupName: item.group?.name ?? "onlinekoçum.",
+    groupName: item.group?.name ?? "Yön Koçluk",
     energy: item.energy,
     confidence: item.confidence,
     barrier: item.barrier,
@@ -89,7 +89,7 @@ export default async function StudentCheckInPage() {
       </header>
       <div className="mt-7">
         <StudentCheckInForm
-          groups={profile.enrollments.length ? profile.enrollments.map((item) => item.group) : profile.coachAssignments.map((item) => ({ id: `coach:${item.id}`, name: "onlinekoçum.", subject: "Koçunla takip" }))}
+          groups={profile.enrollments.length ? profile.enrollments.map((item) => item.group) : profile.coachAssignments.map((item) => ({ id: `coach:${item.id}`, name: "Yön Koçluk", subject: "Koçunla takip" }))}
           history={history}
           remaining={Math.max(0, STUDENT_CHECK_IN_WEEKLY_LIMIT - weeklyCount)}
         />

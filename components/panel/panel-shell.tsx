@@ -195,6 +195,9 @@ export async function PanelShell({
     const access = await effectiveStaffPermissions(effectiveUserId);
     return access.isAdmin ? null : [...access.permissions];
   })();
+  // Ürün vurgusu (`.pn-scope[data-product]`) — yalnız sunum; yetki değildir.
+  const accentProduct =
+    navScope === "OK" ? "yon" : navScope === "ODK" || product === "ODK" ? "dl" : "od";
   const productSwitch =
     !isBusinessWorkspace && !preview && navScope
       ? { href: PRODUCT_SELECTOR_PATH, label: `${productLabel(navScope)} · Panel değiştir` }
@@ -281,9 +284,10 @@ export async function PanelShell({
         )}
       >
         <div
-          className={`site-scope dc-panel-bg flex min-h-dvh ${
+          className={`site-scope dc-panel-bg pn-scope flex min-h-dvh ${
             isBusinessWorkspace ? "business-panel-scope" : ""
           }`}
+          data-product={accentProduct}
         >
           {accessibilityEnabled ? (
             <AccessibilityPreferenceApplier

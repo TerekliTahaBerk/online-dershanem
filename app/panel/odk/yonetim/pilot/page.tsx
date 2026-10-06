@@ -115,7 +115,7 @@ export default async function OdkPilotPage() {
             <ShieldCheck size={19} />
           </span>
           <div>
-            <h2 className="text-sm font-extrabold">ODK yayın kapıları</h2>
+            <h2 className="text-sm font-extrabold">Deneme Ligi yayın kapıları</h2>
             <p className="mt-1 text-xs leading-5 text-(--site-muted)">
               {readiness.canActivate
                 ? "Pilot aktivasyonu için bloke kapı kalmadı."

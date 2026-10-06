@@ -30,6 +30,21 @@
   --color-dc-on-deep-faint: var(--dc-on-deep-faint);
   --color-dc-on-deep-line: var(--dc-on-deep-line);
 
+  /* Panel token katmanı — değerler yalnız `.pn-scope` içinde tanımlıdır. */
+  --color-pn-canvas: var(--pn-canvas);
+  --color-pn-sidebar: var(--pn-sidebar);
+  --color-pn-surface-subtle: var(--pn-surface-subtle);
+  --color-pn-hover: var(--pn-hover);
+  --color-pn-selected: var(--pn-selected);
+  --color-pn-border: var(--pn-border);
+  --color-pn-border-strong: var(--pn-border-strong);
+  --color-pn-text: var(--pn-text);
+  --color-pn-text-secondary: var(--pn-text-secondary);
+  --color-pn-text-muted: var(--pn-text-muted);
+  --color-pn-accent: var(--pn-accent);
+  --color-pn-accent-soft: var(--pn-accent-soft);
+  --color-pn-accent-marker: var(--pn-accent-marker);
+
   --color-anchor: #091413;
   --color-ink: #111111;
   --color-pine: #435633;
@@ -506,6 +521,75 @@ a {
 .dc-panel-bg {
   background: #f6f8f7;
 }
+
+/* ============================================================
+   PANEL TOKEN KATMANI (.pn-scope) — docs/panel-design-roadmap.md §5
+   Ortak `--dc-*` temelinin üstünde, yalnız oturum açılmış panelde geçerli.
+   Public site bu değişkenleri görmez. Bu katman ADDITIVE'dir: mevcut
+   panel sınıfları değişmez; yeni panel primitive'leri bunları kullanır.
+   Ürün vurgusu yalnız aktif menü, rozet, küçük işaret, grafik ve seçili
+   satırda kullanılır — sayfa zemininde veya butonlarda değil.
+   ============================================================ */
+.pn-scope {
+  --pn-canvas: #ffffff;
+  --pn-sidebar: #f7f8f7;
+  --pn-surface-subtle: #fafbfa;
+  --pn-hover: rgba(20, 32, 28, 0.045);
+  --pn-selected: rgba(20, 32, 28, 0.07);
+  --pn-border: #e9ecea;
+  --pn-border-strong: #d9dedb;
+  --pn-text: var(--dc-ink);
+  --pn-text-secondary: var(--dc-ink-body);
+  --pn-text-muted: #5f6e67;
+  --pn-focus: #0c7c57;
+
+  /* Ürün vurguları (AA metin rengi / yumuşak zemin / metin dışı işaret) */
+  --pn-accent-od: #0c7c57;
+  --pn-accent-od-soft: #edf7f2;
+  --pn-accent-od-marker: #14976b;
+  --pn-accent-yon: #0754c9;
+  --pn-accent-yon-soft: #e8f1fe;
+  --pn-accent-yon-marker: #0673f5;
+  --pn-accent-dl: #5b2599;
+  --pn-accent-dl-soft: #f1eafa;
+  --pn-accent-dl-marker: #6c35ac;
+
+  /* Varsayılan vurgu: onlinedershanem. */
+  --pn-accent: var(--pn-accent-od);
+  --pn-accent-soft: var(--pn-accent-od-soft);
+  --pn-accent-marker: var(--pn-accent-od-marker);
+
+  /* Semantik durum tonları — üründen bağımsız */
+  --pn-tone-neutral: #4e5c56;
+  --pn-tone-neutral-soft: #f1f3f2;
+  --pn-tone-info: #1e4e8c;
+  --pn-tone-info-soft: #eaf2fb;
+  --pn-tone-success: #1f6b45;
+  --pn-tone-success-soft: #e8f4ec;
+  --pn-tone-warning: #7a5a0b;
+  --pn-tone-warning-soft: #fdf5dc;
+  --pn-tone-critical: #9a2b1f;
+  --pn-tone-critical-soft: #fbeae6;
+
+  /* Yoğunluk: satır yüksekliği */
+  --pn-row-h: 40px;
+}
+.pn-scope[data-product="yon"] {
+  --pn-accent: var(--pn-accent-yon);
+  --pn-accent-soft: var(--pn-accent-yon-soft);
+  --pn-accent-marker: var(--pn-accent-yon-marker);
+}
+.pn-scope[data-product="dl"] {
+  --pn-accent: var(--pn-accent-dl);
+  --pn-accent-soft: var(--pn-accent-dl-soft);
+  --pn-accent-marker: var(--pn-accent-dl-marker);
+}
+.pn-scope [data-density="comfortable"],
+.pn-scope[data-density="comfortable"] { --pn-row-h: 48px; }
+.pn-scope [data-density="compact"],
+.pn-scope[data-density="compact"] { --pn-row-h: 36px; }
+.pn-scope [data-density="dense"],
+.pn-scope[data-density="dense"] { --pn-row-h: 32px; }
 
 /* Koyu yeşil yüzey (footer + kapanış banner'ı).
    NOT: `.site-scope` kendi zeminini set ettiği için burada aynı özgüllükte

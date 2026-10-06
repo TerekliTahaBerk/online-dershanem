@@ -14,7 +14,9 @@ import {
 } from "@/components/panel/ui";
 import { CreateUserForm } from "@/components/panel/create-user-form";
 import { UserBulkOperations } from "@/components/panel/user-bulk-operations";
+import { PendingMfaResetQueue } from "@/components/panel/pending-mfa-reset-queue";
 import { PANEL_DOMAIN } from "@/lib/panel/domain-vocabulary";
+import { USER_STATUS_PRESENTATION } from "@/lib/panel/status-vocabulary";
 
 export const dynamic = "force-dynamic";
 
@@ -211,6 +213,8 @@ export default async function PeopleHubPage({
         description="Öğrenci, öğretmen ve velileri tek ekrandan yönetin. Detay için satıra gidin."
       />
 
+      <PendingMfaResetQueue viewerUserId={session.userId} className="mt-6" />
+
       <PanelCard className="mt-6">
         <CreateUserForm />
       </PanelCard>
@@ -344,7 +348,7 @@ export default async function PeopleHubPage({
                       .join(", ") || "—"}
                   </PanelTableCell>
                   <PanelTableCell>
-                    {user.status}
+                    {USER_STATUS_PRESENTATION[user.status].label}
                     {!user.inviteAcceptedAt ? " · davet" : ""}
                   </PanelTableCell>
                   <PanelTableCell>
@@ -388,7 +392,7 @@ export default async function PeopleHubPage({
                   <PanelTableCell>{studentCount}</PanelTableCell>
                   <PanelTableCell>{user.taughtGroups.length}</PanelTableCell>
                   <PanelTableCell>{user.taughtLessons.length}</PanelTableCell>
-                  <PanelTableCell>{user.status}</PanelTableCell>
+                  <PanelTableCell>{USER_STATUS_PRESENTATION[user.status].label}</PanelTableCell>
                 </PanelTableRow>
               );
             })}
@@ -425,7 +429,7 @@ export default async function PeopleHubPage({
                 <PanelTableCell>
                   {[user.phone, user.email].filter(Boolean).join(" · ")}
                 </PanelTableCell>
-                <PanelTableCell>{user.status}</PanelTableCell>
+                <PanelTableCell>{USER_STATUS_PRESENTATION[user.status].label}</PanelTableCell>
                 <PanelTableCell>
                   {user.lastLoginAt ? DATE.format(user.lastLoginAt) : "—"}
                 </PanelTableCell>

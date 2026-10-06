@@ -107,7 +107,7 @@ export default async function ParentMockExamsPage({
             Bu öğrencide deneme üyeliği yok
           </h2>
           <p className="mt-2 text-[14.5px] leading-[1.65] text-dc-ink-muted">
-            onlinedenemekulübüm. eklendiğinde denemeler, sonuç dağılımı ve gelişim
+            Deneme Ligi eklendiğinde denemeler, sonuç dağılımı ve gelişim
             karşılaştırması bu ekranda görünür.
           </p>
           <Link

@@ -14,6 +14,7 @@ import {
   formatIstanbulDateInput,
 } from "@/lib/istanbul-time";
 import { buildWeeklyKocumMetrics } from "@/lib/kocum";
+import { WEEKLY_PLAN_SUGGESTION_KIND_LABELS } from "@/lib/panel/status-vocabulary";
 
 export const dynamic = "force-dynamic";
 
@@ -100,7 +101,7 @@ export default async function TeacherPlanPage() {
     >
       <header>
         <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
-          <ListChecks size={15} /> onlinekoçum. planı
+          <ListChecks size={15} /> Yön · Plan masası
         </p>
         <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
           Haftayı görün, düzenleyin, kilitleyin.
@@ -130,7 +131,7 @@ export default async function TeacherPlanPage() {
                   {item.title}
                 </p>
                 <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-(--site-muted)">
-                  {item.kind}
+                  {WEEKLY_PLAN_SUGGESTION_KIND_LABELS[item.kind]}
                 </p>
                 <p className="mt-1 text-xs text-(--site-muted)">
                   {item.rationale}

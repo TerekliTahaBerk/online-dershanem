@@ -62,7 +62,7 @@ export function createPrismaTeacherAttentionQueries(): TeacherAttentionQueries {
       return rows.map((row) => ({
         id: row.id,
         studentId: row.studentId,
-        groupName: row.group?.name ?? "onlinekoçum.",
+        groupName: row.group?.name ?? "Yön Koçluk",
         barrier: row.checkIn.barrier,
         createdAt: row.createdAt,
         dueAt: row.dueAt,
