@@ -1,4 +1,8 @@
 import { yonBrand } from "@/lib/yon-brand";
+import { PublicOdkPackageCard } from "@/components/odk/public-package-card";
+import { listPublicOdkPackages } from "@/lib/odk/public-commerce-server";
+import { listActivePublicProductCodes } from "@/lib/public-marketing-products-server";
+import { log } from "@/lib/logger";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Check, Plus } from "lucide-react";
@@ -45,7 +49,12 @@ function JoinLink() {
   );
 }
 
-export default function OnlineDenemeKulubumPage() {
+export default async function OnlineDenemeKulubumPage() {
+  const codes = await listActivePublicProductCodes();
+  const packages = codes.includes("ODK") ? await listPublicOdkPackages().catch((error: unknown) => {
+    log.warn("public.odk_catalog_unavailable", undefined, error);
+    return [];
+  }) : [];
   const price = singleProductPriceLabel("denemeKulubum");
   return (
     <div className="site-scope">
@@ -160,6 +169,12 @@ export default function OnlineDenemeKulubumPage() {
               <Link href="/urunler/online-kocum"><span><strong>{yonBrand.name}</strong><span>Deneme sonucunu haftalık planına taşı.</span></span><ArrowRight size={18} aria-hidden="true" /></Link>
             </aside>
           </div>
+        </section>
+
+        <section id="paketler" className="site-container scroll-mt-24 py-(--dc-section-tight)" aria-labelledby="deneme-packages-title">
+          <h2 id="deneme-packages-title" className="font-display text-(length:--public-title) leading-[1.1] tracking-tight text-dc-ink">Deneme paketleri ve katılım koşulları</h2>
+          <p className="mt-4 max-w-3xl text-[16px] leading-7 text-dc-ink-body">Takvim, kapsam, güncel fiyat ve satış durumu paket detayında gösterilir. Online satın alma yalnız paketin mevcut satış ve erişim koşulları uygunsa açılır.</p>
+          {packages.length ? <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">{packages.map((item) => <PublicOdkPackageCard key={item.contract.package.slug} item={item} />)}</div> : <p className="mt-6 rounded-dc-card border border-dc-line bg-white p-6 text-dc-ink-body">Şu anda burada gösterilebilen deneme paketi bulunmuyor. Güncel takvim ve başlangıç koşulları için ekibimizle görüşebilirsin.</p>}
         </section>
 
         <section className={`site-container ${styles.section}`} aria-labelledby="faq-title">

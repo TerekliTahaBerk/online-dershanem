@@ -8,7 +8,7 @@ import { lessonPackage, lessonPackages } from "@/lib/pricing-content";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "LGS ve YKS Matematik Ders Paketleri | onlinedershanem.",
+  title: "Ders Seçenekleri | LGS ve YKS Matematik Kataloğu",
   description:
     `LGS ve YKS online matematik ders paketleri: ayda ${lessonPackage.lessonsPerMonth} × ${lessonPackage.lessonDurationMinutes} dakika canlı ders, en fazla 4 öğrenci, ${lessonPackage.priceLabel} ve taahhütsüz ödeme.`,
   canonical: "/ders-paketleri",

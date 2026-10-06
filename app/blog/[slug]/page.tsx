@@ -298,7 +298,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
           <section className="mx-auto mt-6 grid max-w-3xl gap-4 rounded-3xl border border-(--site-line) bg-white p-6 sm:grid-cols-2">
             <Link
-              href="/online-dershane"
+              href="/urunler/online-dershanem"
               className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4 text-sm font-semibold text-(--site-ink) transition-colors hover:border-(--brand-orange)"
             >
               Online dershane sayfasına git

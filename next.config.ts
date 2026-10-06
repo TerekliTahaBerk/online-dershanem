@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import type { NextConfig } from "next";
+import { publicLegacyRedirects } from "./lib/public-legacy-redirects";
 import { resolveBuildInfo } from "./lib/build-info";
 
 /**
@@ -98,18 +99,7 @@ const nextConfig: NextConfig = {
    */
   async redirects() {
     return [
-      { source: "/matematik-ders-paketi", destination: "/ders-paketleri", permanent: true },
-      { source: "/paket", destination: "/ders-paketleri", permanent: true },
-      { source: "/tyt", destination: "/yks", permanent: true },
-      { source: "/ayt", destination: "/yks", permanent: true },
-      { source: "/online-dershane", destination: "/urunler/online-dershanem", permanent: true },
-      { source: "/deneme-kulubu", destination: "/urunler/online-deneme-kulubum", permanent: true },
-      { source: "/odk", destination: "/urunler/online-deneme-kulubum", permanent: true },
-      { source: "/odk-paketleri", destination: "/urunler/online-deneme-kulubum", permanent: true },
-      { source: "/online-deneme-kulubu", destination: "/urunler/online-deneme-kulubum", permanent: true },
-      { source: "/deneme-paketleri", destination: "/urunler/online-deneme-kulubum", permanent: true },
-      { source: "/tyt-deneme-kulubu", destination: "/urunler/online-deneme-kulubum", permanent: true },
-      { source: "/lgs-deneme-kulubu", destination: "/urunler/online-deneme-kulubum", permanent: true },
+      ...publicLegacyRedirects,
       // Panel IA vocabulary aliases — canonical paths korunur.
       {
         source: "/panel/yonetim/ogretmenler",

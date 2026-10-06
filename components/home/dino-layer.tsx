@@ -1,3 +1,5 @@
+import { getDinoMarketingCopy } from "@/lib/dino-marketing";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import Link from "next/link";
 
 /**
@@ -25,21 +27,23 @@ const examples = [
 ];
 
 export function DinoLayer() {
+  const dino = getDinoMarketingCopy(getPanelFeatureFlags().dinoAi);
   return (
     <section className="site-container py-(--dc-section)">
       <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
         <div>
           <p className="text-[12px] font-semibold tracking-[0.08em] text-dc-brand-strong">
-            DINO AI
+            DINO AI · {dino.status}
           </p>
           <h2 className="mt-4 font-display text-(length:--public-title) leading-[1.12] tracking-tight text-dc-ink">
-            Dino AI ne yapıyor?
+            Dino AI nasıl destekleyecek?
           </h2>
           <p className="mt-4 text-[17px] leading-[1.65] text-dc-ink-body">
             Ders notunu, planı ve deneme sonucunu birlikte okur; hangi konuya
             dönmenin faydalı olabileceğini sade bir dille açıklar. Kararı
             öğretmen ve koç verir.
           </p>
+          <p className="mt-3 text-[15px] leading-7 text-dc-ink-muted">{dino.description}</p>
           <Link
             href="/dino-ai"
             className="mt-6 inline-block text-[15px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
@@ -48,6 +52,8 @@ export function DinoLayer() {
           </Link>
         </div>
 
+        <div>
+        <p className="mb-4 text-[13px] text-dc-ink-muted">Temsili destek örnekleri; canlı öğrenci çıktısı değildir.</p>
         <ul className="flex flex-col">
           {examples.map(({ context, line }, i) => (
             <li
@@ -65,6 +71,7 @@ export function DinoLayer() {
             </li>
           ))}
         </ul>
+        </div>
       </div>
     </section>
   );

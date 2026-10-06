@@ -4,7 +4,7 @@ import { breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "YKS Matematik Canlı Ders | onlinedershanem.",
+  title: "YKS Canlı Ders ve Matematik Desteği | onlinedershanem.",
   description:
     "YKS matematik kursu: en fazla 4 öğrencilik online canlı ders, TYT-AYT çalışma planı, soru çözümü, deneme analizi ve öğretmen yönlendirmesi.",
   canonical: "/yks",
@@ -12,7 +12,7 @@ export const metadata = buildMarketingMetadata({
   imageAlt: "YKS matematik canlı ders — onlinedershanem.",
 });
 
-export default function TYTLandingPage() {
+export default function YKSLandingPage() {
   const yksFaq = [
     {
       q: "TYT ve AYT matematik aynı YKS paketinde mi ilerliyor?",
@@ -27,8 +27,8 @@ export default function TYTLandingPage() {
       a: "Evet. YKS Matematik Ders Paketi aylık ilerler; güncel fiyat ve kapsam Ders Paketleri sayfasında açıkça gösterilir.",
     },
     {
-      q: "Deneme analizi nasıl takip ediliyor?",
-      a: "Öğrencinin denemelerinde kaybettiği konu ve soru tipleri birlikte değerlendirilir; haftalık çalışma bu analize göre yönlendirilir.",
+      q: "Deneme desteği ders paketine dahil mi?",
+      a: "Ders sürecinde öğretmen geri bildirimiyle çalışma yönü belirlenir. Planlı online denemeler ve paket koşullarına bağlı sonuç raporları için onlinedenemekulübüm. × Deneme Ligi ayrı bir destek olarak değerlendirilebilir.",
     },
     {
       q: "Ödeme sonrası ne oluyor?",
@@ -52,7 +52,7 @@ export default function TYTLandingPage() {
       <ExamSalesLanding
         data={{
           examKey: "YKS",
-          heroBadge: "YKS Matematik",
+          heroBadge: "YKS · Canlı öğrenme rehberi",
           heroTitle: "YKS matematikte TYT ve AYT birlikte, dengeli ilerlesin.",
           heroText:
             "YKS öğrencisi derste yalnızca dinlemez; çözümünü gösterir, sorusunu sorar ve ders sonunda TYT-AYT çalışmasında hangi adımla devam edeceğini bilir. İhtiyaç olursa bu akış, onlinekoçum. × Yön Koçluk plan takibi ve onlinedenemekulübüm. × Deneme Ligi deneme analiziyle desteklenebilir.",

@@ -96,7 +96,7 @@ export default async function OdkPaymentPage({
       >
         <PaytrIframeShell
           breadcrumb={[
-            { label: "ODK Paketleri", href: "/deneme-kulubu" },
+            { label: "Deneme Ligi", href: "/urunler/online-deneme-kulubum" },
             { label: "Bilgiler", href: `/odk-paketleri/${slug}/satin-al` },
             { label: "Ödeme" },
           ]}

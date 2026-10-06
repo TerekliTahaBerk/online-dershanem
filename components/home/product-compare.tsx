@@ -1,3 +1,4 @@
+import { listActivePublicProducts } from "@/lib/public-marketing-products-server";
 import { yonBrand } from "@/lib/yon-brand";
 import { ProductBrandLabel } from "@/components/product/product-brand-label";
 import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
@@ -76,7 +77,9 @@ function priceText(key: ProductKey): string {
   return `${label.price} ${billingSuffix(billingPeriods[key])}`;
 }
 
-export function ProductCompare() {
+export async function ProductCompare() {
+  const products = await listActivePublicProducts();
+  const visibleColumns = columns.filter((column) => products.some((product) => product.href === column.href));
   return (
     <section
       aria-labelledby="urun-karsilastirma"
@@ -112,7 +115,7 @@ export function ProductCompare() {
           <thead>
             <tr className="border-b border-dc-line bg-dc-surface-muted">
               <td className="w-[180px] p-5" />
-              {columns.map((col) => (
+              {visibleColumns.map((col) => (
                 <th
                   key={col.key}
                   scope="col"
@@ -132,7 +135,7 @@ export function ProductCompare() {
                 >
                   {row.label}
                 </th>
-                {columns.map((col) => (
+                {visibleColumns.map((col) => (
                   <td
                     key={col.key}
                     className="p-5 align-top text-[15px] leading-[1.55] text-dc-ink"
@@ -149,7 +152,7 @@ export function ProductCompare() {
               >
                 Tek başına fiyatı
               </th>
-              {columns.map((col) => (
+              {visibleColumns.map((col) => (
                 <td
                   key={col.key}
                   className="p-5 align-top text-[17px] font-extrabold text-dc-ink"
@@ -160,7 +163,7 @@ export function ProductCompare() {
             </tr>
             <tr>
               <td className="p-5" />
-              {columns.map((col) => (
+              {visibleColumns.map((col) => (
                 <td key={col.key} className="px-5 pb-5 pt-1">
                   <Link
                     href={col.href}
@@ -178,7 +181,7 @@ export function ProductCompare() {
 
       {/* Mobil: ürün başına kart */}
       <ul className="mt-8 grid gap-4 md:hidden">
-        {columns.map((col) => (
+        {visibleColumns.map((col) => (
           <li
             key={col.key}
             className="rounded-dc-card border border-dc-line bg-white p-5"

@@ -10,6 +10,9 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: [
         "/api/",
+        "/panel",
+        "/sepet",
+        "/paketler/satin-al/",
         "/odk-paketleri/*/satin-al",
       ],
     },

@@ -90,6 +90,7 @@ test("ana ekrana ekleme yönergesi mobilde bulunur; kamplar menü ve sitemap'te 
   const sitemap = await request.get("/sitemap.xml");
   expect(sitemap.ok()).toBe(true);
   expect(await sitemap.text()).not.toContain("/kamplar");
-  const camp = await request.get("/kamplar");
-  expect(camp.ok()).toBe(true);
+  const camp = await request.get("/kamplar", { maxRedirects: 0 });
+  expect(camp.status()).toBe(308);
+  expect(camp.headers().location).toBe("/urunler");
 });

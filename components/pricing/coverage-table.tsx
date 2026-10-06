@@ -1,3 +1,6 @@
+import { getDinoMarketingCopy } from "@/lib/dino-marketing";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { FALLBACK_PUBLIC_PRODUCT_CODES } from "@/lib/public-marketing-products";
 import { yonBrand } from "@/lib/yon-brand";
 import { ProductBrandLabel } from "@/components/product/product-brand-label";
 import { Fragment } from "react";
@@ -117,7 +120,12 @@ function Mark({ on }: { on: boolean }) {
   );
 }
 
-export function CoverageTable() {
+export function CoverageTable({ activeRegistryCodes = FALLBACK_PUBLIC_PRODUCT_CODES }: { activeRegistryCodes?: readonly string[] } = {}) {
+  const codes = ["OD", "OK", "ODK"];
+  const visibleProducts = products.map((name, index) => ({ name, index })).filter((product) => activeRegistryCodes.includes(codes[product.index]));
+  const dinoEnabled = getPanelFeatureFlags().dinoAi;
+  const dino = getDinoMarketingCopy(dinoEnabled);
+  const visibleGroups = groups.filter((group) => group.title !== "Dino AI" || dinoEnabled);
   return (
     <>
       {/* Masaüstü — gerçek tablo */}
@@ -129,7 +137,7 @@ export function CoverageTable() {
           <thead>
             <tr>
               <th scope="col" className="w-auto pb-3.5" />
-              {products.map((p, pi) => (
+              {visibleProducts.map(({ name: p, index: pi }) => (
                 <th
                   key={p}
                   scope="col"
@@ -141,12 +149,12 @@ export function CoverageTable() {
             </tr>
           </thead>
           <tbody>
-            {groups.map((g) => (
+            {visibleGroups.map((g) => (
               <Fragment key={g.title}>
                 <tr>
                   <th
                     scope="colgroup"
-                    colSpan={4}
+                    colSpan={visibleProducts.length + 1}
                     className="pb-1 pt-8 text-left text-[13px] font-bold uppercase tracking-[0.08em] text-dc-brand-strong"
                   >
                     {g.title}
@@ -161,12 +169,12 @@ export function CoverageTable() {
                       {r.label}
                     </th>
                     {"on" in r
-                      ? r.on.map((v, i) => (
+                      ? r.on.flatMap((v, i) => activeRegistryCodes.includes(codes[i]) ? [v] : []).map((v, i) => (
                           <td key={i} className="py-3.5 text-center">
                             <Mark on={v} />
                           </td>
                         ))
-                      : r.values.map((v, i) => (
+                      : r.values.flatMap((v, i) => activeRegistryCodes.includes(codes[i]) ? [v] : []).map((v, i) => (
                           <td
                             key={i}
                             className="py-3.5 text-center text-[14px] font-medium text-dc-ink-muted"
@@ -184,7 +192,7 @@ export function CoverageTable() {
 
       {/* Mobil — ürün başlıklarına göre açılır liste */}
       <div className="mt-8 flex flex-col gap-2.5 lg:hidden">
-        {products.map((p, pi) => (
+        {visibleProducts.map(({ name: p, index: pi }) => (
           <details
             key={p}
             className="dc-faq rounded-dc-card-sm border border-dc-line bg-white px-5 py-[18px]"
@@ -199,7 +207,7 @@ export function CoverageTable() {
               </span>
             </summary>
 
-            {groups.map((g) => {
+            {visibleGroups.map((g) => {
               const included = g.rows.filter((r) =>
                 "on" in r ? r.on[pi] : true,
               );
@@ -226,6 +234,7 @@ export function CoverageTable() {
         ))}
       </div>
 
+      <p className="mt-5 max-w-3xl text-[14px] leading-7 text-dc-ink-muted">{dino.description}</p>
       <p className="mt-4 text-[12.5px] text-dc-ink-ghost">
         Ders saatleri ve grup günleri öğrencinin yerleştiği gruba göre değişir;
         ön görüşmede netleşir.

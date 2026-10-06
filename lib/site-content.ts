@@ -56,7 +56,7 @@ export function primaryNavForDino(dinoAiEnabled: boolean) {
 
 /** Sağ üst birincil CTA — ekibin değerlendireceği başvuru formu. */
 export const navCta = application;
-/** Öğrenci paneli girişi. Panel sıfırdan yazılana kadar `/giris` "yenileniyor" mesajı + destek kanallarını gösterir. */
+/** Panel girişi; erişim mevcut authentication ve feature flag kurallarına bağlıdır. */
 export const navLogin = { label: "Giriş Yap", href: "/giris" } as const;
 
 /* ---------------- Sıkça sorulan sorular ---------------- */

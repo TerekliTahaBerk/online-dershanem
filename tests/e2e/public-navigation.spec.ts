@@ -213,7 +213,6 @@ test.describe("eski public adresler", () => {
     "/online-ozel-ders",
     "/lgs",
     "/yks",
-    "/kamplar",
     "/sss",
     "/iletisim",
     "/giris",

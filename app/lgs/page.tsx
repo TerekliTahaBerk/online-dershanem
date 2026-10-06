@@ -4,7 +4,7 @@ import { breadcrumbJsonLd, courseJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "LGS Matematik Canlı Ders | onlinedershanem.",
+  title: "LGS Canlı Ders ve Matematik Desteği | onlinedershanem.",
   description:
     "LGS matematik kursu: en fazla 4 öğrencilik online canlı ders, yeni nesil soru çözümü, çalışma programı ve ders sonrası öğretmen yönlendirmesi.",
   canonical: "/lgs",
@@ -16,7 +16,7 @@ export default function LGSLandingPage() {
   const lgsFaq = [
     {
       q: "LGS öğrencisi için hangi paket var?",
-      a: "LGS öğrencisi için onlinedershanem. içinde LGS Matematik Ders Paketi var. Öğrenci seviyesi ve hedefi konuşulduktan sonra uygun küçük gruba yerleştirilir.",
+      a: "LGS öğrencisi için onlinedershanem. içinde farklı derslerde canlı öğrenme seçenekleri var. Doğrudan satın alınabilen LGS matematik seçeneğini bu rehberde inceleyebilirsin. Öğrenci seviyesi ve hedefi konuşulduktan sonra uygun küçük gruba yerleştirilir.",
     },
     {
       q: "Dersler kalabalık sınıf şeklinde mi?",
@@ -52,7 +52,7 @@ export default function LGSLandingPage() {
       <ExamSalesLanding
         data={{
           examKey: "LGS",
-          heroBadge: "LGS Matematik",
+          heroBadge: "LGS · Canlı öğrenme rehberi",
           heroTitle:
             "LGS matematikte öğrencinin çözümünün görüldüğü küçük grup.",
           heroText:

@@ -1,3 +1,5 @@
+import { getDinoMarketingCopy } from "@/lib/dino-marketing";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -142,16 +144,18 @@ export function ProductDinoBand({
   quoteBody: string;
   onWhite?: boolean;
 }) {
+  const dino = getDinoMarketingCopy(getPanelFeatureFlags().dinoAi);
   const inner = (
     <div className="site-container grid items-center gap-10 lg:grid-cols-2">
       <div>
-        <p className="dc-eyebrow normal-case!">{eyebrow}</p>
+        <p className="dc-eyebrow normal-case!">{eyebrow} · {dino.status}</p>
         <h2 className="mt-3.5 font-display text-[28px] leading-[1.14] tracking-[-0.02em] text-dc-ink sm:text-[36px]">
           {title}
         </h2>
         <p className="mt-3.5 text-[16.5px] leading-[1.65] text-dc-ink-body">
           {body}
         </p>
+        <p className="mt-3 text-[14.5px] leading-7 text-dc-ink-muted">{dino.description}</p>
       </div>
 
       <div className="flex items-center gap-4 rounded-[20px] border border-dc-brand-soft-line bg-dc-brand-soft p-5 sm:gap-[18px] sm:p-6">
@@ -170,7 +174,7 @@ export function ProductDinoBand({
             {quoteBody}
           </p>
           <p className="mt-2.5 text-[12px] font-medium text-(--dc-ink-muted)">
-            Örnek metin — gerçek çıktı öğrencinin kendi verisinden üretilir.
+            Temsili örnek; kişisel çıktılara erişim pilot kapsamına bağlıdır.
           </p>
         </div>
       </div>

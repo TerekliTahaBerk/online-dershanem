@@ -1,7 +1,7 @@
 export const siteUrl = "https://www.onlinedershanem.com";
 
 /**
- * Matematik paket kataloğu — sitenin TEK fiyat/ürün kaynağı.
+ * Doğrudan satın alınabilir matematik kataloğu — OD sepetinin fiyat kaynağı.
  *
  * ÖNEMLİ (ödeme kritik): `category` + `subject` çifti sepet kimliği ve
  * checkout fiyat doğrulamasının anahtarıdır (`getPackagePriceCents`). Bu
@@ -153,7 +153,7 @@ export const blogPosts = [
         ],
         links: [
           { label: "Canlı ders modeli nasıl işliyor?", href: "/online-ozel-ders" },
-          { label: "Ders bazlı küçük grup sistemini incele", href: "/online-dershane" }
+          { label: "Ders bazlı küçük grup sistemini incele", href: "/urunler/online-dershanem" }
         ]
       }
     ],
@@ -200,14 +200,14 @@ export const blogPosts = [
           "Küçük grupta öğrenci ne kalabalıkta kaybolur ne de maliyet yükü altına girer.",
           "Bu yapı hem verimli hem de uzun sınav sürecinde takip edilebilir bir ilerleme sunar."
         ],
-        links: [{ label: "Online dershane sistemini incele", href: "/online-dershane" }]
+        links: [{ label: "Online dershane sistemini incele", href: "/urunler/online-dershanem" }]
       }
     ],
     cta: {
       title: "Küçük grup yaklaşımını yakından incele",
       text: "Öğrencinin seviyesine göre en uygun grubu birlikte seçelim.",
       buttonLabel: "onlinedershanem. ürününü incele",
-      href: "/online-dershane"
+      href: "/urunler/online-dershanem"
     },
     relatedSlugs: ["online-dershane-nedir", "yks-online-ders-calisma-plani", "online-dershane-fiyatlari-2026"]
   },
@@ -328,7 +328,7 @@ export const blogPosts = [
           "Böylece öğrenci yalnızca soru çözmekle kalmaz; hangi eksiğe neden döndüğünü de takip edebilir."
         ],
         links: [
-          { label: "Online dershane sistemini incele", href: "/online-dershane" },
+          { label: "Online dershane sistemini incele", href: "/urunler/online-dershanem" },
           { label: "Canlı ders yaklaşımını incele", href: "/online-ozel-ders" }
         ]
       }
@@ -373,7 +373,7 @@ export const blogPosts = [
         paragraphs: [
           "En uygun tercih; öğrencinin seviyesine, ihtiyaç duyduğu geri bildirime ve ailenin bütçesine uyan seçenektir."
         ],
-        links: [{ label: "Online dershane sistemimizi incele", href: "/online-dershane" }]
+        links: [{ label: "Online dershane sistemimizi incele", href: "/urunler/online-dershanem" }]
       }
     ],
     cta: {
@@ -413,7 +413,7 @@ export const blogPosts = [
       {
         h2: "Kimler e dershane modelinden daha düzenli yararlanabilir?",
         bullets: ["Takip ile çalışan öğrenciler", "Planı tek başına sürdüremeyenler", "Ders bazlı destek isteyenler"],
-        links: [{ label: "Online dershane sistemini detaylı incele", href: "/online-dershane" }]
+        links: [{ label: "Online dershane sistemini detaylı incele", href: "/urunler/online-dershanem" }]
       }
     ],
     cta: {
@@ -488,7 +488,7 @@ export const blogPosts = [
       {
         h2: "Hangi durumda hangi model seçilmeli?",
         bullets: ["Tek ders krizi varsa: özel ders", "Genel dağınıklık varsa: küçük grup + takip"],
-        links: [{ label: "Küçük grup online dershaneyi incele", href: "/online-dershane" }]
+        links: [{ label: "Küçük grup online dershaneyi incele", href: "/urunler/online-dershanem" }]
       }
     ],
     cta: {
@@ -557,7 +557,7 @@ export const blogPosts = [
       {
         h2: "Küçük grup desteği ne kazandırır?",
         paragraphs: ["En fazla 4 öğrencilik sınıfta öğretmen öğrencinin işlem hatasını hızlı fark eder ve anında müdahale eder."],
-        links: [{ label: "LGS için online dershane modelini gör", href: "/online-dershane" }]
+        links: [{ label: "LGS için online dershane modelini gör", href: "/urunler/online-dershanem" }]
       }
     ],
     cta: {
@@ -596,7 +596,7 @@ export const blogPosts = [
       {
         h2: "Analizden plana geçiş",
         paragraphs: ["Analiz sonuçları bir sonraki haftanın konu ve soru dağılımını belirlemeli."],
-        links: [{ label: "Haftalık takipli online dershane modeli", href: "/online-dershane" }]
+        links: [{ label: "Haftalık takipli online dershane modeli", href: "/urunler/online-dershanem" }]
       }
     ],
     cta: {
@@ -634,7 +634,7 @@ export const blogPosts = [
         paragraphs: [
           "Yanlış modelde geçen aylar hem zaman hem motivasyon kaybettirir. Bu yüzden başlangıç seçimi kritik bir yatırım kararıdır."
         ],
-        links: [{ label: "Online dershane modelimizi detaylı incele", href: "/online-dershane" }]
+        links: [{ label: "Online dershane modelimizi detaylı incele", href: "/urunler/online-dershanem" }]
       }
     ],
     cta: {
@@ -669,7 +669,7 @@ export const blogPosts = [
       {
         h2: "Takip sistemiyle disiplin kalıcı hale gelir",
         paragraphs: ["Öğrenci tek başına kaldığında planı esnetir; dış takip disiplini korumanın en etkili yoludur."],
-        links: [{ label: "Haftalık takipli online ders modelini incele", href: "/online-dershane" }]
+        links: [{ label: "Haftalık takipli online ders modelini incele", href: "/urunler/online-dershanem" }]
       }
     ],
     cta: {
@@ -682,161 +682,6 @@ export const blogPosts = [
   }
 ];
 
-export const faq = [
-  {
-    q: "onlinedershanem. sadece matematik mi?",
-    a: "Evet. onlinedershanem.'de odak matematik. Dersi, ödevi ve veli bilgilendirmesini aynı çizgide tutuyoruz."
-  },
-  {
-    q: "Gruplar kaç kişilik?",
-    a: "Her matematik grubunda en fazla 4 öğrenci olur. Öğretmen öğrenciyi adıyla tanır; soru sormaya, çözümü göstermeye ve derste geri dönüş almaya zaman kalır."
-  },
-  {
-    q: "Seviyeye göre gruplandırma yapılıyor mu?",
-    a: "Evet. Kısa bir matematik değerlendirmesiyle seninle aynı seviyedeki ve benzer hedeflere sahip öğrencilerle eşleşirsin. Tempo ne çok yavaş ne de çok hızlı kalır."
-  },
-  {
-    q: "Satışta hangi paket var?",
-    a: `Online satın alınabilen seçenekler: ${subjectPackageGroups[0].packages.map((pkg) => `${pkg.name} (${pkg.discountedPrice})`).join(" ve ")}. En fazla 4 öğrencilik canlı matematik dersi üzerine kurulu.`
-  },
-  {
-    q: "Dersler sınav odaklı mı ilerliyor?",
-    a: "Evet. LGS veya YKS hedefi dikkate alınır. YKS paketinde TYT ve AYT matematiği birlikte planlanır. Derste konu anlatımı ve soru çözümü birlikte ilerler; ders sonunda öğrencinin ne çalışacağı bellidir."
-  },
-  {
-    q: "Veli olarak süreci takip edebilir miyim?",
-    a: "Evet. Veli sadece sonucu görmez; çocuğunun hangi konuda zorlandığını anlamaya yetecek kısa bir özet alır."
-  },
-  {
-    q: "Paket seçiminde kararsızsam ne yapmalıyım?",
-    a: "Kısa bir ön görüşmede öğrencinin matematik seviyesini, sınıfını ve hedefini konuşuruz; doğru küçük grup başlangıcına birlikte karar veririz."
-  }
-];
-
-// Kategori bazlı SSS — /sss sayfası ve FAQPage JSON-LD bu listeyi kullanır.
-// Operasyonel cevaplar (ders süresi 90 dk, haftada 1 ders, kaçırılan ders için
-// telafi paketi) ekip tarafından onaylanan rakamlarla yazılmıştır.
-export const faqCategories = [
-  {
-    category: "Ders modeli",
-    items: [
-      {
-        q: "onlinedershanem. sadece matematik mi?",
-        a: "Evet. onlinedershanem.'de odak matematik. Dersi, ödevi ve veli bilgilendirmesini aynı çizgide tutuyoruz.",
-      },
-      {
-        q: "Dersler LGS ve YKS odaklı mı?",
-        a: "Evet. LGS paketi 8. sınıf matematiğine, YKS paketi TYT ve AYT matematiğine göre kurgulanır. Konu anlatımı ve soru çözümü birlikte ilerler.",
-      },
-      {
-        q: "Dersler canlı mı yoksa kayıt mı?",
-        a: "Dersler Google Meet üzerinden gerçek zamanlı ve canlıdır. Hazır video izlemezsiniz; öğrenci soru sorar, çözümünü gösterir ve aynı derste geri dönüş alır.",
-      },
-      {
-        q: "Öğrenci derste soru sorabilir mi?",
-        a: "Evet. Soru sormak dersin doğal parçasıdır. En fazla 4 öğrencilik grupta her öğrencinin soru sormaya ve çözümünü göstermeye zamanı olur.",
-      },
-      {
-        q: "Dersler birebir mi yoksa grup hâlinde mi?",
-        a: "Dersler en fazla 4 öğrencilik küçük grup hâlinde işlenir. Birebir özel ders değildir; amaç birebir maliyetine çıkmadan, kalabalık sınıfta kaybolmadan yakın takip sağlamaktır.",
-      },
-      {
-        q: "Dersler kaç dakika ve haftada kaç ders var?",
-        a: `Her matematik dersi ${subjectPackageGroups[0].packages[0].lessonDurationMinutes} dakikadır. ${subjectPackageGroups[0].packages.map((pkg) => `${pkg.category} paketi ${pkg.discountedPrice}`).join(", ")}; ayda ${subjectPackageGroups[0].packages[0].lessonsPerMonth} canlı ders içerir. Ders günü ve saati, öğrencinin yerleştiği küçük grubun programına göre belirlenir.`,
-      },
-      {
-        q: "Ödev veriliyor ve kontrol ediliyor mu?",
-        a: "Evet. Her dersin sonunda seviyeye uygun ödev verilir ve takip edilir; öğrenci bir sonraki derse ne çalışacağını bilerek gelir.",
-      },
-    ],
-  },
-  {
-    category: "Seviye ve grup yerleşimi",
-    items: [
-      {
-        q: "Gruplar kaç kişilik?",
-        a: "Her matematik grubunda en fazla 4 öğrenci olur. Öğretmen öğrenciyi adıyla tanır; kalabalık sınıfta kaybolma olmaz.",
-      },
-      {
-        q: "Seviyeye göre gruplandırma yapılıyor mu?",
-        a: "Evet. Kısa bir matematik değerlendirmesiyle öğrenci benzer seviye ve hedefteki öğrencilerle eşleşir. Tempo ne çok yavaş ne de çok hızlı kalır.",
-      },
-      {
-        q: "Öğretmenler nasıl seçiliyor?",
-        a: "Dersler, alanında deneyimli matematik öğretmenleriyle yürütülür. Öğretmen-grup eşleşmesinde öğrencinin seviyesi ve hedefi gözetilir.",
-      },
-    ],
-  },
-  {
-    category: "Ödeme ve iade",
-    items: [
-      {
-        q: "Ödeme sonrası ne olur?",
-        a: "Ödeme tamamlandıktan sonra ekibimiz sizinle iletişime geçer, öğrencinin seviyesini değerlendirir, uygun grubu belirler ve ilk canlı dersi planlar. Satın almak için önceden hesap oluşturmanız gerekmez.",
-      },
-      {
-        q: "Satın alma için hesap oluşturmak gerekiyor mu?",
-        a: "Hayır. Satın alma öncesinde hesap oluşturmanız gerekmez; uygun grup ve ilk ders bilgilerini ekibimiz sizinle paylaşır.",
-      },
-      {
-        q: "Ödeme sonrası beni kim arar ve ilk ders ne zaman başlar?",
-        a: "Ödeme sonrası ekibimiz sizinle iletişime geçer, kısa bir seviye değerlendirmesi yapar ve uygun gruba göre ilk dersin başlangıcını birlikte planlar.",
-      },
-      {
-        q: "İptal ve iade koşulları nedir?",
-        a: "İade koşullarının tamamı İade Politikası sayfamızda yer alır. Sorularınız için ödeme öncesi bizimle iletişime geçebilirsiniz.",
-      },
-    ],
-  },
-  {
-    category: "Veli takibi",
-    items: [
-      {
-        q: "Veli süreçten nasıl haberdar olur?",
-        a: "Veli yalnızca sonuç görmez; çocuğunun hangi konuda zorlandığını anlayacak kadar anlaşılır bir haftalık not alır.",
-      },
-      {
-        q: "Veli notu ne zaman gönderilir?",
-        a: "Haftalık not ders sürecine bağlı olarak düzenli paylaşılır; içeriğinde işlenen konu, öğrencinin zorlandığı yer, verilen ödev ve sonraki hedef yer alır.",
-      },
-      {
-        q: "Ders sonrası takip nasıl işliyor?",
-        a: "Her dersin sonunda konu, ödev ve tekrar yönü bellidir. Öğrenci ne çalışacağını bilir; veli de sürecin nereye gittiğini kolayca takip eder.",
-      },
-      {
-        q: "Telafi dersi var mı?",
-        a: "Ayrı bir telafi dersi yapılmaz. Bunun yerine, kaçırılan ders için panelde ortak konu özeti, aktif materyal ve küçük çalışma adımı içeren telafi paketi paylaşılır. Düzenli devamsızlık durumunda ekibimiz sizinle iletişime geçer.",
-      },
-    ],
-  },
-  {
-    category: "Teknik gereksinimler",
-    items: [
-      {
-        q: "Hangi teknik ekipman gerekiyor?",
-        a: "İnternet bağlantısı olan bir bilgisayar veya tablet, çalışan bir mikrofon ve Google Meet yeterlidir. Kamera tavsiye edilir ama zorunlu değildir.",
-      },
-      {
-        q: "Derse nereden bağlanılıyor?",
-        a: "Dersler Google Meet bağlantısı üzerinden yapılır. Bağlantı ve ders saatleri ekibimiz tarafından önceden paylaşılır.",
-      },
-    ],
-  },
-  {
-    category: "Uygunluk",
-    items: [
-      {
-        q: "Öğrenci matematikte çok gerideyse uygun mu?",
-        a: "Uygundur. Önce eksiğin nerede başladığını görürüz ve dersi tam o noktadan kurarız; tempo öğrenciye göre ayarlanır.",
-      },
-      {
-        q: "Paket seçiminde kararsızsam ne yapmalıyım?",
-        a: "Kısa bir ön görüşmede öğrencinin matematik seviyesini, sınıfını ve hedefini konuşuruz; doğru başlangıca birlikte karar veririz.",
-      },
-    ],
-  },
-];
-
 export const contact = {
   phone: "+90 537 795 44 34",
   email: "iletisim@onlinedershanem.com",
@@ -844,98 +689,11 @@ export const contact = {
   address: "Yıldız Teknik Üniversitesi Davutpaşa Kampüsü"
 };
 
-/**
- * Matematik konu kampları — tamamlayıcı ürün (ana ürün hâlâ Matematik Ders Paketi).
- *
- * ÖNEMLİ: Bunlar şu an SATIN ALINABİLİR ÜRÜN DEĞİLDİR. Fiyatlandırma
- * netleşmediği için sepete/PayTR'ye bağlanmaz; tüm CTA'lar iletişim / ön kayıt
- * akışına gider. Ödeme-kritik `subjectPackageGroups` kataloğuyla KARIŞTIRMA;
- * burada bilerek `priceCents`/`category`+`subject` checkout kimliği yoktur.
- *
- * Sadece matematik. Fizik/Kimya/Biyoloji/ODK kampı eklenmez.
- */
-export type MathCamp = {
-  id: string;
-  name: string;
-  goal: string;
-  durationLabel: string;
-  lessonsLabel: string;
-  levelLabel: string;
-  levelTag: string;
-  featured: boolean;
-};
-
-export const mathCamps: MathCamp[] = [
-  {
-    id: "lgs-son-duzluk",
-    name: "LGS Matematik Son Düzlük Kampı",
-    goal: "LGS öncesi temel konu açıklarını ve yeni nesil soru pratiğini toparlamak.",
-    durationLabel: "2 hafta",
-    lessonsLabel: "4 canlı ders",
-    levelLabel: "8. sınıf",
-    levelTag: "LGS",
-    featured: true,
-  },
-  {
-    id: "tyt-temel",
-    name: "YKS Temel Matematik Kampı",
-    goal: "YKS matematikte temel becerileri, problem çözme rutinini ve TYT hızını güçlendirmek.",
-    durationLabel: "2 hafta",
-    lessonsLabel: "4 canlı ders",
-    levelLabel: "YKS hazırlık",
-    levelTag: "YKS",
-    featured: true,
-  },
-  {
-    id: "ayt-hizlandirma",
-    name: "YKS İleri Matematik Hızlandırma Kampı",
-    goal: "AYT kapsamındaki ileri matematik başlıklarında yoğun tekrar ve birlikte çözümle eksikleri görünür yapmak.",
-    durationLabel: "3 hafta",
-    lessonsLabel: "6 canlı ders",
-    levelLabel: "YKS hazırlık",
-    levelTag: "YKS",
-    featured: true,
-  },
-  {
-    id: "yaz-baslangic",
-    name: "Yaz Başlangıç Kampı",
-    goal: "Yeni döneme başlamadan önce matematik düzenini ve çalışma ritmini kurmak.",
-    durationLabel: "2 hafta",
-    lessonsLabel: "4 canlı ders",
-    levelLabel: "LGS / YKS",
-    levelTag: "Yaz",
-    featured: false,
-  },
-  {
-    id: "ara-tatil",
-    name: "Ara Tatil Toparlanma Kampı",
-    goal: "Dönem içinde biriken eksikleri kısa ve hedefli bir matematik planıyla toparlamak.",
-    durationLabel: "1 hafta",
-    lessonsLabel: "2 canlı ders",
-    levelLabel: "LGS / YKS",
-    levelTag: "Ara tatil",
-    featured: false,
-  },
-];
-
-/** Tüm kamplarda ortak sabit: kontenjan üst sınırı. */
-export const CAMP_MAX_STUDENTS = 12;
-
 export const seoKeywords = [
-  "online dershanem",
-  "online matematik dershanesi",
-  "online matematik dersi",
-  "matematik özel ders",
-  "canlı matematik dersi",
-  "tyt matematik",
-  "ayt matematik",
-  "lgs matematik",
-  "matematik net artırma",
-  "küçük grup matematik dersi",
-  "google meet matematik dersi",
-  "matematik eksik konu",
-  "veliye gelişim takibi",
-  "matematik ders paketi"
+  "onlinedershanem", "online canlı ders", "LGS", "YKS",
+  "birebir online ders", "küçük grup canlı ders", "online matematik dersi",
+  "Yön Koçluk", "haftalık çalışma planı", "Deneme Ligi",
+  "online deneme", "deneme analizi", "Dino AI"
 ];
 
 /**

@@ -29,16 +29,16 @@ export function PageHero({
     <section
       className={
         warm
-          ? "border-b border-(--site-line) bg-(--site-bg-warm)"
-          : "bg-(--site-bg)"
+          ? "border-b border-dc-line-soft bg-dc-canvas"
+          : "bg-dc-canvas"
       }
     >
       <div
-        className={`site-container py-16 sm:py-24 ${centered ? "text-center" : ""}`}
+        className={`site-container py-(--dc-section-tight) ${centered ? "text-center" : ""}`}
       >
-        {eyebrow ? <span className="site-eyebrow">{eyebrow}</span> : null}
+        {eyebrow ? <span className="dc-eyebrow">{eyebrow}</span> : null}
         <h1
-          className={`${eyebrow ? "mt-4" : ""} font-display text-[clamp(2.3rem,5.5vw,3.9rem)] leading-[1.04] text-(--site-ink) ${
+          className={`${eyebrow ? "mt-4" : ""} font-display text-(length:--public-display) leading-[1.08] tracking-[-0.03em] text-dc-ink ${
             centered ? "mx-auto max-w-3xl" : "max-w-3xl"
           }`}
         >
@@ -46,7 +46,7 @@ export function PageHero({
         </h1>
         {subtitle ? (
           <p
-            className={`mt-6 text-[17px] leading-8 text-(--site-body) ${
+            className={`mt-6 text-[17px] leading-[1.65] text-dc-ink-body ${
               centered ? "mx-auto max-w-2xl" : "max-w-2xl"
             }`}
           >

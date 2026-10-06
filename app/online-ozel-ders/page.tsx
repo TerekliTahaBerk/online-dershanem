@@ -1,145 +1,57 @@
 import Link from "next/link";
-import { Check, ArrowRight } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { PageHero } from "@/components/site/page-hero";
-import { LeadFunnelTrigger } from "@/components/ui/lead-funnel-trigger";
+import { FooterCta } from "@/components/marketing/footer-cta";
+import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
-import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
+import { breadcrumbJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "Online Matematik Özel Ders",
-  description:
-    "Online matematik özel ders alternatifi: en fazla 4 öğrencilik canlı grup, yoğun soru-cevap, öğretmen geri bildirimi ve ders sonrası çalışma yönü.",
+  title: "Online Özel Ders mi, Küçük Grup mu? | LGS ve YKS",
+  description: "LGS ve YKS için birebir online özel ders ve en fazla 4 kişilik canlı grubu karşılaştırın. Öğretmen etkileşimi, çalışma yönü ve güncel seçenekleri inceleyin.",
   canonical: "/online-ozel-ders",
 });
-
+const faqs = [
+  { q: "Online özel ders yalnız matematik için mi?", a: "Hayır. onlinedershanem. LGS ve YKS için farklı derslerde canlı öğrenme sunar. Güncel ders ve format seçeneklerini paket kurucuda görebilirsin." },
+  { q: "Birebir ve küçük grup arasındaki fark ne?", a: "Birebirde öğretmen bir öğrenciyle çalışır. Küçük grupta en fazla 4 öğrenci birlikte öğrenir; her öğrencinin soru sormasına ve çözümünü göstermesine alan açılır. Uygun format seviye, hedef ve programa göre değerlendirilir." },
+  { q: "Koçluk veya deneme almak zorunda mıyım?", a: "Hayır. Canlı dersle başlayabilirsin. Çalışma düzeni için Yön Koçluk, ölçme ve sonuç analizi için Deneme Ligi ayrıca değerlendirilebilir." },
+];
+const formats = [
+  { title: "Birebir online özel ders", body: "Öğretmenle tek öğrenci. Belirli bir konuda kişisel çalışma temposuna ve yoğun bireysel geri bildirime ihtiyaç duyanlar için değerlendirilebilir.", detail: "Bir öğrenci · canlı soru-cevap" },
+  { title: "Küçük grupta canlı ders", body: "En fazla 4 öğrenci. Benzer seviye ve hedefte öğrencilerle birlikte çözüm, soru-cevap ve düzenli ders akışı sunar.", detail: "En fazla 4 öğrenci · birlikte öğrenme" },
+];
 export default function OnlineOzelDersPage() {
   return (
     <div className="site-scope">
-      <SchemaJsonLd
-        schema={breadcrumbJsonLd([
-          { name: "Ana Sayfa", url: "/" },
-          { name: "Online Matematik Özel Ders", url: "/online-ozel-ders/" },
-        ])}
-      />
       <SiteHeader />
+      <SchemaJsonLd schema={[breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Online özel ders rehberi", url: "/online-ozel-ders" }]), faqJsonLd(faqs)]} />
       <main id="main-content" tabIndex={-1}>
-        <PageHero
-          eyebrow="Online Matematik Özel Ders"
-          align="left"
-          title={
-            <>
-              Özel derse yakın ilgi, küçük
-              grubun temposuyla.
-            </>
-          }
-          subtitle="Matematikte öğrenci zorlandığı yerden başlar; en fazla 4 öğrencilik grupta daha çok soru-cevap alanı bulur ve ders sonunda ne çalışacağını bilir."
-          actions={
-            <>
-              <Link
-                href="/ders-paketleri"
-                className="site-btn site-btn-primary site-btn-lg"
-              >
-                Paketleri incele
-              </Link>
-              <LeadFunnelTrigger
-                source="online_ozel_ders_hero_cta"
-                eventName="landing_cta_click"
-                className="site-btn site-btn-secondary site-btn-lg"
-              >
-                Ücretsiz görüşme
-              </LeadFunnelTrigger>
-            </>
-          }
-        />
-
-        <section className="site-container py-16 sm:py-20">
-          <div className="grid gap-4 md:grid-cols-3">
-            {[
-              "Canlı matematik dersi ve ders sonrası çalışma yönü",
-              "En fazla 4 öğrencilik grupta daha yoğun soru-cevap alanı",
-              "Ders sonrası öğretmen notu ve veliye kısa özet",
-            ].map((item) => (
-              <article
-                key={item}
-                className="flex items-start gap-3 rounded-[22px] border border-(--site-line) bg-white p-6 text-[15px] font-medium leading-6 text-(--site-body)"
-              >
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-(--brand-orange-soft) text-(--brand-orange-ink)">
-                  <Check size={13} strokeWidth={2.5} aria-hidden="true" />
-                </span>
-                {item}
-              </article>
-            ))}
+        <PageHero eyebrow="Canlı ders rehberi" align="left" title="Birebir mi, küçük grup mu? İhtiyacına göre seç." subtitle="Online özel ders ararken yalnız ders adına bakma. Öğretmenle etkileşim, çalışma temposu ve ders sonrası yönlendirme de seçimin parçası." actions={<><Link href="/urunler/online-dershanem" className="site-btn site-btn-primary">Canlı öğrenmeyi incele</Link><Link href="/paketler" className="site-btn site-btn-secondary">Format ve fiyatları karşılaştır</Link></>} />
+        <section className="site-container py-(--dc-section)">
+          <h2 className="font-display text-(length:--public-title) leading-[1.1] tracking-tight text-dc-ink">İki formatta da öğretmenle canlı öğrenme.</h2>
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            {formats.map((format) => <article key={format.title} className="rounded-dc-card border border-dc-line bg-white p-7"><p className="text-[13px] font-semibold text-dc-brand-strong">{format.detail}</p><h3 className="mt-4 text-[23px] font-bold text-dc-ink">{format.title}</h3><p className="mt-3 text-[16px] leading-7 text-dc-ink-body">{format.body}</p></article>)}
           </div>
-
-          <div className="mt-4 rounded-od-xl border border-(--site-line) bg-white p-7 sm:p-9">
-            <h2 className="font-display text-[clamp(1.6rem,3vw,2.2rem)] leading-tight tracking-[-0.02em] text-(--site-ink)">
-              Hangi öğrenciler için daha uygun?
-            </h2>
-            <ul className="mt-5 space-y-3">
+          <p className="mt-6 max-w-3xl text-[16px] leading-7 text-dc-ink-body">onlinedershanem. farklı derslerde canlı öğrenme sunar. Bu rehber format seçimine yardımcı olur; güncel ders listesi, fiyat ve başlangıç koşulları ürün sayfasında ve paket kurucuda yer alır.</p>
+          <Link href="/ders-paketleri" className="mt-4 inline-flex min-h-11 items-center font-semibold text-dc-brand-strong">Doğrudan satın alınabilir matematik seçenekleri →</Link>
+        </section>
+        <section className="border-y border-dc-line-soft bg-dc-surface-muted">
+          <div className="site-container py-(--dc-section-tight)">
+            <h2 className="text-[24px] font-bold text-dc-ink">Seçimini destekleyen rehberler</h2>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {[
-                "Matematikte belirli konularda hızlı toparlanma ihtiyacı olanlar",
-                "Soru çözüm ve yanlış analizi desteğini artırmak isteyenler",
-                "Ders sonunda belirli bir çalışma yönüyle devam etmek isteyen öğrenciler",
-              ].map((item) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-3 text-[15.5px] leading-7 text-(--site-body)"
-                >
-                  <Check
-                    className="mt-1 h-4 w-4 shrink-0 text-(--brand-orange-ink)"
-                    strokeWidth={2.4}
-                    aria-hidden="true"
-                  />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="mt-4 rounded-od-xl border border-(--site-line) bg-(--site-bg-warm) p-7 sm:p-9">
-            <h2 className="font-display text-[clamp(1.6rem,3vw,2.2rem)] leading-tight tracking-[-0.02em] text-(--site-ink)">
-              İlgili rehber yazılar
-            </h2>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <Link
-                href="/matematik"
-                className="group flex items-center justify-between gap-3 rounded-2xl border border-(--site-line) bg-white p-5 text-[15px] font-semibold text-(--site-ink) transition-colors hover:border-(--brand-orange)"
-              >
-                Online matematik dersi rehberi
-                <ArrowRight
-                  size={17}
-                  className="shrink-0 text-(--brand-orange-ink) transition-transform group-hover:translate-x-0.5"
-                  aria-hidden="true"
-                />
-              </Link>
-              <Link
-                href="/blog/online-ozel-ders-mi-dershane-mi"
-                className="group flex items-center justify-between gap-3 rounded-2xl border border-(--site-line) bg-white p-5 text-[15px] font-semibold text-(--site-ink) transition-colors hover:border-(--brand-orange)"
-              >
-                Online özel ders mi dershane mi?
-                <ArrowRight
-                  size={17}
-                  className="shrink-0 text-(--brand-orange-ink) transition-transform group-hover:translate-x-0.5"
-                  aria-hidden="true"
-                />
-              </Link>
-              <Link
-                href="/blog/yks-online-ders-calisma-plani"
-                className="group flex items-center justify-between gap-3 rounded-2xl border border-(--site-line) bg-white p-5 text-[15px] font-semibold text-(--site-ink) transition-colors hover:border-(--brand-orange)"
-              >
-                YKS online ders çalışma planı
-                <ArrowRight
-                  size={17}
-                  className="shrink-0 text-(--brand-orange-ink) transition-transform group-hover:translate-x-0.5"
-                  aria-hidden="true"
-                />
-              </Link>
+                { href: "/matematik", label: "Matematikte çalışma ve canlı destek" },
+                { href: "/blog/online-ozel-ders-mi-dershane-mi", label: "Online özel ders mi dershane mi?" },
+                { href: "/lgs", label: "LGS canlı öğrenme rehberi" },
+                { href: "/yks", label: "YKS canlı öğrenme rehberi" },
+              ].map((link) => <Link key={link.href} href={link.href} className="rounded-dc-card-sm border border-dc-line bg-white p-5 font-semibold text-dc-ink">{link.label} →</Link>)}
             </div>
           </div>
         </section>
+        <FaqAccordion title="Format seçimi hakkında" items={faqs} tone="plain" />
+        <FooterCta title="Uygun ders formatını birlikte bulalım." subtitle="Sınıfını, hedefini ve takıldığın konuyu ücretsiz ön görüşmede paylaşabilirsin." ctaLabel="Ücretsiz ön görüşme" ctaHref="/iletisim#on-gorusme" />
       </main>
       <SiteFooter />
     </div>

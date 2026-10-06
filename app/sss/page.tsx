@@ -1,118 +1,47 @@
-import { Plus } from "lucide-react";
+import Link from "next/link";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { PageHero } from "@/components/site/page-hero";
+import { PublicAccordion } from "@/components/public/accordion";
 import { FooterCta } from "@/components/marketing/footer-cta";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
-import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
-import { contact, faqCategories } from "@/lib/content";
+import { breadcrumbJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
+import { getPublicFaqCategories } from "@/lib/public-faq";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "Sıkça Sorulanlar",
-  description:
-    "onlinedershanem. hakkında sık sorulan sorular: ders modeli, seviye ve grup yerleşimi, ödeme ve iade, veli takibi, teknik gereksinimler ve uygunluk.",
+  title: "Sıkça Sorulan Sorular",
+  description: "Canlı ders, Yön Koçluk, Deneme Ligi, Dino AI, başvuru, satın alma ve panel erişimi hakkında sorular ve açık yanıtlar.",
   canonical: "/sss",
-  imageAlt: "onlinedershanem. sıkça sorulan sorular",
 });
 
-const waHref = `https://wa.me/${contact.whatsapp.replace(/[^\d]/g, "")}`;
-const telHref = `tel:${contact.phone.replace(/[^\d+]/g, "")}`;
-
 export default function SssPage() {
-  const faqJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqCategories.flatMap((cat) =>
-      cat.items.map((item) => ({
-        "@type": "Question",
-        name: item.q,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: item.a,
-        },
-      })),
-    ),
-  };
-
+  const categories = getPublicFaqCategories(getPanelFeatureFlags().dinoAi);
   return (
     <div className="site-scope">
-      <SchemaJsonLd
-        schema={[
-          faqJsonLd,
-          breadcrumbJsonLd([
-            { name: "Ana Sayfa", url: "/" },
-            { name: "Sıkça Sorulanlar", url: "/sss/" },
-          ]),
-        ]}
-      />
       <SiteHeader />
+      <SchemaJsonLd schema={[
+        breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Sıkça sorulan sorular", url: "/sss" }]),
+        faqJsonLd(categories.flatMap((category) => category.items)),
+      ]} />
       <main id="main-content" tabIndex={-1}>
-        <PageHero
-          eyebrow="Yardım Merkezi"
-          title={
-            <>
-              Sık sorulan sorular
-            </>
-          }
-          subtitle={
-            <>
-              Aradığınızı bulamazsanız{" "}
-              <a
-                href={waHref}
-                className="font-semibold text-(--brand-orange-ink) hover:underline"
-              >
-                WhatsApp&apos;tan yazabilirsiniz
-              </a>{" "}
-              veya{" "}
-              <a
-                href={telHref}
-                className="font-semibold text-(--brand-orange-ink) hover:underline"
-              >
-                bizi arayabilirsiniz
-              </a>
-              .
-            </>
-          }
-        />
-
-        <section className="site-container py-16 sm:py-20">
-          <div className="mx-auto flex max-w-3xl flex-col gap-10">
-            {faqCategories.map((cat) => (
-              <div key={cat.category}>
-                <h2 className="mb-4 text-[13px] font-semibold uppercase tracking-[0.06em] text-(--brand-orange-ink)">
-                  {cat.category}
-                </h2>
-                <div className="divide-y divide-(--site-line) overflow-hidden rounded-od-xl border border-(--site-line) bg-white">
-                  {cat.items.map((item) => (
-                    <details key={item.q} className="group px-6">
-                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-[16px] font-semibold text-(--site-ink) [&::-webkit-details-marker]:hidden">
-                        {item.q}
-                        <span className="shrink-0 text-(--brand-orange-ink) transition-transform duration-200 ease-[cubic-bezier(0.2,0,0,1)] group-open:rotate-45">
-                          <Plus
-                            size={20}
-                            strokeWidth={1.7}
-                            aria-hidden="true"
-                          />
-                        </span>
-                      </summary>
-                      <p className="pb-5 pr-8 text-[15px] leading-7 text-(--site-body)">
-                        {item.a}
-                      </p>
-                    </details>
-                  ))}
-                </div>
-              </div>
+        <PageHero eyebrow="Destek" title="Sık sorulan sorular" subtitle="İhtiyacın olan desteği, nasıl başlayacağını ve erişim koşullarını birlikte netleştirelim." />
+        <section className="site-container py-(--dc-section)">
+          <nav aria-label="Soru kategorileri" className="mx-auto mb-12 flex max-w-3xl flex-wrap gap-3">
+            {categories.map((category, index) => <Link key={category.category} href={`#kategori-${index}`} className="site-btn site-btn-secondary">{category.category}</Link>)}
+          </nav>
+          <div className="mx-auto max-w-3xl space-y-12">
+            {categories.map((category, index) => (
+              <section key={category.category} id={`kategori-${index}`} className="scroll-mt-24" aria-labelledby={`kategori-${index}-title`}>
+                <h2 id={`kategori-${index}-title`} className="mb-5 text-[20px] font-bold text-dc-ink">{category.category}</h2>
+                <PublicAccordion items={category.items.map((item) => ({ title: item.q, content: item.a }))} />
+              </section>
             ))}
+            <p className="text-[15px] text-dc-ink-body"><Link href="/iade" className="font-semibold text-dc-brand-strong underline">İade koşulları</Link> veya <Link href="/giris" className="font-semibold text-dc-brand-strong underline">hesap girişi</Link> için ilgili sayfadan devam edebilirsin.</p>
           </div>
         </section>
-
-        <FooterCta
-          title="Sorunuz hâlâ duruyor mu?"
-          subtitle="Öğrencinin sınıfını, matematik hedefini veya paket sürecini ücretsiz görüşmede konuşalım."
-          ctaLabel="Bize ulaşın"
-          ctaHref="/iletisim"
-        />
+        <FooterCta title="Yanıtını bulamadın mı?" subtitle="Öğrencinin hedefini ve ihtiyaç duyduğu desteği ücretsiz ön görüşmede konuşalım." ctaLabel="Bize ulaş" ctaHref="/iletisim#on-gorusme" />
       </main>
       <SiteFooter />
     </div>

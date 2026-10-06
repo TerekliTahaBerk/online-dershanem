@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { getPublicPricingCopy } from "./public-pricing-copy";
-import { faq, faqCategories, subjectPackageGroups } from "@/lib/content";
+import { subjectPackageGroups } from "@/lib/content";
+import { getPublicFaqCategories } from "@/lib/public-faq";
 import { homeFaqs } from "@/lib/site-content";
 
 test("ürün ve birlikte alım metinleri aylık/dönemlik fiyatları açıkça ayırır", () => {
@@ -17,11 +18,10 @@ test("ürün ve birlikte alım metinleri aylık/dönemlik fiyatları açıkça a
 });
 
 test("SSS fiyatları katalog etiketlerini ve ortak ürün fiyat metnini kullanır", () => {
-  const saleFaq = faq.find((item) => item.q === "Satışta hangi paket var?");
-  const durationFaq = faqCategories.flatMap((group) => group.items)
+  const categories = getPublicFaqCategories(false);
+  const durationFaq = categories.flatMap((group) => group.items)
     .find((item) => item.q === "Dersler kaç dakika ve haftada kaç ders var?");
   for (const pkg of subjectPackageGroups[0].packages) {
-    assert.ok(saleFaq?.a.includes(pkg.discountedPrice));
     assert.ok(durationFaq?.a.includes(pkg.discountedPrice));
   }
   assert.ok(homeFaqs.find((item) => item.q === "Üçünü birden almak zorunda mıyım?")?.a

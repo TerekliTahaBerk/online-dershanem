@@ -5,6 +5,7 @@ import { siteUrl } from "@/lib/content";
 import { log } from "@/lib/logger";
 import { listPublicOdkPackages } from "@/lib/odk/public-commerce-server";
 import { listActivePublicProductCodes } from "@/lib/public-marketing-products-server";
+import { publicProducts } from "@/lib/product-architecture";
 import { kpssSitemapRoutes } from "@/lib/seo/product-sitemap";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +36,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/lgs`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteUrl}/blog`, changeFrequency: "weekly", priority: 0.6 },
     { url: `${siteUrl}/hakkimizda`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${siteUrl}/misyonumuz`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${siteUrl}/sss`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${siteUrl}/iletisim`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${siteUrl}/kvkk`, changeFrequency: "monthly", priority: 0.5 },
@@ -58,7 +58,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   return [
-    ...staticRoutes,
+    ...staticRoutes.filter((route) => {
+      const product = publicProducts.find((item) => route.url === `${siteUrl}${item.href}`);
+      return !product || activeProductCodes.includes(product.registryCode);
+    }),
     ...kpssSitemapRoutes(siteUrl, activeProductCodes),
     ...odkRoutes,
     ...blogRoutes,

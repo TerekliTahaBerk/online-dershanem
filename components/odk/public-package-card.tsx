@@ -35,9 +35,9 @@ export function PublicOdkPackageCard({ item }: { item: PublicOdkPackage }) {
               .filter((value, index, all) => all.indexOf(value) === index)
               .join(" + ") || "Online deneme"}
           </p>
-          <h2 className="mt-2 font-display text-3xl tracking-[-.035em] text-(--site-ink)">
+          <h3 className="mt-2 font-display text-3xl tracking-[-.035em] text-(--site-ink)">
             {contract.package.title}
-          </h2>
+          </h3>
         </div>
         <span
           className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold ${availability.allowed ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-900"}`}
@@ -64,6 +64,7 @@ export function PublicOdkPackageCard({ item }: { item: PublicOdkPackage }) {
         <li className="flex gap-3">
           <CalendarDays
             size={18}
+            aria-hidden="true"
             className="mt-0.5 shrink-0 text-(--brand-orange)"
           />
           {contract.exams.length} planlı deneme
@@ -71,6 +72,7 @@ export function PublicOdkPackageCard({ item }: { item: PublicOdkPackage }) {
         <li className="flex gap-3">
           <FileChartColumn
             size={18}
+            aria-hidden="true"
             className="mt-0.5 shrink-0 text-(--brand-orange)"
           />
           {rights.studentReports
@@ -80,6 +82,7 @@ export function PublicOdkPackageCard({ item }: { item: PublicOdkPackage }) {
         <li className="flex gap-3">
           <Users
             size={18}
+            aria-hidden="true"
             className="mt-0.5 shrink-0 text-(--brand-orange)"
           />
           {rights.parentReports && rights.teacherReports
@@ -90,6 +93,7 @@ export function PublicOdkPackageCard({ item }: { item: PublicOdkPackage }) {
           <li className="flex gap-3">
             <Check
               size={18}
+            aria-hidden="true"
               className="mt-0.5 shrink-0 text-(--brand-orange)"
             />
             Canlı sınav hizmeti

@@ -14,9 +14,11 @@ const routes = [
   "/ders-paketleri",
   "/lgs",
   "/yks",
-  "/kamplar",
   "/iletisim",
   "/sss",
+  "/hakkimizda",
+  "/matematik",
+  "/online-ozel-ders",
   "/sepet",
 ];
 

@@ -55,12 +55,13 @@ export function PackagesExperience({
         <section className="bg-white pt-14 sm:pt-20">
           <div className="site-container text-center">
             <p className="site-eyebrow justify-center">onlinedershanem.</p>
-            <h1 className="mx-auto mt-4 max-w-5xl font-display text-[clamp(2.65rem,5.5vw,5rem)] leading-[.98] text-(--site-ink)">
+            <h1 className="mx-auto mt-4 max-w-5xl font-display text-(length:--public-display) leading-[1.08] tracking-[-0.03em] text-(--site-ink)">
               {title}
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-[16.5px] leading-7 text-(--site-body)">
               {subtitle}
             </p>
+            <Link href="/urunler/online-dershanem" className="mt-4 inline-flex min-h-11 items-center font-semibold text-dc-brand-strong">Canlı öğrenme ürününü tanı →</Link>
           </div>
         </section>
 

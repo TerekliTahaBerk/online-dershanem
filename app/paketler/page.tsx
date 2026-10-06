@@ -62,7 +62,7 @@ export default async function PackagesPage() {
             </div>
           </div>
 
-          <CoverageTable />
+          <CoverageTable activeRegistryCodes={activeRegistryCodes} />
         </section>
 
         <ProductFaq

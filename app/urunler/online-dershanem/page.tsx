@@ -26,7 +26,7 @@ import { buildMarketingMetadata } from "@/lib/seo/metadata";
 export const metadata = buildMarketingMetadata({
   title: "onlinedershanem. | Canlı derste öğretmenle ilerle",
   description:
-    "LGS ve YKS için birebir ya da en fazla 4 kişilik grupta canlı ders, ders takibi, veli özeti ve Dino AI ders analizi.",
+    "LGS ve YKS için birebir ya da en fazla 4 kişilik grupta canlı ders, ders takibi, veli özeti ve ders sonrası çalışma yönü.",
   canonical: "/urunler/online-dershanem",
 });
 
@@ -130,7 +130,7 @@ export default function OnlineDershanemPage() {
         <ProductDinoBand
           eyebrow="Dino AI · Ders analizi"
           title="Derste zorlandığın yer kaybolmuyor."
-          body="Dino AI ders sonrası zorlanılan kazanımları öne çıkarır ve tekrar için açıklayıcı öneri üretir. Koçluk planına nasıl yansıyacağına koçunla birlikte karar verilir."
+          body="Dino AI’ın ders sonrası zorlanılan kazanımları öne çıkarıp tekrar için açıklayıcı önerilerle destek olması hedefleniyor. Koçluk planına nasıl yansıyacağına koçunla birlikte karar verilir."
           quote="&ldquo;Bu derste türev kurallarında zorlandın.&rdquo;"
           quoteBody="Önerilen tekrar: 2 soru seti + kısa video özeti."
         />
@@ -168,7 +168,7 @@ export default function OnlineDershanemPage() {
           features={[
             "Canlı dersler",
             "Ders takibi ve veli özeti",
-            "Dino AI ders analizi",
+            "Ders sonrası çalışma yönü",
           ]}
           priceFootnote="Koçluk da eklediğinde toplamda daha avantajlı."
         />

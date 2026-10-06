@@ -1,171 +1,26 @@
-import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Boxes } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
-import { contact, siteUrl } from "@/lib/content";
+import { PageHero } from "@/components/site/page-hero";
+import { contact } from "@/lib/content";
+import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
-  title: "Kariyer",
-  description:
-    "onlinedershanem.'de açık pozisyonlar. Küçük grup matematik dersini büyütecek ekip arkadaşları arıyoruz.",
-  alternates: { canonical: "/kariyer" },
+export const metadata = {
+  ...buildMarketingMetadata({ title: "Kariyer", description: "Canlı öğrenme, koçluk ve ölçme deneyimleri üzerinde çalışan onlinedershanem. ekibiyle iletişime geçin.", canonical: "/kariyer" }),
   robots: { index: false, follow: true },
-  openGraph: {
-    title: "Kariyer | onlinedershanem.",
-    description:
-      "onlinedershanem. ekibine katılmak ister misin? Açık pozisyonlara göz at.",
-    url: `${siteUrl}/kariyer`,
-    images: [{ url: `${siteUrl}/og.png?v=2`, width: 1200, height: 630 }],
-  },
 };
-
-type Role = {
-  title: string;
-  location: string;
-  type: string;
-  summary: string;
-};
-
-const openRoles: Role[] = [
-  {
-    title: "Öğrenci Elçisi (Student Ambassador)",
-    location: "Yerinde · Üniversite kampüsleri",
-    type: "Yarı zamanlı",
-    summary:
-      "Üniversitende onlinedershanem.'i temsil edecek; etkinlikler, birebir görüşmeler ve sosyal medya çalışmalarıyla topluluğu büyütecek öğrenci elçileri arıyoruz.",
-  },
-];
 
 export default function CareersPage() {
-  const mailtoSubject = encodeURIComponent("Kariyer Başvurusu");
-  const mailtoBody = encodeURIComponent(
-    "Merhaba,\n\nİlgilendiğim pozisyon: \n\nKısaca kendimden bahsetmem gerekirse...\n",
-  );
-
   return (
     <div className="site-scope">
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
-        {/* Hero */}
-        <section className="site-container pb-8 pt-16 text-center sm:pt-24">
-          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-[22px] border border-(--site-line) bg-(--site-bg-warm) text-(--brand-orange-ink)">
-            <Boxes size={27} strokeWidth={1.6} aria-hidden="true" />
-          </span>
-          <h1 className="mx-auto mt-6 max-w-3xl font-display text-[clamp(2.3rem,5.5vw,3.9rem)] leading-[1.05] tracking-[-0.02em] text-(--site-ink)">
-            Küçük bir ekipte, öğrenciye dokunan{" "}
-            iş yap.
-          </h1>
-          <p className="mx-auto mt-6 max-w-xl text-[17px] leading-8 text-(--site-body)">
-            onlinedershanem., öğrencinin kalabalıkta kaybolmadığı, öğretmeninin
-            onu adıyla tanıdığı küçük gruplarla çalışıyor. Bunu büyüten küçük
-            ama etkili bir ekibiz.
-          </p>
-        </section>
-
-        {/* Open roles */}
-        <section className="site-container pb-20 sm:pb-28">
-          <div className="overflow-hidden rounded-[28px] border border-(--site-line) bg-white shadow-[0_28px_70px_-40px_rgba(20,20,15,0.2)]">
-            <div className="grid gap-0 lg:grid-cols-[0.95fr_2fr]">
-              {/* Left brand intro */}
-              <aside className="relative bg-(--brand-orange) p-8 text-white sm:p-10">
-                <span className="text-[12px] font-semibold uppercase tracking-[0.16em] text-white/80">
-                  Kariyer
-                </span>
-                <h2 className="mt-3 font-display text-[32px] leading-tight tracking-[-0.01em] sm:text-[36px]">
-                  Açık Pozisyonlar
-                </h2>
-                <p className="mt-4 max-w-xs text-[14px] leading-7 text-white/85">
-                  Küçük ve odaklı bir ekipte, yaptığın işin öğrenci deneyimine
-                  doğrudan dokunduğu bir yerde çalış.
-                </p>
-                <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[12px] font-medium uppercase tracking-[0.14em] text-white">
-                  {openRoles.length} açık pozisyon
-                </div>
-              </aside>
-
-              {/* Right roles list */}
-              <div className="divide-y divide-(--site-line) bg-white">
-                {openRoles.map((role) => (
-                  <a
-                    key={role.title}
-                    href={`mailto:${contact.email}?subject=${mailtoSubject}&body=${mailtoBody}`}
-                    className="group flex items-start justify-between gap-6 px-6 py-6 transition-colors hover:bg-(--site-bg-warm) sm:px-8 sm:py-7"
-                  >
-                    <div className="min-w-0">
-                      <h3 className="font-display text-[20px] leading-tight tracking-[-0.01em] text-(--site-ink) sm:text-[22px]">
-                        {role.title}
-                      </h3>
-                      <p className="mt-1.5 text-[12.5px] font-semibold uppercase tracking-[0.14em] text-(--site-muted)">
-                        <span>{role.location}</span>
-                        <span className="mx-2 text-(--site-line)">·</span>
-                        <span>{role.type}</span>
-                      </p>
-                      <p className="mt-3 max-w-2xl text-[14px] leading-6 text-(--site-body)">
-                        {role.summary}
-                      </p>
-                    </div>
-                    <span className="mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-(--site-line) bg-white text-(--site-ink) transition-colors group-hover:border-(--brand-orange) group-hover:bg-(--brand-orange) group-hover:text-white">
-                      <ArrowRight size={15} strokeWidth={1.8} />
-                    </span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Aspirational mission cards */}
-          <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            {[
-              {
-                title: "Küçük ekip, büyük etki",
-                body: "Kararlar hızlı alınır, yapılan iş doğrudan öğrencinin haftasına dokunur.",
-              },
-              {
-                title: "Özenli standartlar",
-                body: "Öğretmenden yazılım altyapısına kadar her detayda tutarlı kalite arıyoruz.",
-              },
-              {
-                title: "Şeffaf süreç",
-                body: "Hedefler net, geri bildirim düzenli, gelişim alanları açık şekilde konuşulur.",
-              },
-            ].map((item) => (
-              <article
-                key={item.title}
-                className="rounded-od-xl border border-(--site-line) bg-white p-7"
-              >
-                <h3 className="font-display text-[20px] leading-tight tracking-[-0.01em] text-(--site-ink)">
-                  {item.title}
-                </h3>
-                <p className="mt-3 text-[14.5px] leading-6 text-(--site-body)">
-                  {item.body}
-                </p>
-              </article>
-            ))}
-          </div>
-
-          {/* Footer CTA */}
-          <div className="mt-4 overflow-hidden rounded-[28px] border border-(--site-line) bg-(--site-bg-warm) p-8 sm:p-12">
-            <div className="grid gap-6 sm:grid-cols-[1.4fr_auto] sm:items-center">
-              <div>
-                <span className="site-eyebrow">
-                  Açık roller dışında bir alanda katkı sunmak istiyorsan
-                </span>
-                <h3 className="mt-3 font-display text-[28px] leading-tight tracking-[-0.02em] text-(--site-ink) sm:text-[36px]">
-                  Genel başvurunu da bekleriz.
-                </h3>
-                <p className="mt-3 max-w-md text-[14.5px] leading-7 text-(--site-body)">
-                  Online eğitime değer katacağına inanıyorsan, kısa bir mesaj ve
-                  özgeçmişini bize gönder. Doğru zaman geldiğinde geri dönelim.
-                </p>
-              </div>
-              <Link
-                href={`mailto:${contact.email}?subject=${mailtoSubject}&body=${mailtoBody}`}
-                className="site-btn site-btn-primary site-btn-lg shrink-0"
-              >
-                Bize yaz
-              </Link>
-            </div>
+        <PageHero eyebrow="Kariyer" title="Öğrencinin öğrenme yoluna katkı sun." subtitle="Canlı öğrenme, çalışma düzeni ve ölçme deneyimlerini bir araya getiren bir ekibiz." />
+        <section className="site-container py-(--dc-section)">
+          <div className="max-w-3xl rounded-dc-card border border-dc-line bg-white p-7 sm:p-10">
+            <h2 className="text-[24px] font-bold text-dc-ink">Şu anda yayınlanan açık pozisyon bulunmuyor.</h2>
+            <p className="mt-4 text-[16px] leading-7 text-dc-ink-body">Ekibimize katkı sunmak istersen çalışma alanını ve özgeçmişini paylaşabilirsin. Genel başvuru bir açık pozisyon veya işe alım taahhüdü değildir.</p>
+            <Link href={`mailto:${contact.email}?subject=${encodeURIComponent("Genel kariyer başvurusu")}`} className="site-btn site-btn-secondary mt-6">Genel başvurunu paylaş</Link>
           </div>
         </section>
       </main>
