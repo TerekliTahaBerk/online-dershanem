@@ -3,7 +3,7 @@ import { test } from "node:test";
 import type { ProductCode, UserRole } from "@prisma/client";
 import { panelFeatureDefaults, type PanelFeatureFlags } from "../panel-feature-flags";
 import { PANEL_DOMAIN } from "./domain-vocabulary";
-import { mobilePrimaryNav, panelNavHrefs, panelNavSections } from "./navigation";
+import { YON_COACH_TODAY, YON_STUDENT_TODAY, mobilePrimaryNav, panelNavHrefs, panelNavSections, scopedTodayHref } from "./navigation";
 
 const ALL_FLAGS_OFF: PanelFeatureFlags = Object.fromEntries(
   (Object.keys(panelFeatureDefaults) as (keyof PanelFeatureFlags)[]).map((key) => [key, false]),
@@ -272,4 +272,24 @@ test("öğrenci OD menüsü tekrar ve telafiye bağlanır, kapalı bayrakla bağ
   assert.ok(!closed.includes("/panel/ogrenci/tekrar"));
   assert.ok(!closed.includes("/panel/ogrenci/telafi"));
   assert.ok(!panelNavHrefs("STUDENT", ["OK"], ALL_FLAGS_ON).includes("/panel/ogrenci/tekrar"));
+});
+
+test("Yön Koçluk panelinde öğrencinin Bugün'ü Yön Bugün'e, Deneme Ligi'nde ODK köküne gider", () => {
+  const todayHref = (role: "STUDENT" | "PARENT" | "TEACHER", scope: ProductCode) =>
+    panelNavSections(role, ALL_PRODUCTS, ALL_FLAGS_ON, undefined, scope)
+      .flatMap((section) => section.items)
+      .find((item) => item.id === "today")?.href;
+  assert.equal(todayHref("STUDENT", "OK"), YON_STUDENT_TODAY);
+  assert.equal(todayHref("STUDENT", "OD"), "/panel/ogrenci");
+  assert.equal(todayHref("STUDENT", "ODK"), "/panel/odk/ogrenci");
+  // Kapsamsız menü değişmez.
+  assert.equal(
+    panelNavSections("STUDENT", ALL_PRODUCTS, ALL_FLAGS_ON).flatMap((s) => s.items).find((i) => i.id === "today")?.href,
+    "/panel/ogrenci",
+  );
+  const mobileToday = mobilePrimaryNav("STUDENT", ALL_PRODUCTS, ALL_FLAGS_ON, undefined, "OK").find((item) => item.id === "today");
+  assert.equal(mobileToday?.href, YON_STUDENT_TODAY);
+  assert.equal(scopedTodayHref("PARENT", "OK", "/panel/veli"), "/panel/veli");
+  assert.equal(todayHref("TEACHER", "OK"), YON_COACH_TODAY);
+  assert.equal(todayHref("TEACHER", "OD"), "/panel/ogretmen");
 });

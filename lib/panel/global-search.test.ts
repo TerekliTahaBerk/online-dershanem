@@ -90,6 +90,9 @@ test("visible commands: Deneme Ligi and Yön commands follow staff permissions, 
   });
   assert.ok(!coachFlagOff.some((item) => item.id === "coach-desk"));
   assert.ok(coach.some((item) => item.id === "coach-desk"));
+  // Koç çalışma alanı plan bayrağından bağımsızdır; düz öğretmen görmez.
+  assert.ok(coachFlagOff.some((item) => item.id === "coach-workspace"));
+  assert.ok(!plainTeacher.some((item) => item.id === "coach-workspace"));
 
   // ADMIN break-glass: personel izni listesi olmadan da görür.
   const admin = visibleGlobalSearchCommands({ role: "ADMIN", flags: flagsOn, businessPermissions: [] });

@@ -173,6 +173,14 @@ export const GLOBAL_SEARCH_COMMANDS: readonly GlobalSearchCommand[] = [
     staffPermissions: ["odk:result:score"],
   },
   {
+    id: "coach-workspace",
+    label: "Koç çalışma alanını aç",
+    detail: "Bugünkü görüşmeler, dikkat bekleyen öğrenciler",
+    href: "/panel/ogretmen/yon",
+    roles: ["TEACHER"],
+    staffPermissions: ["ok:coaching:write"],
+  },
+  {
     id: "coach-desk",
     label: "Yön plan masasını aç",
     detail: "Onay bekleyen haftalık planlar ve öneriler",

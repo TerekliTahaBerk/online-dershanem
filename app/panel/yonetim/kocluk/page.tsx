@@ -3,21 +3,26 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { planningWeekStart } from "@/lib/adaptive-plan";
-import { addIstanbulCalendarDays } from "@/lib/istanbul-time";
+import { addIstanbulCalendarDays, formatIstanbulDateInput } from "@/lib/istanbul-time";
 import { coachingOverdue } from "@/lib/coaching";
 import { getManagementKocumSignals } from "@/lib/kocum/server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
-  PanelCard,
-  PanelCardTitle,
-  PanelHeading,
-  PanelEmpty,
-  PanelStatCard,
+  EmptyState,
+  List,
+  ListRow,
+  PageHeader,
   PanelTable,
   PanelTableRow,
   PanelTableCell,
+  Section,
+  StatusBadge,
+  UrlDrawer,
+  ViewTabs,
+  buttonClass,
 } from "@/components/panel/ui";
 import { assignCoach } from "./actions";
+import { COACHING_QUEUES, type CoachingQueue } from "./queues";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +53,7 @@ const ASSIGN_ERROR: Record<string, string> = {
 export default async function AdminCoachingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ hata?: string | string[] }>;
+  searchParams: Promise<{ hata?: string | string[]; kuyruk?: string | string[]; onizle?: string | string[]; atandi?: string | string[] }>;
 }) {
   const session = await requireRole("ADMIN");
   const rawError = (await searchParams).hata;
@@ -222,11 +227,6 @@ export default async function AdminCoachingPage({
       c.coachCapacity !== null && c._count.coachAssignments > c.coachCapacity,
   );
   const overdueRows = rows.filter((r) => r.overdue);
-  const coachOptions = coaches.map((c) => {
-    const name = c.user.fullName || c.user.email;
-    const full = c.coachCapacity !== null && c._count.coachAssignments >= c.coachCapacity;
-    return { id: c.id, name: full ? `${name} (kapasite dolu)` : name };
-  });
 
   /* Müdahale listesi: önce koçsuzlar, sonra gecikenler. */
   const interventions = [
@@ -253,347 +253,325 @@ export default async function AdminCoachingPage({
     })),
   ];
 
+  // Koç dizini: bugünkü ve geciken görüşme sayıları (aktif atamalardan).
+  const todayKey = formatIstanbulDateInput(new Date());
+  const coachStats = new Map<string, { today: number; overdue: number }>();
+  for (const assignment of assignments) {
+    const entry = coachStats.get(assignment.coach.id) ?? { today: 0, overdue: 0 };
+    entry.today += assignment.sessions.filter(
+      (item) => item.status === "PLANNED" && formatIstanbulDateInput(item.scheduledAt) === todayKey,
+    ).length;
+    coachStats.set(assignment.coach.id, entry);
+  }
+  for (const row of overdueRows) {
+    const coachId = assignments.find((item) => item.id === row.id)?.coach.id;
+    if (!coachId) continue;
+    const entry = coachStats.get(coachId) ?? { today: 0, overdue: 0 };
+    entry.overdue += 1;
+    coachStats.set(coachId, entry);
+  }
+
+  const queueParams = await searchParams;
+  const requested = typeof queueParams.kuyruk === "string" ? queueParams.kuyruk : "";
+  const assigned = queueParams.atandi === "1";
+  const counts: Record<CoachingQueue, number> = {
+    "koc-bekleyen": unassigned.length,
+    geciken: overdueRows.length,
+    plansiz: adaptivePlanEnabled ? studentsWithoutPlan.length : 0,
+    hedefsiz: studentsWithoutGoals.length,
+    kapasite: overCapacity.length,
+    sinyaller: kocumSignals.length,
+  };
+  const QUEUE_LABEL: Record<CoachingQueue, string> = {
+    "koc-bekleyen": "Koç bekleyen",
+    geciken: "Görüşme gecikti",
+    plansiz: "Plan yayınlanmadı",
+    hedefsiz: "Hedefi olmayan",
+    kapasite: "Kapasite üstü koçlar",
+    sinyaller: "Yön sinyalleri",
+  };
+  const visibleQueues = COACHING_QUEUES.filter((queue) => queue !== "plansiz" || adaptivePlanEnabled);
+  const activeQueue: CoachingQueue = (visibleQueues as readonly string[]).includes(requested)
+    ? (requested as CoachingQueue)
+    : visibleQueues.find((queue) => counts[queue] > 0) ?? "koc-bekleyen";
+  const queueHref = (queue: CoachingQueue, extra = "") => `/panel/yonetim/kocluk?kuyruk=${queue}${extra}`;
+
+  // Yan panel: ?onizle=ata:<öğrenciId> → koç atama / devretme formu.
+  const preview = typeof queueParams.onizle === "string" ? queueParams.onizle : "";
+  const assignStudentId = preview.startsWith("ata:") ? preview.slice(4) : null;
+  const assignTarget = assignStudentId
+    ? interventions.find((row) => row.studentId === assignStudentId) ??
+      [...studentsWithoutPlan, ...studentsWithoutGoals]
+        .map((row) => ({
+          key: `x-${row.id}`,
+          studentId: row.student.id,
+          studentName: row.student.user.fullName || row.student.user.email,
+          coachName: row.coach.user.fullName || row.coach.user.email,
+          when: null as Date | null,
+          issue: "",
+          tone: "warn" as const,
+        }))
+        .find((row) => row.studentId === assignStudentId) ??
+      // Kuyrukta olmasa da aktif ataması olan öğrenci devredilebilir (öğrenci 360 bağlantıları).
+      rows
+        .filter((row) => row.studentId === assignStudentId)
+        .map((row) => ({ studentId: row.studentId, studentName: row.studentName, coachName: row.coachName }))[0] ??
+      null
+    : null;
+
+  const assignAction = (row: { studentId: string; studentName: string; coachName: string | null }) =>
+    coaches.length ? (
+      <Link
+        href={queueHref(activeQueue, `&onizle=ata:${row.studentId}`)}
+        scroll={false}
+        className={buttonClass("secondary", "sm")}
+        aria-haspopup="dialog"
+      >
+        {row.coachName ? "Devret" : "Koç ata"}
+        <span className="sr-only"> · {row.studentName}</span>
+      </Link>
+    ) : (
+      <span className="text-[12.5px] text-pn-text-muted">Koç yok</span>
+    );
+
+  const assignmentRows = (list: Array<{ id: string; student: { id: string; user: { fullName: string | null; email: string } }; coach: { user: { fullName: string | null; email: string } } }>) =>
+    list.map((row) => ({
+      studentId: row.student.id,
+      studentName: row.student.user.fullName || row.student.user.email,
+      coachName: row.coach.user.fullName || row.coach.user.email,
+      key: row.id,
+    }));
+
   return (
-    <PanelShell
-      role={session.role}
-      fullName={session.fullName}
-      email={session.email}
-      pageTitle="Koçluk operasyonu"
-    >
-      <div className="max-w-[1040px]">
-        <PanelHeading
+    <PanelShell role={session.role} fullName={session.fullName} email={session.email} pageTitle="Koçluk operasyonu">
+      <div className="max-w-[1100px]">
+        <PageHeader
           title="Koçluk operasyonu"
-          description={`${rows.length} koçluk öğrencisi · ${overdueRows.length} görüşme gecikti · ${unassigned.length} öğrenciye koç atanmadı`}
+          description={`${rows.length} koçluk öğrencisi · ${unassigned.length} öğrenci koç bekliyor · ${overCapacity.length} koç kapasite üstünde`}
         />
 
         {assignError ? (
-          <p
-            role="alert"
-            className="mt-4 rounded-[12px] border border-[#E9C8C3] bg-[#FBF1EF] px-4 py-3 text-[13.5px] font-semibold text-[#9A3A2F]"
-          >
+          <p role="alert" className="mt-4 rounded-md border border-(--pn-tone-critical)/30 bg-(--pn-tone-critical-soft) px-4 py-3 text-[13.5px] font-medium text-(--pn-tone-critical)">
             {assignError}
+          </p>
+        ) : assigned ? (
+          <p role="status" className="mt-4 rounded-md border border-pn-border bg-(--pn-tone-success-soft) px-4 py-3 text-[13.5px] font-medium text-(--pn-tone-success)">
+            Koç ataması kaydedildi.
           </p>
         ) : null}
 
-        <div className="mt-[22px] grid gap-5 sm:grid-cols-3">
-          <PanelStatCard
-            title="Koç atanmayan öğrenci"
-            value={String(unassigned.length)}
-          />
-          <PanelStatCard
-            title="Görüşmesi geciken"
-            value={String(overdueRows.length)}
-          />
-          <PanelStatCard
-            title="Kapasitesi aşan koç"
-            value={String(overCapacity.length)}
-          />
-        </div>
-
-        {kocumSignals.length ? (
-          <PanelCard className="mt-5">
-            <PanelCardTitle>Yön operasyon sinyalleri</PanelCardTitle>
-            <p className="mt-1 text-[12.5px] text-dc-ink-muted">
-              Mikro görev listesi değil — plansız, koçsuz, yayınlanmamış veya
-              düşük uyumlu öğrenciler.
-            </p>
-            <ul className="mt-3 space-y-2">
-              {kocumSignals.slice(0, 20).map((signal) => (
-                <li
-                  key={`${signal.code}-${signal.studentId}`}
-                  className="flex flex-wrap items-baseline justify-between gap-2 text-[13.5px]"
-                >
-                  <span>
-                    <Link
-                      className="font-semibold text-dc-ink underline-offset-2 hover:underline"
-                      href={`/panel/yonetim/ogrenciler/${signal.studentId}?tab=kocluk`}
-                    >
-                      {signal.studentName}
-                    </Link>
-                    <span className="text-dc-ink-muted">
-                      {" "}
-                      · {signal.detail}
-                    </span>
-                  </span>
-                  <span className="text-[11px] font-bold uppercase tracking-wide text-dc-ink-faint">
-                    {signal.code}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </PanelCard>
-        ) : null}
-
         {!adaptivePlanEnabled ? (
-          <PanelCard className="mt-5">
-            <PanelCardTitle>Uyarlanabilir plan şu anda kapalı</PanelCardTitle>
-            <p className="mt-2 text-[13.5px] leading-[1.7] text-dc-ink-muted">
-              Koç atama, görüşme takibi ve hedef operasyonu aktif kalır.
-              Haftalık plan üretme/onaylama ekranları pilot yeniden açıldığında
-              otomatik genişler.
-            </p>
-          </PanelCard>
+          <p className="mt-4 text-[13px] text-pn-text-muted">
+            Uyarlanabilir plan şu anda kapalı: koç atama, görüşme takibi ve hedef operasyonu aktif; plan kuyruğu pilot açıldığında görünür.
+          </p>
         ) : null}
 
-        {/* ── Müdahale bekleyenler ── */}
-        <PanelCard className="mt-5" padded={false}>
-          <div className="px-5 py-4">
-            <PanelCardTitle>Müdahale bekleyenler</PanelCardTitle>
+        <Section id="kuyruklar" title="Kuyruklar" divider={false}>
+          <ViewTabs
+            label="Koçluk kuyrukları"
+            activeId={activeQueue}
+            tabs={visibleQueues.map((queue) => ({ id: queue, label: QUEUE_LABEL[queue], href: queueHref(queue), count: counts[queue] }))}
+          />
+          <div className="mt-3">
+            {activeQueue === "koc-bekleyen" || activeQueue === "geciken" ? (
+              (() => {
+                const list = interventions.filter((row) => (activeQueue === "koc-bekleyen" ? !row.coachName : Boolean(row.coachName)));
+                return list.length ? (
+                  <PanelTable
+                    caption="Koçluk müdahale listesi"
+                    columns={["Öğrenci", "Koç", "Son / sonraki görüşme", "Sorun", "Aksiyon"]}
+                  >
+                    {list.map((row) => (
+                      <PanelTableRow key={row.key}>
+                        <PanelTableCell>
+                          <Link href={`/panel/yonetim/ogrenciler/${row.studentId}?tab=kocluk`} className="font-medium text-pn-text underline-offset-2 hover:underline">
+                            {row.studentName}
+                          </Link>
+                        </PanelTableCell>
+                        <PanelTableCell>{row.coachName ?? <StatusBadge label="Atanmadı" tone="warning" />}</PanelTableCell>
+                        <PanelTableCell>{row.when ? DATE.format(row.when) : "—"}</PanelTableCell>
+                        <PanelTableCell>{row.issue}</PanelTableCell>
+                        <PanelTableCell>{assignAction(row)}</PanelTableCell>
+                      </PanelTableRow>
+                    ))}
+                  </PanelTable>
+                ) : (
+                  <EmptyState title={activeQueue === "koc-bekleyen" ? "Koç bekleyen öğrenci yok." : "Gecikmiş görüşme yok."} />
+                );
+              })()
+            ) : activeQueue === "plansiz" || activeQueue === "hedefsiz" ? (
+              (() => {
+                const list = assignmentRows(activeQueue === "plansiz" ? studentsWithoutPlan : studentsWithoutGoals);
+                return list.length ? (
+                  <List label={QUEUE_LABEL[activeQueue]}>
+                    {list.map((row) => (
+                      <ListRow
+                        key={row.key}
+                        title={row.studentName}
+                        href={`/panel/yonetim/ogrenciler/${row.studentId}?tab=kocluk`}
+                        meta={`Koç: ${row.coachName}`}
+                        action={assignAction(row)}
+                      />
+                    ))}
+                  </List>
+                ) : (
+                  <EmptyState
+                    title={
+                      activeQueue === "plansiz"
+                        ? "Aktif koçluk öğrencilerinin bu hafta için plan kaydı var."
+                        : "Aktif koçluk öğrencilerinin hepsinde en az bir hedef tanımlı."
+                    }
+                  />
+                );
+              })()
+            ) : activeQueue === "kapasite" ? (
+              overCapacity.length ? (
+                <List label="Kapasite üstü koçlar">
+                  {overCapacity.map((coach) => (
+                    <ListRow
+                      key={coach.id}
+                      title={coach.user.fullName || coach.user.email}
+                      meta={`${coach._count.coachAssignments} / ${coach.coachCapacity} öğrenci`}
+                      status={<StatusBadge label="Kapasite aşıldı" tone="critical" />}
+                    />
+                  ))}
+                </List>
+              ) : (
+                <EmptyState title="Kapasitesini aşan koç yok." />
+              )
+            ) : kocumSignals.length ? (
+              <List label="Yön operasyon sinyalleri">
+                {kocumSignals.slice(0, 30).map((signal) => (
+                  <ListRow
+                    key={`${signal.code}-${signal.studentId}`}
+                    title={signal.studentName}
+                    href={`/panel/yonetim/ogrenciler/${signal.studentId}?tab=kocluk`}
+                    description={signal.detail}
+                  />
+                ))}
+              </List>
+            ) : (
+              <EmptyState title="Plansız, koçsuz, yayınlanmamış veya düşük uyumlu öğrenci sinyali yok." />
+            )}
           </div>
-          {interventions.length === 0 ? (
-            <p className="px-5 pb-5 text-[13.5px] text-dc-ink-muted">
-              Koçsuz öğrenci ya da gecikmiş görüşme yok.
-            </p>
-          ) : (
-            <PanelTable
-              caption="Koçluk müdahale listesi"
-              columns={[
-                "Öğrenci",
-                "Koç",
-                "Son / sonraki görüşme",
-                "Sorun",
-                "Aksiyon",
-              ]}
-            >
-              {interventions.map((row) => (
-                <PanelTableRow key={row.key}>
-                  <PanelTableCell>
-                    <span className="text-[14px] font-bold text-dc-ink">
-                      {row.studentName}
-                    </span>
-                  </PanelTableCell>
-                  <PanelTableCell tone={row.coachName ? undefined : "warn"}>
-                    {row.coachName ?? "Atanmadı"}
-                  </PanelTableCell>
-                  <PanelTableCell>
-                    {row.when ? DATE.format(row.when) : "—"}
-                  </PanelTableCell>
-                  <PanelTableCell tone={row.tone}>{row.issue}</PanelTableCell>
-                  <PanelTableCell>
-                    {coachOptions.length === 0 ? (
-                      <span className="text-[12.5px] text-dc-ink-faint">
-                        Koç yok
-                      </span>
-                    ) : (
-                      <form
-                        action={assignCoach}
-                        className="flex flex-wrap items-center gap-1.5"
-                      >
-                        <input
-                          type="hidden"
-                          name="studentId"
-                          value={row.studentId}
-                        />
-                        <label className="sr-only" htmlFor={`coach-${row.key}`}>
-                          {row.studentName} için koç
-                        </label>
-                        <select
-                          id={`coach-${row.key}`}
-                          name="coachId"
-                          required
-                          defaultValue=""
-                          className="rounded-lg border border-[#DDE4E0] bg-white px-2.5 py-1.5 text-[12.5px] font-semibold text-dc-ink"
-                        >
-                          <option value="" disabled>
-                            Koç seçin
-                          </option>
-                          {coachOptions.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {c.name}
-                            </option>
-                          ))}
-                        </select>
-                        <label
-                          className="sr-only"
-                          htmlFor={`cadence-${row.key}`}
-                        >
-                          Görüşme sıklığı (gün)
-                        </label>
-                        <input
-                          id={`cadence-${row.key}`}
-                          name="cadenceDays"
-                          type="number"
-                          min={1}
-                          placeholder="gün"
-                          className="w-[68px] rounded-lg border border-[#DDE4E0] bg-white px-2 py-1.5 text-[12.5px] text-dc-ink"
-                        />
-                        <label
-                          className="sr-only"
-                          htmlFor={`override-${row.key}`}
-                        >
-                          Kapasite aşımı gerekçesi
-                        </label>
-                        <input
-                          id={`override-${row.key}`}
-                          name="overrideReason"
-                          maxLength={500}
-                          placeholder="Kapasite aşımı gerekçesi"
-                          className="w-[170px] rounded-lg border border-[#DDE4E0] bg-white px-2 py-1.5 text-[12.5px] text-dc-ink"
-                        />
-                        <button
-                          type="submit"
-                          className="rounded-lg border border-[#DDE4E0] bg-white px-2.5 py-1.5 text-[12.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
-                        >
-                          {row.coachName ? "Devret" : "Koç ata"}
-                        </button>
-                      </form>
-                    )}
-                  </PanelTableCell>
-                </PanelTableRow>
-              ))}
-            </PanelTable>
-          )}
-        </PanelCard>
+        </Section>
 
-        {/* ── Koç yükü ── */}
-        <PanelCard className="mt-5">
-          <PanelCardTitle>Koç yükü</PanelCardTitle>
+        <Section id="koc-dizini" title="Koç dizini" description="Kapasite, bugünkü ve geciken görüşmeler.">
           {coaches.length === 0 ? (
-            <PanelEmpty
+            <EmptyState
               title="Koç olarak işaretli personel yok."
               body="Bir eğitmeni koç yapmak için kişi detayından koçluk bilgisini işaretleyin."
             />
           ) : (
-            <ul className="mt-3.5 flex flex-col gap-2.5">
-              {coaches.map((c) => {
-                const load = c._count.coachAssignments;
-                const over = c.coachCapacity !== null && load > c.coachCapacity;
+            <PanelTable caption="Koç dizini" columns={["Koç", "Öğrenci / kapasite", "Bugünkü görüşme", "Geciken görüşme"]}>
+              {coaches.map((coach) => {
+                const load = coach._count.coachAssignments;
+                const over = coach.coachCapacity !== null && load > coach.coachCapacity;
+                const stats = coachStats.get(coach.id) ?? { today: 0, overdue: 0 };
+                const pct = coach.coachCapacity ? Math.min(100, Math.round((load / coach.coachCapacity) * 100)) : null;
                 return (
-                  <li
-                    key={c.id}
-                    className="flex flex-wrap items-baseline justify-between gap-2 text-[14px] font-medium text-dc-ink-body"
-                  >
-                    <span>{c.user.fullName || c.user.email}</span>
-                    <span
-                      className={over ? "text-[#C2493D]" : "text-dc-ink-muted"}
-                    >
-                      {load}
-                      {c.coachCapacity !== null
-                        ? ` / ${c.coachCapacity} öğrenci`
-                        : " öğrenci"}
-                      {over ? " · aşıldı" : ""}
-                    </span>
-                  </li>
+                  <PanelTableRow key={coach.id}>
+                    <PanelTableCell>
+                      <span className="font-medium text-pn-text">{coach.user.fullName || coach.user.email}</span>
+                    </PanelTableCell>
+                    <PanelTableCell>
+                      <span className="flex items-center gap-2">
+                        {pct !== null ? (
+                          <span aria-hidden="true" className="block h-1 w-16 overflow-hidden rounded-full bg-pn-surface-subtle">
+                            <span className={`block h-full rounded-full ${over ? "bg-(--pn-tone-critical)" : "bg-pn-accent-marker"}`} style={{ width: `${pct}%` }} />
+                          </span>
+                        ) : null}
+                        <span className="tabular-nums">
+                          {load}
+                          {coach.coachCapacity !== null ? ` / ${coach.coachCapacity}` : ""}
+                        </span>
+                        {over ? <StatusBadge label="aşıldı" tone="critical" /> : null}
+                      </span>
+                    </PanelTableCell>
+                    <PanelTableCell>{stats.today || "—"}</PanelTableCell>
+                    <PanelTableCell>{stats.overdue ? <StatusBadge label={String(stats.overdue)} tone="warning" /> : "—"}</PanelTableCell>
+                  </PanelTableRow>
                 );
               })}
-            </ul>
+            </PanelTable>
           )}
-        </PanelCard>
+        </Section>
 
-        <PanelCard className="mt-5">
-          <PanelCardTitle>Son tamamlanan görüşmeler</PanelCardTitle>
+        <Section id="son-gorusmeler" title="Son tamamlanan görüşmeler">
           {recentSessions.length === 0 ? (
-            <p className="mt-3 text-[13.5px] text-dc-ink-muted">
-              Henüz tamamlanmış koç görüşmesi kaydı yok.
-            </p>
+            <p className="text-[14px] text-pn-text-muted">Henüz tamamlanmış koç görüşmesi kaydı yok.</p>
           ) : (
-            <ul className="mt-3 flex flex-col gap-2.5 text-[13.5px] leading-[1.7] text-dc-ink-body">
-              {recentSessions.map((row) => {
-                const studentName =
-                  row.assignment.student.user.fullName ||
-                  row.assignment.student.user.email;
-                const coachName =
-                  row.assignment.coach.user.fullName ||
-                  row.assignment.coach.user.email;
-                return (
-                  <li
-                    key={row.id}
-                    className="rounded-od border border-dc-line-soft bg-white px-3.5 py-3"
-                  >
-                    <p className="font-semibold text-dc-ink">
-                      {studentName} · {coachName}
-                    </p>
-                    <p className="mt-1 text-dc-ink-muted">
-                      {row.completedAt
-                        ? DATE.format(row.completedAt)
-                        : "Tarih yok"}
-                      {row.focus ? ` · odak: ${row.focus}` : ""}
-                    </p>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </PanelCard>
-
-        <PanelCard className="mt-5">
-          <PanelCardTitle>
-            Bu hafta planı olmayan koçluk öğrencileri
-          </PanelCardTitle>
-          {!adaptivePlanEnabled ? (
-            <p className="mt-3 text-[13.5px] text-dc-ink-muted">
-              Plan pilotu kapalı olduğu için bu kontrol şu an beklemede.
-            </p>
-          ) : studentsWithoutPlan.length === 0 ? (
-            <p className="mt-3 text-[13.5px] text-dc-ink-muted">
-              Aktif koçluk öğrencilerinin bu hafta için plan kaydı var.
-            </p>
-          ) : (
-            <ul className="mt-3 flex flex-col gap-2 text-[13.5px] text-dc-ink-body">
-              {studentsWithoutPlan.map((row) => (
-                <li
+            <List label="Son tamamlanan görüşmeler">
+              {recentSessions.map((row) => (
+                <ListRow
                   key={row.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-od border border-dc-line-soft bg-white px-3.5 py-3"
-                >
-                  <span>
-                    <strong>
-                      {row.student.user.fullName || row.student.user.email}
-                    </strong>{" "}
-                    · {row.coach.user.fullName || row.coach.user.email}
-                  </span>
-                  <Link
-                    href={`/panel/yonetim/ogrenciler/${row.student.id}`}
-                    className="text-[12.5px] font-semibold text-dc-brand-strong hover:underline"
-                  >
-                    Öğrenciyi aç
-                  </Link>
-                </li>
+                  title={`${row.assignment.student.user.fullName || row.assignment.student.user.email} · ${row.assignment.coach.user.fullName || row.assignment.coach.user.email}`}
+                  meta={`${row.completedAt ? DATE.format(row.completedAt) : "Tarih yok"}${row.focus ? ` · odak: ${row.focus}` : ""}`}
+                />
               ))}
-            </ul>
+            </List>
           )}
-        </PanelCard>
+        </Section>
 
-        <PanelCard className="mt-5">
-          <PanelCardTitle>Hedefi olmayan koçluk öğrencileri</PanelCardTitle>
-          {studentsWithoutGoals.length === 0 ? (
-            <p className="mt-3 text-[13.5px] text-dc-ink-muted">
-              Aktif koçluk öğrencilerinin hepsinde en az bir hedef tanımlı.
-            </p>
-          ) : (
-            <ul className="mt-3 flex flex-col gap-2 text-[13.5px] text-dc-ink-body">
-              {studentsWithoutGoals.map((row) => (
-                <li
-                  key={row.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-od border border-dc-line-soft bg-white px-3.5 py-3"
-                >
-                  <span>
-                    <strong>
-                      {row.student.user.fullName || row.student.user.email}
-                    </strong>{" "}
-                    · {row.coach.user.fullName || row.coach.user.email}
-                  </span>
-                  <Link
-                    href={`/panel/yonetim/ogrenciler/${row.student.id}`}
-                    className="text-[12.5px] font-semibold text-dc-brand-strong hover:underline"
-                  >
-                    Öğrenciyi aç
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </PanelCard>
-
-        <p className="mt-5 text-[12.5px] text-dc-ink-faint">
+        <p className="mt-8 text-[12.5px] text-pn-text-muted">
           Koçluk görüşmelerinin kendisi öğretmen panelinden kaydedilir.{" "}
-          <Link
-            href="/panel/yonetim/egitmenler"
-            className="font-semibold text-dc-brand-strong hover:underline"
-          >
+          <Link href="/panel/yonetim/egitmenler" className="font-medium text-pn-text underline-offset-2 hover:underline">
             Öğretmenleri aç
           </Link>
         </p>
       </div>
+
+      {assignTarget ? (
+        <UrlDrawer
+          title={assignTarget.coachName ? "Koçu devret" : "Koç ata"}
+          description={assignTarget.coachName ? `${assignTarget.studentName} · şu an ${assignTarget.coachName}` : assignTarget.studentName}
+        >
+          <form action={assignCoach} className="space-y-4">
+            <input type="hidden" name="studentId" value={assignTarget.studentId} />
+            <input type="hidden" name="returnQueue" value={activeQueue} />
+            <fieldset>
+              <legend className="text-[13px] font-medium text-pn-text">Koç</legend>
+              <div className="mt-2 border-t border-pn-border">
+                {coaches.map((coach) => {
+                  const load = coach._count.coachAssignments;
+                  const full = coach.coachCapacity !== null && load >= coach.coachCapacity;
+                  const pct = coach.coachCapacity ? Math.min(100, Math.round((load / coach.coachCapacity) * 100)) : null;
+                  return (
+                    <label key={coach.id} className="flex cursor-pointer items-center gap-3 border-b border-pn-border py-2.5">
+                      <input type="radio" name="coachId" value={coach.id} required className="h-4 w-4 accent-(--pn-accent)" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[14px] font-medium text-pn-text">{coach.user.fullName || coach.user.email}</span>
+                        <span className="text-[12px] text-pn-text-muted">
+                          {load}
+                          {coach.coachCapacity !== null ? ` / ${coach.coachCapacity} öğrenci` : " öğrenci"}
+                          {full ? " · kapasite dolu" : ""}
+                        </span>
+                      </span>
+                      {pct !== null ? (
+                        <span aria-hidden="true" className="block h-1 w-16 overflow-hidden rounded-full bg-pn-surface-subtle">
+                          <span className={`block h-full rounded-full ${full ? "bg-(--pn-tone-warning)" : "bg-pn-accent-marker"}`} style={{ width: `${pct}%` }} />
+                        </span>
+                      ) : null}
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
+            <label className="grid gap-1 text-[13px] font-medium text-pn-text">
+              Görüşme sıklığı (gün)
+              <input name="cadenceDays" type="number" min={1} className="panel-input w-32" />
+            </label>
+            <label className="grid gap-1 text-[13px] font-medium text-pn-text">
+              Kapasite aşımı gerekçesi
+              <input name="overrideReason" maxLength={500} className="panel-input" />
+              <span className="text-[12px] font-normal text-pn-text-muted">Kapasitesi dolu bir koç seçerseniz zorunludur; denetim kaydına yazılır.</span>
+            </label>
+            <button type="submit" className={buttonClass("primary", "md")}>
+              {assignTarget.coachName ? "Devret" : "Koç ata"}
+            </button>
+          </form>
+        </UrlDrawer>
+      ) : null}
     </PanelShell>
   );
 }

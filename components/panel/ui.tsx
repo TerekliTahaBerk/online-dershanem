@@ -20,6 +20,7 @@ export {
 } from "@/components/panel/primitives";
 export { Sparkline } from "@/components/panel/primitives/sparkline";
 export { Drawer, useDrawerParam } from "@/components/panel/primitives/drawer";
+export { UrlDrawer } from "@/components/panel/primitives/url-drawer";
 
 type PanelTone =
   | "neutral"

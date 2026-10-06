@@ -327,6 +327,18 @@ export function resolveNavScope(
   return products.includes(scope) ? scope : null;
 }
 
+/** Ürün panelindeki "Bugün" hedefi; ürünün kendi ana sayfası yoksa ortak kök. */
+export function scopedTodayHref(role: UserRole, scope: ProductCode, fallback: string): string {
+  if (scope === "ODK") return productRolePath("ODK", role);
+  if (scope === "OK" && role === "STUDENT") return YON_STUDENT_TODAY;
+  // Koçun Yön "Bugün"ü koç çalışma alanıdır (§10.5); sayfa COACH@OK ister.
+  if (scope === "OK" && role === "TEACHER") return YON_COACH_TODAY;
+  return fallback;
+}
+
+export const YON_STUDENT_TODAY = "/panel/ogrenci/yon";
+export const YON_COACH_TODAY = "/panel/ogretmen/yon";
+
 function applyScope(
   role: UserRole,
   sections: PanelNavSection[],
@@ -338,7 +350,8 @@ function applyScope(
       items: navSection.items
         .filter((item) => navItemVisibleInScope(role, item.id, scope))
         // ODK'nın kendi ana sayfası var; "Bugün" o panelde ODK köküne gider.
-        .map((item) => (item.id === "today" && scope === "ODK" ? { ...item, href: productRolePath("ODK", role) } : item)),
+        // Yön Koçluk panelinde öğrencinin "Bugün"ü Yön Bugün'dür (§10.1).
+        .map((item) => (item.id === "today" ? { ...item, href: scopedTodayHref(role, scope, item.href) } : item)),
     }))
     .filter((navSection) => navSection.items.length > 0);
   return scoped;
@@ -420,8 +433,8 @@ export function mobilePrimaryNav(
       .slice(0, 4);
   }
   const items = baseMobilePrimaryNav(role, effectiveScope ? [effectiveScope] : allProducts, flags, root);
-  return effectiveScope === "ODK"
-    ? items.map((item) => (item.id === "today" ? { ...item, href: productRolePath("ODK", role) } : item))
+  return effectiveScope
+    ? items.map((item) => (item.id === "today" ? { ...item, href: scopedTodayHref(role, effectiveScope, item.href) } : item))
     : items;
 }
 
