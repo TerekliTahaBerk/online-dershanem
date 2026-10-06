@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { BarChart3, ClipboardCheck } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { requireProductRole } from "@/lib/auth/guards";
+import { requireStaffPermission } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelPageHeader } from "@/components/panel/panel-page-header";
 import { OdkStatusBadge } from "@/components/odk/odk-status-badge";
@@ -10,7 +10,8 @@ import { examStatusPresentation } from "@/lib/odk/presentation";
 export const dynamic = "force-dynamic";
 
 export default async function OdkAdminResultsHubPage() {
-  const session = await requireProductRole("ODK", "ADMIN");
+  // Deneme Ligi personel izni (ADMIN her izinde geçer); global rol tek başına yetmez.
+  const session = await requireStaffPermission("odk:result:score");
   const exams = await prisma.odkExam.findMany({
     where: { status: { in: ["ENDED", "SCORED", "RELEASED"] } },
     orderBy: [{ endsAt: "desc" }, { updatedAt: "desc" }],

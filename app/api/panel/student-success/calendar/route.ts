@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiOdRole } from "@/lib/auth/api-guards";
+import { requireApiAnyProductRole } from "@/lib/auth/api-guards";
 import { buildTodayItems, whatNextItem } from "@/lib/student-success/calendar";
 import { getStudentToday } from "@/lib/student-success/server/calendar-server";
 import { presentForStudent } from "@/lib/student-success/presenters";
@@ -18,7 +18,7 @@ const querySchema = z.object({
 });
 
 export async function GET(request: Request) {
-  const auth = await requireApiOdRole("STUDENT", "TEACHER", "ADMIN", "PARENT");
+  const auth = await requireApiAnyProductRole(["OD", "OK", "ODK"], "STUDENT", "TEACHER", "ADMIN", "PARENT");
   if (!auth.ok) return auth.response;
 
   const url = new URL(request.url);
@@ -77,7 +77,7 @@ export async function GET(request: Request) {
 
 /** Unified Today — öğrenci bugün ekranı. */
 export async function POST() {
-  const auth = await requireApiOdRole("STUDENT");
+  const auth = await requireApiAnyProductRole(["OD", "OK", "ODK"], "STUDENT");
   if (!auth.ok) return auth.response;
 
   const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId }, select: { id: true } });

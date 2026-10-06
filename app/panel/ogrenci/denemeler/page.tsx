@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/auth/guards";
+import { requireFirstAccessibleProductRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { MockExamWorkspace } from "@/components/panel/mock-exam-workspace";
@@ -45,7 +45,9 @@ export default async function StudentExamResultPage({
 }: {
   searchParams: Promise<{ deneme?: string }>;
 }) {
-  const session = await requireRole("STUDENT");
+  // Dış (okul / yayınevi) deneme kayıtları OD ve Yön öğrencisine açıktır:
+  // Yön hedefleri (SUBJECT_NET) bu kayıtlardan ölçülür.
+  const { session } = await requireFirstAccessibleProductRole(["OD", "OK"], "STUDENT");
   if (!getPanelFeatureFlags().mockExamAnalysis) notFound();
 
   const profile = await prisma.studentProfile.findUnique({

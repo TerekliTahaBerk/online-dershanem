@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import type { OdkAnswerOption } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireApiProductRole } from "@/lib/auth/api-guards";
+import { requireApiStaffPermission } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { jsonImportCommitSchema, jsonImportPreviewSchema } from "@/lib/odk/admin-schemas";
 import { previewAnswerKeyImport, summarizeAnswerKeyPreview } from "@/lib/odk/answer-key-import";
@@ -28,7 +28,7 @@ async function loadExamQuestions(examId: string) {
 }
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
+  const auth = await requireApiStaffPermission("odk:exam:edit"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "odk.answer_key.import_preview", requireSameOrigin: true, headers: request.headers, rateLimitKey: `odk:ak-preview:${auth.session.userId}`, rateLimit: { max: 60, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const { id } = await context.params;
@@ -68,7 +68,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 }
 
 export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
+  const auth = await requireApiStaffPermission("odk:exam:edit"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "odk.answer_key.import_commit", requireSameOrigin: true, headers: request.headers, rateLimitKey: `odk:ak-commit:${auth.session.userId}`, rateLimit: { max: 20, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const { id } = await context.params;

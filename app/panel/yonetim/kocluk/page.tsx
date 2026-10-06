@@ -38,8 +38,21 @@ const DATE = new Intl.DateTimeFormat("tr-TR", {
   month: "long",
 });
 
-export default async function AdminCoachingPage() {
+const ASSIGN_ERROR: Record<string, string> = {
+  student: "Öğrenci bulunamadı.",
+  coach: "Seçilen koç aktif değil ya da koç olarak işaretli değil.",
+  membership: "Öğrencinin aktif Yön Koçluk üyeliği yok; koç atanamaz.",
+  capacity: "Koç kapasitesi dolu. Kapasite aşımı için gerekçe yazın.",
+};
+
+export default async function AdminCoachingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ hata?: string | string[] }>;
+}) {
   const session = await requireRole("ADMIN");
+  const rawError = (await searchParams).hata;
+  const assignError = typeof rawError === "string" ? ASSIGN_ERROR[rawError] ?? null : null;
   const adaptivePlanEnabled = getPanelFeatureFlags().adaptivePlan;
   const thisWeekStart = planningWeekStart();
   const thisWeekEnd = addIstanbulCalendarDays(thisWeekStart, 7);
@@ -209,10 +222,11 @@ export default async function AdminCoachingPage() {
       c.coachCapacity !== null && c._count.coachAssignments > c.coachCapacity,
   );
   const overdueRows = rows.filter((r) => r.overdue);
-  const coachOptions = coaches.map((c) => ({
-    id: c.id,
-    name: c.user.fullName || c.user.email,
-  }));
+  const coachOptions = coaches.map((c) => {
+    const name = c.user.fullName || c.user.email;
+    const full = c.coachCapacity !== null && c._count.coachAssignments >= c.coachCapacity;
+    return { id: c.id, name: full ? `${name} (kapasite dolu)` : name };
+  });
 
   /* Müdahale listesi: önce koçsuzlar, sonra gecikenler. */
   const interventions = [
@@ -222,7 +236,7 @@ export default async function AdminCoachingPage() {
       studentName: s.user.fullName || s.user.email,
       coachName: null as string | null,
       when: null as Date | null,
-      issue: "Koç atanmadı",
+      issue: "Yön Koçluk üyesi · koç atanmadı",
       tone: "warn" as const,
     })),
     ...overdueRows.map((r) => ({
@@ -251,6 +265,15 @@ export default async function AdminCoachingPage() {
           title="Koçluk operasyonu"
           description={`${rows.length} koçluk öğrencisi · ${overdueRows.length} görüşme gecikti · ${unassigned.length} öğrenciye koç atanmadı`}
         />
+
+        {assignError ? (
+          <p
+            role="alert"
+            className="mt-4 rounded-[12px] border border-[#E9C8C3] bg-[#FBF1EF] px-4 py-3 text-[13.5px] font-semibold text-[#9A3A2F]"
+          >
+            {assignError}
+          </p>
+        ) : null}
 
         <div className="mt-[22px] grid gap-5 sm:grid-cols-3">
           <PanelStatCard
@@ -393,6 +416,19 @@ export default async function AdminCoachingPage() {
                           min={1}
                           placeholder="gün"
                           className="w-[68px] rounded-lg border border-[#DDE4E0] bg-white px-2 py-1.5 text-[12.5px] text-dc-ink"
+                        />
+                        <label
+                          className="sr-only"
+                          htmlFor={`override-${row.key}`}
+                        >
+                          Kapasite aşımı gerekçesi
+                        </label>
+                        <input
+                          id={`override-${row.key}`}
+                          name="overrideReason"
+                          maxLength={500}
+                          placeholder="Kapasite aşımı gerekçesi"
+                          className="w-[170px] rounded-lg border border-[#DDE4E0] bg-white px-2 py-1.5 text-[12.5px] text-dc-ink"
                         />
                         <button
                           type="submit"

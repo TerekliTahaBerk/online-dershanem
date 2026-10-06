@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireApiActiveUser } from "@/lib/auth/api-guards";
 import { guardMutation, mutationGuardResponse } from "@/lib/security/mutation-guard";
 import { getAccessibleProducts } from "@/lib/auth/products";
-import { productRolePath } from "@/lib/auth/roles";
+import { resolveProductEntryPath } from "@/lib/products/product-entry";
 import { getSession } from "@/lib/auth/session";
 import { checkProductPanelPilot } from "@/lib/auth/product-panels";
 
@@ -53,6 +53,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Bu panel şu anda erişime kapalı." }, { status: 403 });
   }
 
+  const entry = await resolveProductEntryPath(actor, product);
+  if (!entry) return NextResponse.json({ error: "Bu ürüne erişiminiz yok." }, { status: 403 });
+
   await prisma.session.update({ where: { id: actor.sessionId }, data: { activeProduct: product } });
-  return NextResponse.json({ redirect: productRolePath(product, actor.role) });
+  return NextResponse.json({ redirect: entry });
 }

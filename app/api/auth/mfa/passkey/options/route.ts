@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requireApiPrimaryAdmin } from "@/lib/auth/api-guards";
+import { requireApiPrimaryMfaUser } from "@/lib/auth/api-guards";
 import { adminHasMfa } from "@/lib/auth/mfa";
 import { authenticationOptions, registrationOptions } from "@/lib/auth/webauthn";
 import { guardMutation, mutationGuardResponse } from "@/lib/security/mutation-guard";
@@ -11,7 +11,7 @@ const schema = z.object({
 });
 
 export async function POST(request: Request) {
-  const auth = await requireApiPrimaryAdmin();
+  const auth = await requireApiPrimaryMfaUser();
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "auth.mfa.passkey.options", requireSameOrigin: true, headers: request.headers, rateLimitKey: `mfa:options:${auth.session.userId}`, rateLimit: { max: 20, windowMs: 15 * 60_000 } });
   if (!guard.ok) return mutationGuardResponse(guard);

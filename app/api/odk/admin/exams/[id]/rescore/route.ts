@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireApiProductRole } from "@/lib/auth/api-guards";
+import { requireApiRecentStaffStepUp } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { rescoreSchema } from "@/lib/odk/admin-schemas";
 import { previewRescoreImpact } from "@/lib/odk/result-publication";
 import { scoreOdkExam } from "@/lib/odk/scoring-service";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
+  const auth = await requireApiRecentStaffStepUp("odk:key:revise"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "odk.exam.rescore", requireSameOrigin: true, headers: request.headers, rateLimitKey: `odk:rescore:${auth.session.userId}`, rateLimit: { max: 10, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const { id } = await context.params;

@@ -1,9 +1,10 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { requireProductRole } from "@/lib/auth/guards";
-import { productRolePath } from "@/lib/auth/roles";
+import { resolveProductEntryPath } from "@/lib/products/product-entry";
 
 export const dynamic = "force-dynamic";
 
+/** Deneme Ligi kökü: kullanıcıyı rolüne ve (personelse) izinlerine göre çalışma alanına yollar. */
 export default async function OdkRouterPage() {
   const session = await requireProductRole(
     "ODK",
@@ -12,5 +13,7 @@ export default async function OdkRouterPage() {
     "STUDENT",
     "PARENT",
   );
-  redirect(productRolePath("ODK", session.role));
+  const entry = await resolveProductEntryPath(session, "ODK");
+  if (!entry) notFound();
+  redirect(entry);
 }

@@ -11,6 +11,7 @@ import { usePanelFeatureFlags } from "@/components/panel/panel-feature-provider"
 import { PanelNav, mobilePrimaryNav } from "@/components/panel/panel-nav";
 import { LogoutButton } from "@/components/panel/logout-button";
 import type { PanelNavItem } from "@/lib/panel/navigation";
+import type { StaffPermission } from "@/lib/products/staff-permission-matrix";
 
 export type PanelMobileDrawerAccount = {
   displayName: string;
@@ -33,6 +34,7 @@ export function PanelMobileNav({
   role,
   products,
   scope = null,
+  staffOdkPermissions = null,
   nav,
   mobileQuickItems,
   drawerAccount,
@@ -40,6 +42,8 @@ export function PanelMobileNav({
   role: UserRole;
   products: ProductCode[];
   scope?: ProductCode | null;
+  /** Deneme Ligi personel izinleri (yalnız enforce modunda öğretmen için; sunum). */
+  staffOdkPermissions?: readonly StaffPermission[] | null;
   /** Kendi menüsü olan çalışma alanları için. */
   nav?: React.ReactNode;
   /** Özel menülü alanlarda (İşletme vb.) alt çubuk kısayolları. */
@@ -59,7 +63,7 @@ export function PanelMobileNav({
     role === "PARENT" ? searchParams.get("studentId") : null;
   const quickItems =
     mobileQuickItems ??
-    (nav ? [] : mobilePrimaryNav(role, products, flags, root, scope));
+    (nav ? [] : mobilePrimaryNav(role, products, flags, root, scope, staffOdkPermissions));
   const bottomNavColumns = Math.min(4, Math.max(2, quickItems.length + 1));
 
   useEffect(() => setOpen(false), [pathname]);
@@ -186,6 +190,7 @@ export function PanelMobileNav({
                   role={role}
                   products={products}
                   scope={scope}
+                  staffOdkPermissions={staffOdkPermissions}
                   onNavigate={() => setOpen(false)}
                 />
               )}

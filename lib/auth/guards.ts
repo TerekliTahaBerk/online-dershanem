@@ -21,6 +21,9 @@ import {
   toAdminTeacherModeSession,
 } from "@/lib/auth/admin-teacher-mode";
 import { isPreviewableRole } from "@/lib/panel/preview-context";
+import { hasStaffPermission, userRequiresMfa } from "@/lib/products/staff-permissions";
+import { staffPermissionProduct } from "@/lib/products/staff-mode";
+import type { StaffPermission } from "@/lib/products/staff-permission-matrix";
 
 /**
  * Yetki kapıları.
@@ -70,7 +73,8 @@ export async function requireSession(): Promise<SessionUser> {
 async function requireAuthorizedRole(...roles: UserRole[]): Promise<SessionUser> {
   const session = await requireSession();
   if (session.mustChangePassword) redirect(PASSWORD_CHANGE_PATH);
-  if (session.role === "ADMIN" && !session.mfaVerifiedAt) redirect(MFA_PATH);
+  // ADMIN ve ayrıcalıklı Deneme Ligi / ürün yöneticisi personeli ikinci faktör ister.
+  if (!session.mfaVerifiedAt && (await userRequiresMfa(session.userId, session.role))) redirect(MFA_PATH);
   if (roles.includes(session.role)) return session;
 
   if (session.role === "ADMIN") {
@@ -177,6 +181,57 @@ export async function requireFirstAccessibleProductRole(
     if (await hasProductCodeAccess(session.userId, session.role, code)) {
       return { session, productCode: code };
     }
+  }
+  notFound();
+}
+
+/**
+ * Ürün PERSONEL sayfaları: platform rolü (ADMIN / TEACHER) + ürün pilot kapısı +
+ * ürün personel izni (`ProductStaffAssignment`, bkz. staff-permission-matrix).
+ *
+ * Global rol tek başına yetmez: ör. Deneme Ligi yönetim sayfaları "UserRole
+ * ADMIN" değil "ilgili Deneme Ligi izni" demektir. `STAFF_PRODUCT_ASSIGNMENTS`
+ * shadow modunda karar eski kuraldır (yeni kural farkı loglanır); ADMIN her
+ * iznde geçer. İzinsiz → 404.
+ */
+export async function requireStaffPermission(permission: StaffPermission): Promise<SessionUser> {
+  return requireAnyStaffPermission([permission]);
+}
+
+/** Listelenen izinlerden en az biri. Pilot kapısı ilk iznin ürününden gelir. */
+export async function requireAnyStaffPermission(permissions: readonly [StaffPermission, ...StaffPermission[]] | readonly StaffPermission[]): Promise<SessionUser> {
+  if (!permissions.length) notFound();
+  const session = await requireAuthorizedRole("ADMIN", "TEACHER");
+  await requireProductPilot(session, staffPermissionProduct(permissions[0]!));
+  for (const permission of permissions) {
+    if (await hasStaffPermission(session.userId, permission)) return session;
+  }
+  notFound();
+}
+
+/**
+ * Öğretmen paneli içindeki ürün personel sayfaları (Yön koç masası, Deneme
+ * Ligi öğretmen raporları): rol TEACHER (admin öğretmen modu dahil) + ürün
+ * erişimi + ürün personel izni. OD grup öğretmeni olmak Yön koçluğu ya da
+ * Deneme Ligi rapor yetkisi VERMEZ.
+ */
+export async function requireTeacherStaffPermission(permission: StaffPermission): Promise<SessionUser> {
+  const session = await requireProductRole(staffPermissionProduct(permission), "TEACHER");
+  if (!(await hasStaffPermission(session.userId, permission))) notFound();
+  return session;
+}
+
+/**
+ * OD ve Yön'ün ortak öğretmen sayfaları (ör. görüşme hazırlığı): TEACHER +
+ * izinlerden en az biri. Ürün erişimi izinden gelir; OD ve OK aynı pilot
+ * programını paylaşır. Sayfa içi veri kapsamı (grup / koç ataması) ayrıca çözülür.
+ */
+export async function requireTeacherAnyStaffPermission(permissions: readonly StaffPermission[]): Promise<SessionUser> {
+  if (!permissions.length) notFound();
+  const session = await requireAuthorizedRole("TEACHER");
+  await requireProductPilot(session, staffPermissionProduct(permissions[0]!));
+  for (const permission of permissions) {
+    if (await hasStaffPermission(session.userId, permission)) return session;
   }
   notFound();
 }

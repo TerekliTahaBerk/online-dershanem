@@ -23,6 +23,7 @@ import type { ProductCode, UserRole } from "@prisma/client";
 import { ACCOUNT_SETTINGS_PATH, productRolePath, rolePath, roleStudentsPath } from "@/lib/auth/roles";
 import type { PanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PANEL_DOMAIN } from "@/lib/panel/domain-vocabulary";
+import { ODK_REPORT_WORKSPACE, odkStaffModules, resolveOdkStaffHome, type StaffPermission } from "@/lib/products/staff-permission-matrix";
 
 export type PanelNavItem = {
   /** Kararlı kimlik — test ve analytics için. */
@@ -85,10 +86,10 @@ function studentSections(
       ...(hasODK
         ? [{ id: "odk-exams", href: "/panel/odk/ogrenci/denemeler", label: PANEL_DOMAIN.denemeler }]
         : []),
-      ...(hasOD && flags.mockExamAnalysis && !hasODK
+      ...((hasOD || hasOK) && flags.mockExamAnalysis && !hasODK
         ? [{ id: "mock-exams", href: `${root}/denemeler`, label: PANEL_DOMAIN.denemeler }]
         : []),
-      ...(hasOD && flags.mockExamAnalysis && hasODK
+      ...((hasOD || hasOK) && flags.mockExamAnalysis && hasODK
         ? [{ id: "mock-exams", href: `${root}/denemeler`, label: "Okul ve kurum denemeleri" }]
         : []),
     ]),
@@ -275,7 +276,8 @@ const NAV_ITEM_SCOPE: Partial<Record<"TEACHER" | "ADMIN", Record<string, Product
     help: "OK",
     interventions: "OK",
     digests: "OK",
-    "mock-exams": "ODK",
+    // Dış (okul / yayınevi) deneme kayıtları OD öğretmen analizidir; Deneme Ligi değil.
+    "mock-exams": "OD",
     "odk-reports": "ODK",
   },
   ADMIN: {
@@ -308,7 +310,10 @@ export function resolveNavScope(
   scope: ProductCode | null | undefined,
 ): ProductCode | null {
   if (!scope) return null;
-  if (role === "ADMIN" || role === "TEACHER") return scope;
+  // ADMIN her ürün panelinde çalışır (break-glass). Öğretmenin ürünleri artık
+  // personel atamalarından gelir (`staffAccessibleProducts`): bayat bir
+  // `activeProduct` erişimi olmayan ürünün menüsünü göstermesin.
+  if (role === "ADMIN") return scope;
   return products.includes(scope) ? scope : null;
 }
 
@@ -329,14 +334,40 @@ function applyScope(
   return scoped;
 }
 
+/**
+ * Deneme Ligi PERSONEL menüsü (ADMIN olmayan): global rolden değil personel
+ * izinlerinden kurulur. Menü yetki değildir; her sayfa izni ayrıca doğrular.
+ */
+export function staffOdkNavItems(permissions: readonly StaffPermission[]): PanelNavItem[] {
+  const set = new Set(permissions);
+  const home = resolveOdkStaffHome({ isAdmin: false, permissions: set });
+  if (!home) return [];
+  const items: PanelNavItem[] = [{ id: "today", href: home, label: PANEL_DOMAIN.bugun }];
+  for (const entry of odkStaffModules(set)) {
+    if (entry.href !== home) items.push({ id: entry.id, href: entry.href, label: entry.label });
+  }
+  if (set.has("odk:report:read_related") && home !== ODK_REPORT_WORKSPACE) {
+    items.push({ id: "odk-teacher-reports", href: ODK_REPORT_WORKSPACE, label: "Öğrenci deneme raporları" });
+  }
+  return items;
+}
+
 export function panelNavSections(
   role: UserRole,
   products: ProductCode[],
   flags: PanelFeatureFlags,
   root: string = rolePath(role),
   scope: ProductCode | null = null,
+  staffOdkPermissions: readonly StaffPermission[] | null = null,
 ): PanelNavSection[] {
   const effectiveScope = resolveNavScope(role, products, scope);
+  // Personel atamaları uygulanıyorsa (enforce) öğretmenin Deneme Ligi menüsü izinlerden gelir.
+  if (role === "TEACHER" && effectiveScope === "ODK" && staffOdkPermissions) {
+    return [
+      ...section("denemeler", "DENEME LİGİ", staffOdkNavItems(staffOdkPermissions)),
+      ...section("ayarlar", "AYARLAR", commonItems(flags)),
+    ];
+  }
   const scopedProducts = effectiveScope && (role === "STUDENT" || role === "PARENT") ? [effectiveScope] : products;
   let sections: PanelNavSection[];
   switch (role) {
@@ -370,11 +401,12 @@ export function mobilePrimaryNav(
   flags: PanelFeatureFlags,
   root: string = rolePath(role),
   scope: ProductCode | null = null,
+  staffOdkPermissions: readonly StaffPermission[] | null = null,
 ): PanelNavItem[] {
   const effectiveScope = resolveNavScope(role, allProducts, scope);
   if (effectiveScope && (role === "ADMIN" || role === "TEACHER")) {
     // Personel alt çubuğu: seçili panelin menüsünden ilk dört öğe.
-    return panelNavSections(role, allProducts, flags, root, effectiveScope)
+    return panelNavSections(role, allProducts, flags, root, effectiveScope, staffOdkPermissions)
       .flatMap((navSection) => navSection.items)
       .slice(0, 4);
   }

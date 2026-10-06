@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Product staff responsibilities (`ProductStaffAssignment`): TEACHER@OD, COACH@OK and Deneme Ligi EXAM_EDITOR / EXAM_OPERATOR / RESULT_PUBLISHER / REPORT_VIEWER / PRODUCT_MANAGER are granted per product instead of through new global roles; rows keep full grant/revoke history with one active row per user, product and role (SQL partial unique index)
+- **Ürün sorumlulukları** in the admin user detail (Erişim Merkezi): grant and revoke with a required reason and step-up, coach capacity, history, an "MFA kurulumu bekleniyor" badge and a non-blocking last-holder warning; new teachers get TEACHER@OD automatically
+- Deneme Ligi staff land on the workspace their permissions allow (single module, staff home with permitted tiles only, or the report workspace), and the Deneme Ligi menu is built from the same permissions
+- `STAFF_PRODUCT_ASSIGNMENTS` rollout mode (`legacy` / `shadow` default / `enforce`); shadow keeps today's access and logs `panel.staff_access_shadow_mismatch` as `UNEXPECTED` or `EXPECTED_NARROWING`
+- `npm run staff:backfill` (dry-run by default, `--apply`, idempotent) creating TEACHER@OD for every teacher, COACH@OK for coach-marked teachers, and REPORT_VIEWER@ODK only for teachers with a current Deneme Ligi report relationship
 - Self-signup for students and parents at `/kayit` (multi-step: account type, personal, education or children, interests and purchase status, contact preference, KVKK/terms/marketing consent); signup never grants product access and parents' children wait as pending accounts (`PUBLIC_REGISTER_ENABLED`)
 - Post-signup Tally contact form (`/kayit/iletisim-formu`, skippable) with a signed `ref` hidden field and a signed webhook at `/api/integrations/tally` that records responses, creates CRM leads and notifies admins (`TALLY_FORM_ID`, `TALLY_REF_SECRET`, `TALLY_SIGNING_SECRET`)
 - Account settings hub at `/panel/ayarlar` (profile, education, children, contact, billing address, consents, security) with a profile-completion meter and an in-panel reminder banner
@@ -38,6 +43,9 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Security
 
+- Every Deneme Ligi admin page and API is gated by a specific permission (exam edit, schedule, assign, live ops, integrity review, scoring, release, key revision, packages, reports) instead of the bare ADMIN role; pilot control stays ADMIN-only and ADMIN keeps every permission as code-defined break-glass
+- Privileged Deneme Ligi staff must use MFA, and result release and rescoring require a fresh step-up; answer keys are sent only to exam editors
+- Admin coach assignment requires the student's active Yön Koçluk membership and an audited reason to exceed a coach's capacity
 - Student-success timeline (`/api/panel/student-success/progress/[studentId]?view=timeline`) now filters events by viewer visibility on the server; staff-only and internal events (including intervention and mastery-rescore outbox events) no longer reach students or parents
 - Yön Koçluk writes (coach notes, tasks, templates, plan copy, suggestion review, weekly summaries, plan approval, recovery-driven plan rebuilds) now require ADMIN or the student's active `CoachAssignment`; being the student's OD group teacher is no longer enough
 - Parent academic access now requires an active, unended link with `canViewAcademic`, across parent pages, student-success APIs, Deneme Ligi parent reports, material access, weekly-digest feedback and lesson notifications; the account and package screen keeps working for links without academic access

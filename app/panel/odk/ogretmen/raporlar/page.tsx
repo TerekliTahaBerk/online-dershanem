@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { requireProductRole } from "@/lib/auth/guards";
+import { requireTeacherStaffPermission } from "@/lib/auth/guards";
 import {
   getOdkAudienceStudentReport,
   listOdkReportStudents,
@@ -13,7 +13,7 @@ export default async function OdkTeacherReportsPage({
 }: {
   searchParams: Promise<{ ogrenci?: string }>;
 }) {
-  const session = await requireProductRole("ODK", "TEACHER");
+  const session = await requireTeacherStaffPermission("odk:report:read_related");
   const students = await listOdkReportStudents({
     userId: session.userId,
     role: "TEACHER",

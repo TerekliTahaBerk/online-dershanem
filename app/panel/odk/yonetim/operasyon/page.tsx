@@ -8,7 +8,7 @@ import {
   Video,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { requireProductRole } from "@/lib/auth/guards";
+import { requireStaffPermission } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   PanelPageHeader,
@@ -33,7 +33,8 @@ export default async function OdkOperationsPage({
 }: {
   searchParams: Promise<{ q?: string; gorunum?: string }>;
 }) {
-  const session = await requireProductRole("ODK", "ADMIN");
+  // Deneme Ligi personel izni (ADMIN her izinde geçer); global rol tek başına yetmez.
+  const session = await requireStaffPermission("odk:ops:live");
   const params = await searchParams;
   const query = params.q?.trim().toLocaleLowerCase("tr-TR").slice(0, 80) || "";
   const view = views.includes(params.gorunum as (typeof views)[number])

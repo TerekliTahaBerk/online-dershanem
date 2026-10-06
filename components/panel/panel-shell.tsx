@@ -27,7 +27,9 @@ import { OfflineSyncProvider } from "@/components/panel/offline-sync-provider";
 import { offlineSessionScope } from "@/lib/offline-scope";
 import { PanelFeatureProvider } from "@/components/panel/panel-feature-provider";
 import { visibleGlobalSearchCommands } from "@/lib/panel/global-search";
-import { resolveNavScope, type PanelNavItem } from "@/lib/panel/navigation";
+import { resolveNavScope, staffOdkNavItems, type PanelNavItem } from "@/lib/panel/navigation";
+import { effectiveStaffPermissions } from "@/lib/products/staff-permissions";
+import { staffAssignmentMode } from "@/lib/products/staff-mode";
 import { AccountCompletionBanner } from "@/components/account/account-completion-banner";
 
 /**
@@ -185,6 +187,14 @@ export async function PanelShell({
     }
     return null;
   })();
+  // Enforce modunda öğretmenin Deneme Ligi menüsü personel izinlerinden kurulur
+  // (editör / operatör / yayıncı / rapor okuyucu). Menü yetki değildir.
+  const staffOdkPermissions = await (async () => {
+    if (effectiveRole !== "TEACHER" || navScope !== "ODK" || !effectiveUserId) return null;
+    if (staffAssignmentMode() !== "enforce") return null;
+    const access = await effectiveStaffPermissions(effectiveUserId);
+    return access.isAdmin ? null : [...access.permissions];
+  })();
   const productSwitch =
     !isBusinessWorkspace && !preview && navScope
       ? { href: PRODUCT_SELECTOR_PATH, label: `${productLabel(navScope)} · Panel değiştir` }
@@ -192,7 +202,9 @@ export async function PanelShell({
 
   const homeHref = isBusinessWorkspace
     ? "/panel/yonetim/isletme/genel-bakis"
-    : productRolePath(navScope ?? product, effectiveRole);
+    : staffOdkPermissions
+      ? (staffOdkNavItems(staffOdkPermissions)[0]?.href ?? productRolePath("ODK", effectiveRole))
+      : productRolePath(navScope ?? product, effectiveRole);
 
   /*
    * ÇALIŞMA ALANI DEĞİŞTİRME.
@@ -317,7 +329,7 @@ export async function PanelShell({
             </Link>
 
             <div className="min-h-0 flex-1 overflow-y-auto">
-              {nav ?? <PanelNav role={effectiveRole} products={products} scope={navScope} />}
+              {nav ?? <PanelNav role={effectiveRole} products={products} scope={navScope} staffOdkPermissions={staffOdkPermissions} />}
             </div>
 
             <div className="mt-auto border-t border-dc-line-soft pt-5">
@@ -381,6 +393,7 @@ export async function PanelShell({
                 role={effectiveRole}
                 products={products}
                 scope={navScope}
+                staffOdkPermissions={staffOdkPermissions}
                 nav={nav}
                 mobileQuickItems={mobileQuickItems}
                 drawerAccount={{

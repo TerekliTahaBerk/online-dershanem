@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { findCoachAssignmentForCoach } from "@/lib/panel/coaching";
+import { hasStaffPermission } from "@/lib/products/staff-permissions";
 
 /**
  * Online Koçum yatay erişim — sunucu tarafı.
@@ -45,6 +46,9 @@ export async function assertAssignedCoach(input: {
   studentProfileId: string;
 }): Promise<boolean> {
   if (input.role === "ADMIN") return true;
+  // Phase 1: aktif atama + Yön koç personel izni (COACH@OK). Shadow modunda
+  // izin eski kuraldır (her öğretmen); enforce'ta yalnız COACH@OK.
+  if (!(await hasStaffPermission(input.userId, "ok:coaching:write"))) return false;
   return Boolean(await findCoachAssignmentForCoach(input.userId, input.studentProfileId));
 }
 

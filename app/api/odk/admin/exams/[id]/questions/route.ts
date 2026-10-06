@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireApiProductRole } from "@/lib/auth/api-guards";
+import { requireApiStaffPermission } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { updateQuestionsSchema } from "@/lib/odk/admin-schemas";
 import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
+  const auth = await requireApiStaffPermission("odk:exam:edit"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "odk.exam.questions.update", requireSameOrigin: true, headers: request.headers, rateLimitKey: `odk:questions:${auth.session.userId}`, rateLimit: { max: 60, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = updateQuestionsSchema.safeParse(await request.json().catch(() => null));

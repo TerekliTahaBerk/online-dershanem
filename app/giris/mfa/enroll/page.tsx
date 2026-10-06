@@ -3,10 +3,11 @@ import { AdminMfaEnrollment } from "@/components/panel/admin-mfa-form";
 import { requireSession } from "@/lib/auth/guards";
 import { adminHasMfa } from "@/lib/auth/mfa";
 import { PASSWORD_CHANGE_PATH } from "@/lib/auth/roles";
+import { userRequiresMfa } from "@/lib/products/staff-permissions";
 
 export default async function AdminMfaEnrollPage() {
   const session = await requireSession();
-  if (session.role !== "ADMIN") notFound();
+  if (!(await userRequiresMfa(session.userId, session.role))) notFound();
   if (session.mustChangePassword) redirect(PASSWORD_CHANGE_PATH);
   if ((await adminHasMfa(session.userId)) && !session.mfaVerifiedAt)
     redirect("/giris/mfa");

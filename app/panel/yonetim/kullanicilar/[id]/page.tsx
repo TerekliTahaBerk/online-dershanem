@@ -11,6 +11,10 @@ import { PanelCard, PanelCardTitle, PanelHeading } from "@/components/panel/ui";
 import { AdminUserProfileForm } from "@/components/panel/admin-user-profile-form";
 import { AdminAccessibilityAccommodationForm } from "@/components/panel/admin-accessibility-accommodation-form";
 import { AdminProductAccessForm } from "@/components/panel/admin-product-access-form";
+import { AdminStaffResponsibilitiesForm } from "@/components/panel/admin-staff-responsibilities-form";
+import { listStaffAssignmentHistory } from "@/lib/products/staff-assignment-server";
+import { hasPrivilegedStaffRole } from "@/lib/products/staff-permission-matrix";
+import { adminHasMfa } from "@/lib/auth/mfa";
 import { RequestMfaResetForm } from "@/components/panel/mfa-reset-controls";
 import { UserRowActions } from "@/components/panel/user-row-actions";
 import { ArchiveUserAction } from "@/components/panel/archive-user-action";
@@ -179,6 +183,11 @@ export default async function UserDetailPage({
   const coach = student?.coachAssignments[0] ?? null;
   const teacherLifecycle =
     user.role === "TEACHER" ? await getTeacherLifecycleSummary(user.id) : null;
+  const staffHistory = user.role === "TEACHER" ? await listStaffAssignmentHistory(user.id) : [];
+  const staffMfaPending =
+    user.role === "TEACHER" &&
+    hasPrivilegedStaffRole(staffHistory.filter((row) => !row.revokedAt)) &&
+    !(await adminHasMfa(user.id));
   const teacherStudentLinks =
     user.role === "TEACHER"
       ? user.studentTeacherAssignments.map((link) => ({
@@ -336,11 +345,23 @@ export default async function UserDetailPage({
           </div>
         </PanelCard>
 
-        <AdminProductAccessForm
-          userId={user.id}
-          role={user.role}
-          initialProducts={user.productMemberships.flatMap((m) => (m.product ? [m.product] : []))}
-        />
+        {/* Personel ürün erişimi atamalardan türetilir (aşağıdaki "Ürün sorumlulukları"). */}
+        {user.role !== "TEACHER" ? (
+          <AdminProductAccessForm
+            userId={user.id}
+            role={user.role}
+            initialProducts={user.productMemberships.flatMap((m) => (m.product ? [m.product] : []))}
+          />
+        ) : null}
+
+        {user.role === "TEACHER" ? (
+          <AdminStaffResponsibilitiesForm
+            userId={user.id}
+            history={staffHistory}
+            coachCapacity={user.teacherProfile?.coachCapacity ?? null}
+            mfaPending={staffMfaPending}
+          />
+        ) : null}
 
         {/* Yönetici MFA kurtarma — cihaz kaybında tek çıkış yolu. Kendi hesabınız
             için açılamaz; sunucu da aynı kuralı uygular. */}

@@ -13,6 +13,7 @@ import {
   resolveAppOrigin,
 } from "@/lib/auth/invitation";
 import { hashPassword } from "@/lib/auth/password";
+import { grantStaffRole } from "@/lib/products/staff-assignment-server";
 
 /**
  * Hesap açma — YALNIZCA admin.
@@ -125,6 +126,18 @@ export async function POST(request: Request) {
     },
     include: { studentProfile: { select: { id: true } } },
   });
+
+  // Yeni öğretmen varsayılan olarak yalnız OD ders sorumluluğu alır; Yön koçluğu
+  // ve Deneme Ligi görevleri Erişim Merkezi'nden ayrıca verilir.
+  if (user.role === "TEACHER") {
+    await grantStaffRole({
+      userId: user.id,
+      productCode: "OD",
+      role: "TEACHER",
+      actorUserId: auth.session.userId,
+      reason: "Öğretmen hesabı açılışı",
+    });
+  }
 
   await logAudit({
     actorUserId: auth.session.userId,

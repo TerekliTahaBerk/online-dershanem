@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireApiProductRole } from "@/lib/auth/api-guards";
+import { requireApiStaffPermission } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { integrityReviewSchema } from "@/lib/odk/admin-schemas";
 import { assessIntegrity } from "@/lib/odk/integrity";
 import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
+  const auth = await requireApiStaffPermission("odk:integrity:review"); if (!auth.ok) return auth.response;
   const routeParams = idParamsSchema.safeParse(await context.params);
   if (!routeParams.success) return invalidApiInput();
   const { id } = routeParams.data;
@@ -60,7 +60,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
 }
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
+  const auth = await requireApiStaffPermission("odk:integrity:review"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "odk.attempt.integrity_review", requireSameOrigin: true, headers: request.headers, rateLimitKey: `odk:integrity:${auth.session.userId}`, rateLimit: { max: 60, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const routeParams = idParamsSchema.safeParse(await context.params);

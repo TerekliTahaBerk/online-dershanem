@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requireApiPrimaryAdmin } from "@/lib/auth/api-guards";
+import { requireApiPrimaryMfaUser } from "@/lib/auth/api-guards";
 import { adminHasMfa, markSessionMfaVerified, replaceRecoveryCodes } from "@/lib/auth/mfa";
 import { decryptMfaSecret, encryptMfaSecret, matchTotpCounter, randomBase32 } from "@/lib/auth/mfa-crypto";
 import { prisma } from "@/lib/prisma";
@@ -10,7 +10,7 @@ import { guardMutation, mutationGuardResponse } from "@/lib/security/mutation-gu
 const verifySchema = z.object({ code: z.string().regex(/^\d{6}$/) });
 
 export async function PUT(request: Request) {
-  const auth = await requireApiPrimaryAdmin();
+  const auth = await requireApiPrimaryMfaUser();
   if (!auth.ok) return auth.response;
   if ((await adminHasMfa(auth.session.userId)) && !auth.session.mfaVerifiedAt) return NextResponse.json({ error: "TOTP'yi değiştirmek için önce MFA doğrulayın." }, { status: 403 });
   const guard = await guardMutation({ action: "auth.mfa.totp.begin", requireSameOrigin: true, headers: request.headers, rateLimitKey: `mfa:totp-begin:${auth.session.userId}`, rateLimit: { max: 5, windowMs: 15 * 60_000 } });
@@ -23,7 +23,7 @@ export async function PUT(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const auth = await requireApiPrimaryAdmin();
+  const auth = await requireApiPrimaryMfaUser();
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "auth.mfa.totp.confirm", requireSameOrigin: true, headers: request.headers, rateLimitKey: `mfa:totp-confirm:${auth.session.userId}`, rateLimit: { max: 10, windowMs: 15 * 60_000 } });
   if (!guard.ok) return mutationGuardResponse(guard);

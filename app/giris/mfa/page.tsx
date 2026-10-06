@@ -6,10 +6,12 @@ import { getAdminPasskeyCapabilities } from "@/lib/auth/mfa-methods";
 import { prisma } from "@/lib/prisma";
 import { postAuthenticationPath } from "@/lib/auth/products";
 import { PASSWORD_CHANGE_PATH } from "@/lib/auth/roles";
+import { userRequiresMfa } from "@/lib/products/staff-permissions";
 
 export default async function AdminMfaPage() {
   const session = await requireSession();
-  if (session.role !== "ADMIN") notFound();
+  // ADMIN ve ayrıcalıklı ürün personeli (Deneme Ligi editör / operatör / yayıncı).
+  if (!(await userRequiresMfa(session.userId, session.role))) notFound();
   if (session.mustChangePassword) redirect(PASSWORD_CHANGE_PATH);
   if (!(await adminHasMfa(session.userId))) redirect("/giris/mfa/enroll");
   if (session.mfaVerifiedAt) redirect(await postAuthenticationPath(session));

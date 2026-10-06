@@ -2,7 +2,8 @@ import Link from "next/link";
 import { CoachingSessions } from "@/components/panel/coaching-sessions";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/auth/guards";
+import { requireTeacherAnyStaffPermission } from "@/lib/auth/guards";
+import { hasStaffPermission } from "@/lib/products/staff-permissions";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { planningWeekStart } from "@/lib/adaptive-plan";
 import { addIstanbulCalendarDays } from "@/lib/istanbul-time";
@@ -44,11 +45,13 @@ export default async function CoachPrepPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await requireRole("TEACHER");
+  // OD öğretmeni (grup / bireysel) ya da Yön koçu; öğrenci kapsamı aşağıda çözülür.
+  const session = await requireTeacherAnyStaffPermission(["od:lesson:teach", "ok:coaching:write"]);
   if (!getPanelFeatureFlags().adaptivePlan) notFound();
 
   const { id } = await params;
-  const ownCoachAssignment = await findCoachAssignmentForCoach(session.userId, id);
+  // Koç yolu yalnız Yön koç izniyle (COACH@OK); OD öğretmeni grup kapsamına düşer.
+  const ownCoachAssignment = (await hasStaffPermission(session.userId, "ok:coaching:write")) ? await findCoachAssignmentForCoach(session.userId, id) : null;
   const coachStudent = ownCoachAssignment ? await prisma.studentProfile.findFirst({ where: { id, coachAssignments: { some: { endedAt: null, coach: { userId: session.userId } } } }, select: { id: true, userId: true, classLevel: true, targetGoal: true, user: { select: { fullName: true, email: true } } } }) : null;
   const student = coachStudent ? { ...coachStudent, name: coachStudent.user.fullName || coachStudent.user.email, groups: [] } : await resolveTeacherStudent(session.userId, id);
   const groupIds = student.groups.map((g) => g.id);

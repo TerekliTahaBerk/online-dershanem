@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireApiProductRole } from "@/lib/auth/api-guards";
+import { requireApiStaffPermission } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
@@ -13,7 +13,7 @@ const uploadSchema = z.object({ file: z.instanceof(File), type: z.enum(["BOOKLET
 function cleanName(name: string) { return name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0, 100) || "deneme.pdf"; }
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
+  const auth = await requireApiStaffPermission("odk:exam:edit"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "odk.exam.file.upload", requireSameOrigin: true, headers: request.headers, rateLimitKey: `odk:file:${auth.session.userId}`, rateLimit: { max: 20, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   if (!process.env.BLOB_READ_WRITE_TOKEN) return NextResponse.json({ error: "Private dosya deposu yapılandırılmamış." }, { status: 503 });
