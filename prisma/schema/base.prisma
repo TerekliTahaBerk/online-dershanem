@@ -69,6 +69,7 @@ model Product {
   progressEvidence     StudentProgressEvidence[]
   commerceOrderLines   CommerceOrderLine[]
   contentRoles         ProductContentRoleAssignment[]
+  staffAssignments     ProductStaffAssignment[]
   weeklyPlans          WeeklyPlan[]
 
   @@map("products")
@@ -96,6 +97,61 @@ model ProductContentRoleAssignment {
   @@unique([userId, productId, role])
   @@index([productId, revokedAt])
   @@map("product_content_role_assignments")
+}
+
+/// Ürün başına personel sorumluluğu — kimlik DEĞİL. Platform rolü (`UserRole`)
+/// değişmez; bir TEACHER aynı anda OD öğretmeni, Yön koçu ve Deneme Ligi
+/// editörü olabilir. Karar mantığı: lib/products/staff-permission-matrix.ts
+enum ProductStaffRole {
+  /// OD: grup / bireysel öğrencilere ders verir.
+  TEACHER
+  /// OK (Yön Koçluk): `CoachAssignment` taşıyabilir.
+  COACH
+  /// ODK (Deneme Ligi): sınav, soru, cevap anahtarı, kazanım, dosya.
+  EXAM_EDITOR
+  /// ODK: takvim, atama, canlı operasyon, bütünlük incelemesi, istisnai erişim.
+  EXAM_OPERATOR
+  /// ODK: puanlama, yeniden puanlama, sonuç yayını, cevap anahtarı revizyonu.
+  RESULT_PUBLISHER
+  /// ODK: yalnız ilişkili öğrencilerin raporlarını okur.
+  REPORT_VIEWER
+  /// Ürünün operasyon yöneticisi (atama, paket).
+  PRODUCT_MANAGER
+}
+
+enum ProductStaffAssignmentSource {
+  MANUAL
+  LEGACY_BACKFILL
+}
+
+/// Bir satır = bir yetki dönemi. İptal satırı KAPATIR (`revokedAt`), yeniden
+/// verme YENİ satır açar; satırlar silinmez ve yeniden kullanılmaz (geçmiş).
+///
+/// "Aynı (kullanıcı, ürün, rol) için en fazla bir AKTİF satır" kuralı Prisma'da
+/// ifade edilemez; migration 0113'teki SQL kısmi tekil indeksiyle korunur
+/// (`product_staff_assignments_one_active … WHERE revoked_at IS NULL`).
+/// `prisma db push` bu indeksi OLUŞTURMAZ — yalnız migration zinciri kullanın.
+model ProductStaffAssignment {
+  id           String                       @id @default(cuid())
+  userId       String                       @map("user_id")
+  productId    String                       @map("product_id")
+  role         ProductStaffRole
+  source       ProductStaffAssignmentSource @default(MANUAL)
+  grantedAt    DateTime                     @default(now()) @map("granted_at") @db.Timestamptz(3)
+  /// LEGACY_BACKFILL satırlarında boştur.
+  grantedById  String?                      @map("granted_by_id")
+  grantReason  String?                      @map("grant_reason")
+  revokedAt    DateTime?                    @map("revoked_at") @db.Timestamptz(3)
+  revokedById  String?                      @map("revoked_by_id")
+  revokeReason String?                      @map("revoke_reason")
+  user         User                         @relation("ProductStaffAssignmentOwner", fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy    User?                        @relation("ProductStaffAssignmentGranter", fields: [grantedById], references: [id], onDelete: SetNull)
+  revokedBy    User?                        @relation("ProductStaffAssignmentRevoker", fields: [revokedById], references: [id], onDelete: SetNull)
+  product      Product                      @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([userId, revokedAt])
+  @@index([productId, role, revokedAt])
+  @@map("product_staff_assignments")
 }
 
 /// Ürüne bağlı, migration gerektirmeden genişletilebilen sınav ailesi kataloğu.

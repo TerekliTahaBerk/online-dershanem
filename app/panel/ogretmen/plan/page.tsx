@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { ListChecks } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/auth/guards";
+import { requireTeacherStaffPermission } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { planningWeekStart } from "@/lib/adaptive-plan";
 import { PanelShell } from "@/components/panel/panel-shell";
@@ -21,7 +21,8 @@ export const dynamic = "force-dynamic";
 const TEACHER_PLAN_DESK_LIMIT = 25;
 
 export default async function TeacherPlanPage() {
-  const session = await requireRole("TEACHER");
+  // Yön koç masası: COACH@OK (ADMIN öğretmen modu dahil). OD grup öğretmenliği yetmez.
+  const session = await requireTeacherStaffPermission("ok:coaching:write");
   if (!getPanelFeatureFlags().adaptivePlan) notFound();
 
   const weekStart = planningWeekStart();

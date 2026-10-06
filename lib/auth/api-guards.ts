@@ -19,6 +19,9 @@ import {
   toAdminTeacherModeSession,
 } from "@/lib/auth/admin-teacher-mode";
 import { isPreviewableRole } from "@/lib/panel/preview-context";
+import { hasStaffPermission, userRequiresMfa } from "@/lib/products/staff-permissions";
+import { staffPermissionProduct } from "@/lib/products/staff-mode";
+import type { StaffPermission } from "@/lib/products/staff-permission-matrix";
 
 /**
  * API route'ları için yetki kapısı.
@@ -39,7 +42,7 @@ export type ApiAuth =
   | { ok: true; session: SessionUser }
   | { ok: false; response: NextResponse };
 
-async function requireApiAuthorizedRole(roles: UserRole[], requireAdminMfa = true): Promise<ApiAuth> {
+async function requireApiAuthorizedRole(roles: UserRole[], requireMfa = true): Promise<ApiAuth> {
   if (!PANEL_ENABLED) {
     return {
       ok: false,
@@ -71,8 +74,10 @@ async function requireApiAuthorizedRole(roles: UserRole[], requireAdminMfa = tru
     };
   }
 
-  if (requireAdminMfa && session.role === "ADMIN" && !session.mfaVerifiedAt) {
-    return { ok: false, response: NextResponse.json({ error: "Yönetici erişimi için ikinci faktörü doğrulayın.", code: "MFA_REQUIRED", redirect: "/giris/mfa" }, { status: 403 }) };
+  // ADMIN ve ayrıcalıklı ürün personeli (Deneme Ligi editör / operatör / yayıncı,
+  // ürün yöneticisi) ikinci faktör doğrulamadan iş yapamaz.
+  if (requireMfa && !session.mfaVerifiedAt && (await userRequiresMfa(session.userId, session.role))) {
+    return { ok: false, response: NextResponse.json({ error: "Bu hesap için ikinci faktörü doğrulayın.", code: "MFA_REQUIRED", redirect: "/giris/mfa" }, { status: 403 }) };
   }
 
   if (roles.includes(session.role)) {
@@ -150,6 +155,44 @@ export async function requireApiPrimaryAdmin(): Promise<ApiAuth> {
   return requireApiAuthorizedRole(["ADMIN"], false);
 }
 
+/**
+ * MFA törenleri için ön-MFA sınırı: ADMIN ya da MFA zorunlu (ayrıcalıklı)
+ * ürün personeli. Diğer roller bu uçlara hiç giremez.
+ */
+export async function requireApiPrimaryMfaUser(): Promise<ApiAuth> {
+  const auth = await requireApiAuthorizedRole(["ADMIN", "TEACHER"], false);
+  if (!auth.ok) return auth;
+  if (!(await userRequiresMfa(auth.session.userId, auth.session.role))) {
+    return { ok: false, response: NextResponse.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403 }) };
+  }
+  return auth;
+}
+
+/**
+ * Ürün PERSONEL API'leri: ADMIN / TEACHER + ürün pilot kapısı + personel izni.
+ * İzinsiz → 403 JSON (API'lerde rota keşfi yok; mevcut rol kapılarıyla aynı).
+ */
+export async function requireApiStaffPermission(permission: StaffPermission): Promise<ApiAuth> {
+  let auth = await requireApiAuthorizedRole(["ADMIN", "TEACHER"]);
+  if (!auth.ok) return auth;
+  auth = await requireApiProductPilot(auth, staffPermissionProduct(permission));
+  if (!auth.ok) return auth;
+  if (!(await hasStaffPermission(auth.session.userId, permission))) {
+    return { ok: false, response: NextResponse.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403 }) };
+  }
+  return auth;
+}
+
+/** Personel izni + taze step-up (son 10 dk içinde ikinci faktör). */
+export async function requireApiRecentStaffStepUp(permission: StaffPermission): Promise<ApiAuth> {
+  const auth = await requireApiStaffPermission(permission);
+  if (!auth.ok) return auth;
+  if (!hasFreshStepUp(auth.session.stepUpAt)) {
+    return { ok: false, response: NextResponse.json({ error: "Bu hassas işlem için kimliğinizi yeniden doğrulayın.", code: "STEP_UP_REQUIRED", redirect: "/panel/guvenlik" }, { status: 428 }) };
+  }
+  return auth;
+}
+
 /** API için rol kontrolüne ek olarak alt ürün üyeliğini doğrular. */
 export async function requireApiProductRole(product: ProductCode, ...roles: UserRole[]): Promise<ApiAuth> {
   let auth = await requireApiAuthorizedRole(roles);
@@ -182,6 +225,22 @@ export async function requireApiProductCodeRole(code: string, ...roles: UserRole
     return { ok: false, response: NextResponse.json({ error: "Bu ürün için aktif erişiminiz yok." }, { status: 404 }) };
   }
   return auth;
+}
+
+/**
+ * Birden çok ürüne ait ortak uçlar (ör. dış deneme kayıtları OD ve Yön'de,
+ * öğrenci başarısı verisi üç üründe de): rol + listelenen ürünlerden en az
+ * birine erişim + o ürünün pilot kapısı. Hiçbirine erişim yoksa 404.
+ */
+export async function requireApiAnyProductRole(products: readonly ProductCode[], ...roles: UserRole[]): Promise<ApiAuth> {
+  const auth = await requireApiAuthorizedRole(roles);
+  if (!auth.ok) return auth;
+  for (const product of products) {
+    if (await hasProductAccess(auth.session.userId, auth.session.role, product)) {
+      return requireApiProductPilot(auth, product);
+    }
+  }
+  return { ok: false, response: NextResponse.json({ error: "Bu ürün için aktif erişiminiz yok." }, { status: 404 }) };
 }
 
 /** Online Dershanem'e ait legacy route'lar için açık ürün adı taşıyan kısayol. */

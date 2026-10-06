@@ -67,13 +67,22 @@ type Props = {
     examEnded: boolean;
     integrityReviewCount?: number;
   };
+  /**
+   * Deneme Ligi personel izinlerine göre görünen eylemler. Sunucu her uçta
+   * izni AYRICA doğrular; bu yalnız sunumdur. `edit` yoksa sunucu soru /
+   * cevap anahtarı verisini hiç göndermez.
+   */
+  capabilities?: { edit: boolean; schedule: boolean; score: boolean; rescore: boolean };
 };
+
+const ALL_CAPABILITIES = { edit: true, schedule: true, score: true, rescore: true };
 
 export function AdminExamEditor({
   exam,
   outcomes,
   issues,
   resultStats,
+  capabilities = ALL_CAPABILITIES,
 }: Props) {
   const router = useRouter();
   const editable = exam.status === "DRAFT" && exam.versionStatus === "DRAFT";
@@ -362,6 +371,8 @@ export function AdminExamEditor({
         </p>
       ) : null}
 
+      {capabilities.edit ? (
+        <>
       <section id="adim-1" className="panel-surface scroll-mt-36 p-5 sm:p-6">
         <div>
           <h2 className="text-sm font-extrabold">1. Planlama bilgileri</h2>
@@ -813,7 +824,10 @@ export function AdminExamEditor({
           </p>
         ) : null}
       </section>
+        </>
+      ) : null}
 
+      {capabilities.edit || capabilities.schedule ? (
       <section id="adim-4" className="panel-surface scroll-mt-36 p-5 sm:p-6">
         <h2 className="text-sm font-extrabold">4. Yayın kontrolleri</h2>
         <div className="mt-3 space-y-2">
@@ -834,7 +848,7 @@ export function AdminExamEditor({
           ) : null}
         </div>
         <div className="mt-4 flex flex-wrap gap-3">
-          {exam.status === "DRAFT" ? (
+          {exam.status === "DRAFT" && capabilities.edit ? (
             <button
               type="button"
               disabled={errors > 0 || Boolean(busy)}
@@ -856,7 +870,7 @@ export function AdminExamEditor({
               <LockKeyhole size={14} /> Sürümü kilitle ve hazırla
             </button>
           ) : null}
-          {exam.status === "READY" ? (
+          {exam.status === "READY" && capabilities.schedule ? (
             <button
               type="button"
               disabled={Boolean(busy)}
@@ -880,6 +894,7 @@ export function AdminExamEditor({
           ) : null}
         </div>
       </section>
+      ) : null}
 
       <section id="adim-5" className="panel-surface scroll-mt-36 p-5 sm:p-6">
         <h2 className="text-sm font-extrabold">Puanlama kısayolu</h2>
@@ -906,7 +921,7 @@ export function AdminExamEditor({
           ))}
         </div>
         <div className="mt-4 flex flex-wrap gap-3">
-          {["SCHEDULED", "LIVE", "ENDED"].includes(exam.status) ? (
+          {["SCHEDULED", "LIVE", "ENDED"].includes(exam.status) && capabilities.score ? (
             <button
               type="button"
               disabled={!resultStats.examEnded || Boolean(busy)}
@@ -928,9 +943,10 @@ export function AdminExamEditor({
               <CheckCircle2 size={14} /> Teslimleri puanla
             </button>
           ) : null}
-          {exam.status === "SCORED" ||
-          exam.status === "ENDED" ||
-          exam.status === "RELEASED" ? (
+          {capabilities.rescore &&
+          (exam.status === "SCORED" ||
+            exam.status === "ENDED" ||
+            exam.status === "RELEASED") ? (
             <button
               type="button"
               disabled={Boolean(busy)}

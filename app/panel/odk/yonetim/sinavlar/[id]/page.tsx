@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { requireProductRole } from "@/lib/auth/guards";
+import { requireAnyStaffPermission } from "@/lib/auth/guards";
+import { hasStaffPermission } from "@/lib/products/staff-permissions";
+import { ODK_EXAM_LIST_PERMISSIONS } from "@/lib/products/staff-permission-matrix";
 import { getActiveOutcomeOptions } from "@/lib/curriculum/catalog-cache";
 import { getOdkExamReadiness } from "@/lib/odk/admin-exam-server";
 import { parseExamSecurityPolicy } from "@/lib/odk/exam-security";
@@ -36,7 +38,13 @@ export default async function OdkAdminExamDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await requireProductRole("ODK", "ADMIN");
+  // Deneme Ligi personeli: her bölüm kendi iznine göre görünür; uçlar ayrıca doğrular.
+  const session = await requireAnyStaffPermission(ODK_EXAM_LIST_PERMISSIONS);
+  const [canEdit, canSchedule, canAssign, canScore, canRescore, canReviewIntegrity] = await Promise.all(
+    (["odk:exam:edit", "odk:exam:schedule", "odk:exam:assign", "odk:result:score", "odk:key:revise", "odk:integrity:review"] as const).map(
+      (permission) => hasStaffPermission(session.userId, permission),
+    ),
+  );
   const { id } = await params;
   const { exam, issues } = await getOdkExamReadiness(id);
   if (!exam?.currentVersion) notFound();
@@ -101,11 +109,13 @@ export default async function OdkAdminExamDetailPage({
       </header>
       <div className="mt-7 space-y-6">
         <div id="adim-json">
-          {exam.status === "DRAFT" || exam.currentVersion.status === "DRAFT" ? (
+          {canEdit && (exam.status === "DRAFT" || exam.currentVersion.status === "DRAFT") ? (
             <AdminJsonImportPanel examId={exam.id} />
           ) : null}
         </div>
+        {canEdit || canSchedule || canScore || canRescore ? (
         <AdminExamEditor
+          capabilities={{ edit: canEdit, schedule: canSchedule, score: canScore, rescore: canRescore }}
           exam={{
             id: exam.id,
             title: exam.title,
@@ -123,7 +133,8 @@ export default async function OdkAdminExamDetailPage({
               type: file.type,
               fileName: file.fileName,
             })),
-            questions,
+            // Cevap anahtarı yalnız içerik editörüne gider (EXAM_EDITOR / ADMIN).
+            questions: canEdit ? questions : [],
             security: {
               ...security,
               autoSubmit: exam.currentVersion.autoSubmit,
@@ -144,12 +155,16 @@ export default async function OdkAdminExamDetailPage({
             integrityReviewCount: reviewCount,
           }}
         />
-        <AdminAssignmentPanel
-          examId={exam.id}
-          canEdit={exam.status !== "ARCHIVED"}
-        />
-        <AdminPreviewPanel examId={exam.id} />
-        <AdminResultsReviewPanel examId={exam.id} examStatus={exam.status} />
+        ) : null}
+        {canAssign ? (
+          <AdminAssignmentPanel
+            examId={exam.id}
+            canEdit={exam.status !== "ARCHIVED"}
+          />
+        ) : null}
+        {canEdit ? <AdminPreviewPanel examId={exam.id} /> : null}
+        {canScore ? <AdminResultsReviewPanel examId={exam.id} examStatus={exam.status} /> : null}
+        {canReviewIntegrity ? (
         <AdminIntegrityReviewPanel
           examId={exam.id}
           attempts={attempts.map((attempt) => ({
@@ -161,6 +176,7 @@ export default async function OdkAdminExamDetailPage({
               attempt.integrityReviewedAt?.toISOString() || null,
           }))}
         />
+        ) : null}
       </div>
     </PanelShell>
   );

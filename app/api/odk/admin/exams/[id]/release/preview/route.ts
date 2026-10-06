@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireApiProductRole } from "@/lib/auth/api-guards";
+import { requireApiStaffPermission } from "@/lib/auth/api-guards";
 import { releasePreviewSchema } from "@/lib/odk/admin-schemas";
 import { previewResultPublication } from "@/lib/odk/result-publication";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
+  const auth = await requireApiStaffPermission("odk:result:score"); if (!auth.ok) return auth.response;
   const { id } = await context.params;
   const parsed = releasePreviewSchema.safeParse(await request.json().catch(() => ({})));
   const exam = await prisma.odkExam.findUnique({

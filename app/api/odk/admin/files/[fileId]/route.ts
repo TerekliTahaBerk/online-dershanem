@@ -1,11 +1,11 @@
 import { get } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireApiProductRole } from "@/lib/auth/api-guards";
+import { requireApiStaffPermission } from "@/lib/auth/api-guards";
 import { fileIdParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function GET(request: Request, context: { params: Promise<{ fileId: string }> }) {
-  const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
+  const auth = await requireApiStaffPermission("odk:exam:edit"); if (!auth.ok) return auth.response;
   if (!process.env.BLOB_READ_WRITE_TOKEN) return NextResponse.json({ error: "Dosya deposu kullanılamıyor." }, { status: 503 });
   const params = fileIdParamsSchema.safeParse(await context.params);
   if (!params.success) return invalidApiInput();

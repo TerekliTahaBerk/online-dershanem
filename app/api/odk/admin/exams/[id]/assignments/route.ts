@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireApiProductRole } from "@/lib/auth/api-guards";
+import { requireApiStaffPermission } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { assignmentCreateSchema } from "@/lib/odk/admin-schemas";
 import { resolveAssignmentStudents } from "@/lib/odk/assignment-resolve";
@@ -9,7 +9,7 @@ import { afterResponse } from "@/lib/after-response";
 import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
+  const auth = await requireApiStaffPermission("odk:exam:assign"); if (!auth.ok) return auth.response;
   const routeParams = idParamsSchema.safeParse(await context.params);
   if (!routeParams.success) return invalidApiInput();
   const { id } = routeParams.data;
@@ -68,7 +68,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
 }
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
+  const auth = await requireApiStaffPermission("odk:exam:assign"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "odk.exam.assign", requireSameOrigin: true, headers: request.headers, rateLimitKey: `odk:assign:${auth.session.userId}`, rateLimit: { max: 40, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const routeParams = idParamsSchema.safeParse(await context.params);

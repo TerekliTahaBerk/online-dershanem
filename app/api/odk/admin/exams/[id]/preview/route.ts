@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiProductRole } from "@/lib/auth/api-guards";
+import { requireApiStaffPermission } from "@/lib/auth/api-guards";
 import { buildAdminPreview, type AdminPreviewKind } from "@/lib/odk/admin-preview";
 import { parseExamSecurityPolicy } from "@/lib/odk/exam-security";
 import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
@@ -10,7 +10,7 @@ import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 const previewQuerySchema = z.object({ kind: z.enum(["STUDENT_EXAM", "TEACHER_REPORT", "PARENT_REPORT"]).default("STUDENT_EXAM") });
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
+  const auth = await requireApiStaffPermission("odk:exam:edit"); if (!auth.ok) return auth.response;
   const routeParams = idParamsSchema.safeParse(await context.params);
   const query = previewQuerySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
   if (!routeParams.success || !query.success) return invalidApiInput("Geçersiz önizleme parametreleri.");

@@ -12,6 +12,7 @@ import {
   type PanelNavSection,
 } from "@/lib/panel/navigation";
 import { withParentStudentContext } from "@/lib/parent-home-summary";
+import type { StaffPermission } from "@/lib/products/staff-permission-matrix";
 
 export type { PanelNavItem, PanelNavSection };
 export { mobilePrimaryNav, panelNavSections };
@@ -20,19 +21,22 @@ export function PanelNav({
   role,
   products = [],
   scope = null,
+  staffOdkPermissions = null,
   onNavigate,
 }: {
   role: UserRole;
   products?: ProductCode[];
   /** Seçili ürün paneli; menüyü o ürüne daraltır (yetki değil, sunum). */
   scope?: ProductCode | null;
+  /** Deneme Ligi personel izinleri (yalnız enforce modunda öğretmen için; sunum). */
+  staffOdkPermissions?: readonly StaffPermission[] | null;
   onNavigate?: () => void;
 }) {
   const flags = usePanelFeatureFlags();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const root = rolePath(role);
-  const sections = panelNavSections(role, products, flags, root, scope);
+  const sections = panelNavSections(role, products, flags, root, scope, staffOdkPermissions);
   const selectedStudentId =
     role === "PARENT" ? searchParams.get("studentId") : null;
 

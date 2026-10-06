@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireRole } from "@/lib/auth/guards";
+import { requireTeacherStaffPermission } from "@/lib/auth/guards";
 import { findCoachAssignmentForCoach } from "@/lib/panel/coaching";
 import { enforceMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
@@ -22,7 +22,7 @@ import { logAudit } from "@/lib/audit";
  * veliye açılır, `privateNote` yalnız koç ve yönetici içindir.
  */
 export async function recordCoachingSession(formData: FormData) {
-  const session = await requireRole("TEACHER");
+  const session = await requireTeacherStaffPermission("ok:coaching:write");
   await enforceMutation({
     action: "coaching.session.record",
     userId: session.userId,
@@ -118,7 +118,7 @@ export async function recordCoachingSession(formData: FormData) {
  * zorlar.
  */
 export async function setStudentGoal(formData: FormData) {
-  const session = await requireRole("TEACHER");
+  const session = await requireTeacherStaffPermission("ok:coaching:write");
   await enforceMutation({
     action: "coaching.goal.set",
     userId: session.userId,

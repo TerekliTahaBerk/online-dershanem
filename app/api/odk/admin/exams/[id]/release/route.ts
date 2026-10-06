@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { requireApiProductRole } from "@/lib/auth/api-guards";
+import { requireApiRecentStaffStepUp } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { releaseCommitSchema } from "@/lib/odk/admin-schemas";
 import { previewResultPublication } from "@/lib/odk/result-publication";
@@ -12,7 +12,7 @@ import { afterResponse } from "@/lib/after-response";
 import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiProductRole("ODK", "ADMIN"); if (!auth.ok) return auth.response;
+  const auth = await requireApiRecentStaffStepUp("odk:result:release"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "odk.exam.release", requireSameOrigin: true, headers: request.headers, rateLimitKey: `odk:release:${auth.session.userId}`, rateLimit: { max: 10, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const { id } = await context.params;
@@ -103,6 +103,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     summary: "Deneme sonuçları öğrencilere açıklandı",
     payload: { attemptCount: publishAttemptIds.length, excluded: preview.excludedAttemptIds.length, coachSuggestions: coach.created },
   });
-  await recordPanelProductEvent({ name: "odk_results_released", properties: { family: getOdkExamFamilyCode(exam), attemptBand: odkAttemptBand(publishAttemptIds.length) } }, "ADMIN");
+  await recordPanelProductEvent({ name: "odk_results_released", properties: { family: getOdkExamFamilyCode(exam), attemptBand: odkAttemptBand(publishAttemptIds.length) } }, auth.session.role);
   return NextResponse.json({ status: "RELEASED", resultsReleasedAt: now, published: publishAttemptIds.length, excluded: preview.excludedAttemptIds.length, coach });
 }

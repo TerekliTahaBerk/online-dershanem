@@ -4,6 +4,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Settings } from "lucide-react";
 import { requireSession } from "@/lib/auth/guards";
+import { userRequiresMfa } from "@/lib/products/staff-permissions";
+import { resolveProductEntryPath } from "@/lib/products/product-entry";
 import { PASSWORD_CHANGE_PATH, ACCOUNT_SETTINGS_PATH, productRolePath, roleLabel } from "@/lib/auth/roles";
 import { PANEL_PRODUCTS, loadProductPanelStates } from "@/lib/auth/product-panels";
 import { publicProducts } from "@/lib/product-architecture";
@@ -41,9 +43,13 @@ const LOCKED_CTA: Record<(typeof PANEL_PRODUCTS)[number], { href: string; label:
 export default async function ProductSelectorPage() {
   const session = await requireSession();
   if (session.mustChangePassword) redirect(PASSWORD_CHANGE_PATH);
-  if (session.role === "ADMIN" && !session.mfaVerifiedAt) redirect("/giris/mfa");
+  if (!session.mfaVerifiedAt && (await userRequiresMfa(session.userId, session.role))) redirect("/giris/mfa");
 
   const states = await loadProductPanelStates(session.userId, session.role);
+  // Personelin giriş yolu izinlerden gelir (ör. Deneme Ligi operatörü canlı operasyona iner).
+  const entries = Object.fromEntries(
+    await Promise.all(PANEL_PRODUCTS.map(async (code) => [code, await resolveProductEntryPath(session, code)] as const)),
+  ) as Record<(typeof PANEL_PRODUCTS)[number], string | null>;
   const cards: ProductPanelCardModel[] = PANEL_PRODUCTS.map((code) => {
     const catalog = publicProducts.find((product) => product.registryCode === code);
     return {
@@ -51,8 +57,8 @@ export default async function ProductSelectorPage() {
       name: catalog?.name ?? code,
       role: catalog?.role ?? "",
       description: catalog?.description ?? "",
-      state: states[code],
-      href: productRolePath(code, session.role),
+      state: states[code] === "ACTIVE" && !entries[code] ? "LOCKED" : states[code],
+      href: entries[code] ?? productRolePath(code, session.role),
       lastUsed: session.activeProduct === code,
       lockedCta: LOCKED_CTA[code],
     };

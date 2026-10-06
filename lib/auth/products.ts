@@ -4,8 +4,10 @@ import type { Prisma, ProductCode, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { PASSWORD_CHANGE_PATH, PRODUCT_SELECTOR_PATH } from "@/lib/auth/roles";
 import { hasProductEntitlement } from "@/lib/auth/product-entitlements";
+import { staffAccessibleProducts, userRequiresMfa } from "@/lib/products/staff-permissions";
 import { LEGACY_PRODUCT_ORDER, asLegacyProductCode, isLegacyProductCode, membershipProductCode, sortProductCodes } from "@/lib/products/codes";
 
+/** ADMIN'in legacy ürünleri (break-glass; satırlardan bağımsız). */
 const STAFF_PRODUCTS: ProductCode[] = ["OD", "OK", "ODK"];
 
 function activeMembershipWhere(userId: string, now: Date): Prisma.ProductMembershipWhereInput {
@@ -24,9 +26,11 @@ function activeMembershipWhere(userId: string, now: Date): Prisma.ProductMembers
  * açıkça legacy üçlüdür — aksi halde KPSS registry `is_active` kapısını atlardı.
  */
 export async function getAccessibleProducts(userId: string, role: UserRole, now = new Date()): Promise<ProductCode[]> {
-  // Personel görev gereği üç üründe de çalışır. DB satırları kaynak/audit için
-  // tutulur; yanlışlıkla silinmeleri personelin operasyon erişimini kesmez.
-  if (role === "ADMIN" || role === "TEACHER") return STAFF_PRODUCTS;
+  // Personel: ADMIN üç üründe de çalışır (break-glass). TEACHER'ın ürünleri
+  // `STAFF_PRODUCT_ASSIGNMENTS` moduna göre ya eski kural (üçü; shadow'da yeni
+  // kuralla karşılaştırılıp loglanır) ya da `ProductStaffAssignment` satırlarıdır.
+  if (role === "ADMIN") return STAFF_PRODUCTS;
+  if (role === "TEACHER") return staffAccessibleProducts(userId, role);
 
   const memberships = await prisma.productMembership.findMany({
     where: { ...activeMembershipWhere(userId, now), product: { in: [...LEGACY_PRODUCT_ORDER] } },
@@ -45,7 +49,7 @@ export async function hasProductAccess(userId: string, role: UserRole, product: 
  * kodlar (ör. "KPSS").
  *
  * - ADMIN: legacy üç ürün + registry'deki bütün aktif ürünler.
- * - TEACHER: legacy üç ürün (görev gereği) + yalnız KENDİ aktif üyelikleri.
+ * - TEACHER: personel ürünleri (`staffAccessibleProducts`, moda bağlı) + yalnız KENDİ aktif üyelikleri.
  *   Öğretmen KPSS'ye otomatik erişmez; KPSS içerik yazımı ayrıca
  *   `lib/products/content-permissions.ts` ile yetkilendirilir.
  * - STUDENT / PARENT: yalnız aktif üyelikler.
@@ -64,7 +68,7 @@ export async function getAccessibleProductCodes(userId: string, role: UserRole, 
       : Promise.resolve([] as Array<{ code: string }>),
   ]);
 
-  const codes: string[] = role === "ADMIN" || role === "TEACHER" ? [...STAFF_PRODUCTS] : [];
+  const codes: string[] = role === "ADMIN" ? [...STAFF_PRODUCTS] : role === "TEACHER" ? await staffAccessibleProducts(userId, role) : [];
   for (const product of activeRegistryProducts) codes.push(product.code);
   for (const membership of memberships) {
     const code = membershipProductCode(membership);
@@ -83,7 +87,7 @@ export async function hasProductCodeAccess(userId: string, role: UserRole, code:
 /**
  * Girişten sonra gidilecek yer.
  *
- * ÜRÜN PANELLERİ: parola ve (yönetici için) MFA adımlarından sonra HERKES
+ * ÜRÜN PANELLERİ: parola ve (yönetici ile ayrıcalıklı ürün personeli için) MFA adımlarından sonra HERKES
  * (Yönetim, Öğretmen, Öğrenci, Veli) ürün paneli seçicisine gider ve OD / OK /
  * ODK'dan gireceği paneli seçer. Seçim `Session.activeProduct`'a yazılır ve
  * yalnız menüyü daraltır; yetki her sayfada guard'larla yeniden doğrulanır.
@@ -93,6 +97,6 @@ export async function hasProductCodeAccess(userId: string, role: UserRole, code:
  */
 export async function postAuthenticationPath(input: { userId: string; role: UserRole; mustChangePassword: boolean; mfaVerifiedAt?: Date | null }): Promise<string> {
   if (input.mustChangePassword) return PASSWORD_CHANGE_PATH;
-  if (input.role === "ADMIN" && !input.mfaVerifiedAt) return "/giris/mfa";
+  if (!input.mfaVerifiedAt && (await userRequiresMfa(input.userId, input.role))) return "/giris/mfa";
   return PRODUCT_SELECTOR_PATH;
 }

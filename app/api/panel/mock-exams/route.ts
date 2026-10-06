@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiOdRole } from "@/lib/auth/api-guards";
+import { requireApiAnyProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { mockExamTemplates, validateMockExamSections } from "@/lib/mock-exams";
@@ -36,7 +36,7 @@ const schema = z.object({
  * yalnız salt-okunur analiz verisini döner.
  */
 export async function GET(request: Request) {
-  const auth = await requireApiOdRole("STUDENT");
+  const auth = await requireApiAnyProductRole(["OD", "OK"], "STUDENT");
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().mockExamAnalysis) {
     return NextResponse.json({ error: "Deneme analizi henüz açık değil." }, { status: 404 });
@@ -91,7 +91,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const auth = await requireApiOdRole("ADMIN", "TEACHER", "STUDENT");
+  const auth = await requireApiAnyProductRole(["OD", "OK"], "ADMIN", "TEACHER", "STUDENT");
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().mockExamAnalysis) return NextResponse.json({ error: "Deneme analizi henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.mock_exam.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:mock-exam:${auth.session.userId}`, rateLimit: { max: 40, windowMs: 15 * 60 * 1000 } });

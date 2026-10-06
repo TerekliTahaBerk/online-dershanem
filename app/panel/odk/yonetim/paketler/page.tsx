@@ -7,7 +7,7 @@ import {
   Video,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { requireProductRole } from "@/lib/auth/guards";
+import { requireStaffPermission } from "@/lib/auth/guards";
 import { parseOdkPackagePolicy } from "@/lib/odk/product-contract";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelPageHeader } from "@/components/panel/panel-page-header";
@@ -42,7 +42,8 @@ function displayDate(value: string | null | undefined) {
 }
 
 export default async function OdkAdminPackagesPage() {
-  const session = await requireProductRole("ODK", "ADMIN");
+  // Deneme Ligi personel izni (ADMIN her izinde geçer); global rol tek başına yetmez.
+  const session = await requireStaffPermission("odk:package:manage");
   const packages = await prisma.odkPackage.findMany({
     orderBy: [{ isActive: "desc" }, { title: "asc" }],
     include: {

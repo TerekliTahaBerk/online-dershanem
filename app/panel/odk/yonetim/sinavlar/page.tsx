@@ -2,7 +2,9 @@ import Link from "next/link";
 import type { OdkExamStatus, Prisma } from "@prisma/client";
 import { ClipboardCheck, Plus, Search } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { requireProductRole } from "@/lib/auth/guards";
+import { requireAnyStaffPermission } from "@/lib/auth/guards";
+import { hasStaffPermission } from "@/lib/products/staff-permissions";
+import { ODK_EXAM_LIST_PERMISSIONS } from "@/lib/products/staff-permission-matrix";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelPageHeader } from "@/components/panel/panel-page-header";
 import { OdkStatusBadge } from "@/components/odk/odk-status-badge";
@@ -33,7 +35,9 @@ export default async function OdkAdminExamsPage({
 }: {
   searchParams: Promise<{ q?: string; aile?: string; durum?: string }>;
 }) {
-  const session = await requireProductRole("ODK", "ADMIN");
+  const session = await requireAnyStaffPermission(ODK_EXAM_LIST_PERMISSIONS);
+  // Yeni deneme oluşturma yalnız içerik editörüne (EXAM_EDITOR / ADMIN) görünür; uç ayrıca doğrular.
+  const canCreate = await hasStaffPermission(session.userId, "odk:exam:edit");
   const params = await searchParams;
   const familyRecords = await listActiveExamFamilies();
   const familyRecord = familyRecords.find((item) => item.code === params.aile);
@@ -81,21 +85,25 @@ export default async function OdkAdminExamsPage({
         description="Taslak → hazır → plan → canlı → kapandı → inceleme → yayın. Sonuçlar yönetim yayınlamadan öğrenciye açılmaz."
         icon={ClipboardCheck}
         action={
-          <a
-            href="#yeni-deneme"
-            className="panel-quick-action panel-quick-action-primary"
-          >
-            <Plus size={14} /> Yeni deneme
-          </a>
+          canCreate ? (
+            <a
+              href="#yeni-deneme"
+              className="panel-quick-action panel-quick-action-primary"
+            >
+              <Plus size={14} /> Yeni deneme
+            </a>
+          ) : undefined
         }
       />
 
-      <section id="yeni-deneme" className="mt-7 scroll-mt-28">
-        <AdminExamCreate
-          series={series.map((item) => ({ id: item.id, title: item.title, familyCode: getOdkExamFamilyCode(item) }))}
-          families={familyRecords.map((item) => ({ code: item.code, name: item.name, legacy: Boolean(asLegacyOdkExamFamily(item.code)) }))}
-        />
-      </section>
+      {canCreate ? (
+        <section id="yeni-deneme" className="mt-7 scroll-mt-28">
+          <AdminExamCreate
+            series={series.map((item) => ({ id: item.id, title: item.title, familyCode: getOdkExamFamilyCode(item) }))}
+            families={familyRecords.map((item) => ({ code: item.code, name: item.name, legacy: Boolean(asLegacyOdkExamFamily(item.code)) }))}
+          />
+        </section>
+      ) : null}
 
       <section className="mt-9">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">

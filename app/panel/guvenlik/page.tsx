@@ -1,10 +1,14 @@
 import { AdminMfaForm } from "@/components/panel/admin-mfa-form";
-import { requireRole } from "@/lib/auth/guards";
+import { notFound } from "next/navigation";
+import { requireActiveUser } from "@/lib/auth/guards";
+import { userRequiresMfa } from "@/lib/products/staff-permissions";
 import { getAdminPasskeyCapabilities } from "@/lib/auth/mfa-methods";
 import { prisma } from "@/lib/prisma";
 
 export default async function AdminStepUpPage() {
-  const session = await requireRole("ADMIN");
+  // Adım yükseltme: ADMIN ve ayrıcalıklı ürün personeli (MFA zorunlu hesaplar).
+  const session = await requireActiveUser();
+  if (!(await userRequiresMfa(session.userId, session.role))) notFound();
   const [config, passkeys] = await Promise.all([
     prisma.adminMfa.findUnique({
       where: { userId: session.userId },

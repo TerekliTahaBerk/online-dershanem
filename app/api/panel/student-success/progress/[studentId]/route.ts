@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireApiOdRole } from "@/lib/auth/api-guards";
+import { requireApiAnyProductRole } from "@/lib/auth/api-guards";
 import { resolveStudentScopeForViewer } from "@/lib/student-success/server/viewer-scope";
 import {
   getStudentProgressSummary,
@@ -21,7 +21,7 @@ import { studentIdParamsSchema, invalidApiInput } from "@/lib/api/input-validati
 const querySchema = z.object({ view: z.enum(["summary", "outcomes", "timeline"]).default("summary") });
 
 export async function GET(request: Request, context: { params: Promise<{ studentId: string }> }) {
-  const auth = await requireApiOdRole("STUDENT", "TEACHER", "ADMIN", "PARENT");
+  const auth = await requireApiAnyProductRole(["OD", "OK", "ODK"], "STUDENT", "TEACHER", "ADMIN", "PARENT");
   if (!auth.ok) return auth.response;
 
   const routeParams = studentIdParamsSchema.safeParse(await context.params);

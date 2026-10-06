@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyAuthenticationResponse, verifyRegistrationResponse } from "@simplewebauthn/server";
 import type { AuthenticationResponseJSON, AuthenticatorTransportFuture, RegistrationResponseJSON } from "@simplewebauthn/server";
 import { z } from "zod";
-import { requireApiPrimaryAdmin } from "@/lib/auth/api-guards";
+import { requireApiPrimaryMfaUser } from "@/lib/auth/api-guards";
 import { consumeChallenge, challengeMatches, loadChallenge, webAuthnConfig } from "@/lib/auth/webauthn";
 import { markSessionMfaVerified, markSessionStepUp, replaceRecoveryCodes } from "@/lib/auth/mfa";
 import { prisma } from "@/lib/prisma";
@@ -12,7 +12,7 @@ import { guardMutation, mutationGuardResponse } from "@/lib/security/mutation-gu
 const schema = z.object({ challengeId: z.string().min(1), purpose: z.enum(["ENROLL", "AUTHENTICATE", "STEP_UP"]), response: z.record(z.string(), z.unknown()) });
 
 export async function POST(request: Request) {
-  const auth = await requireApiPrimaryAdmin();
+  const auth = await requireApiPrimaryMfaUser();
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "auth.mfa.passkey.verify", requireSameOrigin: true, headers: request.headers, rateLimitKey: `mfa:verify:${auth.session.userId}`, rateLimit: { max: 20, windowMs: 15 * 60_000 } });
   if (!guard.ok) return mutationGuardResponse(guard);

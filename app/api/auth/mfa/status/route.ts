@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { requireApiPrimaryAdmin } from "@/lib/auth/api-guards";
+import { requireApiPrimaryMfaUser } from "@/lib/auth/api-guards";
 import { prisma } from "@/lib/prisma";
 import { hasFreshStepUp } from "@/lib/auth/mfa-policy";
 
 export async function GET() {
-  const auth = await requireApiPrimaryAdmin();
+  const auth = await requireApiPrimaryMfaUser();
   if (!auth.ok) return auth.response;
   const [config, passkeyCount, recoveryCodeCount] = await Promise.all([
     prisma.adminMfa.findUnique({ where: { userId: auth.session.userId }, select: { totpEnabledAt: true, enrolledAt: true } }),

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { requireProductRole } from "@/lib/auth/guards";
+import { requireStaffPermission } from "@/lib/auth/guards";
 import {
   getOdkAudienceStudentReport,
   listOdkReportStudents,
@@ -13,7 +13,8 @@ export default async function OdkAdminReportsPage({
 }: {
   searchParams: Promise<{ ogrenci?: string }>;
 }) {
-  const session = await requireProductRole("ODK", "ADMIN");
+  // Deneme Ligi personel izni (ADMIN her izinde geçer); global rol tek başına yetmez.
+  const session = await requireStaffPermission("odk:report:read_all");
   const students = await listOdkReportStudents({
     userId: session.userId,
     role: "ADMIN",
