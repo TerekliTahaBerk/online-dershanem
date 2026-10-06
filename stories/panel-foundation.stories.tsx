@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { useState } from "react";
 import { CalendarClock, Inbox } from "lucide-react";
 import {
   Button,
   ButtonLink,
+  Drawer,
   EmptyState,
   List,
   ListRow,
@@ -103,4 +105,30 @@ export const EmptyStates: Story = {
       />
     </div>
   ),
+};
+
+/** Yan panel (§8.4): satırdan açılan ayrıntı; Escape kapatır, odak geri döner. */
+export const SidePeek: Story = {
+  render: function SidePeekStory() {
+    const [open, setOpen] = useState(true);
+    return (
+      <>
+        <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
+          Ödev ayrıntısını aç
+        </Button>
+        <Drawer
+          open={open}
+          onClose={() => setOpen(false)}
+          title="Türev — 40 soru"
+          description="12-A · Matematik · Teslim 9 Eki 19:00"
+          footer={<Button variant="primary" size="sm">Kanıtı gönder</Button>}
+        >
+          <PropertyList>
+            <PropertyRow label="Durum"><StatusBadge label="Çalışıyorum" tone="info" /></PropertyRow>
+            <PropertyRow label="Öğretmen">Zeynep A.</PropertyRow>
+          </PropertyList>
+        </Drawer>
+      </>
+    );
+  },
 };

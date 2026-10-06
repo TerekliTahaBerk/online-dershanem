@@ -4,7 +4,7 @@ import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentWeeklyGoal } from "@/components/panel/student-weekly-goal";
-import { PanelEmpty } from "@/components/panel/ui";
+import { PanelEmpty, Section, buttonClass } from "@/components/panel/ui";
 import {
   AcademicBlock,
   BehavioralBlock,
@@ -111,19 +111,18 @@ export default async function StudentAnalizPage() {
       )}
 
       {flags.mockExamAnalysis ? (
-        <div className="mt-5 rounded-2xl border border-dc-line-soft bg-white p-4">
-          <h2 className="text-sm font-bold text-dc-ink">Dış Deneme Sonucu</h2>
-          <p className="mt-1 text-xs leading-6 text-dc-ink-muted">
-            Okulda, kursta veya başka bir platformda çözdüğün deneme sonucunu
-            buraya ekleyebilirsin.
-          </p>
-          <Link
-            href="/panel/ogrenci/denemeler"
-            className="panel-quick-action mt-3 inline-flex"
-          >
-            Dış Deneme Ekle
-          </Link>
-        </div>
+        <Section
+          id="dis-deneme"
+          title="Dış deneme sonucu"
+          description="Okulda, kursta veya başka bir platformda çözdüğün deneme sonucunu buraya ekleyebilirsin."
+          actions={
+            <Link href="/panel/ogrenci/denemeler" className={buttonClass("secondary", "sm")}>
+              Dış Deneme Ekle
+            </Link>
+          }
+        >
+          {null}
+        </Section>
       ) : null}
     </>,
   );

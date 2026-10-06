@@ -5,6 +5,7 @@ import { getCurriculumVersionSummaries } from "@/lib/curriculum/catalog-cache";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
 import { CurriculumManager } from "@/components/panel/curriculum-manager";
+import { PropertyList, PropertyRow, Section } from "@/components/panel/ui";
 import {
   LEGACY_CURRICULUM_EXAM_CODES,
   listActiveExamFamilies,
@@ -59,21 +60,18 @@ export default async function CurriculumAdminPage() {
         icon={BookOpenCheck}
         meta={`${versions.length} sürüm`}
       />
-      <section className="my-6 grid gap-3 sm:grid-cols-2">
-        <article className="panel-metric-card">
-          <p className="text-3xl font-extrabold">%{lessonCoverage}</p>
-          <p className="mt-1 text-xs text-(--site-muted)">
-            Son 30 gün kazanım etiketli tamamlanmış ders · {taggedLessons}/
-            {completedLessons}
-          </p>
-        </article>
-        <article className="panel-metric-card">
-          <p className="text-3xl font-extrabold">%{assignmentCoverage}</p>
-          <p className="mt-1 text-xs text-(--site-muted)">
-            Son 30 gün kazanım etiketli ödev · {taggedAssignments}/{assignments}
-          </p>
-        </article>
-      </section>
+      <Section id="kapsama" title="Etiket kapsaması" description="Son 30 gün">
+        <PropertyList>
+          <PropertyRow label="Tamamlanan dersler">
+            <span className="font-semibold tabular-nums">%{lessonCoverage}</span>
+            <span className="text-pn-text-muted"> · kazanım etiketli {taggedLessons}/{completedLessons}</span>
+          </PropertyRow>
+          <PropertyRow label="Ödevler">
+            <span className="font-semibold tabular-nums">%{assignmentCoverage}</span>
+            <span className="text-pn-text-muted"> · kazanım etiketli {taggedAssignments}/{assignments}</span>
+          </PropertyRow>
+        </PropertyList>
+      </Section>
       <CurriculumManager
         versions={versions}
         examFamilies={examFamilies.map((item) => item.code) as (typeof LEGACY_CURRICULUM_EXAM_CODES)[number][]}

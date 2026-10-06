@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
+import { StatusBadge, buttonClass } from "@/components/panel/ui";
 import {
   addIstanbulCalendarDays,
   istanbulWeekStart,
@@ -60,6 +61,12 @@ async function loadWeekLessons(
   });
 }
 
+const LESSON_STATUS: Record<string, { label: string; tone: "neutral" | "success" | "critical" }> = {
+  CANCELLED: { label: "İptal", tone: "critical" },
+  COMPLETED: { label: "Bitti", tone: "success" },
+};
+
+/** Gün sütunu: kartsız, ince ayraçlı; bugün ürün vurgusuyla işaretlenir. */
 function DayColumn({ day, lessons }: { day: Date; lessons: CalendarLesson[] }) {
   const dayStart = day.getTime();
   const dayEnd = dayStart + 86400000;
@@ -72,58 +79,47 @@ function DayColumn({ day, lessons }: { day: Date; lessons: CalendarLesson[] }) {
 
   return (
     <section
-      className={`min-h-0 rounded-[14px] border bg-white p-2.5 shadow-(--panel-card-shadow) lg:min-h-[480px] ${
-        today ? "border-(--brand-olive)" : "border-(--site-line)"
-      }`}
+      aria-label={dayTitle.format(day)}
+      className="min-h-0 border-t border-pn-border pt-2 lg:min-h-[480px] lg:border-t-0 lg:border-l lg:px-2 lg:pt-0 lg:first:border-l-0"
     >
-      <div
-        className={`rounded-xl px-2.5 py-2 ${
-          today
-            ? "bg-(--brand-olive) text-white"
-            : "bg-(--site-bg-warm) text-(--site-ink)"
+      <p
+        className={`flex items-center gap-1.5 py-1.5 text-[12.5px] font-semibold capitalize ${
+          today ? "text-pn-accent" : "text-pn-text-secondary"
         }`}
+        aria-current={today ? "date" : undefined}
       >
-        <p className="text-[11px] font-extrabold capitalize">
-          {dayTitle.format(day)}
-        </p>
-      </div>
-      <div className="mt-2 space-y-2">
-        {items.map((lesson) => (
-          <Link
-            key={lesson.id}
-            href={`/panel/yonetim/gruplar/${lesson.group.id}`}
-            className={`block rounded-[14px] border p-2.5 transition hover:-translate-y-0.5 hover:shadow-md ${
-              lesson.status === "CANCELLED"
-                ? "border-rose-100 bg-rose-50/70 opacity-65"
-                : lesson.status === "COMPLETED"
-                  ? "border-emerald-100 bg-emerald-50/70"
-                  : "border-(--site-line) bg-white"
-            }`}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[10.5px] font-extrabold tabular-nums text-(--brand-olive)">
-                {time.format(lesson.startsAt)}
+        {today ? <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-pn-accent" /> : null}
+        {dayTitle.format(day)}
+        {today ? <span className="sr-only"> (bugün)</span> : null}
+      </p>
+      <div className="mt-1 space-y-1">
+        {items.map((lesson) => {
+          const status = LESSON_STATUS[lesson.status] ?? { label: "Planlı", tone: "neutral" as const };
+          return (
+            <Link
+              key={lesson.id}
+              href={`/panel/yonetim/gruplar/${lesson.group.id}`}
+              className={`block rounded-md px-2 py-1.5 transition-colors hover:bg-pn-hover ${
+                lesson.status === "CANCELLED" ? "opacity-60" : ""
+              }`}
+            >
+              <span className="flex items-center justify-between gap-2">
+                <span className="text-[12px] font-semibold tabular-nums text-pn-text-secondary">
+                  {time.format(lesson.startsAt)}
+                </span>
+                <StatusBadge label={status.label} tone={status.tone} />
               </span>
-              <span className="text-[8.5px] font-bold uppercase text-(--site-muted)">
-                {lesson.status === "CANCELLED"
-                  ? "İptal"
-                  : lesson.status === "COMPLETED"
-                    ? "Bitti"
-                    : "Planlı"}
+              <span className={`mt-0.5 block text-[13px] font-medium leading-5 text-pn-text ${lesson.status === "CANCELLED" ? "line-through" : ""}`}>
+                {lesson.title}
               </span>
-            </div>
-            <p className="mt-2 text-[11.5px] font-bold leading-4 text-(--site-ink)">
-              {lesson.title}
-            </p>
-            <p className="mt-1 text-[9.5px] leading-4 text-(--site-muted)">
-              {lesson.group.name}
-              <br />
-              {lesson.teacher.fullName || lesson.teacher.email}
-            </p>
-          </Link>
-        ))}
+              <span className="block text-[12px] leading-4 text-pn-text-muted">
+                {lesson.group.name} · {lesson.teacher.fullName || lesson.teacher.email}
+              </span>
+            </Link>
+          );
+        })}
         {!items.length ? (
-          <p className="px-2 py-6 text-center text-[10.5px] text-(--site-muted) lg:py-8">
+          <p className="px-2 py-3 text-[12.5px] text-pn-text-muted lg:py-6">
             Ders yok
           </p>
         ) : null}
@@ -177,30 +173,22 @@ export default async function CalendarPage({
         icon={CalendarDays}
         meta={`${lessons.length} ders`}
       />
-      <div className="mt-4 flex justify-end">
-        <a
-          href="/api/panel/calendar/export"
-          download
-          className="panel-quick-action panel-quick-action-primary"
-        >
-          <Download size={14} /> Tüm programı indir (.ics)
-        </a>
-      </div>
-      <div className="mt-6 flex flex-col gap-3 rounded-[14px] border border-(--site-line) bg-white p-3 shadow-(--panel-card-shadow) lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center justify-between gap-2">
+      {/* Araç çubuğu: hafta gezinmesi + filtreler + dışa aktarma, tek düz satır. */}
+      <div className="mt-6 flex flex-col gap-3 border-y border-pn-border py-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-center gap-2">
           <Link
             href={query(week - 1)}
-            className="panel-quick-action"
+            className={buttonClass("ghost", "sm")}
             aria-label="Önceki hafta"
           >
             <ChevronLeft size={16} />
           </Link>
           <div className="min-w-[190px] text-center">
-            <p className="text-[12.5px] font-extrabold text-(--site-ink)">
+            <p className="text-[13.5px] font-semibold text-pn-text">
               {rangeDate.format(start)} –{" "}
               {rangeDate.format(new Date(end.getTime() - 1))}
             </p>
-            <p className="mt-0.5 text-[10.5px] text-(--site-muted)">
+            <p className="text-[12px] text-pn-text-muted">
               {week === 0
                 ? "Bu hafta"
                 : week > 0
@@ -210,62 +198,71 @@ export default async function CalendarPage({
           </div>
           <Link
             href={query(week + 1)}
-            className="panel-quick-action"
+            className={buttonClass("ghost", "sm")}
             aria-label="Sonraki hafta"
           >
             <ChevronRight size={16} />
           </Link>
           {week !== 0 ? (
-            <Link href={query(0)} className="panel-quick-action">
+            <Link href={query(0)} className={buttonClass("secondary", "sm")}>
               Bugün
             </Link>
           ) : null}
         </div>
-        <form
-          className="flex flex-col gap-2 sm:flex-row"
-          action="/panel/yonetim/takvim"
-        >
-          <input type="hidden" name="week" value={week} />
-          <select
-            name="teacher"
-            aria-label="Öğretmene göre filtrele"
-            defaultValue={params.teacher || ""}
-            className="panel-input min-w-0 py-2 text-xs sm:min-w-[170px]"
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <form
+            className="flex flex-col gap-2 sm:flex-row"
+            action="/panel/yonetim/takvim"
           >
-            <option value="">Tüm öğretmenler</option>
-            {teachers.map((teacher) => (
-              <option key={teacher.id} value={teacher.id}>
-                {teacher.fullName || teacher.email}
-              </option>
-            ))}
-          </select>
-          <select
-            name="group"
-            aria-label="Gruba göre filtrele"
-            defaultValue={params.group || ""}
-            className="panel-input min-w-0 py-2 text-xs sm:min-w-[150px]"
+            <input type="hidden" name="week" value={week} />
+            <select
+              name="teacher"
+              aria-label="Öğretmene göre filtrele"
+              defaultValue={params.teacher || ""}
+              className="panel-input min-w-0 py-2 text-[13px] sm:min-w-[170px]"
+            >
+              <option value="">Tüm öğretmenler</option>
+              {teachers.map((teacher) => (
+                <option key={teacher.id} value={teacher.id}>
+                  {teacher.fullName || teacher.email}
+                </option>
+              ))}
+            </select>
+            <select
+              name="group"
+              aria-label="Gruba göre filtrele"
+              defaultValue={params.group || ""}
+              className="panel-input min-w-0 py-2 text-[13px] sm:min-w-[150px]"
+            >
+              <option value="">Tüm gruplar</option>
+              {groups.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name}
+                </option>
+              ))}
+            </select>
+            <button className={buttonClass("secondary", "md")}>
+              <SlidersHorizontal size={14} aria-hidden="true" /> Uygula
+            </button>
+          </form>
+          <a
+            href="/api/panel/calendar/export"
+            download
+            className={buttonClass("ghost", "md")}
           >
-            <option value="">Tüm gruplar</option>
-            {groups.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.name}
-              </option>
-            ))}
-          </select>
-          <button className="panel-quick-action panel-quick-action-primary">
-            <SlidersHorizontal size={14} /> Uygula
-          </button>
-        </form>
+            <Download size={14} aria-hidden="true" /> Tüm programı indir (.ics)
+          </a>
+        </div>
       </div>
 
-      {/* Mobil: günler dikey kart; masaüstü: 7 sütunlu haftalık ızgara */}
-      <div className="mt-4 flex flex-col gap-3 lg:hidden">
+      {/* Mobil: günler alt alta; masaüstü: 7 sütunlu haftalık ızgara */}
+      <div className="mt-4 flex flex-col gap-2 lg:hidden">
         {days.map((day) => (
           <DayColumn key={day.toISOString()} day={day} lessons={lessons} />
         ))}
       </div>
       <div className="panel-nav-scroll mt-4 hidden overflow-x-auto pb-2 lg:block">
-        <div className="grid min-w-[1120px] grid-cols-7 gap-2">
+        <div className="grid min-w-[1120px] grid-cols-7">
           {days.map((day) => (
             <DayColumn key={day.toISOString()} day={day} lessons={lessons} />
           ))}

@@ -545,10 +545,17 @@ test.describe("panel deneyimi", () => {
     page.on("request", (request) => { if (request.url().endsWith("/api/panel/assignments/e2e-assignment-evidence/submissions") && request.method() === "POST") { submitUrl = request.url(); submitPayload = request.postDataJSON() as Record<string, unknown>; } });
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/odevler");
+    // Kanıt formu ve geri bildirim, ödev satırından açılan yan panelde (?onizle=odev:…).
     let studentCard = page.getByRole("article").filter({ hasText: "E2E Kanıtlı Problem Çözümü" }).first();
-    await studentCard.getByLabel("Çözüm yolunu ve kontrolünü kısaca açıkla").fill("Önce ortak çarpanı ayırdım, işlemleri sırayla yaptım ve sonucu yerine koyarak kontrol ettim.");
-    await studentCard.getByRole("button", { name: "Kanıtı gönder" }).click();
-    await expect(page.getByText(/Kanıtın öğretmen değerlendirmesine gönderildi/)).toBeVisible();
+    await studentCard.getByRole("button", { name: "Kanıt gönder" }).click();
+    await expect(page).toHaveURL(/onizle=odev%3Ae2e-assignment-evidence|onizle=odev:e2e-assignment-evidence/);
+    let drawer = page.getByRole("dialog", { name: "E2E Kanıtlı Problem Çözümü" });
+    await drawer.getByLabel("Çözüm yolunu ve kontrolünü kısaca açıkla").fill("Önce ortak çarpanı ayırdım, işlemleri sırayla yaptım ve sonucu yerine koyarak kontrol ettim.");
+    await drawer.getByRole("button", { name: "Kanıtı gönder" }).click();
+    await expect(drawer.getByText(/Kanıtın öğretmen değerlendirmesine gönderildi/)).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(drawer).toHaveCount(0);
+    await expect(page).not.toHaveURL(/onizle=/);
     const replay = await page.evaluate(async ({ url, payload }) => { const response = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }); return { status: response.status, body: await response.json() }; }, { url: submitUrl, payload: submitPayload });
     expect(replay.status).toBe(200); expect(replay.body.replayed).toBe(true);
 
@@ -564,10 +571,14 @@ test.describe("panel deneyimi", () => {
 
     await page.getByRole("button", { name: /çıkış/i }).click(); await login(page, accounts.student); await page.goto("/panel/ogrenci/odevler");
     studentCard = page.getByRole("article").filter({ hasText: "E2E Kanıtlı Problem Çözümü" }).first();
-    await expect(studentCard.getByText(/Son kontrolü bir eşitlik yazarak/)).toBeVisible();
-    await studentCard.getByLabel("Yeni denemende neyi değiştirdin?").fill("Sonucu başlangıç eşitliğinde yerine koydum ve iki tarafın da aynı değeri verdiğini yazdım.");
-    await studentCard.getByRole("button", { name: "Yeni denemeyi gönder" }).click();
-    await expect(page.getByText(/Yeni denemen öğretmenine gönderildi/)).toBeVisible();
+    await studentCard.getByRole("button", { name: "Yeni deneme gönder" }).click();
+    drawer = page.getByRole("dialog", { name: "E2E Kanıtlı Problem Çözümü" });
+    await expect(drawer.getByText(/Son kontrolü bir eşitlik yazarak/)).toBeVisible();
+    await drawer.getByLabel("Yeni denemende neyi değiştirdin?").fill("Sonucu başlangıç eşitliğinde yerine koydum ve iki tarafın da aynı değeri verdiğini yazdım.");
+    await drawer.getByRole("button", { name: "Yeni denemeyi gönder" }).click();
+    await expect(drawer.getByText(/Yeni denemen öğretmenine gönderildi/)).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(drawer).toHaveCount(0);
 
     await page.getByRole("button", { name: /çıkış/i }).click(); await login(page, accounts.teacher); await page.goto("/panel/ogretmen/odevler");
     review = page.getByRole("article").filter({ hasText: "Ada Öğrenci · 2. deneme" }).first();
@@ -581,8 +592,11 @@ test.describe("panel deneyimi", () => {
 
     await page.getByRole("button", { name: /çıkış/i }).click(); await login(page, accounts.student); await page.goto("/panel/ogrenci/odevler");
     studentCard = page.getByRole("article").filter({ hasText: "E2E Kanıtlı Problem Çözümü" }).first();
-    await expect(studentCard.getByText("2. deneme · Onaylandı", { exact: true })).toBeVisible();
-    await expect(studentCard.getByText("Karşılıyor", { exact: false }).first()).toBeVisible();
+    await expect(studentCard.getByText("Kanıt onaylandı", { exact: true })).toBeVisible();
+    await studentCard.getByRole("button", { name: "Ayrıntılar" }).click();
+    drawer = page.getByRole("dialog", { name: "E2E Kanıtlı Problem Çözümü" });
+    await expect(drawer.getByText("2. deneme · Onaylandı", { exact: true })).toBeVisible();
+    await expect(drawer.getByText("Karşılıyor", { exact: false }).first()).toBeVisible();
   });
 
   test("öğrenci kontrollü yardım ister, öğretmen küçük adım seçer ve öğrenci faydasını işaretler", async ({ page }) => {

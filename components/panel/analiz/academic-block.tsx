@@ -1,6 +1,6 @@
 import { NetTrendCard } from "@/components/panel/student/home-cards";
 import { SubjectTrendCard } from "@/components/panel/student/subject-trend";
-import { PanelEmpty } from "@/components/panel/ui";
+import { EmptyState, Section } from "@/components/panel/ui";
 import { GidisatStrengthSupport } from "@/components/panel/analiz/gidisat-hero";
 import type { AcademicInsights } from "@/lib/progress-insights/types";
 
@@ -25,9 +25,9 @@ export function AcademicBlock({
 
   if (!hasTrend && !hasSubjects && academic.examCount === 0) {
     return (
-      <div className="mt-6">
-        <PanelEmpty title={emptyTitle} body={emptyBody} />
-      </div>
+      <Section id="analiz-akademik" title="Akademik gidişat">
+        <EmptyState title={emptyTitle} body={emptyBody} />
+      </Section>
     );
   }
 
@@ -37,20 +37,11 @@ export function AcademicBlock({
       : undefined;
 
   return (
-    <section className="mt-6" aria-labelledby="analiz-akademik-baslik">
-      <h2
-        id="analiz-akademik-baslik"
-        className="text-[15px] font-extrabold text-dc-ink"
-      >
-        Akademik gidişat
-      </h2>
-
+    <Section id="analiz-akademik" title="Akademik gidişat">
       {hasTrend && caption ? (
         <NetTrendCard points={academic.netTrend} caption={caption} />
       ) : academic.examCount > 0 ? (
-        <div className="mt-4">
-          <PanelEmpty title={emptyTitle} body={emptyBody} />
-        </div>
+        <EmptyState title={emptyTitle} body={emptyBody} />
       ) : null}
 
       {hasSubjects ? (
@@ -67,6 +58,6 @@ export function AcademicBlock({
           supports={academic.supportAreas}
         />
       ) : null}
-    </section>
+    </Section>
   );
 }

@@ -4,7 +4,7 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
-import { PanelEmpty } from "@/components/panel/ui";
+import { EmptyState, PanelEmpty } from "@/components/panel/ui";
 import {
   AcademicBlock,
   BehavioralBlock,
@@ -100,15 +100,11 @@ export default async function ParentAnalizPage({
       />
 
       {!hasExamAccess ? (
-        <div className="mt-6 max-w-[760px] rounded-[14px] border border-dashed border-[#CBD6D0] bg-white p-[22px]">
-          <h2 className="text-[16px] font-bold text-dc-ink">
-            Deneme eğilimi için deneme kaydı gerekir
-          </h2>
-          <p className="mt-2 text-[14px] leading-[1.6] text-dc-ink-muted">
-            Bu hesapta deneme ürünü yok. Aşağıda ders katılımı ve çalışma
-            tamamlama görünüyor.
-          </p>
-        </div>
+        <EmptyState
+          className="mt-6 max-w-[760px]"
+          title="Deneme eğilimi için deneme kaydı gerekir"
+          body="Bu hesapta deneme ürünü yok. Aşağıda ders katılımı ve çalışma tamamlama görünüyor."
+        />
       ) : null}
 
       {parentBundle.isEmpty ? (

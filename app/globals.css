@@ -589,6 +589,16 @@ a {
 .site-scope.pn-scope :where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
   outline-color: var(--pn-focus);
 }
+/* Yan panel hareketi (azaltılmış harekette `motion-safe` ile kapalı). */
+@keyframes pn-drawer-in {
+  from { transform: translateX(24px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes pn-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* Kenar çubuğunu gizle/göster (yalnız ≥1024px; mobilde çekmece kullanılır). */
 .pn-sidebar-open { display: none; }
 @media (min-width: 1024px) {
