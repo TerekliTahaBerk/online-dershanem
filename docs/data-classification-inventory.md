@@ -12,10 +12,10 @@ Sütunlar:
 
 ## Özet
 
-- Taranan model: 152
-- Taranan scalar/enum alan: 1753
-- Olası kişisel veri alanı: 293
-- Çocuk verisi `evet`: 88; `olası`: 73
+- Taranan model: 153
+- Taranan scalar/enum alan: 1764
+- Olası kişisel veri alanı: 295
+- Çocuk verisi `evet`: 88; `olası`: 75
 
 | Kategori | Alan sayısı |
 |---|---:|
@@ -24,7 +24,7 @@ Sütunlar:
 | iletişim | 18 |
 | kimlik | 61 |
 | kimlik doğrulama sırrı | 10 |
-| serbest metin | 84 |
+| serbest metin | 86 |
 | yapılandırılmamış (Json) | 51 |
 
 ## Alanlar
@@ -245,6 +245,8 @@ Sütunlar:
 | Product | name | kimlik | düşük | hayır | yok (DB'de düz) |
 | ProductEvent | name | kimlik | düşük | hayır | yok (DB'de düz) |
 | ProductEvent | properties | yapılandırılmamış (Json) | orta | hayır | yok (DB'de düz) |
+| ProductStaffAssignment | grantReason | serbest metin | orta | olası (tüm roller) | yok (DB'de düz) |
+| ProductStaffAssignment | revokeReason | serbest metin | orta | olası (tüm roller) | yok (DB'de düz) |
 | PurchaseEvent | packageName | kimlik | düşük | hayır | yok (DB'de düz) |
 | PurchaseEvent | payload | yapılandırılmamış (Json) | orta | hayır | yok (DB'de düz) |
 | PurchaseIntent | packageName | kimlik | düşük | hayır | yok (DB'de düz) |
