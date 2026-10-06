@@ -9,6 +9,8 @@ import { resolveProductEntryPath } from "@/lib/products/product-entry";
 import { PASSWORD_CHANGE_PATH, ACCOUNT_SETTINGS_PATH, productRolePath, roleLabel } from "@/lib/auth/roles";
 import { PANEL_PRODUCTS, loadProductPanelStates } from "@/lib/auth/product-panels";
 import { publicProducts } from "@/lib/product-architecture";
+import { yonBrand } from "@/lib/yon-brand";
+import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 import { offlineSessionScope } from "@/lib/offline-scope";
 import { OfflineSyncProvider } from "@/components/panel/offline-sync-provider";
 import { LogoutButton } from "@/components/panel/logout-button";
@@ -27,6 +29,26 @@ const LOCKED_CTA: Record<(typeof PANEL_PRODUCTS)[number], { href: string; label:
   OD: { href: "/paketler", label: "Paketleri incele" },
   OK: { href: "/urunler/online-kocum", label: "İncele ve görüşme iste" },
   ODK: { href: "/odk-paketleri", label: "Kulüp paketlerini incele" },
+};
+
+const PANEL_BRANDS: Record<(typeof PANEL_PRODUCTS)[number], ProductPanelCardModel["brand"]> = {
+  OD: {
+    displayName: "onlinedershanem.",
+    logo: "/design/od-logo.png",
+    tone: "OD",
+  },
+  OK: {
+    displayName: yonBrand.shortName,
+    parentName: yonBrand.parentName,
+    logo: yonBrand.logo,
+    tone: "YON",
+  },
+  ODK: {
+    displayName: denemeLigiBrand.shortName,
+    parentName: denemeLigiBrand.parentName,
+    logo: denemeLigiBrand.logo,
+    tone: "LEAGUE",
+  },
 };
 
 /**
@@ -54,7 +76,8 @@ export default async function ProductSelectorPage() {
     const catalog = publicProducts.find((product) => product.registryCode === code);
     return {
       code,
-      name: catalog?.name ?? code,
+      name: code === "OK" ? yonBrand.name : code === "ODK" ? denemeLigiBrand.name : catalog?.name ?? code,
+      brand: PANEL_BRANDS[code],
       role: catalog?.role ?? "",
       description: catalog?.description ?? "",
       state: states[code] === "ACTIVE" && !entries[code] ? "LOCKED" : states[code],

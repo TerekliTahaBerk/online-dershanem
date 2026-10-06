@@ -11,8 +11,8 @@ export type PanelChoice = "OD" | "OK" | "ODK";
 
 const PANEL_LINK_NAME: Record<PanelChoice, string> = {
   OD: "onlinedershanem. paneline git",
-  OK: "onlinekoçum. paneline git",
-  ODK: "onlinedenemekulübüm. paneline git",
+  OK: "onlinekoçum. × Yön Koçluk paneline git",
+  ODK: "onlinedenemekulübüm. × Deneme Ligi paneline git",
 };
 
 /**

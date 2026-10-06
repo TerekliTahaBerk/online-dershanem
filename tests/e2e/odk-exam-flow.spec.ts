@@ -49,7 +49,7 @@ async function login(page: Page, email = account.email) {
   // Ürün panelleri: girişten sonra seçici açılır; ODK paneli seçilince menü
   // ODK'ya daralır ve "Denemeler" sınav motoruna gider.
   await page.waitForURL(/\/panel\/urun-sec$/);
-  await page.getByRole("link", { name: "onlinedenemekulübüm. paneline git" }).click();
+  await page.getByRole("link", { name: "onlinedenemekulübüm. × Deneme Ligi paneline git" }).click();
   await page.waitForURL(/\/panel\/odk\/ogrenci$/);
   await expect(page.getByRole("link", { name: "Denemeler", exact: true })).toHaveAttribute(
     "href",
