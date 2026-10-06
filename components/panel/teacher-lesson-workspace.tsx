@@ -21,6 +21,7 @@ import {
   type SelectedOutcome,
 } from "@/components/panel/outcome-picker";
 import { useOfflineSync } from "@/components/panel/offline-sync-provider";
+import { PAGE_DESCRIPTION_CLASS, PAGE_TITLE_CLASS } from "@/components/panel/ui";
 
 type Attendance = "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
 type Student = {
@@ -550,10 +551,10 @@ export function TeacherLessonWorkspace({
                 <Clock3 size={13} /> {form.timeLabel}
               </span>
             </div>
-            <h1 className="mt-3 text-[clamp(1.45rem,3vw,2.15rem)] font-semibold tracking-[-.04em] text-(--site-ink)">
+            <h1 className={PAGE_TITLE_CLASS}>
               {form.title}
             </h1>
-            <p className="mt-1 text-sm text-(--site-body)">
+            <p className={PAGE_DESCRIPTION_CLASS}>
               {form.subject} · 60 dakikalık ders özeti
             </p>
           </div>

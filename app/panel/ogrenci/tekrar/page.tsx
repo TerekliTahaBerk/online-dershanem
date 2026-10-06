@@ -7,6 +7,11 @@ import { dailyReviewLimit } from "@/lib/review-scheduler";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelEmptyState } from "@/components/panel/empty-state";
 import { StudentReviewQueue } from "@/components/panel/student-review-queue";
+import {
+  PAGE_EYEBROW_CLASS,
+  PAGE_TITLE_CLASS,
+  PAGE_DESCRIPTION_CLASS,
+} from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 export default async function StudentReviewPage() {
@@ -59,13 +64,13 @@ export default async function StudentReviewPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
+        <p className={PAGE_EYEBROW_CLASS}>
           <RotateCcw size={15} /> Beş–on dakikalık dönüş
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
+        <h1 className={PAGE_TITLE_CLASS}>
           Bugün yalnız birkaç küçük tekrar.
         </h1>
-        <p className="mt-2 text-sm leading-6 text-(--site-body)">
+        <p className={PAGE_DESCRIPTION_CLASS}>
           En fazla {dailyReviewLimit} çalışma gösterilir. Yanlış veya emin
           olmamak ilerlemeni silmez; yalnız sonraki dönüşü yaklaştırır.
         </p>

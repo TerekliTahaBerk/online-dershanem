@@ -1,9 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { unstable_noStore as noStore } from "next/cache";
+import { cookies } from "next/headers";
 import type { ProductCode, UserRole } from "@prisma/client";
 import { ArrowLeftRight, Bell, Settings, ShieldCheck } from "lucide-react";
-import { ACCOUNT_SETTINGS_PATH, PRODUCT_SELECTOR_PATH, productLabel, productRolePath, roleLabel } from "@/lib/auth/roles";
+import { ACCOUNT_SETTINGS_PATH, PRODUCT_SELECTOR_PATH, productLabel, productRolePath, roleLabel, rolePath } from "@/lib/auth/roles";
 import { getAccessibleProducts } from "@/lib/auth/products";
 import { getSession } from "@/lib/auth/session";
 import { getResolvedAdminPreview } from "@/lib/auth/admin-preview";
@@ -21,6 +22,8 @@ import { LogoutButton } from "@/components/panel/logout-button";
 import { PanelNav } from "@/components/panel/panel-nav";
 import { ContextBreadcrumb } from "@/components/panel/context-breadcrumb";
 import { WorkspaceSwitcher, type WorkspaceOption } from "@/components/panel/workspace-switcher";
+import { SidebarToggle } from "@/components/panel/sidebar-toggle";
+import { SIDEBAR_COOKIE, parseSidebarState } from "@/lib/panel/sidebar-preference";
 import { PanelMobileNav } from "@/components/panel/panel-mobile-nav";
 import { AccessibilityPreferenceApplier } from "@/components/panel/accessibility-preference-applier";
 import { defaultAccessibilityViewPreference } from "@/lib/accessibility-preferences";
@@ -29,7 +32,7 @@ import { OfflineSyncProvider } from "@/components/panel/offline-sync-provider";
 import { offlineSessionScope } from "@/lib/offline-scope";
 import { PanelFeatureProvider } from "@/components/panel/panel-feature-provider";
 import { visibleGlobalSearchCommands } from "@/lib/panel/global-search";
-import { resolveNavScope, staffOdkNavItems, type PanelNavItem } from "@/lib/panel/navigation";
+import { panelNavSections, resolveNavScope, staffOdkNavItems, type PanelNavItem } from "@/lib/panel/navigation";
 import { effectiveStaffPermissions } from "@/lib/products/staff-permissions";
 import { staffAssignmentMode } from "@/lib/products/staff-mode";
 import { AccountCompletionBanner } from "@/components/account/account-completion-banner";
@@ -91,6 +94,7 @@ export async function PanelShell({
   if (preview || teacherMode.enabled) noStore();
 
   const flags = getPanelFeatureFlags();
+  const sidebarState = parseSidebarState((await cookies()).get(SIDEBAR_COOKIE)?.value);
   const accessibilityEnabled = flags.accessibilityProfile;
   const effectiveRole: UserRole = preview ? preview.subject.role : role;
   const effectiveUserId = preview ? preview.subject.userId : session?.userId;
@@ -152,22 +156,6 @@ export async function PanelShell({
       ])
     : [0, null, null, [], [], []];
 
-  const searchCommands =
-    session &&
-    !preview &&
-    (effectiveRole === "ADMIN" || effectiveRole === "TEACHER") &&
-    !isBusinessWorkspace
-      ? visibleGlobalSearchCommands({
-          role: effectiveRole,
-          flags,
-          businessPermissions: leadUnits.length ? (["lead:read"] as const) : [],
-        }).map((command) => ({
-          id: command.id,
-          label: command.label,
-          detail: command.detail,
-          href: command.href,
-        }))
-      : [];
   const accessibilityPreference =
     storedPreference || defaultAccessibilityViewPreference;
   const offlineScope = session ? offlineSessionScope(session.sessionId) : "";
@@ -199,6 +187,51 @@ export async function PanelShell({
     const access = await effectiveStaffPermissions(effectiveUserId);
     return access.isAdmin ? null : [...access.permissions];
   })();
+  /*
+   * KOMUT MENÜSÜ (⌘K). Rol komutları sunucuda süzülür: rol, bayrak, işletme
+   * izni ve personel izinleri (`effectiveStaffPermissions`, guard'larla aynı
+   * mod kuralı). Sayfa komutları kullanıcının KENDİ menüsünden türetilir, bu
+   * yüzden açılamayacak bir sayfaya giden komut üretilmez.
+   */
+  const commandStaffPermissions =
+    session && !preview && effectiveRole === "TEACHER" && effectiveUserId
+      ? (await effectiveStaffPermissions(effectiveUserId)).permissions
+      : undefined;
+  const roleCommands =
+    session && !preview && !isBusinessWorkspace
+      ? visibleGlobalSearchCommands({
+          role: effectiveRole,
+          flags,
+          businessPermissions: leadUnits.length ? (["lead:read"] as const) : [],
+          staffPermissions: commandStaffPermissions,
+        }).map((command) => ({
+          id: command.id,
+          label: command.label,
+          detail: command.detail,
+          href: command.href,
+        }))
+      : [];
+  const navCommands =
+    session && !preview && !isBusinessWorkspace && !nav
+      ? [
+          ...panelNavSections(effectiveRole, products, flags, rolePath(effectiveRole), navScope, staffOdkPermissions).flatMap(
+            (navSection) =>
+              navSection.items.map((item) => ({
+                id: `nav:${item.id}`,
+                label: item.label,
+                detail: `Sayfa · ${navSection.title.toLocaleLowerCase("tr-TR").replace(/^./, (c) => c.toLocaleUpperCase("tr-TR"))}`,
+                href: item.href,
+              })),
+          ),
+          { id: "nav:notifications", label: "Bildirimler", detail: "Sayfa · Genel", href: "/panel/bildirimler" },
+          { id: "nav:settings", label: "Ayarlar", detail: "Hesap ve panel tercihleri", href: ACCOUNT_SETTINGS_PATH },
+        ]
+      : [];
+  const searchCommands = [...roleCommands, ...navCommands].filter(
+    (command, index, all) => all.findIndex((other) => other.href === command.href) === index,
+  );
+  const entitySearch = effectiveRole === "ADMIN" || effectiveRole === "TEACHER";
+
   // Ürün vurgusu (`.pn-scope[data-product]`) — yalnız sunum; yetki değildir.
   const accentProduct =
     navScope === "OK" ? "yon" : navScope === "ODK" || product === "ODK" ? "dl" : "od";
@@ -337,6 +370,8 @@ export async function PanelShell({
             isBusinessWorkspace ? "business-panel-scope" : ""
           }`}
           data-product={accentProduct}
+          data-pn-shell=""
+          data-sidebar={sidebarState}
         >
           {accessibilityEnabled ? (
             <AccessibilityPreferenceApplier
@@ -351,7 +386,7 @@ export async function PanelShell({
           </a>
 
           {/* Kenar çubuğu — 240px, sakin gri zemin, ince ayraç (roadmap §6.2) */}
-          <aside className="sticky top-0 hidden h-dvh w-[232px] flex-none flex-col border-r border-pn-border bg-pn-sidebar px-2.5 pb-3 pt-3 lg:flex xl:w-[240px]">
+          <aside className="pn-sidebar sticky top-0 hidden h-dvh w-[232px] flex-none flex-col border-r border-pn-border bg-pn-sidebar px-2.5 pb-3 pt-3 lg:flex xl:w-[240px]">
             {/*
               Erişilebilir ad çalışma alanına göre değişir: aynı marka
               bağlantısı işletme alanında başka bir yere gidiyor, ekran
@@ -388,7 +423,8 @@ export async function PanelShell({
             </Link>
             ) : null}
 
-            <div>
+            <div className="flex items-start gap-1">
+              <div className="min-w-0 flex-1">
               <WorkspaceSwitcher
                 current={currentWorkspace}
                 subtitle={displayName}
@@ -396,6 +432,10 @@ export async function PanelShell({
                 selectorHref={PRODUCT_SELECTOR_PATH}
                 disabled={Boolean(preview)}
               />
+              </div>
+              <div className="pt-1.5">
+                <SidebarToggle mode="close" />
+              </div>
             </div>
 
             {!preview ? (
@@ -501,6 +541,8 @@ export async function PanelShell({
                 }}
               />
 
+              <SidebarToggle mode="open" />
+
               <div className="min-w-0 flex-1 lg:flex-none">
                 <ContextBreadcrumb
                   workspace={breadcrumbWorkspace}
@@ -530,10 +572,8 @@ export async function PanelShell({
                   </div>
                 ) : null}
 
-                {!isBusinessWorkspace &&
-                !preview &&
-                (effectiveRole === "ADMIN" || effectiveRole === "TEACHER") ? (
-                  <AdminCommandSearch commands={searchCommands} />
+                {!isBusinessWorkspace && !preview && searchCommands.length ? (
+                  <AdminCommandSearch commands={searchCommands} entitySearch={entitySearch} />
                 ) : null}
 
                 {!preview ? (

@@ -1,7 +1,12 @@
 import type { Preview } from "@storybook/nextjs-vite";
+import { createElement } from "react";
 import "../app/globals.css";
 
 const preview: Preview = {
+  // Panel token katmanı (`--pn-*`) yalnız `.pn-scope` içinde tanımlıdır;
+  // hikâyeler panel kabuğundaki gibi bu kapsamda çizilir. Değişken tanımından
+  // başka stil getirmediği için public bileşen hikâyelerini etkilemez.
+  decorators: [(Story) => createElement("div", { className: "pn-scope" }, createElement(Story))],
   parameters: {
     controls: {
       matchers: {

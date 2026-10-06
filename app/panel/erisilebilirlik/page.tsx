@@ -5,6 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { AccessibilityPreferencesForm } from "@/components/panel/accessibility-preferences-form";
+import {
+  PAGE_EYEBROW_CLASS,
+  PAGE_TITLE_CLASS,
+  PAGE_DESCRIPTION_CLASS,
+} from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 export default async function AccessibilityPage() {
@@ -39,13 +44,13 @@ export default async function AccessibilityPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
+        <p className={PAGE_EYEBROW_CLASS}>
           <Accessibility size={16} /> Erişilebilirlik
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
+        <h1 className={PAGE_TITLE_CLASS}>
           Paneli çalışma biçiminize uyarlayın.
         </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-(--site-body)">
+        <p className={PAGE_DESCRIPTION_CLASS}>
           Tercihler hesabınıza bağlıdır ve kullandığınız cihazlar arasında
           uygulanır. Sağlık tanısı veya engel adı istemeyiz.
         </p>

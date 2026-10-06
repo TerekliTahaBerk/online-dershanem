@@ -82,9 +82,20 @@ function iconFor(item: GlobalSearchResult): LucideIcon {
 type AdminCommandSearchProps = {
   /** Sunucuda filtrelenmiş komutlar — yetkisiz aksiyon istemciye gelmez. */
   commands: CommandSeed[];
+  /**
+   * Kayıt (öğrenci, sipariş, deneme…) araması. Arama ucu yalnız yönetim ve
+   * öğretmene açıktır; öğrenci ve velide menü yalnız komut ve sayfa gezinmesi
+   * sunar ve uca hiç istek atmaz.
+   */
+  entitySearch?: boolean;
 };
 
-export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
+/**
+ * KOMUT MENÜSÜ (⌘K / Ctrl+K) — tüm roller için tek bileşen
+ * (docs/panel-design-roadmap.md §8.7). Kenar çubuğunun yerine geçmez: her
+ * komut hedefi menüde veya bir sayfada da bulunur.
+ */
+export function AdminCommandSearch({ commands, entitySearch = true }: AdminCommandSearchProps) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -154,7 +165,7 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
 
   useEffect(() => {
     const needle = query.trim();
-    if (!open || needle.length < GLOBAL_SEARCH_MIN_CHARS) {
+    if (!open || !entitySearch || needle.length < GLOBAL_SEARCH_MIN_CHARS) {
       setEntities([]);
       setLoadingEntities(false);
       return;
@@ -188,7 +199,7 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
       controller.abort();
       window.clearTimeout(timeout);
     };
-  }, [open, query]);
+  }, [open, query, entitySearch]);
 
   useEffect(() => {
     setActiveIndex(0);
@@ -281,7 +292,7 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
         <span className="flex items-center gap-2">
           <Search size={16} aria-hidden="true" />
           <span className="hidden text-[12.5px] sm:inline">
-            Öğrenci, sipariş, komut…
+            {entitySearch ? "Öğrenci, sipariş, komut…" : "Sayfa veya komut ara…"}
           </span>
         </span>
         <kbd className="hidden rounded-md border border-(--site-line) bg-(--site-bg-warm) px-1.5 py-0.5 text-[10px] font-bold text-(--site-muted) sm:inline">
@@ -329,7 +340,7 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
                       : undefined
                   }
                   className="min-w-0 w-full bg-transparent py-2 text-[15px] text-(--site-ink) outline-hidden placeholder:text-(--site-muted)"
-                  placeholder="Öğrenci, veli, sipariş veya komut ara…"
+                  placeholder={entitySearch ? "Öğrenci, veli, sipariş veya komut ara…" : "Sayfa veya komut ara…"}
                   autoComplete="off"
                   spellCheck={false}
                 />
@@ -461,3 +472,6 @@ export function AdminCommandSearch({ commands }: AdminCommandSearchProps) {
     </>
   );
 }
+
+/** Rol bağımsız ad: komut menüsü. */
+export { AdminCommandSearch as CommandMenu };

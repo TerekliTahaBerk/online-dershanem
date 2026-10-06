@@ -1,6 +1,7 @@
 import type { UserRole } from "@prisma/client";
 import type { PanelFeatureFlags } from "@/lib/panel-feature-flags";
 import type { BusinessPermission } from "@/lib/business/permission-matrix";
+import type { StaffPermission } from "@/lib/products/staff-permission-matrix";
 
 /**
  * Panel global search + command palette — saf domain.
@@ -48,12 +49,19 @@ export type GlobalSearchCommand = GlobalSearchCommandMatch & {
   flag?: keyof PanelFeatureFlags;
   /** İşletme paneli izni; yoksa işletme kontrolü uygulanmaz. */
   businessPermission?: BusinessPermission;
+  /**
+   * Ürün personel izinlerinden EN AZ BİRİ (ADMIN break-glass: her zaman geçer).
+   * Kaynak `effectiveStaffPermissions` — sayfa guard'larıyla aynı mod kuralı.
+   */
+  staffPermissions?: readonly StaffPermission[];
 };
 
 export type GlobalSearchViewer = {
   role: UserRole;
   flags: PanelFeatureFlags;
   businessPermissions: ReadonlySet<BusinessPermission> | readonly BusinessPermission[];
+  /** Etkin personel izinleri (TEACHER); verilmezse personel izni isteyen komutlar gizlenir. */
+  staffPermissions?: ReadonlySet<StaffPermission> | readonly StaffPermission[];
 };
 
 export const GLOBAL_SEARCH_KIND_LABELS: Record<Exclude<GlobalSearchKind, "COMMAND">, string> = {
@@ -113,14 +121,14 @@ export const GLOBAL_SEARCH_COMMANDS: readonly GlobalSearchCommand[] = [
   {
     id: "orders",
     label: "Siparişlere git",
-    detail: "Ödeme ve provisioning durumları",
+    detail: "Ödeme ve erişim açılışı durumları",
     href: "/panel/yonetim/siparisler",
     roles: ["ADMIN"],
   },
   {
     id: "provisioning",
-    label: "Bekleyen provisioning işleri",
-    detail: "İş kuyruğu, onboarding ve cron durumu",
+    label: "Aktivasyon masasını aç",
+    detail: "Erişim açılışı, onboarding ve iş kuyruğu",
     href: "/panel/yonetim/isler",
     roles: ["ADMIN"],
   },
@@ -142,17 +150,36 @@ export const GLOBAL_SEARCH_COMMANDS: readonly GlobalSearchCommand[] = [
   },
   {
     id: "exam-ops",
-    label: "Deneme operasyonunu aç",
-    detail: "Canlı deneme akışı ve incident takibi",
+    label: "Deneme Ligi canlı operasyonu aç",
+    detail: "Canlı deneme akışı ve bütünlük takibi",
     href: "/panel/odk/yonetim/operasyon",
-    roles: ["ADMIN"],
+    roles: ["ADMIN", "TEACHER"],
+    staffPermissions: ["odk:ops:live"],
   },
   {
     id: "exam-plan",
-    label: "Deneme planlamayı aç",
-    detail: "Sınav planı, hazırlık ve yayın akışı",
+    label: "Deneme Ligi denemelerini aç",
+    detail: "Hazırlık, zamanlama, atama ve yayın akışı",
     href: "/panel/odk/yonetim/sinavlar",
-    roles: ["ADMIN"],
+    roles: ["ADMIN", "TEACHER"],
+    staffPermissions: ["odk:exam:edit", "odk:exam:schedule", "odk:exam:assign", "odk:result:score", "odk:integrity:review"],
+  },
+  {
+    id: "exam-results",
+    label: "Puanlama ve yayını aç",
+    detail: "Puanlanacak ve yayın bekleyen denemeler",
+    href: "/panel/odk/yonetim/sonuclar",
+    roles: ["ADMIN", "TEACHER"],
+    staffPermissions: ["odk:result:score"],
+  },
+  {
+    id: "coach-desk",
+    label: "Yön plan masasını aç",
+    detail: "Onay bekleyen haftalık planlar ve öneriler",
+    href: "/panel/ogretmen/plan",
+    roles: ["TEACHER"],
+    flag: "adaptivePlan",
+    staffPermissions: ["ok:coaching:write"],
   },
   {
     id: "students",
@@ -213,7 +240,7 @@ export const GLOBAL_SEARCH_COMMANDS: readonly GlobalSearchCommand[] = [
   {
     id: "coaching",
     label: "Koçluk operasyonunu aç",
-    detail: "Öğrenci başarısı / koçluk masası",
+    detail: "Koç ataması, kapasite ve görüşme takibi",
     href: "/panel/yonetim/kocluk",
     roles: ["ADMIN"],
   },
@@ -248,6 +275,13 @@ export function visibleGlobalSearchCommands(viewer: GlobalSearchViewer): GlobalS
     if (command.flag && !viewer.flags[command.flag]) return false;
     if (command.businessPermission && !hasBusinessPermission(viewer.businessPermissions, command.businessPermission)) {
       return false;
+    }
+    if (command.staffPermissions && viewer.role !== "ADMIN") {
+      const granted = viewer.staffPermissions;
+      if (!granted) return false;
+      const has = (permission: StaffPermission) =>
+        granted instanceof Set ? granted.has(permission) : (granted as readonly StaffPermission[]).includes(permission);
+      if (!command.staffPermissions.some(has)) return false;
     }
     return true;
   });

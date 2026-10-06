@@ -5,6 +5,7 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { TeacherAssignmentManager } from "@/components/panel/teacher-assignment-manager";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { summarizeGroupAssignment } from "@/lib/panel/assignment-display";
+import { PAGE_DESCRIPTION_CLASS, PAGE_EYEBROW_CLASS, PAGE_TITLE_CLASS } from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -77,13 +78,13 @@ export default async function TeacherAssignmentsPage() {
       email={session.email}
     >
       <header className="mb-7">
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
+        <p className={PAGE_EYEBROW_CLASS}>
           <ClipboardCheck size={15} /> Çalışma döngüsü
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-(--site-ink)">
+        <h1 className={PAGE_TITLE_CLASS}>
           Ödevleri ver, ilerlemeyi gör.
         </h1>
-        <p className="mt-2 text-sm text-(--site-body)">
+        <p className={PAGE_DESCRIPTION_CLASS}>
           Ödev öğrenciye ulaşır; tamamlanma durumu veli paneline aynı anda
           yansır.
         </p>

@@ -3,6 +3,11 @@ import { CalendarClock, CheckCircle2, Clock3, FileText } from "lucide-react";
 import { requireProductRole } from "@/lib/auth/guards";
 import { listStudentExams } from "@/lib/odk/student-exam-server";
 import { PanelShell } from "@/components/panel/panel-shell";
+import {
+  PAGE_EYEBROW_CLASS,
+  PAGE_TITLE_CLASS,
+  PAGE_DESCRIPTION_CLASS,
+} from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -173,13 +178,13 @@ export default async function OdkStudentExamsPage() {
       product="ODK"
     >
       <header>
-        <p className="text-xs font-extrabold uppercase tracking-widest text-(--brand-olive)">
+        <p className={PAGE_EYEBROW_CLASS}>
           Deneme Ligi
         </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-[-.04em] text-(--site-ink)">
+        <h1 className={PAGE_TITLE_CLASS}>
           Denemeler
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-(--site-body)">
+        <p className={PAGE_DESCRIPTION_CLASS}>
           Devam eden denemeni, başlayabileceğin denemeleri, yaklaşan sınavlarını
           ve açıklanan sonuçlarını buradan yönetebilirsin.
         </p>

@@ -11,6 +11,9 @@ All notable changes to this project are documented here. The format follows [Kee
 - `lib/panel/status-vocabulary.ts`: one source for user, order payment, readiness, plan-suggestion and Deneme Ligi exam status labels
 - Panel shell (Design Phase 1): a calm gray sidebar with a workspace switcher (onlinedershanem. / Yön Koçluk / Deneme Ligi / İşletme, using the same `/api/panel/active-product` selection as the product selector), Bildirimler with an unread count, and a bottom block for Ayarlar, the business workspace and the account; a 48px context bar with a breadcrumb; a white workspace canvas
 - Panel-wide error boundary (`app/panel/error.tsx`) with retry, a way home and the error code; the loading skeleton matches the new shell
+- Command menu (⌘K / Ctrl+K) for every panel user: commands are filtered by role, feature flag, business permission and product staff permissions (so a Deneme Ligi operator or Yön coach sees their workspace commands), page commands come from the user's own menu, and record search stays admin/teacher-only
+- Hide/show the desktop sidebar (button or ⌘\ / Ctrl+\); the choice is remembered in a cookie and applied on first render
+- Panel primitives (`Section`, `EmptyState`, `StatusBadge`, `PropertyList`/`PropertyRow`, `List`/`ListRow`, `ViewTabs`, `Button`/`ButtonLink`) with Storybook stories; `PanelEmpty` and `PanelStatusBadge` now render them
 - Product staff responsibilities (`ProductStaffAssignment`): TEACHER@OD, COACH@OK and Deneme Ligi EXAM_EDITOR / EXAM_OPERATOR / RESULT_PUBLISHER / REPORT_VIEWER / PRODUCT_MANAGER are granted per product instead of through new global roles; rows keep full grant/revoke history with one active row per user, product and role (SQL partial unique index)
 - **Ürün sorumlulukları** in the admin user detail (Erişim Merkezi): grant and revoke with a required reason and step-up, coach capacity, history, an "MFA kurulumu bekleniyor" badge and a non-blocking last-holder warning; new teachers get TEACHER@OD automatically
 - Deneme Ligi staff land on the workspace their permissions allow (single module, staff home with permitted tiles only, or the report workspace), and the Deneme Ligi menu is built from the same permissions
@@ -36,7 +39,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Changed
 
-- All panel page headers share one scale (24px title, no uppercase eyebrow, 14px description) through `PageHeader`; `PanelHeading`, `PanelPageHeader` and `AdminPageHeader` render it
+- All panel page headers share one scale (24px title, no uppercase eyebrow, 14px description) through `PageHeader`; `PanelHeading`, `PanelPageHeader` and `AdminPageHeader` render it, and the 23 hand-written page headers use the same scale
 - Account settings, notification preferences, accessibility, data usage, sessions and password are no longer menu items: they open from the sidebar's Ayarlar entry, and the settings hub links the panel preferences
 - The panel focus ring uses the panel green instead of the public site's orange; the mobile bottom bar keeps its four shortcuts and the menu button on one row
 - Panel product names follow the public short names: `productLabel()` now returns "Yön Koçluk" and "Deneme Ligi" instead of "onlinekoçum." / "onlinedenemekulübüm."; remaining panel copy, "Kulüp" labels and "ODK" eyebrows were renamed accordingly

@@ -589,6 +589,12 @@ a {
 .site-scope.pn-scope :where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
   outline-color: var(--pn-focus);
 }
+/* Kenar çubuğunu gizle/göster (yalnız ≥1024px; mobilde çekmece kullanılır). */
+.pn-sidebar-open { display: none; }
+@media (min-width: 1024px) {
+  .pn-scope[data-sidebar="collapsed"] .pn-sidebar { display: none; }
+  .pn-scope[data-sidebar="collapsed"] .pn-sidebar-open { display: grid; }
+}
 .pn-scope[data-product="yon"] {
   --pn-accent: var(--pn-accent-yon);
   --pn-accent-soft: var(--pn-accent-yon-soft);

@@ -6,6 +6,11 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentRecoveryPackages } from "@/components/panel/student-recovery-packages";
+import {
+  PAGE_EYEBROW_CLASS,
+  PAGE_TITLE_CLASS,
+  PAGE_DESCRIPTION_CLASS,
+} from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 export default async function StudentRecoveryPage({
@@ -123,13 +128,13 @@ export default async function StudentRecoveryPage({
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
+        <p className={PAGE_EYEBROW_CLASS}>
           <PackageCheck size={15} /> Kaçırdığım ders
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
+        <h1 className={PAGE_TITLE_CLASS}>
           Bu dersi kaçırdın
         </h1>
-        <p className="mt-2 text-sm leading-6 text-(--site-body)">
+        <p className={PAGE_DESCRIPTION_CLASS}>
           25 dakikada toparlayabilirsin: konu özeti, materyal ve küçük çalışma
           tek sırada hazır.
         </p>

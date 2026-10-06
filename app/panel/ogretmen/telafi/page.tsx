@@ -5,6 +5,11 @@ import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { TeacherRecoveryManager } from "@/components/panel/teacher-recovery-manager";
+import {
+  PAGE_EYEBROW_CLASS,
+  PAGE_TITLE_CLASS,
+  PAGE_DESCRIPTION_CLASS,
+} from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 export default async function TeacherRecoveryPage() {
@@ -88,13 +93,13 @@ export default async function TeacherRecoveryPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
+        <p className={PAGE_EYEBROW_CLASS}>
           <PackageCheck size={15} /> 72 saatlik telafi
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
+        <h1 className={PAGE_TITLE_CLASS}>
           Kaçırılan dersi tek onayla küçük bir sıraya koy.
         </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-(--site-body)">
+        <p className={PAGE_DESCRIPTION_CLASS}>
           Ortak özet, aktif kaynak, çalışma ve mini kontrol. Öğrenciye özel
           notlar taslağa hiçbir zaman girmez.
         </p>

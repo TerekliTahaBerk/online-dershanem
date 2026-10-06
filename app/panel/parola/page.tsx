@@ -2,6 +2,10 @@ import { KeyRound } from "lucide-react";
 import { requireSession } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChangePasswordForm } from "@/components/panel/change-password-form";
+import {
+  PAGE_TITLE_CLASS,
+  PAGE_DESCRIPTION_CLASS,
+} from "@/components/panel/ui";
 
 /**
  * Parola değiştirme.
@@ -24,11 +28,11 @@ export default async function ChangePasswordPage() {
           <KeyRound size={19} aria-hidden="true" />
         </span>
 
-        <h1 className="mt-5 font-display text-[clamp(1.7rem,3.5vw,2.2rem)] leading-[1.15] text-(--site-ink)">
+        <h1 className={PAGE_TITLE_CLASS}>
           {forced ? "Kendi parolanızı belirleyin." : "Parolanızı değiştirin."}
         </h1>
 
-        <p className="mt-3 text-[14.5px] leading-7 text-(--site-body)">
+        <p className={PAGE_DESCRIPTION_CLASS}>
           {forced
             ? "Devam etmeden önce yalnızca sizin bildiğiniz bir parola belirleyin."
             : "Yeni parolanızı belirledikten sonra diğer cihazlardaki oturumlarınız kapanır."}

@@ -2,6 +2,22 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { EmptyState, StatusBadge } from "@/components/panel/primitives";
+
+export {
+  Button,
+  ButtonLink,
+  buttonClass,
+  EmptyState,
+  List,
+  ListRow,
+  PropertyList,
+  PropertyRow,
+  Section,
+  StatusBadge,
+  ViewTabs,
+  type ViewTab,
+} from "@/components/panel/primitives";
 
 type PanelTone =
   | "neutral"
@@ -35,6 +51,14 @@ function normalizeTone(tone: PanelTone): Exclude<PanelTone, "danger"> {
  * 24px / 700 başlık, büyük harfsiz küçük bağlam satırı, 14px açıklama, sağda
  * tek birincil eylem alanı. Sayfanın tek `<h1>`'i buradadır.
  */
+/** Başlık ölçeğinin sınıfları — elle yazılmış başlıklar da aynı ölçeği kullanır. */
+export const PAGE_EYEBROW_CLASS =
+  "mb-1.5 flex items-center gap-1.5 text-[12.5px] font-medium text-dc-ink-muted [&_svg]:size-3.5";
+export const PAGE_TITLE_CLASS =
+  "max-w-4xl text-[20px] font-bold leading-[1.3] tracking-[-0.015em] text-dc-ink sm:text-[24px]";
+export const PAGE_DESCRIPTION_CLASS =
+  "mt-1.5 max-w-3xl text-[14px] leading-[1.6] text-dc-ink-body";
+
 export function PageHeader({
   title,
   description,
@@ -54,16 +78,16 @@ export function PageHeader({
     <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
       <div className="min-w-0">
         {eyebrow ? (
-          <p className="mb-1.5 flex items-center gap-1.5 text-[12.5px] font-medium text-dc-ink-muted">
+          <p className={PAGE_EYEBROW_CLASS}>
             {Icon ? <Icon size={14} aria-hidden="true" /> : null}
             {eyebrow}
           </p>
         ) : null}
-        <h1 className="max-w-4xl text-[20px] font-bold leading-[1.3] tracking-[-0.015em] text-dc-ink sm:text-[24px]">
+        <h1 className={PAGE_TITLE_CLASS}>
           {title}
         </h1>
         {description ? (
-          <p className="mt-1.5 max-w-3xl text-[14px] leading-[1.6] text-dc-ink-body">
+          <p className={PAGE_DESCRIPTION_CLASS}>
             {description}
           </p>
         ) : null}
@@ -270,6 +294,7 @@ export function PanelMetric({
   );
 }
 
+/** Eski ad: tek durum rozetine (`StatusBadge`) bağlanır; ton adları korunur. */
 export function PanelStatusBadge({
   label,
   tone = "neutral",
@@ -279,32 +304,7 @@ export function PanelStatusBadge({
   tone?: PanelTone;
   pulse?: boolean;
 }) {
-  const toneClasses: Record<Exclude<PanelTone, "danger">, string> = {
-    neutral: "bg-slate-100 text-slate-700",
-    info: "bg-(--pd-pastel-sky-soft) text-(--pd-pastel-sky-ink)",
-    warning:
-      "bg-(--pd-pastel-yellow-soft) text-(--pd-pastel-yellow-ink)",
-    success: "bg-(--pd-pastel-mint-soft) text-(--pd-pastel-mint-ink)",
-    critical:
-      "bg-(--pd-pastel-blush-soft) text-(--pd-pastel-blush-ink)",
-  };
-  const semanticTone = normalizeTone(tone);
-  return (
-    <span
-      className={cn(
-        "inline-flex min-h-6 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold",
-        toneClasses[semanticTone],
-      )}
-    >
-      {pulse ? (
-        <span
-          className="h-1.5 w-1.5 rounded-full bg-current motion-safe:animate-pulse"
-          aria-hidden="true"
-        />
-      ) : null}
-      {label}
-    </span>
-  );
+  return <StatusBadge label={label} tone={normalizeTone(tone)} live={pulse} />;
 }
 
 export function PanelAttentionCard({
@@ -559,7 +559,7 @@ export function PanelStatCard({
   );
 }
 
-/** Veri yokken gösterilecek dürüst durum. */
+/** Veri yokken gösterilecek dürüst durum — satır içi `EmptyState` (kartsız). */
 export function PanelEmpty({
   title,
   body,
@@ -571,13 +571,5 @@ export function PanelEmpty({
   action?: ReactNode;
   className?: string;
 }) {
-  return (
-    <PanelCard className={cn("mt-5", className)}>
-      <p className="text-[15px] font-bold text-dc-ink">{title}</p>
-      <p className="mt-1.5 text-[14px] leading-[1.6] text-dc-ink-muted">
-        {body}
-      </p>
-      {action ? <div className="mt-4">{action}</div> : null}
-    </PanelCard>
-  );
+  return <EmptyState title={title} body={body} action={action} className={cn("mt-5", className)} />;
 }

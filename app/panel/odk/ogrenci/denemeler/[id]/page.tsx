@@ -6,6 +6,7 @@ import { attemptStartError } from "@/lib/odk/attempt-domain";
 import { getStudentExam } from "@/lib/odk/student-exam-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentExamStart } from "@/components/odk/student-exam-start";
+import { PAGE_DESCRIPTION_CLASS, PAGE_EYEBROW_CLASS, PAGE_TITLE_CLASS } from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 const dateFormatter = new Intl.DateTimeFormat("tr-TR", {
@@ -50,13 +51,13 @@ export default async function OdkStudentExamDetailPage({
         <ArrowLeft size={15} /> Denemeler
       </Link>
       <header className="mt-6">
-        <p className="text-xs font-extrabold uppercase tracking-widest text-(--brand-olive)">
+        <p className={PAGE_EYEBROW_CLASS}>
           Deneme Ligi
         </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-[-.04em] text-(--site-ink)">
+        <h1 className={PAGE_TITLE_CLASS}>
           {exam.title}
         </h1>
-        <p className="mt-3 text-sm text-(--site-body)">
+        <p className={PAGE_DESCRIPTION_CLASS}>
           {startWindowCopy}
         </p>
       </header>

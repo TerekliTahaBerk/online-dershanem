@@ -16,6 +16,7 @@ import { AdminPreviewPanel } from "@/components/odk/admin-preview-panel";
 import { AdminIntegrityReviewPanel } from "@/components/odk/admin-integrity-review-panel";
 import { AdminResultsReviewPanel } from "@/components/odk/admin-results-review-panel";
 import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
+import { PAGE_DESCRIPTION_CLASS, PAGE_EYEBROW_CLASS, PAGE_TITLE_CLASS } from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 function localInput(value: Date | null) {
@@ -94,15 +95,15 @@ export default async function OdkAdminExamDetailPage({
         <ArrowLeft size={13} /> Denemelere dön
       </Link>
       <header className="mt-5">
-        <p className="text-xs font-extrabold uppercase text-(--brand-olive)">
+        <p className={PAGE_EYEBROW_CLASS}>
           {familyCode} ·{" "}
           {exam.structureMode === "FULL_TEMPLATE" ? "Tam deneme" : "Matematik"}{" "}
           · sürüm {exam.currentVersion.versionNumber}
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
+        <h1 className={PAGE_TITLE_CLASS}>
           {exam.title}
         </h1>
-        <p className="mt-2 text-sm text-(--site-body)">
+        <p className={PAGE_DESCRIPTION_CLASS}>
           Sonuçlar yönetim yayınlamadan öğrenciye açılmaz. LIVE sonrası kritik
           alanlar kilitlenir.
         </p>

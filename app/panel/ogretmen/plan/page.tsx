@@ -15,6 +15,11 @@ import {
 } from "@/lib/istanbul-time";
 import { buildWeeklyKocumMetrics } from "@/lib/kocum";
 import { WEEKLY_PLAN_SUGGESTION_KIND_LABELS } from "@/lib/panel/status-vocabulary";
+import {
+  PAGE_EYEBROW_CLASS,
+  PAGE_TITLE_CLASS,
+  PAGE_DESCRIPTION_CLASS,
+} from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -100,13 +105,13 @@ export default async function TeacherPlanPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
+        <p className={PAGE_EYEBROW_CLASS}>
           <ListChecks size={15} /> Yön · Plan masası
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
+        <h1 className={PAGE_TITLE_CLASS}>
           Haftayı görün, düzenleyin, kilitleyin.
         </h1>
-        <p className="mt-2 text-sm leading-6 text-(--site-body)">
+        <p className={PAGE_DESCRIPTION_CLASS}>
           Sistem önerir; kritik değişiklikler sizin onayınız olmadan öğrenciye
           gitmez. Görevleri sürükleyebilir veya Tarihi Değiştir ile
           taşıyabilirsiniz.
