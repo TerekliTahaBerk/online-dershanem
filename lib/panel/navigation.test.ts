@@ -42,7 +42,8 @@ test("admin navigasyonu teknik yüzeyleri görev-temelli ve ayırt edilebilir ad
   assert.ok(navLabels.includes("Ürün ve yönetim analitiği"));
   assert.ok(navLabels.includes("Özellikler"));
   assert.ok(navLabels.includes("Ders, grup ve ödev yönetimi"));
-  assert.ok(navLabels.includes("Sonuç ve kulüp raporları"));
+  assert.ok(navLabels.includes("Sonuç raporları"));
+  assert.ok(!navLabels.some((label) => /kulüp/i.test(label)));
   assert.ok(navLabels.includes("Operasyon ve denetim raporları"));
   assert.ok(!navLabels.includes("Yeni Deneme"));
   assert.ok(!panelNavHrefs("ADMIN", [], ALL_FLAGS_ON).some((href) => href.includes("#")));
@@ -223,4 +224,31 @@ test("ürün paneli kapsamı: mobil alt çubuk seçili panele göre kurulur", ()
   const admin = mobilePrimaryNav("ADMIN", [], ALL_FLAGS_ON, undefined, "ODK");
   assert.equal(admin.length <= 4, true);
   assert.equal(admin.some((item) => item.id === "groups"), false);
+});
+
+test("giriş noktası olmayan sayfalar menüye bağlanır (yetim rota kalmaz)", () => {
+  const adminOn = panelNavHrefs("ADMIN", [], ALL_FLAGS_ON);
+  for (const href of [
+    "/panel/odk/yonetim/sonuclar",
+    "/panel/odk/yonetim/pilot",
+    "/panel/yonetim/pilot",
+    "/panel/yonetim/kalite",
+  ]) {
+    assert.ok(adminOn.includes(href), href);
+  }
+  // Kalite sayfası bayrak kapalıyken 404 verir; menü de üretmemeli.
+  assert.ok(!panelNavHrefs("ADMIN", [], ALL_FLAGS_OFF).includes("/panel/yonetim/kalite"));
+
+  // Deneme Ligi puanlama ve pilot öğeleri yalnız Deneme Ligi panelinde görünür.
+  const adminOd = panelNavSections("ADMIN", ALL_PRODUCTS, ALL_FLAGS_ON, "/panel/yonetim", "OD").flatMap((s) => s.items.map((item) => item.id));
+  assert.ok(!adminOd.includes("odk-results"));
+  assert.ok(!adminOd.includes("odk-pilot"));
+  assert.ok(adminOd.includes("pilot"));
+  const adminOdk = panelNavSections("ADMIN", ALL_PRODUCTS, ALL_FLAGS_ON, "/panel/yonetim", "ODK").flatMap((s) => s.items.map((item) => item.id));
+  assert.ok(adminOdk.includes("odk-results"));
+  assert.ok(adminOdk.includes("odk-pilot"));
+
+  // Öğrencinin haftalık özeti, sayfayla aynı bayrağa bağlıdır.
+  assert.ok(panelNavHrefs("STUDENT", ALL_PRODUCTS, ALL_FLAGS_ON).includes("/panel/ogrenci/haftalik"));
+  assert.ok(!panelNavHrefs("STUDENT", ALL_PRODUCTS, ALL_FLAGS_OFF).includes("/panel/ogrenci/haftalik"));
 });

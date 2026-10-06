@@ -37,7 +37,7 @@ export function OverviewPanel(props: OverviewPanelProps) {
           </div>
           {data.nearestOdkExamTitle ? (
             <div className="flex justify-between gap-3">
-              <dt>Yaklaşan ODK</dt>
+              <dt>Yaklaşan Deneme Ligi sınavı</dt>
               <dd className="font-semibold text-dc-ink">
                 {data.nearestOdkExamTitle}
               </dd>

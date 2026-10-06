@@ -108,7 +108,7 @@ export function OdkAudienceReports({
     report?.trends.filter((trend) => trend.latestAccuracy < 50).length || 0;
   const eyebrow =
     role === "ADMIN"
-      ? "ODK öğrenci raporları"
+      ? "Deneme Ligi raporları"
       : role === "TEACHER"
         ? "Sorumlu olduğunuz öğrenciler"
         : "Bağlı öğrenciniz";
@@ -116,8 +116,8 @@ export function OdkAudienceReports({
     <>
       <PanelPageHeader
         eyebrow={eyebrow}
-        title="Matematik denemelerini öğrenme kararına dönüştürün."
-        description="Sonuçlar yalnız admin tarafından açıklandıktan sonra görünür. Eğilimler öğrencinin kendi önceki ölçümüyle karşılaştırılır; öğrenci sıralaması yapılmaz."
+        title="Deneme sonuçlarını öğrenme kararına dönüştürün."
+        description="Sonuçlar yalnız yayınlandıktan sonra görünür. Eğilimler öğrencinin kendi önceki ölçümüyle karşılaştırılır; öğrenci sıralaması yapılmaz."
         icon={ShieldCheck}
       />
 

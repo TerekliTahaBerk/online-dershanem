@@ -102,7 +102,7 @@ test.describe("panel deneyimi", () => {
     await expect(nav.getByRole("link", { name: "Kişiler", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Öğrenciler", exact: true })).toHaveCount(0);
     await expect(nav.getByRole("link", { name: "Siparişler", exact: true })).toBeVisible();
-    await expect(nav.getByRole("link", { name: "Provisioning", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Aktivasyon masası", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Özellikler", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Ana Sayfa", exact: true })).toHaveCount(0);
 
@@ -111,7 +111,7 @@ test.describe("panel deneyimi", () => {
     const drawer = page.getByRole("dialog", { name: "Panel menüsü" });
     await expect(drawer.getByRole("navigation", { name: "Panel menüsü" })).toBeVisible();
     await expect(drawer.getByText("KİŞİLER", { exact: true })).toBeVisible();
-    await expect(drawer.getByRole("link", { name: "Provisioning", exact: true })).toBeVisible();
+    await expect(drawer.getByRole("link", { name: "Aktivasyon masası", exact: true })).toBeVisible();
   });
 
   test("öğretmen navigasyonu Dersler ve Çalışmalar ayrımını gösterir", async ({ page }) => {

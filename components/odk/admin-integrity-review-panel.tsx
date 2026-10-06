@@ -110,7 +110,7 @@ export function AdminIntegrityReviewPanel({
           <ShieldAlert size={17} />
         </span>
         <div>
-          <h2 className="text-sm font-extrabold">Integrity inceleme</h2>
+          <h2 className="text-sm font-extrabold">Bütünlük incelemesi</h2>
           <p className="mt-1 text-xs leading-5 text-(--site-muted)">
             Otomatik suçlama yok. {flagged.length} oturumda sinyal var · deneme{" "}
             {examId.slice(0, 8)}…

@@ -60,7 +60,7 @@ export default async function TeacherHelpPage() {
     .map(({ item }) => ({
       id: item.id,
       studentName: item.student.user.fullName || item.student.user.email,
-      groupName: item.group?.name ?? "onlinekoçum.",
+      groupName: item.group?.name ?? "Yön Koçluk",
       energy: item.checkIn.energy,
       confidence: item.checkIn.confidence,
       barrier: item.checkIn.barrier,

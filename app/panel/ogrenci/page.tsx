@@ -364,8 +364,8 @@ export default async function StudentHomePage() {
 
       {odk && !latest ? (
         <p className="mt-5 text-[14px] text-dc-ink-muted">
-          onlinedenemekulübüm. sonuçların girildiğinde net gelişimin ve analiz burada
-          açılır.
+          Deneme Ligi sonuçların açıklandığında net gelişimin ve analizin burada
+          görünür.
         </p>
       ) : null}
     </div>,

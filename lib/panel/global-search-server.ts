@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import type { SessionUser } from "@/lib/auth/session";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { getBusinessAccess } from "@/lib/business/permissions";
+import { odkExamStatusLabel } from "@/lib/panel/status-vocabulary";
 import {
   GLOBAL_SEARCH_PER_KIND_LIMIT,
   commandsToResults,
@@ -479,7 +480,7 @@ async function searchExams(needles: string[]): Promise<GlobalSearchResult[]> {
     kind: "EXAM" as const,
     id: row.id,
     label: row.title,
-    detail: `${row.family} · ${row.status}${row.startsAt ? ` · ${DATE.format(row.startsAt)}` : ""}`,
+    detail: `${row.family ?? "Deneme"} · ${odkExamStatusLabel(row.status)}${row.startsAt ? ` · ${DATE.format(row.startsAt)}` : ""}`,
     href: `/panel/odk/yonetim/sinavlar/${row.id}`,
   }));
 }

@@ -355,7 +355,7 @@ export function deriveStudent360Issues(input: {
     issues.push({
       code: "COACH_MISSING",
       title: "Koç ataması eksik",
-      description: "onlinekoçum. erişimi var ama aktif koç ataması yok.",
+      description: "Yön Koçluk erişimi var ama aktif koç ataması yok.",
       severity: "warning",
     });
   }
@@ -567,6 +567,6 @@ export const STUDENT_360_PACKAGE_STATUS_LABELS: Record<Student360PackageStatus, 
   none: "Aktif paket yok",
   active: "Aktif",
   expiring: "Yenileme yaklaşıyor",
-  provisioning_blocked: "Provisioning bekliyor",
+  provisioning_blocked: "Erişim açılışı bekliyor",
   paid_pending: "Ödeme sonrası işlem",
 };

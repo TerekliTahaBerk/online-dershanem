@@ -27,6 +27,7 @@ import {
 } from "@/lib/od/placement";
 import { deriveUnifiedOperationItems } from "@/lib/panel/operations-inbox";
 import { loadFirstLessonMetrics } from "@/lib/business/first-lesson-metrics-server";
+import { ORDER_PAYMENT_STATUS_PRESENTATION, READINESS_STATUS_PRESENTATION } from "@/lib/panel/status-vocabulary";
 
 export const dynamic = "force-dynamic";
 
@@ -303,7 +304,7 @@ export default async function OperationsPage() {
                 : "bg-amber-100 text-amber-900"
             }`}
           >
-            {readinessStatus}
+            {READINESS_STATUS_PRESENTATION[readinessStatus].label}
           </span>
         </div>
         <div
@@ -341,7 +342,7 @@ export default async function OperationsPage() {
                           : "bg-amber-100 text-amber-900"
                       }`}
                     >
-                      {row.status}
+                      {READINESS_STATUS_PRESENTATION[row.status].label}
                     </span>
                   </td>
                   <td className="px-2 py-2.5 text-(--site-muted)">
@@ -866,7 +867,7 @@ export default async function OperationsPage() {
                         : "bg-amber-50 text-amber-800"
                     }`}
                   >
-                    {order.status} ·{" "}
+                    {ORDER_PAYMENT_STATUS_PRESENTATION[order.status].label} ·{" "}
                     {(order.totalCents / 100).toLocaleString("tr-TR")} ₺
                   </span>
                 </div>

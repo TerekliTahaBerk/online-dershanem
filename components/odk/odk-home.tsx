@@ -25,22 +25,22 @@ import { examStatusPresentation } from "@/lib/odk/presentation";
 
 const COPY = {
   ADMIN: {
-    eyebrow: "ODK yönetimi",
+    eyebrow: "Deneme Ligi · yönetim",
     title: "Deneme gününü güvenle yönetin.",
     body: "Hazırlık, canlı operasyon, puanlama ve pilot kapıları tek çalışma alanında.",
   },
   TEACHER: {
-    eyebrow: "ODK öğretmen",
+    eyebrow: "Deneme Ligi · öğretmen",
     title: "Denemeden öğrenme kararına geçin.",
     body: "Sorumlu olduğunuz öğrencilerin açıklanmış sonuçlarını ve tekrar eden gelişim alanlarını izleyin.",
   },
   STUDENT: {
-    eyebrow: "ODK öğrenci",
-    title: "Sıradaki matematik denemene hazırlan.",
+    eyebrow: "Deneme Ligi",
+    title: "Sıradaki denemene hazırlan.",
     body: "Başlama saatin, devam eden oturumun ve açıklanan sonuçların burada.",
   },
   PARENT: {
-    eyebrow: "ODK veli",
+    eyebrow: "Deneme Ligi · veli",
     title: "Gelişimi sakin ve anlaşılır biçimde izleyin.",
     body: "Bağlı öğrencinizin açıklanmış sonuçlarını yalnız kendi önceki denemeleriyle karşılaştırın.",
   },

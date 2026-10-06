@@ -4,6 +4,13 @@
 **Audited revision:** `50026d6` on `claude/blissful-cerf-5ltp54` (includes Phase 0 `e68ec25` and Phase 1 `eb4cc65`).
 **Scope:** `app/panel/**` (106 route folders, 102 `page.tsx`, ~21k lines), `components/panel/**` + `components/odk/**` (136 files, ~30k lines), `lib/panel/**`, `lib/kocum/**`, `lib/odk/**`, `lib/products/staff-*`, `lib/auth/{guards,roles,product-panels}`, `lib/panel-feature-flags.ts`, `app/globals.css`, `next.config.ts` redirects, 136 API routes under `app/api/panel/**` and `app/api/odk/**`.
 
+**Implementation status (update as phases land):**
+
+| Phase | State |
+|---|---|
+| Design Phase 0 | **Partly done.** Done: MFA reset approval queue restored on `/panel/yonetim/kisiler` (`components/panel/pending-mfa-reset-queue.tsx`); menu entries for `/panel/odk/yonetim/sonuclar`, both pilot pages, `/panel/yonetim/kalite`, `/panel/ogrenci/haftalik`; §19.7 copy fixes; `lib/panel/status-vocabulary.ts`; `.pn-scope` token layer + `data-product` on the shell; `tests/e2e/panel-design-phase0.spec.ts`. **Open:** visual-regression screenshot baseline, preservation checklist fixture. |
+| Design Phases 1–8 | Not started. |
+
 **How to use this document:** §2, §3, §19 and §21 are the inventory and safety net. §5–§8 define the system. §9–§15 define each workspace. §22–§23 are the implementation order with file paths. Every proposed feature has a dependency tag:
 
 | Tag | Meaning |
