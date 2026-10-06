@@ -1,7 +1,7 @@
 import "server-only";
 
 import { notFound } from "next/navigation";
-import { listParentVisibleChildren, type ParentChild } from "@/lib/panel/parent-product-policy";
+import { listParentVisibleChildren, type ParentChild, type ParentScopePurpose } from "@/lib/panel/parent-product-policy";
 
 /**
  * VELİ KAPSAMI — hangi öğrencinin verisi gösterilebilir?
@@ -18,11 +18,15 @@ import { listParentVisibleChildren, type ParentChild } from "@/lib/panel/parent-
  * VELİ-FREE ÜRÜNLER: yalnızca KPSS üyeliği olan öğrenci kapsamda yoktur, bu
  * yüzden URL ile istense de 404 döner (bkz. `listParentVisibleChildren`).
  *
+ * AKADEMİK İZİN: varsayılan amaç `academic` — `canViewAcademic = false` olan
+ * çocuk kapsamda yoktur (URL ile istense de 404). Hesap/paket ekranı
+ * `account` amacıyla çağırır.
+ *
  * §23: birden çok çocuk varsa veriler KARIŞTIRILMAZ; her zaman tek bir
  * seçili öğrencinin bağlamı döner.
  */
 
-export type { ParentChild };
+export type { ParentChild, ParentScopePurpose };
 
 export type ParentScope = {
   children: ParentChild[];
@@ -32,8 +36,9 @@ export type ParentScope = {
 export async function resolveParentScope(
   parentUserId: string,
   requestedStudentId?: string,
+  purpose: ParentScopePurpose = "academic",
 ): Promise<ParentScope> {
-  const children = await listParentVisibleChildren(parentUserId);
+  const children = await listParentVisibleChildren(parentUserId, purpose);
 
   if (requestedStudentId) {
     const requested = children.find((c) => c.id === requestedStudentId);

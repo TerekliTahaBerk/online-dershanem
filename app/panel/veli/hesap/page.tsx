@@ -49,7 +49,7 @@ export default async function ParentAccountPage({
 }) {
   const session = await requirePanelRole("PARENT");
   const { talep } = await searchParams;
-  const { children } = await resolveParentScope(session.userId);
+  const { children } = await resolveParentScope(session.userId, undefined, "account");
 
   const orders = await prisma.odOrder.findMany({
     where: { userId: session.userId },

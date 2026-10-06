@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { emitCrossProductEvent } from "../../lib/student-success/server/outbox";
 import { processCrossProductEventOutbox } from "../../lib/student-success/server/event-processor";
 import { getStudentCalendar } from "../../lib/student-success/server/calendar-server";
-import { assertCoachOrTeacherAccess } from "../../lib/kocum/access-server";
+import { assertAssignedCoach, assertOdTeacherOfStudent } from "../../lib/kocum/access-server";
 import { istanbulWeekStart } from "../../lib/istanbul-time";
 import { createIntegrationPrismaClient, integration } from "./integration-utils";
 
@@ -295,38 +295,49 @@ integration("§7 OK yetkisi yoksa ödev Koçum planına yansıtılmaz", async ()
  * §25 — Yatay erişim
  * ---------------------------------------------------------------- */
 
-integration("§25 ilişkisi olmayan öğretmen öğrencinin planına erişemez", async () => {
+integration("§25 Yön yazma yetkisi yalnız atanmış koçta: OD grup öğretmeni koç sayılmaz (P0-3)", async () => {
   const fixture = await createFixture();
   try {
     assert.equal(
-      await assertCoachOrTeacherAccess({
-        role: "TEACHER",
-        userId: fixture.teacher.id,
-        studentProfileId: fixture.student.id,
-      }),
+      await assertOdTeacherOfStudent({ role: "TEACHER", userId: fixture.teacher.id, studentProfileId: fixture.student.id }),
       true,
-      "dersini veren öğretmen erişebilmeli",
+      "dersini veren öğretmen OD kapsamında kalır",
     );
-
     assert.equal(
-      await assertCoachOrTeacherAccess({
-        role: "TEACHER",
-        userId: fixture.outsider.id,
-        studentProfileId: fixture.student.id,
-      }),
+      await assertAssignedCoach({ role: "TEACHER", userId: fixture.teacher.id, studentProfileId: fixture.student.id }),
+      false,
+      "OD grup öğretmeni koç ataması olmadan Yön yazamaz",
+    );
+    assert.equal(
+      await assertAssignedCoach({ role: "TEACHER", userId: fixture.outsider.id, studentProfileId: fixture.student.id }),
       false,
       "YABANCI öğretmen erişememeli",
     );
-
     assert.equal(
-      await assertCoachOrTeacherAccess({
-        role: "ADMIN",
-        userId: fixture.outsider.id,
-        studentProfileId: fixture.student.id,
-      }),
+      await assertAssignedCoach({ role: "ADMIN", userId: fixture.outsider.id, studentProfileId: fixture.student.id }),
       true,
       "admin tümüne erişir",
     );
+
+    // Aktif koç ataması → yetkili; atama sonlanınca yetki düşer.
+    const coachProfile = await db.teacherProfile.create({ data: { userId: fixture.outsider.id, isCoach: true } });
+    const coachAssignment = await db.coachAssignment.create({ data: { studentId: fixture.student.id, coachId: coachProfile.id } });
+    try {
+      assert.equal(
+        await assertAssignedCoach({ role: "TEACHER", userId: fixture.outsider.id, studentProfileId: fixture.student.id }),
+        true,
+        "aktif atanmış koç yazabilir",
+      );
+      await db.coachAssignment.update({ where: { id: coachAssignment.id }, data: { endedAt: new Date() } });
+      assert.equal(
+        await assertAssignedCoach({ role: "TEACHER", userId: fixture.outsider.id, studentProfileId: fixture.student.id }),
+        false,
+        "sonlanmış koç ataması yetki vermez",
+      );
+    } finally {
+      await db.coachAssignment.deleteMany({ where: { id: coachAssignment.id } });
+      await db.teacherProfile.delete({ where: { id: coachProfile.id } });
+    }
   } finally {
     await cleanupFixture(fixture);
   }
@@ -341,13 +352,13 @@ integration("§25 kayıt sonlandırılınca öğretmenin erişimi düşer", asyn
     });
 
     assert.equal(
-      await assertCoachOrTeacherAccess({
+      await assertOdTeacherOfStudent({
         role: "TEACHER",
         userId: fixture.teacher.id,
         studentProfileId: fixture.student.id,
       }),
       false,
-      "gruptan çıkan öğrencinin planı eski öğretmene KAPALI olmalı",
+      "gruptan çıkan öğrencinin verisi eski öğretmene KAPALI olmalı",
     );
   } finally {
     await cleanupFixture(fixture);

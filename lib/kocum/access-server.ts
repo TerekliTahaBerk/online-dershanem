@@ -5,7 +5,8 @@ import { findCoachAssignmentForCoach } from "@/lib/panel/coaching";
 
 /**
  * Online Koçum yatay erişim — sunucu tarafı.
- * Student: kendi planı. Parent: bağlı öğrenci. Teacher/Coach: atanan. Admin: tümü.
+ * Student: kendi planı. Parent: bağlı öğrenci (akademik izinli). Koç: aktif
+ * `CoachAssignment`. OD öğretmeni Yön yazma yetkisi taşımaz. Admin: tümü.
  */
 
 export async function assertStudentOwnsProfile(userId: string, studentProfileId: string) {
@@ -18,22 +19,45 @@ export async function assertStudentOwnsProfile(userId: string, studentProfileId:
 
 export async function assertParentLinkedToStudent(parentUserId: string, studentProfileId: string) {
   const link = await prisma.parentStudent.findFirst({
-    where: { parentId: parentUserId, studentId: studentProfileId },
+    where: { parentId: parentUserId, studentId: studentProfileId, active: true, endedAt: null, canViewAcademic: true },
     select: { id: true },
   });
   return Boolean(link);
 }
 
-export async function assertCoachOrTeacherAccess(input: {
+/**
+ * YÖN (Online Koçum) yazma yetkisi — TEK kapı.
+ *
+ * Koçluğa özgü her yazma (not, görev, plan kopyalama, şablon, öneri inceleme,
+ * haftalık özet, plan onayı) yalnız şu aktörlere açıktır:
+ *  - ADMIN
+ *  - öğrencinin AKTİF (`endedAt = null`) `CoachAssignment` kaydındaki koçu
+ *
+ * OD grup öğretmeni olmak bu yetkiyi VERMEZ. Eskiden "aktif grup kaydı" da
+ * koç ataması gibi kabul ediliyordu; matematik öğretmeni grubundaki her
+ * öğrencinin Yön planını, notlarını ve özetini değiştirebiliyordu.
+ * OD akışları (ders, ödev, materyal, Öğrenci 360) `assertOdTeacherOfStudent`
+ * veya `lib/panel/teacher-scope.ts` ile ayrı korunur.
+ */
+export async function assertAssignedCoach(input: {
   role: "ADMIN" | "TEACHER";
   userId: string;
   studentProfileId: string;
 }): Promise<boolean> {
   if (input.role === "ADMIN") return true;
+  return Boolean(await findCoachAssignmentForCoach(input.userId, input.studentProfileId));
+}
 
-  const coach = await findCoachAssignmentForCoach(input.userId, input.studentProfileId);
-  if (coach) return true;
-
+/**
+ * OD öğretmen kapsamı: öğrenci bu öğretmenin aktif bir grubunda aktif kayıtlı mı?
+ * Yalnız OD verisi için kullanılır; Yön yazma yetkisi VERMEZ (bkz. `assertAssignedCoach`).
+ */
+export async function assertOdTeacherOfStudent(input: {
+  role: "ADMIN" | "TEACHER";
+  userId: string;
+  studentProfileId: string;
+}): Promise<boolean> {
+  if (input.role === "ADMIN") return true;
   const enrollment = await prisma.enrollment.findFirst({
     where: {
       studentId: input.studentProfileId,

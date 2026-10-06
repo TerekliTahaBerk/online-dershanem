@@ -14,7 +14,7 @@ const groupInclude = {
         select: {
           id: true,
           userId: true,
-          parents: { where: { active: true }, select: { parentId: true } },
+          parents: { where: { active: true, endedAt: null, canViewAcademic: true }, select: { parentId: true } },
         },
       },
     },
@@ -62,7 +62,7 @@ export async function resolveLessonTargetGroup(input: {
       id: true,
       userId: true,
       user: { select: { fullName: true, email: true } },
-      parents: { where: { active: true }, select: { parentId: true } },
+      parents: { where: { active: true, endedAt: null, canViewAcademic: true }, select: { parentId: true } },
     },
   });
   if (!student) return { error: "Öğrenci bulunamadı." as const, group: null };

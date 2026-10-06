@@ -5,7 +5,7 @@ import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
-import { assertCoachOrTeacherAccess } from "@/lib/kocum/access-server";
+import { assertAssignedCoach } from "@/lib/kocum/access-server";
 import { recordPlanRevision } from "@/lib/kocum/server";
 import { buildRevisionChangeSummary, isDateWithinPlanWeek } from "@/lib/kocum";
 import { istanbulDayStart, istanbulWeekStart } from "@/lib/istanbul-time";
@@ -53,7 +53,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     return NextResponse.json({ error: "Öneri bulunamadı." }, { status: 404 });
   }
 
-  const allowed = await assertCoachOrTeacherAccess({
+  const allowed = await assertAssignedCoach({
     role: auth.session.role as "ADMIN" | "TEACHER",
     userId: auth.session.userId,
     studentProfileId: suggestion.studentId,

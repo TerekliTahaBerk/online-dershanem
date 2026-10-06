@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
-import { assertCoachOrTeacherAccess } from "@/lib/kocum/access-server";
+import { assertAssignedCoach } from "@/lib/kocum/access-server";
 import { applyTemplateToStudentWeek } from "@/lib/kocum/server";
 import { istanbulWeekStart } from "@/lib/istanbul-time";
 
@@ -36,7 +36,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
   }
 
-  const allowed = await assertCoachOrTeacherAccess({
+  const allowed = await assertAssignedCoach({
     role: auth.session.role as "ADMIN" | "TEACHER",
     userId: auth.session.userId,
     studentProfileId: parsed.data.studentId,

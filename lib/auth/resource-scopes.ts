@@ -28,7 +28,8 @@ export function learningMaterialAccessScope(
           enrollments: {
             some: {
               endedAt: null,
-              student: { parents: { some: { parentId: userId } } },
+              // Materyal akademik veridir: bağlantı aktif + bitmemiş + `canViewAcademic`.
+              student: { parents: { some: { parentId: userId, active: true, endedAt: null, canViewAcademic: true } } },
             },
           },
         },
@@ -49,7 +50,7 @@ export function activeParentEnrollmentScope(
     endedAt: null,
     student: {
       user: { status: "ACTIVE" },
-      parents: { some: { parentId, parent: { status: "ACTIVE" } } },
+      parents: { some: { parentId, active: true, endedAt: null, canViewAcademic: true, parent: { status: "ACTIVE" } } },
     },
   };
 }

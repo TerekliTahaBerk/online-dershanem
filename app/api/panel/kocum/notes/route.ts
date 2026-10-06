@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
-import { assertCoachOrTeacherAccess } from "@/lib/kocum/access-server";
+import { assertAssignedCoach } from "@/lib/kocum/access-server";
 
 const bodySchema = z.object({
   studentId: z.string().min(1),
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Geçersiz not." }, { status: 400 });
   }
 
-  const allowed = await assertCoachOrTeacherAccess({
+  const allowed = await assertAssignedCoach({
     role: auth.session.role as "ADMIN" | "TEACHER",
     userId: auth.session.userId,
     studentProfileId: parsed.data.studentId,

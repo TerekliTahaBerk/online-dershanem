@@ -33,7 +33,7 @@ export async function requestPackageMeeting(formData: FormData) {
     .parse(Object.fromEntries(formData));
 
   // Bağlı olmayan öğrenci kimliği burada 404 olur.
-  const { selected } = await resolveParentScope(session.userId, studentId);
+  const { selected } = await resolveParentScope(session.userId, studentId, "account");
   if (!selected) redirect("/panel/veli/hesap?talep=hata");
 
   const [parent, profile] = await Promise.all([

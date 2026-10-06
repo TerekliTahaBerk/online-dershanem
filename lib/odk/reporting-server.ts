@@ -28,7 +28,8 @@ export async function listOdkReportStudents(viewer: ReportViewer) {
     })()
     : await (async () => {
       const links = await prisma.parentStudent.findMany({
-        where: { parentId: viewer.userId, student: { user: { status: "ACTIVE" } } }, orderBy: { student: { user: { fullName: "asc" } } },
+        // Deneme raporu akademik veridir: bağlantı aktif + bitmemiş + `canViewAcademic`.
+        where: { parentId: viewer.userId, active: true, endedAt: null, canViewAcademic: true, student: { user: { status: "ACTIVE" } } }, orderBy: { student: { user: { fullName: "asc" } } },
         select: { relationship: true, student: { select: { user: { select: { id: true, fullName: true, email: true } } } } },
       });
       const visible = await Promise.all(links.map(async (link) => ({ link, contracts: await listActiveOdkContracts(link.student.user.id) })));
@@ -42,7 +43,7 @@ export async function getOdkAudienceStudentReport(viewer: ReportViewer, studentU
     ? await prisma.studentProfile.findFirst({ where: { userId: studentUserId, user: { status: "ACTIVE" } }, select: { user: { select: { fullName: true, email: true } } } })
     : viewer.role === "TEACHER"
     ? await prisma.studentProfile.findFirst({ where: { userId: studentUserId, enrollments: { some: { endedAt: null, group: { isActive: true, teacherId: viewer.userId } } } }, select: { user: { select: { fullName: true, email: true } } } })
-    : await prisma.parentStudent.findFirst({ where: { parentId: viewer.userId, student: { userId: studentUserId } }, select: { student: { select: { user: { select: { fullName: true, email: true } } } } } });
+    : await prisma.parentStudent.findFirst({ where: { parentId: viewer.userId, active: true, endedAt: null, canViewAcademic: true, student: { userId: studentUserId } }, select: { student: { select: { user: { select: { fullName: true, email: true } } } } } });
   if (!allowed) return null;
   const contracts = viewer.role === "ADMIN" ? [] : await listActiveOdkContracts(studentUserId);
   const reportContracts = viewer.role === "ADMIN" ? [] : contracts.filter(({ contract }) => contractAllowsReport(contract, viewer.role));

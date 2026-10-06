@@ -71,22 +71,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const plan = await prisma.weeklyPlan.findFirst({
     where: {
       id,
-      OR: [
-        {
-          student: {
-            enrollments: {
-              some: { endedAt: null, group: { isActive: true, teacherId: auth.session.userId } },
-            },
-          },
+      // Yön planını yalnız öğrencinin AKTİF atanmış koçu onaylar. OD grup
+      // öğretmeni olmak yetmez (bkz. `lib/kocum/access-server.ts#assertAssignedCoach`).
+      student: {
+        coachAssignments: {
+          some: { endedAt: null, coach: { userId: auth.session.userId } },
         },
-        {
-          student: {
-            coachAssignments: {
-              some: { endedAt: null, coach: { userId: auth.session.userId } },
-            },
-          },
-        },
-      ],
+      },
     },
     select: {
       id: true,

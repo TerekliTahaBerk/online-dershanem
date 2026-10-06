@@ -37,6 +37,7 @@ const ids = {
   odkStudentProfile: "e2e-student-profile-odk",
   planForeignStudentProfile: "e2e-student-profile-plan-foreign",
   teacherProfile: "e2e-teacher-profile",
+  coachAssignment: "e2e-coach-assignment",
   otherTeacherProfile: "e2e-teacher-profile-foreign",
   group: "e2e-group",
   foreignGroup: "e2e-group-foreign",
@@ -194,7 +195,10 @@ async function main() {
   await prisma.productMembership.upsert({ where: { userId_product: { userId: ids.odkStudent, product: "ODK" } }, create: { userId: ids.odkStudent, product: "ODK", source: "MANUAL", grantedById: ids.admin }, update: { revokedAt: null, expiresAt: null, startsAt: new Date(0), grantedById: ids.admin } });
   for (const userId of [ids.parent, ids.foreignStudent]) await prisma.productMembership.upsert({ where: { userId_product: { userId, product: "ODK" } }, create: { userId, product: "ODK", source: "MANUAL", grantedById: ids.admin, startsAt: new Date(0) }, update: { revokedAt: null, expiresAt: null, startsAt: new Date(0), grantedById: ids.admin } });
 
-  await prisma.teacherProfile.upsert({ where: { userId: ids.teacher }, create: { id: ids.teacherProfile, userId: ids.teacher, subjects: ["Matematik"] }, update: { subjects: ["Matematik"] } });
+  // E2E öğretmeni aynı zamanda tohum öğrencinin KOÇUdur (aşağıda aktif
+  // `CoachAssignment`). Yön yazmaları yalnız atanmış koça açıktır; OD grup
+  // öğretmeni olmak yetmez (P0-3).
+  await prisma.teacherProfile.upsert({ where: { userId: ids.teacher }, create: { id: ids.teacherProfile, userId: ids.teacher, subjects: ["Matematik"], isCoach: true }, update: { subjects: ["Matematik"], isCoach: true } });
   await prisma.teacherProfile.upsert({ where: { userId: ids.otherTeacher }, create: { id: ids.otherTeacherProfile, userId: ids.otherTeacher, subjects: ["Fen"] }, update: { subjects: ["Fen"] } });
 
   const profiles = [
@@ -212,7 +216,15 @@ async function main() {
   await prisma.parentStudent.upsert({
     where: { parentId_studentId: { parentId: ids.parent, studentId: ids.studentProfile } },
     create: { parentId: ids.parent, studentId: ids.studentProfile, relationship: "Veli" },
-    update: { relationship: "Veli" },
+    // Testler bağlantı bayraklarını değiştirip geri alır; tohum her koşuda bilinen duruma döndürür.
+    update: { relationship: "Veli", active: true, endedAt: null, canViewAcademic: true },
+  });
+  // Tohum öğrencinin aktif Yön koçu: e2e öğretmeni (bkz. teacherProfile notu).
+  await prisma.coachAssignment.deleteMany({ where: { studentId: ids.studentProfile, NOT: { id: ids.coachAssignment } } });
+  await prisma.coachAssignment.upsert({
+    where: { id: ids.coachAssignment },
+    create: { id: ids.coachAssignment, studentId: ids.studentProfile, coachId: ids.teacherProfile, assignedById: ids.admin },
+    update: { studentId: ids.studentProfile, coachId: ids.teacherProfile, endedAt: null },
   });
   await prisma.notificationPreference.upsert({
     where: { userId: ids.parent },

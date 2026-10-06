@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
-import { assertCoachOrTeacherAccess, loadPlanTaskForStaffMutation } from "@/lib/kocum/access-server";
+import { assertAssignedCoach, loadPlanTaskForStaffMutation } from "@/lib/kocum/access-server";
 import { appendTimelineEvent, recordPlanRevision } from "@/lib/kocum/server";
 import { buildRevisionChangeSummary, isDateWithinPlanWeek } from "@/lib/kocum";
 import { istanbulDayStart } from "@/lib/istanbul-time";
@@ -45,7 +45,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const task = await loadPlanTaskForStaffMutation(id);
   if (!task) return NextResponse.json({ error: "Görev bulunamadı." }, { status: 404 });
 
-  const allowed = await assertCoachOrTeacherAccess({
+  const allowed = await assertAssignedCoach({
     role: auth.session.role as "ADMIN" | "TEACHER",
     userId: auth.session.userId,
     studentProfileId: task.plan.studentId,

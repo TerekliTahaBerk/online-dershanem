@@ -72,7 +72,10 @@ test("kocum mutation routes enforce horizontal access helpers", () => {
     "app/api/panel/kocum/plans/[id]/copy/route.ts",
   ];
   for (const path of files) {
-    assert.match(readFileSync(path, "utf8"), /assertCoachOrTeacherAccess/);
+    const source = readFileSync(path, "utf8");
+    assert.match(source, /assertAssignedCoach/);
+    // OD grup öğretmeni Yön yazma yetkisi taşımaz: eski birleşik kapı geri gelmesin.
+    assert.doesNotMatch(source, /assertCoachOrTeacherAccess|assertOdTeacherOfStudent/);
   }
   assert.match(
     readFileSync("app/api/panel/kocum/tasks/[id]/complete/route.ts", "utf8"),

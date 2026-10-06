@@ -367,9 +367,9 @@ export async function provisionOdOrder(
       });
       injected(options.failurePoint, "AFTER_PROFILE");
 
-      // Alıcıya OD üyeliği yalnız satırları bunu gerektiriyorsa açılır
-      // (`ORDER_GRANTS_BUYER_OD_MEMBERSHIP`). OD/OK/ODK satırlarında ve satırsız
-      // eski siparişlerde davranış aynıdır; KPSS-only sipariş K-12 erişimi açmaz.
+      // Alıcıya OD üyeliği yalnız siparişte OD satırı varsa açılır
+      // (`ORDER_GRANTS_BUYER_OD_MEMBERSHIP`). OK-only / ODK-only / KPSS-only
+      // sipariş OD açmaz; satırsız eski siparişler tarihsel davranışı korur.
       const orderLineProducts = await tx.commerceOrderLine.findMany({ where: { odOrderId: orderId }, select: { product: true } });
       const grantsOdMembership = orderGrantsBuyerOdMembership(orderLineProducts.map((line) => line.product));
       const existingMembership = grantsOdMembership
