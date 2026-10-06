@@ -19,7 +19,7 @@ import {
   toAdminTeacherModeSession,
 } from "@/lib/auth/admin-teacher-mode";
 import { isPreviewableRole } from "@/lib/panel/preview-context";
-import { hasStaffPermission, userRequiresMfa } from "@/lib/products/staff-permissions";
+import { hasStaffPermission, userRequiresLoginMfa, userRequiresMfa } from "@/lib/products/staff-permissions";
 import { staffPermissionProduct } from "@/lib/products/staff-mode";
 import type { StaffPermission } from "@/lib/products/staff-permission-matrix";
 
@@ -74,9 +74,9 @@ async function requireApiAuthorizedRole(roles: UserRole[], requireMfa = true): P
     };
   }
 
-  // ADMIN ve ayrıcalıklı ürün personeli (Deneme Ligi editör / operatör / yayıncı,
-  // ürün yöneticisi) ikinci faktör doğrulamadan iş yapamaz.
-  if (requireMfa && !session.mfaVerifiedAt && (await userRequiresMfa(session.userId, session.role))) {
+  // Yönetici girişinde MFA aranmaz; ayrıcalıklı ürün personelinde aranır.
+  // Hassas yönetici mutasyonları requireApiRecentAdminStepUp ile ayrıca korunur.
+  if (requireMfa && !session.mfaVerifiedAt && (await userRequiresLoginMfa(session.userId, session.role))) {
     return { ok: false, response: NextResponse.json({ error: "Bu hesap için ikinci faktörü doğrulayın.", code: "MFA_REQUIRED", redirect: "/giris/mfa" }, { status: 403 }) };
   }
 

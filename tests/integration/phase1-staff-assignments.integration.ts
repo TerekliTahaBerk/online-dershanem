@@ -7,7 +7,7 @@ import { prisma as db } from "@/lib/prisma";
 import { defaultOdkPackagePolicy } from "@/lib/odk/product-contract";
 import { grantStaffRole, listStaffAssignmentHistory, revokeStaffRole } from "@/lib/products/staff-assignment-server";
 import { runStaffAssignmentBackfill } from "@/lib/products/staff-assignment-backfill-server";
-import { hasStaffPermission, staffAccessibleProducts, staffProductRelationshipEvidence, userRequiresMfa } from "@/lib/products/staff-permissions";
+import { hasStaffPermission, staffAccessibleProducts, staffProductRelationshipEvidence, userRequiresLoginMfa, userRequiresMfa } from "@/lib/products/staff-permissions";
 import { integration } from "./integration-utils";
 
 /**
@@ -204,4 +204,6 @@ integration("shadow eski kararı döndürür; enforce atamaları uygular; ADMIN 
   assert.equal(await hasStaffPermission(publisher.id, "odk:result:release"), false);
   assert.equal(await hasStaffPermission(admin.id, "odk:result:release"), true, "ADMIN her zaman yayınlar");
   assert.deepEqual(await staffAccessibleProducts(admin.id, "ADMIN"), ["OD", "OK", "ODK"]);
+  assert.equal(await userRequiresMfa(admin.id, "ADMIN"), true, "ADMIN hassas işlemlerde MFA kullanmayı sürdürür");
+  assert.equal(await userRequiresLoginMfa(admin.id, "ADMIN"), false, "ADMIN girişinde MFA zorunlu değildir");
 });

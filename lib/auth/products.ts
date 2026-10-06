@@ -4,7 +4,7 @@ import type { Prisma, ProductCode, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { PASSWORD_CHANGE_PATH, PRODUCT_SELECTOR_PATH } from "@/lib/auth/roles";
 import { hasProductEntitlement } from "@/lib/auth/product-entitlements";
-import { staffAccessibleProducts, userRequiresMfa } from "@/lib/products/staff-permissions";
+import { staffAccessibleProducts, userRequiresLoginMfa } from "@/lib/products/staff-permissions";
 import { LEGACY_PRODUCT_ORDER, asLegacyProductCode, isLegacyProductCode, membershipProductCode, sortProductCodes } from "@/lib/products/codes";
 
 /** ADMIN'in legacy ürünleri (break-glass; satırlardan bağımsız). */
@@ -87,7 +87,7 @@ export async function hasProductCodeAccess(userId: string, role: UserRole, code:
 /**
  * Girişten sonra gidilecek yer.
  *
- * ÜRÜN PANELLERİ: parola ve (yönetici ile ayrıcalıklı ürün personeli için) MFA adımlarından sonra HERKES
+ * ÜRÜN PANELLERİ: parola ve (ayrıcalıklı ürün personeli için) giriş MFA'sından sonra HERKES
  * (Yönetim, Öğretmen, Öğrenci, Veli) ürün paneli seçicisine gider ve OD / OK /
  * ODK'dan gireceği paneli seçer. Seçim `Session.activeProduct`'a yazılır ve
  * yalnız menüyü daraltır; yetki her sayfada guard'larla yeniden doğrulanır.
@@ -97,6 +97,6 @@ export async function hasProductCodeAccess(userId: string, role: UserRole, code:
  */
 export async function postAuthenticationPath(input: { userId: string; role: UserRole; mustChangePassword: boolean; mfaVerifiedAt?: Date | null }): Promise<string> {
   if (input.mustChangePassword) return PASSWORD_CHANGE_PATH;
-  if (!input.mfaVerifiedAt && (await userRequiresMfa(input.userId, input.role))) return "/giris/mfa";
+  if (!input.mfaVerifiedAt && (await userRequiresLoginMfa(input.userId, input.role))) return "/giris/mfa";
   return PRODUCT_SELECTOR_PATH;
 }

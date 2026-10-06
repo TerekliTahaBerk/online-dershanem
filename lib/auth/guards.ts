@@ -21,7 +21,7 @@ import {
   toAdminTeacherModeSession,
 } from "@/lib/auth/admin-teacher-mode";
 import { isPreviewableRole } from "@/lib/panel/preview-context";
-import { hasStaffPermission, userRequiresMfa } from "@/lib/products/staff-permissions";
+import { hasStaffPermission, userRequiresLoginMfa } from "@/lib/products/staff-permissions";
 import { staffPermissionProduct } from "@/lib/products/staff-mode";
 import type { StaffPermission } from "@/lib/products/staff-permission-matrix";
 
@@ -73,8 +73,10 @@ export async function requireSession(): Promise<SessionUser> {
 async function requireAuthorizedRole(...roles: UserRole[]): Promise<SessionUser> {
   const session = await requireSession();
   if (session.mustChangePassword) redirect(PASSWORD_CHANGE_PATH);
-  // ADMIN ve ayrıcalıklı Deneme Ligi / ürün yöneticisi personeli ikinci faktör ister.
-  if (!session.mfaVerifiedAt && (await userRequiresMfa(session.userId, session.role))) redirect(MFA_PATH);
+  // Yönetici parola doğrulamasından sonra doğrudan girer; ayrıcalıklı ürün
+  // personelinin giriş MFA'sı zorunlu kalır. Hassas yönetici işlemleri ayrıca
+  // requireRecentAdminStepUp ile korunur.
+  if (!session.mfaVerifiedAt && (await userRequiresLoginMfa(session.userId, session.role))) redirect(MFA_PATH);
   if (roles.includes(session.role)) return session;
 
   if (session.role === "ADMIN") {

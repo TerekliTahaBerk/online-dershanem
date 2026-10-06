@@ -4,7 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Settings } from "lucide-react";
 import { requireSession } from "@/lib/auth/guards";
-import { userRequiresMfa } from "@/lib/products/staff-permissions";
+import { userRequiresLoginMfa } from "@/lib/products/staff-permissions";
 import { resolveProductEntryPath } from "@/lib/products/product-entry";
 import { PASSWORD_CHANGE_PATH, ACCOUNT_SETTINGS_PATH, productRolePath, roleLabel } from "@/lib/auth/roles";
 import { PANEL_PRODUCTS, loadProductPanelStates } from "@/lib/auth/product-panels";
@@ -43,7 +43,7 @@ const LOCKED_CTA: Record<(typeof PANEL_PRODUCTS)[number], { href: string; label:
 export default async function ProductSelectorPage() {
   const session = await requireSession();
   if (session.mustChangePassword) redirect(PASSWORD_CHANGE_PATH);
-  if (!session.mfaVerifiedAt && (await userRequiresMfa(session.userId, session.role))) redirect("/giris/mfa");
+  if (!session.mfaVerifiedAt && (await userRequiresLoginMfa(session.userId, session.role))) redirect("/giris/mfa");
 
   const states = await loadProductPanelStates(session.userId, session.role);
   // Personelin giriş yolu izinlerden gelir (ör. Deneme Ligi operatörü canlı operasyona iner).

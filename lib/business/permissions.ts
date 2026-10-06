@@ -6,6 +6,7 @@ import { getSession, type SessionUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { log } from "@/lib/logger";
 import { hasFreshStepUp, STEP_UP_PATH } from "@/lib/auth/mfa-policy";
+import { userRequiresLoginMfa } from "@/lib/products/staff-permissions";
 import {
   BUSINESS_ROLE_PERMISSIONS,
   roleHasPermission,
@@ -90,7 +91,8 @@ export async function getBusinessAccess(
   session: SessionUser,
   permission: BusinessPermission,
 ): Promise<BusinessUnitAccess[]> {
-  if (session.status !== "ACTIVE" || session.mustChangePassword || (session.role === "ADMIN" && !session.mfaVerifiedAt)) return [];
+  if (session.status !== "ACTIVE" || session.mustChangePassword) return [];
+  if (!session.mfaVerifiedAt && (await userRequiresLoginMfa(session.userId, session.role))) return [];
 
   let assignments = await loadAssignments(session.userId);
 
@@ -180,7 +182,8 @@ export async function getUserBusinessPermissions(
   session: SessionUser,
 ): Promise<Set<BusinessPermission>> {
   const granted = new Set<BusinessPermission>();
-  if (session.status !== "ACTIVE" || session.mustChangePassword || (session.role === "ADMIN" && !session.mfaVerifiedAt)) return granted;
+  if (session.status !== "ACTIVE" || session.mustChangePassword) return granted;
+  if (!session.mfaVerifiedAt && (await userRequiresLoginMfa(session.userId, session.role))) return granted;
 
   let assignments = await loadAssignments(session.userId);
   if (assignments.length === 0 && session.role === "ADMIN" && bootstrapEmails().has(session.email.toLowerCase())) {

@@ -170,3 +170,16 @@ export const userRequiresMfa = cache(async (userId: string, platformRole: UserRo
   const access = await loadStaffAccess(userId);
   return Boolean(access && hasPrivilegedStaffRole(access.assignments));
 });
+
+/**
+ * Giriş kapısında ikinci faktör zorunlu mu?
+ *
+ * ADMIN hesapları parola doğrulamasından sonra doğrudan panele girer. Yönetici
+ * MFA kaydı silinmez: finans ve rol yönetimi gibi hassas işlemlerdeki taze
+ * adım-yükseltme töreni için kullanılmaya devam eder. Ayrıcalıklı ürün
+ * personelinin giriş MFA'sı ise değişmeden zorunludur.
+ */
+export async function userRequiresLoginMfa(userId: string, platformRole: UserRole): Promise<boolean> {
+  if (platformRole === "ADMIN") return false;
+  return userRequiresMfa(userId, platformRole);
+}
