@@ -1,24 +1,24 @@
-import {
-  AlertTriangle,
-  CalendarClock,
-  CheckCircle2,
-  PackageOpen,
-  UsersRound,
-  Video,
-} from "lucide-react";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireStaffPermission } from "@/lib/auth/guards";
 import { parseOdkPackagePolicy } from "@/lib/odk/product-contract";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelPageHeader } from "@/components/panel/panel-page-header";
+import {
+  EmptyState,
+  PageHeader,
+  PanelTable,
+  PanelTableCell,
+  PanelTableRow,
+  PropertyList,
+  PropertyRow,
+  StatusBadge,
+  UrlDrawer,
+} from "@/components/panel/ui";
+import { examWorkspaceHref } from "@/lib/odk/staff-workspace";
 
 export const dynamic = "force-dynamic";
 
-const date = new Intl.DateTimeFormat("tr-TR", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: "Europe/Istanbul",
-});
+const date = new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Istanbul" });
 const saleLabel = {
   AVAILABLE: "Satışta",
   SOLD_OUT: "Tükendi",
@@ -41,9 +41,17 @@ function displayDate(value: string | null | undefined) {
   return value ? date.format(new Date(value)) : "Sınır yok";
 }
 
-export default async function OdkAdminPackagesPage() {
+/**
+ * DENEME LİGİ PAKETLERİ (docs/panel-design-roadmap.md §15, "Packages contract
+ * view → table") — paket ↔ hak ↔ deneme sözleşmesi tek tabloda; satır →
+ * sözleşme yan paneli (`?onizle=paket:<id>`): erişim, rapor hakları, canlı
+ * hizmet, istisnalar ve deneme eşlemesi. Salt okunur; sözleşme makine-okunur
+ * politikadan gösterilir.
+ */
+export default async function OdkAdminPackagesPage({ searchParams }: { searchParams: Promise<{ onizle?: string }> }) {
   // Deneme Ligi personel izni (ADMIN her izinde geçer); global rol tek başına yetmez.
   const session = await requireStaffPermission("odk:package:manage");
+  const { onizle } = await searchParams;
   const packages = await prisma.odkPackage.findMany({
     orderBy: [{ isActive: "desc" }, { title: "asc" }],
     include: {
@@ -54,211 +62,123 @@ export default async function OdkAdminPackagesPage() {
       _count: { select: { orders: true, entitlements: true } },
     },
   });
+  const rows = packages.map((pkg) => ({ pkg, parsed: parseOdkPackagePolicy(pkg.contractPolicy) }));
+  const drawerId = onizle?.startsWith("paket:") ? onizle.slice("paket:".length) : null;
+  const drawer = drawerId ? rows.find((row) => row.pkg.id === drawerId) ?? null : null;
 
   return (
-    <PanelShell
-      role={session.role}
-      fullName={session.fullName}
-      email={session.email}
-      product="ODK"
-    >
-      <PanelPageHeader
-        eyebrow="Ticari ürün sözleşmesi"
-        title="Paketin ne verdiğini tek bakışta görün."
+    <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK" pageTitle="Deneme Ligi paketleri">
+      <PageHeader
+        title="Deneme Ligi paketleri"
         description="Satış, erişim, raporlama, canlı hizmet ve istisna kuralları ile deneme eşlemeleri aynı makine-okunur sözleşmeden gösterilir."
-        icon={PackageOpen}
       />
-      <section className="mt-7 space-y-5">
-        {packages.map((pkg) => {
-          const parsed = parseOdkPackagePolicy(pkg.contractPolicy);
-          return (
-            <article key={pkg.id} className="panel-surface overflow-hidden">
-              <div className="flex flex-col gap-4 border-b border-(--site-line) p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-(--brand-olive-soft) px-2.5 py-1 text-[10px] font-extrabold text-(--brand-olive)">
-                      v{pkg.contractVersion}
-                    </span>
-                    {parsed.success ? (
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold ${parsed.data.sales.state === "AVAILABLE" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"}`}
-                      >
-                        {saleLabel[parsed.data.sales.state]}
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-[10px] font-extrabold text-rose-800">
-                        <AlertTriangle size={11} /> Geçersiz sözleşme
-                      </span>
-                    )}
-                  </div>
-                  <h2 className="mt-2 text-lg font-extrabold text-(--site-ink)">
-                    {pkg.title}
-                  </h2>
-                  <p className="mt-1 text-xs text-(--site-muted)">
-                    /{pkg.slug} ·{" "}
-                    {(pkg.priceCents / 100).toLocaleString("tr-TR")} ₺ ·{" "}
-                    {pkg._count.orders} sipariş · {pkg._count.entitlements} hak
-                  </p>
-                </div>
-                <div className="text-left sm:text-right">
-                  <p className="text-[10px] font-bold uppercase text-(--site-muted)">
-                    Deneme kapsamı
-                  </p>
-                  <p className="mt-1 text-2xl font-black text-(--site-ink)">
-                    {pkg.examLinks.length}
-                  </p>
-                </div>
-              </div>
-              {parsed.success ? (
-                <>
-                  <dl className="grid gap-px bg-(--site-line) sm:grid-cols-2 xl:grid-cols-4">
-                    <div className="bg-white p-4">
-                      <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-(--site-muted)">
-                        <CalendarClock size={13} /> Erişim
-                      </dt>
-                      <dd className="mt-2 text-xs font-bold text-(--site-ink)">
-                        {parsed.data.access.starts === "PURCHASED_AT"
-                          ? "Satın alındığında"
-                          : displayDate(parsed.data.access.startsAt)}
-                      </dd>
-                      <dd className="mt-1 text-[10.5px] text-(--site-muted)">
-                        {parsed.data.access.durationDays
-                          ? `${parsed.data.access.durationDays} gün`
-                          : displayDate(parsed.data.access.endsAt)}
-                      </dd>
-                    </div>
-                    <div className="bg-white p-4">
-                      <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-(--site-muted)">
-                        <UsersRound size={13} /> Rapor hakları
-                      </dt>
-                      <dd className="mt-2 text-xs font-bold text-(--site-ink)">
-                        Öğrenci {parsed.data.rights.studentReports ? "✓" : "—"}{" "}
-                        · Veli {parsed.data.rights.parentReports ? "✓" : "—"} ·
-                        Öğretmen {parsed.data.rights.teacherReports ? "✓" : "—"}
-                      </dd>
-                    </div>
-                    <div className="bg-white p-4">
-                      <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-(--site-muted)">
-                        <Video size={13} /> Canlı hizmet
-                      </dt>
-                      <dd className="mt-2 text-xs font-bold text-(--site-ink)">
-                        {parsed.data.rights.liveService
-                          ? "Dahil"
-                          : "Dahil değil"}
-                      </dd>
-                    </div>
-                    <div className="bg-white p-4">
-                      <dt className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-(--site-muted)">
-                        <CheckCircle2 size={13} /> İstisna politikası
-                      </dt>
-                      <dd className="mt-2 text-[10.5px] leading-5 text-(--site-body)">
-                        Tükenme:{" "}
-                        {exceptionLabel[parsed.data.exceptions.soldOut]}
-                        <br />
-                        Kesinti: {exceptionLabel[parsed.data.exceptions.outage]}
-                        <br />
-                        İptal:{" "}
-                        {exceptionLabel[parsed.data.exceptions.cancellation]}
-                        <br />
-                        İade: {exceptionLabel[parsed.data.exceptions.refund]}
-                        <br />
-                        Özel erişim:{" "}
-                        {
-                          exceptionLabel[
-                            parsed.data.exceptions.exceptionalAccess
-                          ]
-                        }
-                      </dd>
-                    </div>
-                  </dl>
-                  <div className="p-5 sm:p-6">
-                    <h3 className="text-xs font-extrabold text-(--site-ink)">
-                      Paket → hak → deneme eşlemesi
-                    </h3>
-                    <div
-                      className="mt-3 overflow-x-auto"
-                      tabIndex={0}
-                      role="region"
-                      aria-label="Paket, hak ve deneme eşlemesi"
-                    >
-                      <table className="w-full min-w-[760px] text-left text-xs">
-                        <thead className="text-[10px] uppercase text-(--site-muted)">
-                          <tr>
-                            <th className="pb-2">Deneme</th>
-                            <th className="pb-2">Takvim</th>
-                            <th className="pb-2">Geç giriş</th>
-                            <th className="pb-2">Hak</th>
-                            <th className="pb-2">Sonuç / anahtar</th>
-                            <th className="pb-2">Meet</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-(--site-line)">
-                          {pkg.examLinks.map(({ exam }) => (
-                            <tr key={exam.id}>
-                              <td className="py-3 pr-3">
-                                <strong className="block text-(--site-ink)">
-                                  {exam.title}
-                                </strong>
-                                <span className="text-[10px] text-(--site-muted)">
-                                  {exam.series?.title || "Serisiz"} ·{" "}
-                                  {exam.family}
-                                </span>
-                              </td>
-                              <td className="py-3 pr-3">
-                                {exam.startsAt
-                                  ? date.format(exam.startsAt)
-                                  : "Planlanmadı"}
-                                <br />
-                                {exam.endsAt ? date.format(exam.endsAt) : "—"}
-                              </td>
-                              <td className="py-3 pr-3">
-                                {exam.lateEntryMinutes} dk
-                              </td>
-                              <td className="py-3 pr-3">
-                                {exam.attemptLimit} deneme
-                              </td>
-                              <td className="py-3 pr-3">
-                                {exam.resultsReleasedAt
-                                  ? date.format(exam.resultsReleasedAt)
-                                  : "Planlanmadı"}
-                                <br />
-                                {exam.answerKeyReleasedAt
-                                  ? date.format(exam.answerKeyReleasedAt)
-                                  : "Planlanmadı"}
-                              </td>
-                              <td className="py-3">
-                                {exam.meetRequired &&
-                                parsed.data.rights.liveService
-                                  ? "Gerekli"
-                                  : "Yok"}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      {!pkg.examLinks.length ? (
-                        <p className="rounded-xl bg-rose-50 p-3 text-xs font-bold text-rose-800">
-                          Bu paket deneme vermiyor; satışa açılamaz.
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-                </>
+      {rows.length ? (
+        <PanelTable caption="Deneme Ligi paketleri" columns={["Paket", "Sözleşme", "Satış", "Erişim", "Rapor hakları", "Canlı hizmet", "Denemeler", "Sipariş / hak"]}>
+          {rows.map(({ pkg, parsed }) => (
+            <PanelTableRow key={pkg.id}>
+              <PanelTableCell>
+                <Link href={`/panel/odk/yonetim/paketler?onizle=paket:${pkg.id}`} scroll={false} className="font-medium text-pn-text underline-offset-2 hover:underline">
+                  {pkg.title}
+                </Link>
+                <span className="block text-[12.5px] text-pn-text-muted">
+                  /{pkg.slug} · {(pkg.priceCents / 100).toLocaleString("tr-TR")} ₺{pkg.isActive ? "" : " · pasif"}
+                </span>
+              </PanelTableCell>
+              <PanelTableCell>v{pkg.contractVersion}</PanelTableCell>
+              <PanelTableCell>
+                {parsed.success ? (
+                  <StatusBadge tone={parsed.data.sales.state === "AVAILABLE" ? "success" : "warning"} label={saleLabel[parsed.data.sales.state]} />
+                ) : (
+                  <StatusBadge tone="critical" label="Geçersiz sözleşme" />
+                )}
+              </PanelTableCell>
+              <PanelTableCell>
+                {parsed.success
+                  ? `${parsed.data.access.starts === "PURCHASED_AT" ? "Satın alınca" : displayDate(parsed.data.access.startsAt)} · ${parsed.data.access.durationDays ? `${parsed.data.access.durationDays} gün` : displayDate(parsed.data.access.endsAt)}`
+                  : "—"}
+              </PanelTableCell>
+              <PanelTableCell>
+                {parsed.success
+                  ? [parsed.data.rights.studentReports && "Öğrenci", parsed.data.rights.parentReports && "Veli", parsed.data.rights.teacherReports && "Öğretmen"].filter(Boolean).join(" · ") || "Yok"
+                  : "—"}
+              </PanelTableCell>
+              <PanelTableCell>{parsed.success ? (parsed.data.rights.liveService ? "Dahil" : "Dahil değil") : "—"}</PanelTableCell>
+              <PanelTableCell tone={pkg.examLinks.length ? "default" : "warn"}>
+                <span className="tabular-nums">{pkg.examLinks.length || "Yok"}</span>
+              </PanelTableCell>
+              <PanelTableCell>
+                <span className="tabular-nums">
+                  {pkg._count.orders} / {pkg._count.entitlements}
+                </span>
+              </PanelTableCell>
+            </PanelTableRow>
+          ))}
+        </PanelTable>
+      ) : (
+        <EmptyState className="mt-5" title="Henüz Deneme Ligi paketi tanımlanmadı." />
+      )}
+
+      {drawer ? (
+        <UrlDrawer title={drawer.pkg.title} description={`Sözleşme v${drawer.pkg.contractVersion} · /${drawer.pkg.slug}`}>
+          {drawer.parsed.success ? (
+            <>
+              <PropertyList>
+                <PropertyRow label="Satış">{saleLabel[drawer.parsed.data.sales.state]}</PropertyRow>
+                <PropertyRow label="Erişim başlangıcı">
+                  {drawer.parsed.data.access.starts === "PURCHASED_AT" ? "Satın alındığında" : displayDate(drawer.parsed.data.access.startsAt)}
+                </PropertyRow>
+                <PropertyRow label="Erişim süresi">
+                  {drawer.parsed.data.access.durationDays ? `${drawer.parsed.data.access.durationDays} gün` : displayDate(drawer.parsed.data.access.endsAt)}
+                </PropertyRow>
+                <PropertyRow label="Rapor hakları">
+                  Öğrenci {drawer.parsed.data.rights.studentReports ? "✓" : "—"} · Veli {drawer.parsed.data.rights.parentReports ? "✓" : "—"} · Öğretmen{" "}
+                  {drawer.parsed.data.rights.teacherReports ? "✓" : "—"}
+                </PropertyRow>
+                <PropertyRow label="Canlı hizmet">{drawer.parsed.data.rights.liveService ? "Dahil" : "Dahil değil"}</PropertyRow>
+                <PropertyRow label="Tükenme">{exceptionLabel[drawer.parsed.data.exceptions.soldOut]}</PropertyRow>
+                <PropertyRow label="Kesinti">{exceptionLabel[drawer.parsed.data.exceptions.outage]}</PropertyRow>
+                <PropertyRow label="İptal">{exceptionLabel[drawer.parsed.data.exceptions.cancellation]}</PropertyRow>
+                <PropertyRow label="İade">{exceptionLabel[drawer.parsed.data.exceptions.refund]}</PropertyRow>
+                <PropertyRow label="Özel erişim">{exceptionLabel[drawer.parsed.data.exceptions.exceptionalAccess]}</PropertyRow>
+              </PropertyList>
+              <h3 className="mt-5 text-[13.5px] font-semibold text-pn-text">Paket → hak → deneme eşlemesi</h3>
+              {drawer.pkg.examLinks.length ? (
+                <ol className="mt-2 divide-y divide-pn-border-subtle rounded-lg border border-pn-border text-[13px]">
+                  {drawer.pkg.examLinks.map(({ exam }) => (
+                    <li key={exam.id} className="px-3 py-2.5">
+                      <Link href={examWorkspaceHref(exam.id)} className="font-medium text-pn-text underline-offset-2 hover:underline">
+                        {exam.title}
+                      </Link>
+                      <span className="block text-[12.5px] text-pn-text-muted">{exam.series?.title || "Serisiz"}</span>
+                      <dl className="mt-1.5 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-0.5 text-[12.5px]">
+                        <dt className="text-pn-text-muted">Takvim</dt>
+                        <dd>
+                          {exam.startsAt ? date.format(exam.startsAt) : "Planlanmadı"} – {exam.endsAt ? date.format(exam.endsAt) : "—"}
+                        </dd>
+                        <dt className="text-pn-text-muted">Geç giriş · hak</dt>
+                        <dd>
+                          {exam.lateEntryMinutes} dk · {exam.attemptLimit} deneme
+                        </dd>
+                        <dt className="text-pn-text-muted">Sonuç / anahtar</dt>
+                        <dd>
+                          {exam.resultsReleasedAt ? date.format(exam.resultsReleasedAt) : "Planlanmadı"} /{" "}
+                          {exam.answerKeyReleasedAt ? date.format(exam.answerKeyReleasedAt) : "Planlanmadı"}
+                        </dd>
+                        <dt className="text-pn-text-muted">Meet</dt>
+                        <dd>{exam.meetRequired && drawer.parsed.success && drawer.parsed.data.rights.liveService ? "Gerekli" : "Yok"}</dd>
+                      </dl>
+                    </li>
+                  ))}
+                </ol>
               ) : (
-                <p className="p-5 text-sm text-rose-800">
-                  Sözleşme şemaya uymuyor. Satış ve yeni provisioning
-                  engellenir.
-                </p>
+                <p className="mt-2 text-[13.5px] font-medium text-(--pn-tone-critical)">Bu paket deneme vermiyor; satışa açılamaz.</p>
               )}
-            </article>
-          );
-        })}
-        {!packages.length ? (
-          <p className="rounded-3xl border border-dashed border-(--site-line) p-10 text-center text-sm text-(--site-muted)">
-            Henüz ODK paketi tanımlanmadı.
-          </p>
-        ) : null}
-      </section>
+            </>
+          ) : (
+            <p className="text-[14px] text-(--pn-tone-critical)">Sözleşme şemaya uymuyor. Satış ve yeni provisioning engellenir.</p>
+          )}
+        </UrlDrawer>
+      ) : null}
     </PanelShell>
   );
 }

@@ -97,3 +97,22 @@ test("sınav penceresi biterse oturumlar kısalır ve deneme biter", () => {
   const ended = timeline(100, [], at(100));
   assert.equal(ended.phase, "FINISHED");
 });
+
+test("oturum planı düzenlemesi yalnız süre ve arayı değiştirir", async () => {
+  const { applySessionPlanEdits, sessionPlanWorkingMinutes } = await import("./exam-sessions");
+  const ok = applySessionPlanEdits(LGS_FULL_SESSION_PLAN, [
+    { key: "SAYISAL", durationMinutes: 90, breakAfterMinutes: 30 },
+    { key: "SOZEL", durationMinutes: 70, breakAfterMinutes: 30 },
+  ]);
+  assert.ok("plan" in ok);
+  assert.deepEqual(ok.plan.map((item) => [item.key, item.durationMinutes, item.breakAfterMinutes]), [["SOZEL", 70, 30], ["SAYISAL", 90, 0]]);
+  assert.deepEqual(ok.plan[0].sectionCodes, LGS_FULL_SESSION_PLAN[0].sectionCodes);
+  assert.equal(sessionPlanWorkingMinutes(ok.plan), 160);
+  assert.deepEqual(applySessionPlanEdits(LGS_FULL_SESSION_PLAN, [{ key: "SOZEL", durationMinutes: 70, breakAfterMinutes: 30 }]), { error: "Oturum listesi sürümdeki planla eşleşmiyor." });
+  assert.deepEqual(
+    applySessionPlanEdits(LGS_FULL_SESSION_PLAN, [{ key: "SOZEL", durationMinutes: 70, breakAfterMinutes: 30 }, { key: "X", durationMinutes: 70, breakAfterMinutes: 0 }]),
+    { error: "Oturum listesi sürümdeki planla eşleşmiyor." },
+  );
+  assert.match(String((applySessionPlanEdits(LGS_FULL_SESSION_PLAN, [{ key: "SOZEL", durationMinutes: 2, breakAfterMinutes: 30 }, { key: "SAYISAL", durationMinutes: 80, breakAfterMinutes: 0 }]) as { error: string }).error), /5–240/);
+  assert.match(String((applySessionPlanEdits(LGS_FULL_SESSION_PLAN, [{ key: "SOZEL", durationMinutes: 75, breakAfterMinutes: 500 }, { key: "SAYISAL", durationMinutes: 80, breakAfterMinutes: 0 }]) as { error: string }).error), /0–120/);
+});

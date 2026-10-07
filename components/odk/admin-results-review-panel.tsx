@@ -42,6 +42,8 @@ type Summary = {
   }>;
 };
 
+type ReleasePreview = { publishable: number; reviewRequired?: number; scoringErrors?: number; warnings?: string[] };
+
 export function AdminResultsReviewPanel({
   examId,
   examStatus,
@@ -68,9 +70,14 @@ export function AdminResultsReviewPanel({
     void load();
   }, [load]);
 
-  async function publish() {
-    setBusy("publish");
+  const [pending, setPending] = useState<ReleasePreview | null>(null);
+
+  // Yayın iki adımlı (§15.6): önizleme → satır içi onay (kitle sayısı ve geri
+  // alınamazlık açıkça yazılır) → yayın. İkinci bir modal açılmaz.
+  async function previewRelease() {
+    setBusy("preview");
     setMessage(null);
+    setPending(null);
     try {
       const previewResponse = await fetch(
         `/api/odk/admin/exams/${examId}/release/preview`,
@@ -88,8 +95,18 @@ export function AdminResultsReviewPanel({
         });
         return;
       }
-      const confirmMessage = `${preview.publishable} öğrencinin sonucu yayınlanacak.\n${preview.reviewRequired || 0} sonuç inceleme bekliyor.\n${preview.scoringErrors || 0} scoring hatası var.${preview.warnings?.length ? `\n\n${preview.warnings.join("\n")}` : ""}\n\nSonuçları yayınla?`;
-      if (!window.confirm(confirmMessage)) return;
+      setPending(preview);
+    } catch {
+      setMessage({ text: "Bağlantı kurulamadı.", error: true });
+    } finally {
+      setBusy("");
+    }
+  }
+
+  async function publish() {
+    setBusy("publish");
+    setMessage(null);
+    try {
       const response = await fetch(`/api/odk/admin/exams/${examId}/release`, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -103,8 +120,9 @@ export function AdminResultsReviewPanel({
         setMessage({ text: result.error || "Yayın başarısız.", error: true });
         return;
       }
+      setPending(null);
       setMessage({
-        text: `Sonuçlar yayınlandı · ${result.published} öğrenci${result.coach?.created ? ` · ${result.coach.created} Koçum önerisi` : ""}.`,
+        text: `Yayınlandı · ${result.published} öğrenciye bildirim gönderildi${result.coach?.created ? ` · ${result.coach.created} koç önerisi oluşturuldu` : ""}.`,
         error: false,
       });
       await load();
@@ -277,7 +295,10 @@ export function AdminResultsReviewPanel({
             <input
               type="checkbox"
               checked={excludeReview}
-              onChange={(event) => setExcludeReview(event.target.checked)}
+              onChange={(event) => {
+                setExcludeReview(event.target.checked);
+                setPending(null);
+              }}
               className="h-4 w-4"
             />
             İnceleme bekleyenleri hariç tut
@@ -286,15 +307,52 @@ export function AdminResultsReviewPanel({
             type="button"
             disabled={Boolean(busy)}
             className="panel-primary-button"
-            onClick={() => void publish()}
+            onClick={() => void previewRelease()}
           >
-            {busy === "publish" ? (
+            {busy === "preview" ? (
               <Loader2 size={14} className="animate-spin" />
             ) : (
               <Send size={14} />
             )}{" "}
-            Sonuçları Yayınla
+            Yayın önizleme
           </button>
+          {pending ? (
+            <div
+              role="group"
+              aria-labelledby="yayin-onay-baslik"
+              className="w-full rounded-lg border border-(--pn-tone-warning)/40 bg-(--pn-tone-warning-soft) p-4"
+            >
+              <h3 id="yayin-onay-baslik" className="text-[14px] font-semibold text-pn-text">
+                {pending.publishable} öğrencinin sonucu yayınlanacak
+              </h3>
+              <ul className="mt-1.5 space-y-0.5 text-[13px] text-pn-text-secondary">
+                <li>{pending.reviewRequired || 0} sonuç inceleme bekliyor{excludeReview ? " (hariç tutulur)" : ""}.</li>
+                <li>{pending.scoringErrors || 0} puanlama hatası var.</li>
+                {pending.warnings?.map((warning) => <li key={warning}>{warning}</li>)}
+                <li className="font-medium text-pn-text">
+                  Yayın geri alınamaz: öğrenciler sonucu ve cevap anahtarını hemen görür, bildirim gönderilir.
+                </li>
+              </ul>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={Boolean(busy) || pending.publishable < 1}
+                  className="panel-primary-button"
+                  onClick={() => void publish()}
+                >
+                  {busy === "publish" ? <Loader2 size={14} className="animate-spin" /> : null} Sonuçları yayınla
+                </button>
+                <button
+                  type="button"
+                  disabled={Boolean(busy)}
+                  className="panel-secondary-button"
+                  onClick={() => setPending(null)}
+                >
+                  Vazgeç
+                </button>
+              </div>
+            </div>
+          ) : null}
         </div>
       ) : examStatus === "RELEASED" ? (
         <p className="mt-4 rounded-xl bg-(--pd-pastel-mint-soft) p-3 text-xs font-extrabold text-(--pd-pastel-mint-ink)">

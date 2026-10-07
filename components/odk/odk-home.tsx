@@ -1,34 +1,22 @@
 import Link from "next/link";
 import type { SessionUser } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
 import {
-  Activity,
   ArrowRight,
-  CalendarClock,
   CheckCircle2,
-  ClipboardCheck,
   LineChart,
-  Rocket,
-  ShieldCheck,
   UsersRound,
 } from "lucide-react";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelPageHeader } from "@/components/panel/panel-page-header";
-import { OdkStatusBadge } from "@/components/odk/odk-status-badge";
 import { StudentDenemeLigiHome } from "@/components/odk/student-dl-home";
 import { prisma } from "@/lib/prisma";
 import {
   getOdkAudienceStudentReport,
   listOdkReportStudents,
 } from "@/lib/odk/reporting-server";
-import { getOdkPilotReadiness } from "@/lib/odk/pilot-readiness-server";
-import { examStatusPresentation } from "@/lib/odk/presentation";
 
 const COPY = {
-  ADMIN: {
-    eyebrow: "Deneme Ligi · yönetim",
-    title: "Deneme gününü güvenle yönetin.",
-    body: "Hazırlık, canlı operasyon, puanlama ve pilot kapıları tek çalışma alanında.",
-  },
   TEACHER: {
     eyebrow: "Deneme Ligi · öğretmen",
     title: "Denemeden öğrenme kararına geçin.",
@@ -46,19 +34,13 @@ const COPY = {
   },
 } as const;
 
-const dateTime = new Intl.DateTimeFormat("tr-TR", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: "Europe/Istanbul",
-});
-
 function MetricCard({
   icon: Icon,
   label,
   value,
   tone = "mint",
 }: {
-  icon: typeof CalendarClock;
+  icon: typeof LineChart;
   label: string;
   value: string | number;
   tone?: "mint" | "sky" | "yellow" | "lavender";
@@ -117,107 +99,6 @@ function PrimaryCard({
         </Link>
       </div>
     </section>
-  );
-}
-
-async function AdminHome() {
-  const now = new Date();
-  const [nextExam, preparationCount, activeAttempts, awaitingScore, pilotRun] =
-    await Promise.all([
-      prisma.odkExam.findFirst({
-        where: { status: { in: ["SCHEDULED", "LIVE"] } },
-        orderBy: [{ startsAt: "asc" }],
-        select: {
-          id: true,
-          title: true,
-          status: true,
-          startsAt: true,
-          family: true,
-        },
-      }),
-      prisma.odkExam.count({ where: { status: { in: ["DRAFT", "READY"] } } }),
-      prisma.odkExamAttempt.count({
-        where: { status: "IN_PROGRESS", deadlineAt: { gt: now } },
-      }),
-      prisma.odkExam.count({
-        where: {
-          OR: [
-            { status: "ENDED" },
-            { status: { in: ["SCHEDULED", "LIVE"] }, endsAt: { lte: now } },
-          ],
-        },
-      }),
-      prisma.odkPilotRun.findFirst({
-        where: { status: { in: ["ACTIVE", "DRAFT", "PAUSED"] } },
-        orderBy: { updatedAt: "desc" },
-        select: {
-          status: true,
-          startedAt: true,
-          members: { select: { role: true, userId: true } },
-        },
-      }),
-    ]);
-  const readiness = await getOdkPilotReadiness(
-    pilotRun?.members || [{ role: "ADMIN" }],
-    pilotRun?.startedAt,
-  );
-  const blocked = readiness.checks.filter(
-    (check) => check.status === "BLOCK",
-  ).length;
-  const status = nextExam ? examStatusPresentation[nextExam.status] : null;
-  return (
-    <>
-      <PrimaryCard
-        eyebrow="Sıradaki operasyon"
-        title={nextExam?.title || "İlk matematik denemesini hazırlayın"}
-        copy={
-          nextExam
-            ? `${nextExam.family} · ${nextExam.startsAt ? dateTime.format(nextExam.startsAt) : "Saat bekleniyor"}`
-            : "Soru kitapçığı, cevap anahtarı ve kazanım eşlemesini tamamlayarak başlayın."
-        }
-        href={
-          nextExam
-            ? `/panel/odk/yonetim/sinavlar/${nextExam.id}`
-            : "/panel/odk/yonetim/sinavlar"
-        }
-        action={nextExam ? "Denemeyi aç" : "Deneme oluştur"}
-        badge={
-          status ? (
-            <OdkStatusBadge
-              label={status.label}
-              tone={status.tone}
-              pulse={nextExam?.status === "LIVE"}
-            />
-          ) : undefined
-        }
-      />
-      <section className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
-          icon={ClipboardCheck}
-          label="Hazırlanan deneme"
-          value={preparationCount}
-          tone="sky"
-        />
-        <MetricCard
-          icon={Activity}
-          label="Aktif öğrenci"
-          value={activeAttempts}
-          tone="mint"
-        />
-        <MetricCard
-          icon={CheckCircle2}
-          label="Puanlama bekleyen"
-          value={awaitingScore}
-          tone="yellow"
-        />
-        <MetricCard
-          icon={Rocket}
-          label="Bloke yayın kapısı"
-          value={blocked}
-          tone="lavender"
-        />
-      </section>
-    </>
   );
 }
 
@@ -357,6 +238,8 @@ async function ParentHome({ userId }: { userId: string }) {
 export async function OdkHome({ session }: { session: SessionUser }) {
   // Öğrenci Bugün'ü kendi düzeninde (§11.1); diğer roller aşağıdaki karşılama düzeninde.
   if (session.role === "STUDENT") return <StudentDenemeLigiHome session={session} />;
+  // ADMIN tek personel ana sayfasını kullanır (§11.8).
+  if (session.role === "ADMIN") redirect("/panel/odk/yonetim");
   const copy = COPY[session.role];
   return (
     <PanelShell
@@ -369,13 +252,9 @@ export async function OdkHome({ session }: { session: SessionUser }) {
         eyebrow={copy.eyebrow}
         title={copy.title}
         description={copy.body}
-        icon={
-          session.role === "ADMIN" ? ShieldCheck : LineChart
-        }
+        icon={LineChart}
       />
-      {session.role === "ADMIN" ? (
-        <AdminHome />
-      ) : session.role === "TEACHER" ? (
+      {session.role === "TEACHER" ? (
         <TeacherHome userId={session.userId} />
       ) : (
         <ParentHome userId={session.userId} />

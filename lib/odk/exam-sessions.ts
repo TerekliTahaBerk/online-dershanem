@@ -177,3 +177,32 @@ export function canCloseSession(timeline: SessionTimeline, key: string): "OK" | 
   if (timeline.isLastSession) return "LAST_SESSION";
   return "OK";
 }
+
+export type SessionPlanEdit = { key: string; durationMinutes: number; breakAfterMinutes: number };
+
+/**
+ * Personelin oturum planı düzenlemesi (çalışma alanı "Oturumlar" sekmesi).
+ * Yalnız süre ve ara değişir; oturum anahtarları, sırası ve bölüm dağılımı
+ * şablondan gelir ve korunur. Sonuç ya yeni plan ya da hata metnidir.
+ */
+export function applySessionPlanEdits(plan: ExamSessionPlan, edits: readonly SessionPlanEdit[]): { plan: ExamSessionPlan } | { error: string } {
+  if (edits.length !== plan.length || plan.some((item) => !edits.some((edit) => edit.key === item.key))) {
+    return { error: "Oturum listesi sürümdeki planla eşleşmiyor." };
+  }
+  const next = plan.map((item, index) => {
+    const edit = edits.find((candidate) => candidate.key === item.key)!;
+    return { ...item, durationMinutes: edit.durationMinutes, breakAfterMinutes: index < plan.length - 1 ? edit.breakAfterMinutes : 0 };
+  });
+  if (next.some((item) => !Number.isInteger(item.durationMinutes) || item.durationMinutes < 5 || item.durationMinutes > 240)) {
+    return { error: "Oturum süresi 5–240 dakika arasında olmalıdır." };
+  }
+  if (next.some((item) => !Number.isInteger(item.breakAfterMinutes) || item.breakAfterMinutes < 0 || item.breakAfterMinutes > 120)) {
+    return { error: "Ara süresi 0–120 dakika arasında olmalıdır." };
+  }
+  return { plan: next };
+}
+
+/** Sürüm süresi = oturum sürelerinin toplamı (aralar hariç). */
+export function sessionPlanWorkingMinutes(plan: ExamSessionPlan): number {
+  return plan.reduce((sum, item) => sum + item.durationMinutes, 0);
+}
