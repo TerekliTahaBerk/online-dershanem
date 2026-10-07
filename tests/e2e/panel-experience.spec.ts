@@ -361,7 +361,9 @@ test.describe("panel deneyimi", () => {
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.teacher);
     await page.goto("/panel/ogretmen/plan");
-    const studentPlan = page.getByRole("article").filter({ hasText: "Ada Öğrenci" }).first();
+    // Plan masası tablodur; plan satırdan açılan yan panelde onaylanır (?onizle=plan:…).
+    await page.getByRole("table", { name: "Bu haftanın planları" }).getByRole("link", { name: /Ada Öğrenci planı/ }).click();
+    const studentPlan = page.getByRole("dialog").getByRole("article").filter({ hasText: "Ada Öğrenci" }).first();
     await expect(studentPlan.getByText(/adaptive-v1/)).toBeVisible();
     page.once("dialog", async (dialog) => {
       expect(dialog.type()).toBe("confirm");
@@ -372,6 +374,8 @@ test.describe("panel deneyimi", () => {
     await studentPlan.getByRole("button", { name: "Onayla ve kilitle" }).click();
     expect((await approval).status()).toBe(200);
     await expect(page.getByText(/plan onaylandı ve kilitlendi/i)).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
 
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.student);

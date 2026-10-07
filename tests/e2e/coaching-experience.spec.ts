@@ -38,7 +38,7 @@ test.describe.serial("Koçum görüşme ve yardım deneyimi", () => {
     const requestResponse = page.waitForResponse((response) => response.url().endsWith(`/coaching-sessions/${sessionId}`) && response.request().method() === "POST");
     await page.getByRole("button", { name: "Saat değiştir", exact: true }).click(); expect((await requestResponse).status()).toBe(200);
     await expect(page.getByText(/Saat değişikliği talebiniz alındı/)).toBeVisible();
-    await loginAs(page, teacher); await page.goto(`/panel/ogretmen/hazirlik/${studentId}`);
+    await loginAs(page, teacher); await page.goto(`/panel/ogretmen/hazirlik/${studentId}?sekme=gorusmeler`);
     const region = page.getByRole("region", { name: "Görüşme saati" });
     const proposed = new Date(Date.now() + 2 * 86_400_000);
     await region.getByLabel("Yeni saat önerisi").fill(new Date(proposed.getTime() + 3 * 3_600_000).toISOString().slice(0, 16));

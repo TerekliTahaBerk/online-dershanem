@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   buildTodayFocus,
+  groupPlanTasksByDay,
   buildWeeklyProgress,
   planStatusLabel,
   splitPlanTasks,
@@ -66,4 +67,33 @@ test("öğrenciye görünen durum metinleri doğal Türkçedir", () => {
   assert.equal(taskStatusLabel("DONE"), "Tamamladım");
   assert.equal(taskStatusLabel("SKIPPED"), "Yeniden planlanacak");
   assert.equal(taskStatusLabel("PARTIAL"), "Kısmen tamamladım");
+});
+
+test("Planım liste görünümü görevleri güne göre gruplar; SKIPPED görünmez", () => {
+  const mk = (id: string, iso: string, status: "PLANNED" | "DONE" | "PARTIAL" | "SKIPPED" | "COULD_NOT") => ({
+    id,
+    title: id,
+    scheduledFor: iso,
+    durationMinutes: 30,
+    status,
+  });
+  const groups = groupPlanTasksByDay(
+    [
+      mk("b", "2026-10-07T09:00:00.000Z", "PLANNED"),
+      mk("a", "2026-10-05T09:00:00.000Z", "DONE"),
+      mk("c", "2026-10-07T12:00:00.000Z", "PARTIAL"),
+      mk("s", "2026-10-07T13:00:00.000Z", "SKIPPED"),
+      mk("d", "2026-10-09T09:00:00.000Z", "COULD_NOT"),
+    ] as never[],
+    "2026-10-07",
+  );
+  assert.deepEqual(
+    groups.map((g) => [g.key, g.total, g.done, g.isToday, g.isPast]),
+    [
+      ["2026-10-05", 1, 1, false, true],
+      ["2026-10-07", 2, 1, true, false],
+      ["2026-10-09", 1, 0, false, false],
+    ],
+  );
+  assert.deepEqual(groupPlanTasksByDay([], "2026-10-07"), []);
 });

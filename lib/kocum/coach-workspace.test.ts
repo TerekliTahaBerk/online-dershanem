@@ -5,6 +5,7 @@ import {
   COACH_ATTENTION_ORDER,
   buildCoachWorkspace,
   coachAttentionReasons,
+  latestExamByStudent,
   type CoachStudentSignals,
 } from "./coach-workspace";
 
@@ -88,4 +89,16 @@ test("koç çalışma alanı kuyrukları neden bazında gruplar", () => {
   assert.equal(workspace.primaryReason.get("Can"), null);
   assert.equal(buildCoachWorkspace([], ALL_ON).groups.length, 0);
   for (const reason of COACH_ATTENTION_ORDER) assert.ok(COACH_ATTENTION_LABEL[reason]);
+});
+
+test("son deneme neti ve önceki denemeye göre fark", () => {
+  const map = latestExamByStudent([
+    { studentId: "a", takenAt: new Date("2026-09-01"), totalNet: 50.25 },
+    { studentId: "a", takenAt: new Date("2026-10-01"), totalNet: 55.5 },
+    { studentId: "a", takenAt: new Date("2026-08-01"), totalNet: 40 },
+    { studentId: "b", takenAt: new Date("2026-10-02"), totalNet: 31.333 },
+  ]);
+  assert.deepEqual(map.get("a"), { net: 55.5, delta: 5.25, takenAt: new Date("2026-10-01") });
+  assert.deepEqual(map.get("b"), { net: 31.33, delta: null, takenAt: new Date("2026-10-02") });
+  assert.equal(map.get("c"), undefined);
 });

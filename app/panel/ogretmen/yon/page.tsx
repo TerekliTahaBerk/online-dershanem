@@ -1,22 +1,14 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { requireTeacherStaffPermission } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
-import { coachingOverdue } from "@/lib/coaching";
-import { buildWeeklyKocumMetrics } from "@/lib/kocum/metrics";
 import {
-  COACH_ATTENTION_LABEL,
-  buildCoachWorkspace,
   type CoachAttentionReason,
   type CoachStudentSignals,
 } from "@/lib/kocum/coach-workspace";
-import {
-  addIstanbulCalendarDays,
-  formatIstanbulDateInput,
-  istanbulWeekStart,
-  ISTANBUL_TIME_ZONE,
-} from "@/lib/istanbul-time";
-import { studentCheckInWeekEnd, studentCheckInWeekStart } from "@/lib/student-check-in";
+import { loadCoachWorkspace } from "./coach-workspace-data";
+import { ExamCell } from "@/components/panel/yon/exam-cell";
+import { AttentionBadge } from "@/components/panel/yon/attention-badge";
+import { ISTANBUL_TIME_ZONE } from "@/lib/istanbul-time";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   EmptyState,
@@ -27,7 +19,6 @@ import {
   PanelTableCell,
   PanelTableRow,
   Section,
-  StatusBadge,
   buttonClass,
 } from "@/components/panel/ui";
 
@@ -62,120 +53,11 @@ const REASON_ACTION: Record<CoachAttentionReason, { label: string; href: (studen
   LOW_COMPLIANCE: { label: "Öğrenciyi aç", href: (id) => `/panel/ogretmen/hazirlik/${id}` },
 };
 
-const REASON_TONE: Record<CoachAttentionReason, "warning" | "critical" | "info"> = {
-  RESCHEDULE_REQUESTED: "info",
-  HELP_OPEN: "warning",
-  SESSION_OVERDUE: "critical",
-  PLAN_APPROVAL: "warning",
-  SUGGESTION_PENDING: "info",
-  NO_PLAN: "warning",
-  CHECK_IN_MISSING: "info",
-  LOW_COMPLIANCE: "warning",
-};
 
 export default async function CoachWorkspacePage() {
   const session = await requireTeacherStaffPermission("ok:coaching:write");
   const flags = getPanelFeatureFlags();
-  const now = new Date();
-  const todayKey = formatIstanbulDateInput(now);
-  const weekStart = istanbulWeekStart(now);
-  const weekEnd = addIstanbulCalendarDays(weekStart, 7);
-
-  const assignments = await prisma.coachAssignment.findMany({
-    where: { endedAt: null, coach: { userId: session.userId } },
-    select: {
-      id: true,
-      cadenceDays: true,
-      student: { select: { id: true, targetGoal: true, user: { select: { fullName: true, email: true } } } },
-      sessions: {
-        where: { OR: [{ status: "PLANNED" }, { status: "COMPLETED" }] },
-        orderBy: { scheduledAt: "desc" },
-        take: 20,
-        // privateNote / sharedNote BİLEREK seçilmiyor.
-        select: { id: true, status: true, scheduledAt: true, completedAt: true, meetingUrl: true, focus: true, rescheduleRequestedAt: true },
-      },
-    },
-  });
-  const studentIds = assignments.map((item) => item.student.id);
-  const assignmentIds = assignments.map((item) => item.id);
-
-  const [plans, checkIns, helpRequests, suggestions] = await Promise.all([
-    flags.adaptivePlan && studentIds.length
-      ? prisma.weeklyPlan.findMany({
-          where: {
-            studentId: { in: studentIds },
-            weekStart: { gte: weekStart, lt: weekEnd },
-            status: { in: ["DRAFT", "CHANGE_REQUESTED", "APPROVED"] },
-          },
-          select: {
-            studentId: true,
-            status: true,
-            tasks: { select: { id: true, status: true, scheduledFor: true, durationMinutes: true, actualMinutes: true } },
-          },
-        })
-      : Promise.resolve([]),
-    flags.studentCheckIn && studentIds.length
-      ? prisma.studentCheckIn.findMany({
-          where: { studentId: { in: studentIds }, createdAt: { gte: studentCheckInWeekStart(now), lt: studentCheckInWeekEnd(now) } },
-          distinct: ["studentId"],
-          select: { studentId: true },
-        })
-      : Promise.resolve([]),
-    flags.studentCheckIn && assignmentIds.length
-      ? prisma.studentHelpRequest.groupBy({
-          by: ["studentId"],
-          where: { status: "OPEN", coachAssignmentId: { in: assignmentIds } },
-          _count: { _all: true },
-        })
-      : Promise.resolve([]),
-    flags.adaptivePlan && studentIds.length
-      ? prisma.weeklyPlanSuggestion.groupBy({
-          by: ["studentId"],
-          where: { status: "PENDING", studentId: { in: studentIds } },
-          _count: { _all: true },
-        })
-      : Promise.resolve([]),
-  ]);
-
-  const checkInSet = new Set(checkIns.map((item) => item.studentId));
-  const helpCount = new Map(helpRequests.map((item) => [item.studentId, item._count._all]));
-  const suggestionCount = new Map(suggestions.map((item) => [item.studentId, item._count._all]));
-  const planByStudent = new Map(plans.map((plan) => [plan.studentId, plan]));
-
-  const todaySessions: Array<{ id: string; at: Date; studentId: string; name: string; focus: string | null; meetingUrl: string | null }> = [];
-  const signals: CoachStudentSignals[] = assignments.map((assignment) => {
-    const name = assignment.student.user.fullName || assignment.student.user.email;
-    const planned = assignment.sessions
-      .filter((item) => item.status === "PLANNED")
-      .sort((a, b) => a.scheduledAt.getTime() - b.scheduledAt.getTime());
-    const lastCompleted = assignment.sessions.find((item) => item.status === "COMPLETED")?.completedAt ?? null;
-    const next = planned[0] ?? null;
-    for (const item of planned) {
-      if (formatIstanbulDateInput(item.scheduledAt) === todayKey) {
-        todaySessions.push({ id: item.id, at: item.scheduledAt, studentId: assignment.student.id, name, focus: item.focus, meetingUrl: item.meetingUrl });
-      }
-    }
-    const plan = planByStudent.get(assignment.student.id);
-    const metrics = plan?.status === "APPROVED" && plan.tasks.length
-      ? buildWeeklyKocumMetrics(plan.tasks, todayKey, formatIstanbulDateInput)
-      : null;
-    return {
-      studentId: assignment.student.id,
-      name,
-      targetGoal: assignment.student.targetGoal,
-      overdue: coachingOverdue(lastCompleted, next?.scheduledAt ?? null, assignment.cadenceDays).overdue,
-      nextScheduledAt: next?.scheduledAt ?? null,
-      rescheduleRequested: planned.some((item) => item.rescheduleRequestedAt),
-      planStatus: (plan?.status as CoachStudentSignals["planStatus"]) ?? null,
-      planCompletionPct: metrics ? metrics.planCompletionPct : null,
-      checkInThisWeek: checkInSet.has(assignment.student.id),
-      openHelpRequests: helpCount.get(assignment.student.id) ?? 0,
-      pendingSuggestions: suggestionCount.get(assignment.student.id) ?? 0,
-    };
-  });
-  todaySessions.sort((a, b) => a.at.getTime() - b.at.getTime());
-
-  const workspace = buildCoachWorkspace(signals, { adaptivePlan: flags.adaptivePlan, studentCheckIn: flags.studentCheckIn });
+  const { now, assignmentCount, signals, todaySessions, workspace, lastExam } = await loadCoachWorkspace(session.userId, flags);
   const signalById = new Map(signals.map((item) => [item.studentId, item]));
   const nextSession = todaySessions.find((item) => item.at >= now) ?? todaySessions[0] ?? null;
   const sortedStudents = [...signals].sort(
@@ -190,7 +72,7 @@ export default async function CoachWorkspacePage() {
         <PageHeader
           title="Bugün"
           description={
-            assignments.length
+            assignmentCount
               ? `${todaySessions.length} görüşme · ${workspace.attentionCount} öğrenci dikkat bekliyor`
               : "Yön Koçluk öğrencilerin burada görünecek."
           }
@@ -210,7 +92,7 @@ export default async function CoachWorkspacePage() {
           }
         />
 
-        {!assignments.length ? (
+        {!assignmentCount ? (
           <EmptyState
             className="mt-6"
             title="Henüz aktif koçluk öğrencin yok."
@@ -291,9 +173,18 @@ export default async function CoachWorkspacePage() {
               )}
             </Section>
 
-            <Section id="ogrencilerim" title="Öğrencilerim" description={`${signals.length} aktif öğrenci`}>
-              <PanelTable caption="Öğrencilerim" columns={["Öğrenci", "Sınav", "Haftalık uyum", "Sonraki görüşme", "Durum"]}>
-                {sortedStudents.map((item) => {
+            <Section
+              id="ogrencilerim"
+              title="Öğrencilerim"
+              description={`${signals.length} aktif öğrenci${signals.length > 10 ? " · önce dikkat bekleyenler" : ""}`}
+              actions={
+                <Link href="/panel/ogretmen/yon/ogrenciler" className={buttonClass("ghost", "sm")}>
+                  Tümünü gör
+                </Link>
+              }
+            >
+              <PanelTable caption="Öğrencilerim" columns={["Öğrenci", "Sınav", "Haftalık uyum", "Son deneme", "Sonraki görüşme", "Durum"]}>
+                {sortedStudents.slice(0, 10).map((item) => {
                   const reason = workspace.primaryReason.get(item.studentId) ?? null;
                   return (
                     <PanelTableRow key={item.studentId}>
@@ -315,13 +206,10 @@ export default async function CoachWorkspacePage() {
                           </span>
                         )}
                       </PanelTableCell>
+                      <PanelTableCell><ExamCell exam={lastExam.get(item.studentId)} /></PanelTableCell>
                       <PanelTableCell>{item.nextScheduledAt ? DATE_TIME.format(item.nextScheduledAt) : "Planlanmadı"}</PanelTableCell>
                       <PanelTableCell>
-                        {reason ? (
-                          <StatusBadge label={COACH_ATTENTION_LABEL[reason]} tone={REASON_TONE[reason]} />
-                        ) : (
-                          <StatusBadge label="Yolunda" tone="success" />
-                        )}
+                        <AttentionBadge reason={reason} />
                       </PanelTableCell>
                     </PanelTableRow>
                   );
@@ -349,3 +237,4 @@ function reasonMeta(reason: CoachAttentionReason, item: CoachStudentSignals): st
       return item.targetGoal ?? undefined;
   }
 }
+

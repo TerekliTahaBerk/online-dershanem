@@ -274,6 +274,8 @@ function adminSections(root: string, flags: PanelFeatureFlags): PanelNavSection[
  */
 const NAV_ITEM_SCOPE: Partial<Record<"TEACHER" | "ADMIN", Record<string, ProductCode>>> = {
   TEACHER: {
+    // OD öğrenci listesi grup/ders kapsamlıdır; Yön'de koçun kendi "Öğrenciler"i var.
+    students: "OD",
     lessons: "OD",
     assignments: "OD",
     materials: "OD",
@@ -410,7 +412,26 @@ export function panelNavSections(
       return _exhaustive;
     }
   }
-  return effectiveScope ? applyScope(role, sections, effectiveScope) : sections;
+  const scoped = effectiveScope ? applyScope(role, sections, effectiveScope) : sections;
+  return role === "TEACHER" && effectiveScope === "OK" ? withCoachWorkspaceItems(scoped) : scoped;
+}
+
+/**
+ * Yön Koçluk panelinde koçun çalışma alanı öğeleri (§7.4). Yalnız bu kapsamda
+ * eklenir: kapsamsız (OD) öğretmen menüsünde koç sayfaları görünmez. Sayfalar
+ * COACH@OK iznini ayrıca doğrular.
+ */
+function withCoachWorkspaceItems(sections: PanelNavSection[]): PanelNavSection[] {
+  const items: PanelNavItem[] = [
+    { id: "coach-students", href: `${YON_COACH_TODAY}/ogrenciler`, label: PANEL_DOMAIN.ogrenciler },
+    { id: "coach-sessions", href: `${YON_COACH_TODAY}/gorusmeler`, label: "Görüşmeler" },
+  ];
+  const kocluk = sections.find((navSection) => navSection.id === "kocluk");
+  if (kocluk) return sections.map((navSection) => (navSection === kocluk ? { ...navSection, items: [...items, ...navSection.items] } : navSection));
+  const todayIndex = sections.findIndex((navSection) => navSection.id === "bugun");
+  const next = [...sections];
+  next.splice(todayIndex + 1, 0, { id: "kocluk", title: "KOÇLUK", items });
+  return next;
 }
 
 /**

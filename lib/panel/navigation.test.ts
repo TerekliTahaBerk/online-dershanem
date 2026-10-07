@@ -292,4 +292,12 @@ test("Yön Koçluk panelinde öğrencinin Bugün'ü Yön Bugün'e, Deneme Ligi'n
   assert.equal(scopedTodayHref("PARENT", "OK", "/panel/veli"), "/panel/veli");
   assert.equal(todayHref("TEACHER", "OK"), YON_COACH_TODAY);
   assert.equal(todayHref("TEACHER", "OD"), "/panel/ogretmen");
+  // Koç çalışma alanı öğeleri yalnız Yön kapsamında (bayraklar kapalıyken de).
+  const coachIds = (scope: ProductCode | null, flags = ALL_FLAGS_ON) =>
+    panelNavSections("TEACHER", ALL_PRODUCTS, flags, undefined, scope).flatMap((s) => s.items.map((i) => i.id));
+  assert.deepEqual(coachIds("OK").slice(1, 3), ["coach-students", "coach-sessions"]);
+  assert.ok(!coachIds("OD").includes("coach-students"));
+  assert.ok(!coachIds(null).includes("coach-sessions"));
+  const allOff = Object.fromEntries(Object.keys(ALL_FLAGS_ON).map((key) => [key, false])) as typeof ALL_FLAGS_ON;
+  assert.deepEqual(coachIds("OK", allOff), ["today", "coach-students", "coach-sessions"]);
 });

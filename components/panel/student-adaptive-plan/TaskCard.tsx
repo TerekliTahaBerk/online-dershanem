@@ -5,6 +5,7 @@ import { CalendarDays, Check } from "lucide-react";
 import { completionFieldsForKind } from "@/lib/kocum/plan-tasks";
 import { taskStatusLabel } from "@/lib/student-plan-view";
 import { dayHeading, fieldLabel, sourceLabels } from "./constants";
+import { buttonClass } from "@/components/panel/primitives";
 import type { TaskCardProps } from "./types";
 
 export function TaskCard(props: TaskCardProps) {
@@ -24,7 +25,7 @@ export function TaskCard(props: TaskCardProps) {
   const fields = completionFieldsForKind(task.taskKind || "CUSTOM");
   const plannedVsActual =
     task.actualMinutes != null || task.actualQuestions != null ? (
-      <p className="mt-1 text-xs text-(--site-muted)">
+      <p className="mt-1 text-[12.5px] text-pn-text-muted">
         Planlanan
         {task.targetType === "QUESTIONS" && task.targetValue
           ? ` · ${task.targetValue} soru`
@@ -39,17 +40,11 @@ export function TaskCard(props: TaskCardProps) {
 
   return (
     <article
-      className={`rounded-2xl border p-4 ${
-        done
-          ? "border-emerald-200 bg-emerald-50/60"
-          : highlighted
-            ? "border-(--brand-olive) bg-[#FBF7EC]"
-            : "border-(--site-line) bg-white"
-      }`}
+      className={`rounded-md ${highlighted ? "border border-pn-accent-marker p-3" : ""}`}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-(--site-muted)">
+          <p className="flex flex-wrap items-center gap-1.5 text-[12.5px] text-pn-text-muted">
             <CalendarDays size={13} />
             <span>{dayHeading.format(new Date(task.scheduledFor))}</span>
             {task.durationMinutes > 0 ? (
@@ -62,7 +57,7 @@ export function TaskCard(props: TaskCardProps) {
             <span>· {taskStatusLabel(task.status)}</span>
           </p>
           <h3
-            className={`mt-1 font-extrabold ${highlighted ? "text-base" : "text-sm"}`}
+            className="mt-1 text-[15px] font-semibold text-pn-text"
           >
             {task.title}
           </h3>
@@ -77,7 +72,7 @@ export function TaskCard(props: TaskCardProps) {
               <button
                 type="button"
                 onClick={() => onStart(task)}
-                className="panel-quick-action"
+                className={buttonClass("secondary", "sm")}
                 aria-label="Göreve başla"
               >
                 Başladım
@@ -86,7 +81,7 @@ export function TaskCard(props: TaskCardProps) {
             <button
               type="button"
               onClick={() => onOpenComplete(task, "DONE")}
-              className={`panel-quick-action ${highlighted ? "panel-quick-action-primary" : ""}`}
+              className={buttonClass("primary", "sm")}
               aria-label="Görevi tamamla"
             >
               <Check size={14} /> Tamamla
@@ -94,7 +89,7 @@ export function TaskCard(props: TaskCardProps) {
             <button
               type="button"
               onClick={() => onOpenComplete(task, "PARTIAL")}
-              className="panel-quick-action"
+              className={buttonClass("secondary", "sm")}
               aria-label="Kısmen tamamla"
             >
               Kısmen
@@ -102,14 +97,14 @@ export function TaskCard(props: TaskCardProps) {
             <button
               type="button"
               onClick={() => onOpenComplete(task, "COULD_NOT")}
-              className="panel-quick-action"
+              className={buttonClass("secondary", "sm")}
               aria-label="Yapamadım"
             >
               Yapamadım
             </button>
           </div>
         ) : done ? (
-          <span className="shrink-0 text-xs font-bold text-emerald-800">
+          <span className="shrink-0 text-[12.5px] font-medium text-(--pn-tone-success)">
             Tamamlandı
           </span>
         ) : null}
@@ -117,13 +112,13 @@ export function TaskCard(props: TaskCardProps) {
 
       {draft ? (
         <form
-          className="mt-4 space-y-3 rounded-xl border border-(--site-line) bg-(--site-bg-warm) p-3"
+          className="mt-4 space-y-3 border-t border-pn-border pt-4"
           onSubmit={(event) => {
             event.preventDefault();
             onSubmitComplete(task);
           }}
         >
-          <p className="text-xs font-extrabold">
+          <p className="text-[13.5px] font-semibold text-pn-text">
             {draft.status === "DONE"
               ? "Tamamlama bilgisi"
               : draft.status === "PARTIAL"
@@ -172,7 +167,7 @@ export function TaskCard(props: TaskCardProps) {
             <button
               type="submit"
               disabled={busy}
-              className="panel-quick-action panel-quick-action-primary"
+              className={buttonClass("primary", "md")}
             >
               Kaydet
             </button>
@@ -180,7 +175,7 @@ export function TaskCard(props: TaskCardProps) {
               type="button"
               disabled={busy}
               onClick={onCancelComplete}
-              className="panel-quick-action"
+              className={buttonClass("ghost", "md")}
             >
               Vazgeç
             </button>

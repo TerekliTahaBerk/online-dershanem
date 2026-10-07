@@ -122,3 +122,34 @@ export function buildCoachWorkspace(students: CoachStudentSignals[], options: Co
     primaryReason,
   };
 }
+
+export type CoachExamInput = {
+  studentId: string;
+  takenAt: Date;
+  /** Bölüm netleri toplamı (`sectionNet` ile sınav türüne göre hesaplanmış). */
+  totalNet: number;
+};
+
+export type CoachExamSummary = { net: number; delta: number | null; takenAt: Date };
+
+/** Öğrenci başına son deneme toplam neti ve bir önceki denemeye göre farkı. */
+export function latestExamByStudent(exams: CoachExamInput[]): Map<string, CoachExamSummary> {
+  const byStudent = new Map<string, CoachExamInput[]>();
+  for (const exam of exams) {
+    const list = byStudent.get(exam.studentId) ?? [];
+    list.push(exam);
+    byStudent.set(exam.studentId, list);
+  }
+  const result = new Map<string, CoachExamSummary>();
+  for (const [studentId, list] of byStudent) {
+    const sorted = [...list].sort((a, b) => b.takenAt.getTime() - a.takenAt.getTime());
+    const [latest, previous] = sorted;
+    const round = (value: number) => Math.round(value * 100) / 100;
+    result.set(studentId, {
+      net: round(latest.totalNet),
+      delta: previous ? round(latest.totalNet - previous.totalNet) : null,
+      takenAt: latest.takenAt,
+    });
+  }
+  return result;
+}
