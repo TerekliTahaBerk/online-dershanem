@@ -7,6 +7,8 @@ import { decideAnswerRevision } from "@/lib/odk/attempt-domain";
 import { guardMutation, mutationGuardResponse } from "@/lib/security/mutation-guard";
 import { RATE_LIMIT_POLICIES } from "@/lib/security/rate-limit-policies";
 import { getRateLimitKeyFromUser } from "@/lib/security/rate-limit";
+import { loadAttemptSessionState } from "@/lib/odk/attempt-sessions-server";
+import { sectionWritable } from "@/lib/odk/exam-sessions";
 
 const schema = z.object({ questionId: z.string().min(1), selectedOption: z.enum(["A", "B", "C", "D", "E"]).nullable(), isMarked: z.boolean(), revision: z.number().int().min(1) });
 class AttemptClosedError extends Error {}
@@ -26,11 +28,14 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     select: {
       id: true,
       status: true,
+      startedAt: true,
       deadlineAt: true,
       version: {
         select: {
+          settings: true,
           sections: {
             select: {
+              code: true,
               questions: {
                 where: { id: parsed.data.questionId, isActive: true },
                 select: { id: true },
@@ -46,7 +51,17 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     if (attempt.status === "IN_PROGRESS") await prisma.odkExamAttempt.update({ where: { id }, data: { status: "AUTO_SUBMITTED", submittedAt: now } });
     return NextResponse.json({ error: "Sınav süresi sona erdi.", code: "ATTEMPT_CLOSED" }, { status: 409 });
   }
-  if (!attempt.version.sections.some((section) => section.questions.length)) return NextResponse.json({ error: "Soru bu sınav sürümünde bulunmuyor." }, { status: 400 });
+  const section = attempt.version.sections.find((item) => item.questions.length);
+  if (!section) return NextResponse.json({ error: "Soru bu sınav sürümünde bulunmuyor." }, { status: 400 });
+  // Oturumlu sınav: yalnız açık oturumun soruları yazılır; kapanan oturum kilitli, aradayken hiçbiri.
+  const sessionState = await loadAttemptSessionState({ id: attempt.id, startedAt: attempt.startedAt, deadlineAt: attempt.deadlineAt, settings: attempt.version.settings }, now);
+  if (sessionState && !sectionWritable(sessionState.timeline, section.code)) {
+    const onBreak = sessionState.timeline.phase === "BREAK";
+    return NextResponse.json(
+      { error: onBreak ? "Oturum arası: cevaplar bir sonraki oturumda açılır." : "Bu soru kapanmış ya da henüz açılmamış bir oturumda.", code: onBreak ? "SESSION_BREAK" : "SESSION_LOCKED" },
+      { status: 409 },
+    );
+  }
   const existing = await prisma.odkAttemptAnswer.findUnique({ where: { attemptId_questionId: { attemptId: id, questionId: parsed.data.questionId } } });
   const revisionDecision = decideAnswerRevision(existing, parsed.data);
   if (revisionDecision === "IDEMPOTENT") return NextResponse.json({ answer: existing, idempotent: true });

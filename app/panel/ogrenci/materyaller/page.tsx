@@ -3,6 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
+import {
+  PAGE_EYEBROW_CLASS,
+  PAGE_TITLE_CLASS,
+  PAGE_DESCRIPTION_CLASS,
+  EmptyState,
+  StatusBadge,
+  buttonClass,
+} from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 export default async function StudentMaterialsPage() {
@@ -59,24 +67,24 @@ export default async function StudentMaterialsPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
+        <p className={PAGE_EYEBROW_CLASS}>
           <Library size={15} /> Kaynaklarım
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-(--site-ink)">
+        <h1 className={PAGE_TITLE_CLASS}>
           İhtiyacın olan her şey burada.
         </h1>
         {lowDataMode ? (
-          <p className="mt-2 text-sm font-bold text-(--brand-olive)">
+          <p className={PAGE_DESCRIPTION_CLASS}>
             Düşük veri açık: metin dökümleri ve bağlantılar önce; büyük dosyalar
             yalnız siz açarsanız yüklenir.
           </p>
         ) : preference?.captionsPreferred || preference?.transcriptPreferred ? (
-          <p className="mt-2 text-sm text-(--site-body)">
+          <p className={PAGE_DESCRIPTION_CLASS}>
             Altyazı ve metin tercihinle eşleşen kaynaklar önce gösterilir.
           </p>
         ) : null}
       </header>
-      <div className="mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-6 max-w-[880px] border-t border-pn-border">
         {ordered.map((material) => {
           const Icon = icons[material.kind];
           const href = material.blobPathname
@@ -88,71 +96,55 @@ export default async function StudentMaterialsPage() {
           return (
             <article
               key={material.id}
-              className="rounded-[14px] border border-(--site-line) bg-white p-5 shadow-(--panel-card-shadow)"
+              className="flex flex-wrap items-start gap-x-4 gap-y-3 border-b border-pn-border py-4"
             >
-              <div className="flex items-start justify-between gap-2">
-                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-(--brand-olive-soft) text-(--brand-olive)">
-                  <Icon size={19} />
-                </span>
-                {preferred ? (
-                  <span className="rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-bold text-emerald-800">
-                    Tercihinle uyumlu
-                  </span>
-                ) : null}
-              </div>
-              <p className="mt-4 text-[10px] font-bold uppercase text-(--site-muted)">
-                {material.group.name} · {material.group.subject}
-              </p>
-              <h2 className="mt-2 text-base font-extrabold text-(--site-ink)">
-                {material.title}
-              </h2>
-              <p className="mt-2 min-h-10 text-xs leading-5 text-(--site-body)">
-                {material.description ||
-                  "Öğretmeninin paylaştığı çalışma kaynağı."}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-1">
-                {material.captionsAvailable ? (
-                  <span className="rounded-full bg-sky-50 px-2 py-1 text-[9px] font-bold text-sky-800">
-                    Altyazı var
-                  </span>
-                ) : null}
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-pn-surface-subtle text-pn-text-muted">
+                <Icon size={17} aria-hidden="true" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-[15px] font-semibold text-pn-text">{material.title}</h2>
+                  {preferred ? <StatusBadge label="Tercihinle uyumlu" tone="success" /> : null}
+                  {material.captionsAvailable ? <StatusBadge label="Altyazı var" tone="info" /> : null}
+                  {material.transcript ? <StatusBadge label="Metin dökümü var" tone="neutral" /> : null}
+                </div>
+                <p className="mt-0.5 text-[12.5px] text-pn-text-muted">
+                  {material.group.name} · {material.group.subject}
+                </p>
+                <p className="mt-1.5 text-[14px] leading-[1.6] text-pn-text-secondary">
+                  {material.description || "Öğretmeninin paylaştığı çalışma kaynağı."}
+                </p>
                 {material.transcript ? (
-                  <span className="rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-bold text-emerald-800">
-                    Metin dökümü var
-                  </span>
+                  <details open={lowDataMode || undefined} className="mt-2">
+                    <summary className="cursor-pointer text-[13px] font-medium text-pn-text">
+                      Metin dökümünü oku
+                    </summary>
+                    <p className="mt-2 whitespace-pre-wrap rounded-md border border-pn-border bg-pn-surface-subtle p-3 text-[13px] leading-6 text-pn-text-secondary">
+                      {material.transcript}
+                    </p>
+                  </details>
                 ) : null}
               </div>
-              {material.transcript ? (
-                <details
-                  open={lowDataMode || undefined}
-                  className="mt-3 rounded-2xl border border-(--site-line) p-3"
-                >
-                  <summary className="cursor-pointer text-xs font-bold">
-                    Metin dökümünü oku
-                  </summary>
-                  <p className="mt-3 whitespace-pre-wrap text-xs leading-6 text-(--site-body)">
-                    {material.transcript}
-                  </p>
-                </details>
-              ) : null}
               <a
                 href={href}
                 target="_blank"
                 rel="noreferrer"
-                className="panel-quick-action panel-quick-action-primary mt-5 w-full justify-center"
+                className={buttonClass("secondary", "sm", "shrink-0")}
               >
                 {lowDataMode && dataHeavy
                   ? `${material.kind === "VIDEO" ? "Videoyu" : "PDF’i"} aç (veri kullanır)`
                   : "Kaynağı aç"}{" "}
-                <ExternalLink size={14} />
+                <ExternalLink size={14} aria-hidden="true" />
               </a>
             </article>
           );
         })}
         {!ordered.length ? (
-          <p className="rounded-[14px] border border-dashed border-(--site-line) p-10 text-center text-sm text-(--site-muted) md:col-span-2 xl:col-span-3">
-            Henüz paylaşılmış materyal yok.
-          </p>
+          <EmptyState
+            className="mt-4"
+            title="Henüz paylaşılmış kaynak yok."
+            body="Öğretmenin ders kaynağı paylaştığında burada görünecek."
+          />
         ) : null}
       </div>
     </PanelShell>

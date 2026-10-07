@@ -5,6 +5,11 @@ import {
   SESSION_POLICIES,
   formatPolicyDuration,
 } from "@/lib/auth/session-policy";
+import {
+  PAGE_EYEBROW_CLASS,
+  PAGE_TITLE_CLASS,
+  PAGE_DESCRIPTION_CLASS,
+} from "@/components/panel/ui";
 
 export default async function SessionsPage() {
   const session = await requireSession();
@@ -16,13 +21,13 @@ export default async function SessionsPage() {
   return (
     <main className="mx-auto max-w-3xl">
       <header className="mb-7">
-        <p className="text-sm font-bold uppercase tracking-wider text-(--brand-olive)">
+        <p className={PAGE_EYEBROW_CLASS}>
           Hesap güvenliği
         </p>
-        <h1 className="mt-2 text-3xl font-black text-(--site-ink)">
+        <h1 className={PAGE_TITLE_CLASS}>
           Aktif oturumlar
         </h1>
-        <p className="mt-3 text-sm leading-6 text-(--site-body)">
+        <p className={PAGE_DESCRIPTION_CLASS}>
           Bu hesap {formatPolicyDuration(policy.idleTimeoutMs)}{" "}
           kullanılmadığında veya en geç{" "}
           {formatPolicyDuration(policy.absoluteTtlMs)} sonunda yeniden giriş

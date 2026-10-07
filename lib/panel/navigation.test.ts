@@ -3,7 +3,7 @@ import { test } from "node:test";
 import type { ProductCode, UserRole } from "@prisma/client";
 import { panelFeatureDefaults, type PanelFeatureFlags } from "../panel-feature-flags";
 import { PANEL_DOMAIN } from "./domain-vocabulary";
-import { mobilePrimaryNav, panelNavHrefs, panelNavSections } from "./navigation";
+import { YON_COACH_TODAY, YON_STUDENT_TODAY, mobilePrimaryNav, panelNavHrefs, panelNavSections, scopedTodayHref } from "./navigation";
 
 const ALL_FLAGS_OFF: PanelFeatureFlags = Object.fromEntries(
   (Object.keys(panelFeatureDefaults) as (keyof PanelFeatureFlags)[]).map((key) => [key, false]),
@@ -207,7 +207,7 @@ test("ürün paneli kapsamı: yönetim menüsünde ortak öğeler her panelde, �
     panelNavSections("ADMIN", [], ALL_FLAGS_ON, undefined, scope).flatMap((section) => section.items.map((item) => item.id));
   for (const scope of ALL_PRODUCTS) {
     const items = ids(scope);
-    for (const common of ["today", "signups", "people", "orders", "account-settings"]) assert.equal(items.includes(common), true, `${scope}:${common}`);
+    for (const common of ["today", "signups", "people", "orders"]) assert.equal(items.includes(common), true, `${scope}:${common}`);
   }
   assert.equal(ids("OD").includes("groups"), true);
   assert.equal(ids("OD").includes("odk-exams"), false);
@@ -251,4 +251,53 @@ test("giriş noktası olmayan sayfalar menüye bağlanır (yetim rota kalmaz)", 
   // Öğrencinin haftalık özeti, sayfayla aynı bayrağa bağlıdır.
   assert.ok(panelNavHrefs("STUDENT", ALL_PRODUCTS, ALL_FLAGS_ON).includes("/panel/ogrenci/haftalik"));
   assert.ok(!panelNavHrefs("STUDENT", ALL_PRODUCTS, ALL_FLAGS_OFF).includes("/panel/ogrenci/haftalik"));
+});
+
+test("hesap ve panel tercihleri menüde değil, Ayarlar merkezindedir", () => {
+  for (const role of ["ADMIN", "TEACHER", "STUDENT", "PARENT"] as UserRole[]) {
+    const hrefs = panelNavHrefs(role, ALL_PRODUCTS, ALL_FLAGS_ON);
+    for (const href of ["/panel/ayarlar", "/panel/bildirimler", "/panel/erisilebilirlik", "/panel/veri-kullanimi"]) {
+      assert.ok(!hrefs.includes(href), `${role}: ${href}`);
+    }
+    const titles = sectionTitles(role, ALL_PRODUCTS, ALL_FLAGS_ON);
+    assert.ok(!titles.includes("AYARLAR"), role);
+    assert.ok(!titles.includes("GENEL"), role);
+  }
+});
+
+test("öğrenci OD menüsü tekrar ve telafiye bağlanır, kapalı bayrakla bağlanmaz", () => {
+  assert.ok(panelNavHrefs("STUDENT", ["OD"], ALL_FLAGS_ON).includes("/panel/ogrenci/tekrar"));
+  assert.ok(panelNavHrefs("STUDENT", ["OD"], { ...ALL_FLAGS_OFF, recoveryPackage: true }).includes("/panel/ogrenci/telafi"));
+  const closed = panelNavHrefs("STUDENT", ["OD"], ALL_FLAGS_OFF);
+  assert.ok(!closed.includes("/panel/ogrenci/tekrar"));
+  assert.ok(!closed.includes("/panel/ogrenci/telafi"));
+  assert.ok(!panelNavHrefs("STUDENT", ["OK"], ALL_FLAGS_ON).includes("/panel/ogrenci/tekrar"));
+});
+
+test("Yön Koçluk panelinde öğrencinin Bugün'ü Yön Bugün'e, Deneme Ligi'nde ODK köküne gider", () => {
+  const todayHref = (role: "STUDENT" | "PARENT" | "TEACHER", scope: ProductCode) =>
+    panelNavSections(role, ALL_PRODUCTS, ALL_FLAGS_ON, undefined, scope)
+      .flatMap((section) => section.items)
+      .find((item) => item.id === "today")?.href;
+  assert.equal(todayHref("STUDENT", "OK"), YON_STUDENT_TODAY);
+  assert.equal(todayHref("STUDENT", "OD"), "/panel/ogrenci");
+  assert.equal(todayHref("STUDENT", "ODK"), "/panel/odk/ogrenci");
+  // Kapsamsız menü değişmez.
+  assert.equal(
+    panelNavSections("STUDENT", ALL_PRODUCTS, ALL_FLAGS_ON).flatMap((s) => s.items).find((i) => i.id === "today")?.href,
+    "/panel/ogrenci",
+  );
+  const mobileToday = mobilePrimaryNav("STUDENT", ALL_PRODUCTS, ALL_FLAGS_ON, undefined, "OK").find((item) => item.id === "today");
+  assert.equal(mobileToday?.href, YON_STUDENT_TODAY);
+  assert.equal(scopedTodayHref("PARENT", "OK", "/panel/veli"), "/panel/veli");
+  assert.equal(todayHref("TEACHER", "OK"), YON_COACH_TODAY);
+  assert.equal(todayHref("TEACHER", "OD"), "/panel/ogretmen");
+  // Koç çalışma alanı öğeleri yalnız Yön kapsamında (bayraklar kapalıyken de).
+  const coachIds = (scope: ProductCode | null, flags = ALL_FLAGS_ON) =>
+    panelNavSections("TEACHER", ALL_PRODUCTS, flags, undefined, scope).flatMap((s) => s.items.map((i) => i.id));
+  assert.deepEqual(coachIds("OK").slice(1, 3), ["coach-students", "coach-sessions"]);
+  assert.ok(!coachIds("OD").includes("coach-students"));
+  assert.ok(!coachIds(null).includes("coach-sessions"));
+  const allOff = Object.fromEntries(Object.keys(ALL_FLAGS_ON).map((key) => [key, false])) as typeof ALL_FLAGS_ON;
+  assert.deepEqual(coachIds("OK", allOff), ["today", "coach-students", "coach-sessions"]);
 });

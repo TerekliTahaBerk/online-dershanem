@@ -7,6 +7,7 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelEmptyState } from "@/components/panel/empty-state";
 import { CalmDigestCard } from "@/components/panel/calm-digest-card";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
+import { PAGE_DESCRIPTION_CLASS, PAGE_EYEBROW_CLASS, PAGE_TITLE_CLASS } from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 export default async function StudentWeeklyDigestPage() {
@@ -56,13 +57,13 @@ export default async function StudentWeeklyDigestPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
+        <p className={PAGE_EYEBROW_CLASS}>
           <HeartHandshake size={15} /> Seninle aynı anda
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
+        <h1 className={PAGE_TITLE_CLASS}>
           Ailenin gördüğü özet burada.
         </h1>
-        <p className="mt-2 text-sm text-(--site-body)">
+        <p className={PAGE_DESCRIPTION_CLASS}>
           Özel öğretmen notların bu özete eklenmez.
         </p>
       </header>

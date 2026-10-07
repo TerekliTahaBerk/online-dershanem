@@ -4,6 +4,7 @@
  */
 
 import type { OdkExamFamily } from "@prisma/client";
+import { LGS_FULL_SESSION_PLAN, type ExamSessionPlan } from "./exam-sessions";
 
 export type ExamTemplateSection = {
   code: string;
@@ -21,6 +22,8 @@ export type ExamTemplate = {
   scoringPolicyCode: string;
   wrongPenalty: number;
   sections: ExamTemplateSection[];
+  /** Oturumlu düzen (LGS: Sözel → ara → Sayısal); sürüm ayarlarına `sessions` olarak yazılır. */
+  sessions?: ExamSessionPlan;
 };
 
 export const ODK_EXAM_TEMPLATES: Record<string, ExamTemplate> = {
@@ -70,6 +73,7 @@ export const ODK_EXAM_TEMPLATES: Record<string, ExamTemplate> = {
       { code: "MAT", title: "Matematik", questionCount: 20 },
       { code: "FEN", title: "Fen Bilimleri", questionCount: 20 },
     ],
+    sessions: LGS_FULL_SESSION_PLAN,
   },
   TYT_FULL: {
     code: "TYT_FULL",

@@ -7,6 +7,11 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { aiDraftContentSchema } from "@/lib/teacher-ai";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { TeacherAiDrafts } from "@/components/panel/teacher-ai-drafts";
+import {
+  PAGE_EYEBROW_CLASS,
+  PAGE_TITLE_CLASS,
+  PAGE_DESCRIPTION_CLASS,
+} from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -45,13 +50,13 @@ export default async function TeacherAiAssistantPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-dc-brand-strong">
+        <p className={PAGE_EYEBROW_CLASS}>
           <Bot size={15} /> İnsan denetimli yardımcı
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
+        <h1 className={PAGE_TITLE_CLASS}>
           Kaynağı görün, taslağı siz onaylayın.
         </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-(--site-body)">
+        <p className={PAGE_DESCRIPTION_CLASS}>
           Açık sohbet değil: yalnız ödev ve mini kontrol taslağı. Model yanlış
           olabilir; hiçbir çıktı kendiliğinden öğrenciye veya veliye gitmez.
         </p>

@@ -5,6 +5,11 @@ import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { TeacherReviewMonitor } from "@/components/panel/teacher-review-monitor";
+import {
+  PAGE_EYEBROW_CLASS,
+  PAGE_TITLE_CLASS,
+  PAGE_DESCRIPTION_CLASS,
+} from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 export default async function TeacherReviewPage() {
@@ -66,13 +71,13 @@ export default async function TeacherReviewPage() {
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
+        <p className={PAGE_EYEBROW_CLASS}>
           <RotateCcw size={15} /> Kalıcılık gözetimi
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em]">
+        <h1 className={PAGE_TITLE_CLASS}>
           Kuyruk büyürse insan bakışı devreye girsin.
         </h1>
-        <p className="mt-2 text-sm leading-6 text-(--site-body)">
+        <p className={PAGE_DESCRIPTION_CLASS}>
           Öğrencileri sıralamadan yalnız biriken çalışma ve üç kez tekrarlayan
           zorlanma sinyalini görün.
         </p>

@@ -1,10 +1,11 @@
 import Link from "next/link";
 import {
-  PanelActionRow,
-  PanelCard,
-  PanelCardTitle,
-  PanelEmpty,
-  PanelStatusBadge,
+  EmptyState,
+  List,
+  ListRow,
+  Section,
+  StatusBadge,
+  buttonClass,
 } from "@/components/panel/ui";
 import { DinoExplanationAction } from "@/components/panel/dino-explanation-action";
 import {
@@ -58,68 +59,50 @@ function primaryLessonLabel(lesson: TeacherWorkspaceLesson): string {
 
 function LessonRow({ lesson }: { lesson: TeacherWorkspaceLesson }) {
   return (
-    <li className="border-b border-dc-line-soft px-4 py-4 last:border-b-0 sm:px-[22px]">
-      <div className="flex flex-wrap items-start gap-3 sm:gap-5">
-        <span className="w-[52px] flex-none text-[14px] font-bold text-dc-ink sm:w-[60px]">
-          {TIME.format(new Date(lesson.startsAt))}
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-[15px] font-bold text-dc-ink">
+    <li className="flex flex-wrap items-start gap-x-4 gap-y-2 border-b border-pn-border py-3 last:border-b-0">
+      <span className="w-[52px] flex-none pt-0.5 text-[14px] font-semibold tabular-nums text-pn-text">
+        {TIME.format(new Date(lesson.startsAt))}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-[14.5px] font-semibold text-pn-text">
             {lesson.title} · {lesson.groupName}
           </p>
-          <p className="mt-0.5 text-[13px] text-dc-ink-muted">
-            {lessonTypeLabel(lesson.lessonType)}
-            {lesson.subject ? ` · ${lesson.subject}` : ""}
-            {` · ${lesson.studentCount} öğrenci`}
-          </p>
-          <div className="mt-2">
-            <PanelStatusBadge
-              label={lesson.prepLabel}
-              tone={prepTone(lesson.prepStatus)}
-            />
-          </div>
+          <StatusBadge label={lesson.prepLabel} tone={prepTone(lesson.prepStatus)} />
         </div>
-      </div>
-      <div className="mt-3 flex flex-wrap gap-2 sm:pl-[65px]">
-        <Link
-          href={primaryLessonHref(lesson)}
-          className="panel-quick-action panel-quick-action-primary inline-flex"
-          {...(lesson.meetingUrl && lesson.prepStatus !== "needs_close"
-            ? { target: "_blank", rel: "noreferrer" }
-            : {})}
-        >
-          {primaryLessonLabel(lesson)}
-        </Link>
-        {lesson.primaryStudentId ? (
+        <p className="mt-0.5 text-[13px] text-pn-text-muted">
+          {lessonTypeLabel(lesson.lessonType)}
+          {lesson.subject ? ` · ${lesson.subject}` : ""}
+          {` · ${lesson.studentCount} öğrenci`}
+        </p>
+        <div className="mt-2 flex flex-wrap gap-1.5">
           <Link
-            href={`/panel/ogretmen/ogrenci/${lesson.primaryStudentId}`}
-            className="panel-quick-action inline-flex"
+            href={primaryLessonHref(lesson)}
+            className={buttonClass("primary", "sm")}
+            {...(lesson.meetingUrl && lesson.prepStatus !== "needs_close"
+              ? { target: "_blank", rel: "noreferrer" }
+              : {})}
           >
-            Öğrenciye git
+            {primaryLessonLabel(lesson)}
           </Link>
-        ) : (
-          <Link
-            href="/panel/ogretmen/gruplar"
-            className="panel-quick-action inline-flex"
-          >
-            Öğrenciler
+          {lesson.primaryStudentId ? (
+            <Link href={`/panel/ogretmen/ogrenci/${lesson.primaryStudentId}`} className={buttonClass("ghost", "sm")}>
+              Öğrenciye git
+            </Link>
+          ) : (
+            <Link href="/panel/ogretmen/gruplar" className={buttonClass("ghost", "sm")}>
+              Öğrenciler
+            </Link>
+          )}
+          <Link href="/panel/ogretmen/materyaller" className={buttonClass("ghost", "sm")}>
+            Materyaller
           </Link>
-        )}
-        <Link
-          href="/panel/ogretmen/materyaller"
-          className="panel-quick-action inline-flex"
-        >
-          Materyaller
-        </Link>
-        {lesson.prepStatus !== "closed" &&
-        lesson.prepStatus !== "needs_close" ? (
-          <Link
-            href={`/panel/ogretmen/ders/${lesson.id}`}
-            className="panel-quick-action inline-flex"
-          >
-            Ders kapanışı
-          </Link>
-        ) : null}
+          {lesson.prepStatus !== "closed" && lesson.prepStatus !== "needs_close" ? (
+            <Link href={`/panel/ogretmen/ders/${lesson.id}`} className={buttonClass("ghost", "sm")}>
+              Ders kapanışı
+            </Link>
+          ) : null}
+        </div>
       </div>
     </li>
   );
@@ -127,121 +110,90 @@ function LessonRow({ lesson }: { lesson: TeacherWorkspaceLesson }) {
 
 function PendingSection({ items }: { items: TeacherWorkspacePendingItem[] }) {
   return (
-    <PanelCard className="mt-5">
-      <PanelCardTitle>Bekleyen işler</PanelCardTitle>
+    <Section title="Bekleyen işler">
       {items.length ? (
-        <div className="mt-3.5 rounded-[12px] border border-dc-line-soft bg-white">
-          {items.map((item, index) => (
-            <PanelActionRow
+        <List label="Bekleyen işler">
+          {items.map((item) => (
+            <ListRow
               key={item.id}
               title={item.title}
               description={item.detail}
-              status={
-                <PanelStatusBadge
-                  label={pendingKindLabel(item.kind)}
-                  tone="info"
-                />
-              }
-              cta={
-                <Link
-                  href={item.href}
-                  className="panel-quick-action inline-flex"
-                >
+              status={<StatusBadge label={pendingKindLabel(item.kind)} tone="info" />}
+              action={
+                <Link href={item.href} className={buttonClass("secondary", "sm")}>
                   {item.ctaLabel}
                 </Link>
               }
-              last={index === items.length - 1}
             />
           ))}
-        </div>
+        </List>
       ) : (
-        <PanelEmpty
+        <EmptyState
           title="Bekleyen iş yok."
           body="Kapanış, yardım, plan veya değerlendirme biriktiğinde burada görünür."
-          className="mt-3 border-dashed p-5"
         />
       )}
-    </PanelCard>
+    </Section>
   );
 }
 
 function RiskSection({ items }: { items: TeacherWorkspaceRiskStudent[] }) {
   return (
-    <PanelCard className="mt-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <PanelCardTitle>Riskli öğrenciler</PanelCardTitle>
-        <Link
-          href="/panel/ogretmen/gruplar?filtre=risky"
-          className="shrink-0 text-[13.5px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
-        >
+    <Section
+      title="Riskli öğrenciler"
+      actions={
+        <Link href="/panel/ogretmen/gruplar?filtre=risky" className={buttonClass("ghost", "sm")}>
           Listeyi aç
         </Link>
-      </div>
+      }
+    >
       {items.length ? (
-        <div className="mt-3.5 rounded-[12px] border border-dc-line-soft bg-white">
-          {items.map((item, index) => (
-            <PanelActionRow
+        <List label="Riskli öğrenciler">
+          {items.map((item) => (
+            <ListRow
               key={item.studentId}
               title={item.studentName}
-              description={
-                <>
-                  {item.whyRisky}
-                  <span className="mt-1 block text-[12.5px] text-dc-ink-faint">
-                    {item.groupName} · son sinyal {item.lastSignal}
-                  </span>
-                </>
-              }
-              cta={
-                <Link
-                  href={item.href}
-                  className="panel-quick-action inline-flex"
-                >
+              description={item.whyRisky}
+              meta={`${item.groupName} · son sinyal ${item.lastSignal}`}
+              action={
+                <Link href={item.href} className={buttonClass("secondary", "sm")}>
                   Öğrenci profili
                 </Link>
               }
-              last={index === items.length - 1}
             />
           ))}
-        </div>
+        </List>
       ) : (
-        <PanelEmpty
+        <EmptyState
           title="Riskli öğrenci yok."
           body="Güçlü bir sinyal oluştuğunda en fazla 8 öğrenci burada listelenir."
-          className="mt-3 border-dashed p-5"
         />
       )}
-    </PanelCard>
+    </Section>
   );
 }
 
 function UpcomingSection({ items }: { items: TeacherWorkspaceUpcomingItem[] }) {
   if (!items.length) return null;
   return (
-    <PanelCard className="mt-5">
-      <PanelCardTitle>Yaklaşanlar</PanelCardTitle>
-      <div className="mt-3.5 rounded-[12px] border border-dc-line-soft bg-white">
-        {items.map((item, index) => (
-          <PanelActionRow
+    <Section title="Yaklaşanlar">
+      <List label="Yaklaşanlar">
+        {items.map((item) => (
+          <ListRow
             key={item.id}
             title={item.title}
             description={item.detail}
             meta={DAY_TIME.format(new Date(item.at))}
-            status={
-              <PanelStatusBadge
-                label={upcomingKindLabel(item.kind)}
-                tone="neutral"
-              />
-            }
-            cta={
-              <Link href={item.href} className="panel-quick-action inline-flex">
+            status={<StatusBadge label={upcomingKindLabel(item.kind)} tone="neutral" />}
+            action={
+              <Link href={item.href} className={buttonClass("secondary", "sm")}>
                 Aç
               </Link>
             }
-            last={index === items.length - 1}
           />
         ))}
-      </div>
-    </PanelCard>
+      </List>
+    </Section>
   );
 }
 
@@ -264,30 +216,24 @@ export function TeacherWorkspaceHome({
   });
 
   const lessonsSection = (
-    <PanelCard className="mt-5" padded={false}>
-      <div className="px-4 pt-[22px] sm:px-[22px]">
-        <PanelCardTitle>Bugünkü dersler</PanelCardTitle>
-      </div>
+    <Section title="Bugünkü dersler">
       {workspace.todayLessons.length === 0 ? (
-        <div className="px-4 py-[26px] sm:px-[22px]">
-          <p className="text-[15px] font-bold text-dc-ink">Bugün dersin yok.</p>
-          <p className="mt-1.5 text-[14px] text-dc-ink-muted">
-            Bekleyen işleri bitirebilir ya da yarının derslerine
-            hazırlanabilirsin.
-          </p>
-        </div>
+        <EmptyState
+          title="Bugün dersin yok."
+          body="Bekleyen işleri bitirebilir ya da yarının derslerine hazırlanabilirsin."
+        />
       ) : (
-        <ul className="mt-2">
+        <ul aria-label="Bugünkü dersler" className="border-t border-pn-border">
           {workspace.todayLessons.map((lesson) => (
             <LessonRow key={lesson.id} lesson={lesson} />
           ))}
         </ul>
       )}
-    </PanelCard>
+    </Section>
   );
 
   return (
-    <div className="max-w-[1040px]">
+    <div>
       {dinoEnabled ? (
         <div className="mt-4 max-w-[720px]">
           <DinoExplanationAction

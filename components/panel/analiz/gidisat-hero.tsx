@@ -1,4 +1,4 @@
-import { PanelCard, PanelCardTitle } from "@/components/panel/ui";
+import { PAGE_EYEBROW_CLASS, PAGE_TITLE_CLASS } from "@/components/panel/ui";
 
 /**
  * Gidişat hero — dönem + birincil durum cümleleri.
@@ -18,19 +18,19 @@ export function GidisatHero({
 
   return (
     <header className="mt-2">
-      <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-dc-ink-faint">
+      <p className={PAGE_EYEBROW_CLASS}>
         {periodLabel}
       </p>
-      <h1 className="mt-1.5 text-[26px] font-extrabold tracking-[-0.02em] text-dc-ink sm:text-[30px]">
+      <h1 className={`mt-1.5 ${PAGE_TITLE_CLASS}`}>
         {title}
       </h1>
       {lead ? (
-        <p className="mt-3 max-w-[54ch] text-[15px] leading-[1.55] text-dc-ink-body">
+        <p className="mt-3 max-w-[54ch] text-[15px] leading-[1.55] text-pn-text">
           {lead}
         </p>
       ) : null}
       {rest.length ? (
-        <ul className="mt-3 max-w-[54ch] space-y-1.5 text-[14px] leading-normal text-dc-ink-muted">
+        <ul className="mt-3 max-w-[54ch] space-y-1.5 text-[14px] leading-normal text-pn-text-secondary">
           {rest.map((line) => (
             <li key={line}>{line}</li>
           ))}
@@ -49,36 +49,49 @@ export function GidisatStrengthSupport({
 }) {
   if (!strengths.length && !supports.length) return null;
 
+  // Kart yerine iki sütunlu düz liste (roadmap §5.4: kartsız bölümler).
   return (
-    <div className="mt-5 grid gap-4 sm:grid-cols-2">
-      <PanelCard>
-        <PanelCardTitle>Güçlü alanlar</PanelCardTitle>
-        {strengths.length ? (
-          <ul className="mt-3 space-y-2 text-[14px] text-dc-ink-body">
-            {strengths.map((item) => (
-              <li key={item.subject}>{item.sentence}</li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-3 text-[14px] text-dc-ink-muted">
-            Henüz belirgin güçlü alan yok.
-          </p>
-        )}
-      </PanelCard>
-      <PanelCard>
-        <PanelCardTitle>Destek gereken alanlar</PanelCardTitle>
-        {supports.length ? (
-          <ul className="mt-3 space-y-2 text-[14px] text-dc-ink-body">
-            {supports.map((item) => (
-              <li key={item.subject}>{item.sentence}</li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-3 text-[14px] text-dc-ink-muted">
-            Şu an ek destek alanı görünmüyor.
-          </p>
-        )}
-      </PanelCard>
+    <div className="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+      <AreaList
+        title="Güçlü alanlar"
+        items={strengths}
+        empty="Henüz belirgin güçlü alan yok."
+      />
+      <AreaList
+        title="Destek gereken alanlar"
+        items={supports}
+        empty="Şu an ek destek alanı görünmüyor."
+      />
+    </div>
+  );
+}
+
+function AreaList({
+  title,
+  items,
+  empty,
+}: {
+  title: string;
+  items: Array<{ subject: string; sentence: string }>;
+  empty: string;
+}) {
+  return (
+    <div>
+      <h3 className="text-[13.5px] font-semibold text-pn-text">{title}</h3>
+      {items.length ? (
+        <ul className="mt-2 border-t border-pn-border">
+          {items.map((item) => (
+            <li
+              key={item.subject}
+              className="border-b border-pn-border py-2 text-[14px] leading-6 text-pn-text-secondary last:border-b-0"
+            >
+              {item.sentence}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-2 text-[14px] text-pn-text-muted">{empty}</p>
+      )}
     </div>
   );
 }

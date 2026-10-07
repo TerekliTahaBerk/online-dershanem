@@ -5,11 +5,14 @@ import { formatIstanbulDateInput } from "@/lib/istanbul-time";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   PanelHeading,
-  PanelFilterLink,
   PanelTable,
   PanelTableRow,
   PanelTableCell,
   PanelEmpty,
+  PageHeader,
+  StatusBadge,
+  ViewTabs,
+  buttonClass,
 } from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
@@ -105,27 +108,25 @@ export default async function StudentLessonsPage({
 
   return shell(
     <>
-      <PanelHeading
+      <PageHeader
         title="Derslerin"
         description={groupNames || undefined}
         actions={
-          <>
-            <a href="/api/panel/calendar/export" className="site-btn site-btn-secondary">Takvime ekle (.ics)</a>
-            <PanelFilterLink
-              href="/panel/ogrenci/takvim"
-              active={filter === "yaklasan"}
-            >
-              Yaklaşan
-            </PanelFilterLink>
-            <PanelFilterLink
-              href="/panel/ogrenci/takvim?durum=tamamlanan"
-              active={filter === "tamamlanan"}
-            >
-              Tamamlanan
-            </PanelFilterLink>
-          </>
+          <a href="/api/panel/calendar/export" className={buttonClass("secondary")}>
+            Takvime ekle (.ics)
+          </a>
         }
       />
+      <div className="mt-5 mb-4">
+        <ViewTabs
+          label="Ders görünümü"
+          activeId={filter}
+          tabs={[
+            { id: "yaklasan", label: "Yaklaşan", href: "/panel/ogrenci/takvim" },
+            { id: "tamamlanan", label: "Tamamlanan", href: "/panel/ogrenci/takvim?durum=tamamlanan" },
+          ]}
+        />
+      </div>
 
       {lessons.length === 0 ? (
         <PanelEmpty
@@ -196,12 +197,21 @@ export default async function StudentLessonsPage({
                 <PanelTableCell>
                   {lesson.teacher.fullName || "—"}
                 </PanelTableCell>
-                <PanelTableCell
-                  tone={
-                    missed ? "warn" : isToday && !completed ? "ok" : "default"
-                  }
-                >
-                  {statusLabel}
+                <PanelTableCell>
+                  <StatusBadge
+                    label={statusLabel}
+                    tone={
+                      missed
+                        ? "warning"
+                        : cancelled
+                          ? "neutral"
+                          : completed
+                            ? "success"
+                            : isToday
+                              ? "info"
+                              : "neutral"
+                    }
+                  />
                 </PanelTableCell>
                 <PanelTableCell>
                   <Link

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { buttonClass } from "@/components/panel/primitives";
 export function CompleteHomeAction({ taskId }: { taskId: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -15,5 +16,5 @@ export function CompleteHomeAction({ taskId }: { taskId: string }) {
     } catch { setMessage("Bağlantıyı kontrol edip yeniden deneyebilirsin."); }
     finally { setBusy(false); }
   }
-  return <span className="inline-flex flex-col gap-1"><button type="button" className="panel-quick-action" disabled={busy} onClick={() => void complete()}>{busy ? "Kaydediliyor" : "Bu çalışmayı tamamladım"}</button><span className="text-xs" role="status">{message}</span></span>;
+  return <span className="inline-flex flex-col gap-1"><button type="button" className={buttonClass("secondary")} disabled={busy} onClick={() => void complete()}>{busy ? "Kaydediliyor" : "Bu çalışmayı tamamladım"}</button><span className="text-xs" role="status">{message}</span></span>;
 }

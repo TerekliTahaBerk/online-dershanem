@@ -1,205 +1,151 @@
 import Link from "next/link";
-import { CalendarClock, CheckCircle2, Clock3, FileText } from "lucide-react";
 import { requireProductRole } from "@/lib/auth/guards";
+import { prisma } from "@/lib/prisma";
 import { listStudentExams } from "@/lib/odk/student-exam-server";
+import { studentExamState, type StudentExamTab } from "@/lib/odk/student-exam-state";
 import { PanelShell } from "@/components/panel/panel-shell";
+import {
+  EmptyState,
+  PageHeader,
+  PanelTable,
+  PanelTableCell,
+  PanelTableRow,
+  StatusBadge,
+  ViewTabs,
+  buttonClass,
+} from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 
-const dateFormatter = new Intl.DateTimeFormat("tr-TR", {
-  dateStyle: "long",
-  timeStyle: "short",
+/**
+ * DENEME LİGİ · DENEMELERİM (docs/panel-design-roadmap.md §11.2).
+ * Görünüm sekmeleri (`?gorunum=`): Tümü · Yaklaşan · Açık · Tamamlanan.
+ * Devam eden deneme en üstte tek bir dikkat satırıdır; satırdaki deneme adı
+ * doğrudan doğru hedefe (sınav ekranı / ayrıntı / sonuç) bağlanır.
+ */
+
+const DATE_TIME = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
   timeZone: "Europe/Istanbul",
 });
+const NET = new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-type ExamItem = Awaited<ReturnType<typeof listStudentExams>>[number];
+const TABS: Array<{ id: "tumu" | StudentExamTab; label: string }> = [
+  { id: "tumu", label: "Tümü" },
+  { id: "yaklasan", label: "Yaklaşan" },
+  { id: "acik", label: "Açık" },
+  { id: "tamamlanan", label: "Tamamlanan" },
+];
 
-type ExamBucket = "ACTIVE" | "AVAILABLE" | "UPCOMING" | "RESULT" | "CLOSED";
-
-function getBucket(exam: ExamItem): ExamBucket {
-  const attempt = exam.attempts[0];
-  if (attempt?.status === "IN_PROGRESS") return "ACTIVE";
-  if (attempt && attempt.status !== "VOID") return "RESULT";
-  if (exam.startDecision.ok) return "AVAILABLE";
-  if (exam.startDecision.code === "NOT_STARTED") return "UPCOMING";
-  return "CLOSED";
-}
-
-function examMeta(exam: ExamItem): string {
-  const parts: string[] = [];
-  if (exam.startsAt)
-    parts.push(`Açılış: ${dateFormatter.format(exam.startsAt)}`);
-  if (exam.endsAt) parts.push(`Kapanış: ${dateFormatter.format(exam.endsAt)}`);
-  if (exam.currentVersion?.durationMinutes) {
-    parts.push(`Süre: ${exam.currentVersion.durationMinutes} dakika`);
-  }
-  return parts.join(" · ");
-}
-
-function statusInfo(exam: ExamItem): {
-  label: string;
-  tone: string;
-  actionLabel: string;
-  href: string;
-  icon: typeof CalendarClock;
-} {
-  const attempt = exam.attempts[0];
-  if (attempt?.status === "IN_PROGRESS") {
-    return {
-      label: "Devam ediyor",
-      tone: "bg-amber-50 text-amber-700",
-      actionLabel: "Denemeye Devam Et",
-      href: `/panel/odk/ogrenci/denemeler/${exam.id}/coz`,
-      icon: Clock3,
-    };
-  }
-  if (attempt && attempt.status !== "VOID") {
-    if (exam.resultAvailable) {
-      return {
-        label: "Sonuç açıklandı",
-        tone: "bg-emerald-50 text-emerald-700",
-        actionLabel: "Sonucunu Gör",
-        href: `/panel/odk/ogrenci/denemeler/${exam.id}/sonuc`,
-        icon: CheckCircle2,
-      };
-    }
-    return {
-      label: "Sonuç bekleniyor",
-      tone: "bg-slate-100 text-slate-700",
-      actionLabel: "Detayı Gör",
-      href: `/panel/odk/ogrenci/denemeler/${exam.id}`,
-      icon: FileText,
-    };
-  }
-  if (exam.startDecision.ok) {
-    return {
-      label: "Başlayabilirsin",
-      tone: "bg-red-50 text-red-700",
-      actionLabel: "Denemeyi Başlat",
-      href: `/panel/odk/ogrenci/denemeler/${exam.id}`,
-      icon: CalendarClock,
-    };
-  }
-  if (exam.startDecision.code === "NOT_STARTED") {
-    return {
-      label: "Henüz başlamadı",
-      tone: "bg-sky-50 text-sky-700",
-      actionLabel: "Detayı Gör",
-      href: `/panel/odk/ogrenci/denemeler/${exam.id}`,
-      icon: CalendarClock,
-    };
-  }
-  return {
-    label: "Süre kapandı",
-    tone: "bg-slate-100 text-slate-700",
-    actionLabel: "Detayı Gör",
-    href: `/panel/odk/ogrenci/denemeler/${exam.id}`,
-    icon: Clock3,
-  };
-}
-
-function ExamSection({ title, exams }: { title: string; exams: ExamItem[] }) {
-  if (!exams.length) return null;
-  return (
-    <section className="mt-8">
-      <h2 className="text-sm font-extrabold uppercase tracking-[.08em] text-(--site-muted)">
-        {title}
-      </h2>
-      <div className="mt-3 space-y-3">
-        {exams.map((exam) => {
-          const info = statusInfo(exam);
-          const Icon = info.icon;
-          return (
-            <Link
-              key={exam.id}
-              href={info.href}
-              className="flex flex-col gap-4 rounded-3xl border border-(--site-line) bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="flex min-w-0 gap-4">
-                <span
-                  className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${info.tone}`}
-                >
-                  <Icon size={20} />
-                </span>
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="wrap-break-word font-extrabold text-(--site-ink)">
-                      {exam.title}
-                    </h3>
-                    <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-black text-slate-600">
-                      {exam.family}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm leading-6 text-(--site-body)">
-                    {examMeta(exam)}
-                  </p>
-                </div>
-              </div>
-              <div className="flex w-full flex-wrap items-center justify-between gap-2 sm:w-auto sm:justify-end">
-                <span
-                  className={`w-fit rounded-full px-3 py-1.5 text-xs font-extrabold ${info.tone}`}
-                >
-                  {info.label}
-                </span>
-                <span className="text-xs font-bold text-(--brand-olive)">
-                  {info.actionLabel}
-                </span>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-export default async function OdkStudentExamsPage() {
+export default async function OdkStudentExamsPage({ searchParams }: { searchParams: Promise<{ gorunum?: string | string[] }> }) {
   const session = await requireProductRole("ODK", "STUDENT");
+  const requested = (await searchParams).gorunum;
+  const tab = TABS.find((item) => item.id === requested)?.id ?? "tumu";
   const exams = await listStudentExams(session.userId);
-  const activeExams = exams.filter((exam) => getBucket(exam) === "ACTIVE");
-  const availableExams = exams.filter(
-    (exam) => getBucket(exam) === "AVAILABLE",
-  );
-  const upcomingExams = exams.filter((exam) => getBucket(exam) === "UPCOMING");
-  const resultExams = exams.filter((exam) =>
-    ["RESULT", "CLOSED"].includes(getBucket(exam)),
-  );
+  const rows = exams.map((exam) => ({ exam, state: studentExamState(exam) }));
+  const active = rows.find((row) => row.state.key === "IN_PROGRESS") ?? null;
+
+  const releasedAttemptIds = rows
+    .filter((row) => row.state.key === "RESULT_RELEASED" && row.exam.attempts[0])
+    .map((row) => row.exam.attempts[0]!.id);
+  const scores = releasedAttemptIds.length
+    ? await prisma.odkExamAttempt.findMany({
+        where: { id: { in: releasedAttemptIds }, score: { is: { publicationStatus: "PUBLISHED" } } },
+        select: { id: true, score: { select: { totalNet: true } } },
+      })
+    : [];
+  const netByAttempt = new Map(scores.map((row) => [row.id, row.score ? Number(row.score.totalNet) : null]));
+
+  const counts = {
+    tumu: rows.length,
+    yaklasan: rows.filter((row) => row.state.tab === "yaklasan").length,
+    acik: rows.filter((row) => row.state.tab === "acik").length,
+    tamamlanan: rows.filter((row) => row.state.tab === "tamamlanan").length,
+  };
+  // Tümü: önce açık, sonra yaklaşan (yakın tarih önce), sonra tamamlanan (yeni önce).
+  const order = { acik: 0, yaklasan: 1, tamamlanan: 2 } as const;
+  const visible = rows
+    .filter((row) => tab === "tumu" || row.state.tab === tab)
+    .sort((a, b) => {
+      if (order[a.state.tab] !== order[b.state.tab]) return order[a.state.tab] - order[b.state.tab];
+      const at = a.exam.startsAt?.getTime() ?? 0;
+      const bt = b.exam.startsAt?.getTime() ?? 0;
+      return a.state.tab === "tamamlanan" ? bt - at : at - bt;
+    });
 
   return (
-    <PanelShell
-      role={session.role}
-      fullName={session.fullName}
-      email={session.email}
-      product="ODK"
-    >
-      <header>
-        <p className="text-xs font-extrabold uppercase tracking-widest text-(--brand-olive)">
-          Deneme Ligi
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-[-.04em] text-(--site-ink)">
-          Denemeler
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-(--site-body)">
-          Devam eden denemeni, başlayabileceğin denemeleri, yaklaşan sınavlarını
-          ve açıklanan sonuçlarını buradan yönetebilirsin.
-        </p>
-      </header>
+    <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK" pageTitle="Denemeler">
+      <div className="max-w-[1100px]">
+        <PageHeader
+          title="Denemeler"
+          description="Devam eden denemen, başlayabileceğin ve yaklaşan denemeler, açıklanan sonuçların."
+        />
 
-      {exams.length === 0 ? (
-        <section className="mt-8 rounded-3xl border border-dashed border-(--site-line) bg-white p-8 text-center text-sm text-(--site-muted)">
-          Henüz yayınlanmış bir denemen yok.
-        </section>
-      ) : (
-        <>
-          <ExamSection title="Devam eden" exams={activeExams} />
-          <ExamSection
-            title="Başlayabileceğin denemeler"
-            exams={availableExams}
+        {active ? (
+          <div
+            role="region"
+            aria-label="Devam eden deneme"
+            className="mt-5 flex flex-col gap-3 rounded-md border border-(--pn-tone-warning)/40 bg-(--pn-tone-warning-soft) px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <p className="text-[14px] text-pn-text">
+              <span className="font-semibold">{active.exam.title}</span> devam ediyor
+              {active.exam.attempts[0]?.deadlineAt ? ` · bitiş ${DATE_TIME.format(active.exam.attempts[0].deadlineAt)}` : ""}
+            </p>
+            <Link href={active.state.href} className={buttonClass("primary", "sm", "shrink-0")}>
+              Denemeye dön
+            </Link>
+          </div>
+        ) : null}
+
+        <div className="mt-5">
+          <ViewTabs
+            label="Deneme görünümü"
+            activeId={tab}
+            tabs={TABS.map((item) => ({
+              id: item.id,
+              label: item.label,
+              href: item.id === "tumu" ? "/panel/odk/ogrenci/denemeler" : `/panel/odk/ogrenci/denemeler?gorunum=${item.id}`,
+              count: counts[item.id],
+            }))}
           />
-          <ExamSection title="Yaklaşan denemeler" exams={upcomingExams} />
-          <ExamSection title="Sonuçlar" exams={resultExams} />
-        </>
-      )}
+        </div>
+
+        <div className="mt-4">
+          {visible.length ? (
+            <PanelTable caption="Denemeler" columns={["Deneme", "Tür", "Tarih", "Durum", "Süre", "Sonuç"]}>
+              {visible.map(({ exam, state }) => {
+                const net = exam.attempts[0] ? netByAttempt.get(exam.attempts[0].id) : null;
+                return (
+                  <PanelTableRow key={exam.id}>
+                    <PanelTableCell>
+                      <Link href={state.href} className="font-medium text-pn-text underline-offset-2 hover:underline">
+                        {exam.title}
+                      </Link>
+                    </PanelTableCell>
+                    <PanelTableCell>{exam.family}</PanelTableCell>
+                    <PanelTableCell>{exam.startsAt ? DATE_TIME.format(exam.startsAt) : "—"}</PanelTableCell>
+                    <PanelTableCell>
+                      <StatusBadge label={state.label} tone={state.tone} live={state.key === "AVAILABLE"} />
+                    </PanelTableCell>
+                    <PanelTableCell>{exam.currentVersion?.durationMinutes ? `${exam.currentVersion.durationMinutes} dk` : "—"}</PanelTableCell>
+                    <PanelTableCell>
+                      {net != null ? <span className="font-mono tabular-nums">{NET.format(net)} net</span> : <span className="text-pn-text-muted">—</span>}
+                    </PanelTableCell>
+                  </PanelTableRow>
+                );
+              })}
+            </PanelTable>
+          ) : (
+            <EmptyState
+              title={rows.length ? "Bu görünümde deneme yok." : "Henüz yayınlanmış bir denemen yok."}
+              body={rows.length ? undefined : "Yeni deneme açıldığında burada görünecek."}
+            />
+          )}
+        </div>
+      </div>
     </PanelShell>
   );
 }

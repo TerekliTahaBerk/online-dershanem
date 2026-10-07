@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { TeacherMaterialManager } from "@/components/panel/teacher-material-manager";
+import { PAGE_EYEBROW_CLASS, PAGE_TITLE_CLASS } from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 export default async function TeacherMaterialsPage() {
@@ -27,10 +28,10 @@ export default async function TeacherMaterialsPage() {
       email={session.email}
     >
       <header className="mb-7">
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
+        <p className={PAGE_EYEBROW_CLASS}>
           <Library size={15} /> Kaynak kütüphanesi
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-(--site-ink)">
+        <h1 className={PAGE_TITLE_CLASS}>
           Doğru kaynak, doğru grubun önünde.
         </h1>
       </header>

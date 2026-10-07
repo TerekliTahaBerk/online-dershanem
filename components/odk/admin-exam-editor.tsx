@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { OdkStatusBadge } from "@/components/odk/odk-status-badge";
 import { examStatusPresentation } from "@/lib/odk/presentation";
+import { questionMatchesFilter, type QuestionFilter } from "@/lib/odk/staff-workspace";
 
 type Outcome = { id: string; label: string };
 type Question = {
@@ -73,7 +74,16 @@ type Props = {
    * cevap anahtarı verisini hiç göndermez.
    */
   capabilities?: { edit: boolean; schedule: boolean; score: boolean; rescore: boolean };
+  /**
+   * Çalışma alanı sekmesinde yalnız bu bölümler çizilir (§15.2); verilmezse
+   * eski tek sayfa düzeni (adım gezinmesiyle) korunur.
+   */
+  sections?: ReadonlyArray<EditorSection>;
+  /** Sorular sekmesi süzgeci: kazanımsız / anahtarsız. */
+  questionFilter?: QuestionFilter;
 };
+
+export type EditorSection = "plan" | "security" | "files" | "questions" | "publish" | "scoring";
 
 const ALL_CAPABILITIES = { edit: true, schedule: true, score: true, rescore: true };
 
@@ -83,7 +93,10 @@ export function AdminExamEditor({
   issues,
   resultStats,
   capabilities = ALL_CAPABILITIES,
+  sections,
+  questionFilter = "tumu",
 }: Props) {
+  const show = (section: EditorSection) => !sections || sections.includes(section);
   const router = useRouter();
   const editable = exam.status === "DRAFT" && exam.versionStatus === "DRAFT";
   const [questions, setQuestions] = useState(exam.questions);
@@ -317,6 +330,7 @@ export function AdminExamEditor({
 
   return (
     <div className="space-y-6">
+      {!sections ? (
       <section className="sticky top-[76px] z-20 rounded-2xl border border-(--site-line) bg-white/95 p-3 shadow-xs backdrop-blur-sm lg:top-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <nav
@@ -361,6 +375,7 @@ export function AdminExamEditor({
           </div>
         </div>
       </section>
+      ) : null}
 
       {message ? (
         <p
@@ -373,6 +388,7 @@ export function AdminExamEditor({
 
       {capabilities.edit ? (
         <>
+      {show("plan") ? (
       <section id="adim-1" className="panel-surface scroll-mt-36 p-5 sm:p-6">
         <div>
           <h2 className="text-sm font-extrabold">1. Planlama bilgileri</h2>
@@ -475,7 +491,9 @@ export function AdminExamEditor({
           )}
         </form>
       </section>
+      ) : null}
 
+      {show("security") ? (
       <section id="adim-8" className="panel-surface scroll-mt-36 p-5 sm:p-6">
         <h2 className="text-sm font-extrabold">8. Güvenlik politikası</h2>
         <p className="mt-1 text-xs leading-5 text-(--site-muted)">
@@ -592,7 +610,9 @@ export function AdminExamEditor({
           ) : null}
         </form>
       </section>
+      ) : null}
 
+      {show("files") ? (
       <section id="adim-2" className="panel-surface scroll-mt-36 p-5 sm:p-6">
         <h2 className="text-sm font-extrabold">2. Özel PDF dosyaları</h2>
         <p className="mt-1 text-xs leading-5 text-(--site-muted)">
@@ -649,7 +669,9 @@ export function AdminExamEditor({
           </form>
         ) : null}
       </section>
+      ) : null}
 
+      {show("questions") ? (
       <section id="adim-3" className="panel-surface scroll-mt-36 p-5 sm:p-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -672,7 +694,7 @@ export function AdminExamEditor({
           ) : null}
         </div>
         <div className="mt-4 space-y-3 md:hidden">
-          {questions.map((question, index) => (
+          {questions.map((question, index) => !questionMatchesFilter(question, questionFilter) ? null : (
             <article
               key={question.id}
               className="rounded-2xl border border-(--site-line) bg-white p-4"
@@ -705,7 +727,7 @@ export function AdminExamEditor({
               </tr>
             </thead>
             <tbody>
-              {questions.map((question, index) => (
+              {questions.map((question, index) => !questionMatchesFilter(question, questionFilter) ? null : (
                 <tr
                   key={question.id}
                   className="border-t border-(--site-line)"
@@ -824,10 +846,11 @@ export function AdminExamEditor({
           </p>
         ) : null}
       </section>
+      ) : null}
         </>
       ) : null}
 
-      {capabilities.edit || capabilities.schedule ? (
+      {show("publish") && (capabilities.edit || capabilities.schedule) ? (
       <section id="adim-4" className="panel-surface scroll-mt-36 p-5 sm:p-6">
         <h2 className="text-sm font-extrabold">4. Yayın kontrolleri</h2>
         <div className="mt-3 space-y-2">
@@ -896,6 +919,7 @@ export function AdminExamEditor({
       </section>
       ) : null}
 
+      {show("scoring") ? (
       <section id="adim-5" className="panel-surface scroll-mt-36 p-5 sm:p-6">
         <h2 className="text-sm font-extrabold">Puanlama kısayolu</h2>
         <p className="mt-1 text-xs leading-5 text-(--site-muted)">
@@ -978,6 +1002,7 @@ export function AdminExamEditor({
           </p>
         ) : null}
       </section>
+      ) : null}
     </div>
   );
 }

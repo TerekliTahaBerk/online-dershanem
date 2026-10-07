@@ -105,3 +105,39 @@ export function buildTodayFocus(todayPending: StudentPlanTask[]) {
 }
 
 export { formatMinutesAsHours };
+
+export type PlanDayGroup<T> = {
+  key: string;
+  tasks: T[];
+  done: number;
+  total: number;
+  isToday: boolean;
+  isPast: boolean;
+};
+
+/**
+ * Planım "Liste" görünümü: SKIPPED dışı görevler İstanbul gününe göre
+ * gruplanır, günler kronolojik sıralanır. Her görev tam olarak bir grupta
+ * yer alır (docs/panel-design-roadmap.md §10.2).
+ */
+export function groupPlanTasksByDay<T extends StudentPlanTask>(tasks: T[], today: string): PlanDayGroup<T>[] {
+  const groups = new Map<string, T[]>();
+  for (const task of tasks) {
+    if (task.status === "SKIPPED") continue;
+    const key = taskDateKey(task.scheduledFor);
+    const list = groups.get(key) ?? [];
+    list.push(task);
+    groups.set(key, list);
+  }
+  return [...groups.keys()].sort().map((key) => {
+    const dayTasks = groups.get(key)!;
+    return {
+      key,
+      tasks: dayTasks,
+      done: dayTasks.filter((task) => isCompletedTaskStatus(task.status)).length,
+      total: dayTasks.length,
+      isToday: key === today,
+      isPast: key < today,
+    };
+  });
+}

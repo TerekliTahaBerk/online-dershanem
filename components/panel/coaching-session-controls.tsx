@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { COACHING_RESCHEDULE_REASONS } from "@/lib/coaching-experience";
+import { buttonClass } from "@/components/panel/primitives";
 type Session = { id: string; version: number; scheduledAt: string; meetingUrl: string | null; rescheduleRequestedAt: string | null; rescheduleReason: keyof typeof COACHING_RESCHEDULE_REASONS | null; proposedAt: string | null };
 const DATE = new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Istanbul" });
 export function CoachingSessionControls({ session, role }: { session: Session; role: "STUDENT" | "PARENT" | "TEACHER" }) {
@@ -23,21 +24,21 @@ export function CoachingSessionControls({ session, role }: { session: Session; r
     } catch { setMessage("Bağlantı kurulamadı. Tekrar deneyebilirsiniz."); }
     finally { setBusy(false); }
   }
-  return <section aria-label="Görüşme saati" className="mt-4 space-y-3 rounded-xl border border-dc-line p-4">
+  return <section aria-label="Görüşme saati" className="space-y-3 border-b border-pn-border py-4 first:pt-0">
     <p className="font-semibold">{new Date(session.scheduledAt) < new Date() ? "Yeni saat bekleniyor" : DATE.format(new Date(session.scheduledAt))}</p>
-    {session.meetingUrl && !session.proposedAt && new Date(session.scheduledAt) >= new Date() && <a className="site-btn site-btn-primary" href={session.meetingUrl} target="_blank" rel="noreferrer">Görüşmeye katıl</a>}
+    {session.meetingUrl && !session.proposedAt && new Date(session.scheduledAt) >= new Date() && <a className={buttonClass("primary", "md")} href={session.meetingUrl} target="_blank" rel="noreferrer">Görüşmeye katıl</a>}
     {session.rescheduleRequestedAt && <p className="text-sm">Saat değişikliği talebiniz alındı. {session.rescheduleReason ? COACHING_RESCHEDULE_REASONS[session.rescheduleReason] : ""}</p>}
     {session.proposedAt && <p className="text-sm">Önerilen saat: {DATE.format(new Date(session.proposedAt))}</p>}
-    {role === "STUDENT" && session.proposedAt && <button disabled={busy} className="site-btn site-btn-primary" onClick={() => submit({ action: "ACCEPT" })}>Yeni saati onayla</button>}
+    {role === "STUDENT" && session.proposedAt && <button disabled={busy} className={buttonClass("primary", "md")} onClick={() => submit({ action: "ACCEPT" })}>Yeni saati onayla</button>}
     {role !== "TEACHER" && !session.rescheduleRequestedAt && <form className="flex flex-wrap items-end gap-3" onSubmit={(event) => { event.preventDefault(); const data = new FormData(event.currentTarget); void submit({ action: "REQUEST", reason: data.get("reason") }); }}>
       <label className="text-sm">Saat değişikliği nedeni<select name="reason" className="panel-input mt-1">{Object.entries(COACHING_RESCHEDULE_REASONS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-      <button disabled={busy} className="site-btn site-btn-secondary">Saat değiştir</button>
+      <button disabled={busy} className={buttonClass("secondary", "md")}>Saat değiştir</button>
     </form>}
     {role === "TEACHER" && <>
       <form className="space-y-3" onSubmit={(event) => { event.preventDefault(); const data = new FormData(event.currentTarget); void submit({ action: "SAVE", scheduledAt: `${data.get("date")}:00+03:00`, meetingUrl: data.get("meetingUrl") || null }); }}>
         <label className="block text-sm">{session.rescheduleRequestedAt ? "Yeni saat önerisi" : "Görüşme saati"}<input required name="date" type="datetime-local" className="panel-input" defaultValue={new Date(new Date(session.scheduledAt).getTime() + 3 * 3_600_000).toISOString().slice(0, 16)} /></label>
         <label className="block text-sm">Katılım bağlantısı<input name="meetingUrl" type="url" className="panel-input" defaultValue={session.meetingUrl ?? ""} placeholder="https://" /></label>
-        <button disabled={busy} className="site-btn site-btn-secondary">{session.rescheduleRequestedAt ? "Yeni saati öner" : "Görüşmeyi güncelle"}</button>
+        <button disabled={busy} className={buttonClass("secondary", "md")}>{session.rescheduleRequestedAt ? "Yeni saati öner" : "Görüşmeyi güncelle"}</button>
       </form>
       <form className="space-y-3" onSubmit={(event) => { event.preventDefault(); const data = new FormData(event.currentTarget); const decisions = [1, 2, 3].filter((index) => data.get(`decision${index}`)).map((index) => ({ title: data.get(`decision${index}`), scheduledFor: `${data.get(`day${index}`)}T12:00:00+03:00`, durationMinutes: Number(data.get(`minutes${index}`)) })); void submit({ action: "COMPLETE", focus: data.get("focus") || "", sharedNote: data.get("sharedNote") || "", privateNote: data.get("privateNote") || "", decisions }); }}>
         <label className="block text-sm">Haftanın odağı<input name="focus" maxLength={300} className="panel-input" /></label>
@@ -45,7 +46,7 @@ export function CoachingSessionControls({ session, role }: { session: Session; r
         <label className="block text-sm">Özel koç notu<textarea name="privateNote" maxLength={4000} className="panel-input" /></label>
         <p className="text-sm">Bu haftanın en fazla üç kararı. Eklenen çalışmalar koç onayından sonra öğrenciye görünür.</p>
         {[1, 2, 3].map((index) => <fieldset key={index} className="grid gap-2 sm:grid-cols-3"><legend className="text-sm">Karar {index}</legend><label className="text-sm">Çalışma<input name={`decision${index}`} maxLength={160} className="panel-input" /></label><label className="text-sm">Gün<input name={`day${index}`} type="date" className="panel-input" /></label><label className="text-sm">Süre (dakika)<input name={`minutes${index}`} type="number" min={5} max={480} className="panel-input" /></label></fieldset>)}
-        <button disabled={busy} className="site-btn site-btn-primary">Görüşmeyi tamamla</button>
+        <button disabled={busy} className={buttonClass("primary", "md")}>Görüşmeyi tamamla</button>
       </form>
     </>}
     <p role="status" className="text-sm">{message}</p>
@@ -60,6 +61,6 @@ export function CoachingSessionCreate({ studentId }: { studentId: string }) {
   } catch { setMessage("Bağlantı kurulamadı. Tekrar deneyebilirsiniz."); } finally { setBusy(false); } }}>
     <label className="block text-sm">Görüşme saati<input required name="date" type="datetime-local" className="panel-input" /></label>
     <label className="block text-sm">Katılım bağlantısı<input name="meetingUrl" type="url" className="panel-input" placeholder="https://" /></label>
-    <button disabled={busy} className="site-btn site-btn-primary">Görüşme planla</button><p role="status" className="text-sm">{message}</p>
+    <button disabled={busy} className={buttonClass("primary", "md")}>Görüşme planla</button><p role="status" className="text-sm">{message}</p>
   </form>;
 }

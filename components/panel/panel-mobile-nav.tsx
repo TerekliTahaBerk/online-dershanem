@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { ProductCode, UserRole } from "@prisma/client";
-import { ArrowLeftRight, Bell, Menu, ShieldCheck, X } from "lucide-react";
+import { ArrowLeftRight, Bell, Menu, Settings, ShieldCheck, X } from "lucide-react";
 import { rolePath } from "@/lib/auth/roles";
 import { withParentStudentContext } from "@/lib/parent-home-summary";
 import { usePanelFeatureFlags } from "@/components/panel/panel-feature-provider";
@@ -64,7 +64,8 @@ export function PanelMobileNav({
   const quickItems =
     mobileQuickItems ??
     (nav ? [] : mobilePrimaryNav(role, products, flags, root, scope, staffOdkPermissions));
-  const bottomNavColumns = Math.min(4, Math.max(2, quickItems.length + 1));
+  // Kısayollar (en fazla 4) + Menü düğmesi tek satıra sığmalı.
+  const bottomNavColumns = Math.min(5, Math.max(2, quickItems.length + 1));
 
   useEffect(() => setOpen(false), [pathname]);
 
@@ -244,6 +245,16 @@ export function PanelMobileNav({
                     </Link>
                   ) : null}
                 </div>
+
+                {drawerAccount.showSessionsLink ? (
+                  <Link
+                    href="/panel/ayarlar"
+                    onClick={() => setOpen(false)}
+                    className="mt-2 flex min-h-11 items-center justify-center gap-1.5 rounded-od border border-dc-line bg-white px-3 text-[12px] font-semibold text-dc-ink"
+                  >
+                    <Settings size={14} aria-hidden="true" /> Ayarlar
+                  </Link>
+                ) : null}
 
                 {drawerAccount.productSwitch ? (
                   <Link

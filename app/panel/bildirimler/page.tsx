@@ -7,6 +7,7 @@ import { requireActiveUser } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { NotificationInbox } from "@/components/panel/notification-inbox";
 import { NotificationPreferences } from "@/components/panel/notification-preferences";
+import { PAGE_DESCRIPTION_CLASS, PAGE_EYEBROW_CLASS, PAGE_TITLE_CLASS } from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -92,13 +93,13 @@ export default async function NotificationsPage({
       email={session.email}
     >
       <header>
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.08em] text-(--brand-olive)">
+        <p className={PAGE_EYEBROW_CLASS}>
           <Bell size={15} /> Bildirim merkezi
         </p>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-[-0.02em] text-(--site-ink)">
+        <h1 className={PAGE_TITLE_CLASS}>
           Önemli gelişmeler tek yerde.
         </h1>
-        <p className="mt-2 text-sm text-(--site-body)">
+        <p className={PAGE_DESCRIPTION_CLASS}>
           Ders, çalışma ve operasyon hareketlerini kaçırmadan takip edin.
         </p>
       </header>

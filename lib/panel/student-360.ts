@@ -189,12 +189,12 @@ export function visibleStudent360Actions(input: {
     actions.push({
       id: "SCHEDULE_LESSON",
       label: "Ders tanımla",
-      href: `${adminBase}/egitim#ders-planla`,
+      href: `${adminBase}/egitim?sekme=planlama#ders-planla`,
     });
     actions.push({
       id: "CREATE_ASSIGNMENT",
       label: "Ödev tanımla",
-      href: `${adminBase}/egitim#odev-merkezi`,
+      href: `${adminBase}/egitim?sekme=odevler#odev-merkezi`,
     });
     actions.push({
       id: "LINK_TEACHER",

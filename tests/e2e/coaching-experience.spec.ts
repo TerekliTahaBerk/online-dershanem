@@ -38,7 +38,7 @@ test.describe.serial("Koçum görüşme ve yardım deneyimi", () => {
     const requestResponse = page.waitForResponse((response) => response.url().endsWith(`/coaching-sessions/${sessionId}`) && response.request().method() === "POST");
     await page.getByRole("button", { name: "Saat değiştir", exact: true }).click(); expect((await requestResponse).status()).toBe(200);
     await expect(page.getByText(/Saat değişikliği talebiniz alındı/)).toBeVisible();
-    await loginAs(page, teacher); await page.goto(`/panel/ogretmen/hazirlik/${studentId}`);
+    await loginAs(page, teacher); await page.goto(`/panel/ogretmen/hazirlik/${studentId}?sekme=gorusmeler`);
     const region = page.getByRole("region", { name: "Görüşme saati" });
     const proposed = new Date(Date.now() + 2 * 86_400_000);
     await region.getByLabel("Yeni saat önerisi").fill(new Date(proposed.getTime() + 3 * 3_600_000).toISOString().slice(0, 16));
@@ -63,8 +63,11 @@ test.describe.serial("Koçum görüşme ve yardım deneyimi", () => {
     const plan = await db.weeklyPlan.findFirstOrThrow({ where: { studentId }, include: { tasks: true } }); expect(plan.tasks).toHaveLength(1); expect(plan.status).toBe("DRAFT");
     await loginAs(page, student); await page.goto("/panel/ogrenci"); await expect(page.getByText(`Görüşme kararı ${run}`, { exact: false })).toHaveCount(0);
     await page.goto("/panel/ogrenci/kocluk"); await expect(page.getByText(`Görüşme kararı ${run}`, { exact: false })).toHaveCount(0); await expect(page.getByText("PRIVATE_ONLY_COACH", { exact: false })).toHaveCount(0);
+    await page.goto("/panel/ogrenci/yon"); await expect(page.getByText(`Görüşme kararı ${run}`, { exact: false })).toHaveCount(0); await expect(page.getByText("PRIVATE_ONLY_COACH", { exact: false })).toHaveCount(0); await expect(page.getByText("Ortak görüşme notu").first()).toBeVisible();
     await loginAs(page, teacher); const approve = await page.request.post(`/api/panel/adaptive-plan/${plan.id}/approve`, { data: { expectedVersion: plan.version }, headers: origin }); expect(approve.status(), await approve.text()).toBe(200);
     await loginAs(page, student); await page.goto("/panel/ogrenci/plan"); await expect(page.getByText(`Görüşme kararı ${run}`).first()).toBeVisible();
+    // Pazar günü planlama haftası bir sonraki haftadır; Yön Bugün yalnız içinde bulunulan haftayı gösterir.
+    await page.goto("/panel/ogrenci/yon"); if (new Date().getDay() !== 0) await expect(page.getByText(`Görüşme kararı ${run}`).first()).toBeVisible(); await expect(page.getByText("PRIVATE_ONLY_COACH", { exact: false })).toHaveCount(0);
     await loginAs(page, parent); await page.goto(`/panel/veli/kocluk?studentId=${studentId}`); await expect(page.getByText("PRIVATE_ONLY_COACH", { exact: false })).toHaveCount(0); await expect(page.getByText(`Görüşme kararı ${run}`, { exact: false })).toHaveCount(0);
   });
   test("yalnız OK öğrencisinin özel check-in'i görünmez, yardımı atanmış koça gider", async ({ page }) => {

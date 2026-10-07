@@ -4,10 +4,17 @@ import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
+  List,
+  ListRow,
   PanelEmpty,
-  PanelStatCard,
-  PanelCard,
-  PanelCardTitle,
+  PanelTable,
+  PanelTableCell,
+  PanelTableRow,
+  PropertyList,
+  PropertyRow,
+  Section,
+  StatusBadge,
+  buttonClass,
 } from "@/components/panel/ui";
 import { GidisatHero } from "@/components/panel/analiz";
 import {
@@ -59,148 +66,85 @@ export default async function TeacherAnalizPage() {
           />
         ) : (
           <>
-            <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <PanelStatCard
-                title="Ortalama katılım"
-                value={fmtPct(overview.averages.attendancePercent)}
-                note={`${overview.studentCount} öğrenci`}
-              />
-              <PanelStatCard
-                title="Ortalama çalışma"
-                value={fmtPct(overview.averages.assignmentPercent)}
-                note="Aktif ödevler"
-              />
-              <PanelStatCard
-                title="Ortalama plan"
-                value={fmtPct(overview.averages.planPercent)}
-                note="Son haftalık plan"
-              />
-              <PanelStatCard
-                title="Medyan net değişim"
-                value={fmtDelta(overview.averages.medianNetDelta)}
-                note="Son deneme penceresi"
-              />
-            </section>
+            {/* Sayı kutuları yerine özellik satırları (roadmap §5.4). */}
+            <Section id="ortalamalar" title="Grup ortalamaları" description={`${overview.studentCount} öğrenci`}>
+              <PropertyList>
+                <PropertyRow label="Ortalama katılım">{fmtPct(overview.averages.attendancePercent)}</PropertyRow>
+                <PropertyRow label="Ortalama çalışma">
+                  {fmtPct(overview.averages.assignmentPercent)}
+                  <span className="text-pn-text-muted"> · Aktif ödevler</span>
+                </PropertyRow>
+                <PropertyRow label="Ortalama plan">
+                  {fmtPct(overview.averages.planPercent)}
+                  <span className="text-pn-text-muted"> · Son haftalık plan</span>
+                </PropertyRow>
+                <PropertyRow label="Medyan net değişim">
+                  {fmtDelta(overview.averages.medianNetDelta)}
+                  <span className="text-pn-text-muted"> · Son deneme penceresi</span>
+                </PropertyRow>
+              </PropertyList>
+            </Section>
 
-            <section className="mt-8" aria-labelledby="dusen-gidisat">
-              <h2
-                id="dusen-gidisat"
-                className="text-[15px] font-extrabold text-dc-ink"
-              >
-                Düşen gidişat
-              </h2>
-              <p className="mt-1 text-[13px] text-dc-ink-muted">
-                Net gerileme veya düşük katılım / çalışma / plan sinyali olan
-                öğrenciler.
-              </p>
-
+            <Section
+              id="dusen-gidisat"
+              title="Düşen gidişat"
+              description="Net gerileme veya düşük katılım / çalışma / plan sinyali olan öğrenciler."
+            >
               {overview.declining.length === 0 ? (
-                <p className="mt-4 text-[14px] text-dc-ink-muted">
+                <p className="text-[14px] text-pn-text-muted">
                   Şu an düşen gidişat listesinde öğrenci yok.
                 </p>
               ) : (
-                <ul className="mt-4 space-y-3">
+                <List label="Düşen gidişat">
                   {overview.declining.map((row) => (
-                    <li key={row.studentId}>
-                      <PanelCard>
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <div>
-                            <PanelCardTitle>{row.studentName}</PanelCardTitle>
-                            <p className="mt-1 text-[13px] text-dc-ink-muted">
-                              {[
-                                row.classLevel,
-                                row.attendancePercent !== null
-                                  ? `katılım %${row.attendancePercent}`
-                                  : null,
-                                row.assignmentPercent !== null
-                                  ? `çalışma %${row.assignmentPercent}`
-                                  : null,
-                                row.netDelta !== null
-                                  ? `net ${fmtDelta(row.netDelta)}`
-                                  : null,
-                              ]
-                                .filter(Boolean)
-                                .join(" · ")}
-                            </p>
-                            {row.riskHint ? (
-                              <p className="mt-1 text-[12px] text-amber-800">
-                                {row.riskHint}
-                              </p>
-                            ) : null}
-                          </div>
-                          <Link
-                            href={row.href}
-                            className="text-[13px] font-bold text-dc-brand-strong hover:text-dc-brand-hover"
-                          >
-                            Öğrenci profili →
-                          </Link>
-                        </div>
-                      </PanelCard>
-                    </li>
+                    <ListRow
+                      key={row.studentId}
+                      title={row.studentName}
+                      description={[
+                        row.classLevel,
+                        row.attendancePercent !== null ? `katılım %${row.attendancePercent}` : null,
+                        row.assignmentPercent !== null ? `çalışma %${row.assignmentPercent}` : null,
+                        row.netDelta !== null ? `net ${fmtDelta(row.netDelta)}` : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                      status={row.riskHint ? <StatusBadge label={row.riskHint} tone="warning" /> : undefined}
+                      action={
+                        <Link href={row.href} className={buttonClass("secondary", "sm")}>
+                          Öğrenci profili
+                        </Link>
+                      }
+                    />
                   ))}
-                </ul>
+                </List>
               )}
-            </section>
+            </Section>
 
-            <section className="mt-8" aria-labelledby="tum-ogrenciler">
-              <h2
-                id="tum-ogrenciler"
-                className="text-[15px] font-extrabold text-dc-ink"
-              >
-                Tüm öğrenciler
-              </h2>
-              <div className="mt-4 overflow-x-auto rounded-[14px] border border-dc-line-soft bg-white">
-                <table className="min-w-full text-left text-[13px]">
-                  <thead className="border-b border-dc-line-soft text-[11px] font-bold uppercase tracking-[0.06em] text-dc-ink-faint">
-                    <tr>
-                      <th className="px-4 py-3">Öğrenci</th>
-                      <th className="px-4 py-3">Katılım</th>
-                      <th className="px-4 py-3">Çalışma</th>
-                      <th className="px-4 py-3">Plan</th>
-                      <th className="px-4 py-3">Net Δ</th>
-                      <th className="px-4 py-3" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {overview.rows.map((row) => (
-                      <tr
-                        key={row.studentId}
-                        className="border-b border-dc-line-soft last:border-0"
-                      >
-                        <td className="px-4 py-3 font-medium text-dc-ink">
-                          {row.studentName}
-                          {row.declining ? (
-                            <span className="ml-2 text-[11px] font-bold text-amber-700">
-                              düşüş
-                            </span>
-                          ) : null}
-                        </td>
-                        <td className="px-4 py-3 text-dc-ink-body">
-                          {fmtPct(row.attendancePercent)}
-                        </td>
-                        <td className="px-4 py-3 text-dc-ink-body">
-                          {fmtPct(row.assignmentPercent)}
-                        </td>
-                        <td className="px-4 py-3 text-dc-ink-body">
-                          {fmtPct(row.planPercent)}
-                        </td>
-                        <td className="px-4 py-3 text-dc-ink-body">
-                          {fmtDelta(row.netDelta)}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <Link
-                            href={row.href}
-                            className="font-bold text-dc-brand-strong hover:text-dc-brand-hover"
-                          >
-                            Aç
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
+            <Section id="tum-ogrenciler" title="Tüm öğrenciler">
+              <PanelTable caption="Tüm öğrenciler" columns={["Öğrenci", "Katılım", "Çalışma", "Plan", "Net Δ", ""]}>
+                {overview.rows.map((row) => (
+                  <PanelTableRow key={row.studentId}>
+                    <PanelTableCell>
+                      <span className="font-medium text-pn-text">{row.studentName}</span>
+                      {row.declining ? (
+                        <span className="ml-2 inline-block align-middle">
+                          <StatusBadge label="düşüş" tone="warning" />
+                        </span>
+                      ) : null}
+                    </PanelTableCell>
+                    <PanelTableCell>{fmtPct(row.attendancePercent)}</PanelTableCell>
+                    <PanelTableCell>{fmtPct(row.assignmentPercent)}</PanelTableCell>
+                    <PanelTableCell>{fmtPct(row.planPercent)}</PanelTableCell>
+                    <PanelTableCell>{fmtDelta(row.netDelta)}</PanelTableCell>
+                    <PanelTableCell>
+                      <Link href={row.href} className={buttonClass("ghost", "sm")}>
+                        Aç<span className="sr-only"> · {row.studentName}</span>
+                      </Link>
+                    </PanelTableCell>
+                  </PanelTableRow>
+                ))}
+              </PanelTable>
+            </Section>
           </>
         )}
       </div>

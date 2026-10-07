@@ -84,7 +84,8 @@ export async function POST(request: Request) {
         durationMinutes,
         scoringPolicyId: policy.id,
         createdById: auth.session.userId,
-        settings: DEFAULT_EXAM_SETTINGS,
+        // Oturumlu şablon (LGS tam deneme) sürüm ayarlarına oturum planını taşır.
+        settings: template?.sessions ? { ...DEFAULT_EXAM_SETTINGS, sessions: template.sessions } : DEFAULT_EXAM_SETTINGS,
         autoSubmit: true,
       },
     });

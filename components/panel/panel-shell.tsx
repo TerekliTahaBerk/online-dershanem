@@ -1,9 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { unstable_noStore as noStore } from "next/cache";
+import { cookies } from "next/headers";
 import type { ProductCode, UserRole } from "@prisma/client";
-import { ArrowLeftRight, Bell, ShieldCheck } from "lucide-react";
-import { ACCOUNT_SETTINGS_PATH, PRODUCT_SELECTOR_PATH, productLabel, productRolePath, roleLabel } from "@/lib/auth/roles";
+import { ArrowLeftRight, Bell, Settings, ShieldCheck } from "lucide-react";
+import { ACCOUNT_SETTINGS_PATH, PRODUCT_SELECTOR_PATH, productLabel, productRolePath, roleLabel, rolePath } from "@/lib/auth/roles";
 import { getAccessibleProducts } from "@/lib/auth/products";
 import { getSession } from "@/lib/auth/session";
 import { getResolvedAdminPreview } from "@/lib/auth/admin-preview";
@@ -19,6 +20,10 @@ import {
 } from "@/components/panel/admin-teacher-mode-controls";
 import { LogoutButton } from "@/components/panel/logout-button";
 import { PanelNav } from "@/components/panel/panel-nav";
+import { ContextBreadcrumb } from "@/components/panel/context-breadcrumb";
+import { WorkspaceSwitcher, type WorkspaceOption } from "@/components/panel/workspace-switcher";
+import { SidebarToggle } from "@/components/panel/sidebar-toggle";
+import { SIDEBAR_COOKIE, parseSidebarState } from "@/lib/panel/sidebar-preference";
 import { PanelMobileNav } from "@/components/panel/panel-mobile-nav";
 import { AccessibilityPreferenceApplier } from "@/components/panel/accessibility-preference-applier";
 import { defaultAccessibilityViewPreference } from "@/lib/accessibility-preferences";
@@ -27,10 +32,12 @@ import { OfflineSyncProvider } from "@/components/panel/offline-sync-provider";
 import { offlineSessionScope } from "@/lib/offline-scope";
 import { PanelFeatureProvider } from "@/components/panel/panel-feature-provider";
 import { visibleGlobalSearchCommands } from "@/lib/panel/global-search";
-import { resolveNavScope, staffOdkNavItems, type PanelNavItem } from "@/lib/panel/navigation";
+import { panelNavSections, resolveNavScope, staffOdkNavItems, type PanelNavItem } from "@/lib/panel/navigation";
 import { effectiveStaffPermissions } from "@/lib/products/staff-permissions";
 import { staffAssignmentMode } from "@/lib/products/staff-mode";
 import { AccountCompletionBanner } from "@/components/account/account-completion-banner";
+import { yonBrand } from "@/lib/yon-brand";
+import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 
 /**
  * PANEL KABUĞU — onaylı tasarım (Panel.dc.html).
@@ -87,6 +94,7 @@ export async function PanelShell({
   if (preview || teacherMode.enabled) noStore();
 
   const flags = getPanelFeatureFlags();
+  const sidebarState = parseSidebarState((await cookies()).get(SIDEBAR_COOKIE)?.value);
   const accessibilityEnabled = flags.accessibilityProfile;
   const effectiveRole: UserRole = preview ? preview.subject.role : role;
   const effectiveUserId = preview ? preview.subject.userId : session?.userId;
@@ -148,22 +156,6 @@ export async function PanelShell({
       ])
     : [0, null, null, [], [], []];
 
-  const searchCommands =
-    session &&
-    !preview &&
-    (effectiveRole === "ADMIN" || effectiveRole === "TEACHER") &&
-    !isBusinessWorkspace
-      ? visibleGlobalSearchCommands({
-          role: effectiveRole,
-          flags,
-          businessPermissions: leadUnits.length ? (["lead:read"] as const) : [],
-        }).map((command) => ({
-          id: command.id,
-          label: command.label,
-          detail: command.detail,
-          href: command.href,
-        }))
-      : [];
   const accessibilityPreference =
     storedPreference || defaultAccessibilityViewPreference;
   const offlineScope = session ? offlineSessionScope(session.sessionId) : "";
@@ -195,6 +187,51 @@ export async function PanelShell({
     const access = await effectiveStaffPermissions(effectiveUserId);
     return access.isAdmin ? null : [...access.permissions];
   })();
+  /*
+   * KOMUT MENÜSÜ (⌘K). Rol komutları sunucuda süzülür: rol, bayrak, işletme
+   * izni ve personel izinleri (`effectiveStaffPermissions`, guard'larla aynı
+   * mod kuralı). Sayfa komutları kullanıcının KENDİ menüsünden türetilir, bu
+   * yüzden açılamayacak bir sayfaya giden komut üretilmez.
+   */
+  const commandStaffPermissions =
+    session && !preview && effectiveRole === "TEACHER" && effectiveUserId
+      ? (await effectiveStaffPermissions(effectiveUserId)).permissions
+      : undefined;
+  const roleCommands =
+    session && !preview && !isBusinessWorkspace
+      ? visibleGlobalSearchCommands({
+          role: effectiveRole,
+          flags,
+          businessPermissions: leadUnits.length ? (["lead:read"] as const) : [],
+          staffPermissions: commandStaffPermissions,
+        }).map((command) => ({
+          id: command.id,
+          label: command.label,
+          detail: command.detail,
+          href: command.href,
+        }))
+      : [];
+  const navCommands =
+    session && !preview && !isBusinessWorkspace && !nav
+      ? [
+          ...panelNavSections(effectiveRole, products, flags, rolePath(effectiveRole), navScope, staffOdkPermissions).flatMap(
+            (navSection) =>
+              navSection.items.map((item) => ({
+                id: `nav:${item.id}`,
+                label: item.label,
+                detail: `Sayfa · ${navSection.title.toLocaleLowerCase("tr-TR").replace(/^./, (c) => c.toLocaleUpperCase("tr-TR"))}`,
+                href: item.href,
+              })),
+          ),
+          { id: "nav:notifications", label: "Bildirimler", detail: "Sayfa · Genel", href: "/panel/bildirimler" },
+          { id: "nav:settings", label: "Ayarlar", detail: "Hesap ve panel tercihleri", href: ACCOUNT_SETTINGS_PATH },
+        ]
+      : [];
+  const searchCommands = [...roleCommands, ...navCommands].filter(
+    (command, index, all) => all.findIndex((other) => other.href === command.href) === index,
+  );
+  const entitySearch = effectiveRole === "ADMIN" || effectiveRole === "TEACHER";
+
   // Ürün vurgusu (`.pn-scope[data-product]`) — yalnız sunum; yetki değildir.
   const accentProduct =
     navScope === "OK" ? "yon" : navScope === "ODK" || product === "ODK" ? "dl" : "od";
@@ -248,6 +285,51 @@ export async function PanelShell({
         ? ACCOUNT_SETTINGS_PATH
         : "/panel/guvenlik";
 
+  /*
+   * ÇALIŞMA ALANI DEĞİŞTİRİCİ verisi. Seçenekler kullanıcının ERİŞEBİLDİĞİ
+   * ürünlerdir (getAccessibleProducts); pilot kapısı ve son karar
+   * `/api/panel/active-product` ucundadır. İşletme alanı gerçek işletme
+   * atamasından türetilir.
+   */
+  const WORKSPACE_LOGO: Record<"OD" | "OK" | "ODK" | "BUSINESS", string> = {
+    OD: "/design/od-logo.png",
+    OK: yonBrand.logo,
+    ODK: denemeLigiBrand.logo,
+    BUSINESS: "/design/od-logo.png",
+  };
+  const workspaceOptions: WorkspaceOption[] = [
+    ...(["OD", "OK", "ODK"] as const)
+      .filter((code) => products.includes(code))
+      .map((code) => ({
+        key: code,
+        label: productLabel(code),
+        logo: WORKSPACE_LOGO[code],
+        href: productRolePath(code, effectiveRole),
+      })),
+    ...(businessUnits.length > 0 || isBusinessWorkspace
+      ? [{ key: "BUSINESS" as const, label: "İşletme", logo: WORKSPACE_LOGO.BUSINESS, href: "/panel/yonetim/isletme/genel-bakis" }]
+      : []),
+  ];
+  const currentWorkspaceKey: WorkspaceOption["key"] | null = isBusinessWorkspace
+    ? "BUSINESS"
+    : navScope === "OD" || navScope === "OK" || navScope === "ODK"
+      ? navScope
+      : product === "ODK"
+        ? "ODK"
+        : null;
+  const currentWorkspace: WorkspaceOption | null = currentWorkspaceKey
+    ? (workspaceOptions.find((option) => option.key === currentWorkspaceKey) ?? {
+        key: currentWorkspaceKey,
+        label: currentWorkspaceKey === "BUSINESS" ? "İşletme" : productLabel(currentWorkspaceKey),
+        logo: WORKSPACE_LOGO[currentWorkspaceKey],
+        href: homeHref,
+      })
+    : null;
+  const breadcrumbWorkspace = {
+    label: currentWorkspace?.label ?? "Panel",
+    href: homeHref,
+  };
+
   const displayName = shellFullName || shellEmail;
   const initials = displayName
     .split(" ")
@@ -284,10 +366,12 @@ export async function PanelShell({
         )}
       >
         <div
-          className={`site-scope dc-panel-bg pn-scope flex min-h-dvh ${
+          className={`site-scope pn-scope flex min-h-dvh ${
             isBusinessWorkspace ? "business-panel-scope" : ""
           }`}
           data-product={accentProduct}
+          data-pn-shell=""
+          data-sidebar={sidebarState}
         >
           {accessibilityEnabled ? (
             <AccessibilityPreferenceApplier
@@ -301,13 +385,19 @@ export async function PanelShell({
             Ana içeriğe geç
           </a>
 
-          {/* Sidebar — handoff: 248px, beyaz, sağ kenarlık */}
-          <aside className="sticky top-0 hidden h-dvh w-[224px] flex-none flex-col border-r border-dc-line bg-white px-3.5 py-5 lg:flex xl:w-[248px]">
+          {/* Kenar çubuğu — 240px, sakin gri zemin, ince ayraç (roadmap §6.2) */}
+          <aside className="pn-sidebar sticky top-0 hidden h-dvh w-[232px] flex-none flex-col border-r border-pn-border bg-pn-sidebar px-2.5 pb-3 pt-3 lg:flex xl:w-[240px]">
             {/*
               Erişilebilir ad çalışma alanına göre değişir: aynı marka
               bağlantısı işletme alanında başka bir yere gidiyor, ekran
               okuyucuda ikisi aynı isimle duyurulmamalı.
             */}
+            {/*
+              Ürün çalışma alanlarında değiştirici zaten marka ve alan adını
+              gösterir; marka satırı yalnız İşletme alanında ve alan
+              belirsizken basılır (aynı adı iki kez göstermemek için).
+            */}
+            {isBusinessWorkspace || !currentWorkspace ? (
             <Link
               href={homeHref}
               aria-label={
@@ -315,7 +405,7 @@ export async function PanelShell({
                   ? "İşletme yönetim ana sayfası"
                   : "Panel ana sayfası"
               }
-              className="flex items-center gap-2.5 px-2 pb-[22px] pt-1"
+              className="mb-2 flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-pn-hover"
             >
               <Image
                 src="/design/od-logo.png"
@@ -324,57 +414,96 @@ export async function PanelShell({
                 width={1254}
                 height={1254}
                 priority
-                sizes="30px"
-                className="h-[30px] w-[30px] rounded-lg object-cover"
+                sizes="20px"
+                className="h-5 w-5 rounded-[5px] object-cover"
               />
-              <span className="text-[14.5px] font-bold text-dc-ink">
+              <span className="text-[13px] font-bold text-pn-text">
                 onlinedershanem
               </span>
             </Link>
+            ) : null}
 
-            <div className="min-h-0 flex-1 overflow-y-auto">
+            <div className="flex items-start gap-1">
+              <div className="min-w-0 flex-1">
+              <WorkspaceSwitcher
+                current={currentWorkspace}
+                subtitle={displayName}
+                options={workspaceOptions}
+                selectorHref={PRODUCT_SELECTOR_PATH}
+                disabled={Boolean(preview)}
+              />
+              </div>
+              <div className="pt-1.5">
+                <SidebarToggle mode="close" />
+              </div>
+            </div>
+
+            {!preview ? (
+              <div className="mt-3 flex flex-col gap-px">
+                <Link
+                  href="/panel/bildirimler"
+                  aria-label={
+                    unread
+                      ? `Bildirimler, ${unread} okunmamış`
+                      : "Bildirimler"
+                  }
+                  className="flex min-h-9 items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13.5px] font-medium text-pn-text-secondary transition-colors hover:bg-pn-hover hover:text-pn-text"
+                >
+                  <Bell size={15} aria-hidden="true" />
+                  <span className="flex-1">Bildirimler</span>
+                  {unread ? (
+                    <span
+                      aria-hidden="true"
+                      className="min-w-5 rounded-full bg-pn-accent-soft px-1.5 text-center text-[11px] font-semibold text-pn-accent"
+                    >
+                      {unread > 99 ? "99+" : unread}
+                    </span>
+                  ) : null}
+                </Link>
+              </div>
+            ) : null}
+
+            <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
               {nav ?? <PanelNav role={effectiveRole} products={products} scope={navScope} staffOdkPermissions={staffOdkPermissions} />}
             </div>
 
-            <div className="mt-auto border-t border-dc-line-soft pt-5">
-              {productSwitch ? (
-                <Link
-                  href={productSwitch.href}
-                  className="mb-1 flex items-center gap-1.5 rounded-od px-2.5 py-2 text-[12px] font-semibold text-dc-ink-muted transition-colors hover:bg-dc-surface-muted hover:text-dc-ink"
-                >
-                  <ArrowLeftRight size={13} aria-hidden="true" /> {productSwitch.label}
-                </Link>
-              ) : null}
+            <div className="mt-3 flex flex-col gap-px border-t border-pn-border pt-3">
               {workspaceSwitch ? (
                 <Link
                   href={workspaceSwitch.href}
-                  className="mb-3 flex items-center gap-1.5 rounded-od px-2.5 py-2 text-[12px] font-semibold text-dc-ink-muted transition-colors hover:bg-dc-surface-muted hover:text-dc-ink"
+                  className="flex min-h-9 items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] font-medium text-pn-text-secondary transition-colors hover:bg-pn-hover hover:text-pn-text"
                 >
-                  <ArrowLeftRight size={13} aria-hidden="true" />{" "}
+                  <ArrowLeftRight size={14} aria-hidden="true" />
                   {workspaceSwitch.label}
                 </Link>
               ) : null}
+              {!preview && !isBusinessWorkspace ? (
+                <Link
+                  href={ACCOUNT_SETTINGS_PATH}
+                  className="flex min-h-9 items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] font-medium text-pn-text-secondary transition-colors hover:bg-pn-hover hover:text-pn-text"
+                >
+                  <Settings size={14} aria-hidden="true" />
+                  Ayarlar
+                </Link>
+              ) : null}
 
-              <p className="px-2.5 font-mono text-[10.5px] font-semibold uppercase text-dc-ink-ghost">
-                {roleLabel(effectiveRole)}
-                {preview
-                  ? " · önizleme"
-                  : teacherMode.enabled
-                    ? " · yönetici"
-                    : ""}
-              </p>
-              <div className="flex items-center gap-2.5 px-2.5 pb-1 pt-3">
+              <div className="mt-2 flex items-center gap-2.5 rounded-md px-2 py-1.5">
                 {avatar("md")}
-                <span className="min-w-0">
-                  <span className="block truncate text-[13.5px] font-bold text-dc-ink">
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[13px] font-semibold text-pn-text">
                     {displayName}
                   </span>
-                  <span className="block truncate text-[12px] text-dc-ink-faint">
-                    {shellEmail}
+                  <span className="block truncate text-[11.5px] text-pn-text-muted">
+                    {roleLabel(effectiveRole)}
+                    {preview
+                      ? " · önizleme"
+                      : teacherMode.enabled
+                        ? " · yönetici"
+                        : ""}
                   </span>
                 </span>
               </div>
-              <div className="mt-2 border-t border-dc-line-soft pt-2">
+              <div className="px-0.5">
                 <LogoutButton compact />
               </div>
             </div>
@@ -391,8 +520,8 @@ export async function PanelShell({
               <AdminTeacherModeBanner />
             ) : null}
 
-            {/* Topbar — handoff: 64px, beyaz, alt kenarlık */}
-            <header className="sticky top-0 z-40 flex h-16 flex-none items-center gap-2 border-b border-dc-line bg-white px-3 sm:gap-4 sm:px-7">
+            {/* Bağlam çubuğu — 48px: breadcrumb solda, araçlar sağda (roadmap §6.3) */}
+            <header className="sticky top-0 z-40 flex h-12 flex-none items-center gap-2 border-b border-pn-border bg-pn-canvas px-3 sm:gap-3 sm:px-6">
               <PanelMobileNav
                 role={effectiveRole}
                 products={products}
@@ -412,11 +541,19 @@ export async function PanelShell({
                 }}
               />
 
-              {pageTitle ? (
-                <p className="hidden min-w-0 max-w-[34%] truncate text-[14px] font-bold text-dc-ink sm:block sm:max-w-48 sm:text-[15px] lg:max-w-xs xl:max-w-none">
-                  {pageTitle}
-                </p>
-              ) : null}
+              <SidebarToggle mode="open" />
+
+              <div className="min-w-0 flex-1 lg:flex-none">
+                <ContextBreadcrumb
+                  workspace={breadcrumbWorkspace}
+                  pageTitle={pageTitle}
+                  role={effectiveRole}
+                  products={products}
+                  scope={navScope}
+                  staffOdkPermissions={staffOdkPermissions}
+                  useRoleNav={!nav}
+                />
+              </div>
 
               {topbarSlot ? (
                 <div className="panel-topbar-slot min-w-0 flex-1 overflow-x-auto lg:ml-3 lg:flex-none lg:overflow-visible">
@@ -424,7 +561,7 @@ export async function PanelShell({
                 </div>
               ) : null}
 
-              <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3 lg:gap-[18px]">
+              <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2.5">
                 {!preview &&
                 !teacherMode.enabled &&
                 !isBusinessWorkspace &&
@@ -435,19 +572,17 @@ export async function PanelShell({
                   </div>
                 ) : null}
 
-                {!isBusinessWorkspace &&
-                !preview &&
-                (effectiveRole === "ADMIN" || effectiveRole === "TEACHER") ? (
-                  <AdminCommandSearch commands={searchCommands} />
+                {!isBusinessWorkspace && !preview && searchCommands.length ? (
+                  <AdminCommandSearch commands={searchCommands} entitySearch={entitySearch} />
                 ) : null}
 
                 {!preview ? (
                   <Link
                     href="/panel/oturumlar"
                     aria-label="Aktif oturumları yönet"
-                    className="hidden text-dc-ink-muted transition-colors hover:text-dc-ink sm:block"
+                    className="hidden min-h-9 min-w-9 items-center justify-center rounded-md text-pn-text-muted transition-colors hover:bg-pn-hover hover:text-pn-text sm:inline-flex"
                   >
-                    <ShieldCheck size={17} aria-hidden="true" />
+                    <ShieldCheck size={16} aria-hidden="true" />
                   </Link>
                 ) : null}
 
@@ -459,13 +594,13 @@ export async function PanelShell({
                         ? `${unread} okunmamış bildirimi aç`
                         : "Bildirimleri aç"
                     }
-                    className="relative inline-flex min-h-11 min-w-11 items-center justify-center text-dc-ink-muted transition-colors hover:text-dc-ink"
+                    className="relative inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-pn-text-muted transition-colors hover:bg-pn-hover hover:text-pn-text lg:hidden"
                   >
                     <Bell size={17} aria-hidden="true" />
                     {unread ? (
                       <span
                         aria-hidden="true"
-                        className="absolute -right-0.5 -top-0.5 h-[7px] w-[7px] rounded-full bg-dc-brand ring-2 ring-white"
+                        className="absolute right-2.5 top-2.5 h-[7px] w-[7px] rounded-full bg-pn-accent ring-2 ring-white"
                       />
                     ) : null}
                   </Link>

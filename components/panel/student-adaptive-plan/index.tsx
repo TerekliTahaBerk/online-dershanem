@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Check,
   CircleAlert,
   ListChecks,
   RefreshCw,
   SlidersHorizontal,
-  X,
 } from "lucide-react";
+import { Drawer, useDrawerParam } from "@/components/panel/primitives/drawer";
+import { EmptyState, StatusBadge, buttonClass } from "@/components/panel/primitives";
 import {
   getLowerSafeMinutes,
   getOverloadRequest,
@@ -18,9 +19,9 @@ import { sendPanelEvent } from "@/lib/panel-event-client";
 import {
   buildTodayFocus,
   buildWeeklyProgress,
+  groupPlanTasksByDay,
   planStatusLabel,
   splitPlanTasks,
-  taskDateKey,
 } from "@/lib/student-plan-view";
 import { formatMinutesAsHours } from "@/lib/kocum/metrics";
 import { PreferenceFields } from "./PreferenceFields";
@@ -32,6 +33,7 @@ import {
   emptyDraft,
   isOverloadOption,
   overloadOptionLabels,
+  sourceLabels,
 } from "./constants";
 import type {
   CompletionDraft,
@@ -102,10 +104,22 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
   // ikincil bir panele geçer (varsayılan kapalı).
   const [controlsOpen, setControlsOpen] = useState(!initialPlan);
   const preferencesHeadingRef = useRef<HTMLHeadingElement>(null);
+  // Görünüm (?gorunum=hafta) ve görev paneli (?gorev=gorev:<id>) URL'de tutulur.
+  const [viewParam, setViewParam] = useDrawerParam("gorunum");
+  const view: "liste" | "hafta" = viewParam === "hafta" ? "hafta" : "liste";
+  const [taskParam, setTaskParam] = useDrawerParam("gorev");
+  const openTaskId = taskParam?.startsWith("gorev:") ? taskParam.slice(6) : null;
+  const closeTask = useCallback(() => {
+    setTaskParam(null);
+    setActiveCompletionId(null);
+    setCompletionDraft(null);
+  }, [setTaskParam]);
+  const closeControls = useCallback(() => setControlsOpen(false), []);
 
   useEffect(() => {
-    if (controlsOpen) preferencesHeadingRef.current?.focus();
-  }, [controlsOpen]);
+    // Plan yokken tercihler sayfanın ana konusudur; başlığa odaklanılır.
+    if (controlsOpen && !plan) preferencesHeadingRef.current?.focus();
+  }, [controlsOpen, plan]);
 
   useEffect(() => {
     if (plan?.status !== "APPROVED") setOverloadActionOpen(false);
@@ -253,6 +267,8 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
     );
     setActiveCompletionId(null);
     setCompletionDraft(null);
+    // Kayıt sonrası görev paneli kapanır; sonuç canlı bölgede duyurulur.
+    setTaskParam(null);
     setMessage(
       completionDraft.status === "DONE"
         ? "Harika — görev tamamlandı."
@@ -297,9 +313,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
   }
 
   const tasks = plan?.tasks ?? [];
-  const { todayPending, todayCompleted, remainingWeek, overdue } =
-    splitPlanTasks(tasks, today);
-  const firstOpenTodayTask = todayPending[0] ?? null;
+  const { todayPending, overdue } = splitPlanTasks(tasks, today);
   const canComplete = plan?.status === "APPROVED";
   /*
    * Koç onaylı plan kilitlidir (mevcut OK davranışı); otomatik onaylı planda
@@ -310,40 +324,66 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
   const canRegenerate = !plan || plan.status !== "APPROVED" || plan.autoApproved;
   const weekProgress = buildWeeklyProgress(tasks, today);
   const todayFocus = buildTodayFocus(todayPending);
-  const weeklyGroups = remainingWeek.reduce(
-    (map, task) => {
-      const key = taskDateKey(task.scheduledFor);
-      if (!map[key]) map[key] = [];
-      map[key].push(task);
-      return map;
-    },
-    {} as Record<string, Task[]>,
-  );
-  const weekKeys = Object.keys(weeklyGroups).sort();
-  const upcomingDayKeys = weekKeys.filter((key) => key > today);
-  const pastDayKeys = weekKeys.filter((key) => key < today);
+  const dayGroups = groupPlanTasksByDay(tasks, today);
+  const openTask = openTaskId ? tasks.find((task) => task.id === openTaskId) ?? null : null;
+  const overdueIds = new Set(overdue.map((task) => task.id));
 
-  function renderTaskCard(task: Task, highlighted: boolean) {
+  function openComplete(task: Task, status: CompletionDraft["status"]) {
+    setActiveCompletionId(task.id);
+    setCompletionDraft(emptyDraft(status, task));
+    setTaskParam(`gorev:${task.id}`);
+  }
+
+  function renderRow(task: Task) {
+    const done = task.status === "DONE" || task.status === "PARTIAL";
+    const meta = [
+      task.subject,
+      task.targetType === "QUESTIONS" && task.targetValue ? `${task.targetValue} soru` : null,
+      sourceLabels[task.sourceType],
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    const open = task.status === "PLANNED" || task.status === "IN_PROGRESS";
     return (
-      <TaskCard
-        key={task.id}
-        task={task}
-        canComplete={canComplete}
-        highlighted={highlighted}
-        busy={busy}
-        draft={activeCompletionId === task.id ? completionDraft : null}
-        onStart={(item) => void completeQuick(item, "IN_PROGRESS")}
-        onOpenComplete={(item, status) => {
-          setActiveCompletionId(item.id);
-          setCompletionDraft(emptyDraft(status, item));
-        }}
-        onDraftChange={setCompletionDraft}
-        onSubmitComplete={(item) => void submitCompletion(item)}
-        onCancelComplete={() => {
-          setActiveCompletionId(null);
-          setCompletionDraft(null);
-        }}
-      />
+      <li key={task.id} className="flex min-h-(--pn-row-h) flex-wrap items-center gap-x-3 gap-y-1 border-b border-pn-border py-2">
+        <span
+          aria-hidden="true"
+          className={`grid h-4 w-4 shrink-0 place-items-center rounded-[4px] border ${
+            done ? "border-pn-accent bg-pn-accent text-white" : "border-pn-border-strong"
+          }`}
+        >
+          {done ? <Check size={11} /> : null}
+        </span>
+        <button
+          type="button"
+          onClick={() => setTaskParam(`gorev:${task.id}`)}
+          aria-haspopup="dialog"
+          className="min-w-0 flex-1 text-left"
+        >
+          <span className={`block text-[14px] font-medium ${done ? "text-pn-text-muted line-through" : "text-pn-text"}`}>
+            {task.title}
+          </span>
+          {meta ? <span className="block text-[12.5px] text-pn-text-muted">{meta}</span> : null}
+        </button>
+        <span className="shrink-0 text-[12.5px] tabular-nums text-pn-text-muted">{task.durationMinutes} dk</span>
+        {overdueIds.has(task.id) ? (
+          <StatusBadge label="Gecikti" tone="warning" />
+        ) : task.status === "IN_PROGRESS" ? (
+          <StatusBadge label="Başladın" tone="info" />
+        ) : task.status === "COULD_NOT" ? (
+          <StatusBadge label="Yapılamadı" tone="neutral" />
+        ) : null}
+        {canComplete && open ? (
+          <button
+            type="button"
+            onClick={() => openComplete(task, "DONE")}
+            aria-label="Görevi tamamla"
+            className={buttonClass("secondary", "sm")}
+          >
+            Tamamla
+          </button>
+        ) : null}
+      </li>
     );
   }
 
@@ -352,226 +392,222 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
   );
 
   return (
-    <div className="flex flex-col gap-5">
+    <div>
       {!plan ? (
-        <section
-          aria-labelledby="plan-setup-heading"
-          className="panel-surface p-5 sm:p-6"
-        >
-          <p className="text-xs font-extrabold uppercase tracking-[.07em] text-(--brand-olive)">
-            Haftalık plan
-          </p>
+        <section aria-labelledby="plan-setup-heading">
           <h2
             id="plan-setup-heading"
             ref={preferencesHeadingRef}
             tabIndex={-1}
-            className="mt-1 text-xl font-semibold outline-hidden"
+            className="text-[16px] font-semibold text-pn-text outline-hidden"
           >
             Bu hafta için aktif bir plan görünmüyor.
           </h2>
-          <p className="mt-2 text-sm text-(--site-muted)">
+          <p className="mt-1 text-[14px] text-pn-text-secondary">
             Aşağıdan gün ve süre tercihlerini kaydettiğinde planın hazırlanır.
           </p>
-          <div className="mt-5">{preferenceFields}</div>
+          <div className="mt-5 max-w-[720px]">{preferenceFields}</div>
           <div className="mt-5 flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
               disabled={busy || !preference.availableDays.length}
               onClick={() => void savePreference()}
-              className="panel-quick-action"
+              className={buttonClass("secondary", "md")}
             >
-              <Check size={14} /> Tercihleri Kaydet
+              <Check size={14} aria-hidden="true" /> Tercihleri Kaydet
             </button>
             <button
               type="button"
               disabled={busy || !preference.planningEnabled}
               onClick={() => void generate()}
-              className="panel-quick-action panel-quick-action-primary"
+              className={buttonClass("primary", "md")}
             >
-              <RefreshCw size={14} /> Planı Oluştur
+              <RefreshCw size={14} aria-hidden="true" /> Planı Oluştur
             </button>
           </div>
         </section>
       ) : null}
 
-      {examCountdown ? (
-        <section
-          aria-labelledby="exam-countdown-heading"
-          className="panel-surface border-l-4 border-l-(--brand-olive) p-4 sm:p-5"
-        >
-          <h2
-            id="exam-countdown-heading"
-            className="text-xs font-extrabold uppercase tracking-[.07em] text-(--brand-olive)"
-          >
-            Sınava kalan
-          </h2>
-          <p className="mt-1 text-lg font-semibold">
-            {examCountdownHeadline(examCountdown)}
-          </p>
-          <p className="mt-1 text-xs text-(--site-muted)">
-            {dateTime.format(new Date(examCountdown.examAt))} ·{" "}
-            {examCountdownNote(examCountdown.tier)}
-          </p>
-        </section>
-      ) : null}
-
       {plan ? (
-        <section
-          aria-labelledby="today-focus-heading"
-          className="panel-surface border-l-4 border-l-(--brand-olive) p-5 sm:p-6"
-        >
+        <section aria-labelledby="week-summary-heading">
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-extrabold uppercase tracking-[.07em] text-(--brand-olive)">
-                Bugünkü odak
-              </p>
-              <h2
-                id="today-focus-heading"
-                className="mt-1 text-xl font-semibold"
-              >
-                {todayFocus.headline}
+            <div className="min-w-0">
+              <h2 id="week-summary-heading" className="flex flex-wrap items-center gap-2 text-[15px] font-semibold text-pn-text">
+                Bu hafta
+                <StatusBadge
+                  label={planStatusLabel(plan.status, { autoApproved: plan.autoApproved })}
+                  tone={plan.status === "APPROVED" ? "success" : plan.status === "CHANGE_REQUESTED" ? "warning" : "neutral"}
+                />
               </h2>
-              {todayFocus.detail ? (
-                <p className="mt-1 text-sm text-(--site-muted)">
-                  {todayPending.length} çalışma · {todayFocus.detail}
-                </p>
-              ) : null}
-              <p className="mt-2 text-xs font-bold text-(--site-muted)">
-                {planStatusLabel(plan.status, { autoApproved: plan.autoApproved })}
+              <p className="mt-0.5 text-[13px] text-pn-text-muted">
+                {weekProgress.totalCount} görev · {weekProgress.completedCount} tamamlandı · {weekProgress.completedLabel} / {weekProgress.plannedLabel}
+                {weekProgress.questionTarget > 0 ? ` · ${weekProgress.questionActual} / ${weekProgress.questionTarget} soru` : ""}
+                {overdue.length ? ` · ${overdue.length} geciken` : ""}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setControlsOpen((open) => !open)}
-              aria-expanded={controlsOpen}
-              aria-controls="plan-preferences-panel"
-              className="panel-quick-action"
-            >
-              <SlidersHorizontal size={14} /> Plan Tercihleri
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setControlsOpen((open) => !open)}
+                aria-expanded={controlsOpen}
+                aria-haspopup="dialog"
+                className={buttonClass("secondary", "sm")}
+              >
+                <SlidersHorizontal size={14} aria-hidden="true" /> Plan Tercihleri
+              </button>
+              <button
+                type="button"
+                disabled={busy || !preference.planningEnabled || !canRegenerate}
+                onClick={() => void generate()}
+                className={buttonClass("ghost", "sm")}
+              >
+                <RefreshCw size={14} aria-hidden="true" /> Haftayı Dengele
+              </button>
+            </div>
           </div>
-        </section>
-      ) : null}
-
-      {plan ? (
-        <section
-          aria-labelledby="today-tasks-heading"
-          className="panel-surface p-5 sm:p-6"
-        >
-          <h2
-            id="today-tasks-heading"
-            className="text-sm font-extrabold text-(--site-ink)"
+          <div
+            className="mt-3 h-1.5 max-w-[480px] overflow-hidden rounded-full bg-pn-surface-subtle"
+            role="progressbar"
+            aria-valuenow={weekProgress.percent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Bu hafta ${weekProgress.completedCount}/${weekProgress.totalCount} görev tamamlandı`}
           >
-            Bugünkü çalışmalar
-          </h2>
-          {todayPending.length ? (
-            <div className="mt-5 space-y-3">
-              {todayPending.map((task) =>
-                renderTaskCard(task, task.id === firstOpenTodayTask?.id),
-              )}
-            </div>
-          ) : (
-            <div className="mt-5 rounded-2xl border border-dashed border-(--site-line) p-6 text-center">
-              <ListChecks className="mx-auto text-(--site-muted)" />
-              <p className="mt-2 text-sm font-bold">
-                Bugün planında çalışma görünmüyor.
-              </p>
-            </div>
-          )}
-          {todayCompleted.length ? (
-            <details className="mt-4 rounded-xl border border-(--site-line) bg-(--site-bg-warm) p-3">
-              <summary className="cursor-pointer text-xs font-bold text-(--site-muted)">
-                Tamamlananlar ({todayCompleted.length})
-              </summary>
-              <div className="mt-3 space-y-2">
-                {todayCompleted.map((task) => renderTaskCard(task, false))}
-              </div>
-            </details>
+            <div className="h-full rounded-full bg-pn-accent-marker" style={{ width: `${weekProgress.percent}%` }} />
+          </div>
+          <p className="mt-2 text-[13.5px] text-pn-text">
+            <span className="font-medium">Bugün:</span> {todayFocus.headline}
+            {todayFocus.detail ? <span className="text-pn-text-muted"> · {todayPending.length} çalışma · {todayFocus.detail}</span> : null}
+          </p>
+          {examCountdown ? (
+            <p className="mt-1 text-[13px] text-pn-text-secondary" aria-label="Sınava kalan">
+              <span className="font-medium">{examCountdownHeadline(examCountdown)}</span> · {dateTime.format(new Date(examCountdown.examAt))} · {examCountdownNote(examCountdown.tier)}
+            </p>
           ) : null}
           {preference.overwhelmPulse && preference.overwhelmPulse >= 4 ? (
-            <p className="mt-4 flex gap-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-900">
-              <CircleAlert size={15} className="shrink-0" />
-              Bu hafta plan yoğun görünüyor. Değişiklik isteyerek koçundan
-              destek alabilirsin.
+            <p className="mt-3 flex gap-2 rounded-md bg-(--pn-tone-warning-soft) px-3 py-2 text-[13px] text-(--pn-tone-warning)">
+              <CircleAlert size={15} className="shrink-0" aria-hidden="true" />
+              Bu hafta plan yoğun görünüyor. Değişiklik isteyerek koçundan destek alabilirsin.
             </p>
           ) : null}
         </section>
       ) : null}
 
+      {!plan && examCountdown ? (
+        <p className="mt-6 text-[13px] text-pn-text-secondary" aria-label="Sınava kalan">
+          <span className="font-medium">{examCountdownHeadline(examCountdown)}</span> · {dateTime.format(new Date(examCountdown.examAt))} · {examCountdownNote(examCountdown.tier)}
+        </p>
+      ) : null}
+
       {plan ? (
-        <section
-          aria-labelledby="week-progress-heading"
-          className="panel-surface p-5 sm:p-6"
-        >
-          <h2
-            id="week-progress-heading"
-            className="text-sm font-extrabold text-(--site-ink)"
-          >
-            Bu hafta
-          </h2>
-          <div className="mt-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-(--site-muted)">
-              <span>
-                {weekProgress.completedCount} / {weekProgress.totalCount} görev
-                tamamlandı
-              </span>
-              <span>Plan uyumu %{weekProgress.percent}</span>
-            </div>
-            <div className="mt-2 flex flex-wrap gap-3 text-xs text-(--site-muted)">
-              <span>
-                {weekProgress.completedLabel} / {weekProgress.plannedLabel} plan
-              </span>
-              {weekProgress.questionTarget > 0 ? (
-                <span>
-                  {weekProgress.questionActual} / {weekProgress.questionTarget}{" "}
-                  soru
-                </span>
-              ) : null}
-              {overdue.length ? (
-                <span className="font-bold text-amber-800">
-                  {overdue.length} geciken
-                </span>
-              ) : null}
-            </div>
-            <div
-              className="mt-2 h-2 overflow-hidden rounded-full bg-dc-line-soft"
-              role="progressbar"
-              aria-valuenow={weekProgress.percent}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={`Bu hafta ${weekProgress.completedCount}/${weekProgress.totalCount} görev tamamlandı`}
-            >
-              <div
-                className="h-full rounded-full bg-dc-brand"
-                style={{ width: `${weekProgress.percent}%` }}
-              />
-            </div>
+        <section aria-labelledby="plan-tasks-heading" className="mt-8 border-t border-pn-border pt-6">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <h2 id="plan-tasks-heading" className="text-[15px] font-semibold text-pn-text">
+              Görevler
+            </h2>
+            <nav aria-label="Plan görünümü" className="inline-flex gap-0.5 rounded-md border border-pn-border bg-pn-surface-subtle p-0.5">
+              {(["liste", "hafta"] as const).map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  aria-current={view === item ? "page" : undefined}
+                  onClick={() => setViewParam(item === "liste" ? null : item)}
+                  className={`min-h-8 rounded-[5px] px-3 text-[12.5px] font-semibold ${
+                    view === item ? "bg-white text-pn-text shadow-sm" : "text-pn-text-secondary"
+                  }`}
+                >
+                  {item === "liste" ? "Liste" : "Hafta"}
+                </button>
+              ))}
+            </nav>
           </div>
 
-          {weekProgress.subjectDistribution.length ? (
-            <div className="mt-5">
-              <h3 className="text-xs font-extrabold uppercase tracking-[.07em] text-(--site-muted)">
-                Ders dağılımı
-              </h3>
-              <ul className="mt-2 space-y-1.5 text-xs text-(--site-muted)">
-                {weekProgress.subjectDistribution.map((row) => (
-                  <li
-                    key={row.subject}
-                    className="flex flex-wrap justify-between gap-2"
-                  >
-                    <span className="font-bold text-(--site-ink)">
-                      {row.subject}
-                    </span>
-                    <span>
-                      {formatMinutesAsHours(row.actualMinutes)} /{" "}
-                      {formatMinutesAsHours(row.plannedMinutes)}
-                    </span>
+          {!dayGroups.length ? (
+            <EmptyState className="mt-4" icon={ListChecks} title="Bu hafta planında çalışma görünmüyor." />
+          ) : view === "hafta" ? (
+            <div className="panel-nav-scroll mt-4 overflow-x-auto pb-2">
+              <ol aria-label="Haftalık plan" className="grid min-w-[840px] grid-cols-7">
+                {weekColumns(dayGroups).map((day) => (
+                  <li key={day.key} className="border-l border-pn-border px-2 first:border-l-0" aria-current={day.isToday ? "date" : undefined}>
+                    <p className={`py-1.5 text-[12.5px] font-semibold capitalize ${day.isToday ? "text-pn-accent" : "text-pn-text-secondary"}`}>
+                      {dayHeading.format(new Date(`${day.key}T00:00:00.000+03:00`))}
+                    </p>
+                    <ul className="space-y-1">
+                      {day.tasks.map((task) => (
+                        <li key={task.id}>
+                          <button
+                            type="button"
+                            onClick={() => setTaskParam(`gorev:${task.id}`)}
+                            aria-haspopup="dialog"
+                            className={`block w-full rounded-md px-2 py-1.5 text-left hover:bg-pn-hover ${
+                              task.status === "DONE" || task.status === "PARTIAL" ? "text-pn-text-muted line-through" : "text-pn-text"
+                            }`}
+                          >
+                            <span className="block text-[12.5px] font-medium leading-4">{task.title}</span>
+                            <span className="block text-[11.5px] text-pn-text-muted">{task.durationMinutes} dk</span>
+                          </button>
+                        </li>
+                      ))}
+                      {!day.tasks.length ? <li className="px-2 py-2 text-[12px] text-pn-text-muted">—</li> : null}
+                    </ul>
                   </li>
                 ))}
-              </ul>
-              <p className="mt-3 text-[11px] leading-5 text-(--site-muted)">
-                Akademik bağlantı: çalışma süresi ile deneme netleri birlikte
-                izlenebilir; bu bir neden-sonuç iddiası değildir.
+              </ol>
+            </div>
+          ) : (
+            <div className="mt-3 space-y-5">
+              {dayGroups.filter((day) => !day.isPast).map((day) => (
+                <div key={day.key}>
+                  <h3 className="flex items-baseline justify-between gap-3 text-[13px] font-semibold capitalize text-pn-text-secondary">
+                    <span className={day.isToday ? "text-pn-accent" : undefined}>
+                      {day.isToday ? "Bugün · " : ""}
+                      {dayHeading.format(new Date(`${day.key}T00:00:00.000+03:00`))}
+                    </span>
+                    <span className="tabular-nums text-pn-text-muted">
+                      {day.done}/{day.total}
+                    </span>
+                  </h3>
+                  <ul className="mt-1 border-t border-pn-border">{day.tasks.map((task) => renderRow(task))}</ul>
+                </div>
+              ))}
+              {dayGroups.some((day) => day.isPast) ? (
+                <details className="group" open={overdue.length > 0}>
+                  <summary className="cursor-pointer text-[13px] font-medium text-pn-text-secondary">
+                    Geçmiş günler ({dayGroups.filter((day) => day.isPast).length})
+                  </summary>
+                  <div className="mt-3 space-y-4">
+                    {dayGroups.filter((day) => day.isPast).map((day) => (
+                      <div key={day.key}>
+                        <h3 className="flex items-baseline justify-between gap-3 text-[13px] font-semibold capitalize text-pn-text-muted">
+                          <span>{dayHeading.format(new Date(`${day.key}T00:00:00.000+03:00`))}</span>
+                          <span className="tabular-nums">
+                            {day.done}/{day.total}
+                          </span>
+                        </h3>
+                        <ul className="mt-1 border-t border-pn-border">{day.tasks.map((task) => renderRow(task))}</ul>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              ) : null}
+            </div>
+          )}
+
+          {weekProgress.subjectDistribution.length ? (
+            <div className="mt-6">
+              <h3 className="text-[13px] font-semibold text-pn-text">Ders dağılımı</h3>
+              <dl className="mt-1 grid gap-y-1">
+                {weekProgress.subjectDistribution.map((row) => (
+                  <div key={row.subject} className="flex flex-wrap justify-between gap-2 text-[13px]">
+                    <dt className="text-pn-text">{row.subject}</dt>
+                    <dd className="tabular-nums text-pn-text-muted">
+                      {formatMinutesAsHours(row.actualMinutes)} / {formatMinutesAsHours(row.plannedMinutes)}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="mt-2 text-[12px] text-pn-text-muted">
+                Akademik bağlantı: çalışma süresi ile deneme netleri birlikte izlenebilir; bu bir neden-sonuç iddiası değildir.
               </p>
             </div>
           ) : null}
@@ -579,23 +615,15 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
       ) : null}
 
       {upcomingExams && upcomingExams.length ? (
-        <section
-          aria-labelledby="upcoming-exam-heading"
-          className="panel-surface p-5 sm:p-6"
-        >
-          <h2 id="upcoming-exam-heading" className="text-sm font-extrabold">
+        <section aria-labelledby="upcoming-exam-heading" className="mt-8 border-t border-pn-border pt-6">
+          <h2 id="upcoming-exam-heading" className="text-[15px] font-semibold text-pn-text">
             Yaklaşan deneme
           </h2>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-2 border-t border-pn-border">
             {upcomingExams.map((exam) => (
-              <li
-                key={exam.id}
-                className="rounded-xl border border-(--site-line) px-3 py-2 text-sm"
-              >
-                <p className="font-bold">{exam.title}</p>
-                <p className="text-xs text-(--site-muted)">
-                  {dateTime.format(new Date(exam.startsAt))}
-                </p>
+              <li key={exam.id} className="flex flex-wrap justify-between gap-2 border-b border-pn-border py-2 text-[14px]">
+                <span className="font-medium text-pn-text">{exam.title}</span>
+                <span className="text-[13px] text-pn-text-muted">{dateTime.format(new Date(exam.startsAt))}</span>
               </li>
             ))}
           </ul>
@@ -603,176 +631,60 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
       ) : null}
 
       {requiresApproval ? (
-      <section
-        aria-labelledby="coach-section-heading"
-        className="panel-surface p-5 sm:p-6"
-      >
-        <h2
-          id="coach-section-heading"
-          className="text-sm font-extrabold text-(--site-ink)"
-        >
-          Koçundan
-        </h2>
-        {initialCoaching ? (
-          <div className="mt-3 rounded-2xl border border-dc-line-soft bg-dc-surface-soft px-4 py-3">
-            <p className="text-sm font-bold text-dc-ink-body">
-              {initialCoaching.coachName}
-            </p>
-            {initialCoaching.focus ? (
-              <p className="mt-1 text-xs text-(--site-muted)">
-                Bu haftaki odak: {initialCoaching.focus}
-              </p>
-            ) : null}
-            {initialCoaching.sharedNote ? (
-              <p className="mt-2 text-sm text-dc-ink-body">
-                {initialCoaching.sharedNote}
-              </p>
-            ) : (
-              <p className="mt-2 text-xs text-(--site-muted)">
-                Bu hafta için yeni bir koç notu yok.
-              </p>
-            )}
-            {initialCoachSummary?.studentVisibleText ? (
-              <p className="mt-3 rounded-xl bg-white/70 p-3 text-sm text-dc-ink-body">
-                {initialCoachSummary.studentVisibleText}
-              </p>
-            ) : null}
-            {initialCoachSummary?.nextWeekFocus ? (
-              <p className="mt-2 text-xs font-bold text-(--site-muted)">
-                Gelecek hafta: {initialCoachSummary.nextWeekFocus}
-              </p>
-            ) : null}
-            {initialCoaching.nextScheduledAt ? (
-              <p className="mt-2 text-xs font-bold text-(--site-muted)">
-                Sonraki görüşme:{" "}
-                {dateTime.format(new Date(initialCoaching.nextScheduledAt))}
-              </p>
-            ) : null}
-            {initialCoaching.overdue ? (
-              <p className="mt-2 text-xs font-bold text-amber-900">
-                Görüşme zamanı geçti. Uygun bir zamanda koçundan yeni görüşme
-                isteyebilirsin.
-              </p>
-            ) : null}
-          </div>
-        ) : (
-          <p className="mt-3 text-sm text-(--site-muted)">
-            Henüz atanmış bir koç görünmüyor.
-          </p>
-        )}
-      </section>
-      ) : null}
-
-      {plan ? (
-        <section
-          aria-labelledby="week-remaining-heading"
-          className="panel-surface p-5 sm:p-6"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2
-              id="week-remaining-heading"
-              className="text-sm font-extrabold text-(--site-ink)"
-            >
-              Haftanın kalanı
-            </h2>
-            <button
-              type="button"
-              disabled={busy || !preference.planningEnabled || !canRegenerate}
-              onClick={() => void generate()}
-              className="panel-quick-action"
-            >
-              <RefreshCw size={14} /> Haftayı Dengele
-            </button>
-          </div>
-
-          {upcomingDayKeys.length || pastDayKeys.length ? (
-            <div className="mt-4 space-y-4">
-              {upcomingDayKeys.map((dateKey) => (
-                <div key={dateKey}>
-                  <h3 className="text-xs font-extrabold uppercase tracking-[.07em] text-(--site-muted)">
-                    {dayHeading.format(
-                      new Date(`${dateKey}T00:00:00.000+03:00`),
-                    )}
-                  </h3>
-                  <div className="mt-2 space-y-2">
-                    {weeklyGroups[dateKey].map((task) =>
-                      renderTaskCard(task, false),
-                    )}
-                  </div>
-                </div>
-              ))}
-              {pastDayKeys.length ? (
-                <details className="rounded-xl border border-(--site-line) bg-(--site-bg-warm) p-3">
-                  <summary className="cursor-pointer text-xs font-bold text-(--site-muted)">
-                    Geçmiş günler ({pastDayKeys.length})
-                  </summary>
-                  <ul className="mt-2 space-y-1 text-xs text-(--site-muted)">
-                    {pastDayKeys.map((dateKey) => {
-                      const rows = weeklyGroups[dateKey];
-                      const completed = rows.filter(
-                        (task) => task.status === "DONE",
-                      ).length;
-                      const pending = rows.filter(
-                        (task) => task.status === "PLANNED",
-                      ).length;
-                      return (
-                        <li key={dateKey}>
-                          {dayHeading.format(
-                            new Date(`${dateKey}T00:00:00.000+03:00`),
-                          )}
-                          : {completed} tamamlandı · {pending} bekliyor
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </details>
+        <section aria-labelledby="coach-section-heading" className="mt-8 border-t border-pn-border pt-6">
+          <h2 id="coach-section-heading" className="text-[15px] font-semibold text-pn-text">
+            Koçundan
+          </h2>
+          {initialCoaching ? (
+            <div className="mt-2 space-y-1.5 text-[14px]">
+              <p className="font-medium text-pn-text">{initialCoaching.coachName}</p>
+              {initialCoaching.focus ? <p className="text-pn-text-secondary">Bu haftaki odak: {initialCoaching.focus}</p> : null}
+              {initialCoaching.sharedNote ? (
+                <blockquote className="border-l-2 border-pn-accent-marker pl-3 text-pn-text">{initialCoaching.sharedNote}</blockquote>
+              ) : (
+                <p className="text-[13px] text-pn-text-muted">Bu hafta için yeni bir koç notu yok.</p>
+              )}
+              {initialCoachSummary?.studentVisibleText ? (
+                <p className="text-pn-text">{initialCoachSummary.studentVisibleText}</p>
+              ) : null}
+              {initialCoachSummary?.nextWeekFocus ? (
+                <p className="text-[13px] text-pn-text-secondary">Gelecek hafta: {initialCoachSummary.nextWeekFocus}</p>
+              ) : null}
+              {initialCoaching.nextScheduledAt ? (
+                <p className="text-[13px] text-pn-text-secondary">Sonraki görüşme: {dateTime.format(new Date(initialCoaching.nextScheduledAt))}</p>
+              ) : null}
+              {initialCoaching.overdue ? (
+                <p className="text-[13px] text-(--pn-tone-warning)">
+                  Görüşme zamanı geçti. Uygun bir zamanda koçundan yeni görüşme isteyebilirsin.
+                </p>
               ) : null}
             </div>
           ) : (
-            <div className="mt-5 rounded-2xl border border-dashed border-(--site-line) p-6 text-center">
-              <ListChecks className="mx-auto text-(--site-muted)" />
-              <p className="mt-2 text-sm font-bold">
-                Haftanın kalanında planlanan çalışma görünmüyor.
-              </p>
-            </div>
+            <p className="mt-2 text-[14px] text-pn-text-muted">Henüz atanmış bir koç görünmüyor.</p>
           )}
         </section>
       ) : null}
 
       {plan && requiresApproval ? (
-        <section
-          aria-labelledby="change-request-heading"
-          className="panel-surface p-5 sm:p-6"
-        >
-          <h2
-            id="change-request-heading"
-            className="text-sm font-extrabold text-(--site-ink)"
-          >
+        <section aria-labelledby="change-request-heading" className="mt-8 border-t border-pn-border pt-6">
+          <h2 id="change-request-heading" className="text-[15px] font-semibold text-pn-text">
             Değişiklik / destek
           </h2>
           {plan.status === "CHANGE_REQUESTED" ? (
-            <p className="mt-3 rounded-2xl bg-[#fff9dc] p-4 text-xs font-bold text-(--brand-olive)">
-              Değişiklik talebin koçuna iletildi:{" "}
-              {changeCategoryLabels[plan.changeRequestCategory ?? ""] ??
-                "Belirtilmedi"}
+            <p className="mt-2 text-[14px] text-pn-text-secondary">
+              Değişiklik talebin koçuna iletildi: {changeCategoryLabels[plan.changeRequestCategory ?? ""] ?? "Belirtilmedi"}
             </p>
           ) : plan.status === "APPROVED" ? (
-            <div className="mt-3 rounded-2xl bg-[#fff9dc] p-4">
-              <p className="text-sm font-bold">
-                Planında değişiklik mi gerekiyor?
-              </p>
-              <p className="mt-1 text-xs text-(--site-muted)">
-                Planım fazla yoğun veya günlerim değiştiğinde buradan koçuna
-                talep gönderebilirsin.
+            <div className="mt-2">
+              <p className="text-[14px] text-pn-text-secondary">
+                Planım fazla yoğun veya günlerim değiştiğinde buradan koçuna talep gönderebilirsin.
               </p>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <button
                   type="button"
                   onClick={() => {
                     if (!overloadActionOpen) {
-                      const next = getLowerSafeMinutes(
-                        preference.minutesPerDay,
-                      );
+                      const next = getLowerSafeMinutes(preference.minutesPerDay);
                       if (next)
                         setPreference((current) => ({
                           ...current,
@@ -782,102 +694,124 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
                     }
                     setOverloadActionOpen((open) => !open);
                   }}
-                  className="panel-quick-action"
+                  className={buttonClass("secondary", "md")}
                 >
                   Değişiklik İste
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setControlsOpen(true)}
-                  className="panel-quick-action"
-                >
+                <button type="button" onClick={() => setControlsOpen(true)} className={buttonClass("ghost", "md")}>
                   Planım fazla yoğun
                 </button>
               </div>
               {overloadActionOpen ? (
-                <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                <div className="mt-3 flex max-w-[560px] flex-col gap-2 sm:flex-row">
                   <select
                     value={overloadOption}
                     onChange={(event) => {
-                      if (isOverloadOption(event.target.value))
-                        setOverloadOption(event.target.value);
+                      if (isOverloadOption(event.target.value)) setOverloadOption(event.target.value);
                     }}
                     className="panel-input flex-1"
                     aria-label="Plan değişiklik nedeni"
                   >
-                    {Object.entries(overloadOptionLabels).map(
-                      ([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ),
-                    )}
+                    {Object.entries(overloadOptionLabels).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
                   </select>
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => void requestChange()}
-                    className="panel-quick-action"
-                  >
+                  <button type="button" disabled={busy} onClick={() => void requestChange()} className={buttonClass("primary", "md")}>
                     Talebi Gönder
                   </button>
                 </div>
               ) : null}
             </div>
           ) : (
-            <p className="mt-3 text-sm text-(--site-muted)">
-              Plan onaylandığında değişiklik ve destek taleplerini buradan
-              iletebilirsin.
+            <p className="mt-2 text-[14px] text-pn-text-muted">
+              Plan onaylandığında değişiklik ve destek taleplerini buradan iletebilirsin.
             </p>
           )}
         </section>
       ) : null}
 
-      {plan && controlsOpen ? (
-        <aside id="plan-preferences-panel" className="panel-surface p-5 sm:p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal
-                size={17}
-                className="text-(--brand-olive)"
-              />
-              <h2
-                id="plan-preferences-panel-heading"
-                ref={preferencesHeadingRef}
-                tabIndex={-1}
-                className="text-sm font-extrabold outline-hidden"
-              >
-                Plan Tercihleri
-              </h2>
-            </div>
+      {plan ? (
+        <Drawer
+          open={controlsOpen}
+          onClose={closeControls}
+          title="Plan Tercihleri"
+          description="Planı değil, sadece ayarları buradan değiştir."
+          footer={
             <button
               type="button"
-              onClick={() => setControlsOpen(false)}
-              className="panel-quick-action"
+              disabled={busy || !preference.availableDays.length}
+              onClick={() => void savePreference()}
+              className={buttonClass("primary", "md", "w-full justify-center")}
             >
-              <X size={14} /> Kapat
+              <Check size={14} aria-hidden="true" /> Tercihleri Kaydet
             </button>
-          </div>
-          <p className="mt-2 text-xs leading-5 text-(--site-muted)">
-            Planı değil, sadece ayarları buradan değiştir.
-          </p>
-          <div className="mt-5">{preferenceFields}</div>
-          <button
-            type="button"
-            disabled={busy || !preference.availableDays.length}
-            onClick={() => void savePreference()}
-            className="panel-quick-action panel-quick-action-primary mt-4 w-full justify-center"
-          >
-            <Check size={14} /> Tercihleri Kaydet
-          </button>
-        </aside>
+          }
+        >
+          {preferenceFields}
+          {message ? (
+            <p role="status" className="mt-3 text-[13px] font-medium text-pn-text-secondary">
+              {message}
+            </p>
+          ) : null}
+        </Drawer>
       ) : null}
-      <p
-        aria-live="polite"
-        className="min-h-4 text-xs font-bold text-(--brand-olive)"
+
+      <Drawer
+        open={Boolean(openTask)}
+        onClose={closeTask}
+        title={openTask?.title ?? "Görev"}
+        description={
+          openTask
+            ? `${dayHeading.format(new Date(openTask.scheduledFor))} · ${openTask.durationMinutes} dk · ${sourceLabels[openTask.sourceType]}`
+            : undefined
+        }
       >
-        {message}
+        {openTask ? (
+          <>
+            <TaskCard
+              task={openTask}
+              canComplete={canComplete}
+              highlighted={false}
+              busy={busy}
+              draft={activeCompletionId === openTask.id ? completionDraft : null}
+              onStart={(item) => void completeQuick(item, "IN_PROGRESS")}
+              onOpenComplete={(item, status) => {
+                setActiveCompletionId(item.id);
+                setCompletionDraft(emptyDraft(status, item));
+              }}
+              onDraftChange={setCompletionDraft}
+              onSubmitComplete={(item) => void submitCompletion(item)}
+              onCancelComplete={() => {
+                setActiveCompletionId(null);
+                setCompletionDraft(null);
+              }}
+            />
+            {!canComplete ? (
+              <p className="mt-3 text-[13px] text-pn-text-muted">
+                Plan koçun tarafından onaylandığında görevi buradan tamamlayabilirsin.
+              </p>
+            ) : null}
+          </>
+        ) : null}
+      </Drawer>
+
+      <p aria-live="polite" className="mt-6 min-h-4 text-[13px] font-medium text-pn-text-secondary">
+        {(plan && controlsOpen) || openTask ? "" : message}
       </p>
     </div>
   );
+}
+
+/** Hafta görünümü: planın ilk gününün haftası, Pazartesi–Pazar, boş günler dahil. */
+function weekColumns<T extends Task>(groups: Array<{ key: string; tasks: T[]; isToday: boolean }>) {
+  const first = new Date(`${groups[0].key}T12:00:00.000+03:00`);
+  const weekday = (first.getUTCDay() + 6) % 7;
+  const monday = new Date(first.getTime() - weekday * 86_400_000);
+  return Array.from({ length: 7 }, (_, index) => {
+    const key = new Date(monday.getTime() + index * 86_400_000).toISOString().slice(0, 10);
+    const group = groups.find((item) => item.key === key);
+    return { key, tasks: group?.tasks ?? [], isToday: group?.isToday ?? false };
+  });
 }

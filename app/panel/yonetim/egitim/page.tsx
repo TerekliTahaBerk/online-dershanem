@@ -16,12 +16,35 @@ import {
   PanelTableRow,
   PanelTableCell,
   PanelEmpty,
+  ViewTabs,
 } from "@/components/panel/ui";
+import { EducationHashRedirect } from "@/components/panel/education-hash-redirect";
 
 export const dynamic = "force-dynamic";
 
-export default async function EducationAdminPage() {
+const EDUCATION_TABS = [
+  { id: "gruplar", label: "Gruplar" },
+  { id: "planlama", label: "Kurulum ve ders planlama" },
+  { id: "odevler", label: "Ödevler" },
+  { id: "materyaller", label: "Materyaller" },
+] as const;
+type EducationTab = (typeof EDUCATION_TABS)[number]["id"];
+
+/**
+ * YÖNETİM · EĞİTİM (docs/panel-design-roadmap.md §9.6) — tek uzun sayfa yerine
+ * sekmeler. Her sekmenin işlevi aynen korunur; çapalar (`#yeni-grup`,
+ * `#ders-planla`, `#odev-merkezi`) ilgili sekmede kalır.
+ */
+export default async function EducationAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sekme?: string }>;
+}) {
   const session = await requireRole("ADMIN");
+  const requestedTab = (await searchParams).sekme;
+  const tab: EducationTab = EDUCATION_TABS.some((item) => item.id === requestedTab)
+    ? (requestedTab as EducationTab)
+    : "gruplar";
   const featureFlags = getPanelFeatureFlags();
   const [
     teachersRaw,
@@ -155,8 +178,22 @@ export default async function EducationAdminPage() {
         icon={BookOpenCheck}
         meta={`${groupsRaw.filter((group) => group.isActive).length} aktif grup`}
       />
-      <section className="mt-7">
-        <h2 className="text-[16px] font-bold text-dc-ink">Gruplar</h2>
+      <EducationHashRedirect />
+      <div className="mt-5">
+        <ViewTabs
+          label="Eğitim bölümleri"
+          activeId={tab}
+          tabs={EDUCATION_TABS.map((item) => ({
+            id: item.id,
+            label: item.label,
+            href: item.id === "gruplar" ? "/panel/yonetim/egitim" : `/panel/yonetim/egitim?sekme=${item.id}`,
+          }))}
+        />
+      </div>
+      {tab === "gruplar" ? (
+      <>
+      <section className="mt-6">
+        <h2 className="text-[15px] font-semibold text-pn-text">Gruplar</h2>
         <p className="mt-1 text-[13.5px] text-dc-ink-muted">
           {activeGroups.length} aktif grup
           {openSeats ? ` · ${openSeats} grupta boş kontenjan` : ""}
@@ -219,7 +256,36 @@ export default async function EducationAdminPage() {
           </div>
         )}
       </section>
-      <div className="mt-7">
+      <EducationManagement
+        teachers={teachersRaw.map((item) => ({
+          id: item.id,
+          name: name(item),
+        }))}
+        groups={groupsRaw.map((group) => ({
+          id: group.id,
+          name: group.name,
+          subject: group.subject,
+          level: group.level || "",
+          teacherId: group.teacher.id,
+          teacherName: name(group.teacher),
+          isActive: group.isActive,
+          capacity: group.capacity,
+          studentCount: group.enrollments.length,
+        }))}
+        lessons={lessons.map((lesson) => ({
+          id: lesson.id,
+          title: lesson.title,
+          startsAt: lesson.startsAt.toISOString(),
+          status: lesson.status,
+          groupName: lesson.group.name,
+          teacherName: name(lesson.teacher),
+        }))}
+      />
+      </>
+      ) : null}
+      {tab === "planlama" ? (
+      <>
+      <div className="mt-6">
         <AdminSetupWizard
           teachers={teachersRaw.map((item) => ({
             id: item.id,
@@ -258,37 +324,15 @@ export default async function EducationAdminPage() {
             }))}
         />
       </div>
-      <EducationManagement
-        teachers={teachersRaw.map((item) => ({
-          id: item.id,
-          name: name(item),
-        }))}
-        groups={groupsRaw.map((group) => ({
-          id: group.id,
-          name: group.name,
-          subject: group.subject,
-          level: group.level || "",
-          teacherId: group.teacher.id,
-          teacherName: name(group.teacher),
-          isActive: group.isActive,
-          capacity: group.capacity,
-          studentCount: group.enrollments.length,
-        }))}
-        lessons={lessons.map((lesson) => ({
-          id: lesson.id,
-          title: lesson.title,
-          startsAt: lesson.startsAt.toISOString(),
-          status: lesson.status,
-          groupName: lesson.group.name,
-          teacherName: name(lesson.teacher),
-        }))}
-      />
-      <section id="odev-merkezi" className="mt-9 scroll-mt-28">
+      </>
+      ) : null}
+      {tab === "odevler" ? (
+      <section id="odev-merkezi" className="mt-6 scroll-mt-28">
         <div className="mb-4">
-          <h2 className="text-lg font-extrabold text-(--site-ink)">
+          <h2 className="text-[15px] font-semibold text-pn-text">
             Ödev merkezi
           </h2>
-          <p className="mt-1 text-xs text-(--site-muted)">
+          <p className="mt-0.5 text-[13px] text-pn-text-muted">
             Admin tarafından verilen ödevler öğretmen, öğrenci ve veli
             ekranlarına aynı anda yansır.
           </p>
@@ -348,12 +392,14 @@ export default async function EducationAdminPage() {
           }))}
         />
       </section>
-      <section className="mt-9">
+      ) : null}
+      {tab === "materyaller" ? (
+      <section className="mt-6">
         <div className="mb-4">
-          <h2 className="text-lg font-extrabold text-(--site-ink)">
+          <h2 className="text-[15px] font-semibold text-pn-text">
             Materyal merkezi
           </h2>
-          <p className="mt-1 text-xs text-(--site-muted)">
+          <p className="mt-0.5 text-[13px] text-pn-text-muted">
             Kaynaklar öğretmen ve öğrenci ekranlarıyla aynı veri üzerinden
             çalışır.
           </p>
@@ -379,6 +425,7 @@ export default async function EducationAdminPage() {
           }))}
         />
       </section>
+      ) : null}
     </PanelShell>
   );
 }

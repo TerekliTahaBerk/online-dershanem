@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { enforceMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
+import { COACHING_QUEUES, type CoachingQueue } from "./queues";
 
 /**
  * ADMIN · KOÇ ATAMA / DEVRETME (Panel.dc.html → aCoach).
@@ -44,6 +45,7 @@ export async function assignCoach(formData: FormData) {
       coachId: z.string().min(1),
       cadenceDays: z.string().optional(),
       overrideReason: z.string().max(500).optional(),
+      returnQueue: z.string().optional(),
     })
     .parse(Object.fromEntries(formData));
 
@@ -124,4 +126,9 @@ export async function assignCoach(formData: FormData) {
 
   revalidatePath("/panel/yonetim/kocluk");
   revalidatePath("/panel/yonetim/ogrenciler");
+  // Yan panelden atandıysa paneli kapatıp aynı kuyruğa dön (yalnız bilinen kuyruk adları).
+  if (parsed.returnQueue !== undefined) {
+    const queue = COACHING_QUEUES.includes(parsed.returnQueue as CoachingQueue) ? parsed.returnQueue : COACHING_QUEUES[0];
+    redirect(`/panel/yonetim/kocluk?kuyruk=${queue}&atandi=1`);
+  }
 }

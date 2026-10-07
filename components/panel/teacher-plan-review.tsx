@@ -92,17 +92,17 @@ export function TeacherPlanReview({ plans: initial }: { plans: Plan[] }) {
   return (
     <div className="space-y-4">
       {plans.map((plan) => (
-        <article key={plan.id} className="panel-surface p-5 sm:p-6">
+        <article key={plan.id}>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-extrabold">{plan.studentName}</h2>
+              <h2 className="text-[15px] font-semibold text-pn-text">{plan.studentName}</h2>
               <p className="mt-1 text-xs text-(--site-muted)">
                 Haftalık kapasite {plan.capacityMinutes} dk ·{" "}
                 {plan.tasks.length} iş · kural adaptive-v1
               </p>
             </div>
             <span
-              className={`rounded-full px-3 py-1 text-[10px] font-extrabold ${plan.status === "APPROVED" ? "bg-emerald-100 text-emerald-800" : plan.status === "CHANGE_REQUESTED" ? "bg-amber-100 text-amber-900" : "bg-sky-100 text-sky-800"}`}
+              className={`rounded-full px-2 py-0.5 text-[12px] font-medium ${plan.status === "APPROVED" ? "bg-(--pn-tone-success-soft) text-(--pn-tone-success)" : plan.status === "CHANGE_REQUESTED" ? "bg-(--pn-tone-warning-soft) text-(--pn-tone-warning)" : "bg-(--pn-tone-info-soft) text-(--pn-tone-info)"}`}
             >
               {plan.status === "APPROVED"
                 ? "Onaylandı"
@@ -112,7 +112,7 @@ export function TeacherPlanReview({ plans: initial }: { plans: Plan[] }) {
             </span>
           </div>
           {plan.changeRequestCategory ? (
-            <p className="mt-3 rounded-xl bg-amber-50 p-3 text-xs font-bold text-amber-900">
+            <p className="mt-3 rounded-md bg-(--pn-tone-warning-soft) px-3 py-2 text-[13px] font-medium text-(--pn-tone-warning)">
               Öğrenci geri bildirimi:{" "}
               {plan.changeRequestCategory === "TOO_MUCH"
                 ? "Öğrenci bu haftanın yoğunluğunu fazla buldu."
@@ -123,18 +123,17 @@ export function TeacherPlanReview({ plans: initial }: { plans: Plan[] }) {
                     : "Başka bir neden"}
             </p>
           ) : null}
-          <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-3 border-t border-pn-border">
             {plan.tasks.map((task) => (
               <div
                 key={task.id}
-                className="rounded-xl border border-(--site-line) bg-(--site-bg-warm) p-3"
+                className="flex items-baseline justify-between gap-3 border-b border-pn-border py-2"
               >
-                <p className="flex items-center gap-1 text-[10px] font-bold text-(--site-muted)">
-                  <Clock3 size={12} />
-                  {date.format(new Date(task.scheduledFor))} ·{" "}
-                  {task.durationMinutes} dk
+                <p className="text-[13.5px] font-medium text-pn-text">{task.title}</p>
+                <p className="flex shrink-0 items-center gap-1 text-[12px] text-pn-text-muted">
+                  <Clock3 size={12} aria-hidden="true" />
+                  {date.format(new Date(task.scheduledFor))} · {task.durationMinutes} dk
                 </p>
-                <p className="mt-1 text-xs font-extrabold">{task.title}</p>
               </div>
             ))}
           </div>

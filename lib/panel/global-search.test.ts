@@ -61,6 +61,50 @@ test("visible commands: lead command requires business permission", () => {
   assert.ok(withLead.some((item) => item.id === "leads"));
 });
 
+test("visible commands: Deneme Ligi and Yön commands follow staff permissions, not the global role", () => {
+  const plainTeacher = visibleGlobalSearchCommands({ role: "TEACHER", flags: flagsOn, businessPermissions: [] });
+  assert.ok(!plainTeacher.some((item) => item.id === "exam-ops"));
+  assert.ok(!plainTeacher.some((item) => item.id === "coach-desk"));
+
+  const operator = visibleGlobalSearchCommands({
+    role: "TEACHER",
+    flags: flagsOn,
+    businessPermissions: [],
+    staffPermissions: new Set(["odk:ops:live", "odk:exam:schedule"] as const),
+  });
+  assert.ok(operator.some((item) => item.id === "exam-ops"));
+  assert.ok(operator.some((item) => item.id === "exam-plan"));
+  assert.ok(!operator.some((item) => item.id === "exam-results"));
+
+  const coachFlagOff = visibleGlobalSearchCommands({
+    role: "TEACHER",
+    flags: { ...flagsOn, adaptivePlan: false },
+    businessPermissions: [],
+    staffPermissions: ["ok:coaching:write"],
+  });
+  const coach = visibleGlobalSearchCommands({
+    role: "TEACHER",
+    flags: { ...flagsOn, adaptivePlan: true },
+    businessPermissions: [],
+    staffPermissions: ["ok:coaching:write"],
+  });
+  assert.ok(!coachFlagOff.some((item) => item.id === "coach-desk"));
+  assert.ok(coach.some((item) => item.id === "coach-desk"));
+  // Koç çalışma alanı plan bayrağından bağımsızdır; düz öğretmen görmez.
+  assert.ok(coachFlagOff.some((item) => item.id === "coach-workspace"));
+  assert.ok(!plainTeacher.some((item) => item.id === "coach-workspace"));
+
+  // ADMIN break-glass: personel izni listesi olmadan da görür.
+  const admin = visibleGlobalSearchCommands({ role: "ADMIN", flags: flagsOn, businessPermissions: [] });
+  for (const id of ["exam-ops", "exam-plan", "exam-results"]) assert.ok(admin.some((item) => item.id === id), id);
+});
+
+test("command labels do not leak internal terms", () => {
+  for (const command of GLOBAL_SEARCH_COMMANDS) {
+    assert.ok(!/provisioning|incident|\bODK\b/i.test(`${command.label} ${command.detail}`), command.id);
+  }
+});
+
 test("matchCommands is Turkish case-insensitive", () => {
   const matched = matchCommands(GLOBAL_SEARCH_COMMANDS, "SİPARİŞ");
   assert.ok(matched.some((item) => item.id === "orders"));

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import type { SessionUser } from "@/lib/auth/session";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { getBusinessAccess } from "@/lib/business/permissions";
+import { effectiveStaffPermissions } from "@/lib/products/staff-permissions";
 import { odkExamStatusLabel } from "@/lib/panel/status-vocabulary";
 import {
   GLOBAL_SEARCH_PER_KIND_LIMIT,
@@ -63,12 +64,15 @@ function teacherStudentScope(teacherUserId: string): Prisma.StudentProfileWhereI
 
 async function buildViewer(session: SessionUser): Promise<GlobalSearchViewer> {
   const flags = getPanelFeatureFlags();
-  const businessUnits =
-    session.role === "ADMIN" ? await getBusinessAccess(session, "lead:read") : [];
+  const [businessUnits, staff] = await Promise.all([
+    session.role === "ADMIN" ? getBusinessAccess(session, "lead:read") : Promise.resolve([]),
+    session.role === "TEACHER" ? effectiveStaffPermissions(session.userId) : Promise.resolve(null),
+  ]);
   return {
     role: session.role,
     flags,
     businessPermissions: businessUnits.length ? (["lead:read"] as const) : [],
+    staffPermissions: staff?.permissions,
   };
 }
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { BookOpenCheck, CheckCircle2, Plus } from "lucide-react";
+import { CheckCircle2, Plus } from "lucide-react";
+import { EmptyState, Section, StatusBadge, buttonClass } from "@/components/panel/primitives";
 
 type Version = {
   id: string;
@@ -58,10 +59,66 @@ export function CurriculumManager({
   }
 
   return (
-    <div className="space-y-6">
-      <section className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
+    <div>
+      <Section
+        id="surumler"
+        title="Müfredat sürümleri"
+        description="Yalnız Aktif sürümlerin kazanımları öğretmen seçiminde görünür. Eski sürümü silmek yerine arşivleyin."
+      >
+        <div className="border-t border-pn-border">
+          {versions.map((version) => (
+            <article
+              key={version.id}
+              className="flex flex-col gap-2 border-b border-pn-border py-3 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <strong className="text-[14px] font-semibold text-pn-text">{version.code}</strong>
+                  <StatusBadge label={VERSION_STATUS[version.status].label} tone={VERSION_STATUS[version.status].tone} />
+                </div>
+                <p className="mt-0.5 text-[13px] text-pn-text-secondary">
+                  {version.title} · {version.exam} · {version.academicYear}
+                </p>
+                <p className="text-[12px] text-pn-text-muted">
+                  {version.subjectCount} ders · {version.outcomeCount} kazanım
+                </p>
+              </div>
+              <select
+                aria-label={`${version.code} durumu`}
+                value={version.status}
+                disabled={busy}
+                onChange={(event) =>
+                  void run(
+                    () =>
+                      mutate(
+                        `/api/panel/curriculum/versions/${version.id}`,
+                        "PATCH",
+                        { status: event.target.value },
+                      ),
+                    "Sürüm durumu güncellendi.",
+                  )
+                }
+                className="panel-input w-auto text-[13px]"
+              >
+                <option value="DRAFT">Taslak</option>
+                <option value="ACTIVE">Aktif</option>
+                <option value="ARCHIVED">Arşiv</option>
+              </select>
+            </article>
+          ))}
+          {!versions.length ? (
+            <EmptyState className="mt-3" title="İlk müfredat sürümünü oluşturun." />
+          ) : null}
+        </div>
+      </Section>
+
+      <Section
+        id="yeni-surum"
+        title="Yeni sürüm"
+        description="Resmî kaynağı ve yılı ayrı sürümleyin."
+      >
         <form
-          className="panel-surface p-5"
+          className="grid max-w-[760px] gap-3 sm:grid-cols-2"
           onSubmit={(event) => {
             event.preventDefault();
             const data = new FormData(event.currentTarget);
@@ -78,32 +135,20 @@ export function CurriculumManager({
             );
           }}
         >
-          <Plus size={19} className="text-(--brand-olive)" />
-          <h2 className="mt-3 text-sm font-extrabold">Yeni sürüm</h2>
-          <p className="mt-1 text-xs leading-5 text-(--site-muted)">
-            Resmî kaynağı ve yılı ayrı sürümleyin; eski sürümü silmek yerine
-            arşivleyin.
-          </p>
-          <input
-            name="code"
-            required
-            maxLength={40}
-            className="panel-input mt-4"
-            placeholder="Örn. LGS-2026-V1"
-          />
-          <input
-            name="title"
-            required
-            maxLength={120}
-            className="panel-input mt-2"
-            placeholder="Sürüm adı"
-          />
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            <select name="exam" aria-label="Sınav" className="panel-input">
+          <Field label="Sürüm kodu">
+            <input name="code" required maxLength={40} className="panel-input" placeholder="Örn. LGS-2026-V1" />
+          </Field>
+          <Field label="Sürüm adı">
+            <input name="title" required maxLength={120} className="panel-input" />
+          </Field>
+          <Field label="Sınav">
+            <select name="exam" className="panel-input">
               {examFamilies.map((item) => (
                 <option key={item}>{item}</option>
               ))}
             </select>
+          </Field>
+          <Field label="Akademik yıl">
             <input
               name="academicYear"
               type="number"
@@ -111,203 +156,123 @@ export function CurriculumManager({
               max="2100"
               defaultValue={new Date().getFullYear()}
               className="panel-input"
-              aria-label="Akademik yıl"
             />
+          </Field>
+          <Field label="Resmî kaynak URL'si" className="sm:col-span-2">
+            <input name="sourceUrl" type="url" maxLength={500} className="panel-input" />
+          </Field>
+          <div className="sm:col-span-2">
+            <button disabled={busy} className={buttonClass("secondary", "md")}>
+              <Plus size={14} aria-hidden="true" /> Sürümü oluştur
+            </button>
           </div>
-          <input
-            name="sourceUrl"
-            type="url"
-            maxLength={500}
-            className="panel-input mt-2"
-            placeholder="Resmî kaynak URL'si"
-          />
-          <button
-            disabled={busy}
-            className="site-btn site-btn-primary site-btn-sm mt-4 w-full"
-          >
-            Sürümü oluştur
-          </button>
         </form>
-        <section className="panel-surface overflow-hidden">
-          <div className="border-b border-(--site-line) p-5">
-            <h2 className="text-sm font-extrabold">Müfredat sürümleri</h2>
-            <p className="mt-1 text-xs text-(--site-muted)">
-              Yalnız ACTIVE sürümlerin kazanımları öğretmen seçiminde görünür.
-            </p>
-          </div>
-          <div className="divide-y divide-(--site-line)">
-            {versions.map((version) => (
-              <article
-                key={version.id}
-                className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <strong className="text-sm">{version.code}</strong>
-                    <span
-                      className={`rounded-full px-2 py-1 text-[9px] font-extrabold ${version.status === "ACTIVE" ? "bg-emerald-50 text-emerald-700" : version.status === "ARCHIVED" ? "bg-slate-100 text-slate-600" : "bg-amber-50 text-amber-800"}`}
-                    >
-                      {version.status}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs text-(--site-body)">
-                    {version.title} · {version.exam} · {version.academicYear}
-                  </p>
-                  <p className="mt-1 text-[10px] text-(--site-muted)">
-                    {version.subjectCount} ders · {version.outcomeCount} kazanım
-                  </p>
-                </div>
-                <select
-                  aria-label={`${version.code} durumu`}
-                  value={version.status}
-                  disabled={busy}
-                  onChange={(event) =>
-                    void run(
-                      () =>
-                        mutate(
-                          `/api/panel/curriculum/versions/${version.id}`,
-                          "PATCH",
-                          { status: event.target.value },
-                        ),
-                      "Sürüm durumu güncellendi.",
-                    )
-                  }
-                  className="panel-input w-auto text-xs"
-                >
-                  <option value="DRAFT">Taslak</option>
-                  <option value="ACTIVE">Aktif</option>
-                  <option value="ARCHIVED">Arşiv</option>
-                </select>
-              </article>
-            ))}
-            {!versions.length ? (
-              <p className="p-8 text-center text-sm text-(--site-muted)">
-                İlk müfredat sürümünü oluşturun.
-              </p>
-            ) : null}
-          </div>
-        </section>
-      </section>
+      </Section>
 
-      <form
-        className="panel-surface p-5 sm:p-6"
-        onSubmit={(event) => {
-          event.preventDefault();
-          const data = new FormData(event.currentTarget);
-          void run(
-            () =>
-              mutate("/api/panel/curriculum/outcomes", "POST", {
-                versionId: data.get("versionId"),
-                subjectCode: data.get("subjectCode"),
-                subjectName: data.get("subjectName"),
-                unitCode: data.get("unitCode"),
-                unitName: data.get("unitName"),
-                outcomeCode: data.get("outcomeCode"),
-                title: data.get("title"),
-                description: data.get("description"),
-                skills: String(data.get("skills") || "")
-                  .split(",")
-                  .map((item) => item.trim())
-                  .filter(Boolean),
-              }),
-            "Kazanım kataloğa eklendi.",
-          );
-        }}
+      <Section
+        id="kazanim-ekle"
+        title="Kazanım ekle"
+        description="Ders → ünite → kazanım → beceri yapısı korunur."
       >
-        <div className="flex items-center gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-2xl bg-(--brand-olive-soft) text-(--brand-olive)">
-            <BookOpenCheck size={19} />
-          </span>
-          <div>
-            <h2 className="text-sm font-extrabold">Kazanım ekle</h2>
-            <p className="mt-1 text-xs text-(--site-muted)">
-              Ders → ünite → kazanım → beceri yapısı korunur.
-            </p>
-          </div>
-        </div>
-        <div className="mt-5 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-          <select
-            name="versionId"
-            required
-            aria-label="Müfredat sürümü"
-            value={versionId}
-            onChange={(event) => setVersionId(event.target.value)}
-            className="panel-input"
-          >
-            <option value="">Sürüm seçin</option>
-            {versions
-              .filter((item) => item.status !== "ARCHIVED")
-              .map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.code}
-                </option>
-              ))}
-          </select>
-          <input
-            name="subjectCode"
-            required
-            className="panel-input"
-            placeholder="Ders kodu: MAT"
-          />
-          <input
-            name="subjectName"
-            required
-            className="panel-input"
-            placeholder="Ders adı: Matematik"
-          />
-          <input
-            name="unitCode"
-            required
-            className="panel-input"
-            placeholder="Ünite kodu"
-          />
-          <input
-            name="unitName"
-            required
-            className="panel-input"
-            placeholder="Ünite adı"
-          />
-          <input
-            name="outcomeCode"
-            required
-            className="panel-input"
-            placeholder="Kazanım kodu"
-          />
-          <textarea
-            name="title"
-            required
-            maxLength={300}
-            className="panel-input min-h-24 md:col-span-2"
-            placeholder="Öğretmenin ve öğrencinin anlayacağı kazanım ifadesi"
-          />
-          <textarea
-            name="description"
-            maxLength={1000}
-            className="panel-input min-h-24"
-            placeholder="Opsiyonel açıklama"
-          />
-          <input
-            name="skills"
-            maxLength={300}
-            className="panel-input md:col-span-2 xl:col-span-3"
-            placeholder="Beceriler, virgülle: problem çözme, analiz"
-          />
-        </div>
-        <button
-          disabled={busy || !versionId}
-          className="site-btn site-btn-primary site-btn-sm mt-4"
+        <form
+          className="grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const data = new FormData(event.currentTarget);
+            void run(
+              () =>
+                mutate("/api/panel/curriculum/outcomes", "POST", {
+                  versionId: data.get("versionId"),
+                  subjectCode: data.get("subjectCode"),
+                  subjectName: data.get("subjectName"),
+                  unitCode: data.get("unitCode"),
+                  unitName: data.get("unitName"),
+                  outcomeCode: data.get("outcomeCode"),
+                  title: data.get("title"),
+                  description: data.get("description"),
+                  skills: String(data.get("skills") || "")
+                    .split(",")
+                    .map((item) => item.trim())
+                    .filter(Boolean),
+                }),
+              "Kazanım kataloğa eklendi.",
+            );
+          }}
         >
-          <CheckCircle2 size={15} /> Kazanımı ekle
-        </button>
-        {message ? (
-          <p
-            aria-live="polite"
-            className="mt-3 text-xs font-bold text-(--brand-olive)"
-          >
-            {message}
-          </p>
-        ) : null}
-      </form>
+          <Field label="Müfredat sürümü">
+            <select
+              name="versionId"
+              required
+              value={versionId}
+              onChange={(event) => setVersionId(event.target.value)}
+              className="panel-input"
+            >
+              <option value="">Sürüm seçin</option>
+              {versions
+                .filter((item) => item.status !== "ARCHIVED")
+                .map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.code}
+                  </option>
+                ))}
+            </select>
+          </Field>
+          <Field label="Ders kodu">
+            <input name="subjectCode" required className="panel-input" placeholder="MAT" />
+          </Field>
+          <Field label="Ders adı">
+            <input name="subjectName" required className="panel-input" placeholder="Matematik" />
+          </Field>
+          <Field label="Ünite kodu">
+            <input name="unitCode" required className="panel-input" />
+          </Field>
+          <Field label="Ünite adı">
+            <input name="unitName" required className="panel-input" />
+          </Field>
+          <Field label="Kazanım kodu">
+            <input name="outcomeCode" required className="panel-input" />
+          </Field>
+          <Field label="Kazanım ifadesi" className="md:col-span-2">
+            <textarea
+              name="title"
+              required
+              maxLength={300}
+              className="panel-input min-h-24"
+              placeholder="Öğretmenin ve öğrencinin anlayacağı kazanım ifadesi"
+            />
+          </Field>
+          <Field label="Açıklama (isteğe bağlı)">
+            <textarea name="description" maxLength={1000} className="panel-input min-h-24" />
+          </Field>
+          <Field label="Beceriler (virgülle)" className="md:col-span-2 xl:col-span-3">
+            <input name="skills" maxLength={300} className="panel-input" placeholder="problem çözme, analiz" />
+          </Field>
+          <div className="md:col-span-2 xl:col-span-3">
+            <button disabled={busy || !versionId} className={buttonClass("primary", "md")}>
+              <CheckCircle2 size={15} aria-hidden="true" /> Kazanımı ekle
+            </button>
+          </div>
+        </form>
+      </Section>
+
+      <p aria-live="polite" className="mt-4 min-h-5 text-[13px] font-medium text-pn-text-secondary">
+        {message}
+      </p>
     </div>
+  );
+}
+
+const VERSION_STATUS: Record<Version["status"], { label: string; tone: "success" | "neutral" | "warning" }> = {
+  ACTIVE: { label: "Aktif", tone: "success" },
+  DRAFT: { label: "Taslak", tone: "warning" },
+  ARCHIVED: { label: "Arşiv", tone: "neutral" },
+};
+
+function Field({ label, className, children }: { label: string; className?: string; children: ReactNode }) {
+  return (
+    <label className={`grid gap-1 text-[12.5px] font-medium text-pn-text-secondary ${className ?? ""}`}>
+      {label}
+      {children}
+    </label>
   );
 }

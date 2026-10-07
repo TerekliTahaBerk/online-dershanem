@@ -1,4 +1,4 @@
-import { PanelStatCard } from "@/components/panel/ui";
+import { PropertyList, PropertyRow, Section } from "@/components/panel/ui";
 import type { BehavioralInsights } from "@/lib/progress-insights/types";
 
 /**
@@ -59,25 +59,25 @@ export function BehavioralBlock({
 
   if (!cards.length) return null;
 
+  // Sayı kutuları yerine özellik satırları: değer + açıklama + ince ilerleme çizgisi.
   return (
-    <section className="mt-6" aria-labelledby="analiz-davranis-baslik">
-      <h2
-        id="analiz-davranis-baslik"
-        className="text-[15px] font-extrabold text-dc-ink"
-      >
-        Davranışsal gidişat
-      </h2>
-      <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <Section id="analiz-davranis" title="Davranışsal gidişat">
+      <PropertyList>
         {cards.map((card) => (
-          <PanelStatCard
-            key={card.key}
-            title={card.title}
-            value={card.value}
-            progressPct={card.progressPct}
-            note={card.note}
-          />
+          <PropertyRow key={card.key} label={card.title}>
+            <span className="font-semibold tabular-nums">{card.value}</span>
+            <span className="text-pn-text-muted"> · {card.note}</span>
+            {typeof card.progressPct === "number" ? (
+              <span aria-hidden="true" className="mt-1 block h-1 max-w-[240px] overflow-hidden rounded-full bg-pn-surface-subtle">
+                <span
+                  className="block h-full rounded-full bg-(--pn-accent-marker,var(--dc-brand))"
+                  style={{ width: `${Math.max(0, Math.min(100, card.progressPct))}%` }}
+                />
+              </span>
+            ) : null}
+          </PropertyRow>
         ))}
-      </div>
-    </section>
+      </PropertyList>
+    </Section>
   );
 }

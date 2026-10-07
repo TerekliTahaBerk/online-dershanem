@@ -11,6 +11,7 @@ import {
   PanelTable,
   PanelTableCell,
   PanelTableRow,
+  StatusBadge,
 } from "@/components/panel/ui";
 import { CreateUserForm } from "@/components/panel/create-user-form";
 import { UserBulkOperations } from "@/components/panel/user-bulk-operations";
@@ -348,7 +349,7 @@ export default async function PeopleHubPage({
                       .join(", ") || "—"}
                   </PanelTableCell>
                   <PanelTableCell>
-                    {USER_STATUS_PRESENTATION[user.status].label}
+                    <StatusBadge presentation={USER_STATUS_PRESENTATION[user.status]} />
                     {!user.inviteAcceptedAt ? " · davet" : ""}
                   </PanelTableCell>
                   <PanelTableCell>
@@ -392,7 +393,7 @@ export default async function PeopleHubPage({
                   <PanelTableCell>{studentCount}</PanelTableCell>
                   <PanelTableCell>{user.taughtGroups.length}</PanelTableCell>
                   <PanelTableCell>{user.taughtLessons.length}</PanelTableCell>
-                  <PanelTableCell>{USER_STATUS_PRESENTATION[user.status].label}</PanelTableCell>
+                  <PanelTableCell><StatusBadge presentation={USER_STATUS_PRESENTATION[user.status]} /></PanelTableCell>
                 </PanelTableRow>
               );
             })}
@@ -429,7 +430,7 @@ export default async function PeopleHubPage({
                 <PanelTableCell>
                   {[user.phone, user.email].filter(Boolean).join(" · ")}
                 </PanelTableCell>
-                <PanelTableCell>{USER_STATUS_PRESENTATION[user.status].label}</PanelTableCell>
+                <PanelTableCell><StatusBadge presentation={USER_STATUS_PRESENTATION[user.status]} /></PanelTableCell>
                 <PanelTableCell>
                   {user.lastLoginAt ? DATE.format(user.lastLoginAt) : "—"}
                 </PanelTableCell>

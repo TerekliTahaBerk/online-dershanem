@@ -3,9 +3,13 @@ import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   PanelEmpty,
-  PanelFilterLink,
   PanelHeading,
-  PanelStatusBadge,
+  PanelTable,
+  PanelTableCell,
+  PanelTableRow,
+  StatusBadge,
+  ViewTabs,
+  buttonClass,
 } from "@/components/panel/ui";
 import { getTeacherRoster } from "@/lib/panel/teacher-roster-server";
 import {
@@ -62,26 +66,22 @@ export default async function TeacherStudentsPage({
       email={session.email}
       pageTitle="Öğrenciler"
     >
-      <div className="max-w-[1100px]">
+      <div>
         <PanelHeading
           title="Öğrencilerin"
           description={`${roster.totalCount} öğrenci · yalnız sana atanmış`}
         />
 
-        <div className="mt-5 flex flex-wrap gap-2">
-          {roster.filters.map((filter) => (
-            <PanelFilterLink
-              key={filter}
-              href={
-                filter === "all"
-                  ? "/panel/ogretmen/gruplar"
-                  : `/panel/ogretmen/gruplar?filtre=${filter}`
-              }
-              active={roster.filter === filter}
-            >
-              {TEACHER_ROSTER_FILTER_LABELS[filter]}
-            </PanelFilterLink>
-          ))}
+        <div className="mt-5 mb-4">
+          <ViewTabs
+            label="Öğrenci görünümü"
+            activeId={roster.filter}
+            tabs={roster.filters.map((filter) => ({
+              id: filter,
+              label: TEACHER_ROSTER_FILTER_LABELS[filter],
+              href: filter === "all" ? "/panel/ogretmen/gruplar" : `/panel/ogretmen/gruplar?filtre=${filter}`,
+            }))}
+          />
         </div>
 
         {roster.rows.length === 0 ? (
@@ -99,90 +99,47 @@ export default async function TeacherStudentsPage({
             }
           />
         ) : (
-          <ul className="mt-5 space-y-3">
+          <PanelTable
+            caption="Sana atanmış öğrenciler"
+            columns={["Öğrenci", "Durum", "Son ders", "Plan", "Son deneme", "Neden", ""]}
+          >
             {roster.rows.map((row) => (
-              <li
-                key={row.studentId}
-                className="rounded-[14px] border border-dc-line-soft bg-white px-4 py-4 sm:px-5"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <Link
-                      href={`/panel/ogretmen/ogrenci/${row.studentId}`}
-                      className="text-[15px] font-bold text-dc-ink underline-offset-2 hover:text-dc-brand-hover hover:underline"
-                    >
-                      {row.name}
-                    </Link>
-                    <p className="mt-1 text-[13px] text-dc-ink-muted">
-                      {row.groupName}
-                    </p>
-                  </div>
-                  <PanelStatusBadge
-                    label={riskLabel(row.riskLevel)}
-                    tone={riskTone(row.riskLevel)}
-                  />
-                </div>
-
-                <dl className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  <div>
-                    <dt className="text-[11px] font-bold uppercase tracking-[0.06em] text-dc-ink-faint">
-                      Son ders
-                    </dt>
-                    <dd className="mt-1 text-[13.5px] font-semibold text-dc-ink">
-                      {row.lastLessonAt
-                        ? `${DAY.format(new Date(row.lastLessonAt))}${row.lastLessonTitle ? ` · ${row.lastLessonTitle}` : ""}`
-                        : "—"}
-                    </dd>
-                  </div>
-                  {row.planLabel != null ? (
-                    <div>
-                      <dt className="text-[11px] font-bold uppercase tracking-[0.06em] text-dc-ink-faint">
-                        Plan
-                      </dt>
-                      <dd className="mt-1 text-[13.5px] font-semibold text-dc-ink">
-                        {row.planLabel}
-                      </dd>
-                    </div>
-                  ) : null}
-                  {row.examDeltaLabel != null ? (
-                    <div>
-                      <dt className="text-[11px] font-bold uppercase tracking-[0.06em] text-dc-ink-faint">
-                        Son deneme
-                      </dt>
-                      <dd className="mt-1 text-[13.5px] font-semibold text-dc-ink">
-                        {row.examDeltaLabel} net
-                      </dd>
-                    </div>
-                  ) : null}
-                  <div>
-                    <dt className="text-[11px] font-bold uppercase tracking-[0.06em] text-dc-ink-faint">
-                      Neden
-                    </dt>
-                    <dd className="mt-1 text-[13.5px] font-semibold text-dc-ink">
-                      {row.riskReason || "Aksiyon gerektiren sinyal yok"}
-                    </dd>
-                  </div>
-                </dl>
-
-                <div className="mt-3.5 flex flex-wrap gap-2">
+              <PanelTableRow key={row.studentId}>
+                <PanelTableCell>
                   <Link
                     href={`/panel/ogretmen/ogrenci/${row.studentId}`}
-                    className="panel-quick-action inline-flex"
+                    className="font-semibold text-pn-text underline-offset-2 hover:underline"
                   >
-                    Öğrenci profili
+                    {row.name}
                   </Link>
-                  {roster.flags.studentCheckIn && row.tags.includes("help") ? (
-                    <Link
-                      href="/panel/ogretmen/yardim"
-                      className="panel-quick-action inline-flex"
-                    >
-                      Yardım talebi
+                  <span className="block text-[12.5px] text-pn-text-muted">{row.groupName}</span>
+                </PanelTableCell>
+                <PanelTableCell>
+                  <StatusBadge label={riskLabel(row.riskLevel)} tone={riskTone(row.riskLevel)} />
+                </PanelTableCell>
+                <PanelTableCell>
+                  {row.lastLessonAt
+                    ? `${DAY.format(new Date(row.lastLessonAt))}${row.lastLessonTitle ? ` · ${row.lastLessonTitle}` : ""}`
+                    : "—"}
+                </PanelTableCell>
+                <PanelTableCell>{row.planLabel ?? "—"}</PanelTableCell>
+                <PanelTableCell>{row.examDeltaLabel != null ? `${row.examDeltaLabel} net` : "—"}</PanelTableCell>
+                <PanelTableCell>{row.riskReason || "Aksiyon gerektiren sinyal yok"}</PanelTableCell>
+                <PanelTableCell>
+                  <span className="flex flex-wrap gap-1.5">
+                    <Link href={`/panel/ogretmen/ogrenci/${row.studentId}`} className={buttonClass("secondary", "sm")}>
+                      Öğrenci profili
                     </Link>
-                  ) : null}
-                </div>
-              </li>
+                    {roster.flags.studentCheckIn && row.tags.includes("help") ? (
+                      <Link href="/panel/ogretmen/yardim" className={buttonClass("ghost", "sm")}>
+                        Yardım talebi
+                      </Link>
+                    ) : null}
+                  </span>
+                </PanelTableCell>
+              </PanelTableRow>
             ))}
-          </ul>
+          </PanelTable>
         )}
       </div>
     </PanelShell>

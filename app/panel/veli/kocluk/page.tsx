@@ -6,10 +6,11 @@ import { getStudentCoaching } from "@/lib/panel/coaching";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
 import {
-  PanelHeading,
-  PanelCard,
-  PanelCardTitle,
-  PanelEmpty,
+  EmptyState,
+  PageHeader,
+  PropertyList,
+  PropertyRow,
+  Section,
 } from "@/components/panel/ui";
 import {
   addIstanbulCalendarDays,
@@ -53,7 +54,7 @@ export default async function ParentCoachingPage({
       role={session.role}
       fullName={session.fullName}
       email={session.email}
-      pageTitle="Koçluk"
+      pageTitle="Yön Koçluk"
       topbarSlot={
         <ChildSwitcher
           options={children}
@@ -69,8 +70,9 @@ export default async function ParentCoachingPage({
   if (!selected) {
     return shell(
       <>
-        <PanelHeading title="Koçluk" />
-        <PanelEmpty
+        <PageHeader title="Yön Koçluk" />
+        <EmptyState
+          className="mt-6"
           title="Henüz bağlı öğrenci yok."
           body="Hesabınız öğrencinizle eşleştirildiğinde koçluk özeti burada açılır."
         />
@@ -81,8 +83,9 @@ export default async function ParentCoachingPage({
   if (!selected.products.includes("OK")) {
     return shell(
       <>
-        <PanelHeading title="Koçluk" description={selected.name} />
-        <PanelEmpty
+        <PageHeader title="Yön Koçluk" description={selected.name} />
+        <EmptyState
+          className="mt-6"
           title="Bu hesapta Yön Koçluk bulunmuyor."
           body="Koçluk eklendiğinde haftalık plan, tamamlanma oranı ve koç özeti burada görünür."
         />
@@ -138,51 +141,80 @@ export default async function ParentCoachingPage({
     }),
     getStudentGoals(selected.id),
   ]);
+  // Veli yalnız PARENT_VISIBLE notları görür (`canViewerSeeCoachNote`).
+  const parentNotes = await prisma.coachNote.findMany({
+    where: { studentId: selected.id, visibility: "PARENT_VISIBLE" },
+    orderBy: { createdAt: "desc" },
+    take: 3,
+    select: { id: true, body: true, createdAt: true },
+  });
 
   const coachCard = coaching ? (
-    <PanelCard className="mt-5">
-      <PanelCardTitle>Koç</PanelCardTitle>
-      <dl className="mt-3 flex flex-col gap-2.5 text-[14px] font-medium text-dc-ink-body">
-        <div className="flex justify-between gap-3">
-          <dt>Koçu</dt>
-          <dd className="text-dc-ink-muted">{coaching.coachName}</dd>
-        </div>
-        <div className="flex justify-between gap-3">
-          <dt>Sonraki görüşme</dt>
-          <dd
-            className="text-dc-ink-muted"
-          >
-            {coaching.overdue ? "Yeni saat bekleniyor" : coaching.nextScheduledAt
+    <Section id="koc" title="Koç" divider={false}>
+      <PropertyList>
+        <PropertyRow label="Koçu">{coaching.coachName}</PropertyRow>
+        <PropertyRow label="Sonraki görüşme">
+          {coaching.overdue
+            ? "Yeni saat bekleniyor"
+            : coaching.nextScheduledAt
               ? RANGE.format(coaching.nextScheduledAt)
               : "Planlanmadı"}
-
-          </dd>
-        </div>
-        {coaching.focus ? (
-          <div className="flex justify-between gap-3">
-            <dt>Haftanın odağı</dt>
-            <dd className="text-dc-ink-muted">{coaching.focus}</dd>
-          </div>
-        ) : null}
-      </dl>
+        </PropertyRow>
+        {coaching.focus ? <PropertyRow label="Haftanın odağı">{coaching.focus}</PropertyRow> : null}
+      </PropertyList>
       {coaching.sharedNote ? (
-        <p className="mt-3.5 rounded-od border border-dc-line-soft bg-[#FCFDFC] px-3.5 py-3 text-[14px] leading-[1.6] text-dc-ink-body">
+        <blockquote className="mt-3 border-l-2 border-pn-accent-marker pl-3 text-[14px] leading-[1.6] text-pn-text">
           {coaching.sharedNote}
-        </p>
+        </blockquote>
       ) : null}
-    </PanelCard>
+    </Section>
+  ) : null;
+
+  const sessionsBlock = (
+    <Section id="gorusmeler" title="Görüşmeler">
+      <CoachingSessions actor={{ userId: session.userId, role: "PARENT" }} studentId={selected.id} />
+    </Section>
+  );
+
+  const notesBlock = parentNotes.length ? (
+    <Section id="koc-notlari" title="Koç notları" description="Koçun veliyle paylaştığı notlar.">
+      <ul className="border-t border-pn-border">
+        {parentNotes.map((note) => (
+          <li key={note.id} className="border-b border-pn-border py-3">
+            <p className="text-[14px] leading-[1.6] text-pn-text">{note.body}</p>
+            <p className="mt-1 text-[12px] text-pn-text-muted">{RANGE.format(note.createdAt)}</p>
+          </li>
+        ))}
+      </ul>
+    </Section>
+  ) : null;
+
+  const goalsBlock = goals.length ? (
+    <Section id="hedefler" title="Hedefler" description="Koçla belirlenen hedefler; yalnız görüntüleme.">
+      <PropertyList>
+        {goals.slice(0, 5).map((goal) => (
+          <PropertyRow key={goal.id} label={goal.label}>
+            {goal.percent != null ? `%${goal.percent} ilerleme` : "ölçüm yok"}
+          </PropertyRow>
+        ))}
+      </PropertyList>
+    </Section>
   ) : null;
 
   if (!plan) {
     return shell(
       <>
-        <PanelHeading title="Koçluk" description={selected.name} />
+        <PageHeader title="Yön Koçluk" description={selected.name} />
         {coachCard}
-        <CoachingSessions actor={{ userId: session.userId, role: "PARENT" }} studentId={selected.id} />
-        <PanelEmpty
-          title="Bu hafta için plan yayınlanmadı."
-          body="Koç haftalık planı yayınladığında tamamlanma özeti burada görünür."
-        />
+        {sessionsBlock}
+        <Section id="bu-hafta" title="Bu hafta">
+          <EmptyState
+            title="Bu hafta için plan yayınlanmadı."
+            body="Koç haftalık planı yayınladığında tamamlanma özeti burada görünür."
+          />
+        </Section>
+        {notesBlock}
+        {goalsBlock}
       </>,
     );
   }
@@ -226,68 +258,44 @@ export default async function ParentCoachingPage({
 
   return shell(
     <>
-      <PanelHeading
-        title="Koçluk"
+      <PageHeader
+        title="Yön Koçluk"
         description={`${selected.name} · ${RANGE.format(start)} – ${RANGE.format(end)}`}
       />
 
       {coachCard}
-      <CoachingSessions actor={{ userId: session.userId, role: "PARENT" }} studentId={selected.id} />
+      {sessionsBlock}
 
-      <PanelCard className="mt-5">
-        <PanelCardTitle>Bu hafta</PanelCardTitle>
-        <p className="mt-3 text-[15px] font-semibold text-dc-ink">
+      <Section id="bu-hafta" title="Bu hafta">
+        <p className="text-[15px] font-semibold text-pn-text">
           Planın %{parentSummary.planCompletionPct ?? 0}&apos;ü tamamlandı.
         </p>
-        {parentSummary.studyRhythm ? (
-          <p className="mt-2 text-[14px] text-dc-ink-muted">
-            {parentSummary.studyRhythm}
-          </p>
-        ) : null}
-        {parentSummary.goalProgressLine ? (
-          <p className="mt-2 text-[14px] text-dc-ink-muted">
-            {parentSummary.goalProgressLine}
-          </p>
-        ) : null}
-        {parentSummary.overdueTrend ? (
-          <p className="mt-1 text-[13.5px] text-dc-ink-muted">
-            {parentSummary.overdueTrend}
-          </p>
-        ) : null}
-      </PanelCard>
+        {[parentSummary.studyRhythm, parentSummary.goalProgressLine, parentSummary.overdueTrend]
+          .filter(Boolean)
+          .map((line) => (
+            <p key={line} className="mt-1.5 text-[14px] text-pn-text-secondary">
+              {line}
+            </p>
+          ))}
+      </Section>
 
-      {(parentSummary.strengths ||
-        parentSummary.focusAreas ||
-        parentSummary.nextWeekFocus) && (
-        <PanelCard className="mt-5">
-          <PanelCardTitle>Koç özeti</PanelCardTitle>
+      {(parentSummary.strengths || parentSummary.focusAreas || parentSummary.nextWeekFocus) && (
+        <Section id="koc-ozeti" title="Koç özeti">
           {parentSummary.coachSummary ? (
-            <p className="mt-3 text-[14px] leading-[1.6] text-dc-ink-body">
-              {parentSummary.coachSummary}
-            </p>
+            <p className="mb-2 text-[14px] leading-[1.6] text-pn-text">{parentSummary.coachSummary}</p>
           ) : null}
-          {parentSummary.strengths ? (
-            <p className="mt-3 text-[14px]">
-              <span className="font-bold">Güçlü: </span>
-              {parentSummary.strengths}
-            </p>
-          ) : null}
-          {parentSummary.focusAreas ? (
-            <p className="mt-2 text-[14px]">
-              <span className="font-bold">Odak: </span>
-              {parentSummary.focusAreas}
-            </p>
-          ) : null}
-          {parentSummary.nextWeekFocus ? (
-            <p className="mt-2 text-[14px]">
-              <span className="font-bold">Gelecek hafta: </span>
-              {parentSummary.nextWeekFocus}
-            </p>
-          ) : null}
-        </PanelCard>
+          <PropertyList>
+            {parentSummary.strengths ? <PropertyRow label="Güçlü">{parentSummary.strengths}</PropertyRow> : null}
+            {parentSummary.focusAreas ? <PropertyRow label="Odak">{parentSummary.focusAreas}</PropertyRow> : null}
+            {parentSummary.nextWeekFocus ? <PropertyRow label="Gelecek hafta">{parentSummary.nextWeekFocus}</PropertyRow> : null}
+          </PropertyList>
+        </Section>
       )}
 
-      <p className="mt-5 text-[12.5px] leading-[1.6] text-dc-ink-faint">
+      {notesBlock}
+      {goalsBlock}
+
+      <p className="mt-8 text-[12.5px] leading-[1.6] text-pn-text-muted">
         Bu ekran sakin bir özet sunar. İç koç notları, ham check-in ayrıntıları
         ve diğer öğrencilerin verisi paylaşılmaz.
       </p>
