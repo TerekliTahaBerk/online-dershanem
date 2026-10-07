@@ -196,6 +196,10 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
     await expect(page.getByRole("heading", { name: "Deneme Sonucun" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Soru cevap dökümü" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Cevap anahtarı PDF" })).toHaveCount(0);
+    // Sonuç sayfası düzeni (Design Phase 4 §11.5): özet satırı, dersler, soru filtresi, sonraki adım.
+    await expect(page.getByRole("region", { name: "Sonuç özeti" })).toContainText("Net");
+    await expect(page.getByRole("navigation", { name: "Soru filtresi" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sonraki adım" })).toBeVisible();
   });
 
   test("sunucu saati tarayıcı saati ileri olsa da süre dolunca otomatik teslim eder", async ({ page }) => {

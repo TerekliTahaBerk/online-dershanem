@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Clock3, FileText, Video } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { requireProductRole } from "@/lib/auth/guards";
 import { attemptStartError } from "@/lib/odk/attempt-domain";
 import { getStudentExam } from "@/lib/odk/student-exam-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentExamStart } from "@/components/odk/student-exam-start";
-import { PAGE_DESCRIPTION_CLASS, PAGE_EYEBROW_CLASS, PAGE_TITLE_CLASS } from "@/components/panel/ui";
+import { PageHeader, PropertyList, PropertyRow, Section, StatusBadge, buttonClass } from "@/components/panel/ui";
+import { studentExamState } from "@/lib/odk/student-exam-state";
+import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 export const dynamic = "force-dynamic";
 const dateFormatter = new Intl.DateTimeFormat("tr-TR", {
@@ -37,96 +39,74 @@ export default async function OdkStudentExamDetailPage({
         ? `${dateFormatter.format(exam.startsAt)}`
         : "Başlama saati bekleniyor";
 
+  const state = studentExamState({ id: exam.id, attempts: attempt ? [{ status: attempt.status }] : [], startDecision, resultAvailable });
+  const questionCount = version.sections.reduce((sum, section) => sum + section.questions.length, 0);
+
   return (
-    <PanelShell
-      role={session.role}
-      fullName={session.fullName}
-      email={session.email}
-      product="ODK"
-    >
-      <Link
-        href="/panel/odk/ogrenci/denemeler"
-        className="inline-flex items-center gap-2 text-sm font-bold text-(--site-body)"
-      >
-        <ArrowLeft size={15} /> Denemeler
-      </Link>
-      <header className="mt-6">
-        <p className={PAGE_EYEBROW_CLASS}>
-          Deneme Ligi
-        </p>
-        <h1 className={PAGE_TITLE_CLASS}>
-          {exam.title}
-        </h1>
-        <p className={PAGE_DESCRIPTION_CLASS}>
-          {startWindowCopy}
-        </p>
-      </header>
-      <section className="mt-6 grid gap-3 sm:grid-cols-3">
-        {[
-          {
-            icon: Clock3,
-            label: "Süre",
-            value: `${version.durationMinutes} dakika`,
-          },
-          {
-            icon: FileText,
-            label: "Soru",
-            value: `${version.sections.reduce((sum, section) => sum + section.questions.length, 0)} matematik sorusu`,
-          },
-          {
-            icon: Video,
-            label: "Gözetim",
-            value: exam.meetRequired ? "Meet zorunlu" : "Meet gerekmiyor",
-          },
-        ].map(({ icon: Icon, label, value }) => (
-          <article key={label} className="panel-metric-card">
-            <Icon size={18} className="text-(--brand-olive)" />
-            <p className="mt-3 font-extrabold text-(--site-ink)">
-              {value}
-            </p>
-            <p className="mt-1 text-xs text-(--site-muted)">{label}</p>
-          </article>
-        ))}
-      </section>
-      <section className="mt-6 max-w-2xl">
-        {completed ? (
-          <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-6">
-            <h2 className="font-extrabold text-emerald-900">
-              {submittedAwaitingResult
-                ? "Denemen tamamlandı."
-                : "Denemen teslim edildi."}
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-emerald-800">
-              {resultAvailable
-                ? "Sonucun ve kazanım analizin açıklandı."
-                : "Sonucun açıklandığında burada görebileceksin."}
-            </p>
-            {resultAvailable ? (
-              <Link
-                href={`/panel/odk/ogrenci/denemeler/${exam.id}/sonuc`}
-                className="mt-4 inline-flex rounded-xl bg-emerald-800 px-4 py-2.5 text-sm font-extrabold text-white"
-              >
-                Sonucunu Gör
-              </Link>
-            ) : (
-              <p className="mt-4 inline-flex rounded-xl bg-white px-4 py-2.5 text-sm font-extrabold text-slate-700">
-                Sonuç bekleniyor
+    <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK" pageTitle={exam.title}>
+      <div className="max-w-[880px]">
+        <Link href="/panel/odk/ogrenci/denemeler" className="mb-2 inline-flex items-center gap-1.5 text-[13px] text-pn-text-muted hover:text-pn-text">
+          <ArrowLeft size={14} aria-hidden="true" /> Denemeler
+        </Link>
+        <PageHeader
+          eyebrow={getOdkExamFamilyCode(exam) ?? "Deneme Ligi"}
+          title={exam.title}
+          description={startWindowCopy}
+          metadata={<StatusBadge label={state.label} tone={state.tone} live={state.key === "AVAILABLE"} />}
+        />
+
+        <Section id="deneme-bilgisi" title="Deneme bilgisi" divider={false}>
+          <PropertyList>
+            <PropertyRow label="Soru sayısı">{questionCount} soru</PropertyRow>
+            <PropertyRow label="Bölümler">{version.sections.map((section) => section.title).join(" · ") || "—"}</PropertyRow>
+            <PropertyRow label="Süre">{version.durationMinutes} dakika</PropertyRow>
+            <PropertyRow label="Açılış – kapanış">{startWindowCopy}</PropertyRow>
+            <PropertyRow label="Geç giriş">{exam.lateEntryMinutes ? `Başlangıçtan sonra ${exam.lateEntryMinutes} dakika` : "Yok"}</PropertyRow>
+            <PropertyRow label="Gözetim">{exam.meetRequired ? "Meet zorunlu" : "Meet gerekmiyor"}</PropertyRow>
+          </PropertyList>
+        </Section>
+
+        <Section id="kurallar" title="Kurallar">
+          <ul className="list-disc space-y-1 pl-5 text-[14px] text-pn-text-secondary">
+            <li>Süre sunucuda tutulur; sayfayı kapatmak süreyi durdurmaz.</li>
+            <li>Her cevap seçtiğin anda kaydedilir; bağlantı koparsa geri gelince kayıt sürer.</li>
+            <li>Bekleyen kayıt varken teslim kapanır; süre bitince deneme otomatik teslim edilir.</li>
+            {exam.meetRequired ? <li>Deneme boyunca Meet görüşmesinde kalman gerekir.</li> : null}
+          </ul>
+        </Section>
+
+        <Section id="baslat" title={completed ? "Durum" : activeAttempt ? "Denemeye devam et" : "Başlamadan önce"}>
+          {completed ? (
+            <div className="rounded-md border border-pn-border p-4">
+              <p className="text-[15px] font-semibold text-pn-text">
+                {submittedAwaitingResult ? "Denemen tamamlandı." : "Denemen teslim edildi."}
               </p>
-            )}
-          </div>
-        ) : (
-          <StudentExamStart
-            examId={exam.id}
-            meetRequired={exam.meetRequired}
-            meetUrl={exam.meetUrl}
-            canStart={startDecision.ok}
-            startError={
-              startDecision.ok ? null : attemptStartError[startDecision.code]
-            }
-            activeAttempt={activeAttempt}
-          />
-        )}
-      </section>
+              <p className="mt-1 text-[14px] text-pn-text-secondary">
+                {resultAvailable ? "Sonucun ve kazanım analizin açıklandı." : "Sonucun açıklandığında burada görebileceksin."}
+              </p>
+              {resultAvailable ? (
+                <Link href={`/panel/odk/ogrenci/denemeler/${exam.id}/sonuc`} className={buttonClass("primary", "md", "mt-3")}>
+                  Sonucunu Gör
+                </Link>
+              ) : (
+                <p className="mt-3">
+                  <StatusBadge label="Sonuç bekleniyor" tone="neutral" />
+                </p>
+              )}
+            </div>
+          ) : (
+            <StudentExamStart
+              examId={exam.id}
+              meetRequired={exam.meetRequired}
+              meetUrl={exam.meetUrl}
+              canStart={startDecision.ok}
+              startError={startDecision.ok ? null : attemptStartError[startDecision.code]}
+              activeAttempt={activeAttempt}
+              durationMinutes={version.durationMinutes}
+            />
+          )}
+        </Section>
+      </div>
     </PanelShell>
   );
 }

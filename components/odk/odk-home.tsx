@@ -14,8 +14,8 @@ import {
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelPageHeader } from "@/components/panel/panel-page-header";
 import { OdkStatusBadge } from "@/components/odk/odk-status-badge";
+import { StudentDenemeLigiHome } from "@/components/odk/student-dl-home";
 import { prisma } from "@/lib/prisma";
-import { listStudentExams } from "@/lib/odk/student-exam-server";
 import {
   getOdkAudienceStudentReport,
   listOdkReportStudents,
@@ -221,87 +221,6 @@ async function AdminHome() {
   );
 }
 
-async function StudentHome({ userId }: { userId: string }) {
-  const exams = await listStudentExams(userId);
-  const now = new Date();
-  const active = exams.find(
-    (exam) => exam.attempts[0]?.status === "IN_PROGRESS",
-  );
-  const upcoming = exams
-    .filter((exam) => exam.endsAt && exam.endsAt > now)
-    .sort(
-      (a, b) => (a.startsAt?.getTime() || 0) - (b.startsAt?.getTime() || 0),
-    );
-  const next = active || upcoming[0] || null;
-  const completed = exams.filter(
-    (exam) => exam.attempts[0] && exam.attempts[0].status !== "IN_PROGRESS",
-  ).length;
-  const released = exams.filter(
-    (exam) =>
-      exam.status === "RELEASED" && exam.attempts[0]?.status !== "IN_PROGRESS",
-  ).length;
-  const live = Boolean(
-    next?.startsAt && next?.endsAt && now >= next.startsAt && now < next.endsAt,
-  );
-  const status = next ? examStatusPresentation[next.status] : null;
-  return (
-    <>
-      <PrimaryCard
-        eyebrow={active ? "Devam eden deneme" : "Sıradaki deneme"}
-        title={next?.title || "Yeni deneme henüz planlanmadı"}
-        copy={
-          next
-            ? `${next.family} · ${next.startsAt ? dateTime.format(next.startsAt) : "Saat bekleniyor"} · ${next.currentVersion?.durationMinutes || "—"} dakika`
-            : "Yeni bir matematik denemesi planlandığında burada göreceksin."
-        }
-        href={
-          next
-            ? `/panel/odk/ogrenci/denemeler/${next.id}`
-            : "/panel/odk/ogrenci/denemeler"
-        }
-        action={
-          active
-            ? "Denemeye devam et"
-            : next
-              ? "Denemeyi incele"
-              : "Denemelerimi aç"
-        }
-        badge={
-          status ? (
-            <OdkStatusBadge
-              label={
-                active ? "Devam ediyor" : live ? "Giriş açık" : status.label
-              }
-              tone={active || live ? "warning" : status.tone}
-              pulse={live}
-            />
-          ) : undefined
-        }
-      />
-      <section className="mt-4 grid gap-3 sm:grid-cols-3">
-        <MetricCard
-          icon={CalendarClock}
-          label="Yaklaşan deneme"
-          value={upcoming.length}
-          tone="sky"
-        />
-        <MetricCard
-          icon={CheckCircle2}
-          label="Tamamlanan"
-          value={completed}
-          tone="mint"
-        />
-        <MetricCard
-          icon={LineChart}
-          label="Açıklanan sonuç"
-          value={released}
-          tone="lavender"
-        />
-      </section>
-    </>
-  );
-}
-
 async function TeacherHome({ userId }: { userId: string }) {
   const students = await listOdkReportStudents({ userId, role: "TEACHER" });
   const studentIds = students.map((student) => student.userId);
@@ -436,6 +355,8 @@ async function ParentHome({ userId }: { userId: string }) {
 }
 
 export async function OdkHome({ session }: { session: SessionUser }) {
+  // Öğrenci Bugün'ü kendi düzeninde (§11.1); diğer roller aşağıdaki karşılama düzeninde.
+  if (session.role === "STUDENT") return <StudentDenemeLigiHome session={session} />;
   const copy = COPY[session.role];
   return (
     <PanelShell
@@ -449,17 +370,11 @@ export async function OdkHome({ session }: { session: SessionUser }) {
         title={copy.title}
         description={copy.body}
         icon={
-          session.role === "ADMIN"
-            ? ShieldCheck
-            : session.role === "STUDENT"
-              ? CalendarClock
-              : LineChart
+          session.role === "ADMIN" ? ShieldCheck : LineChart
         }
       />
       {session.role === "ADMIN" ? (
         <AdminHome />
-      ) : session.role === "STUDENT" ? (
-        <StudentHome userId={session.userId} />
       ) : session.role === "TEACHER" ? (
         <TeacherHome userId={session.userId} />
       ) : (

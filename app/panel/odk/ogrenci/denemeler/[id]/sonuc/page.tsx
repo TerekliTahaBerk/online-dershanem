@@ -1,12 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  FileText,
-  Target,
-  XCircle,
-} from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import { requireProductRole } from "@/lib/auth/guards";
 import { getReleasedStudentResult } from "@/lib/odk/student-exam-server";
 import { getAccessibleProducts } from "@/lib/auth/products";
@@ -16,14 +10,19 @@ import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { prisma } from "@/lib/prisma";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
-  PanelPageHeader,
-  PanelMetric,
-  PanelCard,
+  EmptyState,
+  PageHeader,
   PanelProgress,
-  PanelStatusBadge,
-  PanelAttentionCard,
-  PanelEmpty,
+  PanelTable,
+  PanelTableCell,
+  PanelTableRow,
+  Section,
+  Sparkline,
+  StatusBadge,
+  ViewTabs,
+  buttonClass,
 } from "@/components/panel/ui";
+import { AYT_TRACK_LABEL, aytTrackSections } from "@/lib/odk/student-exam-state";
 import { DinoExplanationAction } from "@/components/panel/dino-explanation-action";
 import { TrackedPanelLink } from "@/components/panel/tracked-panel-link";
 
@@ -46,10 +45,24 @@ function recommendationActionKind(
   return "OPEN_ANSWER_KEY";
 }
 
+type SectionRow = { code?: string; title?: string; net?: number; correct?: number; wrong?: number; blank?: number };
+
+const NET = new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const DAY = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Istanbul" });
+
+function formatDuration(ms: number | null | undefined): string {
+  if (!ms) return "—";
+  const minutes = Math.round(ms / 60000);
+  const hours = Math.floor(minutes / 60);
+  return hours ? `${hours} sa ${minutes % 60} dk` : `${minutes} dk`;
+}
+
 export default async function OdkStudentResultPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ alan?: string | string[]; soru?: string | string[] }>;
 }) {
   const session = await requireProductRole("ODK", "STUDENT");
   const { id } = await params;
@@ -70,8 +83,9 @@ export default async function OdkStudentResultPage({
   const hasOD = products.includes("OD");
   const student = await prisma.studentProfile.findUnique({
     where: { userId: session.userId },
-    select: { id: true },
+    select: { id: true, fieldTrack: true },
   });
+  const query = await searchParams;
   const weak = weakOutcomeSignals.filter((signal) => signal.needsReview);
   const topSignal = weak[0] || weakOutcomeSignals[0] || null;
   const [latestPlan, relatedReviewItem, relatedRecovery] = await Promise.all([
@@ -118,7 +132,7 @@ export default async function OdkStudentResultPage({
       ? `/panel/ogrenci/telafi?lessonId=${encodeURIComponent(relatedRecovery.lessonId)}`
       : undefined,
   });
-  const reasonCode = topSignal?.needsReview ? "NEEDS_REVIEW" : "NO_SIGNAL";
+  const reasonCode: "NEEDS_REVIEW" | "NO_SIGNAL" = topSignal?.needsReview ? "NEEDS_REVIEW" : "NO_SIGNAL";
   const evidenceBand = topSignal?.confidence || "NA";
   const ageBand = ageBandFromDate(exam.resultsReleasedAt);
   await recordPanelProductEvent(
@@ -152,365 +166,299 @@ export default async function OdkStudentResultPage({
       session.role,
     );
   }
+  // AYT alan görünümü (§11.5): öğrencinin alanı biliniyorsa varsayılan "Benim alanım".
+  const familyCode = String(exam.examFamilyRef?.code ?? exam.family ?? "");
+  const trackCodes = familyCode.startsWith("AYT") ? aytTrackSections(student?.fieldTrack) : null;
+  const trackLabel = trackCodes && student?.fieldTrack ? AYT_TRACK_LABEL[student.fieldTrack.toUpperCase()] : null;
+  const trackMode: "benim" | "tumu" = trackCodes && query.alan !== "tumu" ? "benim" : "tumu";
+  const inTrack = (code: string | undefined) => trackMode === "tumu" || !trackCodes || (code ? trackCodes.includes(code) : false);
+  const sections = (Array.isArray(sectionBreakdown) ? (sectionBreakdown as SectionRow[]) : []).filter((section) => inTrack(section.code));
+  const trackNet = trackMode === "benim" ? sections.reduce((sum, section) => sum + Number(section.net ?? 0), 0) : null;
+
+  const questionFilter = query.soru === "yanlis" || query.soru === "bos" ? query.soru : "tumu";
+  const questions = score.questionResults
+    .filter((item) => inTrack(item.question.section.code))
+    .filter((item) => (questionFilter === "yanlis" ? item.result === "WRONG" : questionFilter === "bos" ? item.result === "BLANK" : true));
+  const baseHref = `/panel/odk/ogrenci/denemeler/${id}/sonuc`;
+  const withQuery = (next: Record<string, string | null>) => {
+    const params = new URLSearchParams();
+    const merged = { alan: trackCodes ? (trackMode === "tumu" ? "tumu" : null) : null, soru: questionFilter === "tumu" ? null : questionFilter, ...next };
+    for (const [key, value] of Object.entries(merged)) if (value) params.set(key, value);
+    const qs = params.toString();
+    return qs ? `${baseHref}?${qs}` : baseHref;
+  };
+
+  const currentIndex = comparison.findIndex((item) => item.examId === id);
+  const previous = currentIndex > 0 ? comparison[currentIndex - 1] : null;
+  const delta = previous ? Math.round((Number(score.totalNet) - previous.totalNet) * 100) / 100 : null;
+
+  const outcomes = score.outcomeScores.map((item) => ({
+    item,
+    accuracy: Number(item.accuracyRate),
+    signal: weakOutcomeSignals.find((entry) => entry.outcomeId === item.outcomeId) || null,
+  }));
+  const strong = outcomes.filter((row) => row.accuracy >= 70 && !row.signal?.needsReview).sort((a, b) => b.accuracy - a.accuracy);
+  const improve = outcomes.filter((row) => !(row.accuracy >= 70 && !row.signal?.needsReview));
+  const slowest = [...timeAnalysis.sections]
+    .filter((section) => inTrack(section.sectionCode))
+    .sort((a, b) => b.totalActiveMs - a.totalActiveMs)[0];
+
+  const trackEvent = (href: string) => ({
+    name: "odk_recovery_action_started" as const,
+    properties: {
+      product: "ODK" as const,
+      actionKind: recommendationActionKind(href),
+      reasonCode,
+      ageBand,
+      evidenceBand,
+      role: "STUDENT" as const,
+    },
+  });
+
   return (
-    <PanelShell
-      role={session.role}
-      fullName={session.fullName}
-      email={session.email}
-      product="ODK"
-    >
-      <Link
-        href={`/panel/odk/ogrenci/denemeler/${id}`}
-        className="inline-flex items-center gap-2 text-sm font-bold text-dc-ink-body"
-      >
-        <ArrowLeft size={15} /> Denemeye dön
-      </Link>
-      <div className="mt-6">
-        <PanelPageHeader
-          eyebrow={exam.title}
+    <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK" pageTitle="Deneme sonucu">
+      <div className="max-w-[1000px]">
+        <Link href={`/panel/odk/ogrenci/denemeler/${id}`} className="mb-2 inline-flex items-center gap-1.5 text-[13px] text-pn-text-muted hover:text-pn-text">
+          <ArrowLeft size={14} aria-hidden="true" /> Denemeye dön
+        </Link>
+        <PageHeader
+          eyebrow={`${familyCode || "Deneme Ligi"} · ${exam.title}`}
           title="Deneme Sonucun"
-          description="Sonucun yalnız kendi cevapların ve denemenin kilitli cevap anahtarı kullanılarak hesaplandı."
+          description={`${exam.resultsReleasedAt ? `${DAY.format(exam.resultsReleasedAt)} · ` : ""}Sonucun yalnız kendi cevapların ve denemenin kilitli cevap anahtarı kullanılarak hesaplandı.`}
         />
-      </div>
-      <section className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          ["Net", Number(score.totalNet).toFixed(2), Target, "info"],
-          ["Doğru", score.correctCount, CheckCircle2, "success"],
-          ["Yanlış", score.wrongCount, XCircle, "critical"],
-          ["Boş", score.blankCount, FileText, "neutral"],
-        ].map(([label, value, Icon, tone]) => {
-          const MetricIcon = Icon as typeof Target;
-          return (
-            <PanelMetric
-              key={String(label)}
-              label={String(label)}
-              value={String(value)}
-              icon={MetricIcon}
-              tone={tone as "neutral" | "info" | "success" | "critical"}
-            />
-          );
-        })}
-      </section>
-      {Array.isArray(sectionBreakdown) && sectionBreakdown.length ? (
-        <PanelCard className="mt-6 p-5">
-          <h2 className="font-extrabold text-dc-ink">Ders bazlı</h2>
-          <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {(
-              sectionBreakdown as Array<{
-                code?: string;
-                title?: string;
-                net?: number;
-                correct?: number;
-                wrong?: number;
-                blank?: number;
-              }>
-            ).map((section, index) => (
-              <article
-                key={section.code || index}
-                className="rounded-2xl border border-dc-line p-4"
-              >
-                <h3 className="text-sm font-bold">
-                  {section.title || section.code || `Bölüm ${index + 1}`}
-                </h3>
-                <p className="mt-1 text-xs text-dc-ink-muted">
-                  Net{" "}
-                  {section.net == null ? "—" : Number(section.net).toFixed(2)}
-                  {section.correct != null
-                    ? ` · ${section.correct}D / ${section.wrong ?? 0}Y / ${section.blank ?? 0}B`
-                    : ""}
-                </p>
-              </article>
-            ))}
+
+        <section aria-label="Sonuç özeti" className="mt-6 flex flex-wrap items-end gap-x-8 gap-y-3 border-y border-pn-border py-4">
+          <div>
+            <p className="text-[12.5px] text-pn-text-muted">Net</p>
+            <p className="font-mono text-[32px] font-semibold leading-none tabular-nums text-pn-text">{NET.format(Number(score.totalNet))}</p>
           </div>
-        </PanelCard>
-      ) : null}
-      {comparison.length > 1 ? (
-        <PanelCard className="mt-6 p-5">
-          <h2 className="font-extrabold text-dc-ink">
-            {exam.family} Net karşılaştırması
-          </h2>
-          <div className="mt-4 space-y-2">
-            {comparison.map((item) => (
-              <div
-                key={item.examId}
-                className="flex items-center justify-between gap-3 rounded-xl border border-dc-line px-4 py-3 text-sm"
-              >
-                <span
-                  className={
-                    item.examId === id
-                      ? "font-extrabold text-dc-brand-strong"
-                      : "text-dc-ink"
-                  }
-                >
-                  {item.title}
-                </span>
-                <strong>{item.totalNet.toFixed(2)}</strong>
+          {[
+            ["Doğru", String(score.correctCount)],
+            ["Yanlış", String(score.wrongCount)],
+            ["Boş", String(score.blankCount)],
+            ["Süre", formatDuration(score.activeDurationMs)],
+            ...(delta !== null ? [["Önceki denemeye göre", `${delta >= 0 ? "+" : "−"}${NET.format(Math.abs(delta))}`]] : []),
+            ...(trackNet !== null && trackLabel ? [[`${trackLabel} ham neti`, NET.format(trackNet)]] : []),
+          ].map(([label, value]) => (
+            <div key={label}>
+              <p className="text-[12.5px] text-pn-text-muted">{label}</p>
+              <p className="text-[17px] font-semibold tabular-nums text-pn-text">{value}</p>
+            </div>
+          ))}
+        </section>
+
+        {trackCodes ? (
+          <div className="mt-5">
+            <ViewTabs
+              label="AYT görünümü"
+              activeId={trackMode}
+              tabs={[
+                { id: "benim", label: `Benim alanım${trackLabel ? ` (${trackLabel})` : ""}`, href: withQuery({ alan: null }) },
+                { id: "tumu", label: "Tüm bölümler", href: withQuery({ alan: "tumu" }) },
+              ]}
+            />
+            <p className="mt-2 text-[12.5px] text-pn-text-muted">Ham net gösterilir; puan tahmini değildir.</p>
+          </div>
+        ) : null}
+
+        {sections.length ? (
+          <Section id="dersler" title="Dersler" divider={!trackCodes}>
+            <PanelTable caption="Ders bazlı sonuç" columns={["Ders", "D", "Y", "B", "Net"]}>
+              {sections.map((section, index) => (
+                <PanelTableRow key={section.code || index}>
+                  <PanelTableCell>{section.title || section.code || `Bölüm ${index + 1}`}</PanelTableCell>
+                  <PanelTableCell><span className="tabular-nums">{section.correct ?? "—"}</span></PanelTableCell>
+                  <PanelTableCell><span className="tabular-nums">{section.wrong ?? "—"}</span></PanelTableCell>
+                  <PanelTableCell><span className="tabular-nums">{section.blank ?? "—"}</span></PanelTableCell>
+                  <PanelTableCell>
+                    <span className="font-mono font-semibold tabular-nums">{section.net == null ? "—" : NET.format(Number(section.net))}</span>
+                  </PanelTableCell>
+                </PanelTableRow>
+              ))}
+            </PanelTable>
+          </Section>
+        ) : null}
+
+        <Section id="analiz" title="Analiz" description={`${weak.length} gelişim alanı · kazanım doğruluğu ve kanıt sayısı`}>
+          <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
+            {[
+              { title: "Güçlü alanlar", rows: strong, empty: "Bu denemede belirgin güçlü kazanım yok." },
+              { title: "Geliştirilecek alanlar", rows: improve, empty: "Geliştirilecek kazanım görünmüyor." },
+            ].map((column) => (
+              <div key={column.title}>
+                <h3 className="text-[13.5px] font-semibold text-pn-text">{column.title}</h3>
+                {column.rows.length ? (
+                  <ul className="mt-2 border-t border-pn-border">
+                    {column.rows.map(({ item, accuracy, signal }) => {
+                      const avgSec = item.activeDurationMs ? Math.round(item.activeDurationMs / Math.max(1, item.questionCount) / 1000) : null;
+                      return (
+                        <li key={item.outcome.code} className="border-b border-pn-border py-2.5">
+                          <div className="flex items-start justify-between gap-3">
+                            <p className="min-w-0 text-[13.5px] text-pn-text">
+                              <span className="mr-1.5 font-mono text-[12px] text-pn-text-muted">{item.outcome.code}</span>
+                              {item.outcome.title}
+                            </p>
+                            <StatusBadge label={`%${accuracy.toFixed(0)}`} tone={accuracy >= 75 ? "success" : accuracy >= 50 ? "warning" : "critical"} />
+                          </div>
+                          <PanelProgress className="mt-1.5" label={`${item.outcome.code} doğruluk oranı`} value={accuracy} />
+                          <p className="mt-1 text-[12px] text-pn-text-muted">
+                            {item.outcome.unit.name} · {item.questionCount} soru · {item.correctCount} D, {item.wrongCount} Y, {item.blankCount} B
+                            {avgSec != null ? ` · ort. ${avgSec} sn/soru` : ""}
+                            {signal ? ` · ${signal.evidenceCount} ölçüm${signal.confidence === "LOW" ? " · az kanıt" : ""}` : ""}
+                          </p>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <p className="mt-2 text-[13px] text-pn-text-muted">{column.empty}</p>
+                )}
               </div>
             ))}
           </div>
-        </PanelCard>
-      ) : null}
-      <section className="mt-6 grid gap-6 xl:grid-cols-2">
-        <PanelCard className="p-5">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="font-extrabold text-dc-ink">Kazanım görünümü</h2>
-            <span className="text-xs font-bold text-dc-ink-muted">
-              {weak.length} gelişim alanı
-            </span>
-          </div>
-          <div className="mt-4 space-y-3">
-            {score.outcomeScores.map((item) => {
-              const accuracy = Number(item.accuracyRate);
-              const signal =
-                weakOutcomeSignals.find(
-                  (entry) => entry.outcomeId === item.outcomeId,
-                ) || null;
-              const avgSec = item.activeDurationMs
-                ? Math.round(
-                    item.activeDurationMs /
-                      Math.max(1, item.questionCount) /
-                      1000,
-                  )
-                : null;
-              return (
-                <article
-                  key={item.outcome.code}
-                  className="rounded-2xl border border-dc-line p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-black text-dc-brand-strong">
-                        {item.outcome.code}
-                      </p>
-                      <h3 className="mt-1 text-sm font-bold text-dc-ink">
-                        {item.outcome.title}
-                      </h3>
-                      <p className="mt-1 text-xs text-dc-ink-muted">
-                        {item.outcome.unit.name} · {item.questionCount} soru ·{" "}
-                        {item.correctCount} doğru, {item.wrongCount} yanlış,{" "}
-                        {item.blankCount} boş
-                        {avgSec != null ? ` · ort. ${avgSec} sn/soru` : ""}
-                      </p>
-                      {signal ? (
-                        <p className="mt-1 text-[11px] text-dc-ink-muted">
-                          {signal.evidenceCount} ölçüm · {signal.questionCount}{" "}
-                          soru kanıtı
-                          {signal.confidence === "LOW" ? " · Az kanıt" : ""}
-                        </p>
-                      ) : null}
-                    </div>
-                    <PanelStatusBadge
-                      label={`%${accuracy.toFixed(0)}`}
-                      tone={
-                        accuracy >= 75
-                          ? "success"
-                          : accuracy >= 50
-                            ? "warning"
-                            : "critical"
-                      }
-                    />
-                  </div>
-                  <PanelProgress
-                    className="mt-3"
-                    label={`${item.outcome.code} doğruluk oranı`}
-                    value={accuracy}
-                  />
-                </article>
-              );
-            })}
-          </div>
-        </PanelCard>
-        <PanelCard className="p-5">
-          <h2 className="font-extrabold text-dc-ink">
-            Bu sonuçtan sonraki adım
-          </h2>
-          <div className="mt-4 space-y-3">
-            {coachSuggestions.map((item) => (
-              <PanelAttentionCard
-                key={item.outcomeCode}
-                tone="info"
-                title={`Koçum önerileri · ${item.subject} → ${item.topic}`}
-                body={item.label}
-                action={
-                  hasOK ? (
-                    <TrackedPanelLink
-                      href="/panel/ogrenci/plan"
-                      className="panel-quick-action panel-quick-action-primary"
-                      event={{
-                        name: "odk_recovery_action_started",
-                        properties: {
-                          product: "ODK",
-                          actionKind: "OPEN_PLAN",
-                          reasonCode,
-                          ageBand,
-                          evidenceBand,
-                          role: "STUDENT",
-                        },
-                      }}
-                    >
-                      Haftalık plana ekle
-                    </TrackedPanelLink>
-                  ) : null
-                }
-              />
-            ))}
-            {recommendations.map((item, index) =>
-              item.tone === "primary" ? (
-                <PanelAttentionCard
-                  key={`${item.title}-${index}`}
-                  tone="info"
-                  title={item.title}
-                  body={item.detail}
-                  action={
-                    item.href && item.actionLabel ? (
-                      <TrackedPanelLink
-                        href={item.href}
-                        className="panel-quick-action panel-quick-action-primary"
-                        event={{
-                          name: "odk_recovery_action_started",
-                          properties: {
-                            product: "ODK",
-                            actionKind: recommendationActionKind(item.href),
-                            reasonCode,
-                            ageBand,
-                            evidenceBand,
-                            role: "STUDENT",
-                          },
-                        }}
-                      >
-                        {item.actionLabel}
+        </Section>
+
+        <Section id="zaman" title="Zaman analizi" description={slowest ? `En çok süre: ${slowest.sectionTitle} (${Math.round(slowest.totalActiveMs / 60000)} dk).` : undefined}>
+          {timeAnalysis.sections.filter((section) => inTrack(section.sectionCode)).length ? (
+            <PanelTable caption="Zaman analizi" columns={["Bölüm", "Toplam", "Doğru ort.", "Yanlış ort."]}>
+              {timeAnalysis.sections
+                .filter((section) => inTrack(section.sectionCode))
+                .map((section) => (
+                  <PanelTableRow key={section.sectionCode}>
+                    <PanelTableCell>{section.sectionTitle}</PanelTableCell>
+                    <PanelTableCell>{Math.round(section.totalActiveMs / 60000)} dk</PanelTableCell>
+                    <PanelTableCell>{section.correctAvgMs == null ? "—" : `${Math.round(section.correctAvgMs / 1000)} sn`}</PanelTableCell>
+                    <PanelTableCell>{section.wrongAvgMs == null ? "—" : `${Math.round(section.wrongAvgMs / 1000)} sn`}</PanelTableCell>
+                  </PanelTableRow>
+                ))}
+            </PanelTable>
+          ) : (
+            <p className="text-[14px] text-pn-text-muted">Süre verisi yok.</p>
+          )}
+          {timeAnalysis.fastWrongs.length ? (
+            <p className="mt-3 text-[13px] text-pn-text-muted">
+              Hızlı yanlış: {timeAnalysis.fastWrongs.length} soru · Uzun süreli yanlış: {timeAnalysis.longWrongs.length} soru
+            </p>
+          ) : null}
+        </Section>
+
+        <Section
+          id="sorular"
+          title="Soru cevap dökümü"
+          actions={
+            answerKeyAvailable && exam.currentVersion?.files.length ? (
+              <a href={`/api/odk/student/exams/${id}/answer-key`} target="_blank" rel="noreferrer" className={buttonClass("secondary", "sm")}>
+                <FileText size={14} aria-hidden="true" /> Cevap anahtarı PDF
+              </a>
+            ) : undefined
+          }
+        >
+          <ViewTabs
+            label="Soru filtresi"
+            activeId={questionFilter}
+            tabs={[
+              { id: "tumu", label: "Tümü", href: withQuery({ soru: null }) },
+              { id: "yanlis", label: "Yanlış", href: withQuery({ soru: "yanlis" }), count: score.questionResults.filter((q) => q.result === "WRONG" && inTrack(q.question.section.code)).length },
+              { id: "bos", label: "Boş", href: withQuery({ soru: "bos" }), count: score.questionResults.filter((q) => q.result === "BLANK" && inTrack(q.question.section.code)).length },
+            ]}
+          />
+          {questions.length ? (
+            <PanelTable caption="Soru cevap dökümü" columns={["No", "Ders", "Kazanım", "Cevabın", "Doğru", "Süre"]}>
+              {questions.map((item) => {
+                const ms = data.attempt.timings.find((timing) => timing.questionId === item.questionId)?.activeDurationMs;
+                return (
+                  <PanelTableRow key={item.questionId}>
+                    <PanelTableCell><span className="tabular-nums">{item.question.questionNumber}</span></PanelTableCell>
+                    <PanelTableCell>{item.question.section.title}</PanelTableCell>
+                    <PanelTableCell>{item.question.outcomes.map((outcome) => outcome.outcome.code).join(", ") || "—"}</PanelTableCell>
+                    <PanelTableCell>
+                      <span className={item.result === "CORRECT" ? "text-(--pn-tone-success)" : item.result === "WRONG" ? "text-(--pn-tone-critical)" : "text-pn-text-muted"}>
+                        {item.selectedOption || "Boş"}
+                        <span className="sr-only">{item.result === "CORRECT" ? " (doğru)" : item.result === "WRONG" ? " (yanlış)" : ""}</span>
+                      </span>
+                    </PanelTableCell>
+                    <PanelTableCell>{item.correctOption}</PanelTableCell>
+                    <PanelTableCell>{ms != null ? `${Math.round(ms / 1000)} sn` : "—"}</PanelTableCell>
+                  </PanelTableRow>
+                );
+              })}
+            </PanelTable>
+          ) : (
+            <p className="mt-3 text-[14px] text-pn-text-muted">Bu filtrede soru yok.</p>
+          )}
+        </Section>
+
+        {comparison.length > 1 ? (
+          <Section id="trend" title={`${familyCode} net gelişimi`} description="Yalnız kendi açıklanan denemelerinle.">
+            <div className="flex flex-wrap items-center gap-5">
+              <Sparkline values={comparison.map((item) => item.totalNet)} label={`Toplam net: ${comparison.map((item) => `${item.title} ${NET.format(item.totalNet)}`).join(", ")}`} />
+              <ul className="min-w-[240px] flex-1 border-t border-pn-border">
+                {comparison.map((item) => (
+                  <li key={item.examId} className="flex justify-between gap-3 border-b border-pn-border py-1.5 text-[13.5px]">
+                    <span className={item.examId === id ? "font-semibold text-pn-text" : "text-pn-text-secondary"}>
+                      {item.title}
+                      {item.examId === id ? <span className="sr-only"> (bu deneme)</span> : null}
+                    </span>
+                    <span className="font-mono tabular-nums">{NET.format(item.totalNet)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Section>
+        ) : null}
+
+        <Section id="sonraki-adim" title="Sonraki adım">
+          {recommendations.length || (hasOK && coachSuggestions.length) ? (
+            <ul className="border-t border-pn-border">
+              {hasOK
+                ? coachSuggestions.map((item) => (
+                    <li key={item.outcomeCode} className="flex flex-wrap items-center gap-3 border-b border-pn-border py-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[14px] font-medium text-pn-text">Koçundan plan önerisi · {item.subject} → {item.topic}</p>
+                        <p className="text-[13px] text-pn-text-secondary">{item.label}</p>
+                      </div>
+                      <TrackedPanelLink href="/panel/ogrenci/plan" className={buttonClass("secondary", "sm")} event={trackEvent("/panel/ogrenci/plan")}>
+                        Haftalık plana ekle
                       </TrackedPanelLink>
-                    ) : null
-                  }
-                />
-              ) : (
-                <PanelCard
-                  key={`${item.title}-${index}`}
-                  className="border-dc-line-soft p-4"
-                >
-                  <h3 className="text-sm font-bold text-dc-ink">
-                    {item.title}
-                  </h3>
-                  <p className="mt-1 text-xs text-dc-ink-muted">
-                    {item.detail}
-                  </p>
+                    </li>
+                  ))
+                : null}
+              {recommendations.map((item, index) => (
+                <li key={`${item.title}-${index}`} className="flex flex-wrap items-center gap-3 border-b border-pn-border py-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[14px] font-medium text-pn-text">{item.title}</p>
+                    <p className="text-[13px] text-pn-text-secondary">{item.detail}</p>
+                  </div>
                   {item.href && item.actionLabel ? (
                     <TrackedPanelLink
                       href={item.href}
-                      className="panel-quick-action mt-3"
-                      event={{
-                        name: "odk_recovery_action_started",
-                        properties: {
-                          product: "ODK",
-                          actionKind: recommendationActionKind(item.href),
-                          reasonCode,
-                          ageBand,
-                          evidenceBand,
-                          role: "STUDENT",
-                        },
-                      }}
+                      className={buttonClass(item.tone === "primary" ? "primary" : "secondary", "sm")}
+                      event={trackEvent(item.href)}
                     >
                       {item.actionLabel}
                     </TrackedPanelLink>
                   ) : null}
-                </PanelCard>
-              ),
-            )}
-            {!recommendations.length && !coachSuggestions.length ? (
-              <PanelEmpty
-                className="mt-0 border-dashed p-5"
-                title="Şu an net bir çalışma önerisi üretilemedi."
-                body="Yeni ölçümle sinyal netleştiğinde bir sonraki adım burada görünür."
-              />
-            ) : null}
-          </div>
-          {topSignal ? (
-            <DinoExplanationAction
-              deterministicReason={buildOutcomeDeterministicReason(topSignal)}
-              questionKey="student_odk_reason"
-              openLabel="Bu denemeyi açıkla"
-              prepareLabel="Dino ile denemeyi açıkla"
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState
+              title="Şu an net bir çalışma önerisi üretilemedi."
+              body="Yeni ölçümle sinyal netleştiğinde bir sonraki adım burada görünür."
             />
+          )}
+          {topSignal ? (
+            <div className="mt-4">
+              <DinoExplanationAction
+                deterministicReason={buildOutcomeDeterministicReason(topSignal)}
+                questionKey="student_odk_reason"
+                openLabel="Bu denemeyi açıkla"
+                prepareLabel="Dino ile denemeyi açıkla"
+              />
+            </div>
           ) : null}
-        </PanelCard>
-      </section>
-      <PanelCard className="mt-6 p-5">
-        <h2 className="font-extrabold text-dc-ink">Zaman analizi</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          {timeAnalysis.sections.map((section) => (
-            <article
-              key={section.sectionCode}
-              className="rounded-2xl border border-dc-line p-4"
-            >
-              <h3 className="text-sm font-bold">{section.sectionTitle}</h3>
-              <p className="mt-1 text-xs text-dc-ink-muted">
-                Toplam {Math.round(section.totalActiveMs / 60000)} dk
-              </p>
-              <p className="mt-1 text-xs text-dc-ink-muted">
-                Doğru ort:{" "}
-                {section.correctAvgMs == null
-                  ? "—"
-                  : `${Math.round(section.correctAvgMs / 1000)} sn`}{" "}
-                · Yanlış ort:{" "}
-                {section.wrongAvgMs == null
-                  ? "—"
-                  : `${Math.round(section.wrongAvgMs / 1000)} sn`}
-              </p>
-            </article>
-          ))}
-        </div>
-        {timeAnalysis.fastWrongs.length ? (
-          <p className="mt-3 text-xs text-dc-ink-muted">
-            Hızlı yanlış: {timeAnalysis.fastWrongs.length} soru · Uzun süreli
-            yanlış: {timeAnalysis.longWrongs.length} soru
-          </p>
-        ) : null}
-      </PanelCard>
-      <PanelCard className="mt-6 p-5">
-        <h2 className="font-extrabold text-dc-ink">Soru cevap dökümü</h2>
-        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {score.questionResults.map((item) => {
-            const ms = data.attempt.timings.find(
-              (timing) => timing.questionId === item.questionId,
-            )?.activeDurationMs;
-            const outcomes = item.question.outcomes
-              .map((outcome) => outcome.outcome.code)
-              .join(", ");
-            return (
-              <div
-                key={item.question.questionNumber}
-                className={`rounded-xl p-3 text-xs font-bold ${item.result === "CORRECT" ? "bg-(--pd-pastel-mint-soft) text-(--pd-pastel-mint-ink)" : item.result === "WRONG" ? "bg-(--pd-pastel-blush-soft) text-(--pd-pastel-blush-ink)" : "bg-slate-100 text-slate-700"}`}
-              >
-                <p>Soru {item.question.questionNumber}</p>
-                <p className="mt-1">
-                  Sen: {item.selectedOption || "—"} · Doğru:{" "}
-                  {item.correctOption}
-                </p>
-                {ms != null ? (
-                  <p className="mt-1 font-medium opacity-80">
-                    {Math.round(ms / 1000)} sn
-                  </p>
-                ) : null}
-                {outcomes ? (
-                  <p className="mt-1 text-[10px] font-medium opacity-80">
-                    {outcomes}
-                  </p>
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
-        {answerKeyAvailable && exam.currentVersion?.files.length ? (
-          <a
-            href={`/api/odk/student/exams/${id}/answer-key`}
-            target="_blank"
-            rel="noreferrer"
-            className="panel-quick-action panel-quick-action-primary mt-5 inline-flex"
-          >
-            <FileText size={15} /> Cevap anahtarı PDF
-          </a>
-        ) : null}
-      </PanelCard>
+        </Section>
+      </div>
     </PanelShell>
   );
 }
