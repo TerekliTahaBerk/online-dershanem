@@ -21,7 +21,17 @@ type Answer = {
   isMarked: boolean;
   revision: number;
 };
-type Question = { id: string; questionNumber: number };
+type Question = { id: string; questionNumber: number; sectionTitle?: string; sessionKey?: string | null };
+type RunnerSession = {
+  phase: "SESSION" | "BREAK";
+  currentKey: string;
+  currentTitle: string;
+  isLast: boolean;
+  /** Açık oturumun bitişi (phase=SESSION) ya da aradan sonra açılacak oturumun bitişi. */
+  deadlineAt: string;
+  breakEndsAt: string | null;
+  sessions: Array<{ key: string; title: string; status: "LOCKED" | "ACTIVE" | "UPCOMING"; durationMinutes: number }>;
+};
 type AnswerPayload = Answer & { questionId: string };
 
 function formatRemaining(ms: number) {
@@ -44,8 +54,9 @@ export function StudentExamRunner({
   attemptId,
   deadlineAt,
   serverNow,
-  questions,
+  questions: allQuestions,
   initialAnswers,
+  session = null,
 }: {
   examId: string;
   attemptId: string;
@@ -53,15 +64,38 @@ export function StudentExamRunner({
   serverNow: string;
   questions: Question[];
   initialAnswers: Record<string, Answer>;
+  /** Oturumlu sınav (LGS). Yoksa tek oturumlu eski akış. */
+  session?: RunnerSession | null;
 }) {
   const router = useRouter();
+  // Oturumlu sınavda yalnız açık oturumun soruları yazılır; önceki oturumlar kilitli.
+  const questions = useMemo(
+    () => (session ? allQuestions.filter((question) => question.sessionKey === session.currentKey) : allQuestions),
+    [allQuestions, session],
+  );
+  const lockedQuestions = useMemo(
+    () =>
+      session
+        ? allQuestions.filter((question) =>
+            session.sessions.some((item) => item.status === "LOCKED" && item.key === question.sessionKey),
+          )
+        : [],
+    [allQuestions, session],
+  );
+  const timerDeadline = session && session.phase === "SESSION" ? session.deadlineAt : deadlineAt;
   const clockOffset = useMemo(
     () => new Date(serverNow).getTime() - Date.now(),
     [serverNow],
   );
   const [remaining, setRemaining] = useState(
-    () => new Date(deadlineAt).getTime() - (Date.now() + clockOffset),
+    () => new Date(timerDeadline).getTime() - (Date.now() + clockOffset),
   );
+  const [breakRemaining, setBreakRemaining] = useState(() =>
+    session?.breakEndsAt ? new Date(session.breakEndsAt).getTime() - (Date.now() + clockOffset) : 0,
+  );
+  const [closingSession, setClosingSession] = useState(false);
+  const [sessionBusy, setSessionBusy] = useState(false);
+  const sessionRefreshRef = useRef(0);
   const [answers, setAnswers] =
     useState<Record<string, Answer>>(initialAnswers);
   const [saveState, setSaveState] = useState<
@@ -231,8 +265,13 @@ export function StudentExamRunner({
         [payload.questionId]: response.ok ? "saved" : "error",
       }));
       if (result.code === "ATTEMPT_CLOSED") closeLocally();
+      // Oturum kapandı ya da aradayız: bekleyen kaydı bırak, güncel oturumu sunucudan al.
+      if (result.code === "SESSION_LOCKED" || result.code === "SESSION_BREAK") {
+        delete pending.current[payload.questionId];
+        router.refresh();
+      }
     },
-    [attemptId, closeLocally],
+    [attemptId, closeLocally, router],
   );
 
   const submit = useCallback(
@@ -286,8 +325,26 @@ export function StudentExamRunner({
   useEffect(() => {
     pushEvent("EXAM_STARTED");
     const interval = window.setInterval(() => {
-      const next = new Date(deadlineAt).getTime() - (Date.now() + clockOffset);
+      const next = new Date(timerDeadline).getTime() - (Date.now() + clockOffset);
       setRemaining(next);
+      if (session?.breakEndsAt) {
+        const breakNext = new Date(session.breakEndsAt).getTime() - (Date.now() + clockOffset);
+        setBreakRemaining(breakNext);
+        // Ara bitti: sıradaki oturum sunucuda açıldı; sayfayı yenile.
+        if (session.phase === "BREAK" && breakNext <= 0 && Date.now() - sessionRefreshRef.current >= 5_000) {
+          sessionRefreshRef.current = Date.now();
+          router.refresh();
+        }
+      }
+      // Ara oturumun süresi bitti: oturum sunucuda kilitlendi; teslim değil yenileme.
+      if (session && session.phase === "SESSION" && !session.isLast) {
+        if (next <= 0 && Date.now() - sessionRefreshRef.current >= 5_000) {
+          sessionRefreshRef.current = Date.now();
+          router.refresh();
+        }
+        return;
+      }
+      if (session?.phase === "BREAK") return;
       if (
         next <= 0 &&
         !submittedRef.current &&
@@ -298,7 +355,47 @@ export function StudentExamRunner({
       }
     }, 1000);
     return () => window.clearInterval(interval);
-  }, [clockOffset, deadlineAt, pushEvent, submit]);
+  }, [clockOffset, timerDeadline, pushEvent, router, session, submit]);
+
+  // Oturum değişince (ara → yeni oturum) gezinme yeni oturumun ilk sorusundan başlar.
+  useEffect(() => {
+    setCurrentIndex(0);
+    setClosingSession(false);
+  }, [session?.currentKey, session?.phase]);
+
+  const closeSession = useCallback(async () => {
+    if (!session || sessionBusy) return;
+    setSessionBusy(true);
+    setSubmitError("");
+    endQuestionFocus();
+    await flushEvents();
+    await Promise.all(Object.values(queues.current));
+    if (Object.keys(pending.current).length) {
+      setSessionBusy(false);
+      setSubmitError("Kaydedilemeyen cevaplar var. Bağlantınızı kontrol edip tekrar deneyin.");
+      return;
+    }
+    try {
+      const response = await fetch(`/api/odk/student/attempts/${attemptId}/sessions/close`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionKey: session.currentKey }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (result.code === "ATTEMPT_CLOSED") return closeLocally();
+      if (!response.ok) {
+        setSubmitError(result.error || "Oturum kapatılamadı. Tekrar deneyin.");
+        return;
+      }
+      setClosingSession(false);
+      router.refresh();
+    } catch {
+      setOnline(false);
+      setSubmitError("Bağlantı kurulamadı. Cevapların korunuyor; tekrar deneyin.");
+    } finally {
+      setSessionBusy(false);
+    }
+  }, [attemptId, closeLocally, endQuestionFocus, flushEvents, router, session, sessionBusy]);
 
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
@@ -468,52 +565,107 @@ export function StudentExamRunner({
     if (ok) void submit();
   }
 
-  return (
-    <div
-      className="odk-panel-scope min-h-dvh bg-[#f5f3ec] text-(--site-ink)"
-      data-odk-exam-surface
-    >
-      <header className="sticky top-0 z-30 border-b border-black/10 bg-white/95 px-3 py-2.5 backdrop-blur-sm sm:px-5">
-        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-2 sm:gap-4">
-          <div className="min-w-0">
-            <p className="truncate text-[10px] font-extrabold uppercase tracking-[.09em] text-(--brand-olive) sm:text-xs">
-              Online Deneme
+  const lockedAnswered = lockedQuestions.filter((question) => answers[question.id]?.selectedOption).length;
+  const saveLabel = !online
+    ? "Çevrimdışı · kayıtlar bekliyor"
+    : errorCount
+      ? `${errorCount} kayıt yeniden denenecek`
+      : savingCount
+        ? `${savingCount} cevap kaydediliyor…`
+        : "Tüm cevaplar kaydedildi";
+  const lowTime = remaining < 5 * 60_000;
+  const nextSession = session ? session.sessions.find((item) => item.status === "UPCOMING") : null;
+  const timeOf = (iso: string | null) =>
+    iso ? new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" }).format(new Date(iso)) : "";
+
+  /* ── ARA: cevap arayüzü yok; yalnız geri sayım (roadmap §11.4 LGS) ── */
+  if (session?.phase === "BREAK") {
+    const finished = session.sessions.filter((item) => item.status === "LOCKED");
+    return (
+      <div className="odk-panel-scope flex min-h-dvh flex-col bg-[#f4f5f4] text-[#14201c]" data-odk-exam-surface>
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-black/10 bg-white px-4">
+          <p className="text-[13px] font-semibold text-[#3d4a45]">Deneme Ligi · Oturum arası</p>
+          <span className={`text-[12px] ${!online ? "text-[#8a5a00]" : "text-[#5b6863]"}`}>{saveLabel}</span>
+        </header>
+        <main className="grid flex-1 place-items-center px-4 py-10">
+          <section aria-labelledby="ara-baslik" className="w-full max-w-[520px] text-center">
+            <p className="text-[14px] font-medium text-[#3d4a45]">
+              {finished.map((item) => item.title).join(" ve ")} tamamlandı
             </p>
+            <h1 id="ara-baslik" className="mt-2 text-[24px] font-semibold leading-tight">
+              {session.currentTitle} {timeOf(session.breakEndsAt)}&apos;da açılır
+            </h1>
             <p
-              className="mt-0.5 text-[11px] font-bold text-(--site-body) sm:text-sm"
-              aria-live="polite"
+              className="mt-6 font-mono text-[56px] font-semibold leading-none tabular-nums"
+              aria-label={`Oturumun açılmasına kalan süre ${formatRemaining(breakRemaining)}`}
+              role="timer"
             >
-              {answered}/{questions.length} cevaplandı · {blank} boş · {marked}{" "}
-              işaretli
+              {formatRemaining(breakRemaining)}
+            </p>
+            <p className="mt-6 text-[14px] leading-6 text-[#3d4a45]">
+              {lockedAnswered}/{lockedQuestions.length} soruyu cevapladın; bu cevaplar kilitlendi. Ara bitince{" "}
+              {session.currentTitle} oturumu {session.sessions.find((item) => item.key === session.currentKey)?.durationMinutes ?? ""} dakikalık
+              yeni süreyle kendiliğinden açılır.
+            </p>
+          </section>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="odk-panel-scope flex h-dvh flex-col overflow-hidden bg-[#f4f5f4] text-[#14201c]" data-odk-exam-surface>
+      <header className="sticky top-0 z-30 shrink-0 border-b border-black/10 bg-white px-3 sm:px-5">
+        <div className="mx-auto flex h-14 max-w-[1760px] items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-[12px] font-semibold text-[#3d4a45] sm:text-[13px]">
+              {session ? `Deneme Ligi · ${session.currentTitle} oturumu` : "Deneme Ligi"}
+            </p>
+            <p className="truncate text-[12px] text-[#5b6863] sm:text-[13px]" aria-live="polite">
+              {answered}/{questions.length} cevaplandı · {blank} boş · {marked} işaretli
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span
+              className={`hidden w-[190px] text-right text-[12px] transition-opacity duration-300 md:inline ${!online || errorCount ? "text-[#8a5a00]" : "text-[#5b6863]"}`}
+            >
+              {saveLabel}
+            </span>
             <div
-              className={`rounded-xl px-3 py-2 text-base font-black tabular-nums sm:px-4 sm:text-lg ${remaining < 5 * 60_000 ? "bg-(--pd-pastel-blush-soft) text-(--pd-pastel-blush-ink)" : "bg-(--panel-nav-active) text-(--site-ink)"}`}
+              className={`min-w-[92px] rounded-md px-3 py-1.5 text-center font-mono text-[18px] font-semibold tabular-nums sm:min-w-[108px] sm:text-[20px] ${lowTime ? "bg-[#fde8e6] text-[#9f1c12]" : "bg-[#eef1ef] text-[#14201c]"}`}
               aria-label={`Kalan süre ${formatRemaining(remaining)}`}
               aria-live="off"
             >
               {formatRemaining(remaining)}
             </div>
-            <button
-              type="button"
-              aria-label="Denemeyi teslim et"
-              onClick={confirmSubmit}
-              disabled={submitting}
-              className="panel-primary-button bg-(--site-ink) px-3 sm:px-4"
-            >
-              {submitting ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <Send size={16} />
-              )}
-              <span className="hidden sm:inline">Teslim et</span>
-            </button>
+            {session && !session.isLast ? (
+              <button
+                type="button"
+                aria-label="Oturumu bitir"
+                onClick={() => setClosingSession(true)}
+                disabled={sessionBusy}
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-md bg-[#14201c] px-3 text-[13px] font-semibold text-white disabled:opacity-60 sm:px-4"
+              >
+                {sessionBusy ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} aria-hidden="true" />}
+                <span className="hidden sm:inline">Oturumu bitir</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                aria-label="Denemeyi teslim et"
+                onClick={confirmSubmit}
+                disabled={submitting}
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-md bg-[#14201c] px-3 text-[13px] font-semibold text-white disabled:opacity-60 sm:px-4"
+              >
+                {submitting ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} aria-hidden="true" />}
+                <span className="hidden sm:inline">Teslim et</span>
+              </button>
+            )}
           </div>
         </div>
         {!online || errorCount || submitError ? (
           <div
-            className="mx-auto mt-2 max-w-[1600px] rounded-xl bg-(--pd-pastel-yellow-soft) px-3 py-2 text-xs font-bold text-(--pd-pastel-yellow-ink)"
+            className="mx-auto mb-2 max-w-[1760px] rounded-md bg-[#fff4d6] px-3 py-2 text-[13px] font-medium text-[#6b4700]"
             role={submitError ? "alert" : "status"}
           >
             {submitError ||
@@ -524,237 +676,256 @@ export function StudentExamRunner({
         ) : null}
       </header>
 
-      <nav
-        aria-label="Mobil sınav görünümü"
-        className="sticky top-[65px] z-20 grid grid-cols-2 gap-2 border-b border-(--site-line) bg-white p-2 lg:hidden"
-      >
+      <nav aria-label="Mobil sınav görünümü" className="grid shrink-0 grid-cols-2 gap-1 border-b border-black/10 bg-white p-1.5 md:hidden">
         <button
           type="button"
           onClick={() => setMobileView("booklet")}
           aria-pressed={mobileView === "booklet"}
-          className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-xs font-extrabold ${mobileView === "booklet" ? "bg-(--brand-olive) text-white" : "bg-(--site-bg-warm) text-(--site-body)"}`}
+          className={`flex min-h-11 items-center justify-center gap-2 rounded-md text-[13px] font-semibold ${mobileView === "booklet" ? "bg-[#14201c] text-white" : "bg-[#eef1ef] text-[#3d4a45]"}`}
         >
-          <FileText size={15} /> Kitapçık
+          <FileText size={15} aria-hidden="true" /> Kitapçık
         </button>
         <button
           type="button"
           onClick={() => setMobileView("answers")}
           aria-pressed={mobileView === "answers"}
-          className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-xs font-extrabold ${mobileView === "answers" ? "bg-(--brand-olive) text-white" : "bg-(--site-bg-warm) text-(--site-body)"}`}
+          className={`flex min-h-11 items-center justify-center gap-2 rounded-md text-[13px] font-semibold ${mobileView === "answers" ? "bg-[#14201c] text-white" : "bg-[#eef1ef] text-[#3d4a45]"}`}
         >
-          <ListChecks size={15} /> Cevaplar ({answered}/{questions.length})
+          <ListChecks size={15} aria-hidden="true" /> Cevaplar ({answered}/{questions.length})
         </button>
       </nav>
 
-      <main className="mx-auto grid min-h-[calc(100dvh-70px)] max-w-[1600px] lg:grid-cols-[minmax(0,1fr)_430px]">
+      {/* Masaüstü ≥1280: kitapçık %62 | cevaplar %38 · yatay tablet ≥1024: 50/50 · dikey tablet: kitapçık üstte 60vh · telefon: sekme. */}
+      <main className="mx-auto grid min-h-0 w-full max-w-[1760px] flex-1 grid-rows-1 md:grid-rows-[60vh_minmax(0,1fr)] lg:grid-cols-2 lg:grid-rows-1 xl:grid-cols-[62fr_38fr]">
         <section
-          className={`${mobileView === "booklet" ? "block" : "hidden"} min-h-[70dvh] border-r border-black/10 bg-slate-200 p-2 sm:p-4 lg:block`}
+          aria-label="Deneme kitapçığı"
+          className={`${mobileView === "booklet" ? "flex" : "hidden"} min-h-0 flex-col bg-[#e3e7e5] p-2 md:flex lg:border-r lg:border-black/10 lg:p-3`}
         >
+          <p className="mb-2 rounded-md bg-white/70 px-3 py-2 text-[12.5px] text-[#3d4a45] md:hidden">
+            Kitapçığı kâğıttan çözüyorsan Cevaplar görünümünü kullan.
+          </p>
           <iframe
             title="Deneme kitapçığı"
             src={`/api/odk/student/exams/${examId}/booklet#toolbar=1&navpanes=0`}
-            className="h-[calc(100dvh-132px)] min-h-[620px] w-full rounded-xl bg-white shadow-xs lg:h-[calc(100dvh-102px)]"
+            className="min-h-[480px] w-full flex-1 rounded-md bg-white md:min-h-0"
           />
           <a
             href={`/api/odk/student/exams/${examId}/booklet`}
             target="_blank"
             rel="noreferrer"
-            className="panel-secondary-button mt-2 w-full lg:hidden"
+            className="mt-2 inline-flex min-h-11 items-center justify-center rounded-md border border-black/15 bg-white text-[13px] font-semibold md:hidden"
           >
             PDF ayrı sekmede aç
           </a>
         </section>
 
         <aside
-          className={`${mobileView === "answers" ? "block" : "hidden"} bg-white p-4 sm:p-5 lg:block`}
+          aria-label="Cevap paneli"
+          className={`${mobileView === "answers" ? "block" : "hidden"} min-h-0 overflow-y-auto border-t border-black/10 bg-white p-4 md:block lg:border-t-0 lg:p-5`}
         >
-          <div
-            className={`mb-4 flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold ${!online || errorCount ? "bg-(--pd-pastel-yellow-soft) text-(--pd-pastel-yellow-ink)" : "bg-(--site-bg-warm) text-(--site-muted)"}`}
-          >
-            {!online ? <WifiOff size={14} /> : <Wifi size={14} />}
-            {!online
-              ? "Çevrimdışı · kayıtlar bekliyor"
-              : errorCount
-                ? `${errorCount} kayıt yeniden denenecek`
-                : savingCount
-                  ? `${savingCount} cevap kaydediliyor…`
-                  : "Tüm cevaplar kaydedildi"}
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="text-xs font-extrabold uppercase tracking-[.08em] text-(--site-muted)">
-                Soru navigatörü
+          {closingSession && session ? (
+            <section aria-labelledby="oturum-bitir-baslik" className="mx-auto max-w-[460px] py-4">
+              <h2 id="oturum-bitir-baslik" className="text-[18px] font-semibold">
+                {session.currentTitle} oturumunu bitir
               </h2>
-              <span
-                className="text-[10px] text-(--site-muted)"
-                aria-hidden
-              >
-                ✓
-              </span>
-            </div>
-            <p className="mt-1 text-[10px] text-(--site-muted)">
-              ✓ cevaplı · ? işaretli · ● görüldü · - boş
-            </p>
-            <div
-              className="panel-nav-scroll mt-3 flex gap-2 overflow-x-auto pb-2 lg:grid lg:grid-cols-5 lg:overflow-visible"
-              role="list"
-              aria-label="Soru listesi"
-            >
-              {questions.map((question, index) => {
-                const answer = answers[question.id];
-                const selected = index === currentIndex;
-                const symbol = navSymbol(answer, Boolean(visited[question.id]));
-                // Liste öğesi sarmalayıcıdır; `role="listitem"` düğmenin kendisinde
-                // olunca ekran okuyucu ve klavye kullanıcısı onu düğme olarak duymuyordu.
-                return (
-                  <div role="listitem" key={question.id} className="shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCurrentIndex(index);
-                      setMobileView("answers");
-                    }}
-                    aria-current={selected ? "step" : undefined}
-                    aria-label={`Soru ${question.questionNumber}, ${
-                      symbol === "✓"
-                        ? "cevaplandı"
-                        : symbol === "?"
-                          ? "işaretli"
-                          : symbol === "●"
-                            ? "görüntülendi"
-                            : "boş"
-                    }`}
-                    className={`relative grid h-11 w-11 shrink-0 place-items-center rounded-xl border text-xs font-extrabold ${
-                      selected
-                        ? "border-(--brand-olive) bg-(--brand-olive) text-white"
-                        : answer?.selectedOption
-                          ? "border-(--brand-olive) bg-(--panel-nav-active) text-(--brand-olive)"
-                          : answer?.isMarked
-                            ? "border-amber-400 bg-amber-50 text-amber-900"
-                            : visited[question.id]
-                              ? "border-slate-400 bg-slate-50 text-slate-700"
-                              : "border-(--site-line) bg-white text-(--site-body)"
-                    }`}
-                  >
-                    <span className="sr-only">{symbol}</span>
-                    {question.questionNumber}
-                    <span
-                      aria-hidden
-                      className="absolute bottom-0.5 right-1 text-[9px] opacity-80"
-                    >
-                      {symbol}
-                    </span>
-                  </button>
+              <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
+                {[
+                  ["Cevaplı", answered],
+                  ["Boş", blank],
+                  ["İşaretli", marked],
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-md border border-black/10 py-3">
+                    <dt className="text-[12px] text-[#5b6863]">{label}</dt>
+                    <dd className="font-mono text-[22px] font-semibold tabular-nums">{value}</dd>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {currentQuestion && currentAnswer ? (
-            <article
-              className={`mt-5 rounded-2xl border p-4 ${currentAnswer.isMarked ? "border-amber-300 bg-amber-50" : "border-(--site-line) bg-white"}`}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[10px] font-extrabold uppercase text-(--brand-olive)">
-                    {currentIndex + 1}/{questions.length}
-                  </p>
-                  <h2 className="mt-1 text-lg font-extrabold">
-                    Soru {currentQuestion.questionNumber}
-                  </h2>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`text-[11px] font-bold ${currentState === "error" ? "text-red-700" : "text-(--site-muted)"}`}
-                  >
-                    {currentState === "saving"
-                      ? "Kaydediliyor…"
-                      : currentState === "saved"
-                        ? "Kaydedildi"
-                        : currentState === "error"
-                          ? "Kayıt hatası"
-                          : ""}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      save(currentQuestion.id, {
-                        isMarked: !currentAnswer.isMarked,
-                      })
-                    }
-                    aria-label={
-                      currentAnswer.isMarked
-                        ? "İşareti kaldır"
-                        : "Sonra bakmak için işaretle"
-                    }
-                    className={`grid h-11 w-11 place-items-center rounded-xl ${currentAnswer.isMarked ? "bg-amber-200 text-amber-800" : "bg-slate-100 text-slate-500"}`}
-                  >
-                    <Bookmark
-                      size={17}
-                      fill={currentAnswer.isMarked ? "currentColor" : "none"}
-                    />
-                  </button>
-                </div>
-              </div>
-              <div
-                className="mt-5 grid grid-cols-5 gap-2"
-                role="group"
-                aria-label={`Soru ${currentQuestion.questionNumber} seçenekleri`}
-              >
-                {(["A", "B", "C", "D", "E"] as Option[]).map((option) => (
-                  <button
-                    type="button"
-                    key={option}
-                    onClick={() =>
-                      save(currentQuestion.id, { selectedOption: option })
-                    }
-                    aria-pressed={currentAnswer.selectedOption === option}
-                    className={`h-12 rounded-xl text-sm font-black ${currentAnswer.selectedOption === option ? "bg-(--brand-olive) text-white" : "bg-slate-100 text-(--site-ink) hover:bg-slate-200"}`}
-                  >
-                    {currentAnswer.selectedOption === option ? (
-                      <Check size={13} className="mr-1 inline" />
-                    ) : null}
-                    {option}
-                  </button>
                 ))}
-              </div>
-              <div className="mt-3 flex items-center justify-between gap-2">
+              </dl>
+              <p className="mt-4 text-[14px] leading-6 text-[#3d4a45]">
+                Oturumu kapattığında bu oturumun cevapları kilitlenir ve değiştirilemez.
+                {nextSession ? ` Ardından ara başlar; ${nextSession.title} oturumu aradan sonra kendi süresiyle açılır.` : ""}
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
                 <button
                   type="button"
-                  onClick={() =>
-                    setCurrentIndex((value) => Math.max(0, value - 1))
-                  }
-                  disabled={currentIndex === 0}
-                  className="panel-secondary-button px-3"
+                  onClick={() => void closeSession()}
+                  disabled={sessionBusy}
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-md bg-[#14201c] px-4 text-[14px] font-semibold text-white disabled:opacity-60"
                 >
-                  <ChevronLeft size={15} /> Önceki
+                  {sessionBusy ? <Loader2 size={16} className="animate-spin" /> : null}
+                  Oturumu kapat
                 </button>
                 <button
                   type="button"
-                  onClick={() =>
-                    save(currentQuestion.id, { selectedOption: null })
-                  }
-                  className="min-h-11 px-2 text-xs font-bold text-(--site-muted)"
+                  onClick={() => setClosingSession(false)}
+                  disabled={sessionBusy}
+                  className="inline-flex min-h-11 items-center rounded-md border border-black/15 px-4 text-[14px] font-semibold"
                 >
-                  Cevabı temizle
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCurrentIndex((value) =>
-                      Math.min(questions.length - 1, value + 1),
-                    )
-                  }
-                  disabled={currentIndex === questions.length - 1}
-                  className="panel-secondary-button px-3"
-                >
-                  Sonraki <ChevronRight size={15} />
+                  Sorulara dön
                 </button>
               </div>
-            </article>
-          ) : null}
+            </section>
+          ) : (
+            <>
+              <p
+                className={`mb-3 flex min-h-8 items-center gap-2 text-[12.5px] md:hidden ${!online || errorCount ? "text-[#8a5a00]" : "text-[#5b6863]"}`}
+              >
+                {!online ? <WifiOff size={14} aria-hidden="true" /> : <Wifi size={14} aria-hidden="true" />}
+                {saveLabel}
+              </p>
+
+              <div>
+                <div className="flex items-baseline justify-between gap-2">
+                  <h2 className="text-[13px] font-semibold text-[#3d4a45]">
+                    {session ? `${session.currentTitle} soruları` : "Soru navigatörü"}
+                  </h2>
+                  <p className="text-[11.5px] text-[#5b6863]">✓ cevaplı · ? işaretli · ● görüldü · - boş</p>
+                </div>
+                <div className="mt-2 grid grid-cols-6 gap-1.5 sm:grid-cols-8 md:grid-cols-10" role="list" aria-label="Soru listesi">
+                  {questions.map((question, index) => {
+                    const answer = answers[question.id];
+                    const selected = index === currentIndex;
+                    const symbol = navSymbol(answer, Boolean(visited[question.id]));
+                    // Liste öğesi sarmalayıcıdır; `role="listitem"` düğmenin kendisinde
+                    // olunca ekran okuyucu ve klavye kullanıcısı onu düğme olarak duymuyordu.
+                    return (
+                      <div role="listitem" key={question.id}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCurrentIndex(index);
+                            setMobileView("answers");
+                          }}
+                          aria-current={selected ? "step" : undefined}
+                          aria-label={`Soru ${question.questionNumber}, ${
+                            symbol === "✓" ? "cevaplandı" : symbol === "?" ? "işaretli" : symbol === "●" ? "görüntülendi" : "boş"
+                          }`}
+                          className={`relative grid h-11 w-full place-items-center rounded-md border text-[13px] font-semibold tabular-nums ${
+                            selected
+                              ? "border-[#14201c] bg-[#14201c] text-white"
+                              : answer?.isMarked
+                                ? "border-[#c98a00] bg-[#fff4d6] text-[#6b4700]"
+                                : answer?.selectedOption
+                                  ? "border-[#0c7c57] bg-[#e6f4ee] text-[#0a5a40]"
+                                  : visited[question.id]
+                                    ? "border-[#9aa5a0] bg-[#f4f5f4] text-[#3d4a45]"
+                                    : "border-black/15 bg-white text-[#3d4a45]"
+                          }`}
+                        >
+                          <span className="sr-only">{symbol}</span>
+                          {question.questionNumber}
+                          <span aria-hidden className="absolute bottom-0 right-1 text-[9px] opacity-80">
+                            {symbol}
+                          </span>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {currentQuestion && currentAnswer ? (
+                <article
+                  className={`mt-5 rounded-md border p-4 ${currentAnswer.isMarked ? "border-[#c98a00] bg-[#fffaf0]" : "border-black/10 bg-white"}`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-[12px] text-[#5b6863] tabular-nums">
+                        {currentIndex + 1}/{questions.length}
+                        {currentQuestion.sectionTitle ? ` · ${currentQuestion.sectionTitle}` : ""}
+                      </p>
+                      <h2 className="mt-0.5 text-[20px] font-semibold">Soru {currentQuestion.questionNumber}</h2>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {/* Sabit genişlik: kayıt durumu değişince düzen kaymaz. */}
+                      <span
+                        className={`w-[92px] text-right text-[12px] transition-opacity duration-300 ${currentState ? "opacity-100" : "opacity-0"} ${currentState === "error" ? "text-[#9f1c12]" : "text-[#5b6863]"}`}
+                      >
+                        {currentState === "saving"
+                          ? "Kaydediliyor…"
+                          : currentState === "saved"
+                            ? "Kaydedildi"
+                            : currentState === "error"
+                              ? "Kayıt hatası"
+                              : ""}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => save(currentQuestion.id, { isMarked: !currentAnswer.isMarked })}
+                        aria-label={currentAnswer.isMarked ? "İşareti kaldır" : "Sonra bakmak için işaretle"}
+                        className={`grid h-11 w-11 place-items-center rounded-md border ${currentAnswer.isMarked ? "border-[#c98a00] bg-[#fff4d6] text-[#6b4700]" : "border-black/15 bg-white text-[#5b6863]"}`}
+                      >
+                        <Bookmark size={17} fill={currentAnswer.isMarked ? "currentColor" : "none"} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="mt-4 grid grid-cols-5 gap-2" role="group" aria-label={`Soru ${currentQuestion.questionNumber} seçenekleri`}>
+                    {(["A", "B", "C", "D", "E"] as Option[]).map((option) => (
+                      <button
+                        type="button"
+                        key={option}
+                        onClick={() => save(currentQuestion.id, { selectedOption: option })}
+                        aria-pressed={currentAnswer.selectedOption === option}
+                        className={`flex h-14 items-center justify-center rounded-md border text-[17px] font-semibold ${currentAnswer.selectedOption === option ? "border-[#14201c] bg-[#14201c] text-white" : "border-black/15 bg-white text-[#14201c] hover:bg-[#eef1ef]"}`}
+                      >
+                        {currentAnswer.selectedOption === option ? <Check size={14} className="mr-1" aria-hidden="true" /> : null}
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentIndex((value) => Math.max(0, value - 1))}
+                      disabled={currentIndex === 0}
+                      className="inline-flex min-h-11 items-center gap-1 rounded-md border border-black/15 px-3 text-[13px] font-semibold disabled:opacity-40"
+                    >
+                      <ChevronLeft size={15} aria-hidden="true" /> Önceki
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => save(currentQuestion.id, { selectedOption: null })}
+                      className="min-h-11 px-2 text-[13px] font-medium text-[#5b6863] hover:text-[#14201c]"
+                    >
+                      Cevabı temizle
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentIndex((value) => Math.min(questions.length - 1, value + 1))}
+                      disabled={currentIndex === questions.length - 1}
+                      className="inline-flex min-h-11 items-center gap-1 rounded-md border border-black/15 px-3 text-[13px] font-semibold disabled:opacity-40"
+                    >
+                      Sonraki <ChevronRight size={15} aria-hidden="true" />
+                    </button>
+                  </div>
+                </article>
+              ) : null}
+
+              {lockedQuestions.length ? (
+                <details className="mt-5 rounded-md border border-black/10">
+                  <summary className="flex min-h-11 cursor-pointer items-center justify-between px-4 text-[13px] font-semibold text-[#3d4a45]">
+                    {session?.sessions.filter((item) => item.status === "LOCKED").map((item) => item.title).join(", ")} cevapların · kilitli
+                    <span className="font-normal text-[#5b6863]">
+                      {lockedAnswered}/{lockedQuestions.length}
+                    </span>
+                  </summary>
+                  <ul aria-label="Kilitli oturum cevapları" className="grid grid-cols-5 gap-1.5 border-t border-black/10 p-3 sm:grid-cols-8 md:grid-cols-10">
+                    {lockedQuestions.map((question) => (
+                      <li
+                        key={question.id}
+                        className="grid h-11 place-items-center rounded-md bg-[#eef1ef] text-[12px] tabular-nums text-[#3d4a45]"
+                        aria-label={`Soru ${question.questionNumber}, ${answers[question.id]?.selectedOption ? `cevabın ${answers[question.id]?.selectedOption}` : "boş"}, kilitli`}
+                      >
+                        <span aria-hidden="true">
+                          {question.questionNumber}
+                          <span className="ml-0.5 font-semibold">{answers[question.id]?.selectedOption ?? "–"}</span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              ) : null}
+            </>
+          )}
         </aside>
       </main>
     </div>

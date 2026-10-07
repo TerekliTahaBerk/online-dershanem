@@ -31,6 +31,8 @@ test.describe("Design Phase 4 — Deneme Ligi öğrenci", () => {
   test.skip(!account.password, "ODK E2E parolası tanımlı değil.");
   test.describe.configure({ mode: "serial" });
   test.afterAll(async () => {
+    // Tohumdaki devam eden denemeyi geri koy: sonraki dosyalar sıraya bağlı kalmasın.
+    await openWindow(true);
     await prisma.$disconnect();
   });
 
@@ -78,5 +80,40 @@ test.describe("Design Phase 4 — Deneme Ligi öğrenci", () => {
     await confirm.getByRole("button", { name: "Vazgeç" }).click();
     await expect(confirm).toHaveCount(0);
     expect(await prisma.odkExamAttempt.count({ where: { examId, studentUserId } })).toBe(0);
+  });
+
+  test("sonuçta İşaretlediğim filtresi ve soru ayrıntı paneli çalışır", async ({ page }) => {
+    await openWindow(true);
+    await prisma.odkAttemptAnswer.createMany({
+      data: [
+        { attemptId: "e2e-odk-attempt-live", questionId: "e2e-odk-question-live-1", selectedOption: "A", isMarked: true, revision: 1, answeredAt: new Date() },
+        { attemptId: "e2e-odk-attempt-live", questionId: "e2e-odk-question-live-2", selectedOption: "C", isMarked: false, revision: 1, answeredAt: new Date() },
+      ],
+    });
+    await prisma.odkExamAttempt.update({ where: { id: "e2e-odk-attempt-live" }, data: { status: "SUBMITTED", submittedAt: new Date() } });
+    await prisma.odkExam.update({ where: { id: examId }, data: { endsAt: new Date(Date.now() - 1_000) } });
+
+    await page.setViewportSize({ width: 1366, height: 900 });
+    await loginAs(page, { ...panelE2EAccounts.admin, failureLabel: "ADMIN" }, { panel: null });
+    const statuses = await page.evaluate(async (id) => {
+      const score = await fetch(`/api/odk/admin/exams/${id}/score`, { method: "POST" });
+      const release = await fetch(`/api/odk/admin/exams/${id}/release`, { method: "POST" });
+      return [score.status, release.status];
+    }, examId);
+    expect(statuses).toEqual([200, 200]);
+
+    await loginAs(page, account, { panel: "ODK" });
+    await page.goto(`/panel/odk/ogrenci/denemeler/${examId}/sonuc?soru=isaretli`);
+    const filter = page.getByRole("navigation", { name: "Soru filtresi" });
+    await expect(filter.getByRole("link", { name: /İşaretlediğim/ })).toHaveAttribute("aria-current", "page");
+    const table = page.getByRole("table", { name: "Soru cevap dökümü" });
+    await expect(table.getByRole("row")).toHaveCount(2); // başlık + 1 işaretli soru
+    await table.getByRole("link", { name: /Ayrıntı · Soru 1/ }).click();
+    const drawer = page.getByRole("dialog", { name: "Soru 1" });
+    await expect(drawer).toBeVisible();
+    await expect(drawer.getByText("İşaretlemiştin")).toBeVisible();
+    await expect(drawer.getByText("MAT.8.1")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(drawer).toHaveCount(0);
   });
 });

@@ -82,6 +82,10 @@ const ids = {
   odkAttempt: "e2e-odk-attempt-live",
   odkForeignAttempt: "e2e-odk-attempt-foreign",
   odkPilotRun: "e2e-odk-pilot-run",
+  odkLgsExam: "e2e-odk-exam-lgs",
+  odkLgsVersion: "e2e-odk-version-lgs",
+  odkLgsSectionTr: "e2e-odk-section-lgs-tr",
+  odkLgsSectionMat: "e2e-odk-section-lgs-mat",
 };
 
 async function main() {
@@ -349,6 +353,25 @@ async function main() {
   await prisma.odkQuestionOutcome.upsert({ where: { questionId_outcomeId: { questionId: ids.odkQuestion, outcomeId: ids.outcomeRoots } }, create: { questionId: ids.odkQuestion, outcomeId: ids.outcomeRoots, isPrimary: true }, update: { isPrimary: true } });
   await prisma.odkQuestionOutcome.upsert({ where: { questionId_outcomeId: { questionId: ids.odkQuestion2, outcomeId: ids.outcomePowers } }, create: { questionId: ids.odkQuestion2, outcomeId: ids.outcomePowers, isPrimary: true }, update: { isPrimary: true } });
   await prisma.odkExam.update({ where: { id: ids.odkExam }, data: { currentVersionId: ids.odkVersion } });
+
+  // Oturumlu LGS denemesi (Sözel → ara → Sayısal): oturum/ara akışının E2E kapsamı.
+  const lgsEndsAt = new Date(Date.now() + 5 * 60 * 60 * 1000);
+  const lgsPolicy = await prisma.odkScoringPolicy.findUniqueOrThrow({ where: { code: "LGS_FULL_V1" } });
+  await prisma.odkExam.upsert({ where: { id: ids.odkLgsExam }, create: { id: ids.odkLgsExam, title: "E2E LGS Oturumlu Deneme", slug: "e2e-lgs-oturumlu-deneme", family: "LGS", status: "SCHEDULED", structureMode: "FULL_TEMPLATE", templateCode: "LGS_FULL", startsAt: odkStartsAt, endsAt: lgsEndsAt, lateEntryMinutes: 30, meetRequired: false, publishedAt: new Date(), createdById: ids.admin }, update: { status: "SCHEDULED", startsAt: odkStartsAt, endsAt: lgsEndsAt, lateEntryMinutes: 30, meetRequired: false, publishedAt: new Date(), resultsReleasedAt: null, answerKeyReleasedAt: null } });
+  const lgsSettings = { sessions: [
+    { key: "SOZEL", title: "Sözel", sectionCodes: ["TURKCE", "INKILAP", "DIN", "INGILIZCE"], durationMinutes: 75, breakAfterMinutes: 45 },
+    { key: "SAYISAL", title: "Sayısal", sectionCodes: ["MAT", "FEN"], durationMinutes: 80, breakAfterMinutes: 0 },
+  ] };
+  await prisma.odkExamVersion.upsert({ where: { id: ids.odkLgsVersion }, create: { id: ids.odkLgsVersion, examId: ids.odkLgsExam, versionNumber: 1, status: "LOCKED", durationMinutes: 155, scoringPolicyId: lgsPolicy.id, createdById: ids.admin, lockedAt: new Date(), settings: lgsSettings }, update: { status: "LOCKED", durationMinutes: 155, settings: lgsSettings, lockedAt: new Date() } });
+  await prisma.odkExamSection.upsert({ where: { id: ids.odkLgsSectionTr }, create: { id: ids.odkLgsSectionTr, versionId: ids.odkLgsVersion, code: "TURKCE", title: "Türkçe", position: 0, questionCount: 2 }, update: { questionCount: 2 } });
+  await prisma.odkExamSection.upsert({ where: { id: ids.odkLgsSectionMat }, create: { id: ids.odkLgsSectionMat, versionId: ids.odkLgsVersion, code: "MAT", title: "Matematik", position: 1, questionCount: 2 }, update: { questionCount: 2 } });
+  for (const [sectionId, prefix, offset] of [[ids.odkLgsSectionTr, "tr", 0], [ids.odkLgsSectionMat, "mat", 2]] as const) {
+    for (const number of [1, 2]) {
+      const questionId = `e2e-odk-question-lgs-${prefix}-${number}`;
+      await prisma.odkExamQuestion.upsert({ where: { id: questionId }, create: { id: questionId, sectionId, questionNumber: offset + number, position: number - 1, correctOption: number === 1 ? "A" : "B", difficulty: "MEDIUM" }, update: { isActive: true } });
+    }
+  }
+  await prisma.odkExam.update({ where: { id: ids.odkLgsExam }, data: { currentVersionId: ids.odkLgsVersion } });
   const e2eOdkPackage = await prisma.odkPackage.upsert({
     where: { slug: "e2e-odk-live-access" },
     create: { id: "e2e-odk-package-live", slug: "e2e-odk-live-access", title: "E2E ODK Canlı Erişim", priceCents: 9900, contractPolicy: odkContractPolicy },
@@ -359,8 +382,13 @@ async function main() {
     create: { packageId: e2eOdkPackage.id, examId: ids.odkExam },
     update: {},
   });
+  await prisma.odkPackageExam.upsert({
+    where: { packageId_examId: { packageId: e2eOdkPackage.id, examId: ids.odkLgsExam } },
+    create: { packageId: e2eOdkPackage.id, examId: ids.odkLgsExam },
+    update: {},
+  });
   const e2eCatalogVersion = (await prisma.odkPackage.findUniqueOrThrow({ where: { id: e2eOdkPackage.id }, select: { contractVersion: true } })).contractVersion;
-  const e2eContractSnapshot = { schemaVersion: 1, catalogVersion: e2eCatalogVersion, capturedAt: new Date().toISOString(), package: { id: e2eOdkPackage.id, slug: e2eOdkPackage.slug, title: e2eOdkPackage.title, description: e2eOdkPackage.description, priceCents: e2eOdkPackage.priceCents, originalPriceCents: e2eOdkPackage.originalPriceCents }, policy: odkContractPolicy, exams: [{ id: ids.odkExam, seriesId: null, seriesTitle: null, title: "E2E Canlı Matematik Denemesi", slug: "e2e-canli-matematik-denemesi", family: "LGS", startsAt: odkStartsAt.toISOString(), endsAt: odkEndsAt.toISOString(), lateEntryMinutes: 10, attemptLimit: 1, resultsReleasedAt: null, answerKeyReleasedAt: null, liveServiceRequired: false }] };
+  const e2eContractSnapshot = { schemaVersion: 1, catalogVersion: e2eCatalogVersion, capturedAt: new Date().toISOString(), package: { id: e2eOdkPackage.id, slug: e2eOdkPackage.slug, title: e2eOdkPackage.title, description: e2eOdkPackage.description, priceCents: e2eOdkPackage.priceCents, originalPriceCents: e2eOdkPackage.originalPriceCents }, policy: odkContractPolicy, exams: [{ id: ids.odkExam, seriesId: null, seriesTitle: null, title: "E2E Canlı Matematik Denemesi", slug: "e2e-canli-matematik-denemesi", family: "LGS", startsAt: odkStartsAt.toISOString(), endsAt: odkEndsAt.toISOString(), lateEntryMinutes: 10, attemptLimit: 1, resultsReleasedAt: null, answerKeyReleasedAt: null, liveServiceRequired: false }, { id: ids.odkLgsExam, seriesId: null, seriesTitle: null, title: "E2E LGS Oturumlu Deneme", slug: "e2e-lgs-oturumlu-deneme", family: "LGS", startsAt: odkStartsAt.toISOString(), endsAt: lgsEndsAt.toISOString(), lateEntryMinutes: 30, attemptLimit: 1, resultsReleasedAt: null, answerKeyReleasedAt: null, liveServiceRequired: false }] };
   for (const userId of [ids.odkStudent, ids.foreignStudent]) {
     const orderId = `e2e-odk-access-${userId}`;
     await prisma.odkOrder.upsert({
@@ -374,7 +402,7 @@ async function main() {
       update: { userId, packageId: e2eOdkPackage.id, startsAt: new Date(0), expiresAt: null, revokedAt: null },
     });
   }
-  await prisma.odkExamAttempt.deleteMany({ where: { examId: ids.odkExam } });
+  await prisma.odkExamAttempt.deleteMany({ where: { examId: { in: [ids.odkExam, ids.odkLgsExam] } } });
   await prisma.odkExamAttempt.create({ data: { id: ids.odkAttempt, examId: ids.odkExam, versionId: ids.odkVersion, studentUserId: ids.odkStudent, attemptNumber: 1, status: "IN_PROGRESS", startedAt: new Date(), deadlineAt: odkEndsAt, lastActivityAt: new Date() } });
   await prisma.odkExamAttempt.create({ data: { id: ids.odkForeignAttempt, examId: ids.odkExam, versionId: ids.odkVersion, studentUserId: ids.foreignStudent, attemptNumber: 1, status: "IN_PROGRESS", startedAt: new Date(), deadlineAt: odkEndsAt, lastActivityAt: new Date() } });
   await prisma.odkPilotRun.deleteMany({ where: { id: ids.odkPilotRun } });

@@ -658,6 +658,7 @@ model OdkExamAttempt {
   score               OdkAttemptScore?
   events              OdkAttemptEvent[]
   timings             OdkAttemptQuestionTiming[]
+  sessionClosures     OdkAttemptSessionClosure[]
 
   @@unique([examId, studentUserId, attemptNumber])
   @@index([studentUserId, status, deadlineAt])
@@ -843,4 +844,19 @@ model OdkImportAudit {
   @@index([examId, kind, createdAt])
   @@index([versionId, status])
   @@map("odk_import_audits")
+}
+
+/// Oturumlu sınavlarda (LGS Sözel → ara → Sayısal) öğrencinin bir oturumu
+/// ERKEN kapatma kaydı. Süreyle kapanış saklanmaz: zaman çizelgesi deneme
+/// başlangıcı + sürüm ayarlarındaki oturum planı + bu kayıtlardan sunucuda
+/// hesaplanır (`lib/odk/exam-sessions.ts`). Kayıt silinmez/değiştirilmez.
+model OdkAttemptSessionClosure {
+  id         String         @id @default(cuid())
+  attemptId  String         @map("attempt_id")
+  sessionKey String         @map("session_key")
+  closedAt   DateTime       @default(now()) @map("closed_at") @db.Timestamptz(3)
+  attempt    OdkExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, sessionKey])
+  @@map("odk_attempt_session_closures")
 }

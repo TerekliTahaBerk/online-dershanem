@@ -8,6 +8,7 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentExamStart } from "@/components/odk/student-exam-start";
 import { PageHeader, PropertyList, PropertyRow, Section, StatusBadge, buttonClass } from "@/components/panel/ui";
 import { studentExamState } from "@/lib/odk/student-exam-state";
+import { readSessionPlan, sessionPlanTotalMinutes } from "@/lib/odk/exam-sessions";
 import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 export const dynamic = "force-dynamic";
@@ -41,6 +42,7 @@ export default async function OdkStudentExamDetailPage({
 
   const state = studentExamState({ id: exam.id, attempts: attempt ? [{ status: attempt.status }] : [], startDecision, resultAvailable });
   const questionCount = version.sections.reduce((sum, section) => sum + section.questions.length, 0);
+  const sessionPlan = readSessionPlan(version.settings);
 
   return (
     <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK" pageTitle={exam.title}>
@@ -59,7 +61,16 @@ export default async function OdkStudentExamDetailPage({
           <PropertyList>
             <PropertyRow label="Soru sayısı">{questionCount} soru</PropertyRow>
             <PropertyRow label="Bölümler">{version.sections.map((section) => section.title).join(" · ") || "—"}</PropertyRow>
-            <PropertyRow label="Süre">{version.durationMinutes} dakika</PropertyRow>
+            {sessionPlan ? (
+              <PropertyRow label="Oturumlar">
+                {sessionPlan
+                  .map((item, index) => `${item.title} ${item.durationMinutes} dk${index < sessionPlan.length - 1 && item.breakAfterMinutes ? ` · ${item.breakAfterMinutes} dk ara` : ""}`)
+                  .join(" · ")}
+              </PropertyRow>
+            ) : null}
+            <PropertyRow label="Süre">
+              {version.durationMinutes} dakika{sessionPlan ? ` (aralar hariç; toplam ${sessionPlanTotalMinutes(sessionPlan)} dakika)` : ""}
+            </PropertyRow>
             <PropertyRow label="Açılış – kapanış">{startWindowCopy}</PropertyRow>
             <PropertyRow label="Geç giriş">{exam.lateEntryMinutes ? `Başlangıçtan sonra ${exam.lateEntryMinutes} dakika` : "Yok"}</PropertyRow>
             <PropertyRow label="Gözetim">{exam.meetRequired ? "Meet zorunlu" : "Meet gerekmiyor"}</PropertyRow>
@@ -72,6 +83,12 @@ export default async function OdkStudentExamDetailPage({
             <li>Her cevap seçtiğin anda kaydedilir; bağlantı koparsa geri gelince kayıt sürer.</li>
             <li>Bekleyen kayıt varken teslim kapanır; süre bitince deneme otomatik teslim edilir.</li>
             {exam.meetRequired ? <li>Deneme boyunca Meet görüşmesinde kalman gerekir.</li> : null}
+            {sessionPlan ? (
+              <li>
+                Oturumlar sırayla açılır. Bir oturumu bitirince (ya da süresi dolunca) cevapları kilitlenir; aradan sonra sıradaki
+                oturum kendi süresiyle açılır. Teslim son oturumda yapılır.
+              </li>
+            ) : null}
           </ul>
         </Section>
 
@@ -102,7 +119,7 @@ export default async function OdkStudentExamDetailPage({
               canStart={startDecision.ok}
               startError={startDecision.ok ? null : attemptStartError[startDecision.code]}
               activeAttempt={activeAttempt}
-              durationMinutes={version.durationMinutes}
+              durationMinutes={sessionPlan ? undefined : version.durationMinutes}
             />
           )}
         </Section>

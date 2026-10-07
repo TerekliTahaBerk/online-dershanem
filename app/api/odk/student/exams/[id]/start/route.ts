@@ -11,6 +11,7 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 import { getActiveOdkExamGrant } from "@/lib/odk/product-contract-server";
 import { contractExamSchedule } from "@/lib/odk/product-contract";
 import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
+import { readSessionPlan, sessionPlanTotalMinutes } from "@/lib/odk/exam-sessions";
 
 const schema = z.object({ meetAcknowledged: z.boolean().default(false) });
 
@@ -25,7 +26,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!grant) {
     return NextResponse.json({ error: "Bu deneme için aktif paket erişiminiz yok." }, { status: 403 });
   }
-  const exam = await prisma.odkExam.findFirst({ where: { id, publishedAt: { not: null } }, select: { id: true, family: true, examFamilyRef: { select: { code: true } }, status: true, startsAt: true, endsAt: true, lateEntryMinutes: true, attemptLimit: true, meetRequired: true, currentVersion: { select: { id: true, status: true, durationMinutes: true } } } });
+  const exam = await prisma.odkExam.findFirst({ where: { id, publishedAt: { not: null } }, select: { id: true, family: true, examFamilyRef: { select: { code: true } }, status: true, startsAt: true, endsAt: true, lateEntryMinutes: true, attemptLimit: true, meetRequired: true, currentVersion: { select: { id: true, status: true, durationMinutes: true, settings: true } } } });
   if (!exam?.currentVersion || exam.currentVersion.status !== "LOCKED") return NextResponse.json({ error: "Sınav sürümü kullanıma hazır değil." }, { status: 409 });
   const familyCode = getOdkExamFamilyCode(exam);
   const existing = await prisma.odkExamAttempt.findFirst({ where: { examId: id, studentUserId: auth.session.userId, status: "IN_PROGRESS" }, orderBy: { attemptNumber: "desc" } });
@@ -38,9 +39,16 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const previous = await prisma.odkExamAttempt.aggregate({ where: { examId: id, studentUserId: auth.session.userId, status: { not: "VOID" } }, _count: true, _max: { attemptNumber: true } });
   if (previous._count >= grant.exam.attemptLimit) return NextResponse.json({ error: "Bu deneme için giriş hakkınız kullanılmış." }, { status: 409 });
   const now = new Date();
+  // Oturumlu sınav (LGS Sözel → ara → Sayısal): sert sınır planın en uzun hâlidir
+  // (tüm oturumlar + aralar), sınav penceresiyle sınırlı. Tek oturumlu sınav değişmez.
+  const sessionPlan = readSessionPlan(exam.currentVersion.settings);
+  const windowEnd = contractExamSchedule(grant.exam).endsAt;
+  const deadlineAt = sessionPlan
+    ? new Date(Math.min(now.getTime() + sessionPlanTotalMinutes(sessionPlan) * 60_000, windowEnd ? windowEnd.getTime() : Number.POSITIVE_INFINITY))
+    : decision.deadlineAt;
   let attempt;
   try {
-    attempt = await prisma.odkExamAttempt.create({ data: { examId: id, versionId: exam.currentVersion.id, studentUserId: auth.session.userId, attemptNumber: (previous._max.attemptNumber || 0) + 1, meetAcknowledgedAt: meetRequired ? now : null, startedAt: now, deadlineAt: decision.deadlineAt, lastActivityAt: now } });
+    attempt = await prisma.odkExamAttempt.create({ data: { examId: id, versionId: exam.currentVersion.id, studentUserId: auth.session.userId, attemptNumber: (previous._max.attemptNumber || 0) + 1, meetAcknowledgedAt: meetRequired ? now : null, startedAt: now, deadlineAt, lastActivityAt: now } });
   } catch (error) {
     if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") throw error;
     const concurrent = await prisma.odkExamAttempt.findFirst({ where: { examId: id, studentUserId: auth.session.userId, status: "IN_PROGRESS", deadlineAt: { gt: now } }, orderBy: { attemptNumber: "desc" } });

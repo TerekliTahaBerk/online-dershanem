@@ -17,8 +17,11 @@ import {
   PanelTableCell,
   PanelTableRow,
   Section,
+  PropertyList,
+  PropertyRow,
   Sparkline,
   StatusBadge,
+  UrlDrawer,
   ViewTabs,
   buttonClass,
 } from "@/components/panel/ui";
@@ -62,7 +65,7 @@ export default async function OdkStudentResultPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ alan?: string | string[]; soru?: string | string[] }>;
+  searchParams: Promise<{ alan?: string | string[]; soru?: string | string[]; onizle?: string | string[] }>;
 }) {
   const session = await requireProductRole("ODK", "STUDENT");
   const { id } = await params;
@@ -175,10 +178,23 @@ export default async function OdkStudentResultPage({
   const sections = (Array.isArray(sectionBreakdown) ? (sectionBreakdown as SectionRow[]) : []).filter((section) => inTrack(section.code));
   const trackNet = trackMode === "benim" ? sections.reduce((sum, section) => sum + Number(section.net ?? 0), 0) : null;
 
-  const questionFilter = query.soru === "yanlis" || query.soru === "bos" ? query.soru : "tumu";
+  const markedIds = new Set(data.attempt.answers.map((answer) => answer.questionId));
+  const questionFilter = query.soru === "yanlis" || query.soru === "bos" || query.soru === "isaretli" ? query.soru : "tumu";
   const questions = score.questionResults
     .filter((item) => inTrack(item.question.section.code))
-    .filter((item) => (questionFilter === "yanlis" ? item.result === "WRONG" : questionFilter === "bos" ? item.result === "BLANK" : true));
+    .filter((item) =>
+      questionFilter === "yanlis"
+        ? item.result === "WRONG"
+        : questionFilter === "bos"
+          ? item.result === "BLANK"
+          : questionFilter === "isaretli"
+            ? markedIds.has(item.questionId)
+            : true,
+    );
+  const previewParam = typeof query.onizle === "string" ? query.onizle : "";
+  const openQuestion = previewParam.startsWith("soru:")
+    ? score.questionResults.find((item) => item.questionId === previewParam.slice(5)) ?? null
+    : null;
   const baseHref = `/panel/odk/ogrenci/denemeler/${id}/sonuc`;
   const withQuery = (next: Record<string, string | null>) => {
     const params = new URLSearchParams();
@@ -360,10 +376,11 @@ export default async function OdkStudentResultPage({
               { id: "tumu", label: "Tümü", href: withQuery({ soru: null }) },
               { id: "yanlis", label: "Yanlış", href: withQuery({ soru: "yanlis" }), count: score.questionResults.filter((q) => q.result === "WRONG" && inTrack(q.question.section.code)).length },
               { id: "bos", label: "Boş", href: withQuery({ soru: "bos" }), count: score.questionResults.filter((q) => q.result === "BLANK" && inTrack(q.question.section.code)).length },
+              { id: "isaretli", label: "İşaretlediğim", href: withQuery({ soru: "isaretli" }), count: score.questionResults.filter((q) => markedIds.has(q.questionId) && inTrack(q.question.section.code)).length },
             ]}
           />
           {questions.length ? (
-            <PanelTable caption="Soru cevap dökümü" columns={["No", "Ders", "Kazanım", "Cevabın", "Doğru", "Süre"]}>
+            <PanelTable caption="Soru cevap dökümü" columns={["No", "Ders", "Kazanım", "Cevabın", "Doğru", "Süre", ""]}>
               {questions.map((item) => {
                 const ms = data.attempt.timings.find((timing) => timing.questionId === item.questionId)?.activeDurationMs;
                 return (
@@ -379,6 +396,17 @@ export default async function OdkStudentResultPage({
                     </PanelTableCell>
                     <PanelTableCell>{item.correctOption}</PanelTableCell>
                     <PanelTableCell>{ms != null ? `${Math.round(ms / 1000)} sn` : "—"}</PanelTableCell>
+                    <PanelTableCell>
+                      <Link
+                        href={`${withQuery({})}${withQuery({}).includes("?") ? "&" : "?"}onizle=soru:${item.questionId}`}
+                        scroll={false}
+                        aria-haspopup="dialog"
+                        className={buttonClass("ghost", "sm")}
+                      >
+                        Ayrıntı<span className="sr-only"> · Soru {item.question.questionNumber}</span>
+                      </Link>
+                      {markedIds.has(item.questionId) ? <span className="sr-only"> (işaretlediğin soru)</span> : null}
+                    </PanelTableCell>
                   </PanelTableRow>
                 );
               })}
@@ -459,6 +487,68 @@ export default async function OdkStudentResultPage({
           ) : null}
         </Section>
       </div>
+
+      {openQuestion ? (
+        <UrlDrawer
+          title={`Soru ${openQuestion.question.questionNumber}`}
+          description={openQuestion.question.section.title}
+        >
+          <PropertyList>
+            <PropertyRow label="Sonuç">
+              <StatusBadge
+                label={openQuestion.result === "CORRECT" ? "Doğru" : openQuestion.result === "WRONG" ? "Yanlış" : "Boş"}
+                tone={openQuestion.result === "CORRECT" ? "success" : openQuestion.result === "WRONG" ? "critical" : "neutral"}
+              />
+              {markedIds.has(openQuestion.questionId) ? (
+                <span className="ml-2 inline-block align-middle">
+                  <StatusBadge label="İşaretlemiştin" tone="warning" />
+                </span>
+              ) : null}
+            </PropertyRow>
+            <PropertyRow label="Cevabın">{openQuestion.selectedOption || "Boş bıraktın"}</PropertyRow>
+            <PropertyRow label="Doğru cevap">{openQuestion.correctOption}</PropertyRow>
+            <PropertyRow label="Süre">
+              {(() => {
+                const ms = data.attempt.timings.find((timing) => timing.questionId === openQuestion.questionId)?.activeDurationMs;
+                return ms != null ? `${Math.round(ms / 1000)} sn` : "Süre kaydı yok";
+              })()}
+            </PropertyRow>
+          </PropertyList>
+          {openQuestion.question.outcomes.length ? (
+            <div className="mt-5">
+              <h3 className="text-[13.5px] font-semibold text-pn-text">Kazanım</h3>
+              <ul className="mt-2 border-t border-pn-border">
+                {openQuestion.question.outcomes.map((link) => {
+                  const outcomeScore = score.outcomeScores.find((row) => row.outcome.code === link.outcome.code);
+                  return (
+                    <li key={link.outcome.code} className="border-b border-pn-border py-2.5">
+                      <p className="text-[13.5px] text-pn-text">
+                        <span className="mr-1.5 font-mono text-[12px] text-pn-text-muted">{link.outcome.code}</span>
+                        {link.outcome.title}
+                        {link.isPrimary ? <span className="ml-1.5 text-[12px] text-pn-text-muted">· ana kazanım</span> : null}
+                      </p>
+                      {outcomeScore ? (
+                        <p className="mt-0.5 text-[12.5px] text-pn-text-muted">
+                          Bu denemede bu kazanımda %{Number(outcomeScore.accuracyRate).toFixed(0)} doğruluk · {outcomeScore.questionCount} soru
+                        </p>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
+          <p className="mt-5 text-[13px] text-pn-text-secondary">
+            Sorunun kendisi deneme kitapçığındadır
+            {answerKeyAvailable && exam.currentVersion?.files.length ? "; çözüm için cevap anahtarını açabilirsin." : "."}
+          </p>
+          {answerKeyAvailable && exam.currentVersion?.files.length ? (
+            <a href={`/api/odk/student/exams/${id}/answer-key`} target="_blank" rel="noreferrer" className={buttonClass("secondary", "sm", "mt-2")}>
+              <FileText size={14} aria-hidden="true" /> Cevap anahtarını aç
+            </a>
+          ) : null}
+        </UrlDrawer>
+      ) : null}
     </PanelShell>
   );
 }

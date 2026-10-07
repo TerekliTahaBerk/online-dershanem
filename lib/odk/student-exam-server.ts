@@ -93,6 +93,8 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
         select: {
           id: true, submittedAt: true, startedAt: true,
           timings: { select: { questionId: true, activeDurationMs: true } },
+          // "İşaretlediğim" filtresi: öğrencinin kendi işaretleri (yalnız soru kimliği ve bayrak).
+          answers: { where: { isMarked: true }, select: { questionId: true } },
           score: {
             select: {
               correctCount: true, wrongCount: true, blankCount: true, totalNet: true, activeDurationMs: true, sectionBreakdown: true,
