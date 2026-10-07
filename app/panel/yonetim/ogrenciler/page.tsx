@@ -195,7 +195,7 @@ export default async function StudentsPage({
           }`}
           actions={
             <Link
-              href="/panel/yonetim/kullanicilar#yeni-hesap"
+              href="/panel/yonetim/kisiler?yeni=1"
               className="rounded-od bg-dc-brand-strong px-[18px] py-[11px] text-[14px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
             >
               Öğrenci hesabı aç

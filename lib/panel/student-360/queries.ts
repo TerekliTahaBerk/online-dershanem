@@ -104,6 +104,8 @@ export async function loadStudent360QueryData(input: {
   access: Student360Access;
   flags: PanelFeatureFlags;
   tab: Student360Tab;
+  /** Üst sekmenin gösterdiği tüm bölümler (verilmezse yalnız `tab`). */
+  sections?: Student360Tab[];
   now: Date;
   weekStart: Date;
   since14d: Date;
@@ -202,7 +204,7 @@ export async function loadStudent360QueryData(input: {
     needsAdminForms,
     needsExamSignals,
     needsAssignmentList,
-  } = deriveStudent360QueryRequirements({ access, tab, flags });
+  } = deriveStudent360QueryRequirements({ access, tab, flags, sections: input.sections });
 
   const lessonNoteWhere =
     access.mode === "teacher_group"

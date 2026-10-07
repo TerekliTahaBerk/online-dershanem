@@ -12,12 +12,14 @@ import {
   derivePackageStatus,
   deriveStudent360RiskSignals,
   examNetDelta,
-  parseStudent360Tab,
   planCompletionPercent,
+  resolveStudent360Location,
   summarizeStudent360Risk,
   visibleStudent360Actions,
+  visibleStudent360Groups,
   visibleStudent360Tabs,
 } from "@/lib/panel/student-360";
+import { getUnifiedActivityTimeline } from "@/lib/student-success/server/progress-server";
 import { loadStudent360QueryData, resolveStudent360Access } from "./queries";
 import type {
   Student360AcademicTab,
@@ -41,6 +43,8 @@ export async function loadStudent360Bundle(input: {
   viewer: { userId: string; role: UserRole };
   studentProfileId: string;
   tabRaw?: string | string[];
+  /** Öğrenme sekmesinin alt görünümü (`?gorunum=`). */
+  viewRaw?: string | string[];
   now?: Date;
 }): Promise<Student360Bundle> {
   const now = input.now ?? new Date();
@@ -51,7 +55,10 @@ export async function loadStudent360Bundle(input: {
     canViewCommerce: access.canViewCommerce,
     flags,
   });
-  const tab = parseStudent360Tab(input.tabRaw, tabs);
+  // Eski sekmeler bölümdür; üst sekme ve takma adlar `resolveStudent360Location`'da (§12).
+  const location = resolveStudent360Location({ sekme: input.tabRaw, gorunum: input.viewRaw, sections: tabs });
+  const groups = visibleStudent360Groups(tabs);
+  const tab = location.sections[0] ?? "genel";
   const basePath =
     access.role === "ADMIN"
       ? `/panel/yonetim/ogrenciler/${access.studentProfileId}`
@@ -98,7 +105,9 @@ export async function loadStudent360Bundle(input: {
     parentOptions,
     teacherLinksRaw,
     teacherOptionsRaw,
-  } = await loadStudent360QueryData({ access, flags, tab, now, weekStart, since14d });
+  } = await loadStudent360QueryData({ access, flags, tab, sections: location.sections, now, weekStart, since14d });
+  // Etkinlik: görünürlük süzgeci sorguda (`timelineVisibilitiesForViewer`), personel olarak.
+  const timeline = location.group === "etkinlik" ? await getUnifiedActivityTimeline(access.studentProfileId, access.role, 60) : null;
 
   const absent14 = attendances14d.filter((row) => row.status === "ABSENT").length;
   const weekPresent = weekAttendances.filter(
@@ -474,6 +483,12 @@ export async function loadStudent360Bundle(input: {
     basePath,
     tab,
     tabs,
+    group: location.group,
+    groups,
+    view: location.view,
+    sections: location.sections,
+    anchor: location.anchor,
+    timeline,
     actions,
     summary,
     overview,

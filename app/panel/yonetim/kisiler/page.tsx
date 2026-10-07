@@ -1,17 +1,30 @@
 import Link from "next/link";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { productLabel, roleLabel } from "@/lib/auth/roles";
-import { buildUserWhere } from "@/lib/panel/user-filters";
+import { ROLE_FILTERS, STATUS_FILTERS, buildUserWhere, parseUserListFilters } from "@/lib/panel/user-filters";
+import {
+  PEOPLE_VIEWS,
+  pageWindow,
+  parsePeopleView,
+  peopleHref,
+  peopleViewWhere,
+  responsibilityBadges,
+  viewAllowsRoleFilter,
+  type PeopleQuery,
+} from "@/lib/panel/people-views";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
-  PanelCard,
-  PanelEmpty,
-  PanelHeading,
+  EmptyState,
+  PageHeader,
   PanelTable,
   PanelTableCell,
   PanelTableRow,
   StatusBadge,
+  UrlDrawer,
+  ViewTabs,
+  buttonClass,
 } from "@/components/panel/ui";
 import { CreateUserForm } from "@/components/panel/create-user-form";
 import { UserBulkOperations } from "@/components/panel/user-bulk-operations";
@@ -21,57 +34,37 @@ import { USER_STATUS_PRESENTATION } from "@/lib/panel/status-vocabulary";
 
 export const dynamic = "force-dynamic";
 
-/**
- * ADMIN · KİŞİLER — tek merkez, rol sekmeleri.
- * Az sayfa / güçlü detay: liste karar bilgisi; derin işlem Student 360 / kişi detayında.
- */
-
-const DATE = new Intl.DateTimeFormat("tr-TR", {
-  day: "numeric",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-});
+const DATE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" });
 const PAGE_SIZE = 30;
+const VIEW_ROLE = { ogrenciler: "STUDENT", veliler: "PARENT", ogretmenler: "TEACHER" } as const;
+const SELECT_CLASS = "min-h-9 rounded-md border border-pn-border-strong bg-white px-2 text-[14px] text-pn-text";
 
-type PeopleTab = "STUDENT" | "TEACHER" | "PARENT";
-
-function parseTab(raw: string | undefined): PeopleTab {
-  if (raw === "TEACHER" || raw === "ogretmenler") return "TEACHER";
-  if (raw === "PARENT" || raw === "veliler") return "PARENT";
-  return "STUDENT";
-}
-
-function tabHref(tab: PeopleTab, q: string) {
-  const params = new URLSearchParams();
-  params.set(
-    "sekme",
-    tab === "STUDENT"
-      ? "ogrenciler"
-      : tab === "TEACHER"
-        ? "ogretmenler"
-        : "veliler",
-  );
-  if (q) params.set("q", q);
-  return `/panel/yonetim/kisiler?${params.toString()}`;
-}
-
+/**
+ * KİŞİLER & ERİŞİM (docs/panel-design-roadmap.md §14.1) — görünümler
+ * (`?sekme=` Tümü · Öğrenciler · Veliler · Öğretmenler · Koçlar · Personel),
+ * erişilemeyen eski `kullanicilar` listesinin süzgeçleri (rol, ürün, durum,
+ * arama, sayfalama; sunucu tarafı) ve sorumluluk rozetleri. "Yeni kişi" yan
+ * panelde (`?yeni=1`). Toplu işlem yalnız süzgeçle birebir eşleşen
+ * görünümlerde (Koçlar/Personel'de uç görünüm kuralını bilmez, gösterilmez).
+ */
 export default async function PeopleHubPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; sekme?: string; sayfa?: string }>;
+  searchParams: Promise<{ q?: string; sekme?: string; sayfa?: string; rol?: string; urun?: string; durum?: string; yeni?: string }>;
 }) {
   const session = await requireRole("ADMIN");
   const sp = await searchParams;
-  const tab = parseTab(sp.sekme);
-  const q = (sp.q ?? "").trim();
+  const view = parsePeopleView(sp.sekme, sp.rol);
+  const filters = parseUserListFilters(sp);
+  const rol = viewAllowsRoleFilter(view) ? filters.rol : view in VIEW_ROLE ? VIEW_ROLE[view as keyof typeof VIEW_ROLE] : "";
+  const query: PeopleQuery = { view, q: filters.q, rol: viewAllowsRoleFilter(view) ? filters.rol : "", urun: filters.urun, durum: filters.durum };
   const page = Math.max(1, Number.parseInt(sp.sayfa ?? "1", 10) || 1);
-  const where = buildUserWhere({
-    q,
-    rol: tab,
-    urun: "",
-    durum: "",
-  });
+  const where: Prisma.UserWhereInput = { AND: [buildUserWhere({ ...filters, rol }), peopleViewWhere(view)] };
+  const bulkApplies = view === "tumu" || view in VIEW_ROLE;
+  const today = new Date();
+  const dayStart = new Date(today);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60_000);
 
   const [total, users, activeGroups, activeTeachers, interventionOwners] = await Promise.all([
     prisma.user.count({ where }),
@@ -89,391 +82,290 @@ export default async function PeopleHubPage({
         status: true,
         lastLoginAt: true,
         inviteAcceptedAt: true,
-        productMemberships: {
-          where: { revokedAt: null },
-          select: { product: true },
-        },
+        productMemberships: { where: { revokedAt: null }, select: { product: true, source: true } },
+        productStaffAssignments: { where: { revokedAt: null }, select: { role: true } },
         studentProfile: {
           select: {
             id: true,
             classLevel: true,
             examType: true,
-            parents: {
-              where: { active: true },
-              select: { parent: { select: { fullName: true, email: true } } },
-              take: 2,
-            },
+            parents: { where: { active: true }, select: { parent: { select: { fullName: true, email: true } } }, take: 2 },
             enrollments: {
               where: { endedAt: null },
-              select: {
-                group: {
-                  select: {
-                    name: true,
-                    teacher: { select: { fullName: true, email: true } },
-                  },
-                },
-              },
+              select: { group: { select: { name: true, teacher: { select: { fullName: true, email: true } } } } },
               take: 2,
             },
-            teacherAssignments: {
-              where: { active: true },
-              select: {
-                subject: true,
-                teacher: { select: { fullName: true, email: true } },
-              },
-              take: 3,
-            },
+            teacherAssignments: { where: { active: true }, select: { subject: true, teacher: { select: { fullName: true, email: true } } }, take: 3 },
+            coachAssignments: { where: { endedAt: null }, select: { coach: { select: { user: { select: { fullName: true, email: true } } } } }, take: 1 },
           },
         },
         teacherProfile: {
-          select: {
-            subjects: true,
-            maxStudentCapacity: true,
-          },
+          select: { subjects: true, isCoach: true, coachCapacity: true, _count: { select: { coachAssignments: { where: { endedAt: null } } } } },
         },
-        taughtGroups: {
+        taughtGroups: { where: { isActive: true }, select: { id: true, _count: { select: { enrollments: { where: { endedAt: null } } } } } },
+        studentTeacherAssignments: { where: { active: true }, select: { id: true } },
+        taughtLessons: { where: { status: "PLANNED", startsAt: { gte: dayStart, lt: dayEnd } }, select: { id: true } },
+        parentStudents: { where: { active: true }, select: { student: { select: { user: { select: { fullName: true, email: true } } } } }, take: 3 },
+      },
+    }),
+    bulkApplies
+      ? prisma.group.findMany({
           where: { isActive: true },
-          select: {
-            id: true,
-            _count: { select: { enrollments: { where: { endedAt: null } } } },
-          },
-        },
-        studentTeacherAssignments: {
-          where: { active: true },
-          select: { id: true },
-        },
-        taughtLessons: {
-          where: {
-            status: "PLANNED",
-            startsAt: {
-              gte: new Date(new Date().setHours(0, 0, 0, 0)),
-              lt: new Date(new Date().setHours(24, 0, 0, 0)),
-            },
-          },
-          select: { id: true },
-        },
-        parentStudents: {
-          where: { active: true },
-          select: {
-            student: {
-              select: { user: { select: { fullName: true, email: true } } },
-            },
-          },
-          take: 3,
-        },
-      },
-    }),
-    // Toplu operasyon seçenekleri: `/panel/yonetim/kullanicilar` bu merkeze
-    // yönlendirildiğinden toplu işlem yüzeyi burada yaşar.
-    prisma.group.findMany({
-      where: { isActive: true },
-      orderBy: { name: "asc" },
-      take: 200,
-      select: {
-        id: true,
-        name: true,
-        subject: true,
-        teacher: { select: { fullName: true, email: true } },
-      },
-    }),
-    prisma.user.findMany({
-      where: { role: "TEACHER", status: "ACTIVE" },
-      orderBy: { fullName: "asc" },
-      take: 200,
-      select: {
-        id: true,
-        fullName: true,
-        email: true,
-        teacherProfile: { select: { isCoach: true } },
-      },
-    }),
-    prisma.user.findMany({
-      where: { role: { in: ["ADMIN", "TEACHER"] }, status: "ACTIVE" },
-      orderBy: [{ role: "asc" }, { fullName: "asc" }],
-      take: 200,
-      select: { id: true, fullName: true, email: true, role: true },
-    }),
+          orderBy: { name: "asc" },
+          take: 200,
+          select: { id: true, name: true, subject: true, teacher: { select: { fullName: true, email: true } } },
+        })
+      : Promise.resolve([]),
+    bulkApplies
+      ? prisma.user.findMany({
+          where: { role: "TEACHER", status: "ACTIVE" },
+          orderBy: { fullName: "asc" },
+          take: 200,
+          select: { id: true, fullName: true, email: true, teacherProfile: { select: { isCoach: true } } },
+        })
+      : Promise.resolve([]),
+    bulkApplies
+      ? prisma.user.findMany({
+          where: { role: { in: ["ADMIN", "TEACHER"] }, status: "ACTIVE" },
+          orderBy: [{ role: "asc" }, { fullName: "asc" }],
+          take: 200,
+          select: { id: true, fullName: true, email: true, role: true },
+        })
+      : Promise.resolve([]),
   ]);
 
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const tabs: { id: PeopleTab; label: string; sekme: string }[] = [
-    { id: "STUDENT", label: PANEL_DOMAIN.ogrenciler, sekme: "ogrenciler" },
-    { id: "TEACHER", label: PANEL_DOMAIN.ogretmenler, sekme: "ogretmenler" },
-    { id: "PARENT", label: PANEL_DOMAIN.veliler, sekme: "veliler" },
-  ];
+  const name = (user: { fullName: string | null; email: string }) => user.fullName || user.email;
+  const products = (user: (typeof users)[number]) =>
+    user.productMemberships.flatMap((m) => (m.product ? [productLabel(m.product)] : [])).join(", ") || "—";
+  const statusCell = (user: (typeof users)[number]) => (
+    <>
+      <StatusBadge presentation={USER_STATUS_PRESENTATION[user.status]} />
+      {!user.inviteAcceptedAt ? <span className="ml-1 text-[12.5px] text-pn-text-muted">davet bekliyor</span> : null}
+    </>
+  );
+  const personLink = (user: (typeof users)[number]) => {
+    const href = user.role === "STUDENT" && user.studentProfile ? `/panel/yonetim/ogrenciler/${user.studentProfile.id}` : `/panel/yonetim/kullanicilar/${user.id}`;
+    return (
+      <>
+        <Link href={href} className="font-medium text-pn-text underline-offset-2 hover:underline">
+          {name(user)}
+        </Link>
+        <span className="block text-[12.5px] text-pn-text-muted">{user.email}</span>
+      </>
+    );
+  };
+  const lastLogin = (user: (typeof users)[number]) => <span className="tabular-nums">{user.lastLoginAt ? DATE.format(user.lastLoginAt) : "—"}</span>;
 
   return (
-    <PanelShell
-      role={session.role}
-      fullName={session.fullName}
-      email={session.email}
-      pageTitle={PANEL_DOMAIN.kisiler}
-    >
-      <PanelHeading
+    <PanelShell role={session.role} fullName={session.fullName} email={session.email} pageTitle={PANEL_DOMAIN.kisiler}>
+      <PageHeader
         title={PANEL_DOMAIN.kisiler}
-        description="Öğrenci, öğretmen ve velileri tek ekrandan yönetin. Detay için satıra gidin."
+        description="Öğrenci, veli, öğretmen, koç ve personeli tek listeden yönetin. Ayrıntı ve erişim için satıra gidin."
+        actions={
+          <>
+            <Link href="/panel/yonetim/basvurular" className={buttonClass("secondary", "md")}>
+              Yeni kayıtlar
+            </Link>
+            <Link href={`${peopleHref(query)}&yeni=1`} scroll={false} className={buttonClass("primary", "md")}>
+              Yeni kişi
+            </Link>
+          </>
+        }
       />
 
-      <PendingMfaResetQueue viewerUserId={session.userId} className="mt-6" />
-
-      <PanelCard className="mt-6">
-        <CreateUserForm />
-      </PanelCard>
-
-      <div className="mt-6 flex flex-wrap items-center gap-2">
-        {tabs.map((item) => (
-          <Link
-            key={item.id}
-            href={tabHref(item.id, q)}
-            aria-current={tab === item.id ? "true" : undefined}
-            className={`rounded-od border px-3.5 py-2.5 text-[13.5px] font-semibold ${
-              tab === item.id
-                ? "border-dc-brand bg-dc-brand-soft text-dc-brand-hover"
-                : "border-[#DDE4E0] bg-white text-dc-ink"
-            }`}
-          >
-            {item.label}
-          </Link>
-        ))}
-        <form
-          className="ml-auto flex gap-2"
-          action="/panel/yonetim/kisiler"
-          method="get"
-        >
-          <input
-            type="hidden"
-            name="sekme"
-            value={tabs.find((t) => t.id === tab)?.sekme ?? "ogrenciler"}
-          />
-          <input
-            name="q"
-            defaultValue={q}
-            placeholder="Hızlı ara…"
-            className="rounded-od border border-[#DDE4E0] px-3.5 py-2.5 text-[13.5px]"
-          />
-          <button className="site-btn site-btn-secondary site-btn-sm">
-            Ara
-          </button>
-        </form>
-      </div>
+      <PendingMfaResetQueue viewerUserId={session.userId} className="mt-4" />
 
       <div className="mt-4">
-        <UserBulkOperations
-          filters={{ q, rol: tab, urun: "", durum: "" }}
-          total={total}
-          groups={activeGroups.map((group) => ({
-            id: group.id,
-            name: `${group.name} · ${group.subject}`,
-            teacherName: group.teacher.fullName || group.teacher.email,
-          }))}
-          teachers={activeTeachers.map((teacher) => ({
-            id: teacher.id,
-            name: teacher.fullName || teacher.email,
-            email: teacher.email,
-            isCoach: teacher.teacherProfile?.isCoach ?? false,
-          }))}
-          interventionOwners={interventionOwners.map((owner) => ({
-            id: owner.id,
-            role: owner.role,
-            name: owner.fullName || owner.email,
-            email: owner.email,
-          }))}
+        <ViewTabs
+          label="Kişi görünümleri"
+          activeId={view}
+          tabs={PEOPLE_VIEWS.map((item) => ({ id: item.id, label: item.label, href: peopleHref({ ...query, view: item.id, rol: "" }) }))}
         />
       </div>
 
-      <PanelCard className="mt-4 overflow-x-auto">
-        {users.length === 0 ? (
-          <PanelEmpty
-            title="Kayıt yok"
-            body="Bu sekmede eşleşen kişi bulunamadı."
-          />
-        ) : tab === "STUDENT" ? (
-          <PanelTable
-            caption="Öğrenciler"
-            columns={[
-              "Ad soyad",
-              "Sınıf",
-              "Sınav",
-              "Ürünler",
-              "Grup",
-              "Öğretmen",
-              "Veli",
-              "Durum",
-              "Son aktivite",
-            ]}
-          >
-            {users.map((user) => {
-              const profile = user.studentProfile;
-              const detailHref = profile
-                ? `/panel/yonetim/ogrenciler/${profile.id}`
-                : `/panel/yonetim/kullanicilar/${user.id}`;
-              const group = profile?.enrollments[0]?.group;
-              const teachers = [
-                ...(profile?.teacherAssignments.map(
-                  (link) =>
-                    `${link.subject} → ${link.teacher.fullName || link.teacher.email}`,
-                ) ?? []),
-                ...(group
-                  ? [
-                      `${group.name}: ${group.teacher.fullName || group.teacher.email}`,
-                    ]
-                  : []),
-              ];
-              return (
-                <PanelTableRow key={user.id}>
-                  <PanelTableCell>
-                    <Link
-                      href={detailHref}
-                      className="font-semibold text-dc-ink hover:underline"
-                    >
-                      {user.fullName || user.email}
-                    </Link>
-                    <div className="text-[12px] text-dc-ink-muted">
-                      {user.email}
-                    </div>
-                  </PanelTableCell>
-                  <PanelTableCell>{profile?.classLevel || "—"}</PanelTableCell>
-                  <PanelTableCell>{profile?.examType || "—"}</PanelTableCell>
-                  <PanelTableCell>
-                    {user.productMemberships
-                      .flatMap((m) => (m.product ? [productLabel(m.product)] : []))
-                      .join(", ") || "—"}
-                  </PanelTableCell>
-                  <PanelTableCell>{group?.name || "—"}</PanelTableCell>
-                  <PanelTableCell>
-                    {teachers.slice(0, 2).join(" · ") || "—"}
-                  </PanelTableCell>
-                  <PanelTableCell>
-                    {profile?.parents
-                      .map((p) => p.parent.fullName || p.parent.email)
-                      .join(", ") || "—"}
-                  </PanelTableCell>
-                  <PanelTableCell>
-                    <StatusBadge presentation={USER_STATUS_PRESENTATION[user.status]} />
-                    {!user.inviteAcceptedAt ? " · davet" : ""}
-                  </PanelTableCell>
-                  <PanelTableCell>
-                    {user.lastLoginAt ? DATE.format(user.lastLoginAt) : "—"}
-                  </PanelTableCell>
-                </PanelTableRow>
-              );
-            })}
-          </PanelTable>
-        ) : tab === "TEACHER" ? (
-          <PanelTable
-            caption="Öğretmenler"
-            columns={[
-              "Ad soyad",
-              "Branş",
-              "Öğrenci",
-              "Grup",
-              "Bugün ders",
-              "Durum",
-            ]}
-          >
-            {users.map((user) => {
-              const studentCount =
-                user.taughtGroups.reduce(
-                  (sum, g) => sum + g._count.enrollments,
-                  0,
-                ) + user.studentTeacherAssignments.length;
-              return (
-                <PanelTableRow key={user.id}>
-                  <PanelTableCell>
-                    <Link
-                      href={`/panel/yonetim/kullanicilar/${user.id}`}
-                      className="font-semibold text-dc-ink hover:underline"
-                    >
-                      {user.fullName || user.email}
-                    </Link>
-                  </PanelTableCell>
-                  <PanelTableCell>
-                    {user.teacherProfile?.subjects.join(", ") || "—"}
-                  </PanelTableCell>
-                  <PanelTableCell>{studentCount}</PanelTableCell>
-                  <PanelTableCell>{user.taughtGroups.length}</PanelTableCell>
-                  <PanelTableCell>{user.taughtLessons.length}</PanelTableCell>
-                  <PanelTableCell><StatusBadge presentation={USER_STATUS_PRESENTATION[user.status]} /></PanelTableCell>
-                </PanelTableRow>
-              );
-            })}
-          </PanelTable>
-        ) : (
-          <PanelTable
-            caption="Veliler"
-            columns={[
-              "Ad soyad",
-              "Bağlı öğrenciler",
-              "İletişim",
-              "Durum",
-              "Son giriş",
-            ]}
-          >
-            {users.map((user) => (
-              <PanelTableRow key={user.id}>
-                <PanelTableCell>
-                  <Link
-                    href={`/panel/yonetim/kullanicilar/${user.id}`}
-                    className="font-semibold text-dc-ink hover:underline"
-                  >
-                    {user.fullName || user.email}
-                  </Link>
-                </PanelTableCell>
-                <PanelTableCell>
-                  {user.parentStudents
-                    .map(
-                      (link) =>
-                        link.student.user.fullName || link.student.user.email,
-                    )
-                    .join(", ") || "—"}
-                </PanelTableCell>
-                <PanelTableCell>
-                  {[user.phone, user.email].filter(Boolean).join(" · ")}
-                </PanelTableCell>
-                <PanelTableCell><StatusBadge presentation={USER_STATUS_PRESENTATION[user.status]} /></PanelTableCell>
-                <PanelTableCell>
-                  {user.lastLoginAt ? DATE.format(user.lastLoginAt) : "—"}
-                </PanelTableCell>
-              </PanelTableRow>
+      <form method="get" action="/panel/yonetim/kisiler" className="mt-4 flex flex-wrap items-end gap-2">
+        <input type="hidden" name="sekme" value={view} />
+        <label className="grid min-w-[200px] flex-1 gap-1 text-[12.5px] font-medium text-pn-text-muted sm:max-w-xs">
+          Ara
+          <input name="q" defaultValue={filters.q} placeholder="Ad, e-posta veya telefon" className={`${SELECT_CLASS} px-3`} />
+        </label>
+        {viewAllowsRoleFilter(view) ? (
+          <label className="grid gap-1 text-[12.5px] font-medium text-pn-text-muted">
+            Rol
+            <select name="rol" defaultValue={filters.rol} className={SELECT_CLASS}>
+              {ROLE_FILTERS.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+        <label className="grid gap-1 text-[12.5px] font-medium text-pn-text-muted">
+          Ürün
+          <select name="urun" defaultValue={filters.urun} className={SELECT_CLASS}>
+            <option value="">Tümü</option>
+            {(["OD", "OK", "ODK"] as const).map((code) => (
+              <option key={code} value={code}>
+                {productLabel(code)}
+              </option>
             ))}
-          </PanelTable>
-        )}
-      </PanelCard>
+          </select>
+        </label>
+        <label className="grid gap-1 text-[12.5px] font-medium text-pn-text-muted">
+          Durum
+          <select name="durum" defaultValue={filters.durum} className={SELECT_CLASS}>
+            {STATUS_FILTERS.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button className={buttonClass("secondary", "sm", "min-h-9")}>Süz</button>
+        {filters.q || query.rol || filters.urun || filters.durum ? (
+          <Link href={peopleHref({ view, q: "", rol: "", urun: "", durum: "" })} className={buttonClass("ghost", "sm", "min-h-9")}>
+            Süzgeci temizle
+          </Link>
+        ) : null}
+        <span className="ml-auto text-[13px] tabular-nums text-pn-text-muted">{total} kişi</span>
+      </form>
+
+      {users.length === 0 ? (
+        <EmptyState className="mt-5" title="Eşleşen kişi yok." body="Süzgeci değiştirin ya da başka bir görünüm seçin." />
+      ) : view === "ogrenciler" ? (
+        <PanelTable caption="Öğrenciler" columns={["Ad soyad", "Sınıf · sınav", "Ürünler", "Grup / öğretmen", "Koç", "Veli", "Durum", "Son giriş"]}>
+          {users.map((user) => {
+            const profile = user.studentProfile;
+            const group = profile?.enrollments[0]?.group;
+            const teachers = [
+              ...(group ? [`${group.name}: ${name(group.teacher)}`] : []),
+              ...(profile?.teacherAssignments.map((link) => `${link.subject} → ${name(link.teacher)}`) ?? []),
+            ];
+            const coach = profile?.coachAssignments[0]?.coach.user;
+            return (
+              <PanelTableRow key={user.id}>
+                <PanelTableCell>{personLink(user)}</PanelTableCell>
+                <PanelTableCell>{[profile?.classLevel, profile?.examType].filter(Boolean).join(" · ") || "—"}</PanelTableCell>
+                <PanelTableCell>{products(user)}</PanelTableCell>
+                <PanelTableCell>{teachers.slice(0, 2).join(" · ") || "—"}</PanelTableCell>
+                <PanelTableCell>{coach ? name(coach) : "—"}</PanelTableCell>
+                <PanelTableCell>{profile?.parents.map((link) => name(link.parent)).join(", ") || "—"}</PanelTableCell>
+                <PanelTableCell>{statusCell(user)}</PanelTableCell>
+                <PanelTableCell>{lastLogin(user)}</PanelTableCell>
+              </PanelTableRow>
+            );
+          })}
+        </PanelTable>
+      ) : view === "ogretmenler" ? (
+        <PanelTable caption="Öğretmenler" columns={["Ad soyad", "Branş", "Sorumluluklar", "Öğrenci", "Grup", "Bugün ders", "Durum"]}>
+          {users.map((user) => {
+            const studentCount = user.taughtGroups.reduce((sum, group) => sum + group._count.enrollments, 0) + user.studentTeacherAssignments.length;
+            return (
+              <PanelTableRow key={user.id}>
+                <PanelTableCell>{personLink(user)}</PanelTableCell>
+                <PanelTableCell>{user.teacherProfile?.subjects.join(", ") || "—"}</PanelTableCell>
+                <PanelTableCell>{responsibilityBadges(user.productStaffAssignments.map((row) => row.role)).join(" · ") || "—"}</PanelTableCell>
+                <PanelTableCell>
+                  <span className="tabular-nums">{studentCount}</span>
+                </PanelTableCell>
+                <PanelTableCell>
+                  <span className="tabular-nums">{user.taughtGroups.length}</span>
+                </PanelTableCell>
+                <PanelTableCell>
+                  <span className="tabular-nums">{user.taughtLessons.length}</span>
+                </PanelTableCell>
+                <PanelTableCell>{statusCell(user)}</PanelTableCell>
+              </PanelTableRow>
+            );
+          })}
+        </PanelTable>
+      ) : view === "veliler" ? (
+        <PanelTable caption="Veliler" columns={["Ad soyad", "Bağlı öğrenciler", "İletişim", "Durum", "Son giriş"]}>
+          {users.map((user) => (
+            <PanelTableRow key={user.id}>
+              <PanelTableCell>{personLink(user)}</PanelTableCell>
+              <PanelTableCell>{user.parentStudents.map((link) => name(link.student.user)).join(", ") || "—"}</PanelTableCell>
+              <PanelTableCell>{[user.phone, user.email].filter(Boolean).join(" · ")}</PanelTableCell>
+              <PanelTableCell>{statusCell(user)}</PanelTableCell>
+              <PanelTableCell>{lastLogin(user)}</PanelTableCell>
+            </PanelTableRow>
+          ))}
+        </PanelTable>
+      ) : view === "koclar" ? (
+        <PanelTable caption="Koçlar" columns={["Ad soyad", "Aktif öğrenci", "Kapasite", "Sorumluluklar", "Durum", "Son giriş"]}>
+          {users.map((user) => {
+            const load = user.teacherProfile?._count.coachAssignments ?? 0;
+            const capacity = user.teacherProfile?.coachCapacity ?? null;
+            return (
+              <PanelTableRow key={user.id}>
+                <PanelTableCell>{personLink(user)}</PanelTableCell>
+                <PanelTableCell tone={capacity !== null && load > capacity ? "warn" : "default"}>
+                  <span className="tabular-nums">{load}</span>
+                </PanelTableCell>
+                <PanelTableCell>
+                  <span className="tabular-nums">{capacity ?? "Sınırsız"}</span>
+                </PanelTableCell>
+                <PanelTableCell>{responsibilityBadges(user.productStaffAssignments.map((row) => row.role)).join(" · ") || "—"}</PanelTableCell>
+                <PanelTableCell>{statusCell(user)}</PanelTableCell>
+                <PanelTableCell>{lastLogin(user)}</PanelTableCell>
+              </PanelTableRow>
+            );
+          })}
+        </PanelTable>
+      ) : (
+        <PanelTable caption={view === "personel" ? "Personel" : "Tüm kişiler"} columns={["Ad soyad", "Rol", "Ürünler", "Sorumluluklar", "Durum", "Son giriş"]}>
+          {users.map((user) => (
+            <PanelTableRow key={user.id}>
+              <PanelTableCell>{personLink(user)}</PanelTableCell>
+              <PanelTableCell>{roleLabel(user.role)}</PanelTableCell>
+              <PanelTableCell>{products(user)}</PanelTableCell>
+              <PanelTableCell>
+                {user.role === "ADMIN" ? "Tam yetki" : responsibilityBadges(user.productStaffAssignments.map((row) => row.role)).join(" · ") || "—"}
+              </PanelTableCell>
+              <PanelTableCell>{statusCell(user)}</PanelTableCell>
+              <PanelTableCell>{lastLogin(user)}</PanelTableCell>
+            </PanelTableRow>
+          ))}
+        </PanelTable>
+      )}
 
       {pages > 1 ? (
-        <div className="mt-4 flex gap-2">
-          {Array.from({ length: pages }, (_, index) => {
-            const n = index + 1;
-            const params = new URLSearchParams();
-            params.set(
-              "sekme",
-              tab === "STUDENT"
-                ? "ogrenciler"
-                : tab === "TEACHER"
-                  ? "ogretmenler"
-                  : "veliler",
-            );
-            if (q) params.set("q", q);
-            params.set("sayfa", String(n));
-            return (
+        <nav aria-label="Sayfalar" className="mt-4 flex flex-wrap items-center gap-1.5">
+          {pageWindow(page, pages).map((n, index) =>
+            n === null ? (
+              <span key={`gap-${index}`} className="px-1 text-pn-text-muted">
+                …
+              </span>
+            ) : (
               <Link
                 key={n}
-                href={`/panel/yonetim/kisiler?${params.toString()}`}
-                className={`rounded-lg border px-3 py-1.5 text-sm ${
-                  n === page
-                    ? "border-dc-brand bg-dc-brand-soft"
-                    : "border-[#DDE4E0]"
-                }`}
+                href={peopleHref(query, { sayfa: n })}
+                aria-current={n === page ? "page" : undefined}
+                className={buttonClass(n === page ? "primary" : "ghost", "sm", "min-w-8 justify-center")}
               >
                 {n}
               </Link>
-            );
-          })}
+            ),
+          )}
+        </nav>
+      ) : null}
+
+      {bulkApplies ? (
+        <div className="mt-8">
+          <UserBulkOperations
+            filters={{ ...filters, rol }}
+            total={total}
+            groups={activeGroups.map((group) => ({ id: group.id, name: `${group.name} · ${group.subject}`, teacherName: name(group.teacher) }))}
+            teachers={activeTeachers.map((teacher) => ({ id: teacher.id, name: name(teacher), email: teacher.email, isCoach: teacher.teacherProfile?.isCoach ?? false }))}
+            interventionOwners={interventionOwners.map((owner) => ({ id: owner.id, role: owner.role, name: name(owner), email: owner.email }))}
+          />
         </div>
       ) : null}
 
-      <p className="mt-4 text-[12.5px] text-dc-ink-muted">
-        Eski listeler:{" "}
+      <p className="mt-4 text-[12.5px] text-pn-text-muted">
+        Ayrıntılı eski listeler:{" "}
         <Link href="/panel/yonetim/ogrenciler" className="underline">
           {roleLabel("STUDENT")}
         </Link>
@@ -487,6 +379,12 @@ export default async function PeopleHubPage({
         </Link>
         .
       </p>
+
+      {sp.yeni ? (
+        <UrlDrawer param="yeni" title="Yeni kişi" description="Hesap geçici parolayla açılır; davet bağlantısını kişiye iletin. Hesap açmak ürün erişimi vermez.">
+          <CreateUserForm />
+        </UrlDrawer>
+      ) : null}
     </PanelShell>
   );
 }

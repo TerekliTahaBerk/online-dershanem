@@ -5,11 +5,14 @@ import { requireRole } from "@/lib/auth/guards";
 import { istanbulMonthStart } from "@/lib/istanbul-time";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
-  PanelHeading,
-  PanelEmpty,
+  EmptyState,
+  PageHeader,
   PanelTable,
   PanelTableRow,
   PanelTableCell,
+  StatusBadge,
+  ViewTabs,
+  buttonClass,
 } from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
@@ -38,24 +41,24 @@ const LIRA = new Intl.NumberFormat("tr-TR", {
 const PAGE_SIZE = 30;
 
 const PAYMENT_LABEL = {
-  PAID: { label: "Alındı", tone: "ok" as const },
-  PENDING: { label: "Bekliyor", tone: "warn" as const },
-  CANCELLED: { label: "İptal", tone: undefined },
-  REFUNDED: { label: "İade", tone: undefined },
+  PAID: { label: "Alındı", tone: "success" as const },
+  PENDING: { label: "Bekliyor", tone: "warning" as const },
+  CANCELLED: { label: "İptal", tone: "neutral" as const },
+  REFUNDED: { label: "İade", tone: "neutral" as const },
 };
 
 const PROVISIONING_LABEL = {
-  SUCCEEDED: { label: "Tamam", tone: "ok" as const },
-  PENDING: { label: "Beklemede", tone: undefined },
-  RUNNING: { label: "Çalışıyor", tone: undefined },
-  RETRY_PENDING: { label: "Yeniden denenecek", tone: "warn" as const },
-  MANUAL_REVIEW: { label: "Başarısız", tone: "warn" as const },
+  SUCCEEDED: { label: "Tamam", tone: "success" as const },
+  PENDING: { label: "Beklemede", tone: "neutral" as const },
+  RUNNING: { label: "Çalışıyor", tone: "info" as const },
+  RETRY_PENDING: { label: "Yeniden denenecek", tone: "warning" as const },
+  MANUAL_REVIEW: { label: "Başarısız", tone: "critical" as const },
 };
 
 export default async function AdminOrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filtre?: string; sayfa?: string }>;
+  searchParams: Promise<{ filtre?: string; sayfa?: string; q?: string }>;
 }) {
   const session = await requireRole("ADMIN");
   const sp = await searchParams;
@@ -63,6 +66,7 @@ export default async function AdminOrdersPage({
     ? (sp.filtre ?? "")
     : "";
   const page = Math.max(1, Number.parseInt(sp.sayfa ?? "1", 10) || 1);
+  const q = (sp.q ?? "").trim().slice(0, 80);
 
   const monthStart = istanbulMonthStart(new Date());
 
@@ -71,6 +75,15 @@ export default async function AdminOrdersPage({
       ? { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } }
       : {}),
     ...(filtre === "ay" ? { createdAt: { gte: monthStart } } : {}),
+    ...(q
+      ? {
+          OR: [
+            { packageName: { contains: q, mode: "insensitive" as const } },
+            { user: { fullName: { contains: q, mode: "insensitive" as const } } },
+            { user: { email: { contains: q, mode: "insensitive" as const } } },
+          ],
+        }
+      : {}),
   };
 
   const [total, orders, problemCount] = await Promise.all([
@@ -97,24 +110,15 @@ export default async function AdminOrdersPage({
   ]);
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const chip = (value: string, label: string) => (
-    <Link
-      key={value || "all"}
-      href={
-        value
-          ? `/panel/yonetim/siparisler?filtre=${value}`
-          : "/panel/yonetim/siparisler"
-      }
-      aria-current={filtre === value ? "true" : undefined}
-      className={`rounded-lg border px-3.5 py-2.5 text-[13px] font-semibold transition-colors ${
-        filtre === value
-          ? "border-dc-brand bg-dc-brand-soft text-dc-brand-hover"
-          : "border-[#DDE4E0] bg-white text-dc-ink-muted hover:border-dc-brand"
-      }`}
-    >
-      {label}
-    </Link>
-  );
+  const listHref = (patch: { filtre?: string; sayfa?: number }) => {
+    const params = new URLSearchParams();
+    const nextFilter = patch.filtre ?? filtre;
+    if (nextFilter) params.set("filtre", nextFilter);
+    if (q) params.set("q", q);
+    if (patch.sayfa && patch.sayfa > 1) params.set("sayfa", String(patch.sayfa));
+    const text = params.toString();
+    return text ? `/panel/yonetim/siparisler?${text}` : "/panel/yonetim/siparisler";
+  };
 
   return (
     <PanelShell
@@ -124,19 +128,32 @@ export default async function AdminOrdersPage({
       pageTitle="Siparişler"
     >
       <div className="max-w-[1080px]">
-        <PanelHeading
-          title="Siparişler"
-          description="Ödeme durumu ile erişim açma durumu ayrı izlenir."
-        />
+        <PageHeader title="Siparişler" description="Ödeme durumu ile erişim açma durumu ayrı izlenir; ödenmiş ama erişimi açılmamış sipariş operasyonun işidir." />
 
-        <div className="mt-[18px] flex flex-wrap gap-2.5">
-          {chip("sorun", `Erişim sorunu (${problemCount})`)}
-          {chip("", "Tümü")}
-          {chip("ay", "Bu ay")}
+        <div className="mt-2">
+          <ViewTabs
+            label="Sipariş görünümleri"
+            activeId={filtre || "tumu"}
+            tabs={[
+              { id: "sorun", label: "Erişim sorunu", href: listHref({ filtre: "sorun" }), count: problemCount },
+              { id: "tumu", label: "Tümü", href: q ? `/panel/yonetim/siparisler?q=${encodeURIComponent(q)}` : "/panel/yonetim/siparisler" },
+              { id: "ay", label: "Bu ay", href: listHref({ filtre: "ay" }) },
+            ]}
+          />
         </div>
 
+        <form method="get" className="mt-4 flex flex-wrap items-end gap-2">
+          {filtre ? <input type="hidden" name="filtre" value={filtre} /> : null}
+          <label className="grid min-w-[200px] flex-1 gap-1 text-[12.5px] font-medium text-pn-text-muted sm:max-w-xs">
+            Ara
+            <input name="q" defaultValue={q} placeholder="Paket, ad veya e-posta" className="min-h-9 rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text" />
+          </label>
+          <button className={buttonClass("secondary", "sm", "min-h-9")}>Ara</button>
+        </form>
+
         {orders.length === 0 ? (
-          <PanelEmpty
+          <EmptyState
+            className="mt-5"
             title={
               filtre === "sorun"
                 ? "Erişim sorunu olan sipariş yok."
@@ -171,11 +188,11 @@ export default async function AdminOrdersPage({
                     <PanelTableCell>
                       <Link
                         href={`/panel/yonetim/siparisler/${order.id}`}
-                        className="text-[13.5px] font-bold text-dc-ink underline-offset-2 hover:text-dc-brand-hover hover:underline"
+                        className="font-medium text-pn-text underline-offset-2 hover:underline"
                       >
                         {order.packageName}
                       </Link>
-                      <span className="mt-0.5 block text-[12.5px] text-dc-ink-faint">
+                      <span className="mt-0.5 block text-[12.5px] tabular-nums text-pn-text-muted">
                         {LIRA.format(order.totalCents / 100)}
                       </span>
                     </PanelTableCell>
@@ -189,21 +206,18 @@ export default async function AdminOrdersPage({
                         ? order.lines.map((l) => l.productName).join(" + ")
                         : "—"}
                     </PanelTableCell>
-                    <PanelTableCell tone={payment.tone}>
-                      {payment.label}
+                    <PanelTableCell>
+                      <StatusBadge tone={payment.tone} label={payment.label} />
                     </PanelTableCell>
-                    <PanelTableCell tone={provisioning.tone}>
-                      {provisioning.label}
+                    <PanelTableCell>
+                      {order.status === "PAID" ? <StatusBadge tone={provisioning.tone} label={provisioning.label} /> : <span className="text-pn-text-muted">—</span>}
                     </PanelTableCell>
                     <PanelTableCell>
                       {DATE.format(order.createdAt)}
                     </PanelTableCell>
                     <PanelTableCell>
-                      <Link
-                        href={`/panel/yonetim/siparisler/${order.id}`}
-                        className="text-[13px] font-semibold text-dc-brand-strong hover:underline"
-                      >
-                        Siparişi Aç
+                      <Link href={`/panel/yonetim/siparisler/${order.id}`} className={buttonClass("ghost", "sm")}>
+                        Aç<span className="sr-only"> · {order.packageName}</span>
                       </Link>
                     </PanelTableCell>
                   </PanelTableRow>
@@ -211,7 +225,7 @@ export default async function AdminOrdersPage({
               })}
             </PanelTable>
 
-            <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 text-[13px] text-dc-ink-faint">
+            <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3 text-[13px] text-pn-text-muted">
               <span>
                 {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)}{" "}
                 / {total}
@@ -220,8 +234,8 @@ export default async function AdminOrdersPage({
                 <nav className="flex items-center gap-2" aria-label="Sayfalama">
                   {page > 1 ? (
                     <Link
-                      href={`/panel/yonetim/siparisler?${new URLSearchParams({ ...(filtre ? { filtre } : {}), sayfa: String(page - 1) })}`}
-                      className="rounded-lg border border-[#DDE4E0] bg-white px-3 py-1.5 font-semibold text-dc-ink hover:border-dc-brand"
+                      href={listHref({ sayfa: page - 1 })}
+                      className={buttonClass("secondary", "sm")}
                     >
                       Önceki
                     </Link>
@@ -231,8 +245,8 @@ export default async function AdminOrdersPage({
                   </span>
                   {page < pageCount ? (
                     <Link
-                      href={`/panel/yonetim/siparisler?${new URLSearchParams({ ...(filtre ? { filtre } : {}), sayfa: String(page + 1) })}`}
-                      className="rounded-lg border border-[#DDE4E0] bg-white px-3 py-1.5 font-semibold text-dc-ink hover:border-dc-brand"
+                      href={listHref({ sayfa: page + 1 })}
+                      className={buttonClass("secondary", "sm")}
                     >
                       Sonraki
                     </Link>
@@ -243,13 +257,13 @@ export default async function AdminOrdersPage({
           </div>
         )}
 
-        <p className="mt-5 text-[12.5px] text-dc-ink-faint">
+        <p className="mt-5 text-[12.5px] text-pn-text-muted">
           Onboarding SLA'sı, cron sağlığı, talepler ve e-posta kuyruğu için{" "}
           <Link
             href="/panel/yonetim/isler"
-            className="font-semibold text-dc-brand-strong hover:underline"
+            className="font-medium text-pn-text underline underline-offset-2"
           >
-            işler / provisioning ekranına
+            aktivasyon masasına
           </Link>{" "}
           bak.
         </p>

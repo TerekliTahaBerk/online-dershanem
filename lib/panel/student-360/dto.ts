@@ -1,11 +1,14 @@
 /** Student 360 sunum sözleşmelerini ve dışarı açılan veri şekillerini tanımlar. */
 import type { ProductCode } from "@prisma/client";
 import type { PanelFeatureFlags } from "@/lib/panel-feature-flags";
+import type { UnifiedTimelineEntry } from "@/lib/student-success/types";
 import type {
   Student360Action,
   Student360PackageStatus,
   Student360RiskSummary,
   Student360Tab,
+  Student360Group,
+  Student360LearningView,
   Student360ViewerRole,
 } from "@/lib/panel/student-360";
 
@@ -196,6 +199,13 @@ export type Student360Bundle = {
   basePath: string;
   tab: Student360Tab;
   tabs: Student360Tab[];
+  /** Üst sekme ve Öğrenme alt görünümü (§12); `sections` bu konumda yüklenen bölümler. */
+  group: Student360Group;
+  groups: Student360Group[];
+  view: Student360LearningView | null;
+  sections: Student360Tab[];
+  anchor: "iliskiler" | null;
+  timeline: UnifiedTimelineEntry[] | null;
   actions: Student360Action[];
   summary: Student360Summary;
   overview: Student360OverviewTab | null;

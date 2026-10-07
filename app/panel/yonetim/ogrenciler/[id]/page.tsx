@@ -25,6 +25,7 @@ export default async function AdminStudent360Page({
     viewer: session,
     studentProfileId: id,
     tabRaw: query.sekme,
+    viewRaw: query.gorunum,
   });
 
   const adminActions = (

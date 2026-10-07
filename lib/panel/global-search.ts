@@ -101,7 +101,7 @@ export const GLOBAL_SEARCH_COMMANDS: readonly GlobalSearchCommand[] = [
     id: "create-student",
     label: "Yeni öğrenci oluştur",
     detail: "Geçici parolalı öğrenci hesabı aç",
-    href: "/panel/yonetim/kisiler#yeni-hesap",
+    href: "/panel/yonetim/kisiler?yeni=1",
     roles: ["ADMIN"],
   },
   {

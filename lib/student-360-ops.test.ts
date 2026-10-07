@@ -270,3 +270,45 @@ test("permission isolation: öğretmen aksiyonlarında ticari işlem yoktur", ()
     assert.equal(action.href.includes("/kullanicilar/"), false);
   }
 });
+
+test("üst sekmeler bölümlerden türetilir; eski sekmeler takma adla doğru yere düşer (§12)", async () => {
+  const { resolveStudent360Location, visibleStudent360Groups, student360GroupHref, STUDENT_360_TAB_ALIASES } = await import("./panel/student-360");
+  const all = visibleStudent360Tabs({ role: "ADMIN", canViewCommerce: true, flags: allFlagsOn });
+  assert.deepEqual(visibleStudent360Groups(all), ["genel", "ogrenme", "yon", "deneme-ligi", "etkinlik", "risk", "paket"]);
+  const minimal = visibleStudent360Tabs({ role: "TEACHER", canViewCommerce: false, flags: allFlagsOff });
+  assert.deepEqual(visibleStudent360Groups(minimal), ["genel", "ogrenme", "etkinlik"]);
+
+  const at = (sekme?: string, gorunum?: string, sections = all) => resolveStudent360Location({ sekme, gorunum, sections });
+  assert.deepEqual(at(), { group: "genel", view: null, sections: ["genel", "ogretmenler", "veli"], anchor: null });
+  assert.deepEqual(at(undefined, undefined, minimal).sections, ["genel", "veli"], "öğretmen bölümü yalnız ADMIN");
+  assert.deepEqual(at("dersler"), { group: "ogrenme", view: "dersler", sections: ["dersler"], anchor: null });
+  assert.equal(at("gelisim").view, "gelisim");
+  assert.equal(at("ogrenme").view, "dersler", "alt görünüm yoksa ilk görünüm");
+  assert.equal(at("ogrenme", "takvim").view, "takvim");
+  assert.equal(at("ogrenme", "bilinmeyen").view, "dersler");
+  assert.equal(at("veli").anchor, "iliskiler");
+  assert.equal(at("ogretmenler").group, "genel");
+  assert.deepEqual(at("kocluk").sections, ["kocluk"]);
+  assert.equal(at("kocluk").group, "yon");
+  assert.equal(at("denemeler").group, "deneme-ligi");
+  assert.deepEqual(at("etkinlik").sections, []);
+  assert.equal(at("paket").group, "paket");
+  assert.equal(at("paket", undefined, minimal).group, "genel", "görünmeyen sekme Genel'e düşer");
+  assert.equal(at("yok").group, "genel");
+  assert.equal(resolveStudent360Location({ sekme: ["risk", "x"], sections: all }).group, "risk");
+  for (const tab of all) assert.ok(STUDENT_360_TAB_ALIASES[tab], `${tab} için takma ad`);
+  assert.equal(student360GroupHref("/p/s1", "ogrenme", "odevler"), "/p/s1?sekme=ogrenme&gorunum=odevler");
+  assert.equal(student360GroupHref("/p/s1?x=1", "genel"), "/p/s1?x=1&sekme=genel");
+});
+
+test("bölüm kümesi veri yükleme kararlarını verir", async () => {
+  const { deriveStudent360QueryRequirements } = await import("./panel/student-360/policy");
+  const access = { role: "ADMIN", canViewCommerce: true } as Parameters<typeof deriveStudent360QueryRequirements>[0]["access"];
+  const genel = deriveStudent360QueryRequirements({ access, tab: "genel", flags: allFlagsOn, sections: ["genel", "ogretmenler", "veli"] });
+  assert.equal(genel.needsOverview && genel.needsTeachersTab && genel.needsParent, true);
+  assert.equal(genel.needsLessons, false);
+  const etkinlik = deriveStudent360QueryRequirements({ access, tab: "genel", flags: allFlagsOn, sections: [] });
+  assert.equal(etkinlik.needsOverview, false, "Etkinlik bölüm yüklemez");
+  const legacy = deriveStudent360QueryRequirements({ access, tab: "dersler", flags: allFlagsOn });
+  assert.equal(legacy.needsLessons, true);
+});

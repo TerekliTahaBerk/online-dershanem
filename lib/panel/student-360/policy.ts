@@ -16,18 +16,22 @@ export function deriveStudent360QueryRequirements(input: {
   access: Student360Access;
   tab: Student360Tab;
   flags: PanelFeatureFlags;
+  /** Üst sekme birden çok bölümü birlikte gösterir (ör. Genel = genel + öğretmenler + veli). */
+  sections?: readonly Student360Tab[];
 }) {
   const { access, tab, flags } = input;
-  const needsOverview = tab === "genel";
-  const needsAcademic = tab === "gelisim";
-  const needsLessons = tab === "dersler" || tab === "takvim";
-  const needsAssignmentsTab = tab === "odevler";
-  const needsTeachersTab = tab === "ogretmenler" && access.role === "ADMIN";
-  const needsCoaching = tab === "kocluk" && flags.adaptivePlan;
-  const needsExams = tab === "denemeler" && flags.mockExamAnalysis;
-  const needsRisk = tab === "risk";
-  const needsParent = tab === "veli";
-  const needsCommerce = tab === "paket" && access.canViewCommerce;
+  const shown = new Set<Student360Tab>(input.sections ?? [tab]);
+  const has = (section: Student360Tab) => shown.has(section);
+  const needsOverview = has("genel");
+  const needsAcademic = has("gelisim");
+  const needsLessons = has("dersler") || has("takvim");
+  const needsAssignmentsTab = has("odevler");
+  const needsTeachersTab = has("ogretmenler") && access.role === "ADMIN";
+  const needsCoaching = has("kocluk") && flags.adaptivePlan;
+  const needsExams = has("denemeler") && flags.mockExamAnalysis;
+  const needsRisk = has("risk");
+  const needsParent = has("veli");
+  const needsCommerce = has("paket") && access.canViewCommerce;
   const needsAdminForms = access.role === "ADMIN";
   const needsExamSignals = needsExams || needsOverview || needsAcademic;
   const needsAssignmentList = needsAcademic || needsOverview || needsAssignmentsTab;
