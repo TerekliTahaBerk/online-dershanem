@@ -27,6 +27,7 @@ export default async function TeacherStudent360Page({
     viewer: session,
     studentProfileId: id,
     tabRaw: query.sekme,
+    viewRaw: query.gorunum,
   });
 
   return (

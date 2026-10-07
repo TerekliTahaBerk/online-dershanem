@@ -28,11 +28,79 @@ export type OpsActionCode =
   | "ACCOUNT_INTEGRITY"
   | "LESSON_CANCELLED"
   | "STALE_PLAN"
-  | "UNNOTED_LESSON";
+  | "UNNOTED_LESSON"
+  | "YON_NO_COACH"
+  | "YON_COACH_OVER_CAPACITY"
+  | "YON_SESSION_OVERDUE"
+  | "DL_EXAM_INCOMPLETE"
+  | "DL_UNSCORED"
+  | "DL_AWAITING_RELEASE"
+  | "DL_INTEGRITY_REVIEW"
+  | "SECURITY_MFA_RESET_PENDING"
+  | "SECURITY_STAFF_NO_MFA";
+
+/** Gelen kutusu grupları (docs/panel-design-roadmap.md §13). */
+export type OpsActionGroup = "OD" | "YON" | "DL" | "COMMERCE" | "SECURITY" | "SYSTEM";
+
+export const OPS_ACTION_GROUP: Record<OpsActionCode, OpsActionGroup> = {
+  PROVISIONING_FAILED: "COMMERCE",
+  PROVISIONING_PENDING: "COMMERCE",
+  PROVISIONING_RETRY: "COMMERCE",
+  INVITE_PENDING: "COMMERCE",
+  PAID_NO_ACCOUNT: "COMMERCE",
+  STUDENT_NO_GROUP: "OD",
+  STUDENT_NO_PARENT: "OD",
+  GROUP_TEACHER_INACTIVE: "OD",
+  LESSON_MISSING_PLAN: "OD",
+  HELP_REQUEST_OPEN: "OD",
+  HIGH_RISK_STUDENT: "OD",
+  LESSON_CANCELLED: "OD",
+  UNNOTED_LESSON: "OD",
+  STALE_PLAN: "YON",
+  YON_NO_COACH: "YON",
+  YON_COACH_OVER_CAPACITY: "YON",
+  YON_SESSION_OVERDUE: "YON",
+  MOCK_EXAM_FAILED: "DL",
+  DL_EXAM_INCOMPLETE: "DL",
+  DL_UNSCORED: "DL",
+  DL_AWAITING_RELEASE: "DL",
+  DL_INTEGRITY_REVIEW: "DL",
+  SECURITY_MFA_RESET_PENDING: "SECURITY",
+  SECURITY_STAFF_NO_MFA: "SECURITY",
+  ACCOUNT_INTEGRITY: "SYSTEM",
+  UNIFIED_OPS_OPEN: "SYSTEM",
+  SYSTEM_CRON: "SYSTEM",
+  SYSTEM_PARTIAL_DATA: "SYSTEM",
+};
+
+export const OPS_GROUP_LABEL: Record<OpsActionGroup, string> = {
+  OD: "OD",
+  YON: "Yön",
+  DL: "DL",
+  COMMERCE: "Ticaret",
+  SECURITY: "Güv.",
+  SYSTEM: "Sistem",
+};
+
+/** Gelen kutusu süzgeci (`?grup=`). */
+export const OPS_GROUP_FILTERS: Array<{ id: "tumu" | OpsActionGroup; label: string }> = [
+  { id: "tumu", label: "Tümü" },
+  { id: "OD", label: "onlinedershanem." },
+  { id: "YON", label: "Yön Koçluk" },
+  { id: "DL", label: "Deneme Ligi" },
+  { id: "COMMERCE", label: "Ticaret" },
+  { id: "SECURITY", label: "Güvenlik" },
+  { id: "SYSTEM", label: "Sistem" },
+];
+
+export function parseOpsGroupFilter(value: string | undefined): "tumu" | OpsActionGroup {
+  return OPS_GROUP_FILTERS.find((item) => item.id === value)?.id ?? "tumu";
+}
 
 export type OpsActionItem = {
   id: string;
   code: OpsActionCode;
+  group: OpsActionGroup;
   severity: OpsSeverity;
   title: string;
   subject: string;
@@ -193,7 +261,7 @@ const SEVERITY_RANK: Record<OpsSeverity, number> = {
   WATCH: 2,
 };
 
-const MAX_ACTIONS = 12;
+const MAX_ACTIONS = 40;
 const MAX_ACTIVITIES = 12;
 
 export function formatOpsAge(from: Date, now: Date): string {
@@ -298,6 +366,22 @@ export function buildRiskDistribution(input: {
   };
 }
 
+export type OpsCoachLoadSample = { id: string; label: string; load: number; capacity: number };
+export type OpsMfaResetSample = { id: string; targetUserId: string; targetLabel: string; requestedByLabel: string; createdAt: Date };
+export type OpsStaffMfaSample = { userId: string; label: string; since: Date };
+
+export type OpsExtendedInput = {
+  yonNoCoach: { count: number; samples: OpsStudentSample[] };
+  coachOverCapacity: OpsCoachLoadSample[];
+  yonSessionOverdue: { count: number; samples: Array<OpsStudentSample & { days: number | null }> };
+  dlIncomplete: OpsExamIssueSample[];
+  dlUnscored: Array<OpsExamIssueSample & { count: number }>;
+  dlAwaitingRelease: OpsExamIssueSample[];
+  dlIntegrity: Array<OpsExamIssueSample & { count: number }>;
+  mfaResetPending: OpsMfaResetSample[];
+  staffWithoutMfa: OpsStaffMfaSample[];
+};
+
 export type AdminOperationsCenterInput = {
   now: Date;
   flags: OpsFlags;
@@ -345,6 +429,8 @@ export type AdminOperationsCenterInput = {
     critical: string[];
     watch: string[];
   };
+  /** Yön / Deneme Ligi / Güvenlik kaynakları (§13); verilmezse bu satırlar üretilmez. */
+  extended?: OpsExtendedInput;
   health: {
     database: OpsHealthStatus;
     databaseDetail: string;
@@ -362,7 +448,10 @@ export type AdminOperationsCenterInput = {
 };
 
 export function buildAdminOperationsCenter(input: AdminOperationsCenterInput): AdminOperationsCenterSnapshot {
-  const actions = collectActions(input).sort(sortOpsActions).slice(0, MAX_ACTIONS);
+  const actions = [...collectActions(input), ...collectExtendedActions(input)]
+    .map((item) => ({ ...item, group: OPS_ACTION_GROUP[item.code] }))
+    .sort(sortOpsActions)
+    .slice(0, MAX_ACTIONS);
   const activities = input.samples.audits.map(formatAuditActivity).slice(0, MAX_ACTIVITIES);
   const risk = buildRiskDistribution({
     activeStudentCount: input.counts.activeStudents ?? 0,
@@ -387,9 +476,11 @@ export function buildAdminOperationsCenter(input: AdminOperationsCenterInput): A
   };
 }
 
-function collectActions(input: AdminOperationsCenterInput): OpsActionItem[] {
+type OpsActionDraft = Omit<OpsActionItem, "group">;
+
+function collectActions(input: AdminOperationsCenterInput): OpsActionDraft[] {
   const { now, flags, counts, samples, partialData } = input;
-  const rows: OpsActionItem[] = [];
+  const rows: OpsActionDraft[] = [];
 
   if (counts.unifiedOpenOps > 0) {
     rows.push({
@@ -698,6 +789,170 @@ function collectActions(input: AdminOperationsCenterInput): OpsActionItem[] {
   }
 
   return rows;
+}
+
+function collectExtendedActions(input: AdminOperationsCenterInput): OpsActionDraft[] {
+  const { now, extended } = input;
+  if (!extended) return [];
+  const rows: OpsActionDraft[] = [];
+  for (const student of extended.yonNoCoach.samples) {
+    rows.push({
+      id: `yon-no-coach-${student.profileId}`,
+      code: "YON_NO_COACH",
+      severity: "ACTION_REQUIRED",
+      title: "Koç bekliyor",
+      subject: `${student.label} · Yön aktif`,
+      ageLabel: formatOpsAge(student.since, now),
+      owner: null,
+      href: `/panel/yonetim/kocluk?kuyruk=koc-bekleyen&onizle=ata:${student.profileId}`,
+      ctaLabel: "Koç ata",
+      createdAt: student.since,
+    });
+  }
+  if (extended.yonNoCoach.count > extended.yonNoCoach.samples.length) {
+    rows.push({
+      id: "yon-no-coach-more",
+      code: "YON_NO_COACH",
+      severity: "WATCH",
+      title: `${extended.yonNoCoach.count - extended.yonNoCoach.samples.length} öğrenci daha koç bekliyor`,
+      subject: "Koçluk kuyruğu",
+      ageLabel: "şimdi",
+      owner: null,
+      href: "/panel/yonetim/kocluk?kuyruk=koc-bekleyen",
+      ctaLabel: "Kuyruğu aç",
+      createdAt: now,
+    });
+  }
+  for (const coach of extended.coachOverCapacity) {
+    rows.push({
+      id: `yon-capacity-${coach.id}`,
+      code: "YON_COACH_OVER_CAPACITY",
+      severity: "ACTION_REQUIRED",
+      title: "Koç kapasite üstü",
+      subject: `${coach.label} · ${coach.load}/${coach.capacity}`,
+      ageLabel: "şimdi",
+      owner: coach.label,
+      href: "/panel/yonetim/kocluk?kuyruk=kapasite",
+      ctaLabel: "Yeniden dağıt",
+      createdAt: now,
+    });
+  }
+  if (extended.yonSessionOverdue.count > 0) {
+    const first = extended.yonSessionOverdue.samples[0];
+    rows.push({
+      id: "yon-session-overdue",
+      code: "YON_SESSION_OVERDUE",
+      severity: "WATCH",
+      title: `${extended.yonSessionOverdue.count} koçluk görüşmesi gecikti`,
+      subject: first ? `${first.label}${first.days !== null ? ` · ${first.days} gün` : ""}${extended.yonSessionOverdue.count > 1 ? " ve diğerleri" : ""}` : "Koçluk",
+      ageLabel: "şimdi",
+      owner: null,
+      href: "/panel/yonetim/kocluk?kuyruk=geciken",
+      ctaLabel: "Gecikenler",
+      createdAt: now,
+    });
+  }
+  for (const exam of extended.dlUnscored) {
+    rows.push({
+      id: `dl-unscored-${exam.id}`,
+      code: "DL_UNSCORED",
+      severity: "BLOCKING",
+      title: "Puanlama tamamlanmadı",
+      subject: `${exam.title} · ${exam.count} teslim`,
+      ageLabel: formatOpsAge(exam.updatedAt, now),
+      owner: null,
+      href: `/panel/odk/yonetim/sinavlar/${exam.id}?sekme=puanlama`,
+      ctaLabel: "Puanla",
+      createdAt: exam.updatedAt,
+    });
+  }
+  for (const exam of extended.dlIncomplete) {
+    rows.push({
+      id: `dl-incomplete-${exam.id}`,
+      code: "DL_EXAM_INCOMPLETE",
+      severity: "ACTION_REQUIRED",
+      title: "Deneme hazırlığı eksik",
+      subject: `${exam.title} · ${exam.detail}`,
+      ageLabel: formatOpsAge(exam.updatedAt, now),
+      owner: null,
+      href: `/panel/odk/yonetim/sinavlar/${exam.id}?sekme=genel`,
+      ctaLabel: "Hazırlığa git",
+      createdAt: exam.updatedAt,
+    });
+  }
+  for (const exam of extended.dlAwaitingRelease) {
+    rows.push({
+      id: `dl-release-${exam.id}`,
+      code: "DL_AWAITING_RELEASE",
+      severity: "ACTION_REQUIRED",
+      title: "Yayın bekliyor",
+      subject: exam.title,
+      ageLabel: formatOpsAge(exam.updatedAt, now),
+      owner: null,
+      href: `/panel/odk/yonetim/sinavlar/${exam.id}?sekme=puanlama`,
+      ctaLabel: "Yayın önizleme",
+      createdAt: exam.updatedAt,
+    });
+  }
+  for (const exam of extended.dlIntegrity) {
+    rows.push({
+      id: `dl-integrity-${exam.id}`,
+      code: "DL_INTEGRITY_REVIEW",
+      severity: "WATCH",
+      title: "Bütünlük incelemesi bekliyor",
+      subject: `${exam.title} · ${exam.count} deneme`,
+      ageLabel: formatOpsAge(exam.updatedAt, now),
+      owner: null,
+      href: `/panel/odk/yonetim/sinavlar/${exam.id}?sekme=butunluk`,
+      ctaLabel: "İncele",
+      createdAt: exam.updatedAt,
+    });
+  }
+  for (const request of extended.mfaResetPending) {
+    rows.push({
+      id: `mfa-reset-${request.id}`,
+      code: "SECURITY_MFA_RESET_PENDING",
+      severity: "ACTION_REQUIRED",
+      title: "MFA sıfırlama onayı bekliyor",
+      subject: `${request.targetLabel} · isteyen: ${request.requestedByLabel}`,
+      ageLabel: formatOpsAge(request.createdAt, now),
+      owner: request.requestedByLabel,
+      href: "/panel/yonetim/kisiler#mfa-sifirlama",
+      ctaLabel: "Onayla",
+      createdAt: request.createdAt,
+    });
+  }
+  for (const staff of extended.staffWithoutMfa) {
+    rows.push({
+      id: `staff-mfa-${staff.userId}`,
+      code: "SECURITY_STAFF_NO_MFA",
+      severity: "WATCH",
+      title: "MFA kurulumu bekleniyor",
+      subject: `${staff.label} · ayrıcalıklı personel`,
+      ageLabel: formatOpsAge(staff.since, now),
+      owner: null,
+      href: `/panel/yonetim/kullanicilar/${staff.userId}`,
+      ctaLabel: "Kişiyi aç",
+      createdAt: staff.since,
+    });
+  }
+  return rows;
+}
+
+/** Bugün satırı: özet kutucukları yerine tek metin satırı (§13). */
+export function summaryLine(summary: OpsSummaryTile[]): Array<{ id: OpsSummaryTileId; text: string; href: string }> {
+  const UNIT: Partial<Record<OpsSummaryTileId, string>> = {
+    today_lessons: "ders",
+    active_students: "aktif öğrenci",
+    today_exams: "deneme",
+    new_orders: "yeni sipariş",
+    pending_jobs: "bekleyen iş",
+    open_interventions: "açık müdahale",
+    provisioning_pending: "erişim açılışı bekliyor",
+  };
+  return summary
+    .filter((tile) => tile.available && tile.value !== null)
+    .map((tile) => ({ id: tile.id, text: `${tile.value} ${UNIT[tile.id] ?? tile.label.toLocaleLowerCase("tr-TR")}`, href: tile.href }));
 }
 
 function buildSummaryTiles(input: AdminOperationsCenterInput): OpsSummaryTile[] {

@@ -158,10 +158,11 @@ test.describe("panel deneyimi", () => {
     await expect(student360.getByRole("heading", { name: "Son denemeler" })).toBeVisible();
     await expect(student360.getByRole("heading", { name: "Açık görev / müdahale" })).toBeVisible();
 
-    // Eski kullanıcılar rotası Kişiler merkezine yönlenir; hesap formu orada.
+    // Eski kullanıcılar rotası Kişiler merkezine yönlenir; hesap formu "Yeni kişi" yan panelinde.
     await page.goto("/panel/yonetim/kullanicilar");
     await expect(page.getByRole("heading", { name: "Kişiler", exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Hesabı aç" })).toBeVisible();
+    await page.getByRole("link", { name: "Yeni kişi" }).click();
+    await expect(page.getByRole("dialog", { name: "Yeni kişi" }).getByRole("button", { name: "Hesabı aç" })).toBeVisible();
   });
 
   test("öğretmen kaynaklı AI taslağını düzenleyip onaylar; içerik otomatik yayınlanmaz", async ({ page }) => {

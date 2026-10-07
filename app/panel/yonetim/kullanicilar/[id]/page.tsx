@@ -7,7 +7,21 @@ import { SignupProfileCard } from "@/components/panel/signups/signup-profile-car
 import { productLabel, roleLabel } from "@/lib/auth/roles";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelCard, PanelCardTitle, PanelHeading } from "@/components/panel/ui";
+import {
+  EmptyState,
+  PageHeader,
+  PanelCard,
+  PanelCardTitle,
+  PropertyList,
+  PropertyRow,
+  Section,
+  StatusBadge,
+  ViewTabs,
+  buttonClass,
+} from "@/components/panel/ui";
+import { USER_STATUS_PRESENTATION } from "@/lib/panel/status-vocabulary";
+import { ACCESS_SOURCE_LABEL, accessEditableHere, accessState, sortAccessObjects } from "@/lib/panel/access-objects";
+import { ApproveMfaResetButton } from "@/components/panel/mfa-reset-controls";
 import { AdminUserProfileForm } from "@/components/panel/admin-user-profile-form";
 import { AdminAccessibilityAccommodationForm } from "@/components/panel/admin-accessibility-accommodation-form";
 import { AdminProductAccessForm } from "@/components/panel/admin-product-access-form";
@@ -40,9 +54,12 @@ export const dynamic = "force-dynamic";
  * Uyarı GERÇEK veriden türetilir: ödenmiş ama `provisioningStatus`u
  * tamamlanmamış siparişler. Sorun yoksa uyarı hiç basılmaz.
  *
- * Korunan davranışlar (hiçbiri yeniden yazılmadı): profil formu, ürün erişim
- * formu, admin MFA kurtarma (kendi hesabına açılmaz), öğrenci akademik
- * düzenleme formu, gruplar/veli bağlantıları/notlar ve öğretmen–veli
+ * Sekmeler (§14.2, `?sekme=`): Profil · Ürünler (erişim nesneleri + mevcut
+ * erişim formu) · Sorumluluklar (yalnız öğretmen) · İlişkiler · Güvenlik (MFA,
+ * bekleyen sıfırlama, hesap durumu, arşiv, offboarding) · Geçmiş (bu kişinin
+ * işlem kaydı). Korunan davranışlar (hiçbiri yeniden yazılmadı): profil formu,
+ * ürün erişim formu, admin MFA kurtarma (kendi hesabına açılmaz), öğrenci
+ * akademik düzenleme formu, gruplar/veli bağlantıları/notlar ve öğretmen–veli
  * bölümleri.
  */
 
@@ -61,30 +78,25 @@ const DATE_TIME = new Intl.DateTimeFormat("tr-TR", {
 
 const ALL_PRODUCTS = ["OD", "OK", "ODK"] as const;
 
-function Row({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone?: string;
-}) {
-  return (
-    <div className="flex justify-between gap-3">
-      <dt>{label}</dt>
-      <dd className={tone ?? "text-dc-ink-muted"}>{value}</dd>
-    </div>
-  );
-}
+const USER_TABS = [
+  { id: "profil", label: "Profil" },
+  { id: "urunler", label: "Ürünler" },
+  { id: "sorumluluklar", label: "Sorumluluklar" },
+  { id: "iliskiler", label: "İlişkiler" },
+  { id: "guvenlik", label: "Güvenlik" },
+  { id: "gecmis", label: "Geçmiş" },
+] as const;
+type UserTab = (typeof USER_TABS)[number]["id"];
 
 export default async function UserDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ sekme?: string }>;
 }) {
   const session = await requireRole("ADMIN");
-  const { id } = await params;
+  const [{ id }, query] = await Promise.all([params, searchParams]);
 
   const user = await prisma.user.findUnique({
     where: { id },
@@ -164,11 +176,18 @@ export default async function UserDetailPage({
       odOrders: { orderBy: { createdAt: "desc" }, take: 10 },
       accessibilityPreference: true,
       productMemberships: {
-        where: {
-          revokedAt: null,
-          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        orderBy: { startsAt: "desc" },
+        select: {
+          id: true,
+          product: true,
+          source: true,
+          startsAt: true,
+          expiresAt: true,
+          revokedAt: true,
+          productRef: { select: { name: true } },
+          grantedBy: { select: { fullName: true, email: true } },
+          sourceOdOrder: { select: { id: true, packageName: true } },
         },
-        select: { product: true },
       },
     },
   });
@@ -179,7 +198,41 @@ export default async function UserDetailPage({
   const attended = attendance.filter(
     (a) => a.status === "PRESENT" || a.status === "LATE",
   ).length;
-  const activeProducts = new Set(user.productMemberships.map((m) => m.product));
+  const now = new Date();
+  const activeMemberships = user.productMemberships.filter((m) => accessState(m, now).label === "Aktif");
+  const activeProducts = new Set(activeMemberships.map((m) => m.product));
+  // Sorumluluklar yalnız öğretmende anlamlıdır; diğer rollerde sekme çizilmez.
+  const tabs = USER_TABS.filter((tab) => tab.id !== "sorumluluklar" || user.role === "TEACHER");
+  const tab: UserTab = tabs.find((item) => item.id === query.sekme)?.id ?? "profil";
+  const tabHref = (next: UserTab) => (next === "profil" ? `/panel/yonetim/kullanicilar/${user.id}` : `/panel/yonetim/kullanicilar/${user.id}?sekme=${next}`);
+  const [hasMfa, pendingResets, auditRows] = await Promise.all([
+    tab === "guvenlik" && (user.role === "ADMIN" || user.role === "TEACHER") ? adminHasMfa(user.id) : Promise.resolve(null),
+    tab === "guvenlik"
+      ? prisma.mfaResetRequest.findMany({
+          where: { targetUserId: user.id, status: "PENDING", expiresAt: { gt: now } },
+          orderBy: { createdAt: "desc" },
+          select: { id: true, reason: true, createdAt: true, requestedById: true, requestedBy: { select: { fullName: true, email: true } } },
+        })
+      : Promise.resolve([]),
+    tab === "gecmis"
+      ? prisma.auditLog.findMany({
+          where: { entityId: user.id },
+          orderBy: { createdAt: "desc" },
+          take: 60,
+          select: { id: true, action: true, summary: true, createdAt: true, actorUserId: true },
+        })
+      : Promise.resolve([]),
+  ]);
+  const auditActors = auditRows.length
+    ? new Map(
+        (
+          await prisma.user.findMany({
+            where: { id: { in: [...new Set(auditRows.flatMap((row) => (row.actorUserId ? [row.actorUserId] : [])))] } },
+            select: { id: true, fullName: true, email: true },
+          })
+        ).map((actor) => [actor.id, actor.fullName || actor.email]),
+      )
+    : new Map<string, string>();
   const coach = student?.coachAssignments[0] ?? null;
   const teacherLifecycle =
     user.role === "TEACHER" ? await getTeacherLifecycleSummary(user.id) : null;
@@ -238,504 +291,438 @@ export default async function UserDetailPage({
       pageTitle="Kişi detayı"
     >
       <div className="max-w-[1040px]">
-        <Link
-          href="/panel/yonetim/kullanicilar"
-          className="inline-flex items-center gap-1.5 text-[13px] text-dc-ink-faint transition-colors hover:text-dc-brand-hover"
-        >
-          <ArrowLeft size={13} aria-hidden="true" /> Kişilere dön
+        <Link href="/panel/yonetim/kisiler" className={buttonClass("ghost", "sm", "-ml-2.5")}>
+          <ArrowLeft size={14} aria-hidden="true" /> Kişiler
         </Link>
 
-        <div className="mt-2">
-          <PanelHeading
-            eyebrow={roleLabel(user.role)}
-            title={user.fullName || user.email}
-            description={`${user.email}${user.phone ? ` · ${user.phone}` : ""} · kayıt ${DATE.format(user.createdAt)}${
-              user.status === "ACTIVE"
-                ? ""
-                : user.status === "ARCHIVED"
-                  ? " · hesap arşivde"
-                  : " · hesap askıda"
-            }`}
-            actions={
-              <div className="flex flex-wrap gap-2">
-                {previewLabel && isPreviewableRole(user.role) ? (
-                  <AdminPreviewLaunchButton
-                    previewRole={user.role}
-                    previewUserId={user.id}
-                    label={previewLabel}
-                    returnPath={`/panel/yonetim/kullanicilar/${user.id}`}
-                  />
-                ) : null}
-                {blocked ? (
-                  <Link
-                    href={`/panel/yonetim/siparisler/${blocked.id}`}
-                    className="rounded-od bg-dc-brand-strong px-[18px] py-[11px] text-[13.5px] font-bold text-white transition-colors hover:bg-dc-brand-hover"
-                  >
-                    Erişim sorununu çöz
-                  </Link>
-                ) : null}
-              </div>
-            }
-          />
-        </div>
+        <PageHeader
+          eyebrow={roleLabel(user.role)}
+          title={user.fullName || user.email}
+          description={`${user.email}${user.phone ? ` · ${user.phone}` : ""} · kayıt ${DATE.format(user.createdAt)}${user.lastLoginAt ? ` · son giriş ${DATE_TIME.format(user.lastLoginAt)}` : ""}`}
+          metadata={<StatusBadge presentation={USER_STATUS_PRESENTATION[user.status]} />}
+          actions={
+            <>
+              {previewLabel && isPreviewableRole(user.role) ? (
+                <AdminPreviewLaunchButton
+                  previewRole={user.role}
+                  previewUserId={user.id}
+                  label={previewLabel}
+                  returnPath={`/panel/yonetim/kullanicilar/${user.id}`}
+                />
+              ) : null}
+              {blocked ? (
+                <Link href={`/panel/yonetim/siparisler/${blocked.id}`} className={buttonClass("primary", "md")}>
+                  Erişim sorununu çöz
+                </Link>
+              ) : null}
+            </>
+          }
+        />
 
         {blocked ? (
-          <section className="mt-5 flex flex-wrap items-center gap-4 rounded-[14px] border border-dc-line border-l-[3px] border-l-[#C2493D] bg-white px-[22px] py-[18px]">
+          <section
+            aria-labelledby="erisim-sorunu"
+            className="mt-4 flex flex-wrap items-center gap-4 rounded-lg border border-pn-border border-l-[3px] border-l-(--pn-tone-critical) bg-white px-4 py-3"
+          >
             <div className="min-w-0 flex-1">
-              <h2 className="text-[15px] font-bold text-dc-ink">
+              <h2 id="erisim-sorunu" className="text-[14.5px] font-semibold text-pn-text">
                 Ödeme alındı, ürün erişimi açılmadı
               </h2>
-              <p className="mt-1 text-[13.5px] text-dc-ink-muted">
+              <p className="mt-0.5 text-[13.5px] text-pn-text-muted">
                 {blocked.packageName} · {DATE_TIME.format(blocked.createdAt)}
-                {blocked.provisioningError
-                  ? ` · ${blocked.provisioningError}`
-                  : ""}
+                {blocked.provisioningError ? ` · ${blocked.provisioningError}` : ""}
               </p>
             </div>
-            <Link
-              href={`/panel/yonetim/siparisler/${blocked.id}`}
-              className="rounded-lg border border-[#DDE4E0] bg-white px-3.5 py-2.5 text-[13px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
-            >
+            <Link href={`/panel/yonetim/siparisler/${blocked.id}`} className={buttonClass("secondary", "sm")}>
               Siparişi aç
             </Link>
           </section>
         ) : null}
 
-        <div className="mt-5">
-          <AdminUserProfileForm
-            user={{
-              id: user.id,
-              role: user.role,
-              email: user.email,
-              fullName: user.fullName || "",
-              phone: user.phone || "",
-              classLevel: student?.classLevel || "",
-              schoolName: student?.schoolName || "",
-              targetGoal: student?.targetGoal || "",
-              subjects: user.teacherProfile?.subjects || [],
-              bio: user.teacherProfile?.bio || "",
-            }}
-          />
+        <div className="mt-4">
+          <ViewTabs label="Kişi detayı" activeId={tab} tabs={tabs.map((item) => ({ id: item.id, label: item.label, href: tabHref(item.id) }))} />
         </div>
 
-        {user.role === "STUDENT" || user.role === "PARENT" ? <SignupProfileCard userId={user.id} /> : null}
-
-        <PanelCard className="mt-5">
-          <PanelCardTitle>Hesap yaşam döngüsü</PanelCardTitle>
-          <p className="mt-2 text-[13px] leading-[1.6] text-dc-ink-muted">
-            Kalıcı silme geri alınamaz. Hesap önce arşivlenir; kritik kayıtlar
-            varsa sistem silmeyi engeller.
-          </p>
-          <div className="mt-4 space-y-4">
-            <UserRowActions
-              userId={user.id}
-              email={user.email}
-              fullName={user.fullName}
-              phone={user.phone}
-              status={user.status}
-              inviteAcceptedAt={user.inviteAcceptedAt?.toISOString() ?? null}
-              isSelf={user.id === session.userId}
+        {tab === "profil" ? (
+          <div className="mt-5 space-y-5">
+            <AdminUserProfileForm
+              user={{
+                id: user.id,
+                role: user.role,
+                email: user.email,
+                fullName: user.fullName || "",
+                phone: user.phone || "",
+                classLevel: student?.classLevel || "",
+                schoolName: student?.schoolName || "",
+                targetGoal: student?.targetGoal || "",
+                subjects: user.teacherProfile?.subjects || [],
+                bio: user.teacherProfile?.bio || "",
+              }}
             />
-            {user.status !== "ARCHIVED" && user.id !== session.userId ? (
-              <ArchiveUserAction
+            {user.role === "STUDENT" && getPanelFeatureFlags().accessibilityProfile ? (
+              <AdminAccessibilityAccommodationForm
                 userId={user.id}
-                userName={user.fullName || user.email}
+                initial={{
+                  version: user.accessibilityPreference?.version || 0,
+                  assessmentExtraPercent: user.accessibilityPreference?.assessmentExtraPercent || 0,
+                  breaksAllowed: user.accessibilityPreference?.breaksAllowed || false,
+                }}
               />
             ) : null}
-          </div>
-        </PanelCard>
-
-        {/* Personel ürün erişimi atamalardan türetilir (aşağıdaki "Ürün sorumlulukları"). */}
-        {user.role !== "TEACHER" ? (
-          <AdminProductAccessForm
-            userId={user.id}
-            role={user.role}
-            initialProducts={user.productMemberships.flatMap((m) => (m.product ? [m.product] : []))}
-          />
-        ) : null}
-
-        {user.role === "TEACHER" ? (
-          <AdminStaffResponsibilitiesForm
-            userId={user.id}
-            history={staffHistory}
-            coachCapacity={user.teacherProfile?.coachCapacity ?? null}
-            mfaPending={staffMfaPending}
-          />
-        ) : null}
-
-        {/* Yönetici MFA kurtarma — cihaz kaybında tek çıkış yolu. Kendi hesabınız
-            için açılamaz; sunucu da aynı kuralı uygular. */}
-        {user.role === "ADMIN" && user.id !== session.userId ? (
-          <div className="mt-5">
-            <RequestMfaResetForm userId={user.id} />
+            {user.role === "STUDENT" || user.role === "PARENT" ? <SignupProfileCard userId={user.id} /> : null}
           </div>
         ) : null}
 
-        {user.role === "STUDENT" &&
-        getPanelFeatureFlags().accessibilityProfile ? (
-          <AdminAccessibilityAccommodationForm
-            userId={user.id}
-            initial={{
-              version: user.accessibilityPreference?.version || 0,
-              assessmentExtraPercent:
-                user.accessibilityPreference?.assessmentExtraPercent || 0,
-              breaksAllowed:
-                user.accessibilityPreference?.breaksAllowed || false,
-            }}
-          />
-        ) : null}
-
-        {student ? (
-          <>
-            <div className="mt-5 grid gap-5 md:grid-cols-2">
-              <PanelCard>
-                <PanelCardTitle>Ürün erişimleri</PanelCardTitle>
-                <dl className="mt-3.5 flex flex-col gap-3 text-[14px] font-medium text-dc-ink-body">
-                  {ALL_PRODUCTS.map((code) => {
-                    const active = activeProducts.has(code);
-                    const pending = !active && blocked;
+        {tab === "urunler" ? (
+          <div className="mt-5 space-y-6">
+            <Section title="Ürün erişimleri" description="Kaynak, süre ve sipariş bağlantısı erişim kaydından gelir. Satın alınmış erişim yalnız sipariş üzerinden yönetilir." divider={false}>
+              {user.productMemberships.length ? (
+                <ul className="divide-y divide-pn-border-subtle rounded-lg border border-pn-border">
+                  {sortAccessObjects(user.productMemberships, now).map((membership) => {
+                    const state = accessState(membership, now);
+                    const productName = membership.product ? productLabel(membership.product) : membership.productRef?.name || "Ürün";
                     return (
-                      <Row
-                        key={code}
-                        label={productLabel(code)}
-                        value={
-                          active
-                            ? "Açık"
-                            : pending
-                              ? `Açılmadı · ${blocked.packageName}`
-                              : "Satın alınmadı"
-                        }
-                        tone={
-                          active
-                            ? "text-dc-brand-hover"
-                            : pending
-                              ? "text-[#C2493D]"
-                              : "text-dc-ink-ghost"
-                        }
-                      />
+                      <li key={membership.id} className="flex flex-wrap items-start justify-between gap-3 px-4 py-3">
+                        <div className="min-w-0">
+                          <p className="text-[14.5px] font-semibold text-pn-text">{productName}</p>
+                          <p className="mt-0.5 text-[13px] text-pn-text-secondary">
+                            {ACCESS_SOURCE_LABEL[membership.source]} · {DATE.format(membership.startsAt)} →{" "}
+                            {membership.expiresAt ? DATE.format(membership.expiresAt) : "süresiz"}
+                            {membership.revokedAt ? ` · ${DATE.format(membership.revokedAt)} tarihinde sonlandırıldı` : ""}
+                          </p>
+                          {membership.grantedBy ? (
+                            <p className="text-[12.5px] text-pn-text-muted">Veren: {membership.grantedBy.fullName || membership.grantedBy.email}</p>
+                          ) : null}
+                          {membership.sourceOdOrder ? (
+                            <Link href={`/panel/yonetim/siparisler/${membership.sourceOdOrder.id}`} className="text-[12.5px] text-pn-text-secondary underline underline-offset-2">
+                              Sipariş: {membership.sourceOdOrder.packageName}
+                            </Link>
+                          ) : null}
+                        </div>
+                        <span className="flex items-center gap-2">
+                          <StatusBadge tone={state.tone} label={state.label} />
+                          {!accessEditableHere(membership) ? <span className="text-[12px] text-pn-text-muted">siparişten yönetilir</span> : null}
+                        </span>
+                      </li>
                     );
                   })}
-                </dl>
-                <p className="mt-3.5 text-[12.5px] leading-[1.6] text-dc-ink-faint">
-                  Erişim başlangıç ve bitiş tarihleri sipariş kaydından gelir.
-                  Elle değişiklik kayıt altına alınır.
-                </p>
-              </PanelCard>
-
-              <PanelCard>
-                <PanelCardTitle>Atamalar ve ilişkiler</PanelCardTitle>
-                <dl className="mt-3.5 flex flex-col gap-3 text-[14px] font-medium text-dc-ink-body">
-                  <Row
-                    label="Öğretmen / grup"
-                    value={
-                      student.enrollments.length
-                        ? student.enrollments
-                            .map(
-                              (e) =>
-                                `${e.group.teacher.fullName || e.group.teacher.email} · ${e.group.name}`,
-                            )
-                            .join(", ")
-                        : "Grup ataması yok"
-                    }
-                    tone={
-                      student.enrollments.length ? undefined : "text-[#8A5F37]"
-                    }
-                  />
-                  <Row
-                    label="Veli"
-                    value={
-                      student.parents.length
-                        ? student.parents
-                            .map((p) => p.parent.fullName || p.parent.email)
-                            .join(", ")
-                        : "Bağlı veli yok"
-                    }
-                    tone={student.parents.length ? undefined : "text-[#8A5F37]"}
-                  />
-                  <Row
-                    label="Koç"
-                    value={
-                      coach
-                        ? `${coach.coach.user.fullName || coach.coach.user.email}${
-                            coach.cadenceDays
-                              ? ` · ${coach.cadenceDays} günde bir`
-                              : ""
-                          }`
-                        : "Koç atanmadı"
-                    }
-                    tone={coach ? undefined : "text-[#8A5F37]"}
-                  />
-                  <Row
-                    label="Son ders katılımı"
-                    value={
-                      attendance.length
-                        ? `%${Math.round((attended / attendance.length) * 100)} · ${attended}/${attendance.length}`
-                        : "Kayıt yok"
-                    }
-                  />
-                  <Row
-                    label="Bağlı sipariş"
-                    value={`${user.odOrders.length}`}
-                  />
-                </dl>
-              </PanelCard>
-            </div>
-
-            <div className="mt-5 grid gap-5 xl:grid-cols-2">
-              <PanelCard>
-                <PanelCardTitle>Gruplar</PanelCardTitle>
-                <div className="mt-3.5 flex flex-col gap-2">
-                  {student.enrollments.map((enrollment) => (
-                    <Link
-                      key={enrollment.id}
-                      href={`/panel/yonetim/gruplar/${enrollment.group.id}`}
-                      className="rounded-od border border-dc-line p-3 transition-colors hover:border-dc-brand"
-                    >
-                      <p className="text-[13.5px] font-bold text-dc-ink">
-                        {enrollment.group.name} · {enrollment.group.subject}
-                      </p>
-                      <p className="mt-1 text-[12.5px] text-dc-ink-muted">
-                        {enrollment.group.teacher.fullName ||
-                          enrollment.group.teacher.email}
-                      </p>
-                    </Link>
+                </ul>
+              ) : (
+                <EmptyState title="Ürün erişimi yok." body={user.role === "TEACHER" ? "Personel erişimi Sorumluluklar sekmesindeki atamalardan gelir." : undefined} />
+              )}
+            </Section>
+            {/* Personel ürün erişimi atamalardan türetilir ("Sorumluluklar" sekmesi). */}
+            {user.role !== "TEACHER" ? (
+              <AdminProductAccessForm
+                userId={user.id}
+                role={user.role}
+                initialProducts={activeMemberships.flatMap((m) => (m.product ? [m.product] : []))}
+              />
+            ) : null}
+            {user.odOrders.length ? (
+              <Section title="Siparişler">
+                <ul className="divide-y divide-pn-border-subtle rounded-lg border border-pn-border">
+                  {user.odOrders.map((order) => (
+                    <li key={order.id} className="flex flex-wrap items-baseline justify-between gap-3 px-4 py-2.5 text-[13.5px]">
+                      <Link href={`/panel/yonetim/siparisler/${order.id}`} className="font-medium text-pn-text underline-offset-2 hover:underline">
+                        {order.packageName}
+                      </Link>
+                      <span className="text-pn-text-muted">
+                        {DATE.format(order.createdAt)} · {order.status === "PAID" ? (order.provisioningStatus === "SUCCEEDED" ? "Ödendi · erişim açık" : "Ödendi · erişim bekliyor") : order.status}
+                      </span>
+                    </li>
                   ))}
-                  {!student.enrollments.length ? (
-                    <p className="text-[13px] text-dc-ink-muted">
-                      Aktif grup yok.
-                    </p>
-                  ) : null}
-                </div>
-              </PanelCard>
+                </ul>
+              </Section>
+            ) : null}
+          </div>
+        ) : null}
 
-              <PanelCard>
-                <PanelCardTitle>Veli bağlantıları</PanelCardTitle>
-                <div className="mt-3.5 flex flex-col gap-2">
-                  {student.parents.map((link) => (
-                    <Link
-                      key={link.id}
-                      href={`/panel/yonetim/kullanicilar/${link.parent.id}`}
-                      className="rounded-od border border-dc-line p-3 transition-colors hover:border-dc-brand"
-                    >
-                      <p className="text-[13.5px] font-bold text-dc-ink">
-                        {link.parent.fullName || link.parent.email}
-                      </p>
-                      <p className="mt-1 text-[12.5px] text-dc-ink-muted">
-                        {link.relationship || "Veli"}
-                      </p>
+        {tab === "sorumluluklar" && user.role === "TEACHER" ? (
+          <div className="mt-5">
+            <AdminStaffResponsibilitiesForm
+              userId={user.id}
+              history={staffHistory}
+              coachCapacity={user.teacherProfile?.coachCapacity ?? null}
+              mfaPending={staffMfaPending}
+            />
+          </div>
+        ) : null}
+
+        {tab === "iliskiler" ? (
+          <div className="mt-5 space-y-5">
+            {student ? (
+              <>
+                <Section title="Atamalar" divider={false}>
+                  <PropertyList>
+                    <PropertyRow label="Öğretmen / grup">
+                      {student.enrollments.length
+                        ? student.enrollments.map((e) => `${e.group.teacher.fullName || e.group.teacher.email} · ${e.group.name}`).join(", ")
+                        : "Grup ataması yok"}
+                    </PropertyRow>
+                    <PropertyRow label="Veli">
+                      {student.parents.length ? student.parents.map((p) => p.parent.fullName || p.parent.email).join(", ") : "Bağlı veli yok"}
+                    </PropertyRow>
+                    <PropertyRow label="Koç">
+                      {coach
+                        ? `${coach.coach.user.fullName || coach.coach.user.email}${coach.cadenceDays ? ` · ${coach.cadenceDays} günde bir` : ""}`
+                        : "Koç atanmadı"}
+                    </PropertyRow>
+                    <PropertyRow label="Ürünler">
+                      {ALL_PRODUCTS.filter((code) => activeProducts.has(code)).map((code) => productLabel(code)).join(" · ") || "Erişim yok"}
+                    </PropertyRow>
+                    <PropertyRow label="Son ders katılımı">
+                      {attendance.length ? `%${Math.round((attended / attendance.length) * 100)} · ${attended}/${attendance.length}` : "Kayıt yok"}
+                    </PropertyRow>
+                  </PropertyList>
+                  {student ? (
+                    <Link href={`/panel/yonetim/ogrenciler/${student.id}`} className={buttonClass("secondary", "sm", "mt-3")}>
+                      Öğrenci 360&apos;ı aç
                     </Link>
-                  ))}
-                  {!student.parents.length ? (
-                    <p className="text-[13px] text-dc-ink-muted">
-                      Veli bağlantısı yok.
-                    </p>
                   ) : null}
-                </div>
-              </PanelCard>
-            </div>
+                </Section>
+                <Section title="Gruplar">
+                  {student.enrollments.length ? (
+                    <ul className="divide-y divide-pn-border-subtle rounded-lg border border-pn-border">
+                      {student.enrollments.map((enrollment) => (
+                        <li key={enrollment.id} className="px-4 py-2.5 text-[13.5px]">
+                          <Link href={`/panel/yonetim/gruplar/${enrollment.group.id}`} className="font-medium text-pn-text underline-offset-2 hover:underline">
+                            {enrollment.group.name} · {enrollment.group.subject}
+                          </Link>
+                          <span className="block text-[12.5px] text-pn-text-muted">{enrollment.group.teacher.fullName || enrollment.group.teacher.email}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-[13.5px] text-pn-text-muted">Aktif grup yok.</p>
+                  )}
+                </Section>
+                <Section title="Veli bağlantıları">
+                  {student.parents.length ? (
+                    <ul className="divide-y divide-pn-border-subtle rounded-lg border border-pn-border">
+                      {student.parents.map((link) => (
+                        <li key={link.id} className="px-4 py-2.5 text-[13.5px]">
+                          <Link href={`/panel/yonetim/kullanicilar/${link.parent.id}`} className="font-medium text-pn-text underline-offset-2 hover:underline">
+                            {link.parent.fullName || link.parent.email}
+                          </Link>
+                          <span className="block text-[12.5px] text-pn-text-muted">{link.relationship || "Veli"}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-[13.5px] text-pn-text-muted">Veli bağlantısı yok.</p>
+                  )}
+                </Section>
+                <Section title="Son öğretmen notları">
+                  {student.notes.length ? (
+                    <ul className="divide-y divide-pn-border-subtle rounded-lg border border-pn-border">
+                      {student.notes.map((note) => (
+                        <li key={note.id} className="px-4 py-2.5 text-[13.5px]">
+                          <p className="text-[12.5px] text-pn-text-muted">
+                            {note.lesson.group.subject} · {DATE.format(note.updatedAt)}
+                          </p>
+                          <p className="mt-0.5 text-pn-text">{note.note || note.nextGoal || note.homework || "Not içeriği yok"}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-[13.5px] text-pn-text-muted">Henüz bireysel not yok.</p>
+                  )}
+                </Section>
+              </>
+            ) : null}
 
-            <PanelCard className="mt-5">
-              <PanelCardTitle>Son öğretmen notları</PanelCardTitle>
-              <div className="mt-3.5 grid gap-2 md:grid-cols-2">
-                {student.notes.map((note) => (
-                  <article
-                    key={note.id}
-                    className="rounded-od border border-dc-line p-4"
-                  >
-                    <p className="text-[11px] font-bold uppercase tracking-[.06em] text-dc-brand-strong">
-                      {note.lesson.group.subject} ·{" "}
-                      {DATE.format(note.updatedAt)}
-                    </p>
-                    <p className="mt-2 text-[13px] leading-[1.6] text-dc-ink-body">
-                      {note.note ||
-                        note.nextGoal ||
-                        note.homework ||
-                        "Not içeriği yok"}
-                    </p>
-                  </article>
-                ))}
-                {!student.notes.length ? (
-                  <p className="text-[13px] text-dc-ink-muted">
-                    Henüz bireysel not yok.
-                  </p>
+            {user.role === "TEACHER" ? (
+              <>
+                {teacherLifecycle ? (
+                  <Section title="Öğretmen özeti" divider={false}>
+                    <PropertyList>
+                      <PropertyRow label="Ders alanları">{teacherLifecycle.teacher.subjects.join(", ") || "Tanımlı değil"}</PropertyRow>
+                      <PropertyRow label="Koçluk">
+                        {teacherLifecycle.teacher.isCoach
+                          ? `Evet${teacherLifecycle.teacher.coachCapacity ? ` · kapasite ${teacherLifecycle.teacher.coachCapacity}` : ""}`
+                          : "Hayır"}
+                      </PropertyRow>
+                      <PropertyRow label="Aktif grup / öğrenci">
+                        {teacherLifecycle.counts.activeGroups} / {teacherLifecycle.counts.activeStudents}
+                      </PropertyRow>
+                      <PropertyRow label="Gelecek ders">{String(teacherLifecycle.counts.upcomingLessons)}</PropertyRow>
+                      <PropertyRow label="Bekleyen ders kapanışı">{String(teacherLifecycle.counts.pendingLessonClosures)}</PropertyRow>
+                      <PropertyRow label="Açık yardım talebi">{String(teacherLifecycle.activeResponsibilities.openHelpRequests)}</PropertyRow>
+                      <PropertyRow label="Açık müdahale / koçluk">
+                        {String(teacherLifecycle.activeResponsibilities.openInterventions + teacherLifecycle.activeResponsibilities.coachAssignments)}
+                      </PropertyRow>
+                    </PropertyList>
+                  </Section>
+                ) : null}
+                <Section title="Sorumlu gruplar">
+                  {user.taughtGroups.length ? (
+                    <ul className="divide-y divide-pn-border-subtle rounded-lg border border-pn-border">
+                      {user.taughtGroups.map((group) => (
+                        <li key={group.id} className="flex items-baseline justify-between gap-3 px-4 py-2.5 text-[13.5px]">
+                          <Link href={`/panel/yonetim/gruplar/${group.id}`} className="font-medium text-pn-text underline-offset-2 hover:underline">
+                            {group.name} · {group.subject}
+                          </Link>
+                          <span className="tabular-nums text-pn-text-muted">
+                            {group.enrollments.length}/{group.capacity}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-[13.5px] text-pn-text-muted">Sorumlu grup yok.</p>
+                  )}
+                </Section>
+                <Section title="Branş öğrencileri">
+                  {teacherStudentLinks.length ? (
+                    <ul className="divide-y divide-pn-border-subtle rounded-lg border border-pn-border">
+                      {teacherStudentLinks.map((link) => (
+                        <li key={link.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-[13.5px]">
+                          <span>
+                            <span className="block text-[12.5px] text-pn-text-muted">{link.subject}</span>
+                            <Link href={`/panel/yonetim/ogrenciler/${link.studentId}`} className="font-medium text-pn-text underline-offset-2 hover:underline">
+                              {link.studentName}
+                            </Link>
+                          </span>
+                          <StudentTeacherUnlinkButton linkId={link.id} />
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-[13.5px] text-pn-text-muted">Branş bağlantısı yok.</p>
+                  )}
+                  <StudentTeacherLinkForm teacherId={user.id} students={linkableStudents} />
+                </Section>
+                <Section title="Son dersler">
+                  {user.taughtLessons.length ? (
+                    <ul className="divide-y divide-pn-border-subtle rounded-lg border border-pn-border">
+                      {user.taughtLessons.map((lesson) => (
+                        <li key={lesson.id} className="px-4 py-2.5 text-[13.5px]">
+                          <span className="font-medium text-pn-text">{lesson.title}</span>
+                          <span className="block text-[12.5px] text-pn-text-muted">
+                            {lesson.group.name} · {DATE.format(lesson.startsAt)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-[13.5px] text-pn-text-muted">Kayıtlı ders yok.</p>
+                  )}
+                </Section>
+              </>
+            ) : null}
+
+            {user.role === "PARENT" ? (
+              <Section title="Bağlı öğrenciler" divider={false}>
+                {user.parentStudents.length ? (
+                  <ul className="divide-y divide-pn-border-subtle rounded-lg border border-pn-border">
+                    {user.parentStudents.map((link) => (
+                      <li key={link.id} className="px-4 py-2.5 text-[13.5px]">
+                        <Link href={`/panel/yonetim/kullanicilar/${link.student.user.id}`} className="font-medium text-pn-text underline-offset-2 hover:underline">
+                          {link.student.user.fullName || link.student.user.email}
+                        </Link>
+                        <span className="block text-[12.5px] text-pn-text-muted">{link.relationship || "Veli"}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-[13.5px] text-pn-text-muted">Bağlı öğrenci yok.</p>
+                )}
+              </Section>
+            ) : null}
+
+            {user.role === "ADMIN" ? <p className="text-[13.5px] text-pn-text-muted">Yönetici hesabının öğrenci, grup veya veli ilişkisi yoktur.</p> : null}
+          </div>
+        ) : null}
+
+        {tab === "guvenlik" ? (
+          <div className="mt-5 space-y-6">
+            <Section title="İkinci faktör" divider={false}>
+              <PropertyList>
+                <PropertyRow label="MFA">
+                  {hasMfa === null ? "Bu rol için gerekmiyor" : hasMfa ? "Kurulu" : staffMfaPending ? "MFA kurulumu bekleniyor" : "Kurulu değil"}
+                </PropertyRow>
+              </PropertyList>
+              {pendingResets.length ? (
+                <ul className="mt-3 divide-y divide-pn-border-subtle rounded-lg border border-(--pn-tone-warning)/40">
+                  {pendingResets.map((request) => (
+                    <li key={request.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 text-[13.5px]">
+                      <span>
+                        <span className="font-medium text-pn-text">Bekleyen MFA sıfırlama</span>
+                        <span className="block text-[12.5px] text-pn-text-muted">
+                          {request.requestedBy.fullName || request.requestedBy.email} · {DATE_TIME.format(request.createdAt)} · {request.reason}
+                        </span>
+                      </span>
+                      {request.requestedById !== session.userId ? (
+                        <ApproveMfaResetButton requestId={request.id} />
+                      ) : (
+                        <span className="text-[12.5px] text-pn-text-muted">İkinci bir yönetici onaylamalı</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              {/* Yönetici MFA kurtarma — cihaz kaybında tek çıkış yolu. Kendi hesabınız
+                  için açılamaz; sunucu da aynı kuralı uygular. */}
+              {user.role === "ADMIN" && user.id !== session.userId ? (
+                <div className="mt-4">
+                  <RequestMfaResetForm userId={user.id} />
+                </div>
+              ) : null}
+            </Section>
+
+            <PanelCard>
+              <PanelCardTitle>Hesap durumu</PanelCardTitle>
+              <p className="mt-2 text-[13px] leading-[1.6] text-dc-ink-muted">
+                Kalıcı silme geri alınamaz. Hesap önce arşivlenir; kritik kayıtlar varsa sistem silmeyi engeller.
+              </p>
+              <div className="mt-4 space-y-4">
+                <UserRowActions
+                  userId={user.id}
+                  email={user.email}
+                  fullName={user.fullName}
+                  phone={user.phone}
+                  status={user.status}
+                  inviteAcceptedAt={user.inviteAcceptedAt?.toISOString() ?? null}
+                  isSelf={user.id === session.userId}
+                />
+                {user.status !== "ARCHIVED" && user.id !== session.userId ? (
+                  <ArchiveUserAction userId={user.id} userName={user.fullName || user.email} />
                 ) : null}
               </div>
             </PanelCard>
-          </>
-        ) : null}
 
-        {user.role === "TEACHER" ? (
-          <div className="mt-5 space-y-5">
-            {teacherLifecycle ? (
+            {user.role === "TEACHER" ? (
               <PanelCard>
-                <PanelCardTitle>Öğretmen yaşam döngüsü</PanelCardTitle>
-                <dl className="mt-3 grid gap-2 text-[13px] md:grid-cols-2">
-                  <Row
-                    label="Ders alanları"
-                    value={
-                      teacherLifecycle.teacher.subjects.join(", ") ||
-                      "Tanımlı değil"
-                    }
-                  />
-                  <Row
-                    label="Koç capability"
-                    value={
-                      teacherLifecycle.teacher.isCoach
-                        ? `Evet${teacherLifecycle.teacher.coachCapacity ? ` · kapasite ${teacherLifecycle.teacher.coachCapacity}` : ""}`
-                        : "Hayır"
-                    }
-                  />
-                  <Row
-                    label="Aktif grup"
-                    value={`${teacherLifecycle.counts.activeGroups}`}
-                  />
-                  <Row
-                    label="Aktif öğrenci"
-                    value={`${teacherLifecycle.counts.activeStudents}`}
-                  />
-                  <Row
-                    label="Gelecek ders"
-                    value={`${teacherLifecycle.counts.upcomingLessons}`}
-                  />
-                  <Row
-                    label="Bekleyen ders kapanışı"
-                    value={`${teacherLifecycle.counts.pendingLessonClosures}`}
-                  />
-                  <Row
-                    label="Açık yardım talebi"
-                    value={`${teacherLifecycle.activeResponsibilities.openHelpRequests}`}
-                  />
-                  <Row
-                    label="Açık müdahale/koç sorumluluğu"
-                    value={`${teacherLifecycle.activeResponsibilities.openInterventions + teacherLifecycle.activeResponsibilities.coachAssignments}`}
-                  />
-                </dl>
-                <div className="mt-4 border-t border-dc-line pt-4">
-                  <p className="mb-2 text-[12.5px] font-semibold text-dc-ink-faint">
-                    Güvenli offboarding
-                  </p>
+                <PanelCardTitle>Güvenli offboarding</PanelCardTitle>
+                <div className="mt-3">
                   <TeacherOffboardingForm teacherId={user.id} />
                 </div>
               </PanelCard>
             ) : null}
-
-            <div className="grid gap-5 xl:grid-cols-2">
-              <PanelCard>
-                <PanelCardTitle>Sorumlu gruplar</PanelCardTitle>
-                <div className="mt-3.5 flex flex-col gap-2">
-                  {user.taughtGroups.map((group) => (
-                    <Link
-                      key={group.id}
-                      href={`/panel/yonetim/gruplar/${group.id}`}
-                      className="flex items-center justify-between rounded-od border border-dc-line p-3 transition-colors hover:border-dc-brand"
-                    >
-                      <span>
-                        <span className="block text-[13.5px] font-bold text-dc-ink">
-                          {group.name}
-                        </span>
-                        <span className="mt-1 block text-[12.5px] text-dc-ink-muted">
-                          {group.subject}
-                        </span>
-                      </span>
-                      <span className="text-[13px] font-bold text-dc-brand-strong">
-                        {group.enrollments.length}/{group.capacity}
-                      </span>
-                    </Link>
-                  ))}
-                  {!user.taughtGroups.length ? (
-                    <p className="text-[13px] text-dc-ink-muted">
-                      Sorumlu grup yok.
-                    </p>
-                  ) : null}
-                </div>
-              </PanelCard>
-
-              <PanelCard>
-                <PanelCardTitle>Branş öğrencileri</PanelCardTitle>
-                <div className="mt-3.5 space-y-2">
-                  {teacherStudentLinks.map((link) => (
-                    <div
-                      key={link.id}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-od border border-dc-line p-3"
-                    >
-                      <div>
-                        <p className="text-[12px] font-semibold uppercase tracking-wide text-dc-ink-faint">
-                          {link.subject}
-                        </p>
-                        <Link
-                          href={`/panel/yonetim/ogrenciler/${link.studentId}`}
-                          className="text-[13.5px] font-bold text-dc-ink hover:underline"
-                        >
-                          {link.studentName}
-                        </Link>
-                      </div>
-                      <StudentTeacherUnlinkButton linkId={link.id} />
-                    </div>
-                  ))}
-                  {!teacherStudentLinks.length ? (
-                    <p className="text-[13px] text-dc-ink-muted">
-                      Branş bağlantısı yok.
-                    </p>
-                  ) : null}
-                </div>
-                <StudentTeacherLinkForm
-                  teacherId={user.id}
-                  students={linkableStudents}
-                />
-              </PanelCard>
-
-              <PanelCard>
-                <PanelCardTitle>Son dersler</PanelCardTitle>
-                <div className="mt-3.5 flex flex-col gap-2">
-                  {user.taughtLessons.map((lesson) => (
-                    <div
-                      key={lesson.id}
-                      className="rounded-od border border-dc-line p-3"
-                    >
-                      <p className="text-[13.5px] font-bold text-dc-ink">
-                        {lesson.title}
-                      </p>
-                      <p className="mt-1 text-[12.5px] text-dc-ink-muted">
-                        {lesson.group.name} · {DATE.format(lesson.startsAt)}
-                      </p>
-                    </div>
-                  ))}
-                  {!user.taughtLessons.length ? (
-                    <p className="text-[13px] text-dc-ink-muted">
-                      Kayıtlı ders yok.
-                    </p>
-                  ) : null}
-                </div>
-              </PanelCard>
-            </div>
           </div>
         ) : null}
 
-        {user.role === "PARENT" ? (
-          <PanelCard className="mt-5">
-            <PanelCardTitle>Bağlı öğrenciler</PanelCardTitle>
-            <div className="mt-3.5 grid gap-2 md:grid-cols-2">
-              {user.parentStudents.map((link) => (
-                <Link
-                  key={link.id}
-                  href={`/panel/yonetim/kullanicilar/${link.student.user.id}`}
-                  className="rounded-od border border-dc-line p-4 transition-colors hover:border-dc-brand"
-                >
-                  <span className="block text-[13.5px] font-bold text-dc-ink">
-                    {link.student.user.fullName || link.student.user.email}
-                  </span>
-                  <span className="mt-1 block text-[12.5px] text-dc-ink-muted">
-                    {link.relationship || "Veli"}
-                  </span>
-                </Link>
-              ))}
-              {!user.parentStudents.length ? (
-                <p className="text-[13px] text-dc-ink-muted">
-                  Bağlı öğrenci yok.
-                </p>
-              ) : null}
-            </div>
-          </PanelCard>
+        {tab === "gecmis" ? (
+          <Section title="Geçmiş" description="Bu kişiyle ilgili kayıtlı yönetim işlemleri." divider={false}>
+            {auditRows.length ? (
+              <ol className="mt-1 divide-y divide-pn-border-subtle rounded-lg border border-pn-border">
+                {auditRows.map((row) => (
+                  <li key={row.id} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 px-4 py-2.5 text-[13.5px]">
+                    <span className="min-w-0 text-pn-text">{row.summary || row.action}</span>
+                    <span className="shrink-0 text-[12.5px] text-pn-text-muted">
+                      {row.actorUserId ? auditActors.get(row.actorUserId) || "Kullanıcı" : "Sistem"} · {DATE_TIME.format(row.createdAt)}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <EmptyState title="Kayıtlı işlem yok." />
+            )}
+            <Link href="/panel/yonetim/kayitlar" className={buttonClass("ghost", "sm", "mt-3")}>
+              Tüm işlem geçmişi
+            </Link>
+          </Section>
         ) : null}
       </div>
     </PanelShell>

@@ -8,6 +8,9 @@ import {
   formatAuditActivity,
   formatOpsAge,
   sortOpsActions,
+  summaryLine,
+  parseOpsGroupFilter,
+  OPS_ACTION_GROUP,
   type AdminOperationsCenterInput,
   type OpsActionItem,
 } from "./admin-operations-center";
@@ -388,6 +391,7 @@ test("öncelik sıralaması severity sonra yaşa göre çalışır", () => {
   const older: OpsActionItem = {
     id: "1",
     code: "PROVISIONING_PENDING",
+    group: "COMMERCE",
     severity: "ACTION_REQUIRED",
     title: "eski",
     subject: "x",
@@ -400,6 +404,7 @@ test("öncelik sıralaması severity sonra yaşa göre çalışır", () => {
   const newerBlocking: OpsActionItem = {
     id: "2",
     code: "PROVISIONING_FAILED",
+    group: "COMMERCE",
     severity: "BLOCKING",
     title: "yeni bloke",
     subject: "y",
@@ -426,4 +431,93 @@ test("kısmi veri sinyali aksiyon üretir", () => {
   const snapshot = buildAdminOperationsCenter(baseInput({ partialData: true }));
   assert.ok(snapshot.actions.some((item) => item.code === "SYSTEM_PARTIAL_DATA"));
   assert.equal(snapshot.partialData, true);
+});
+
+test("Yön, Deneme Ligi ve Güvenlik kaynakları gruplu gelen kutusu satırı üretir (§13)", () => {
+  const since = new Date("2026-08-28T09:00:00.000Z");
+  const snapshot = buildAdminOperationsCenter(
+    baseInput({
+      extended: {
+        yonNoCoach: { count: 3, samples: [{ profileId: "sp9", label: "Selin D.", since }] },
+        coachOverCapacity: [{ id: "c1", label: "Zeynep A.", load: 18, capacity: 15 }],
+        yonSessionOverdue: { count: 2, samples: [{ profileId: "sp2", label: "Ali K.", since, days: 4 }] },
+        dlIncomplete: [{ id: "e1", title: "TYT-4", detail: "3 bloke sorun", updatedAt: since }],
+        dlUnscored: [{ id: "e2", title: "AYT-2", detail: "", updatedAt: since, count: 18 }],
+        dlAwaitingRelease: [{ id: "e3", title: "LGS-3", detail: "", updatedAt: since }],
+        dlIntegrity: [{ id: "e4", title: "LGS-1", detail: "", updatedAt: since, count: 4 }],
+        mfaResetPending: [{ id: "m1", targetUserId: "u1", targetLabel: "Mehmet Y.", requestedByLabel: "Admin K.", createdAt: since }],
+        staffWithoutMfa: [{ userId: "u2", label: "Elif K.", since }],
+      },
+    }),
+  );
+  const byCode = (code: string) => snapshot.actions.filter((item) => item.code === code);
+  assert.equal(byCode("YON_NO_COACH").length, 2, "örnek + 'daha fazla' satırı");
+  assert.match(byCode("YON_NO_COACH")[0]!.href, /onizle=ata:sp9/);
+  assert.equal(byCode("YON_NO_COACH")[1]!.title, "2 öğrenci daha koç bekliyor");
+  assert.equal(byCode("YON_COACH_OVER_CAPACITY")[0]!.subject, "Zeynep A. · 18/15");
+  assert.match(byCode("YON_SESSION_OVERDUE")[0]!.subject, /Ali K\. · 4 gün ve diğerleri/);
+  const unscored = byCode("DL_UNSCORED")[0]!;
+  assert.equal(unscored.severity, "BLOCKING");
+  assert.equal(unscored.href, "/panel/odk/yonetim/sinavlar/e2?sekme=puanlama");
+  assert.equal(byCode("DL_AWAITING_RELEASE")[0]!.ctaLabel, "Yayın önizleme");
+  assert.equal(byCode("DL_INTEGRITY_REVIEW")[0]!.href, "/panel/odk/yonetim/sinavlar/e4?sekme=butunluk");
+  assert.equal(byCode("DL_EXAM_INCOMPLETE")[0]!.href, "/panel/odk/yonetim/sinavlar/e1?sekme=genel");
+  assert.equal(byCode("SECURITY_MFA_RESET_PENDING")[0]!.ctaLabel, "Onayla");
+  assert.equal(byCode("SECURITY_STAFF_NO_MFA")[0]!.href, "/panel/yonetim/kullanicilar/u2");
+  assert.ok(snapshot.actions.every((item) => item.group === OPS_ACTION_GROUP[item.code]));
+  assert.equal(snapshot.actions[0]!.severity, "BLOCKING", "kritik en üstte");
+  const groups = new Set(snapshot.actions.map((item) => item.group));
+  assert.deepEqual([...groups].sort(), ["DL", "SECURITY", "YON"]);
+});
+
+test("tek kişi geciken görüşme ve gün bilgisi olmadan da okunur", () => {
+  const since = new Date("2026-08-28T09:00:00.000Z");
+  const empty = { count: 0, samples: [] };
+  const snapshot = buildAdminOperationsCenter(
+    baseInput({
+      extended: {
+        yonNoCoach: empty,
+        coachOverCapacity: [],
+        yonSessionOverdue: { count: 1, samples: [{ profileId: "sp2", label: "Ali K.", since, days: null }] },
+        dlIncomplete: [],
+        dlUnscored: [],
+        dlAwaitingRelease: [],
+        dlIntegrity: [],
+        mfaResetPending: [],
+        staffWithoutMfa: [],
+      },
+    }),
+  );
+  assert.equal(snapshot.actions.length, 1);
+  assert.equal(snapshot.actions[0]!.subject, "Ali K.");
+  const noSample = buildAdminOperationsCenter(
+    baseInput({
+      extended: {
+        yonNoCoach: empty,
+        coachOverCapacity: [],
+        yonSessionOverdue: { count: 2, samples: [] },
+        dlIncomplete: [],
+        dlUnscored: [],
+        dlAwaitingRelease: [],
+        dlIntegrity: [],
+        mfaResetPending: [],
+        staffWithoutMfa: [],
+      },
+    }),
+  );
+  assert.equal(noSample.actions[0]!.subject, "Koçluk");
+});
+
+test("gelen kutusu süzgeci ve bugün satırı", () => {
+  assert.equal(parseOpsGroupFilter("YON"), "YON");
+  assert.equal(parseOpsGroupFilter("x"), "tumu");
+  assert.equal(parseOpsGroupFilter(undefined), "tumu");
+  const snapshot = buildAdminOperationsCenter(
+    baseInput({ counts: { ...baseInput().counts, todayLessons: 12, activeStudents: 340, todayExams: 2, newOrdersToday: 5, openInterventions: null } }),
+  );
+  const line = summaryLine(snapshot.summary);
+  assert.ok(line.some((item) => item.text === "12 ders"));
+  assert.ok(line.some((item) => item.text === "340 aktif öğrenci"));
+  assert.ok(line.every((item) => item.href.startsWith("/panel/")));
+  assert.ok(!line.some((item) => item.id === "open_interventions"), "kullanılamayan kutucuk satıra girmez");
 });

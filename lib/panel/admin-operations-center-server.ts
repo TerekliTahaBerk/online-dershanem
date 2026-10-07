@@ -8,10 +8,15 @@ import { OD_ONBOARDING_NEXT_ACTION } from "@/lib/od/onboarding-state";
 import { deriveUnifiedOperationItems } from "@/lib/panel/operations-inbox";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { RESTORE_DRILL_MAX_AGE_DAYS } from "@/lib/env-contract";
+import { adminHasMfa } from "@/lib/auth/mfa";
+import { coachingOverdue } from "@/lib/coaching";
+import { getOdkExamReadiness } from "@/lib/odk/admin-exam-server";
+import { PRIVILEGED_STAFF_ROLES } from "@/lib/products/staff-permission-matrix";
 import {
   buildAdminOperationsCenter,
   countBand,
   type AdminOperationsCenterSnapshot,
+  type OpsExtendedInput,
   type OpsFlags,
   type OpsHealthStatus,
 } from "@/lib/panel/admin-operations-center";
@@ -51,6 +56,151 @@ function restoreStatus(now: Date, env: NodeJS.ProcessEnv = process.env): { statu
     return { status: "degraded", detail: `Son drill ${RESTORE_DRILL_MAX_AGE_DAYS}+ gün önce` };
   }
   return { status: "ok", detail: "Restore drill güncel" };
+}
+
+const SUBMITTED_ATTEMPT_STATUSES = ["SUBMITTED", "AUTO_SUBMITTED", "REVIEW_REQUIRED"] as const;
+const EMPTY_EXTENDED: OpsExtendedInput = {
+  yonNoCoach: { count: 0, samples: [] },
+  coachOverCapacity: [],
+  yonSessionOverdue: { count: 0, samples: [] },
+  dlIncomplete: [],
+  dlUnscored: [],
+  dlAwaitingRelease: [],
+  dlIntegrity: [],
+  mfaResetPending: [],
+  staffWithoutMfa: [],
+};
+
+/**
+ * Gelen kutusunun Yön / Deneme Ligi / Güvenlik kaynakları (§13). Her kaynak
+ * ayrı okunur; biri düşerse yalnız o bölüm boş kalır ve veri "kısmi" işaretlenir.
+ */
+async function loadExtendedOps(now: Date): Promise<{ extended: OpsExtendedInput; partial: boolean }> {
+  const okActive = {
+    status: "ACTIVE" as const,
+    productMemberships: { some: { product: "OK" as const, revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] } },
+  };
+  const soon = new Date(now.getTime() + 7 * DAY_MS);
+  const results = await Promise.allSettled([
+    prisma.studentProfile.findMany({
+      where: { coachAssignments: { none: { endedAt: null } }, user: okActive },
+      orderBy: { createdAt: "asc" },
+      take: SAMPLE,
+      select: { id: true, createdAt: true, user: { select: { fullName: true, email: true } } },
+    }),
+    prisma.studentProfile.count({ where: { coachAssignments: { none: { endedAt: null } }, user: okActive } }),
+    prisma.teacherProfile.findMany({
+      where: { isCoach: true, coachCapacity: { not: null } },
+      select: { id: true, coachCapacity: true, user: { select: { fullName: true, email: true } }, _count: { select: { coachAssignments: { where: { endedAt: null } } } } },
+    }),
+    prisma.coachAssignment.findMany({
+      where: { endedAt: null },
+      select: {
+        cadenceDays: true,
+        student: { select: { id: true, createdAt: true, user: { select: { fullName: true, email: true } } } },
+        sessions: { where: { status: { in: ["COMPLETED", "PLANNED"] } }, orderBy: { scheduledAt: "desc" }, take: 6, select: { status: true, scheduledAt: true, completedAt: true } },
+      },
+    }),
+    prisma.odkExam.findMany({
+      where: { status: { in: ["DRAFT", "READY"] }, startsAt: { gte: now, lte: soon } },
+      orderBy: { startsAt: "asc" },
+      take: SAMPLE,
+      select: { id: true, title: true, updatedAt: true },
+    }),
+    prisma.odkExam.findMany({
+      where: { OR: [{ status: "ENDED" }, { status: { in: ["SCHEDULED", "LIVE", "SCORED"] }, endsAt: { lte: now } }] },
+      orderBy: { endsAt: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        title: true,
+        updatedAt: true,
+        _count: { select: { attempts: { where: { status: { in: [...SUBMITTED_ATTEMPT_STATUSES] }, score: { is: null } } } } },
+      },
+    }),
+    prisma.odkExam.findMany({ where: { status: "SCORED" }, orderBy: { updatedAt: "asc" }, take: SAMPLE, select: { id: true, title: true, updatedAt: true } }),
+    prisma.odkExamAttempt.groupBy({
+      by: ["examId"],
+      where: { integrityLevel: { not: "NORMAL" }, integrityReviewedAt: null, status: { not: "VOID" }, exam: { status: { not: "ARCHIVED" } } },
+      _count: { _all: true },
+    }),
+    prisma.mfaResetRequest.findMany({
+      where: { status: "PENDING", expiresAt: { gt: now } },
+      orderBy: { createdAt: "asc" },
+      take: SAMPLE,
+      select: { id: true, createdAt: true, target: { select: { id: true, fullName: true, email: true } }, requestedBy: { select: { fullName: true, email: true } } },
+    }),
+    prisma.productStaffAssignment.findMany({
+      where: { revokedAt: null, role: { in: [...PRIVILEGED_STAFF_ROLES] }, user: { role: "TEACHER", status: "ACTIVE" } },
+      orderBy: { grantedAt: "asc" },
+      take: 20,
+      select: { grantedAt: true, user: { select: { id: true, fullName: true, email: true } } },
+    }),
+  ]);
+  const partial = results.some((result) => result.status === "rejected");
+  const [noCoach, noCoachCount, coaches, assignments, upcomingDrafts, ended, scored, flagged, mfaResets, privileged] = results;
+  const extended: OpsExtendedInput = { ...EMPTY_EXTENDED };
+
+  extended.yonNoCoach = {
+    count: settled(noCoachCount, 0),
+    samples: settled(noCoach, []).map((profile) => ({ profileId: profile.id, label: ownerLabel(profile.user), since: profile.createdAt })),
+  };
+  extended.coachOverCapacity = settled(coaches, [])
+    .filter((coach) => coach.coachCapacity !== null && coach._count.coachAssignments > coach.coachCapacity)
+    .map((coach) => ({ id: coach.id, label: ownerLabel(coach.user), load: coach._count.coachAssignments, capacity: coach.coachCapacity! }));
+  const overdue = settled(assignments, []).flatMap((assignment) => {
+    const lastCompleted = assignment.sessions.find((session) => session.status === "COMPLETED")?.completedAt ?? null;
+    const next = assignment.sessions
+      .filter((session) => session.status === "PLANNED")
+      .sort((a, b) => a.scheduledAt.getTime() - b.scheduledAt.getTime())[0]?.scheduledAt ?? null;
+    const state = coachingOverdue(lastCompleted, next, assignment.cadenceDays, now);
+    return state.overdue
+      ? [{ profileId: assignment.student.id, label: ownerLabel(assignment.student.user), since: assignment.student.createdAt, days: state.overdueDays }]
+      : [];
+  });
+  overdue.sort((a, b) => (b.days ?? 0) - (a.days ?? 0));
+  extended.yonSessionOverdue = { count: overdue.length, samples: overdue.slice(0, SAMPLE) };
+
+  const drafts = settled(upcomingDrafts, []);
+  const readiness = await Promise.allSettled(drafts.map((exam) => getOdkExamReadiness(exam.id)));
+  extended.dlIncomplete = drafts.flatMap((exam, index) => {
+    const result = readiness[index]!;
+    const issues = result.status === "fulfilled" ? result.value.issues.filter((issue) => issue.level === "error") : [];
+    return issues.length ? [{ id: exam.id, title: exam.title, detail: `${issues.length} bloke eden hazırlık sorunu`, updatedAt: exam.updatedAt }] : [];
+  });
+  const endedRows = settled(ended, []);
+  extended.dlUnscored = endedRows
+    .filter((exam) => exam._count.attempts > 0)
+    .slice(0, SAMPLE)
+    .map((exam) => ({ id: exam.id, title: exam.title, detail: "", updatedAt: exam.updatedAt, count: exam._count.attempts }));
+  extended.dlAwaitingRelease = settled(scored, [])
+    .filter((exam) => !extended.dlUnscored.some((item) => item.id === exam.id))
+    .map((exam) => ({ id: exam.id, title: exam.title, detail: "", updatedAt: exam.updatedAt }));
+  const flaggedRows = settled(flagged, []).sort((a, b) => b._count._all - a._count._all).slice(0, SAMPLE);
+  if (flaggedRows.length) {
+    const exams = await prisma.odkExam
+      .findMany({ where: { id: { in: flaggedRows.map((row) => row.examId) } }, select: { id: true, title: true, updatedAt: true } })
+      .catch(() => []);
+    const byId = new Map(exams.map((exam) => [exam.id, exam]));
+    extended.dlIntegrity = flaggedRows.flatMap((row) => {
+      const exam = byId.get(row.examId);
+      return exam ? [{ id: exam.id, title: exam.title, detail: "", updatedAt: exam.updatedAt, count: row._count._all }] : [];
+    });
+  }
+  extended.mfaResetPending = settled(mfaResets, []).map((request) => ({
+    id: request.id,
+    targetUserId: request.target.id,
+    targetLabel: ownerLabel(request.target),
+    requestedByLabel: ownerLabel(request.requestedBy),
+    createdAt: request.createdAt,
+  }));
+  const privilegedUsers = new Map<string, { userId: string; label: string; since: Date }>();
+  for (const row of settled(privileged, [])) {
+    if (!privilegedUsers.has(row.user.id)) privilegedUsers.set(row.user.id, { userId: row.user.id, label: ownerLabel(row.user), since: row.grantedAt });
+  }
+  const mfaChecks = await Promise.all([...privilegedUsers.values()].map(async (user) => ((await adminHasMfa(user.userId).catch(() => true)) ? null : user)));
+  extended.staffWithoutMfa = mfaChecks.filter((user): user is NonNullable<typeof user> => user !== null).slice(0, SAMPLE);
+  return { extended, partial };
 }
 
 export async function getAdminOperationsCenterSnapshot(options?: {
@@ -690,10 +840,12 @@ export async function getAdminOperationsCenterSnapshot(options?: {
     (flags.interventionInbox ? openInterventions.length : 0) +
     (flags.studentCheckIn ? openHelpCount : 0);
 
+  const { extended, partial: extendedPartial } = await loadExtendedOps(now);
   const snapshot = buildAdminOperationsCenter({
     now,
     flags: opsFlags,
-    partialData: partialData || !dbOk,
+    partialData: partialData || extendedPartial || !dbOk,
+    extended,
     counts: {
       todayLessons,
       activeStudents,

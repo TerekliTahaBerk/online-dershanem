@@ -67,6 +67,7 @@ export function StudentTeacherLinkForm({
           value={selectedStudentId}
           onChange={(e) => setSelectedStudentId(e.target.value)}
           disabled={pending}
+          aria-label="Bağlanacak öğrenci"
           className="panel-input"
         >
           <option value="">Öğrenci seçin</option>
@@ -83,6 +84,7 @@ export function StudentTeacherLinkForm({
           value={selectedTeacherId}
           onChange={(e) => setSelectedTeacherId(e.target.value)}
           disabled={pending}
+          aria-label="Bağlanacak öğretmen"
           className="panel-input"
         >
           <option value="">Öğretmen seçin</option>
@@ -98,6 +100,7 @@ export function StudentTeacherLinkForm({
         value={subject}
         onChange={(e) => setSubject(e.target.value)}
         disabled={pending}
+        aria-label="Branş"
         className="panel-input"
         placeholder="Branş (ör. Matematik)"
       />

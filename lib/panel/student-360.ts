@@ -65,6 +65,105 @@ export const STUDENT_360_TAB_LABELS: Record<Student360Tab, string> = {
   paket: "Hesap & paket",
 };
 
+/* ── Üst sekmeler (docs/panel-design-roadmap.md §12) ───────────────────
+ * Eski sekmeler (`STUDENT_360_TABS`) artık BÖLÜM'dür: veri yükleme ve panel
+ * kararları onlardan verilir. Kullanıcı yedi üst sekme görür; eski `?sekme=`
+ * değerleri takma adla doğru üst sekmeye (ve Öğrenme alt görünümüne) düşer,
+ * böylece derin bağlantılar ve testler kırılmaz. */
+
+export const STUDENT_360_GROUPS = ["genel", "ogrenme", "yon", "deneme-ligi", "etkinlik", "risk", "paket"] as const;
+export type Student360Group = (typeof STUDENT_360_GROUPS)[number];
+
+export const STUDENT_360_GROUP_LABELS: Record<Student360Group, string> = {
+  genel: "Genel",
+  ogrenme: "Öğrenme",
+  yon: "Yön",
+  "deneme-ligi": "Deneme Ligi",
+  etkinlik: "Etkinlik",
+  risk: "Risk & müdahale",
+  paket: "Hesap & paket",
+};
+
+export const STUDENT_360_LEARNING_VIEWS = ["dersler", "odevler", "takvim", "gelisim"] as const;
+export type Student360LearningView = (typeof STUDENT_360_LEARNING_VIEWS)[number];
+
+/** Eski sekme → üst sekme (+ Öğrenme alt görünümü / Genel içi çapa). */
+export const STUDENT_360_TAB_ALIASES: Record<string, { group: Student360Group; view?: Student360LearningView; anchor?: "iliskiler" }> = {
+  genel: { group: "genel" },
+  dersler: { group: "ogrenme", view: "dersler" },
+  odevler: { group: "ogrenme", view: "odevler" },
+  takvim: { group: "ogrenme", view: "takvim" },
+  gelisim: { group: "ogrenme", view: "gelisim" },
+  ogretmenler: { group: "genel", anchor: "iliskiler" },
+  veli: { group: "genel", anchor: "iliskiler" },
+  kocluk: { group: "yon" },
+  denemeler: { group: "deneme-ligi" },
+  risk: { group: "risk" },
+  paket: { group: "paket" },
+};
+
+/** Bölümlerden görünür üst sekmeler; Etkinlik ilişkisi olan her personele açıktır. */
+export function visibleStudent360Groups(sections: readonly Student360Tab[]): Student360Group[] {
+  const has = (tab: Student360Tab) => sections.includes(tab);
+  const groups: Student360Group[] = ["genel"];
+  if (STUDENT_360_LEARNING_VIEWS.some((view) => has(view))) groups.push("ogrenme");
+  if (has("kocluk")) groups.push("yon");
+  if (has("denemeler")) groups.push("deneme-ligi");
+  groups.push("etkinlik");
+  if (has("risk")) groups.push("risk");
+  if (has("paket")) groups.push("paket");
+  return groups;
+}
+
+export type Student360Location = {
+  group: Student360Group;
+  /** Yalnız Öğrenme sekmesinde. */
+  view: Student360LearningView | null;
+  /** Bu konumda yüklenecek bölümler (veri ve panel kararları). */
+  sections: Student360Tab[];
+  anchor: "iliskiler" | null;
+};
+
+/**
+ * `?sekme=` (yeni üst sekme ya da eski takma ad) ve `?gorunum=` değerlerinden
+ * konum. Görünmeyen sekme güvenli varsayılana (Genel) düşer.
+ */
+export function resolveStudent360Location(input: {
+  sekme?: string | string[];
+  gorunum?: string | string[];
+  sections: readonly Student360Tab[];
+}): Student360Location {
+  const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
+  const raw = first(input.sekme);
+  const groups = visibleStudent360Groups(input.sections);
+  const alias = raw ? STUDENT_360_TAB_ALIASES[raw] : undefined;
+  const requestedGroup = alias?.group ?? (STUDENT_360_GROUPS as readonly string[]).find((group) => group === raw) as Student360Group | undefined;
+  const group: Student360Group = requestedGroup && groups.includes(requestedGroup) ? requestedGroup : "genel";
+  const available = STUDENT_360_LEARNING_VIEWS.filter((view) => input.sections.includes(view));
+  const rawView = first(input.gorunum) ?? alias?.view;
+  const view = group === "ogrenme" ? (available.find((item) => item === rawView) ?? available[0] ?? null) : null;
+  const sections: Student360Tab[] =
+    group === "genel"
+      ? (["genel", "ogretmenler", "veli"] as const).filter((tab) => input.sections.includes(tab))
+      : group === "ogrenme"
+        ? view ? [view] : []
+        : group === "yon"
+          ? ["kocluk"]
+          : group === "deneme-ligi"
+            ? ["denemeler"]
+            : group === "risk"
+              ? ["risk"]
+              : group === "paket"
+                ? ["paket"]
+                : [];
+  return { group, view, sections, anchor: group === "genel" && alias?.anchor ? alias.anchor : null };
+}
+
+export function student360GroupHref(basePath: string, group: Student360Group, view?: Student360LearningView): string {
+  const sep = basePath.includes("?") ? "&" : "?";
+  return `${basePath}${sep}sekme=${group}${view ? `&gorunum=${view}` : ""}`;
+}
+
 export type Student360ViewerRole = "ADMIN" | "TEACHER";
 
 export type Student360ActionId =
@@ -199,12 +298,12 @@ export function visibleStudent360Actions(input: {
     actions.push({
       id: "LINK_TEACHER",
       label: "Öğretmen bağla",
-      href: student360TabHref(`${adminBase}/ogrenciler/${input.studentProfileId}`, "ogretmenler"),
+      href: `${student360GroupHref(`${adminBase}/ogrenciler/${input.studentProfileId}`, "genel")}#iliskiler`,
     });
     actions.push({
       id: "LINK_PARENT",
       label: "Veli bağla",
-      href: student360TabHref(`${adminBase}/ogrenciler/${input.studentProfileId}`, "veli"),
+      href: `${student360GroupHref(`${adminBase}/ogrenciler/${input.studentProfileId}`, "genel")}#iliskiler`,
     });
     actions.push({
       id: "MANAGE_GROUP",

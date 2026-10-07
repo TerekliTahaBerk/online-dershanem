@@ -42,6 +42,7 @@ export async function PendingMfaResetQueue({
 
   return (
     <section
+      id="mfa-sifirlama"
       aria-labelledby="mfa-reset-queue-title"
       className={`rounded-[14px] border border-dc-line border-l-[3px] border-l-[#C2493D] bg-white p-[22px] ${className}`}
     >
