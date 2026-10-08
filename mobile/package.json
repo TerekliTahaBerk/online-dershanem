@@ -75,6 +75,10 @@
     ],
     "transformIgnorePatterns": [
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|standard-navigation|@unimodules/.*|unimodules|@tanstack/.*|lucide-react-native)"
+    ],
+    "moduleDirectories": [
+      "node_modules",
+      "<rootDir>/node_modules"
     ]
   }
 }
