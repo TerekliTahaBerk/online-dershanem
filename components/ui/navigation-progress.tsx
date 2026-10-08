@@ -1,75 +1,101 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
+/** Yönlendirme hiç tamamlanmazsa (iptal, aynı adrese redirect) çubuk takılı kalmasın. */
+const SAFETY_TIMEOUT_MS = 15_000;
+
+/**
+ * Sayfa geçişi ilerleme çubuğu.
+ *
+ * Tıklama anında görünür, URL değişince tamamlanır. Böylece sunucu yanıtı
+ * gelene kadar kullanıcı "tıklama alındı" geri bildirimini hemen görür;
+ * segmentlerdeki `loading.tsx` iskeletleri bunun üstüne içerik yerini tutar.
+ */
 export function NavigationProgress() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const visibleRef = useRef(false);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const safetyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const finishRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    const handleAnchor = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const anchor = target.closest("a");
-      if (!anchor) return;
-
-      const href = anchor.getAttribute("href");
-      if (!href || !href.startsWith("/") || href.startsWith("/#")) return;
-      if (anchor.target === "_blank" || e.metaKey || e.ctrlKey || e.shiftKey)
-        return;
-
-      const url = new URL(anchor.href, window.location.href);
-      if (
-        url.pathname === window.location.pathname &&
-        url.search === window.location.search
-      )
-        return;
-
-      setVisible(true);
-      setProgress(10);
+    const clearTimers = () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
-      intervalRef.current = setInterval(() => {
-        setProgress((p) => (p < 85 ? p + (85 - p) * 0.1 : p));
-      }, 120);
+      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+      if (safetyTimeoutRef.current) clearTimeout(safetyTimeoutRef.current);
     };
 
-    document.addEventListener("click", handleAnchor);
-    return () => document.removeEventListener("click", handleAnchor);
+    const finish = () => {
+      clearTimers();
+      if (!visibleRef.current) return;
+      setProgress(100);
+      hideTimeoutRef.current = setTimeout(() => {
+        visibleRef.current = false;
+        setVisible(false);
+        setProgress(0);
+      }, 250);
+    };
+
+    const start = () => {
+      clearTimers();
+      visibleRef.current = true;
+      setVisible(true);
+      setProgress(8);
+      intervalRef.current = setInterval(() => {
+        // Yavaşlayarak %90'a yaklaşır; gerçek tamamlanma URL değişimidir.
+        setProgress((p) => (p < 90 ? p + Math.max((90 - p) * 0.08, 0.4) : p));
+      }, 150);
+      safetyTimeoutRef.current = setTimeout(finish, SAFETY_TIMEOUT_MS);
+    };
+
+    const handleClick = (e: MouseEvent) => {
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const anchor = (e.target as Element | null)?.closest?.("a");
+      if (!anchor || !anchor.href) return;
+      if (anchor.target && anchor.target !== "_self") return;
+      if (anchor.hasAttribute("download")) return;
+
+      const url = new URL(anchor.href, window.location.href);
+      if (url.origin !== window.location.origin) return;
+      // Aynı sayfa (yalnız #hash değişimi ya da aynı adres): yükleme yok.
+      if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+
+      start();
+    };
+
+    finishRef.current = finish;
+    document.addEventListener("click", handleClick);
+    return () => {
+      clearTimers();
+      finishRef.current = null;
+      document.removeEventListener("click", handleClick);
+    };
   }, []);
 
   useEffect(() => {
-    if (!visible) return;
-    setProgress(100);
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      setVisible(false);
-      setProgress(0);
-    }, 220);
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-    // İlerleme yalnız URL değişiminde sıfırlanır; progress/visible bağımlılıkları efekt döngüsü oluşturur.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- route-change-only reset
+    finishRef.current?.();
   }, [pathname, searchParams]);
 
-  if (!visible && progress === 0) return null;
+  if (!visible) return null;
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 z-100 h-0.5 pointer-events-none"
-      aria-hidden
+      className="pointer-events-none fixed inset-x-0 top-0 z-[2147483000] h-[3px]"
+      role="progressbar"
+      aria-label="Sayfa yükleniyor"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(progress)}
     >
       <div
-        className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.6)] transition-[width,opacity] duration-200 ease-out"
-        style={{
-          width: `${progress}%`,
-          opacity: visible ? 1 : 0,
-        }}
+        className="h-full rounded-r-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.7)] transition-[width] duration-200 ease-out motion-reduce:transition-none"
+        style={{ width: `${progress}%` }}
       />
     </div>
   );
