@@ -2,7 +2,7 @@ import Link from "next/link";
 import { PreMeetingLink } from "@/components/forms/pre-meeting-link";
 import { singleProductPriceLabel } from "@/lib/commerce/package-builder-pricing";
 import { yonBrand } from "@/lib/yon-brand";
-import { YonHeroVisual } from "./yon-brand-visual";
+import { EditorialProductHero } from "./editorial-product-hero";
 import styles from "./yon-brand.module.css";
 
 const headingClass = `font-display text-(length:--public-title) leading-[1.12] tracking-tight ${styles.title}`;
@@ -10,34 +10,21 @@ const bodyClass = "mt-4 text-[16px] leading-[1.65] text-dc-ink-body";
 
 export function YonHero() {
   return (
-    <section className={`site-container ${styles.hero}`}>
-      <div className={styles.heroGrid}>
-        <div className="min-w-0">
-          <p className={styles.eyebrow}>
-            <span>onlinekoçum.</span>{" "}<span>× Yön Koçluk</span>
-          </p>
-          <h1 className={`mt-4 font-display text-(length:--public-display) leading-[1.1] tracking-[-0.03em] ${styles.title}`}>
-            Yönünü belirle.<br />Planını uygula.
-          </h1>
-          <p className="mt-4 max-w-[510px] text-[17px] leading-[1.65] text-dc-ink-body sm:text-[18px]">
-            {yonBrand.description}
-          </p>
-          <div className={styles.actions}>
-            <PreMeetingLink href={yonBrand.meetingHref} source="product_hero" className={`site-btn site-btn-lg ${styles.primary}`} />
-            <a href="#nasil-calisir" className={`site-btn site-btn-secondary site-btn-lg ${styles.secondary}`}>
-              Koçluk nasıl çalışır?
-            </a>
-          </div>
-          <div className="mt-5 flex flex-wrap items-center gap-3 text-[13px] font-bold">
-            {["LGS", "YKS"].map((exam) => (
-              <span key={exam} className="rounded-full bg-dc-brand-soft px-3.5 py-2 text-dc-brand-hover">{exam}</span>
-            ))}
-            <span className="text-[14px] font-normal text-dc-ink-muted">İnsan koç · Tüm dersleri kapsayan plan</span>
-          </div>
-        </div>
-        <div className={styles.heroVisual}><YonHeroVisual /></div>
-      </div>
-    </section>
+    <EditorialProductHero
+      tone="coaching"
+      titleId="coaching-title"
+      lines={[{ text: "Yönünü belirle." }, { text: "Planını", emphasis: "uygula." }]}
+      description="Hedefini, her hafta uygulayabileceğin bir plana dönüştür. LGS ve YKS hazırlığında tüm derslerini koçunla planla; birebir görüşmelerle çalışma düzenini takip et ve ihtiyaçlarına göre güncelle."
+      actions={<>
+        <PreMeetingLink href={yonBrand.meetingHref} source="product_hero" className="" />
+        <a href="#nasil-calisir">Koçluk nasıl çalışır? <span aria-hidden="true">↓</span></a>
+      </>}
+      facts={[
+        { title: "Seni tanıyan bir koç", detail: "Birebir görüşme ve yol gösterme" },
+        { title: "Hayatına uyan bir plan", detail: "Tüm dersler için kişisel haftalık plan" },
+        { title: "Düzenli takip, güncel plan", detail: "Uygulama takibi ve plan güncelleme" },
+      ]}
+    />
   );
 }
 

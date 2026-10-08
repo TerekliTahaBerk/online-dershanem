@@ -2,56 +2,38 @@ import { yonBrand } from "@/lib/yon-brand";
 import { ProductBrandLabel } from "@/components/product/product-brand-label";
 import Link from "next/link";
 import Image from "next/image";
+import styles from "./product-covers.module.css";
 import type { PublicProduct } from "@/lib/product-architecture";
 import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 
-/**
- * 04 ÜÇ ÜRÜN — onaylı tasarım (Web.dc.html).
- * Beyaz zemin, 3 kolon ProductCard; her kartın üstünde ürüne özgü,
- * 172px önizleme alanı vardır. Yön ve Deneme Ligi onaylı marka
- * logolarını aynı ölçüde gösterir; ders ve KPSS kendi önizlemelerini korur.
- * Mobilde dikey; hover'da kenarlık markaya döner.
- */
-
-/**
- * Canlı ders: paylaşılan tahta + en fazla dört katılımcı.
- *
- * Burada eskiden taralı bir yer tutucu ve "canlı ders ekranı" yazısı vardı;
- * canlı sitede yarım bırakılmış maket gibi duruyordu.
- */
-function LivePreview() {
+/** Consistent branded covers; original artwork stays intact. */
+function ProductCover({ tone, image, label, verb, number }: {
+  tone: "lesson" | "coaching" | "exam";
+  image: string;
+  label: string;
+  verb: string;
+  number: string;
+}) {
   return (
-    <div className="flex h-[172px] flex-col gap-2 border-b border-dc-line-soft bg-dc-surface-muted p-[18px]">
-      <div className="flex flex-1 flex-col justify-center gap-2 rounded-xl border border-dc-line bg-white px-4">
-        <span className="h-2 w-[58%] rounded-full bg-[#CDE2D8]" />
-        <span className="h-2 w-[80%] rounded-full bg-[#DCEAE3]" />
-        <span className="h-2 w-[40%] rounded-full bg-dc-brand" />
-      </div>
-      <div className="flex gap-2">
-        <span className="h-[34px] flex-1 rounded-lg bg-[#DFEBE5]" />
-        <span className="h-[34px] flex-1 rounded-lg bg-[#E9F1ED]" />
-        <span className="h-[34px] flex-1 rounded-lg bg-[#E9F1ED]" />
-        <span className="h-[34px] flex-1 rounded-lg bg-[#E9F1ED]" />
-      </div>
+    <div className={`${styles.cover} ${styles[tone]}`} aria-hidden="true">
+      <div className={styles.topline}><span>{label}</span><span>{number}</span></div>
+      <span className={styles.orbit} />
+      <Image src={image} alt="" width={1254} height={1254} sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 380px" className={styles.artwork} />
+      <div className={styles.caption}><span>{verb}</span><span className={styles.spark}>✦</span></div>
     </div>
   );
+}
+
+function LivePreview() {
+  return <ProductCover tone="lesson" image="/design/od-logo.png" label="CANLI DERS" verb="Birlikte öğren." number="01" />;
 }
 
 function YonPreview() {
-  // Continue the source image's edge colors so its square background has no seam.
-  return <div className="flex h-[172px] items-stretch border-b border-[#CADDF8]">
-    <span aria-hidden="true" className="flex-1" style={{ background: "linear-gradient(to bottom, #001d75 0%, #011d71 6.25%, #011c6f 12.5%, #001e75 18.75%, #002586 25%, #002fa0 31.25%, #0043c2 37.5%, #015de1 43.75%, #0877f4 50%, #1491fc 56.25%, #21a4fd 62.5%, #169dfd 68.75%, #0887fd 75%, #026efa 81.25%, #0055eb 87.5%, #003ed1 93.75%, #002dbb 100%)" }} />
-    <Image src={yonBrand.logo} alt="" width={1254} height={1254} sizes="172px" className="h-full w-auto shrink-0 object-contain" />
-    <span aria-hidden="true" className="flex-1" style={{ background: "linear-gradient(to bottom, #28c1fd 0%, #1db6fd 6.25%, #129cfd 12.5%, #0880fd 18.75%, #026cf7 25%, #015ceb 31.25%, #0052df 37.5%, #0045cd 43.75%, #003bbb 50%, #0034ac 56.25%, #002d9c 62.5%, #002892 68.75%, #002284 75%, #001e7a 81.25%, #001c73 87.5%, #011a6f 93.75%, #01176c 100%)" }} />
-  </div>;
+  return <ProductCover tone="coaching" image={yonBrand.logo} label="BİREBİR KOÇLUK" verb="Yönünü bul." number="02" />;
 }
 
 function LeaguePreview() {
-  return (
-    <div className="flex h-[172px] items-center justify-center border-b border-[#4D1887] bg-[#34066B]">
-      <Image src="/deneme-ligi/logo.png" alt="" width={1254} height={1254} sizes="172px" className="h-full w-auto object-contain" style={{ maskImage: "linear-gradient(to right, transparent, black 12px, black calc(100% - 12px), transparent)" }} />
-    </div>
-  );
+  return <ProductCover tone="exam" image={denemeLigiBrand.logo} label="ONLINE DENEME" verb="Gelişimini gör." number="03" />;
 }
 
 function KpssPreview() {

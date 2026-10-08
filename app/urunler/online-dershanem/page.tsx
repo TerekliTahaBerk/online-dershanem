@@ -1,18 +1,19 @@
+import Link from "next/link";
+import { EditorialProductHero } from "@/components/product/editorial-product-hero";
+import { PreMeetingLink } from "@/components/forms/pre-meeting-link";
 import { yonBrand } from "@/lib/yon-brand";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
-import { ClipboardCheck, MessagesSquare, Users } from "lucide-react";
+import { ArrowRight, ClipboardCheck, MessagesSquare, Users } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import {
-  ProductHero,
   ProductDinoBand,
   CrossSellWithPrice,
   ProductFaq,
   ProductClosingCta,
 } from "@/components/product/product-sections";
 import {
-  LessonBoardVisual,
   ParentSummaryVisual,
   StudentScheduleVisual,
 } from "@/components/product/product-visuals";
@@ -40,22 +41,24 @@ export default function OnlineDershanemPage() {
       <SiteHeader />
       <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: "onlinedershanem.", url: "/urunler/online-dershanem" }])} />
       <main id="main-content" tabIndex={-1}>
-        <ProductHero
-          eyebrow="Ürün · onlinedershanem."
-          title="Canlı derste öğretmenle ilerle."
-          body="Birebir ya da en fazla 4 kişilik grupta ders. Öğretmen soruyu derste seninle çözer; ders bitince neyi tekrar edeceğin yazılı olarak kalır."
-          tracks={["LGS", "YKS"]}
-          secondaryCta={{ label: "Ücretsiz Ön Görüşme", href: "/iletisim?urun=onlinedershanem#on-gorusme" }}
-          note="Birebir ya da en fazla 4 kişilik grup"
-          visual={
-            <div className="rounded-dc-card border border-dc-line bg-white p-3.5 shadow-[0_14px_34px_rgba(20,32,28,.07)]">
-              <LessonBoardVisual />
-            </div>
-          }
+        <EditorialProductHero
+          tone="lesson"
+          titleId="lesson-title"
+          lines={[{ text: "Canlı derste" }, { text: "öğretmenle", emphasis: "ilerle." }]}
+          description="Sorunu o anda sor, zorlandığın konuyu öğretmeninle birlikte çöz. LGS ve YKS için canlı derslerde öğren; ders sonrası özet ve çalışma adımlarıyla öğrendiklerini pekiştir."
+          actions={<>
+            <Link href="/paketler">Paketini Oluştur <ArrowRight size={19} aria-hidden="true" /></Link>
+            <PreMeetingLink href="/iletisim?urun=onlinedershanem#on-gorusme" source="product_hero" className="" />
+          </>}
+          facts={[
+            { title: "Az kişi, yakın ilgi", detail: "Birebir ya da en fazla 4 kişilik grup" },
+            { title: "Anında soru, canlı çözüm", detail: "Öğretmeninle doğrudan etkileşim" },
+            { title: "Ders bitince yolun belli", detail: "Konu özeti ve tekrar adımları" },
+          ]}
         />
 
         {/* Derste ve ders sonrasında ne oluyor? */}
-        <section className="mt-(--dc-section-tight) border-y border-dc-line-soft bg-white">
+        <section className="border-b border-dc-line-soft bg-white">
           <div className="site-container py-(--dc-section-tight)">
             <h2 className="max-w-[560px] font-display text-(length:--public-title) leading-[1.1] tracking-tight text-dc-ink">
               Derste ve ders sonrasında ne oluyor?

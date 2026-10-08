@@ -1,0 +1,25 @@
+.cover {
+  --cover-bg: #057e6d;
+  --cover-highlight: #98f5cf;
+  position: relative;
+  isolation: isolate;
+  aspect-ratio: 5 / 4;
+  overflow: hidden;
+  color: #fff;
+  background: var(--cover-bg);
+}
+.lesson { background: radial-gradient(ellipse at 50% 45%, #079581, #047766 85%); }
+.coaching { --cover-bg: #0544c3; --cover-highlight: #ffe353; background: radial-gradient(ellipse at 50% 42%, #129afc, #05369b 90%); }
+.exam { --cover-bg: #34066b; --cover-highlight: #ffe353; background: radial-gradient(ellipse at 50% 40%, #4e118b, #2b0758 95%); }
+.topline, .caption { position: absolute; z-index: 2; left: 22px; right: 22px; display: flex; align-items: center; justify-content: space-between; }
+.topline { top: 18px; font-size: 10px; font-weight: 750; letter-spacing: .13em; }
+.topline > span:last-child { color: #ffffffa6; font-variant-numeric: tabular-nums; letter-spacing: .05em; }
+.caption { bottom: 17px; font-size: 14px; font-weight: 700; letter-spacing: -.02em; }
+.spark { color: var(--cover-highlight); font-size: 23px; line-height: 1; }
+.artwork { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .35s ease; }
+.orbit { position: absolute; z-index: 1; pointer-events: none; width: 310px; height: 310px; left: calc(50% - 155px); top: -30px; border: 1px solid #ffffff1a; border-radius: 50%; transform: rotate(-25deg) scaleX(1.2); }
+.cover::after { content: ""; position: absolute; left: -70px; bottom: -125px; width: 215px; height: 215px; border-radius: 50%; border: 1px solid #ffffff18; box-shadow: 0 0 0 20px #ffffff04; pointer-events: none; }
+@media (hover: hover) {
+  article:hover .artwork { transform: scale(1.025); }
+}
+@media (prefers-reduced-motion: reduce) { .artwork { transition: none; } }

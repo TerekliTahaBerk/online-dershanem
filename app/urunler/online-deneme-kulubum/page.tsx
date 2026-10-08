@@ -1,3 +1,4 @@
+import { EditorialProductHero } from "@/components/product/editorial-product-hero";
 import { yonBrand } from "@/lib/yon-brand";
 import { PublicOdkPackageCard } from "@/components/odk/public-package-card";
 import { listPublicOdkPackages } from "@/lib/odk/public-commerce-server";
@@ -64,24 +65,24 @@ export default async function OnlineDenemeKulubumPage() {
         faqJsonLd(faqs),
       ]} />
       <main id="main-content" tabIndex={-1} className={styles.league}>
-        <section className={styles.hero} aria-labelledby="league-title">
-          <div className={`site-container ${styles.heroGrid}`}>
-            <div>
-              <p className={styles.brandName}>{brand.name}</p>
-              <h1 id="league-title">Denemeye katıl.{" "}<br /><span>Gelişimini gör.</span></h1>
-              <p className={styles.heroBody}>{brand.description}</p>
-              <div className={styles.actions}>
-                <JoinLink />
-                <a href="#nasil-isler" className={styles.outline}>Nasıl İşler?<span aria-hidden="true">↓</span></a>
-              </div>
-              <p className={styles.participation}>{brand.participationNote}</p>
-              <p className={styles.infrastructure}>{brand.infrastructure}</p>
-            </div>
-            <div className={styles.heroMedia}>
-              <Image src="/deneme-ligi/logo.png" alt="Deneme Ligi logosu" width={1254} height={1254} sizes="(max-width: 767px) 88vw, (max-width: 1023px) 40vw, 440px" preload className={styles.squareImage} />
-            </div>
-          </div>
-        </section>
+        <EditorialProductHero
+          tone="exam"
+          titleId="league-title"
+          lines={[{ text: "Denemeye katıl." }, { text: "Gelişimini", emphasis: "gör." }]}
+          description="Her denemeyi bir sonraki çalışmana yön veren bir adıma dönüştür. LGS, TYT ve AYT denemelerini online çöz; sonuçlarını incele, zorlandığın konuları gör ve gelişimini takip et."
+          actions={<>
+            <Link href={brand.joinHref} data-analytics-id="deneme_ligi_application">
+              {brand.joinLabel}<ArrowRight size={18} aria-hidden="true" />
+            </Link>
+            <a href="#nasil-isler">Nasıl İşler? <span aria-hidden="true">↓</span></a>
+          </>}
+          facts={[
+            { title: "Sınavına uygun denemeler", detail: "LGS, TYT ve AYT’ye online hazırlık" },
+            { title: "Sonuçtan fazlasını gör", detail: "Konu bazlı analizle eksiklerini tanı" },
+            { title: "Gelişimini adım adım izle", detail: "Denemeden denemeye sonuç takibi" },
+          ]}
+          note={brand.participationNote}
+        />
 
         <section className={`site-container ${styles.section}`} aria-labelledby="tracks-title">
           <div className={styles.sectionHeading}>
