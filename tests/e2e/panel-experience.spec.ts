@@ -293,17 +293,22 @@ test.describe("panel deneyimi", () => {
     await page.goto("/panel/ogretmen/ders/e2e-lesson");
     await expect(page.getByRole("heading", { name: "E2E Hızlı Ders Özeti" })).toBeVisible();
 
+    // Ders alanı Hazırlık / Ders / Kapanış sekmeleridir (Design Phase 8);
+    // öneri konuyu doldurup Ders sekmesine geçirir.
+    await page.getByRole("tab", { name: "Hazırlık" }).click();
     await page.getByRole("button", { name: /Geçen dersten akıllı öneri/ }).click();
+    await expect(page.getByRole("tab", { name: /^Ders/ })).toHaveAttribute("aria-selected", "true");
     await expect(page.getByRole("textbox", { name: "Bugün ne işlediniz?" }).last()).toHaveValue("Bir örnek çözüp ana adımı açıklamak");
-    await page.getByRole("textbox", { name: "Gruba ortak kısa not" }).last().fill("Grup konuyu kavradı; işlem sırasını pekiştiriyoruz.");
-    await page.getByRole("textbox", { name: "Bir sonraki hedef" }).last().fill("Yeni nesil sorularda hız kazanmak.");
-    await page.getByRole("textbox", { name: "Çalışma / ödev" }).last().fill("20 karma soru ve yanlış analizi.");
     await page.getByRole("textbox", { name: "Kazanım ara" }).fill("Köklü ifadeler");
     await page.getByRole("button", { name: /MAT\.8\.1.*Köklü ifadelerle dört işlem yapar/ }).click();
     await page.getByLabel("MAT.8.1 kanıt türü").selectOption("NEEDS_REVIEW");
     await page.getByRole("button", { name: "İstisna ekle" }).click();
     await page.getByRole("button", { name: "Ada Öğrenci: Geç" }).click();
     await page.getByRole("textbox", { name: "Ada Öğrenci için özel not" }).last().fill("İşlem kontrolünü son adımda tekrar et.");
+    await page.getByRole("tab", { name: "Kapanış" }).click();
+    await page.getByRole("textbox", { name: "Gruba ortak kısa not" }).last().fill("Grup konuyu kavradı; işlem sırasını pekiştiriyoruz.");
+    await page.getByRole("textbox", { name: "Bir sonraki hedef" }).last().fill("Yeni nesil sorularda hız kazanmak.");
+    await page.getByRole("textbox", { name: "Çalışma / ödev" }).last().fill("20 karma soru ve yanlış analizi.");
 
     await expect(page.getByText("Kaydedildi", { exact: true })).toBeVisible({ timeout: 6_000 });
     await page.getByRole("button", { name: "Ödev taslağını önizle" }).click();
@@ -312,6 +317,7 @@ test.describe("panel deneyimi", () => {
     await expect(page.getByText(/Ders tamamlandı; ödev 4 öğrenciye gönderildi/i)).toBeVisible();
     await expect.poll(() => productEvents).toContain("lesson_close_started");
     await expect.poll(() => productEvents).toContain("lesson_close_completed");
+    await page.getByRole("tab", { name: /^Ders/ }).click();
     await expect(page.getByRole("button", { name: "Ada Öğrenci: Geç" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByText("4/4", { exact: true })).toBeVisible();
     const replay = await page.evaluate(async ({ payload, url }) => { const response = await fetch(url, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }); return { status: response.status, body: await response.json() }; }, { payload: closePayload, url: closeUrl });
@@ -758,11 +764,13 @@ test.describe("panel deneyimi", () => {
     // Ders kapanışı dersin kendi adresinde. Seri akışta ders daha önce kapandığı
     // için ana sayfa bağlantı basmaz; adrese doğrudan gidilir.
     await page.goto("/panel/ogretmen/ders/e2e-lesson");
+    await page.getByRole("tab", { name: "Hazırlık" }).click();
     await page.getByRole("button", { name: /Geçen dersten akıllı öneri/ }).click();
-    await page.getByRole("textbox", { name: "Gruba ortak kısa not" }).last().fill("Çevrimdışı kapanış öncesi ortak ders notu.");
-    await page.getByRole("textbox", { name: "Bir sonraki hedef" }).last().fill("Bağlantı gelince güvenle eşitlemek.");
     const outcomeSkipReason = page.getByLabel("Kazanım erteleme nedeni").last();
     if (await outcomeSkipReason.count()) await outcomeSkipReason.selectOption("COMPLETE_LATER");
+    await page.getByRole("tab", { name: "Kapanış" }).click();
+    await page.getByRole("textbox", { name: "Gruba ortak kısa not" }).last().fill("Çevrimdışı kapanış öncesi ortak ders notu.");
+    await page.getByRole("textbox", { name: "Bir sonraki hedef" }).last().fill("Bağlantı gelince güvenle eşitlemek.");
     await expect(page.getByText("Kaydedildi", { exact: true })).toBeVisible({ timeout: 8_000 });
     await context.setOffline(true);
     await page.getByRole("textbox", { name: "Gruba ortak kısa not" }).last().fill("Bağlantı yokken cihazda bekleyen ortak ders notu.");
