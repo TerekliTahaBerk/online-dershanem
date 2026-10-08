@@ -44,7 +44,7 @@ export function LeadLifecyclePanel({
           : "border-(--site-line) bg-white text-(--site-ink)";
 
   return (
-    <section className="panel-surface grid gap-4 p-4 lg:grid-cols-[1fr_1.2fr]">
+    <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white grid gap-4 p-4 lg:grid-cols-[1fr_1.2fr]">
       <div className="space-y-3">
         <div>
           <p className="text-[10px] font-extrabold uppercase tracking-wide text-(--site-muted)">

@@ -404,7 +404,7 @@ export function CreateUserForm() {
         <button
           type="submit"
           disabled={pending}
-          className="site-btn site-btn-primary site-btn-sm disabled:opacity-70"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-8 px-2.5 text-[13px] disabled:opacity-70"
         >
           {pending ? (
             <>

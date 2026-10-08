@@ -98,7 +98,7 @@ export function CurriculumManager({
                     "Sürüm durumu güncellendi.",
                   )
                 }
-                className="panel-input w-auto text-[13px]"
+                className="rounded-md border border-pn-border-strong bg-white px-3 py-2 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 w-auto text-[13px]"
               >
                 <option value="DRAFT">Taslak</option>
                 <option value="ACTIVE">Aktif</option>
@@ -136,13 +136,13 @@ export function CurriculumManager({
           }}
         >
           <Field label="Sürüm kodu">
-            <input name="code" required maxLength={40} className="panel-input" placeholder="Örn. LGS-2026-V1" />
+            <input name="code" required maxLength={40} className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60" placeholder="Örn. LGS-2026-V1" />
           </Field>
           <Field label="Sürüm adı">
-            <input name="title" required maxLength={120} className="panel-input" />
+            <input name="title" required maxLength={120} className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60" />
           </Field>
           <Field label="Sınav">
-            <select name="exam" className="panel-input">
+            <select name="exam" className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60">
               {examFamilies.map((item) => (
                 <option key={item}>{item}</option>
               ))}
@@ -155,11 +155,11 @@ export function CurriculumManager({
               min="2024"
               max="2100"
               defaultValue={new Date().getFullYear()}
-              className="panel-input"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             />
           </Field>
           <Field label="Resmî kaynak URL'si" className="sm:col-span-2">
-            <input name="sourceUrl" type="url" maxLength={500} className="panel-input" />
+            <input name="sourceUrl" type="url" maxLength={500} className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60" />
           </Field>
           <div className="sm:col-span-2">
             <button disabled={busy} className={buttonClass("secondary", "md")}>
@@ -205,7 +205,7 @@ export function CurriculumManager({
               required
               value={versionId}
               onChange={(event) => setVersionId(event.target.value)}
-              className="panel-input"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             >
               <option value="">Sürüm seçin</option>
               {versions
@@ -218,34 +218,34 @@ export function CurriculumManager({
             </select>
           </Field>
           <Field label="Ders kodu">
-            <input name="subjectCode" required className="panel-input" placeholder="MAT" />
+            <input name="subjectCode" required className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60" placeholder="MAT" />
           </Field>
           <Field label="Ders adı">
-            <input name="subjectName" required className="panel-input" placeholder="Matematik" />
+            <input name="subjectName" required className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60" placeholder="Matematik" />
           </Field>
           <Field label="Ünite kodu">
-            <input name="unitCode" required className="panel-input" />
+            <input name="unitCode" required className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60" />
           </Field>
           <Field label="Ünite adı">
-            <input name="unitName" required className="panel-input" />
+            <input name="unitName" required className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60" />
           </Field>
           <Field label="Kazanım kodu">
-            <input name="outcomeCode" required className="panel-input" />
+            <input name="outcomeCode" required className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60" />
           </Field>
           <Field label="Kazanım ifadesi" className="md:col-span-2">
             <textarea
               name="title"
               required
               maxLength={300}
-              className="panel-input min-h-24"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-h-24"
               placeholder="Öğretmenin ve öğrencinin anlayacağı kazanım ifadesi"
             />
           </Field>
           <Field label="Açıklama (isteğe bağlı)">
-            <textarea name="description" maxLength={1000} className="panel-input min-h-24" />
+            <textarea name="description" maxLength={1000} className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-h-24" />
           </Field>
           <Field label="Beceriler (virgülle)" className="md:col-span-2 xl:col-span-3">
-            <input name="skills" maxLength={300} className="panel-input" placeholder="problem çözme, analiz" />
+            <input name="skills" maxLength={300} className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60" placeholder="problem çözme, analiz" />
           </Field>
           <div className="md:col-span-2 xl:col-span-3">
             <button disabled={busy || !versionId} className={buttonClass("primary", "md")}>

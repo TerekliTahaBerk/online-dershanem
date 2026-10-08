@@ -45,7 +45,7 @@ export function LeadMetricsPanel({ analytics, ownerNames }: Props) {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <article className="panel-surface p-4">
+        <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
           <h3 className="text-xs font-extrabold">Kaynak dönüşümü</h3>
           <ul className="mt-3 space-y-2 text-xs">
             {analytics.sourceConversion.length === 0 ? (
@@ -66,7 +66,7 @@ export function LeadMetricsPanel({ analytics, ownerNames }: Props) {
           </ul>
         </article>
 
-        <article className="panel-surface p-4">
+        <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
           <h3 className="text-xs font-extrabold">Aşama dağılımı</h3>
           <ul className="mt-3 space-y-2 text-xs">
             {analytics.stageConversion.map((row) => (
@@ -81,7 +81,7 @@ export function LeadMetricsPanel({ analytics, ownerNames }: Props) {
           </ul>
         </article>
 
-        <article className="panel-surface p-4">
+        <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
           <h3 className="text-xs font-extrabold">Ortalama aşama süresi</h3>
           <ul className="mt-3 space-y-2 text-xs">
             {analytics.averageMsInStage.length === 0 ? (
@@ -104,7 +104,7 @@ export function LeadMetricsPanel({ analytics, ownerNames }: Props) {
           </ul>
         </article>
 
-        <article className="panel-surface p-4">
+        <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
           <h3 className="text-xs font-extrabold">Kayıp nedenleri</h3>
           <ul className="mt-3 space-y-2 text-xs">
             {analytics.lostReasons.length === 0 ? (
@@ -127,7 +127,7 @@ export function LeadMetricsPanel({ analytics, ownerNames }: Props) {
           </ul>
         </article>
 
-        <article className="panel-surface p-4 xl:col-span-2">
+        <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4 xl:col-span-2">
           <h3 className="text-xs font-extrabold">Sorumlu performansı</h3>
           <ul className="mt-3 space-y-2 text-xs">
             {analytics.ownerPerformance.length === 0 ? (

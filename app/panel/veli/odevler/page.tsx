@@ -6,12 +6,14 @@ import {
   deriveAssignmentDisplayStatus,
 } from "@/lib/panel/assignment-display";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
+import { ChildContext } from "@/components/panel/parent/child-context";
 import {
-  PanelCard,
-  PanelEmpty,
-  PanelPageHeader,
-  PanelStatusBadge,
+  EmptyState,
+  PageHeader,
+  PanelTable,
+  PanelTableCell,
+  PanelTableRow,
+  StatusBadge,
 } from "@/components/panel/ui";
 import { PANEL_DOMAIN } from "@/lib/panel/domain-vocabulary";
 
@@ -46,13 +48,6 @@ export default async function ParentAssignmentsPage({
       fullName={session.fullName}
       email={session.email}
       pageTitle={PANEL_DOMAIN.odev}
-      topbarSlot={
-        <ChildSwitcher
-          options={children}
-          selectedId={selected?.id ?? null}
-          basePath="/panel/veli/odevler"
-        />
-      }
     >
       <div className="max-w-[760px]">{body}</div>
     </PanelShell>
@@ -60,10 +55,7 @@ export default async function ParentAssignmentsPage({
 
   if (!selected) {
     return shell(
-      <PanelEmpty
-        title="Bağlı öğrenci yok"
-        body="Ödev özeti öğrenci eşleşince açılır."
-      />,
+      <EmptyState title="Bağlı öğrenci yok." body="Ödev özeti öğrenci eşleşince açılır." />,
     );
   }
 
@@ -117,50 +109,34 @@ export default async function ParentAssignmentsPage({
 
   return shell(
     <>
-      <PanelPageHeader
+      <PageHeader
         title={PANEL_DOMAIN.odev}
-        description={`${selected.name} · aktif ${active.length} · geciken ${late.length}`}
+        description={`Aktif ${active.length} · geciken ${late.length}. Ödev içerikleri öğretmen tarafından yönetilir; burada yalnız izlenir.`}
+        metadata={<ChildContext options={children} selectedId={selected.id} basePath="/panel/veli/odevler" />}
       />
       {rows.length === 0 ? (
-        <PanelEmpty
-          title="Aktif ödev yok"
-          body="Öğretmenden ödev geldiğinde burada görünür."
-        />
+        <EmptyState className="mt-5" title="Aktif ödev yok." body="Öğretmenden ödev geldiğinde burada görünür." />
       ) : (
-        <div className="mt-5 space-y-3">
+        <PanelTable caption={`${selected.name} · ödevler`} columns={["Ödev", "Öğretmen", "Son tarih", "Durum"]}>
           {rows.map(({ assignment, status }) => (
-            <PanelCard key={assignment.id}>
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-[15px] font-bold text-dc-ink">
-                    {assignment.title}
-                  </h2>
-                  <p className="mt-1 text-[12.5px] text-dc-ink-muted">
-                    {assignment.createdBy.fullName ||
-                      assignment.createdBy.email}
-                    {" · Son tarih "}
-                    {DATE.format(assignment.dueAt)}
-                  </p>
-                  {assignment.description ? (
-                    <p className="mt-2 text-[13.5px] text-dc-ink-body">
-                      {assignment.description}
-                    </p>
-                  ) : null}
-                </div>
-                <PanelStatusBadge
+            <PanelTableRow key={assignment.id}>
+              <PanelTableCell>
+                <span className="font-medium text-pn-text">{assignment.title}</span>
+                {assignment.description ? <span className="mt-0.5 block text-[12.5px] text-pn-text-muted line-clamp-2">{assignment.description}</span> : null}
+              </PanelTableCell>
+              <PanelTableCell>{assignment.createdBy.fullName || assignment.createdBy.email}</PanelTableCell>
+              <PanelTableCell>
+                <span className="tabular-nums">{DATE.format(assignment.dueAt)}</span>
+              </PanelTableCell>
+              <PanelTableCell>
+                <StatusBadge
                   label={ASSIGNMENT_DISPLAY_LABELS[status]}
-                  tone={
-                    status === "GEC"
-                      ? "critical"
-                      : status === "TAMAMLANDI" || status === "DEGERLENDIRILDI"
-                        ? "success"
-                        : "neutral"
-                  }
+                  tone={status === "GEC" ? "critical" : status === "TAMAMLANDI" || status === "DEGERLENDIRILDI" ? "success" : "neutral"}
                 />
-              </div>
-            </PanelCard>
+              </PanelTableCell>
+            </PanelTableRow>
           ))}
-        </div>
+        </PanelTable>
       )}
     </>,
   );

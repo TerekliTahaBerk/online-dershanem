@@ -3,7 +3,7 @@ import { requirePanelRole } from "@/lib/auth/guards";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { loadParentCalmHome } from "@/lib/panel/parent-calm-server";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
+import { ChildContext } from "@/components/panel/parent/child-context";
 import { ParentCalmHomeView } from "@/components/panel/parent-calm-home";
 import { PanelPageHeader } from "@/components/panel/ui";
 import { OdStartCard } from "@/components/panel/od-start-card";
@@ -36,13 +36,6 @@ export default async function ParentHomePage({
       fullName={session.fullName}
       email={session.email}
       pageTitle="Bugün"
-      topbarSlot={
-        <ChildSwitcher
-          options={children}
-          selectedId={selected?.id ?? null}
-          basePath="/panel/veli"
-        />
-      }
     >
       <div className="max-w-[760px]">{body}</div>
     </PanelShell>
@@ -54,10 +47,10 @@ export default async function ParentHomePage({
         <PanelPageHeader title="Hoş geldiniz" />
         <OdStartCard start={null} />
         <div className="mt-4 flex flex-wrap gap-3">
-          <Link href="/panel/veli/hesap" className="site-btn site-btn-primary">
+          <Link href="/panel/veli/hesap" className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]">
             Hesap durumunu kontrol et
           </Link>
-          <Link href="/iletisim" className="site-btn site-btn-secondary">
+          <Link href="/iletisim" className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]">
             Eşleştirme desteği al
           </Link>
         </div>
@@ -70,5 +63,5 @@ export default async function ParentHomePage({
     selected,
   }), getCustomerOdStart({ userId: session.userId, role: "PARENT", studentId: selected.id })]);
 
-  return shell(<>{start && <OdStartCard start={start} />}<ParentCalmHomeView home={home} /></>);
+  return shell(<>{start && <OdStartCard start={start} />}<ParentCalmHomeView home={home} childContext={<ChildContext options={children} selectedId={selected.id} basePath="/panel/veli" />} /></>);
 }

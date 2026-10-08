@@ -180,7 +180,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
           type="button"
           onClick={generate}
           disabled={!hydrated || busy !== null}
-          className="panel-quick-action panel-quick-action-primary"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
         >
           <RefreshCcw size={15} /> Açıklanabilir sinyalleri yenile
         </button>
@@ -203,7 +203,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
               <article
                 key={row.id}
                 data-intervention-id={row.id}
-                className="panel-surface p-5 sm:p-6"
+                className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5 sm:p-6"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
@@ -279,7 +279,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                           type="button"
                           disabled={disabled}
                           onClick={() => act(row, "ASSIGN_SELF")}
-                          className="panel-quick-action"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                         >
                           Üstlen
                         </button>
@@ -292,7 +292,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                             note: notes[row.id] || undefined,
                           })
                         }
-                        className="panel-quick-action"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                       >
                         İncelemeye başla
                       </button>
@@ -323,7 +323,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                         onClick={() =>
                           act(row, "LOG_ACTION", { note: notes[row.id] })
                         }
-                        className="panel-quick-action"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                       >
                         Aksiyonu kaydet
                       </button>
@@ -336,7 +336,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                             note: notes[row.id] || undefined,
                           })
                         }
-                        className="panel-quick-action"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                       >
                         3 gün beklet
                       </button>
@@ -383,7 +383,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                               note: notes[row.id] || undefined,
                             })
                           }
-                          className="panel-quick-action mt-2"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] mt-2"
                         >
                           <CheckCircle2 size={14} /> Sonuçla kapat
                         </button>
@@ -424,7 +424,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                               note: notes[row.id] || undefined,
                             })
                           }
-                          className="panel-quick-action mt-2"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] mt-2"
                         >
                           <ShieldQuestion size={14} /> Yanlış işaret olarak
                           kapat
@@ -438,7 +438,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                     type="button"
                     disabled={disabled}
                     onClick={() => act(row, "REOPEN")}
-                    className="panel-quick-action mt-4"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] mt-4"
                   >
                     Yeniden aç
                   </button>
@@ -480,7 +480,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
             );
           })
         ) : (
-          <div className="panel-surface p-8 text-center text-sm text-(--site-muted)">
+          <div className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-8 text-center text-sm text-(--site-muted)">
             Bu görünümde kayıt yok. Tek günlük dalgalanmalar özellikle vaka
             üretmez.
           </div>

@@ -128,7 +128,7 @@ export function AdminAssignmentPanel({
   }
 
   return (
-    <section id="adim-7" className="panel-surface scroll-mt-36 p-5 sm:p-6">
+    <section id="adim-7" className="overflow-hidden rounded-[10px] border border-pn-border bg-white scroll-mt-36 p-5 sm:p-6">
       <div className="flex items-start gap-3">
         <span className="panel-metric-icon panel-tone-mint">
           <Users size={17} />
@@ -168,7 +168,7 @@ export function AdminAssignmentPanel({
             )}
           </div>
           {mode === "GROUP" ? (
-            <label className="panel-field">
+            <label className="pn-field">
               Grup
               <select
                 value={groupId}
@@ -184,7 +184,7 @@ export function AdminAssignmentPanel({
             </label>
           ) : null}
           {mode === "CLASS" ? (
-            <label className="panel-field">
+            <label className="pn-field">
               Sınıf düzeyi
               <select
                 value={classLevel}
@@ -200,7 +200,7 @@ export function AdminAssignmentPanel({
             </label>
           ) : null}
           {mode === "COHORT" ? (
-            <label className="panel-field">
+            <label className="pn-field">
               ODK pilot koşusu
               <select
                 value={cohortId}
@@ -216,7 +216,7 @@ export function AdminAssignmentPanel({
             </label>
           ) : null}
           {mode === "PACKAGE" ? (
-            <label className="panel-field">
+            <label className="pn-field">
               Paket (aktif entitlement)
               <select
                 value={packageId}
@@ -232,10 +232,10 @@ export function AdminAssignmentPanel({
             </label>
           ) : null}
           {mode === "BULK" ? (
-            <label className="panel-field">
+            <label className="pn-field">
               Öğrenci e-posta veya ID
               <textarea
-                className="panel-input min-h-24"
+                className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-h-24"
                 value={emails}
                 onChange={(event) => setEmails(event.target.value)}
                 placeholder="Her satıra bir e-posta veya kullanıcı ID"
@@ -245,7 +245,7 @@ export function AdminAssignmentPanel({
           <button
             type="button"
             disabled={busy}
-            className="panel-primary-button"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
             onClick={() => void submit()}
           >
             {busy ? (

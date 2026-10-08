@@ -5,12 +5,13 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { getStudentCoaching } from "@/lib/panel/coaching";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
+import { ChildContext } from "@/components/panel/parent/child-context";
 import {
-  PanelCard,
-  PanelCardTitle,
-  PanelEmpty,
+  EmptyState,
+  List,
+  ListRow,
   PanelHeading,
+  Section,
 } from "@/components/panel/ui";
 import { CalmDigestCard } from "@/components/panel/calm-digest-card";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
@@ -49,6 +50,8 @@ export default async function ParentWeeklyDigestPage({
     session.userId,
     studentId,
   );
+  // Hangi çocuğun verisine bakıldığı başlığın özellik satırında (§9.7).
+  const childContext = <ChildContext options={children} selectedId={selected?.id ?? null} basePath="/panel/veli/haftalik" />;
 
   const shell = (body: React.ReactNode) => (
     <PanelShell
@@ -56,13 +59,6 @@ export default async function ParentWeeklyDigestPage({
       fullName={session.fullName}
       email={session.email}
       pageTitle="Haftalık özet"
-      topbarSlot={
-        <ChildSwitcher
-          options={children}
-          selectedId={selected?.id ?? null}
-          basePath="/panel/veli/haftalik"
-        />
-      }
     >
       <div className="max-w-[860px]">{body}</div>
     </PanelShell>
@@ -72,7 +68,8 @@ export default async function ParentWeeklyDigestPage({
     return shell(
       <>
         <PanelHeading title="Haftalık özet" />
-        <PanelEmpty
+        <EmptyState
+          className="mt-6"
           title="Öğrenci bağlantın hazırlanıyor."
           body="Bağlantı kurulduğunda haftalık özet burada görünür."
         />
@@ -107,41 +104,49 @@ export default async function ParentWeeklyDigestPage({
       : Promise.resolve(null),
   ]);
 
-  const systemUpcoming: string[] = nextLessons.map(
-    (lesson) => `${lesson.title} · ${TR_DATE.format(lesson.startsAt)}`,
-  );
+  const systemUpcoming = nextLessons.map((lesson) => ({
+    title: lesson.title,
+    meta: TR_DATE.format(lesson.startsAt),
+  }));
   if (coaching?.nextScheduledAt) {
-    systemUpcoming.push(
-      `Koçluk görüşmesi · ${TR_DATE.format(coaching.nextScheduledAt)}`,
-    );
+    systemUpcoming.push({
+      title: "Koçluk görüşmesi",
+      meta: TR_DATE.format(coaching.nextScheduledAt),
+    });
   }
+  // Otomatik kayıtlar öğretmen/koç özetinden ayrı bir bölümde durur.
+  const upcomingSection = (description: string) => (
+    <Section title="Sistemden görünenler · önümüzdeki günler" description={description}>
+      {systemUpcoming.length ? (
+        <List label="Önümüzdeki günler">
+          {systemUpcoming.map((item) => (
+            <ListRow key={`${item.title}-${item.meta}`} title={item.title} meta={item.meta} />
+          ))}
+        </List>
+      ) : (
+        <p className="text-[14px] text-pn-text-muted">
+          Önümüzdeki iki hafta için planlanmış ders veya görüşme görünmüyor.
+        </p>
+      )}
+    </Section>
+  );
 
   if (!digest) {
     return shell(
       <>
         <PanelHeading
-          title={selected.name}
+          title="Haftalık özet"
           description="Haftada bir sakin bakış"
+          metadata={childContext}
         />
-        <PanelEmpty
+        <EmptyState
+          className="mt-6"
           title="Haftalık özet henüz yayınlanmadı."
           body="Öğretmen önizlemeyi tamamladığında öğrenciyle aynı anda burada açılır."
         />
-        {systemUpcoming.length ? (
-          <PanelCard className="mt-5">
-            <PanelCardTitle>
-              Sistemden görünenler · önümüzdeki günler
-            </PanelCardTitle>
-            <p className="mt-1 text-[12.5px] text-dc-ink-faint">
-              Bu liste otomatik kayıtlardan gelir; öğretmen özeti değildir.
-            </p>
-            <ul className="mt-3 space-y-2 text-[14px] text-dc-ink-body">
-              {systemUpcoming.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </PanelCard>
-        ) : null}
+        {systemUpcoming.length
+          ? upcomingSection("Bu liste otomatik kayıtlardan gelir; öğretmen özeti değildir.")
+          : null}
       </>,
     );
   }
@@ -170,8 +175,9 @@ export default async function ParentWeeklyDigestPage({
   return shell(
     <>
       <PanelHeading
-        title={selected.name}
+        title="Haftalık özet"
         description="Haftada bir sakin bakış"
+        metadata={childContext}
       />
       <div className="mt-7">
         <CalmDigestCard
@@ -193,26 +199,9 @@ export default async function ParentWeeklyDigestPage({
           }}
         />
       </div>
-      <PanelCard className="mt-5">
-        <PanelCardTitle>
-          Sistemden görünenler · önümüzdeki günler
-        </PanelCardTitle>
-        <p className="mt-1 text-[12.5px] text-dc-ink-faint">
-          Otomatik takvim ve koçluk kayıtlarıdır; öğretmen/koç özetinden ayrı
-          tutulur.
-        </p>
-        {systemUpcoming.length ? (
-          <ul className="mt-3 space-y-2 text-[14px] text-dc-ink-body">
-            {systemUpcoming.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-3 text-[14px] text-dc-ink-muted">
-            Önümüzdeki iki hafta için planlanmış ders veya görüşme görünmüyor.
-          </p>
-        )}
-      </PanelCard>
+      {upcomingSection(
+        "Otomatik takvim ve koçluk kayıtlarıdır; öğretmen/koç özetinden ayrı tutulur.",
+      )}
     </>,
   );
 }

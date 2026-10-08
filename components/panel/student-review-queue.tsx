@@ -145,7 +145,7 @@ export function StudentReviewQueue({
       ) : null}
       <section className="space-y-4">
         {items.map((item, index) => (
-          <article key={item.id} className="panel-surface p-5">
+          <article key={item.id} className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <span className="text-[9px] font-extrabold uppercase tracking-wide text-(--brand-olive)">
@@ -168,7 +168,7 @@ export function StudentReviewQueue({
                 className="shrink-0 text-(--brand-olive)"
               />
             </div>
-            <label className="panel-field mt-4">
+            <label className="pn-field mt-4">
               Kritik çözüm adımım (isteğe bağlı)
               <textarea
                 value={notes[item.id] || ""}
@@ -186,28 +186,28 @@ export function StudentReviewQueue({
               <button
                 disabled={busy === item.id}
                 onClick={() => void respond(item, "WRONG")}
-                className="panel-secondary-button"
+                className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
               >
                 Henüz oturmadı
               </button>
               <button
                 disabled={busy === item.id}
                 onClick={() => void respond(item, "UNSURE")}
-                className="panel-secondary-button"
+                className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
               >
                 Emin değilim
               </button>
               <button
                 disabled={busy === item.id}
                 onClick={() => void respond(item, "CORRECT")}
-                className="panel-primary-button"
+                className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
               >
                 Doğru hatırladım
               </button>
               <button
                 disabled={busy === item.id}
                 onClick={() => void defer(item)}
-                className="panel-quick-action"
+                className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
               >
                 Bugün ertele
               </button>
@@ -215,7 +215,7 @@ export function StudentReviewQueue({
           </article>
         ))}
         {!items.length ? (
-          <article className="panel-surface p-8 text-center">
+          <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-8 text-center">
             <CheckCircle2 size={25} className="mx-auto text-emerald-600" />
             <h2 className="mt-3 text-sm font-extrabold">
               Bugünün küçük tekrarları tamam.

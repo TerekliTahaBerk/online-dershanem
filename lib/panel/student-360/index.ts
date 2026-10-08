@@ -14,6 +14,7 @@ import {
   examNetDelta,
   planCompletionPercent,
   resolveStudent360Location,
+  restrictStudent360SectionsForAccess,
   summarizeStudent360Risk,
   visibleStudent360Actions,
   visibleStudent360Groups,
@@ -50,11 +51,14 @@ export async function loadStudent360Bundle(input: {
   const now = input.now ?? new Date();
   const access = await resolveStudent360Access(input.viewer, input.studentProfileId);
   const flags = getPanelFeatureFlags();
-  const tabs = visibleStudent360Tabs({
-    role: access.role,
-    canViewCommerce: access.canViewCommerce,
-    flags,
-  });
+  const tabs = restrictStudent360SectionsForAccess(
+    visibleStudent360Tabs({
+      role: access.role,
+      canViewCommerce: access.canViewCommerce,
+      flags,
+    }),
+    access.mode,
+  );
   // Eski sekmeler bölümdür; üst sekme ve takma adlar `resolveStudent360Location`'da (§12).
   const location = resolveStudent360Location({ sekme: input.tabRaw, gorunum: input.viewRaw, sections: tabs });
   const groups = visibleStudent360Groups(tabs);

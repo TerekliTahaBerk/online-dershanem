@@ -152,4 +152,42 @@ test.describe("Design Phase 6 — yönetim", () => {
     await expect(page.getByRole("navigation", { name: "Öğrenci profili sekmeleri" }).getByRole("link", { name: "Öğrenme" })).toHaveAttribute("aria-current", "page");
     await expectNoBlockingA11y(page, "Öğretmen Öğrenci 360");
   });
+
+  test("aktivasyon masası sekmeli; eski çapalar Sistem sekmesini açar; yeni kayıtlar tablo + panel, işlem geçmişi görünümlü", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await loginAs(page, admin);
+    await page.goto("/panel/yonetim/isler");
+    await expect(page.getByRole("heading", { name: "Aktivasyon masası", level: 1 })).toBeVisible();
+    const tabs = page.getByRole("navigation", { name: "Aktivasyon masası" });
+    await expect(tabs.getByRole("link", { name: /^Aktivasyon/ })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("region", { name: "İlk ders göstergeleri" })).toBeVisible();
+    await expectNoBlockingA11y(page, "Aktivasyon masası");
+    await tabs.getByRole("link", { name: /İstisnalar/ }).click();
+    await expect(page).toHaveURL(/sekme=istisnalar/);
+    await expect(page.getByRole("heading", { name: "Birleşik iş kutusu" })).toBeVisible();
+
+    await page.goto("/panel/yonetim");
+    await page.goto("/panel/yonetim/isler#eposta-kuyrugu");
+    await expect(page).toHaveURL(/sekme=sistem/);
+    await expect(page.getByRole("heading", { name: /E-posta kuyruğu/ })).toBeVisible();
+
+    await page.goto("/panel/yonetim/basvurular");
+    await expect(page.getByRole("heading", { name: "Yeni kayıtlar", level: 1 })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Yeni kayıt görünümleri" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Kayıt süzgeci" })).toBeVisible();
+    await expectNoBlockingA11y(page, "Yeni kayıtlar");
+    const firstSignup = page.getByRole("table", { name: "Yeni kayıtlar" }).getByRole("link").first();
+    if (await firstSignup.count()) {
+      await firstSignup.click();
+      await expect(page.getByRole("dialog").getByRole("heading", { name: "İletişim durumu" })).toBeVisible();
+      await page.keyboard.press("Escape");
+    }
+
+    await page.goto("/panel/yonetim/kayitlar");
+    const types = page.getByRole("navigation", { name: "Kayıt türü filtresi" });
+    await expect(types.getByRole("link", { name: "Tümü" })).toHaveAttribute("aria-current", "page");
+    await types.getByRole("link", { name: "Kişiler" }).click();
+    await expect(page).toHaveURL(/tur=User/);
+    await expectNoBlockingA11y(page, "İşlem geçmişi");
+  });
 });

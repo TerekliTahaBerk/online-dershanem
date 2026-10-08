@@ -152,7 +152,7 @@ export function UserBulkOperations({
               setResult(null);
               setError("");
             }}
-            className="panel-input mt-1 py-2 text-xs"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 py-2 text-xs"
           >
             <option value="RESEND_INVITE">Davetleri tekrar gönder</option>
             <option value="TRANSFER_STUDENTS_TO_GROUP">
@@ -170,7 +170,7 @@ export function UserBulkOperations({
             <select
               value={targetGroupId}
               onChange={(event) => setTargetGroupId(event.target.value)}
-              className="panel-input mt-1 py-2 text-xs"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 py-2 text-xs"
             >
               <option value="">Grup seçin</option>
               {groups.map((group) => (
@@ -195,7 +195,7 @@ export function UserBulkOperations({
                   if (!transferInterventionOwnerId)
                     setTransferInterventionOwnerId(next);
                 }}
-                className="panel-input mt-1 py-2 text-xs"
+                className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 py-2 text-xs"
               >
                 <option value="">Öğretmen seçin</option>
                 {teachers.map((teacher) => (
@@ -212,7 +212,7 @@ export function UserBulkOperations({
                 onChange={(event) =>
                   setTransferCoachTeacherId(event.target.value)
                 }
-                className="panel-input mt-1 py-2 text-xs"
+                className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 py-2 text-xs"
               >
                 <option value="">Aynı öğretmen kullanılacak</option>
                 {coachTeachers.map((teacher) => (
@@ -229,7 +229,7 @@ export function UserBulkOperations({
                 onChange={(event) =>
                   setTransferInterventionOwnerId(event.target.value)
                 }
-                className="panel-input mt-1 py-2 text-xs"
+                className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 py-2 text-xs"
               >
                 <option value="">Aynı öğretmen kullanılacak</option>
                 {interventionOwners.map((owner) => (

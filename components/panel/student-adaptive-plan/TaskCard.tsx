@@ -129,9 +129,9 @@ export function TaskCard(props: TaskCardProps) {
             {fields.map((field) =>
               field === "studentNote" ? (
                 <label key={field} className="sm:col-span-2">
-                  <span className="panel-label">{fieldLabel(field)}</span>
+                  <span className="block text-[12.5px] font-medium text-pn-text-secondary">{fieldLabel(field)}</span>
                   <textarea
-                    className="panel-input mt-1 min-h-[64px]"
+                    className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 min-h-[64px]"
                     value={draft.studentNote}
                     onChange={(e) =>
                       onDraftChange({ ...draft, studentNote: e.target.value })
@@ -140,7 +140,7 @@ export function TaskCard(props: TaskCardProps) {
                 </label>
               ) : (
                 <label key={field}>
-                  <span className="panel-label">{fieldLabel(field)}</span>
+                  <span className="block text-[12.5px] font-medium text-pn-text-secondary">{fieldLabel(field)}</span>
                   <input
                     type="number"
                     min={
@@ -153,7 +153,7 @@ export function TaskCard(props: TaskCardProps) {
                         ? 5
                         : 720
                     }
-                    className="panel-input mt-1"
+                    className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1"
                     value={draft[field]}
                     onChange={(e) =>
                       onDraftChange({ ...draft, [field]: e.target.value })

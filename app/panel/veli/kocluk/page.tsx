@@ -4,7 +4,7 @@ import { requirePanelRole } from "@/lib/auth/guards";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { getStudentCoaching } from "@/lib/panel/coaching";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
+import { ChildContext } from "@/components/panel/parent/child-context";
 import {
   EmptyState,
   PageHeader,
@@ -48,6 +48,8 @@ export default async function ParentCoachingPage({
     session.userId,
     studentId,
   );
+  // Hangi çocuğun verisine bakıldığı başlığın özellik satırında (§9.7).
+  const childContext = <ChildContext options={children} selectedId={selected?.id ?? null} basePath="/panel/veli/kocluk" />;
 
   const shell = (body: React.ReactNode) => (
     <PanelShell
@@ -55,13 +57,6 @@ export default async function ParentCoachingPage({
       fullName={session.fullName}
       email={session.email}
       pageTitle="Yön Koçluk"
-      topbarSlot={
-        <ChildSwitcher
-          options={children}
-          selectedId={selected?.id ?? null}
-          basePath="/panel/veli/kocluk"
-        />
-      }
     >
       <div className="max-w-[1000px]">{body}</div>
     </PanelShell>
@@ -83,7 +78,7 @@ export default async function ParentCoachingPage({
   if (!selected.products.includes("OK")) {
     return shell(
       <>
-        <PageHeader title="Yön Koçluk" description={selected.name} />
+        <PageHeader title="Yön Koçluk" metadata={childContext} />
         <EmptyState
           className="mt-6"
           title="Bu hesapta Yön Koçluk bulunmuyor."
@@ -204,7 +199,7 @@ export default async function ParentCoachingPage({
   if (!plan) {
     return shell(
       <>
-        <PageHeader title="Yön Koçluk" description={selected.name} />
+        <PageHeader title="Yön Koçluk" metadata={childContext} />
         {coachCard}
         {sessionsBlock}
         <Section id="bu-hafta" title="Bu hafta">
@@ -260,7 +255,8 @@ export default async function ParentCoachingPage({
     <>
       <PageHeader
         title="Yön Koçluk"
-        description={`${selected.name} · ${RANGE.format(start)} – ${RANGE.format(end)}`}
+        description={`${RANGE.format(start)} – ${RANGE.format(end)}`}
+        metadata={childContext}
       />
 
       {coachCard}

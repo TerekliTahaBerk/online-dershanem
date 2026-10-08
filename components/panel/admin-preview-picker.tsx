@@ -224,7 +224,7 @@ export function AdminPreviewPicker({
                           ? "Ad, e-posta, bağlı öğrenci…"
                           : "Ad, e-posta, ders/grup…"
                     }
-                    className="panel-input w-full pl-9"
+                    className="rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 w-full pl-9"
                   />
                 </span>
               </label>

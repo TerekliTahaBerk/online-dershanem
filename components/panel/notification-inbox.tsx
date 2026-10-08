@@ -75,7 +75,7 @@ export function NotificationInbox({
   }
 
   return (
-    <section className="panel-surface overflow-hidden">
+    <section className="rounded-[10px] border border-pn-border bg-white overflow-hidden">
       <div className="flex items-center justify-between gap-3 border-b border-(--site-line) p-5">
         <div>
           <h2 className="text-sm font-extrabold text-(--site-ink)">
@@ -92,7 +92,7 @@ export function NotificationInbox({
             type="button"
             disabled={busy !== null}
             onClick={() => void markRead()}
-            className="panel-quick-action"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
           >
             {busy === "all" ? (
               <Loader2 size={14} className="animate-spin" />

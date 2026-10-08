@@ -148,7 +148,7 @@ export default async function ManagementAnalyticsMetricPage({
       ) : null}
 
       <section className="mt-6 grid gap-4 lg:grid-cols-2">
-        <article className="panel-surface p-5">
+        <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
           <h2 className="text-sm font-extrabold">Tanım sözleşmesi</h2>
           <dl className="mt-3 space-y-3 text-xs text-(--site-body)">
             <div>
@@ -185,7 +185,7 @@ export default async function ManagementAnalyticsMetricPage({
           </dl>
         </article>
 
-        <article className="panel-surface p-5">
+        <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
           <h2 className="text-sm font-extrabold">Değer</h2>
           <p className="mt-4 text-4xl font-extrabold tracking-[-0.03em] text-(--site-ink)">
             {formatMetricDisplay(def.unit, value)}

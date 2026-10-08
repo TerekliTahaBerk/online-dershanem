@@ -154,7 +154,7 @@ function DraftCard({
               }))
             }
             maxLength={140}
-            className="panel-input mt-1"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1"
           />
         </label>
         <label className="text-xs font-extrabold">
@@ -169,7 +169,7 @@ function DraftCard({
               }))
             }
             maxLength={1200}
-            className="panel-input mt-1 min-h-28 resize-y"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 min-h-28 resize-y"
           />
         </label>
         <label className="text-xs font-extrabold">
@@ -184,7 +184,7 @@ function DraftCard({
               }))
             }
             maxLength={300}
-            className="panel-input mt-1 min-h-20 resize-y"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 min-h-20 resize-y"
           />
         </label>
         <div>
@@ -205,7 +205,7 @@ function DraftCard({
                 }))
               }
               maxLength={160}
-              className="panel-input mt-1 text-xs"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 text-xs"
             />
           ))}
         </div>
@@ -236,7 +236,7 @@ function DraftCard({
               disabled={busy}
               type="button"
               onClick={() => void review("APPROVE")}
-              className="panel-quick-action panel-quick-action-primary"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
             >
               <Check size={14} />{" "}
               {changed ? "Düzenleyip onayla" : "Kontrol ettim, onayla"}
@@ -245,7 +245,7 @@ function DraftCard({
               disabled={busy}
               type="button"
               onClick={() => void review("REJECT")}
-              className="panel-quick-action"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
             >
               <X size={14} /> Reddet
             </button>
@@ -253,7 +253,7 @@ function DraftCard({
               aria-label="AI hata nedeni"
               value={flagReason}
               onChange={(event) => setFlagReason(event.target.value)}
-              className="panel-input w-auto text-xs"
+              className="rounded-md border border-pn-border-strong bg-white px-3 py-2 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 w-auto text-xs"
             >
               <option value="FACTUAL_ERROR">Bilgi/çözüm hatası</option>
               <option value="UNSUPPORTED_CITATION">Kaynak desteklemiyor</option>
@@ -265,7 +265,7 @@ function DraftCard({
               disabled={busy}
               type="button"
               onClick={() => void review("FLAG")}
-              className="panel-quick-action text-rose-700"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] text-rose-700"
             >
               <Flag size={14} /> Hatalı işaretle
             </button>
@@ -281,7 +281,7 @@ function DraftCard({
               )
               .then(() => setMessage("Onaylı taslak panoya kopyalandı."))
           }
-          className="panel-quick-action mt-4"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] mt-4"
         >
           <Copy size={14} /> Onaylı taslağı kopyala
         </button>
@@ -360,7 +360,7 @@ export function TeacherAiDrafts({
     );
   return (
     <div className="grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)]">
-      <section className="panel-surface h-fit p-5">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white h-fit p-5">
         <span className="grid h-10 w-10 place-items-center rounded-2xl bg-violet-100 text-violet-700">
           <Bot size={19} />
         </span>
@@ -374,7 +374,7 @@ export function TeacherAiDrafts({
           <select
             value={lessonId}
             onChange={(event) => setLessonId(event.target.value)}
-            className="panel-input mt-1"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1"
           >
             <option value="">Ders seçin</option>
             {lessons.map((lesson) => (
@@ -391,7 +391,7 @@ export function TeacherAiDrafts({
             onChange={(event) =>
               setTaskType(event.target.value as typeof taskType)
             }
-            className="panel-input mt-1"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1"
           >
             <option value="ASSIGNMENT">Ödev taslağı</option>
             <option value="MINI_CHECK">Mini kontrol</option>
@@ -401,7 +401,7 @@ export function TeacherAiDrafts({
           disabled={busy || !lessonId}
           type="button"
           onClick={() => void generate()}
-          className="site-btn site-btn-primary site-btn-sm mt-4 w-full"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-8 px-2.5 text-[13px] mt-4 w-full"
         >
           {busy ? "Güvenle hazırlanıyor" : "Kaynaklı taslak hazırla"}
         </button>

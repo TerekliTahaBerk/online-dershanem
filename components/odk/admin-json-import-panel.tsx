@@ -75,7 +75,7 @@ export function AdminJsonImportPanel({ examId }: { examId: string }) {
   }
 
   return (
-    <section className="panel-surface p-5 sm:p-6">
+    <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5 sm:p-6">
       <div className="flex items-start gap-3">
         <span className="panel-metric-icon panel-tone-sky">
           <FileJson2 size={17} />
@@ -105,7 +105,7 @@ export function AdminJsonImportPanel({ examId }: { examId: string }) {
         </button>
       </div>
       <textarea
-        className="panel-input mt-3 min-h-40 font-mono text-[11px]"
+        className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-3 min-h-40 font-mono text-[11px]"
         placeholder={
           kind === "answer-key"
             ? '{"schemaVersion":"1.0","examType":"TYT","sections":[{"code":"TURKCE","answers":{"1":"A"}}]}'
@@ -118,7 +118,7 @@ export function AdminJsonImportPanel({ examId }: { examId: string }) {
         <button
           type="button"
           disabled={busy || !payload.trim()}
-          className="panel-secondary-button"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
           onClick={() => void preview()}
         >
           {busy ? <Loader2 size={14} className="animate-spin" /> : null} Önizle
@@ -126,7 +126,7 @@ export function AdminJsonImportPanel({ examId }: { examId: string }) {
         <button
           type="button"
           disabled={busy || !importId || !ready}
-          className="panel-primary-button"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
           onClick={() => void commit()}
         >
           Onayla ve yaz

@@ -709,7 +709,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
                     onChange={(event) => {
                       if (isOverloadOption(event.target.value)) setOverloadOption(event.target.value);
                     }}
-                    className="panel-input flex-1"
+                    className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 flex-1"
                     aria-label="Plan değişiklik nedeni"
                   >
                     {Object.entries(overloadOptionLabels).map(([value, label]) => (

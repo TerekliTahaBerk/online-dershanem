@@ -201,7 +201,7 @@ export default async function AdminReportsPage() {
         <a
           href="/api/panel/reports/export?range=30"
           download
-          className="panel-quick-action panel-quick-action-primary"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
         >
           <Download size={15} /> CSV raporu indir
         </a>
@@ -335,7 +335,7 @@ export default async function AdminReportsPage() {
           </article>
         </section>
       ) : null}
-      <section className="mt-5 panel-surface p-5 sm:p-6">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-5 p-5 sm:p-6">
         <div className="flex items-start gap-3">
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#eef2df] text-(--brand-olive)">
             <Activity size={19} />
@@ -379,7 +379,7 @@ export default async function AdminReportsPage() {
         </div>
       </section>
       <div className="mt-5 grid gap-5 xl:grid-cols-2">
-        <section className="panel-surface overflow-hidden">
+        <section className="rounded-[10px] border border-pn-border bg-white overflow-hidden">
           <div className="border-b border-(--site-line) p-5">
             <h2 className="text-sm font-extrabold text-(--site-ink)">
               Öğretmen ders tamamlama
@@ -416,7 +416,7 @@ export default async function AdminReportsPage() {
             })}
           </div>
         </section>
-        <section className="panel-surface overflow-hidden">
+        <section className="rounded-[10px] border border-pn-border bg-white overflow-hidden">
           <div className="border-b border-(--site-line) p-5">
             <h2 className="text-sm font-extrabold text-(--site-ink)">
               Grup ödev ilerlemesi

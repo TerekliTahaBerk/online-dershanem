@@ -179,7 +179,7 @@ export function AdminMfaForm({
       type="button"
       onClick={() => void passkey()}
       disabled={pending}
-      className={`site-btn site-btn-primary site-btn-lg w-full min-h-12 ${isMobile && totpEnabled ? "site-btn-secondary" : ""}`}
+      className={`inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black px-4 text-[14px] w-full min-h-12 ${isMobile && totpEnabled ? "inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]" : ""}`}
     >
       {pending ? (
         <Loader2 className="animate-spin" size={18} aria-hidden="true" />
@@ -272,7 +272,7 @@ function RecoveryCodesPanel({ recoveryCodes }: { recoveryCodes: string[] }) {
         <button
           type="button"
           onClick={() => void copyAll()}
-          className="site-btn site-btn-secondary mt-3 w-full"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] mt-3 w-full"
         >
           {copied ? "Kopyalandı" : "Tüm kodları kopyala"}
         </button>
@@ -280,7 +280,7 @@ function RecoveryCodesPanel({ recoveryCodes }: { recoveryCodes: string[] }) {
       <button
         type="button"
         onClick={() => window.location.replace("/panel")}
-        className="site-btn site-btn-primary w-full min-h-12"
+        className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black px-3.5 text-[13.5px] w-full min-h-12"
       >
         Güvenli alana devam et
       </button>
@@ -395,7 +395,7 @@ export function AdminMfaEnrollment() {
           type="button"
           onClick={() => void enrollPasskey()}
           disabled={pending}
-          className="site-btn site-btn-primary site-btn-lg mt-4 w-full min-h-12"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black px-4 text-[14px] mt-4 w-full min-h-12"
         >
           {pending ? (
             <Loader2 className="animate-spin" size={18} aria-hidden="true" />
@@ -420,7 +420,7 @@ export function AdminMfaEnrollment() {
             type="button"
             onClick={() => void beginTotp()}
             disabled={pending}
-            className="site-btn site-btn-secondary w-full min-h-11"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover px-3.5 text-[13.5px] w-full min-h-11"
           >
             {pending ? (
               <Loader2 className="animate-spin" size={16} aria-hidden="true" />

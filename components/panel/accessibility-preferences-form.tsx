@@ -110,7 +110,7 @@ export function AccessibilityPreferencesForm({
     router.refresh();
   }
   return (
-    <section className="panel-surface p-5">
+    <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
       <h2 className="text-lg font-extrabold">Benim panel tercihlerim</h2>
       <p className="mt-2 text-sm leading-6 text-(--site-body)">
         Bunlar tanı veya sağlık kaydı değildir. İstediğiniz zaman açıp
@@ -153,7 +153,7 @@ export function AccessibilityPreferencesForm({
           type="button"
           disabled={busy}
           onClick={save}
-          className="panel-quick-action panel-quick-action-primary"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
         >
           {busy ? "Kaydediliyor…" : "Tercihleri kaydet"}
         </button>

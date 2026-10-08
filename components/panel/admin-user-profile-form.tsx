@@ -24,7 +24,7 @@ export function AdminUserProfileForm({ user }: Props) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   return (
-    <details className="panel-surface mt-5" open>
+    <details className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-5" open>
       <summary className="cursor-pointer list-none px-5 py-4 text-sm font-extrabold text-(--site-ink)">
         Profil bilgilerini düzenle
       </summary>
@@ -64,7 +64,7 @@ export function AdminUserProfileForm({ user }: Props) {
           <input
             name="fullName"
             defaultValue={user.fullName}
-            className="panel-input"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             placeholder="Ad soyad"
           />
           <input
@@ -72,13 +72,13 @@ export function AdminUserProfileForm({ user }: Props) {
             type="email"
             required
             defaultValue={user.email}
-            className="panel-input"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             placeholder="E-posta"
           />
           <input
             name="phone"
             defaultValue={user.phone}
-            className="panel-input"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             placeholder="Telefon"
           />
         </div>
@@ -87,19 +87,19 @@ export function AdminUserProfileForm({ user }: Props) {
             <input
               name="classLevel"
               defaultValue={user.classLevel}
-              className="panel-input"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
               placeholder="Sınıf seviyesi"
             />
             <input
               name="schoolName"
               defaultValue={user.schoolName}
-              className="panel-input"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
               placeholder="Okul"
             />
             <textarea
               name="targetGoal"
               defaultValue={user.targetGoal}
-              className="panel-input min-h-24 sm:col-span-2"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-h-24 sm:col-span-2"
               placeholder="Hedefi"
             />
           </div>
@@ -109,13 +109,13 @@ export function AdminUserProfileForm({ user }: Props) {
             <input
               name="subjects"
               defaultValue={user.subjects.join(", ")}
-              className="panel-input"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
               placeholder="Branşlar (virgülle ayırın)"
             />
             <textarea
               name="bio"
               defaultValue={user.bio}
-              className="panel-input min-h-24"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-h-24"
               placeholder="Kısa öğretmen tanıtımı"
             />
           </div>
@@ -129,7 +129,7 @@ export function AdminUserProfileForm({ user }: Props) {
           </p>
           <button
             disabled={busy}
-            className="panel-quick-action panel-quick-action-primary"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
           >
             <Save size={14} /> {busy ? "Kaydediliyor" : "Profili kaydet"}
           </button>

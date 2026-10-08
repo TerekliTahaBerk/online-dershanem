@@ -64,7 +64,7 @@ export function InviteLinkReveal({
           href={waUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="site-btn site-btn-primary site-btn-sm"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-8 px-2.5 text-[13px]"
         >
           <MessageCircle size={15} aria-hidden="true" />
           WhatsApp&apos;tan gönder
@@ -72,7 +72,7 @@ export function InviteLinkReveal({
         <button
           type="button"
           onClick={() => void copy(inviteMessage, "message")}
-          className="site-btn site-btn-secondary site-btn-sm"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-8 px-2.5 text-[13px]"
         >
           {copied === "message" ? (
             <Check size={15} aria-hidden="true" />
@@ -84,7 +84,7 @@ export function InviteLinkReveal({
         <button
           type="button"
           onClick={() => void copy(inviteUrl, "link")}
-          className="site-btn site-btn-secondary site-btn-sm"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-8 px-2.5 text-[13px]"
         >
           {copied === "link" ? (
             <Check size={15} aria-hidden="true" />

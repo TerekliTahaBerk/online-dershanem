@@ -11,7 +11,7 @@ export function PreferenceFields({
   return (
     <>
       <div>
-        <span className="panel-label">Çalışmak istediğim günler</span>
+        <span className="block text-[12.5px] font-medium text-pn-text-secondary">Çalışmak istediğim günler</span>
         <div className="mt-2 grid grid-cols-4 gap-2">
           {days.map((day) => (
             <button
@@ -38,9 +38,9 @@ export function PreferenceFields({
         </div>
       </div>
       <label className="mt-4 block">
-        <span className="panel-label">Bir günde ayırabileceğim süre</span>
+        <span className="block text-[12.5px] font-medium text-pn-text-secondary">Bir günde ayırabileceğim süre</span>
         <select
-          className="panel-input mt-2"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
           value={preference.minutesPerDay}
           onChange={(event) =>
             setPreference({
@@ -58,9 +58,9 @@ export function PreferenceFields({
       </label>
       <div className="mt-4 grid grid-cols-2 gap-2">
         <label>
-          <span className="panel-label">Yaklaşan sınav türü</span>
+          <span className="block text-[12.5px] font-medium text-pn-text-secondary">Yaklaşan sınav türü</span>
           <select
-            className="panel-input mt-2"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
             value={preference.examLabel || ""}
             onChange={(event) =>
               setPreference({
@@ -76,10 +76,10 @@ export function PreferenceFields({
           </select>
         </label>
         <label>
-          <span className="panel-label">Tarih</span>
+          <span className="block text-[12.5px] font-medium text-pn-text-secondary">Tarih</span>
           <input
             type="date"
-            className="panel-input mt-2"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
             disabled={!preference.examLabel}
             value={preference.nextExamAt?.slice(0, 10) || ""}
             onChange={(event) =>
@@ -92,11 +92,11 @@ export function PreferenceFields({
         </label>
       </div>
       <label className="mt-4 block">
-        <span className="panel-label">
+        <span className="block text-[12.5px] font-medium text-pn-text-secondary">
           Bu planın yoğunluğu bana nasıl geliyor?
         </span>
         <select
-          className="panel-input mt-2"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
           value={preference.overwhelmPulse || ""}
           onChange={(event) =>
             setPreference({

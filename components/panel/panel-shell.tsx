@@ -366,7 +366,7 @@ export async function PanelShell({
         )}
       >
         <div
-          className={`site-scope pn-scope flex min-h-dvh ${
+          className={`pn-scope flex min-h-dvh ${
             isBusinessWorkspace ? "business-panel-scope" : ""
           }`}
           data-product={accentProduct}

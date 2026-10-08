@@ -57,7 +57,7 @@ export default async function AccessibilityPage() {
       </header>
       <div className="mt-7 grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
         <AccessibilityPreferencesForm initial={initial} />
-        <aside className="panel-surface h-fit p-5">
+        <aside className="overflow-hidden rounded-[10px] border border-pn-border bg-white h-fit p-5">
           <h2 className="text-sm font-extrabold">Akademik düzenlemem</h2>
           {session.role === "STUDENT" ? (
             <>

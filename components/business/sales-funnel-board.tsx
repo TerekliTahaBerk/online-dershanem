@@ -145,7 +145,7 @@ export function SalesFunnelBoard({
           role="dialog"
           aria-modal="true"
           aria-labelledby="lost-reason-title"
-          className="panel-surface fixed inset-x-4 top-24 z-50 mx-auto max-w-md p-4 shadow-lg md:inset-x-auto"
+          className="overflow-hidden rounded-[10px] border border-pn-border bg-white fixed inset-x-4 top-24 z-50 mx-auto max-w-md p-4 shadow-lg md:inset-x-auto"
         >
           <h2 id="lost-reason-title" className="text-sm font-extrabold">
             Kayıp nedeni zorunlu
@@ -216,7 +216,7 @@ export function SalesFunnelBoard({
         {LEAD_STAGES.map((stage) => (
           <section
             key={stage}
-            className="panel-surface w-[min(88vw,320px)] shrink-0 snap-center p-3 md:min-h-40 md:w-auto md:shrink"
+            className="overflow-hidden rounded-[10px] border border-pn-border bg-white w-[min(88vw,320px)] shrink-0 snap-center p-3 md:min-h-40 md:w-auto md:shrink"
             onDragOver={(event) => {
               if (!canWrite) return;
               event.preventDefault();

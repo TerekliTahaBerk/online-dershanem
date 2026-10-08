@@ -1,7 +1,7 @@
 import { requireRole } from "@/lib/auth/guards";
 import { loadGroup360Bundle } from "@/lib/panel/group-360-server";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { Group360View } from "@/components/panel/group-360-view";
+import { Group360View } from "@/components/panel/group-360";
 
 export const dynamic = "force-dynamic";
 

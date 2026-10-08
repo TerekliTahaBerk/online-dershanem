@@ -59,7 +59,7 @@ export function StudentParentLinkForm({
             name="studentId"
             required
             defaultValue=""
-            className="panel-input py-2 text-xs"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2 text-xs"
           >
             <option value="">Öğrenci seçin</option>
             {(students || []).map((student) => (
@@ -79,7 +79,7 @@ export function StudentParentLinkForm({
           name="parentId"
           required
           defaultValue=""
-          className="panel-input py-2 text-xs"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2 text-xs"
         >
           <option value="">Veli seçin</option>
           {parents.map((parent) => (
@@ -96,7 +96,7 @@ export function StudentParentLinkForm({
         <select
           id="relationship"
           name="relationship"
-          className="panel-input py-2 text-xs"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2 text-xs"
           defaultValue="Anne"
         >
           <option value="Anne">Anne</option>

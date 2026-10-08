@@ -50,7 +50,7 @@ export function OdkOperationsRefresh({
         type="button"
         onClick={refresh}
         disabled={pending}
-        className="panel-secondary-button min-h-9 px-3 py-2 text-[11px]"
+        className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-9 px-3 py-2 text-[11px]"
       >
         {pending ? (
           <Loader2 size={13} className="animate-spin" />

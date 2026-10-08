@@ -3,7 +3,7 @@ import { requirePanelRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
+import { ChildContext } from "@/components/panel/parent/child-context";
 import { EmptyState, PanelEmpty } from "@/components/panel/ui";
 import {
   AcademicBlock,
@@ -36,6 +36,8 @@ export default async function ParentAnalizPage({
     session.userId,
     studentId,
   );
+  // Hangi çocuğun verisine bakıldığı başlığın özellik satırında (§9.7).
+  const childContext = <ChildContext options={children} selectedId={selected?.id ?? null} basePath="/panel/veli/analiz" />;
 
   const shell = (body: React.ReactNode) => (
     <PanelShell
@@ -43,13 +45,6 @@ export default async function ParentAnalizPage({
       fullName={session.fullName}
       email={session.email}
       pageTitle={PANEL_DOMAIN.analiz}
-      topbarSlot={
-        <ChildSwitcher
-          options={children}
-          selectedId={selected?.id ?? null}
-          basePath="/panel/veli/analiz"
-        />
-      }
     >
       <div className="max-w-[1000px]">{body}</div>
     </PanelShell>
@@ -96,6 +91,7 @@ export default async function ParentAnalizPage({
       <GidisatHero
         title={`${selected.name} · gidişatı`}
         periodLabel={formatPeriodRangeLabel(parentBundle.period)}
+        metadata={childContext}
         sentences={parentBundle.narrative}
       />
 

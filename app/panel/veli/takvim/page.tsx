@@ -2,9 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/auth/guards";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
+import { ChildContext } from "@/components/panel/parent/child-context";
 import {
   PanelHeading,
+  buttonClass,
   PanelCard,
   PanelTable,
   PanelTableRow,
@@ -37,6 +38,8 @@ export default async function ParentLessonsPage({
     session.userId,
     studentId,
   );
+  // Hangi çocuğun verisine bakıldığı başlığın özellik satırında (§9.7).
+  const childContext = <ChildContext options={children} selectedId={selected?.id ?? null} basePath="/panel/veli/takvim" />;
 
   const shell = (body: React.ReactNode) => (
     <PanelShell
@@ -44,13 +47,6 @@ export default async function ParentLessonsPage({
       fullName={session.fullName}
       email={session.email}
       pageTitle="Dersler"
-      topbarSlot={
-        <ChildSwitcher
-          options={children}
-          selectedId={selected?.id ?? null}
-          basePath="/panel/veli/takvim"
-        />
-      }
     >
       <div className="max-w-[1000px]">{body}</div>
     </PanelShell>
@@ -71,7 +67,7 @@ export default async function ParentLessonsPage({
   if (!selected.products.includes("OD")) {
     return shell(
       <>
-        <PanelHeading title="Dersler" description={selected.name} />
+        <PanelHeading title="Dersler" metadata={childContext} />
         <PanelEmpty
           title="Bu hesapta canlı ders ürünü bulunmuyor."
           body="onlinedershanem. eklendiğinde ders takvimi ve katılım burada görünür."
@@ -107,7 +103,7 @@ export default async function ParentLessonsPage({
 
   return shell(
     <>
-      <PanelHeading title="Dersler" description={selected.name} actions={<a href={`/api/panel/calendar/export?studentId=${encodeURIComponent(selected.id)}`} className="site-btn site-btn-secondary">Takvime ekle (.ics)</a>} />
+      <PanelHeading title="Dersler" metadata={childContext} actions={<a href={`/api/panel/calendar/export?studentId=${encodeURIComponent(selected.id)}`} className={buttonClass("secondary", "md")}>Takvime ekle (.ics)</a>} />
 
       {lessons.length === 0 ? (
         <PanelEmpty

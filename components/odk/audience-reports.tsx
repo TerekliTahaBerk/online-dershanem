@@ -1,17 +1,15 @@
 import Link from "next/link";
 import {
-  ArrowDownRight,
-  ArrowRight,
-  ArrowUpRight,
-  BarChart3,
-  BookOpenCheck,
-  CheckCircle2,
-  FileText,
-  ShieldCheck,
-  Target,
-  XCircle,
-} from "lucide-react";
-import { PanelPageHeader } from "@/components/panel/panel-page-header";
+  EmptyState,
+  PageHeader,
+  PanelTable,
+  PanelTableCell,
+  PanelTableRow,
+  PropertyList,
+  PropertyRow,
+  Section,
+} from "@/components/panel/ui";
+import { WEAK_ACCURACY, netChange, previousComparable, reportSummarySentences } from "@/lib/odk/parent-report";
 
 type Student = { userId: string; name: string; context: string };
 type Report = {
@@ -39,57 +37,24 @@ type Report = {
     questionCount: number;
   }>;
 };
-const date = new Intl.DateTimeFormat("tr-TR", {
-  dateStyle: "medium",
-  timeZone: "Europe/Istanbul",
-});
+const date = new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeZone: "Europe/Istanbul" });
+const net = (value: number) => value.toFixed(2);
 
-function trendCopy(delta: number | null) {
-  if (delta === null)
-    return {
-      label: "İlk ölçüm",
-      Icon: ArrowRight,
-      className: "bg-slate-100 text-slate-600",
-    };
-  if (delta >= 10)
-    return {
-      label: `+${delta.toFixed(0)} puan`,
-      Icon: ArrowUpRight,
-      className:
-        "bg-(--pd-pastel-mint-soft) text-(--pd-pastel-mint-ink)",
-    };
-  if (delta <= -10)
-    return {
-      label: `${delta.toFixed(0)} puan`,
-      Icon: ArrowDownRight,
-      className:
-        "bg-(--pd-pastel-yellow-soft) text-(--pd-pastel-yellow-ink)",
-    };
-  return {
-    label: "Benzer düzey",
-    Icon: ArrowRight,
-    className: "bg-slate-100 text-slate-600",
-  };
+function trendLabel(delta: number | null) {
+  if (delta === null) return "İlk ölçüm";
+  if (delta >= 10) return `+${delta.toFixed(0)} puan`;
+  if (delta <= -10) return `${delta.toFixed(0)} puan`;
+  return "Benzer düzey";
 }
 
-function metric(
-  label: string,
-  value: number | string,
-  icon: typeof Target,
-  tone: string,
-) {
-  const Icon = icon;
-  return (
-    <article key={label} className="panel-metric-card">
-      <span className={`panel-metric-icon ${tone}`}>
-        <Icon size={18} />
-      </span>
-      <p className="mt-4 text-2xl font-black text-(--site-ink)">{value}</p>
-      <p className="mt-1 text-xs text-(--site-muted)">{label}</p>
-    </article>
-  );
-}
-
+/**
+ * DENEME LİGİ SONUÇ RAPORU — sade düzen (docs/panel-design-roadmap.md §11.7).
+ * Veli, öğretmen ve yönetimin ayrıntılı görünümü: öğrenci bağlamı başlıkta,
+ * son açıklanan sonuç (net, D/Y/B, kendi önceki denemesine göre değişim),
+ * düz dil özet, deneme geçmişi ve kazanım eğilimleri tabloları. Görünürlük
+ * kuralları rapor sunucusundadır; burada sıralama ya da başka öğrenciyle
+ * karşılaştırma yapılmaz.
+ */
 export function OdkAudienceReports({
   role,
   basePath,
@@ -103,252 +68,157 @@ export function OdkAudienceReports({
   selectedUserId: string | null;
   report: Report | null;
 }) {
-  const latest = report?.exams.at(-1) || null;
-  const attentionCount =
-    report?.trends.filter((trend) => trend.latestAccuracy < 50).length || 0;
-  const eyebrow =
-    role === "ADMIN"
-      ? "Deneme Ligi raporları"
-      : role === "TEACHER"
-        ? "Sorumlu olduğunuz öğrenciler"
-        : "Bağlı öğrenciniz";
+  const pair = report ? previousComparable(report.exams) : null;
+  const latest = pair ? report!.exams.find((exam) => exam.id === pair.latest.id)! : null;
+  const change = pair ? netChange(pair.latest, pair.previous) : null;
+  const summary = report ? reportSummarySentences(report.exams, report.trends) : [];
+  const selected = students.find((student) => student.userId === selectedUserId) ?? null;
+  const others = students.filter((student) => student.userId !== selectedUserId);
+  const weakCount = report?.trends.filter((trend) => trend.latestAccuracy < WEAK_ACCURACY).length ?? 0;
+
   return (
     <>
-      <PanelPageHeader
-        eyebrow={eyebrow}
-        title="Deneme sonuçlarını öğrenme kararına dönüştürün."
-        description="Sonuçlar yalnız yayınlandıktan sonra görünür. Eğilimler öğrencinin kendi önceki ölçümüyle karşılaştırılır; öğrenci sıralaması yapılmaz."
-        icon={ShieldCheck}
+      <PageHeader
+        title={role === "PARENT" ? "Deneme raporu" : "Öğrenci deneme raporu"}
+        description="Sonuçlar yalnız yayınlandıktan sonra görünür. Eğilimler öğrencinin kendi önceki ölçümüyle karşılaştırılır; sıralama yapılmaz."
+        metadata={
+          selected ? (
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13.5px] text-pn-text-secondary">
+              <span>
+                Öğrenci: <strong className="font-semibold text-pn-text">{selected.name}</strong>
+                {selected.context ? <span className="text-pn-text-muted"> · {selected.context}</span> : null}
+              </span>
+              {others.length ? (
+                <nav aria-label="Öğrenci seçimi" className="flex flex-wrap items-center gap-1">
+                  <span aria-hidden="true" className="text-pn-text-muted">
+                    ·
+                  </span>
+                  {others.map((student) => (
+                    <Link
+                      key={student.userId}
+                      href={`${basePath}?ogrenci=${encodeURIComponent(student.userId)}`}
+                      className="rounded px-1.5 py-0.5 underline-offset-2 hover:bg-pn-hover hover:text-pn-text hover:underline"
+                    >
+                      {student.name}
+                      <span className="sr-only"> öğrencisine geç</span>
+                    </Link>
+                  ))}
+                </nav>
+              ) : null}
+            </span>
+          ) : undefined
+        }
       />
 
       {!students.length ? (
-        <div className="mt-8 rounded-3xl border border-dashed border-(--site-line) bg-white p-8 text-center">
-          <Target size={22} className="mx-auto text-(--site-muted)" />
-          <h2 className="mt-3 text-sm font-extrabold">
-            {role === "ADMIN"
-              ? "Henüz denemeye katılmış ODK öğrencisi yok."
+        <EmptyState
+          className="mt-6"
+          title={
+            role === "ADMIN"
+              ? "Henüz denemeye katılmış öğrenci yok."
               : role === "TEACHER"
                 ? "Aktif grubunuza bağlı öğrenci bulunmuyor."
-                : "Henüz bağlı öğrenciniz bulunmuyor."}
-          </h2>
-          <p className="mt-2 text-xs text-(--site-muted)">
-            Açıklanmış sonuç oluştuğunda rapor alanı otomatik güncellenir.
-          </p>
-        </div>
+                : "Henüz bağlı öğrenciniz bulunmuyor."
+          }
+          body="Açıklanmış sonuç oluştuğunda rapor otomatik güncellenir."
+        />
+      ) : !report || !latest ? (
+        <EmptyState
+          className="mt-6"
+          title="Açıklanmış sonuç henüz yok."
+          body="Öğrenci denemeyi tamamlayıp sonuç açıklandığında rapor burada oluşur."
+        />
       ) : (
         <>
-          {role !== "PARENT" || students.length > 1 ? (
-            <nav
-              aria-label="Öğrenci seçimi"
-              className="panel-nav-scroll mt-7 flex gap-2 overflow-x-auto pb-2"
-            >
-              {students.map((student) => (
-                <Link
-                  key={student.userId}
-                  href={`${basePath}?ogrenci=${encodeURIComponent(student.userId)}`}
-                  aria-current={
-                    student.userId === selectedUserId ? "true" : undefined
-                  }
-                  className={`min-w-fit rounded-2xl border px-4 py-3 ${student.userId === selectedUserId ? "border-(--brand-olive) bg-(--brand-olive) text-white" : "border-(--site-line) bg-white text-(--site-ink)"}`}
-                >
-                  <strong className="block text-sm">{student.name}</strong>
-                  <span
-                    className={`mt-1 block text-[10px] ${student.userId === selectedUserId ? "text-white" : "text-(--site-muted)"}`}
-                  >
-                    {student.context}
-                  </span>
-                </Link>
-              ))}
-            </nav>
-          ) : (
-            <div className="mt-7 inline-flex items-center gap-3 rounded-2xl border border-(--site-line) bg-white px-4 py-3">
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-(--panel-nav-active) text-sm font-black text-(--brand-olive)">
-                {students[0].name.charAt(0).toLocaleUpperCase("tr-TR")}
-              </span>
-              <span>
-                <strong className="block text-sm">{students[0].name}</strong>
-                <span className="mt-0.5 block text-[10px] text-(--site-muted)">
-                  {students[0].context}
+          <Section title="Son açıklanan deneme" divider={false}>
+            <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2">
+              <p className="text-[15px] font-semibold text-pn-text">
+                {latest.title}
+                <span className="ml-2 text-[13px] font-normal text-pn-text-muted">
+                  {latest.family} · {date.format(latest.takenAt)}
                 </span>
-              </span>
-            </div>
-          )}
-
-          {!report || !latest ? (
-            <div className="mt-6 rounded-3xl border border-dashed border-(--site-line) bg-white p-8">
-              <h2 className="font-extrabold text-(--site-ink)">
-                Açıklanmış sonuç henüz yok.
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-(--site-muted)">
-                Öğrenci denemeyi tamamlayıp admin sonucu açıkladığında rapor
-                burada oluşacak.
+              </p>
+              <p className="tabular-nums text-pn-text-secondary">
+                <strong className="text-[26px] font-semibold text-pn-text">{net(latest.totalNet)}</strong> net
               </p>
             </div>
-          ) : (
-            <>
-              <section className="mt-6 panel-surface p-5 sm:p-6">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-extrabold uppercase tracking-[.08em] text-(--brand-olive)">
-                      Son açıklanan deneme
-                    </p>
-                    <h2 className="mt-2 text-xl font-semibold text-(--site-ink)">
-                      {latest.title}
-                    </h2>
-                    <p className="mt-1 text-xs text-(--site-muted)">
-                      {latest.family} · {date.format(latest.takenAt)}
-                    </p>
-                  </div>
-                  <span className="rounded-2xl bg-(--panel-nav-active) px-5 py-3 text-center">
-                    <strong className="block text-3xl font-black text-(--site-ink)">
-                      {latest.totalNet.toFixed(2)}
-                    </strong>
-                    <span className="text-[10px] font-bold text-(--site-muted)">
-                      net
-                    </span>
-                  </span>
-                </div>
-                <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                  {metric(
-                    "Doğru",
-                    latest.correctCount,
-                    CheckCircle2,
-                    "panel-tone-mint",
-                  )}
-                  {metric(
-                    "Yanlış",
-                    latest.wrongCount,
-                    XCircle,
-                    "panel-attention-rose",
-                  )}
-                  {metric("Boş", latest.blankCount, FileText, "panel-tone-sky")}
-                </div>
-              </section>
+            <PropertyList className="mt-3">
+              <PropertyRow label="Doğru · yanlış · boş">
+                {latest.correctCount} · {latest.wrongCount} · {latest.blankCount}
+              </PropertyRow>
+              <PropertyRow label="Kendi önceki denemesine göre">
+                {change === null ? "İlk deneme" : `${change > 0 ? "+" : ""}${net(change)} net`}
+              </PropertyRow>
+              {latest.integrityNotice ? <PropertyRow label="Not">{latest.integrityNotice}</PropertyRow> : null}
+            </PropertyList>
+            {summary.length ? (
+              <div className="mt-4 space-y-1 text-[14.5px] leading-[1.65] text-pn-text" aria-label="Kısa özet">
+                {summary.map((sentence) => (
+                  <p key={sentence}>{sentence}</p>
+                ))}
+              </div>
+            ) : null}
+          </Section>
 
-              <section className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_.8fr]">
-                <div className="panel-surface p-5 sm:p-6">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <Target
-                        size={18}
-                        className="mt-0.5 shrink-0 text-(--brand-olive)"
-                      />
-                      <div>
-                        <h2 className="font-extrabold text-(--site-ink)">
-                          Kazanım eğilimleri
-                        </h2>
-                        <p className="mt-1 text-xs leading-5 text-(--site-muted)">
-                          Yüzde, bağlı sorulardaki doğru oranıdır. Az sorulu
-                          ölçümlerde yeni kanıt bekleyin.
-                        </p>
-                      </div>
-                    </div>
-                    <span className="min-w-fit rounded-full bg-(--pd-pastel-yellow-soft) px-2.5 py-1 text-[10px] font-extrabold text-(--pd-pastel-yellow-ink)">
-                      {attentionCount} gelişim alanı
+          <Section title="Deneme geçmişi">
+            <PanelTable caption="Deneme geçmişi" columns={["Deneme", "Tür", "Tarih", "Net", "D · Y · B"]}>
+              {[...report.exams].reverse().map((exam) => (
+                <PanelTableRow key={exam.id}>
+                  <PanelTableCell>
+                    <span className="font-medium text-pn-text">{exam.title}</span>
+                    {exam.integrityNotice ? <span className="block text-[12.5px] text-pn-text-muted">{exam.integrityNotice}</span> : null}
+                  </PanelTableCell>
+                  <PanelTableCell>{exam.family}</PanelTableCell>
+                  <PanelTableCell>
+                    <span className="tabular-nums">{date.format(exam.takenAt)}</span>
+                  </PanelTableCell>
+                  <PanelTableCell>
+                    <span className="tabular-nums">{net(exam.totalNet)}</span>
+                  </PanelTableCell>
+                  <PanelTableCell>
+                    <span className="tabular-nums">
+                      {exam.correctCount} · {exam.wrongCount} · {exam.blankCount}
                     </span>
-                  </div>
-                  <div className="mt-4 space-y-3">
-                    {report.trends.map((trend) => {
-                      const copy = trendCopy(trend.delta);
-                      return (
-                        <article
-                          key={trend.outcomeId}
-                          className="rounded-2xl border border-(--site-line) p-4"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <p className="text-[10px] font-black text-(--brand-olive)">
-                                {trend.code} · {trend.unitName}
-                              </p>
-                              <h3 className="mt-1 text-sm font-bold leading-5 text-(--site-ink)">
-                                {trend.title}
-                              </h3>
-                            </div>
-                            <span className="text-lg font-black text-(--site-ink)">
-                              %{trend.latestAccuracy.toFixed(0)}
-                            </span>
-                          </div>
-                          <div className="mt-3 flex flex-wrap items-center gap-2">
-                            <span
-                              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-extrabold ${copy.className}`}
-                            >
-                              <copy.Icon size={12} /> {copy.label}
-                            </span>
-                            <span className="text-[10px] text-(--site-muted)">
-                              {trend.evidenceCount} deneme ·{" "}
-                              {trend.questionCount} soru
-                            </span>
-                            {trend.questionCount < 3 ? (
-                              <span className="rounded-full bg-(--pd-pastel-yellow-soft) px-2 py-1 text-[9px] font-bold text-(--pd-pastel-yellow-ink)">
-                                Yeni kanıt gerekli
-                              </span>
-                            ) : null}
-                          </div>
-                        </article>
-                      );
-                    })}
-                    {!report.trends.length ? (
-                      <p className="text-sm text-(--site-muted)">
-                        Kazanım verisi bulunmuyor.
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-                <div className="panel-surface p-5 sm:p-6">
-                  <div className="flex items-center gap-2">
-                    <BarChart3
-                      size={17}
-                      className="text-(--brand-olive)"
-                    />
-                    <h2 className="font-extrabold text-(--site-ink)">
-                      Deneme geçmişi
-                    </h2>
-                  </div>
-                  <div className="mt-4 space-y-3">
-                    {[...report.exams].reverse().map((exam) => (
-                      <article
-                        key={exam.id}
-                        className="rounded-2xl border border-(--site-line) p-4"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <h3 className="text-sm font-bold text-(--site-ink)">
-                              {exam.title}
-                            </h3>
-                            <p className="mt-1 text-[10px] text-(--site-muted)">
-                              {exam.family} · {date.format(exam.takenAt)}
-                            </p>
-                          </div>
-                          <strong className="text-lg text-(--brand-olive)">
-                            {exam.totalNet.toFixed(2)}
-                          </strong>
-                        </div>
-                        <p className="mt-3 text-xs text-(--site-body)">
-                          {exam.correctCount} doğru · {exam.wrongCount} yanlış ·{" "}
-                          {exam.blankCount} boş
-                        </p>
-                        {exam.integrityNotice ? (
-                          <p className="mt-2 text-[10px] font-bold text-(--pd-pastel-yellow-ink)">
-                            {exam.integrityNotice}
-                          </p>
-                        ) : null}
-                      </article>
-                    ))}
-                  </div>
-                  <div className="mt-5 rounded-2xl bg-(--panel-nav-active) p-4">
-                    <h3 className="flex items-center gap-2 text-xs font-extrabold text-(--site-ink)">
-                      <BookOpenCheck size={14} /> Yorumlama notu
-                    </h3>
-                    <p className="mt-2 text-xs leading-5 text-(--site-body)">
-                      Tek bir denemeyi kesin yargı olarak kullanmayın.
-                      Tekrarlayan kazanım kanıtı ve öğrencinin kendi eğilimi
-                      daha anlamlıdır.
-                    </p>
-                  </div>
-                </div>
-              </section>
-            </>
-          )}
+                  </PanelTableCell>
+                </PanelTableRow>
+              ))}
+            </PanelTable>
+          </Section>
+
+          <Section
+            title="Kazanım eğilimleri"
+            description={`Yüzde, bağlı sorulardaki doğru oranıdır; az sorulu ölçümlerde yeni kanıt bekleyin.${weakCount ? ` ${weakCount} kazanım %${WEAK_ACCURACY} altında.` : ""}`}
+          >
+            {report.trends.length ? (
+              <PanelTable caption="Kazanım eğilimleri" columns={["Kazanım", "Son doğruluk", "Değişim", "Kanıt"]}>
+                {report.trends.map((trend) => (
+                  <PanelTableRow key={trend.outcomeId}>
+                    <PanelTableCell>
+                      <span className="text-pn-text">{trend.title}</span>
+                      <span className="block text-[12.5px] text-pn-text-muted">
+                        {trend.code} · {trend.unitName}
+                      </span>
+                    </PanelTableCell>
+                    <PanelTableCell tone={trend.latestAccuracy < WEAK_ACCURACY ? "warn" : "default"}>
+                      <span className="tabular-nums">%{trend.latestAccuracy.toFixed(0)}</span>
+                    </PanelTableCell>
+                    <PanelTableCell>{trendLabel(trend.delta)}</PanelTableCell>
+                    <PanelTableCell>
+                      <span className="tabular-nums">
+                        {trend.evidenceCount} deneme · {trend.questionCount} soru
+                      </span>
+                      {trend.questionCount < 3 ? <span className="block text-[12.5px] text-pn-text-muted">Yeni kanıt gerekli</span> : null}
+                    </PanelTableCell>
+                  </PanelTableRow>
+                ))}
+              </PanelTable>
+            ) : (
+              <p className="text-[14px] text-pn-text-muted">Kazanım verisi bulunmuyor.</p>
+            )}
+            <p className="mt-4 text-[13px] text-pn-text-muted">
+              Tek bir denemeyi kesin yargı olarak kullanmayın; tekrarlayan kazanım kanıtı ve öğrencinin kendi eğilimi daha anlamlıdır.
+            </p>
+          </Section>
         </>
       )}
     </>

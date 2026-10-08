@@ -80,7 +80,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
             (item) => item.kind === "ASSIGNMENT",
           );
           return (
-            <article key={row.id} className="panel-surface p-5 sm:p-6">
+            <article key={row.id} className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-extrabold uppercase tracking-[.06em] text-(--brand-olive)">
@@ -137,7 +137,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                                 href={item.href}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="panel-quick-action"
+                                className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                               >
                                 Materyali Aç <ExternalLink size={13} />
                               </a>
@@ -151,7 +151,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                                 type="button"
                                 disabled={busy !== null || item.completed}
                                 onClick={() => completeItem(row.id, item.id)}
-                                className="panel-quick-action"
+                                className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                               >
                                 {item.completed ? "İşaretlendi" : "Açtım"}{" "}
                                 {item.completed ? <Check size={13} /> : null}
@@ -187,7 +187,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                             {item.href ? (
                               <a
                                 href={item.href}
-                                className="panel-quick-action"
+                                className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                               >
                                 Çalışmayı Aç <ExternalLink size={13} />
                               </a>
@@ -201,7 +201,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                                 type="button"
                                 disabled={busy !== null || item.completed}
                                 onClick={() => completeItem(row.id, item.id)}
-                                className="panel-quick-action"
+                                className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                               >
                                 {item.completed ? "İşaretlendi" : "Tamamladım"}{" "}
                                 {item.completed ? <Check size={13} /> : null}
@@ -226,7 +226,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                       type="button"
                       disabled={busy !== null}
                       onClick={() => checkpoint(row.id, "NOT_YET")}
-                      className="panel-quick-action"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                     >
                       Henüz değil
                     </button>
@@ -234,7 +234,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                       type="button"
                       disabled={busy !== null}
                       onClick={() => checkpoint(row.id, "NEED_HELP")}
-                      className="panel-quick-action"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                     >
                       Bir örnek daha gerekli
                     </button>
@@ -242,13 +242,13 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                       type="button"
                       disabled={busy !== null}
                       onClick={() => checkpoint(row.id, "READY")}
-                      className="panel-quick-action panel-quick-action-primary"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
                     >
                       Tamamladım
                     </button>
                     <a
                       href="/panel/ogrenci/check-in"
-                      className="panel-quick-action"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                     >
                       Takıldım / Yardım iste
                     </a>
@@ -266,7 +266,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
           );
         })}
         {!rows.length ? (
-          <div className="panel-surface p-10 text-center">
+          <div className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-10 text-center">
             <PackageCheck className="mx-auto text-(--site-muted)" />
             <p className="mt-3 text-sm font-bold">
               Yayınlanmış telafi paketin yok.

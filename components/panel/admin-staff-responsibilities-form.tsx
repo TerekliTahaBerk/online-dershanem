@@ -120,7 +120,7 @@ export function AdminStaffResponsibilitiesForm({
   }
 
   return (
-    <section className="panel-surface mt-5 p-5">
+    <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-5 p-5">
       <h2 className="flex items-center gap-2 text-sm font-extrabold text-(--site-ink)">
         <BadgeCheck size={16} aria-hidden="true" /> Ürün sorumlulukları
       </h2>
@@ -146,7 +146,7 @@ export function AdminStaffResponsibilitiesForm({
                 {row.grantedBy ? ` · ${row.grantedBy}` : row.source === "LEGACY_BACKFILL" ? " · geçiş" : ""}
               </span>
             </span>
-            <button type="button" disabled={busy} onClick={() => void revoke(row)} className="panel-secondary-button">
+            <button type="button" disabled={busy} onClick={() => void revoke(row)} className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]">
               İptal et
             </button>
           </li>
@@ -168,7 +168,7 @@ export function AdminStaffResponsibilitiesForm({
           Gerekçe
           <input value={reason} onChange={(event) => setReason(event.target.value)} maxLength={500} className="rounded-xl border border-(--site-line) bg-white px-3 py-2" />
         </label>
-        <button type="submit" disabled={busy} className="panel-primary-button">
+        <button type="submit" disabled={busy} className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]">
           Ver
         </button>
       </form>
@@ -179,7 +179,7 @@ export function AdminStaffResponsibilitiesForm({
             Koç kapasitesi (öğrenci)
             <input inputMode="numeric" value={capacity} onChange={(event) => setCapacity(event.target.value)} placeholder="Tanımsız" className="w-32 rounded-xl border border-(--site-line) bg-white px-3 py-2" />
           </label>
-          <button type="submit" disabled={busy} className="panel-secondary-button">
+          <button type="submit" disabled={busy} className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]">
             Kaydet
           </button>
         </form>

@@ -10,8 +10,8 @@ export function OdStartCard({ start }: { start: OdCustomerStart | null }) {
       <p className="mt-2 text-sm text-dc-ink-muted">{start?.estimatedTime ?? "Başlangıç zamanını ekibimiz sizinle paylaşacak."}</p>
       {!!start?.timePreferences.length && <p className="mt-3 text-sm text-dc-ink-muted">Saat tercihiniz: {start.timePreferences.join(" · ")}</p>}
       <div className="mt-4 flex flex-wrap gap-3">
-        {start?.href && <Link href={start.href} className="site-btn site-btn-primary">Takvimimi gör</Link>}
-        <Link href="/iletisim" className="site-btn site-btn-secondary">Bize ulaş</Link>
+        {start?.href && <Link href={start.href} className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]">Takvimimi gör</Link>}
+        <Link href="/iletisim" className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]">Bize ulaş</Link>
       </div>
     </section>
   );

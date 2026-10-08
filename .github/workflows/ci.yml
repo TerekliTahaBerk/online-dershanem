@@ -170,6 +170,8 @@ jobs:
       - name: Configure production readiness fixture
         run: echo "ODK_LAST_RESTORE_DRILL_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
       - run: npm run build
+      - name: Panel first-load JS budget
+        run: npm run -s perf:budget:panel
 
   fresh-database:
     name: Fresh database bootstrap

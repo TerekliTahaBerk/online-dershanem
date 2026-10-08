@@ -227,6 +227,18 @@ export function ViewTabs({ tabs, activeId, label }: { tabs: ViewTab[]; activeId:
 
 /* ── Button: birincil eylem nötr koyu, ürün renginden bağımsız ───────── */
 
+/* ── Form alanları: eski `panel-input` / `panel-label` yerine (Phase 8) ── */
+
+/** Metin kutusu, seçim ve çok satırlı alan için tek görünüm. */
+export const INPUT_CLASS =
+  "w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60";
+/** Alan etiketi (görünür metin; `<label>` içinde ya da `htmlFor` ile). */
+export const LABEL_CLASS = "block text-[12.5px] font-medium text-pn-text-secondary";
+
+export function inputClass(className?: string) {
+  return cn(INPUT_CLASS, className);
+}
+
 type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 type ButtonSize = "sm" | "md";
 

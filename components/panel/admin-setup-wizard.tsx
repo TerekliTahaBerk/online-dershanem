@@ -40,7 +40,7 @@ export function AdminSetupWizard({
   return (
     <section
       id="hizli-kurulum"
-      className="panel-surface scroll-mt-24 overflow-hidden"
+      className="rounded-[10px] border border-pn-border bg-white scroll-mt-24 overflow-hidden"
     >
       <div className="flex flex-col gap-4 border-b border-(--site-line) bg-[linear-gradient(135deg,#f0f5ec,#fff_60%,#fff7d7)] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div>
@@ -144,7 +144,7 @@ export function AdminSetupWizard({
           <select
             name="role"
             aria-label="Hesap rolü"
-            className="panel-input"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             defaultValue="STUDENT"
           >
             <option value="STUDENT">Öğrenci</option>
@@ -154,19 +154,19 @@ export function AdminSetupWizard({
           <input
             name="fullName"
             required
-            className="panel-input"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             placeholder="Ad soyad"
           />
           <input
             name="email"
             type="email"
             required
-            className="panel-input"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             placeholder="E-posta"
           />
           <button
             disabled={accountBusy}
-            className="panel-quick-action panel-quick-action-primary justify-center"
+            className="inline-flex items-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px] justify-center"
           >
             {accountBusy ? "Açılıyor" : "Hesabı ekle"}
           </button>
@@ -259,17 +259,17 @@ export function AdminSetupWizard({
       >
         <div className={step === 1 ? "grid gap-3 sm:grid-cols-2" : "hidden"}>
           <label>
-            <span className="panel-label">Grup adı</span>
+            <span className="block text-[12.5px] font-medium text-pn-text-secondary">Grup adı</span>
             <input
               name="name"
               required
-              className="panel-input mt-2"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
               placeholder="LGS Matematik A"
             />
           </label>
           <label>
-            <span className="panel-label">Öğretmen</span>
-            <select name="teacherId" required className="panel-input mt-2">
+            <span className="block text-[12.5px] font-medium text-pn-text-secondary">Öğretmen</span>
+            <select name="teacherId" required className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2">
               <option value="">Öğretmen seçin</option>
               {people.teachers.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -279,19 +279,19 @@ export function AdminSetupWizard({
             </select>
           </label>
           <label>
-            <span className="panel-label">Ders</span>
+            <span className="block text-[12.5px] font-medium text-pn-text-secondary">Ders</span>
             <input
               name="subject"
               required
-              className="panel-input mt-2"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
               placeholder="Matematik"
             />
           </label>
           <label>
-            <span className="panel-label">Seviye</span>
+            <span className="block text-[12.5px] font-medium text-pn-text-secondary">Seviye</span>
             <input
               name="level"
-              className="panel-input mt-2"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
               placeholder="8. Sınıf"
             />
           </label>
@@ -330,7 +330,7 @@ export function AdminSetupWizard({
                         [student.id]: event.target.value,
                       })
                     }
-                    className="panel-input mt-3"
+                    className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-3"
                   >
                     <option value="">Veli sonra bağlanacak</option>
                     {people.parents.map((parent) => (
@@ -350,29 +350,29 @@ export function AdminSetupWizard({
         </div>
         <div className={step === 3 ? "grid gap-3 sm:grid-cols-2" : "hidden"}>
           <label>
-            <span className="panel-label">Ders başlığı</span>
+            <span className="block text-[12.5px] font-medium text-pn-text-secondary">Ders başlığı</span>
             <input
               name="lessonTitle"
               required
-              className="panel-input mt-2"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
               placeholder="Haftalık Matematik Dersi"
             />
           </label>
           <label>
-            <span className="panel-label">İlk ders</span>
+            <span className="block text-[12.5px] font-medium text-pn-text-secondary">İlk ders</span>
             <input
               name="startsAt"
               type="datetime-local"
               required
-              className="panel-input mt-2"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
             />
           </label>
           <label>
-            <span className="panel-label">Program</span>
+            <span className="block text-[12.5px] font-medium text-pn-text-secondary">Program</span>
             <select
               name="repeatWeeks"
               defaultValue="8"
-              className="panel-input mt-2"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
             >
               <option value="4">4 hafta</option>
               <option value="8">8 hafta</option>
@@ -380,11 +380,11 @@ export function AdminSetupWizard({
             </select>
           </label>
           <label>
-            <span className="panel-label">Canlı ders bağlantısı</span>
+            <span className="block text-[12.5px] font-medium text-pn-text-secondary">Canlı ders bağlantısı</span>
             <input
               name="meetingUrl"
               type="url"
-              className="panel-input mt-2"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
               placeholder="https://..."
             />
           </label>
@@ -410,14 +410,14 @@ export function AdminSetupWizard({
               <button
                 type="button"
                 onClick={() => setStep(step - 1)}
-                className="panel-quick-action"
+                className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
               >
                 Geri
               </button>
             ) : null}
             <button
               disabled={busy || (step === 2 && !selected.length)}
-              className="panel-quick-action panel-quick-action-primary"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
             >
               {step < 3 ? "Devam" : busy ? "Hazırlanıyor" : "Kurulumu tamamla"}
             </button>

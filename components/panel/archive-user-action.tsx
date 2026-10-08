@@ -71,7 +71,7 @@ export function ArchiveUserAction({
         </div>
         <button
           type="button"
-          className="site-btn site-btn-secondary site-btn-sm"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-8 px-2.5 text-[13px]"
           onClick={() => setOpen((value) => !value)}
         >
           {open ? "Gizle" : "Etki analizi"}
@@ -108,7 +108,7 @@ export function ArchiveUserAction({
                 type="button"
                 disabled={pending}
                 onClick={() => void archive()}
-                className="site-btn site-btn-primary site-btn-sm"
+                className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-8 px-2.5 text-[13px]"
               >
                 {pending ? "Arşivleniyor…" : `${userName} hesabını arşivle`}
               </button>

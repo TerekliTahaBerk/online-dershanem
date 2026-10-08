@@ -194,12 +194,12 @@ export function AdminExamEditor({
   ) {
     return (
       <>
-        <label className={compact ? "panel-field sm:col-span-3" : "contents"}>
+        <label className={compact ? "pn-field sm:col-span-3" : "contents"}>
           {compact ? "İçerik türü" : <span className="sr-only">Soru {question.questionNumber} içerik türü</span>}
           <select
             aria-label={`Soru ${question.questionNumber} içerik türü`}
             disabled={!editable}
-            className="panel-input py-2"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
             value={question.contentType}
             onChange={(event) => patchQuestion(index, { contentType: event.target.value as Question["contentType"] })}
           >
@@ -209,19 +209,19 @@ export function AdminExamEditor({
           </select>
         </label>
         {question.contentType === "RICH_CONTENT" ? (
-          <label className={compact ? "panel-field sm:col-span-3" : "contents"}>
+          <label className={compact ? "pn-field sm:col-span-3" : "contents"}>
             {compact ? "Soru metni" : <span className="sr-only">Soru {question.questionNumber} metni</span>}
             <textarea
               aria-label={`Soru ${question.questionNumber} metni`}
               disabled={!editable}
-              className="panel-input min-w-80 py-2"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-w-80 py-2"
               rows={2}
               value={question.contentText || ""}
               onChange={(event) => patchQuestion(index, { contentText: event.target.value || null })}
             />
           </label>
         ) : null}
-        <label className={compact ? "panel-field" : "contents"}>
+        <label className={compact ? "pn-field" : "contents"}>
           {compact ? (
             "Doğru cevap"
           ) : (
@@ -232,7 +232,7 @@ export function AdminExamEditor({
           <select
             aria-label={`Soru ${question.questionNumber} doğru cevap`}
             disabled={!editable}
-            className="panel-input py-2"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
             value={question.correctOption || ""}
             onChange={(event) =>
               patchQuestion(index, {
@@ -247,7 +247,7 @@ export function AdminExamEditor({
             ))}
           </select>
         </label>
-        <label className={compact ? "panel-field" : "contents"}>
+        <label className={compact ? "pn-field" : "contents"}>
           {compact ? (
             "Zorluk"
           ) : (
@@ -258,7 +258,7 @@ export function AdminExamEditor({
           <select
             aria-label={`Soru ${question.questionNumber} zorluk`}
             disabled={!editable}
-            className="panel-input py-2"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
             value={question.difficulty}
             onChange={(event) =>
               patchQuestion(index, {
@@ -271,7 +271,7 @@ export function AdminExamEditor({
             <option value="HARD">Zor</option>
           </select>
         </label>
-        <label className={compact ? "panel-field" : "contents"}>
+        <label className={compact ? "pn-field" : "contents"}>
           {compact ? (
             "PDF sayfası"
           ) : (
@@ -282,7 +282,7 @@ export function AdminExamEditor({
           <input
             aria-label={`Soru ${question.questionNumber} PDF sayfası`}
             disabled={!editable}
-            className="panel-input py-2"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
             type="number"
             min={1}
             value={question.bookletPage || ""}
@@ -293,7 +293,7 @@ export function AdminExamEditor({
             }
           />
         </label>
-        <label className={compact ? "panel-field sm:col-span-3" : "contents"}>
+        <label className={compact ? "pn-field sm:col-span-3" : "contents"}>
           {compact ? (
             "Ana kazanım"
           ) : (
@@ -304,7 +304,7 @@ export function AdminExamEditor({
           <select
             aria-label={`Soru ${question.questionNumber} ana kazanım`}
             disabled={!editable}
-            className="panel-input min-w-0 py-2"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-w-0 py-2"
             value={question.primaryOutcomeId || ""}
             onChange={(event) => {
               const primary = event.target.value || null;
@@ -389,7 +389,7 @@ export function AdminExamEditor({
       {capabilities.edit ? (
         <>
       {show("plan") ? (
-      <section id="adim-1" className="panel-surface scroll-mt-36 p-5 sm:p-6">
+      <section id="adim-1" className="overflow-hidden rounded-[10px] border border-pn-border bg-white scroll-mt-36 p-5 sm:p-6">
         <div>
           <h2 className="text-sm font-extrabold">1. Planlama bilgileri</h2>
           <p className="mt-1 text-xs text-(--site-muted)">
@@ -419,7 +419,7 @@ export function AdminExamEditor({
             );
           }}
         >
-          <label className="panel-field">
+          <label className="pn-field">
             Deneme adı
             <input
               name="title"
@@ -428,7 +428,7 @@ export function AdminExamEditor({
               disabled={!editable && exam.status !== "READY"}
             />
           </label>
-          <label className="panel-field">
+          <label className="pn-field">
             Başlangıç
             <input
               name="startsAt"
@@ -437,7 +437,7 @@ export function AdminExamEditor({
               disabled={exam.status !== "DRAFT" && exam.status !== "READY"}
             />
           </label>
-          <label className="panel-field">
+          <label className="pn-field">
             Genel bitiş
             <input
               name="endsAt"
@@ -446,7 +446,7 @@ export function AdminExamEditor({
               disabled={exam.status !== "DRAFT" && exam.status !== "READY"}
             />
           </label>
-          <label className="panel-field">
+          <label className="pn-field">
             Geç giriş (dakika)
             <input
               name="lateEntryMinutes"
@@ -457,7 +457,7 @@ export function AdminExamEditor({
               disabled={exam.status !== "DRAFT" && exam.status !== "READY"}
             />
           </label>
-          <label className="panel-field">
+          <label className="pn-field">
             Meet bağlantısı
             <input
               name="meetUrl"
@@ -480,7 +480,7 @@ export function AdminExamEditor({
           {exam.status === "DRAFT" || exam.status === "READY" ? (
             <button
               disabled={Boolean(busy)}
-              className="panel-primary-button md:col-span-2 xl:col-span-3"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px] md:col-span-2 xl:col-span-3"
             >
               <Save size={14} /> Planı kaydet
             </button>
@@ -494,7 +494,7 @@ export function AdminExamEditor({
       ) : null}
 
       {show("security") ? (
-      <section id="adim-8" className="panel-surface scroll-mt-36 p-5 sm:p-6">
+      <section id="adim-8" className="overflow-hidden rounded-[10px] border border-pn-border bg-white scroll-mt-36 p-5 sm:p-6">
         <h2 className="text-sm font-extrabold">8. Güvenlik politikası</h2>
         <p className="mt-1 text-xs leading-5 text-(--site-muted)">
           Client engeller güvenlik garantisi değildir; amaç davranışsal sinyal
@@ -537,7 +537,7 @@ export function AdminExamEditor({
             );
           }}
         >
-          <label className="panel-field">
+          <label className="pn-field">
             Tam ekran
             <select
               name="fullscreenMode"
@@ -549,7 +549,7 @@ export function AdminExamEditor({
               <option value="REQUIRED">İstenir</option>
             </select>
           </label>
-          <label className="panel-field">
+          <label className="pn-field">
             Ek süre (dk)
             <input
               name="allowExtraTimeMinutes"
@@ -603,7 +603,7 @@ export function AdminExamEditor({
           {exam.status === "DRAFT" || exam.status === "READY" ? (
             <button
               disabled={Boolean(busy)}
-              className="panel-primary-button md:col-span-2 xl:col-span-3"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px] md:col-span-2 xl:col-span-3"
             >
               <Save size={14} /> Güvenliği kaydet
             </button>
@@ -613,7 +613,7 @@ export function AdminExamEditor({
       ) : null}
 
       {show("files") ? (
-      <section id="adim-2" className="panel-surface scroll-mt-36 p-5 sm:p-6">
+      <section id="adim-2" className="overflow-hidden rounded-[10px] border border-pn-border bg-white scroll-mt-36 p-5 sm:p-6">
         <h2 className="text-sm font-extrabold">2. Özel PDF dosyaları</h2>
         <p className="mt-1 text-xs leading-5 text-(--site-muted)">
           Kitapçık sınav sırasında, cevap anahtarı yalnız sonuçlar açıklandıktan
@@ -626,7 +626,7 @@ export function AdminExamEditor({
               href={`/api/odk/admin/files/${file.id}`}
               target="_blank"
               rel="noreferrer"
-              className="panel-quick-action"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
             >
               {file.type === "BOOKLET_PDF" ? "Kitapçık" : "Cevap anahtarı"}:{" "}
               {file.fileName}
@@ -643,14 +643,14 @@ export function AdminExamEditor({
             className="mt-4 grid gap-3 sm:grid-cols-[220px_minmax(0,1fr)_auto] sm:items-end"
             onSubmit={(event) => void upload(event)}
           >
-            <label className="panel-field">
+            <label className="pn-field">
               Dosya türü
               <select name="type">
                 <option value="BOOKLET_PDF">Öğrenci kitapçığı</option>
                 <option value="ANSWER_KEY_PDF">Cevap anahtarı PDF</option>
               </select>
             </label>
-            <label className="panel-field">
+            <label className="pn-field">
               PDF dosyası
               <input
                 name="file"
@@ -662,7 +662,7 @@ export function AdminExamEditor({
             </label>
             <button
               disabled={busy === "upload"}
-              className="panel-primary-button"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
             >
               <FileUp size={14} /> PDF yükle
             </button>
@@ -672,7 +672,7 @@ export function AdminExamEditor({
       ) : null}
 
       {show("questions") ? (
-      <section id="adim-3" className="panel-surface scroll-mt-36 p-5 sm:p-6">
+      <section id="adim-3" className="overflow-hidden rounded-[10px] border border-pn-border bg-white scroll-mt-36 p-5 sm:p-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-sm font-extrabold">
@@ -687,7 +687,7 @@ export function AdminExamEditor({
               type="button"
               onClick={() => void saveQuestions()}
               disabled={Boolean(busy)}
-              className="panel-primary-button"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
             >
               <Save size={14} /> Soruları kaydet
             </button>
@@ -739,7 +739,7 @@ export function AdminExamEditor({
                     <select
                       aria-label={`Soru ${question.questionNumber} içerik türü`}
                       disabled={!editable}
-                      className="panel-input py-2"
+                      className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
                       value={question.contentType}
                       onChange={(event) => patchQuestion(index, { contentType: event.target.value as Question["contentType"] })}
                     >
@@ -752,7 +752,7 @@ export function AdminExamEditor({
                     <textarea
                       aria-label={`Soru ${question.questionNumber} metni`}
                       disabled={!editable || question.contentType !== "RICH_CONTENT"}
-                      className="panel-input py-2"
+                      className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
                       rows={2}
                       value={question.contentText || ""}
                       onChange={(event) => patchQuestion(index, { contentText: event.target.value || null })}
@@ -762,7 +762,7 @@ export function AdminExamEditor({
                     <select
                       aria-label={`Soru ${question.questionNumber} doğru cevap`}
                       disabled={!editable}
-                      className="panel-input py-2"
+                      className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
                       value={question.correctOption || ""}
                       onChange={(event) =>
                         patchQuestion(index, {
@@ -781,7 +781,7 @@ export function AdminExamEditor({
                     <select
                       aria-label={`Soru ${question.questionNumber} zorluk`}
                       disabled={!editable}
-                      className="panel-input py-2"
+                      className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
                       value={question.difficulty}
                       onChange={(event) =>
                         patchQuestion(index, {
@@ -799,7 +799,7 @@ export function AdminExamEditor({
                     <input
                       aria-label={`Soru ${question.questionNumber} PDF sayfası`}
                       disabled={!editable}
-                      className="panel-input py-2"
+                      className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
                       type="number"
                       min={1}
                       value={question.bookletPage || ""}
@@ -814,7 +814,7 @@ export function AdminExamEditor({
                     <select
                       aria-label={`Soru ${question.questionNumber} ana kazanım`}
                       disabled={!editable}
-                      className="panel-input min-w-80 py-2"
+                      className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-w-80 py-2"
                       value={question.primaryOutcomeId || ""}
                       onChange={(event) => {
                         const primary = event.target.value || null;
@@ -851,7 +851,7 @@ export function AdminExamEditor({
       ) : null}
 
       {show("publish") && (capabilities.edit || capabilities.schedule) ? (
-      <section id="adim-4" className="panel-surface scroll-mt-36 p-5 sm:p-6">
+      <section id="adim-4" className="overflow-hidden rounded-[10px] border border-pn-border bg-white scroll-mt-36 p-5 sm:p-6">
         <h2 className="text-sm font-extrabold">4. Yayın kontrolleri</h2>
         <div className="mt-3 space-y-2">
           {issues.map((issue, index) => (
@@ -888,7 +888,7 @@ export function AdminExamEditor({
                     "Sürüm kilitlendi ve deneme hazırlandı.",
                   );
               }}
-              className="panel-primary-button"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
             >
               <LockKeyhole size={14} /> Sürümü kilitle ve hazırla
             </button>
@@ -910,7 +910,7 @@ export function AdminExamEditor({
                     "Deneme planlandı.",
                   );
               }}
-              className="panel-primary-button"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
             >
               <Send size={14} /> Denemeyi planla
             </button>
@@ -920,7 +920,7 @@ export function AdminExamEditor({
       ) : null}
 
       {show("scoring") ? (
-      <section id="adim-5" className="panel-surface scroll-mt-36 p-5 sm:p-6">
+      <section id="adim-5" className="overflow-hidden rounded-[10px] border border-pn-border bg-white scroll-mt-36 p-5 sm:p-6">
         <h2 className="text-sm font-extrabold">Puanlama kısayolu</h2>
         <p className="mt-1 text-xs leading-5 text-(--site-muted)">
           Detaylı sonuç tablosu ve yayın akışı aşağıda “Sonuç inceleme”
@@ -962,7 +962,7 @@ export function AdminExamEditor({
                     "Teslimler puanlandı (yayınlanmadı).",
                   );
               }}
-              className="panel-primary-button"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
             >
               <CheckCircle2 size={14} /> Teslimleri puanla
             </button>
@@ -986,12 +986,12 @@ export function AdminExamEditor({
                     "Yeniden puanlama tamamlandı.",
                   );
               }}
-              className="panel-secondary-button"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
             >
               Yeniden puanla
             </button>
           ) : null}
-          <a href="#adim-sonuc" className="panel-secondary-button">
+          <a href="#adim-sonuc" className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]">
             <Send size={14} /> Sonuç incelemesine git
           </a>
         </div>

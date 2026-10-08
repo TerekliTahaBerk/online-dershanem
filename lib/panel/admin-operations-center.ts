@@ -491,7 +491,7 @@ function collectActions(input: AdminOperationsCenterInput): OpsActionDraft[] {
       subject: "Birleşik operasyon kuyruğu",
       ageLabel: "şimdi",
       owner: null,
-      href: "/panel/yonetim/isler",
+      href: "/panel/yonetim/isler?sekme=istisnalar",
       ctaLabel: "Çöz",
       createdAt: now,
     });
@@ -646,7 +646,7 @@ function collectActions(input: AdminOperationsCenterInput): OpsActionDraft[] {
         subject: `${help.studentLabel} · ${help.groupName}`,
         ageLabel: formatOpsAge(help.createdAt, now),
         owner: help.ownerLabel,
-        href: "/panel/yonetim/isler",
+        href: "/panel/yonetim/isler?sekme=istisnalar",
         ctaLabel: "Takip Et",
         createdAt: help.createdAt,
       });

@@ -57,7 +57,7 @@ export function LeadWorklist({
     <div className="space-y-4">
       <form
         method="get"
-        className="panel-surface grid gap-2 p-3 sm:grid-cols-2 xl:grid-cols-4"
+        className="overflow-hidden rounded-[10px] border border-pn-border bg-white grid gap-2 p-3 sm:grid-cols-2 xl:grid-cols-4"
         aria-label="Aday filtreleri"
       >
         <label className="text-xs font-bold">
@@ -192,7 +192,7 @@ export function LeadWorklist({
               <Link
                 key={lead.id}
                 href={href}
-                className={`panel-surface block p-4 transition hover:bg-(--site-bg-warm) ${selectedLeadId === lead.id ? "ring-2 ring-(--brand-olive)" : ""} ${overdue ? "border-rose-300" : ""}`}
+                className={`overflow-hidden rounded-[10px] border border-pn-border bg-white block p-4 transition hover:bg-(--site-bg-warm) ${selectedLeadId === lead.id ? "ring-2 ring-(--brand-olive)" : ""} ${overdue ? "border-rose-300" : ""}`}
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">

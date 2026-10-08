@@ -114,7 +114,7 @@ export function PilotRolloutControl({
   }
   return (
     <div className="grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)]">
-      <section className="panel-surface h-fit p-5">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white h-fit p-5">
         <h2 className="text-sm font-extrabold">
           Gruptan pilot kohortu oluştur
         </h2>
@@ -126,7 +126,7 @@ export function PilotRolloutControl({
           Aktif grup
           <select
             aria-label="Pilot grubu"
-            className="panel-input mt-1"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1"
             value={groupId}
             onChange={(event) => setGroupId(event.target.value)}
           >
@@ -142,7 +142,7 @@ export function PilotRolloutControl({
           type="button"
           disabled={busy || !groupId}
           onClick={() => void create()}
-          className="site-btn site-btn-primary site-btn-sm mt-4 w-full"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-8 px-2.5 text-[13px] mt-4 w-full"
         >
           Pilot taslağı oluştur
         </button>
@@ -163,7 +163,7 @@ export function PilotRolloutControl({
             Durdurma nedeni
             <select
               aria-label="Pilot durdurma nedeni"
-              className="panel-input mt-1 w-auto"
+              className="rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 w-auto"
               value={stopReason}
               onChange={(event) => setStopReason(event.target.value)}
             >
@@ -184,7 +184,7 @@ export function PilotRolloutControl({
         ) : null}
         <div className="mt-3 space-y-3">
           {rows.map((cohort) => (
-            <article key={cohort.id} className="panel-surface p-5">
+            <article key={cohort.id} className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
@@ -209,7 +209,7 @@ export function PilotRolloutControl({
                     <button
                       disabled={busy}
                       type="button"
-                      className="panel-quick-action panel-quick-action-primary"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
                       onClick={() => void transition(cohort, "ACTIVATE")}
                     >
                       <CirclePlay size={14} /> Aktive et
@@ -220,7 +220,7 @@ export function PilotRolloutControl({
                       <button
                         disabled={busy}
                         type="button"
-                        className="panel-quick-action"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                         onClick={() => void transition(cohort, "PAUSE")}
                       >
                         <CirclePause size={14} /> Duraklat
@@ -228,7 +228,7 @@ export function PilotRolloutControl({
                       <button
                         disabled={busy}
                         type="button"
-                        className="panel-quick-action"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                         onClick={() => void transition(cohort, "COMPLETE")}
                       >
                         <SquareCheckBig size={14} /> Tamamla
@@ -236,7 +236,7 @@ export function PilotRolloutControl({
                       <button
                         disabled={busy}
                         type="button"
-                        className="panel-quick-action text-rose-700"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] text-rose-700"
                         onClick={() => void transition(cohort, "ROLLBACK")}
                       >
                         <ShieldAlert size={14} /> Geri al
@@ -248,7 +248,7 @@ export function PilotRolloutControl({
                       <button
                         disabled={busy}
                         type="button"
-                        className="panel-quick-action panel-quick-action-primary"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
                         onClick={() => void transition(cohort, "RESUME")}
                       >
                         <RotateCcw size={14} /> Sürdür
@@ -256,7 +256,7 @@ export function PilotRolloutControl({
                       <button
                         disabled={busy}
                         type="button"
-                        className="panel-quick-action text-rose-700"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] text-rose-700"
                         onClick={() => void transition(cohort, "ROLLBACK")}
                       >
                         <ShieldAlert size={14} /> Geri al

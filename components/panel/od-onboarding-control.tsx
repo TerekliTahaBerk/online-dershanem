@@ -75,7 +75,7 @@ export function OdOnboardingControl({
           name="toState"
           required
           defaultValue={allowed[0]}
-          className="panel-input mt-1 py-2 text-xs"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 py-2 text-xs"
         >
           {allowed.map((next) => (
             <option key={next} value={next}>
@@ -90,7 +90,7 @@ export function OdOnboardingControl({
           name="ownerId"
           required
           defaultValue={ownerId || ""}
-          className="panel-input mt-1 py-2 text-xs"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 py-2 text-xs"
         >
           <option value="">Sorumlu seçin…</option>
           {staff.map((person) => (
@@ -106,7 +106,7 @@ export function OdOnboardingControl({
           name="blockerReason"
           maxLength={500}
           placeholder="Yalnız bloke / manuel inceleme geçişinde zorunlu"
-          className="panel-input mt-1 py-2 text-xs"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 py-2 text-xs"
         />
       </label>
       <label className="text-[10.5px] font-bold text-(--site-muted)">
@@ -115,7 +115,7 @@ export function OdOnboardingControl({
           name="note"
           maxLength={500}
           placeholder={OD_ONBOARDING_NEXT_ACTION[state]}
-          className="panel-input mt-1 py-2 text-xs"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 py-2 text-xs"
         />
       </label>
       {error ? (

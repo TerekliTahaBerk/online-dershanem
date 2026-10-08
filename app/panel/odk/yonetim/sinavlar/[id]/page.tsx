@@ -31,7 +31,7 @@ import { AdminPreviewPanel } from "@/components/odk/admin-preview-panel";
 import { AdminIntegrityReviewPanel } from "@/components/odk/admin-integrity-review-panel";
 import { AdminResultsReviewPanel } from "@/components/odk/admin-results-review-panel";
 import { AdminSessionPlan } from "@/components/odk/admin-session-plan";
-import { ExamTabAnchorRedirect } from "@/components/odk/exam-tab-anchor-redirect";
+import { AnchorTabRedirect } from "@/components/panel/anchor-tab-redirect";
 import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 import {
   EmptyState,
@@ -198,7 +198,7 @@ export default async function OdkAdminExamDetailPage({
 
   return (
     <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK" pageTitle={exam.title}>
-      <ExamTabAnchorRedirect anchors={EXAM_ANCHOR_TABS} activeTab={tab} />
+      <AnchorTabRedirect anchors={EXAM_ANCHOR_TABS} activeTab={tab} />
       <Link href="/panel/odk/yonetim/sinavlar" className={buttonClass("ghost", "sm", "-ml-2.5")}>
         <ArrowLeft size={14} aria-hidden="true" /> Denemeler
       </Link>

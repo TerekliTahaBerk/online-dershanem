@@ -141,7 +141,7 @@ export function TeacherHelpRequests({ rows }: { rows: Row[] }) {
                               )
                             }
                             key={action}
-                            className="panel-secondary-button min-h-10 text-left text-xs"
+                            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white hover:bg-pn-hover px-3.5 min-h-10 text-left text-xs"
                           >
                             {label}
                           </button>

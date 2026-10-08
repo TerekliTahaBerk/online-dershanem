@@ -402,14 +402,14 @@ async function OzetTab(props: {
             <input type="hidden" name="studentId" value={props.studentId} />
             <label className="grid gap-1 text-[12.5px] font-medium text-pn-text-secondary">
               Hedef türü
-              <select name="kind" className="panel-input">
+              <select name="kind" className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60">
                 <option value="SUBJECT_NET">Ders neti</option>
                 <option value="PLAN_COMPLETION">Plan tamamlama %</option>
               </select>
             </label>
             <label className="grid gap-1 text-[12.5px] font-medium text-pn-text-secondary">
               Ders
-              <select name="subjectName" className="panel-input">
+              <select name="subjectName" className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60">
                 <option value="">— (plan hedefi için boş)</option>
                 {examSubjects.map((subject) => (
                   <option key={subject} value={subject}>
@@ -420,11 +420,11 @@ async function OzetTab(props: {
             </label>
             <label className="grid gap-1 text-[12.5px] font-medium text-pn-text-secondary">
               Hedef değer
-              <input name="targetValue" required inputMode="decimal" className="panel-input" />
+              <input name="targetValue" required inputMode="decimal" className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60" />
             </label>
             <label className="grid gap-1 text-[12.5px] font-medium text-pn-text-secondary sm:col-span-2">
               Yakın hedef notu
-              <input name="nearTermNote" maxLength={300} placeholder="Örn. bir sonraki denemede 21 net" className="panel-input" />
+              <input name="nearTermNote" maxLength={300} placeholder="Örn. bir sonraki denemede 21 net" className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60" />
             </label>
             <div className="flex items-end">
               <button type="submit" className={buttonClass("secondary", "md")}>

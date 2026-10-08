@@ -111,7 +111,7 @@ export function CoachWeekCalendar({
 
   return (
     <section
-      className="panel-surface p-5 sm:p-6"
+      className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5 sm:p-6"
       aria-labelledby={`coach-cal-${planId}`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -130,7 +130,7 @@ export function CoachWeekCalendar({
           </p>
         </div>
         <a
-          className="panel-quick-action"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
           href={`/panel/ogretmen/ogrenci/${studentId}?tab=kocluk`}
         >
           Öğrenci profili
@@ -185,7 +185,7 @@ export function CoachWeekCalendar({
                       <span className="sr-only">Tarihi Değiştir</span>
                       <input
                         type="date"
-                        className="panel-input text-[11px]"
+                        className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 text-[11px]"
                         min={formatIstanbulDateInput(weekStart)}
                         max={formatIstanbulDateInput(
                           addIstanbulCalendarDays(weekStart, 6),
@@ -202,7 +202,7 @@ export function CoachWeekCalendar({
                     </label>
                     <button
                       type="button"
-                      className="panel-quick-action mt-1 w-full text-[10px]"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 mt-1 w-full text-[10px]"
                       disabled={busyId === task.id}
                       onClick={() => {
                         const value = dateDraft[task.id] ?? key;

@@ -87,7 +87,7 @@ function AssignmentOutcomeBackfill({
           <select
             value={reason}
             onChange={(event) => setReason(event.target.value as typeof reason)}
-            className="panel-input mt-2 text-xs"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2 text-xs"
             aria-label={`${assignment.title} erteleme nedeni`}
           >
             <option value="COMPLETE_LATER">Sonra tamamlayacağım</option>
@@ -117,7 +117,7 @@ function AssignmentOutcomeBackfill({
               )
               .finally(() => setBusy(false));
           }}
-          className="panel-quick-action mt-2"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] mt-2"
         >
           {busy ? "Kaydediliyor" : "Etiketi kaydet"}
         </button>
@@ -209,7 +209,7 @@ function SubmissionReview({
                     | "MEETS",
                 }))
               }
-              className="panel-input text-xs"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 text-xs"
             >
               <option value="">Seçin</option>
               <option value="NEEDS_WORK">Bir adım daha</option>
@@ -224,7 +224,7 @@ function SubmissionReview({
         value={feedback}
         onChange={(event) => setFeedback(event.target.value)}
         maxLength={1000}
-        className="panel-input mt-3 min-h-20 resize-y"
+        className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-3 min-h-20 resize-y"
         placeholder="Bir güçlü nokta ve sıradaki küçük adım"
       />
       <div className="mt-3 flex flex-wrap gap-2">
@@ -232,7 +232,7 @@ function SubmissionReview({
           type="button"
           disabled={busy || !ready}
           onClick={() => void review("APPROVE")}
-          className="panel-quick-action panel-quick-action-primary"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
         >
           Onayla
         </button>
@@ -240,7 +240,7 @@ function SubmissionReview({
           type="button"
           disabled={busy || !ready}
           onClick={() => void review("REQUEST_CHANGES")}
-          className="panel-quick-action"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
         >
           Küçük yeniden deneme iste
         </button>
@@ -307,7 +307,7 @@ export function TeacherAssignmentManager({
   return (
     <div className="grid gap-5 xl:grid-cols-[380px_minmax(0,1fr)]">
       <form
-        className="panel-surface h-fit p-5"
+        className="overflow-hidden rounded-[10px] border border-pn-border bg-white h-fit p-5"
         onSubmit={(event) => {
           event.preventDefault();
           const data = new FormData(event.currentTarget);
@@ -344,7 +344,7 @@ export function TeacherAssignmentManager({
           onChange={(event) => setGroupId(event.target.value)}
           required
           aria-label="Grup"
-          className="panel-input mt-4"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-4"
         >
           <option value="">Grup seçin</option>
           {groups.map((group) => (
@@ -356,7 +356,7 @@ export function TeacherAssignmentManager({
         <select
           name="lessonId"
           aria-label="Bağlı ders"
-          className="panel-input mt-2"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
         >
           <option value="">Belirli bir derse bağlı değil</option>
           {groupLessons.map((lesson) => (
@@ -373,20 +373,20 @@ export function TeacherAssignmentManager({
           name="title"
           required
           maxLength={140}
-          className="panel-input mt-2"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
           placeholder="Ödev başlığı"
         />
         <textarea
           name="description"
           maxLength={2000}
-          className="panel-input mt-2 min-h-28 resize-y"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2 min-h-28 resize-y"
           placeholder="Yapılacak çalışma, soru aralığı ve kısa yönlendirme"
         />
         <input
           name="dueAt"
           type="datetime-local"
           required
-          className="panel-input mt-2"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
           aria-label="Teslim zamanı"
         />
         {assignmentEvidenceEnabled ? (
@@ -417,7 +417,7 @@ export function TeacherAssignmentManager({
                         ),
                       )
                     }
-                    className="panel-input text-xs"
+                    className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 text-xs"
                   />
                 ))}
                 <div className="flex gap-2">
@@ -464,7 +464,7 @@ export function TeacherAssignmentManager({
                     event.target.value as typeof outcomeSkipReason,
                   )
                 }
-                className="panel-input mt-2 text-xs"
+                className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2 text-xs"
                 aria-label="Ödev kazanım erteleme nedeni"
               >
                 <option value="">Kazanım seçin veya neden belirtin</option>
@@ -481,7 +481,7 @@ export function TeacherAssignmentManager({
         ) : null}
         <button
           disabled={busy === "create" || !groups.length}
-          className="site-btn site-btn-primary site-btn-sm mt-4 w-full"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-8 px-2.5 text-[13px] mt-4 w-full"
         >
           {busy === "create" ? "Gönderiliyor" : "Ödevi gönder"}
         </button>

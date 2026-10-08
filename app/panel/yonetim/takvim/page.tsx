@@ -219,7 +219,7 @@ export default async function CalendarPage({
               name="teacher"
               aria-label="Öğretmene göre filtrele"
               defaultValue={params.teacher || ""}
-              className="panel-input min-w-0 py-2 text-[13px] sm:min-w-[170px]"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-w-0 py-2 text-[13px] sm:min-w-[170px]"
             >
               <option value="">Tüm öğretmenler</option>
               {teachers.map((teacher) => (
@@ -232,7 +232,7 @@ export default async function CalendarPage({
               name="group"
               aria-label="Gruba göre filtrele"
               defaultValue={params.group || ""}
-              className="panel-input min-w-0 py-2 text-[13px] sm:min-w-[150px]"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-w-0 py-2 text-[13px] sm:min-w-[150px]"
             >
               <option value="">Tüm gruplar</option>
               {groups.map((group) => (

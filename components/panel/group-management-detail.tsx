@@ -102,7 +102,7 @@ export function GroupManagementDetail({
 
   return (
     <div className="space-y-5">
-      <section className="panel-surface p-5">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
         <h2 className="text-sm font-extrabold text-(--site-ink)">
           Grup ayarları
         </h2>
@@ -128,26 +128,26 @@ export function GroupManagementDetail({
             name="name"
             required
             defaultValue={group.name}
-            className="panel-input"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             aria-label="Grup adı"
           />
           <input
             name="subject"
             required
             defaultValue={group.subject}
-            className="panel-input"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             aria-label="Ders"
           />
           <input
             name="level"
             defaultValue={group.level}
-            className="panel-input"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             aria-label="Seviye"
             placeholder="Seviye"
           />
           <button
             disabled={busy === "meta"}
-            className="panel-quick-action panel-quick-action-primary justify-center sm:justify-start"
+            className="inline-flex items-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px] justify-center sm:justify-start"
           >
             {busy === "meta" ? "Kaydediliyor" : "Grubu güncelle"}
           </button>
@@ -172,7 +172,7 @@ export function GroupManagementDetail({
           <select
             name="teacherId"
             defaultValue={selectedTeacher}
-            className="panel-input min-w-[220px]"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-w-[220px]"
             aria-label="Öğretmen"
           >
             {teachers.map((teacher) => (
@@ -183,7 +183,7 @@ export function GroupManagementDetail({
           </select>
           <button
             disabled={busy === "teacher"}
-            className="panel-quick-action panel-quick-action-primary"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
           >
             {busy === "teacher" ? "Kaydediliyor" : "Öğretmeni değiştir"}
           </button>
@@ -206,7 +206,7 @@ export function GroupManagementDetail({
             );
           }}
         >
-          <button disabled={busy === "active"} className="panel-quick-action">
+          <button disabled={busy === "active"} className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]">
             {busy === "active"
               ? "İşleniyor"
               : group.isActive
@@ -216,7 +216,7 @@ export function GroupManagementDetail({
         </form>
       </section>
 
-      <section className="panel-surface p-5">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
             <h2 className="text-sm font-extrabold text-(--site-ink)">
@@ -230,13 +230,13 @@ export function GroupManagementDetail({
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              className="panel-input"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
               placeholder="Öğrenci ara"
               aria-label="Öğrenci ara"
             />
             <button
               type="button"
-              className="panel-quick-action"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
               onClick={() =>
                 void run(
                   "search",
@@ -272,7 +272,7 @@ export function GroupManagementDetail({
                 ) : null}
                 <button
                   type="button"
-                  className="panel-quick-action mt-2"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] mt-2"
                   onClick={() =>
                     void run(
                       `add-${student.id}`,
@@ -308,7 +308,7 @@ export function GroupManagementDetail({
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  className="panel-quick-action"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                   onClick={() =>
                     void run(
                       `remove-${member.id}`,
@@ -334,7 +334,7 @@ export function GroupManagementDetail({
                       [member.id]: event.target.value,
                     }))
                   }
-                  className="panel-input min-w-[220px]"
+                  className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-w-[220px]"
                 >
                   <option value="">Hedef grup seç</option>
                   {targetGroups.map((target) => (
@@ -345,7 +345,7 @@ export function GroupManagementDetail({
                 </select>
                 <button
                   type="button"
-                  className="panel-quick-action panel-quick-action-primary"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
                   onClick={() => {
                     const targetGroupId = transferTarget[member.id];
                     if (!targetGroupId)

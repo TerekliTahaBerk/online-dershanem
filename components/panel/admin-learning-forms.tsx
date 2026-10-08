@@ -95,7 +95,7 @@ export function AdminLearningForms({
     <div className="grid gap-4 xl:grid-cols-3">
       <form
         id="yeni-grup"
-        className="panel-action-card scroll-mt-28"
+        className="rounded-[10px] border border-pn-border bg-white p-5 scroll-mt-28"
         onSubmit={(event) => {
           event.preventDefault();
           const data = new FormData(event.currentTarget);
@@ -113,33 +113,33 @@ export function AdminLearningForms({
           );
         }}
       >
-        <span className="panel-action-icon bg-[#eaf1e8] text-[#2f4a2a]">
+        <span className="grid h-9 w-9 place-items-center rounded-md bg-[#eaf1e8] text-[#2f4a2a]">
           <UsersRound size={19} />
         </span>
-        <h2 className="panel-card-title">Yeni grup</h2>
-        <p className="panel-card-copy">
+        <h2 className="mt-3 text-[15px] font-semibold text-pn-text">Yeni grup</h2>
+        <p className="mt-1 text-[13px] leading-5 text-pn-text-secondary">
           En fazla dört öğrenciyi aynı öğretmenle eşleştirin.
         </p>
         <input
           name="name"
           required
-          className="panel-input mt-4"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-4"
           placeholder="Grup adı"
         />
         <div className="mt-2 grid grid-cols-2 gap-2">
           <input
             name="subject"
             required
-            className="panel-input"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             placeholder="Ders"
           />
-          <input name="level" className="panel-input" placeholder="Seviye" />
+          <input name="level" className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60" placeholder="Seviye" />
         </div>
         <select
           name="teacherId"
           required
           aria-label="Öğretmen"
-          className="panel-input mt-2"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
         >
           <option value="">Öğretmen seçin</option>
           {teachers.map((item) => (
@@ -161,7 +161,7 @@ export function AdminLearningForms({
         </div>
         <button
           disabled={busy}
-          className="site-btn site-btn-primary site-btn-sm mt-4 w-full"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-8 px-2.5 text-[13px] mt-4 w-full"
         >
           Grubu kur
         </button>
@@ -169,7 +169,7 @@ export function AdminLearningForms({
 
       <form
         id="ders-planla"
-        className="panel-action-card scroll-mt-28"
+        className="rounded-[10px] border border-pn-border bg-white p-5 scroll-mt-28"
         onSubmit={(event) => {
           event.preventDefault();
           const data = new FormData(event.currentTarget);
@@ -179,11 +179,11 @@ export function AdminLearningForms({
           );
         }}
       >
-        <span className="panel-action-icon bg-[#ecf3fa] text-[#1e3a5f]">
+        <span className="grid h-9 w-9 place-items-center rounded-md bg-[#ecf3fa] text-[#1e3a5f]">
           <CalendarPlus size={19} />
         </span>
-        <h2 className="panel-card-title">Ders planla</h2>
-        <p className="panel-card-copy">
+        <h2 className="mt-3 text-[15px] font-semibold text-pn-text">Ders planla</h2>
+        <p className="mt-1 text-[13px] leading-5 text-pn-text-secondary">
           Grup veya bireysel öğrenci. Seri için önizleme alın.
         </p>
         <div className="mt-4 flex gap-2 text-xs font-semibold">
@@ -213,7 +213,7 @@ export function AdminLearningForms({
             name="groupId"
             required
             aria-label="Grup"
-            className="panel-input mt-2"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
           >
             <option value="">Grup seçin</option>
             {groups.map((item) => (
@@ -228,7 +228,7 @@ export function AdminLearningForms({
               name="studentId"
               required
               aria-label="Öğrenci"
-              className="panel-input mt-2"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
             >
               <option value="">Öğrenci seçin</option>
               {students.map((item) => (
@@ -241,7 +241,7 @@ export function AdminLearningForms({
               name="teacherId"
               required
               aria-label="Öğretmen"
-              className="panel-input mt-2"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
             >
               <option value="">Öğretmen seçin</option>
               {teachers.map((item) => (
@@ -255,7 +255,7 @@ export function AdminLearningForms({
         <input
           name="title"
           required
-          className="panel-input mt-2"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
           placeholder="Ders başlığı"
         />
         <input
@@ -263,12 +263,12 @@ export function AdminLearningForms({
           required
           type="datetime-local"
           aria-label="Ders başlangıç zamanı"
-          className="panel-input mt-2"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
         />
         <input
           name="meetingUrl"
           type="url"
-          className="panel-input mt-2"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
           placeholder="Canlı ders bağlantısı (opsiyonel)"
         />
         <div className="mt-2 flex flex-wrap gap-2 text-xs">
@@ -294,7 +294,7 @@ export function AdminLearningForms({
           name="repeatWeeks"
           defaultValue="1"
           aria-label="Tekrar"
-          className="panel-input mt-2"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
         >
           <option value="1">Yalnızca bu ders / seçili gün serisi</option>
           <option value="4">4 hafta tekrarla</option>
@@ -305,7 +305,7 @@ export function AdminLearningForms({
           name="totalOccurrences"
           defaultValue="8"
           aria-label="Toplam ders sayısı"
-          className="panel-input mt-2"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
         >
           <option value="4">4 oluşum</option>
           <option value="8">8 oluşum</option>
@@ -315,7 +315,7 @@ export function AdminLearningForms({
         <button
           type="button"
           disabled={busy}
-          className="site-btn site-btn-secondary site-btn-sm mt-3 w-full"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-8 px-2.5 text-[13px] mt-3 w-full"
           onClick={(event) => {
             const form = event.currentTarget.form;
             if (!form) return;
@@ -359,14 +359,14 @@ export function AdminLearningForms({
         ) : null}
         <button
           disabled={busy}
-          className="site-btn site-btn-primary site-btn-sm mt-4 w-full"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-8 px-2.5 text-[13px] mt-4 w-full"
         >
           Dersi planla
         </button>
       </form>
 
       <form
-        className="panel-action-card"
+        className="rounded-[10px] border border-pn-border bg-white p-5"
         onSubmit={(event) => {
           event.preventDefault();
           const data = new FormData(event.currentTarget);
@@ -384,18 +384,18 @@ export function AdminLearningForms({
           );
         }}
       >
-        <span className="panel-action-icon bg-[#f1edf8] text-[#3f3463]">
+        <span className="grid h-9 w-9 place-items-center rounded-md bg-[#f1edf8] text-[#3f3463]">
           <Link2 size={19} />
         </span>
-        <h2 className="panel-card-title">Veli bağla</h2>
-        <p className="panel-card-copy">
+        <h2 className="mt-3 text-[15px] font-semibold text-pn-text">Veli bağla</h2>
+        <p className="mt-1 text-[13px] leading-5 text-pn-text-secondary">
           Anne ve baba aynı öğrenciye ayrı ayrı bağlanabilir.
         </p>
         <select
           name="parentId"
           required
           aria-label="Veli"
-          className="panel-input mt-4"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-4"
         >
           <option value="">Veli seçin</option>
           {parents.map((item) => (
@@ -408,7 +408,7 @@ export function AdminLearningForms({
           name="studentId"
           required
           aria-label="Öğrenci"
-          className="panel-input mt-2"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
         >
           <option value="">Öğrenci seçin</option>
           {students.map((item) => (
@@ -420,7 +420,7 @@ export function AdminLearningForms({
         <select
           name="relationship"
           aria-label="Yakınlık"
-          className="panel-input mt-2"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
           defaultValue="Anne"
         >
           <option value="Anne">Anne</option>
@@ -440,7 +440,7 @@ export function AdminLearningForms({
         </label>
         <button
           disabled={busy}
-          className="site-btn site-btn-primary site-btn-sm mt-4 w-full"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-8 px-2.5 text-[13px] mt-4 w-full"
         >
           Bağlantıyı kur
         </button>

@@ -48,7 +48,7 @@ export function OrderLinkForm({
           required
           defaultValue=""
           aria-label="Öğrenci hesabı"
-          className="panel-input py-2 text-xs"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2 text-xs"
         >
           <option value="">Mevcut öğrenci hesabına bağla…</option>
           {students.map((student) => (

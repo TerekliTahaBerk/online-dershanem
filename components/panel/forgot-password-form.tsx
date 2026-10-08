@@ -66,14 +66,14 @@ export function ForgotPasswordForm() {
           doğrulayıp parolanızı biz sıfırlayalım.
         </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
-          <Link href="/giris" className="site-btn site-btn-primary inline-flex">
+          <Link href="/giris" className="items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px] inline-flex">
             <ArrowLeft size={16} aria-hidden="true" /> Girişe dön
           </Link>
           <a
             href={whatsappHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="site-btn site-btn-secondary inline-flex"
+            className="items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] inline-flex"
           >
             <MessageCircle size={16} aria-hidden="true" /> WhatsApp&apos;tan yaz
           </a>
@@ -117,7 +117,7 @@ export function ForgotPasswordForm() {
         type="submit"
         disabled={pending}
         aria-busy={pending}
-        className="site-btn site-btn-primary site-btn-lg mt-2 w-full disabled:opacity-70"
+        className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-11 px-4 text-[14px] mt-2 w-full disabled:opacity-70"
       >
         {pending ? (
           <>
