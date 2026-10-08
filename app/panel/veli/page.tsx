@@ -3,7 +3,7 @@ import { requirePanelRole } from "@/lib/auth/guards";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { loadParentCalmHome } from "@/lib/panel/parent-calm-server";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
+import { ChildContext } from "@/components/panel/parent/child-context";
 import { ParentCalmHomeView } from "@/components/panel/parent-calm-home";
 import { PanelPageHeader } from "@/components/panel/ui";
 import { OdStartCard } from "@/components/panel/od-start-card";
@@ -36,13 +36,6 @@ export default async function ParentHomePage({
       fullName={session.fullName}
       email={session.email}
       pageTitle="Bugün"
-      topbarSlot={
-        <ChildSwitcher
-          options={children}
-          selectedId={selected?.id ?? null}
-          basePath="/panel/veli"
-        />
-      }
     >
       <div className="max-w-[760px]">{body}</div>
     </PanelShell>
@@ -70,5 +63,5 @@ export default async function ParentHomePage({
     selected,
   }), getCustomerOdStart({ userId: session.userId, role: "PARENT", studentId: selected.id })]);
 
-  return shell(<>{start && <OdStartCard start={start} />}<ParentCalmHomeView home={home} /></>);
+  return shell(<>{start && <OdStartCard start={start} />}<ParentCalmHomeView home={home} childContext={<ChildContext options={children} selectedId={selected.id} basePath="/panel/veli" />} /></>);
 }

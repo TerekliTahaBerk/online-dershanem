@@ -4,7 +4,7 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { dinoQuestionsForProducts } from "@/lib/dino";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
+import { ChildContext } from "@/components/panel/parent/child-context";
 import { PanelHeading, PanelEmpty } from "@/components/panel/ui";
 import { DinoChat } from "@/components/panel/dino-chat";
 
@@ -37,6 +37,8 @@ export default async function ParentDinoPage({
     session.userId,
     studentId,
   );
+  // Hangi çocuğun verisine bakıldığı başlığın özellik satırında (§9.7).
+  const childContext = <ChildContext options={children} selectedId={selected?.id ?? null} basePath="/panel/veli/dino" />;
 
   return (
     <PanelShell
@@ -44,17 +46,10 @@ export default async function ParentDinoPage({
       fullName={session.fullName}
       email={session.email}
       pageTitle="Dino AI"
-      topbarSlot={
-        <ChildSwitcher
-          options={children}
-          selectedId={selected?.id ?? null}
-          basePath="/panel/veli/dino"
-        />
-      }
     >
       <div className="max-w-[880px]">
         <PanelHeading
-          eyebrow={selected?.name}
+          metadata={childContext}
           title="Dino AI"
           description="Çocuğunun panelde gördüğün kayıtlarını açıklar. Öğretmen notları ve özel görüşme notları aktarılmaz."
         />

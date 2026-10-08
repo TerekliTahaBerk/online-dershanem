@@ -108,11 +108,14 @@ export function PanelHeading({
   description,
   eyebrow,
   actions,
+  metadata,
 }: {
   title: string;
   description?: string;
   eyebrow?: string;
   actions?: ReactNode;
+  /** Başlık altındaki özellik satırı (ör. velinin öğrenci bağlamı). */
+  metadata?: ReactNode;
 }) {
   return (
     <PageHeader
@@ -120,6 +123,7 @@ export function PanelHeading({
       description={description}
       eyebrow={eyebrow}
       actions={actions}
+      metadata={metadata}
     />
   );
 }

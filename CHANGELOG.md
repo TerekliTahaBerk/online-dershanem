@@ -27,6 +27,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - Build provenance on every deployed artifact: `x-build-*` response headers, a public `/api/version` endpoint, a `build` block on the health and smoke endpoints, and a version/short-SHA stamp in the site footer
 - `npm run verify:production-version` and a scheduled Production Health step that compares the live commit against `main`, so a healthy but stale deploy no longer reads as green
+- Parent panel (Design Phase 7): the student being viewed is named in every page header with links to switch children; Bugün, Ödev and Öğretmenler (read-only tables), Haftalık özet and Denemeler use the calm section layout; the Deneme Ligi parent home and report show the latest released result, the change against the student's own previous exam and a plain-language summary, with no ranking
 - Role **Analiz** pages (student, teacher, parent) for combined academic and behavioral gidişat, plus a management analytics **Gidişat** panel sharing the same catalog (`PANEL_FEATURE_PROGRESS_INSIGHTS`, default on)
 - Public `/dino-ai` page positioning Dino AI as the shared layer across the three products, linked from the footer and sitemap
 - Registration-status notice on the Online Koçum product page while pricing and sign-up are not yet published

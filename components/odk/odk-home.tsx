@@ -1,136 +1,35 @@
 import Link from "next/link";
 import type { SessionUser } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
-import {
-  ArrowRight,
-  CheckCircle2,
-  LineChart,
-  UsersRound,
-} from "lucide-react";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelPageHeader } from "@/components/panel/panel-page-header";
 import { StudentDenemeLigiHome } from "@/components/odk/student-dl-home";
+import { EmptyState, PageHeader, PropertyList, PropertyRow, Section, buttonClass } from "@/components/panel/ui";
 import { prisma } from "@/lib/prisma";
-import {
-  getOdkAudienceStudentReport,
-  listOdkReportStudents,
-} from "@/lib/odk/reporting-server";
+import { getOdkAudienceStudentReport, listOdkReportStudents } from "@/lib/odk/reporting-server";
+import { netChange, previousComparable, reportSummarySentences, WEAK_ACCURACY } from "@/lib/odk/parent-report";
 
-const COPY = {
-  TEACHER: {
-    eyebrow: "Deneme Ligi · öğretmen",
-    title: "Denemeden öğrenme kararına geçin.",
-    body: "Sorumlu olduğunuz öğrencilerin açıklanmış sonuçlarını ve tekrar eden gelişim alanlarını izleyin.",
-  },
-  STUDENT: {
-    eyebrow: "Deneme Ligi",
-    title: "Sıradaki denemene hazırlan.",
-    body: "Başlama saatin, devam eden oturumun ve açıklanan sonuçların burada.",
-  },
-  PARENT: {
-    eyebrow: "Deneme Ligi · veli",
-    title: "Gelişimi sakin ve anlaşılır biçimde izleyin.",
-    body: "Bağlı öğrencinizin açıklanmış sonuçlarını yalnız kendi önceki denemeleriyle karşılaştırın.",
-  },
-} as const;
+const DATE = new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeZone: "Europe/Istanbul" });
 
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-  tone = "mint",
-}: {
-  icon: typeof LineChart;
-  label: string;
-  value: string | number;
-  tone?: "mint" | "sky" | "yellow" | "lavender";
-}) {
-  return (
-    <article className="panel-metric-card">
-      <span className={`panel-metric-icon panel-tone-${tone}`}>
-        <Icon size={18} aria-hidden="true" />
-      </span>
-      <p className="mt-4 text-2xl font-black tracking-[-.03em] text-(--site-ink)">
-        {value}
-      </p>
-      <p className="mt-1 text-xs text-(--site-muted)">{label}</p>
-    </article>
-  );
-}
-
-function PrimaryCard({
-  eyebrow,
-  title,
-  copy,
-  href,
-  action,
-  badge,
-}: {
-  eyebrow: string;
-  title: string;
-  copy: string;
-  href: string;
-  action: string;
-  badge?: React.ReactNode;
-}) {
-  return (
-    <section className="panel-surface mt-7 p-5 sm:p-6">
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-[10px] font-extrabold uppercase tracking-[.09em] text-(--brand-olive)">
-              {eyebrow}
-            </p>
-            {badge}
-          </div>
-          <h2 className="mt-2 text-xl font-semibold tracking-[-.035em] text-(--site-ink)">
-            {title}
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-(--site-body)">
-            {copy}
-          </p>
-        </div>
-        <Link
-          href={href}
-          className="panel-quick-action panel-quick-action-primary shrink-0"
-        >
-          {action}
-          <ArrowRight size={14} aria-hidden="true" />
-        </Link>
-      </div>
-    </section>
-  );
-}
-
+/**
+ * Öğretmen (rapor okuyucu) Deneme Ligi ana sayfası: son açıklanan sonuç ve
+ * sayılar düz satırlarda; ayrıntı rapor tablosunda (§11.7).
+ */
 async function TeacherHome({ userId }: { userId: string }) {
   const students = await listOdkReportStudents({ userId, role: "TEACHER" });
   const studentIds = students.map((student) => student.userId);
   const [releasedResults, attentionAreas, latest] = studentIds.length
     ? await Promise.all([
         prisma.odkExamAttempt.count({
-          where: {
-            studentUserId: { in: studentIds },
-            exam: { status: "RELEASED" },
-            score: { isNot: null },
-          },
+          where: { studentUserId: { in: studentIds }, exam: { status: "RELEASED" }, score: { isNot: null } },
         }),
         prisma.odkAttemptOutcomeScore.count({
           where: {
-            accuracyRate: { lt: 50 },
-            score: {
-              attempt: {
-                studentUserId: { in: studentIds },
-                exam: { status: "RELEASED" },
-              },
-            },
+            accuracyRate: { lt: WEAK_ACCURACY },
+            score: { attempt: { studentUserId: { in: studentIds }, exam: { status: "RELEASED" } } },
           },
         }),
         prisma.odkExamAttempt.findFirst({
-          where: {
-            studentUserId: { in: studentIds },
-            exam: { status: "RELEASED" },
-            score: { isNot: null },
-          },
+          where: { studentUserId: { in: studentIds }, exam: { status: "RELEASED" }, score: { isNot: null } },
           orderBy: { exam: { resultsReleasedAt: "desc" } },
           select: {
             student: { select: { fullName: true, email: true } },
@@ -142,123 +41,111 @@ async function TeacherHome({ userId }: { userId: string }) {
     : [0, 0, null];
   return (
     <>
-      <PrimaryCard
-        eyebrow="Son açıklanan sonuç"
-        title={
-          latest
-            ? `${latest.student.fullName || latest.student.email} · ${latest.exam.title}`
-            : "İncelenecek sonuç henüz yok"
+      <PageHeader
+        title="Deneme Ligi"
+        description="Sorumlu olduğunuz öğrencilerin açıklanmış sonuçları ve tekrar eden gelişim alanları."
+        actions={
+          <Link href="/panel/odk/ogretmen/raporlar" className={buttonClass("primary", "md")}>
+            Sonuç raporları
+          </Link>
         }
-        copy={
-          latest
-            ? `${Number(latest.score?.totalNet || 0).toFixed(2)} net. Sonucu öğrencinin önceki kanıtlarıyla birlikte yorumlayın.`
-            : "Admin sonuçları açıkladığında sorumlu olduğunuz öğrencilerin raporları burada görünür."
-        }
-        href="/panel/odk/ogretmen/raporlar"
-        action="Raporları incele"
       />
-      <section className="mt-4 grid gap-3 sm:grid-cols-3">
-        <MetricCard
-          icon={UsersRound}
-          label="Sorumlu öğrenci"
-          value={students.length}
-          tone="sky"
-        />
-        <MetricCard
-          icon={CheckCircle2}
-          label="Açıklanan sonuç"
-          value={releasedResults}
-          tone="mint"
-        />
-        <MetricCard
-          icon={LineChart}
-          label="Yeni kanıt gerektiren alan"
-          value={attentionAreas}
-          tone="yellow"
-        />
-      </section>
+      <Section title="Son açıklanan sonuç" divider={false}>
+        {latest ? (
+          <p className="text-[14.5px] text-pn-text">
+            <span className="font-medium">{latest.student.fullName || latest.student.email}</span> · {latest.exam.title} ·{" "}
+            <span className="tabular-nums">{Number(latest.score?.totalNet || 0).toFixed(2)} net</span>
+            <span className="block text-[13px] text-pn-text-muted">Sonucu öğrencinin önceki kanıtlarıyla birlikte yorumlayın.</span>
+          </p>
+        ) : (
+          <p className="text-[14px] text-pn-text-muted">İncelenecek sonuç henüz yok; sonuçlar açıklandığında burada görünür.</p>
+        )}
+      </Section>
+      <Section title="Özet">
+        <PropertyList>
+          <PropertyRow label="Sorumlu öğrenci">{String(students.length)}</PropertyRow>
+          <PropertyRow label="Açıklanan sonuç">{String(releasedResults)}</PropertyRow>
+          <PropertyRow label={`%${WEAK_ACCURACY} altındaki kazanım ölçümü`}>{String(attentionAreas)}</PropertyRow>
+        </PropertyList>
+      </Section>
     </>
   );
 }
 
+/**
+ * VELİ Deneme Ligi ana sayfası (Design Phase 7, §11.7): son açıklanan sonuç,
+ * kendi önceki denemesine göre değişim ve düz dil özet; ayrıntı raporda.
+ */
 async function ParentHome({ userId }: { userId: string }) {
   const students = await listOdkReportStudents({ userId, role: "PARENT" });
-  const report = students[0]
-    ? await getOdkAudienceStudentReport(
-        { userId, role: "PARENT" },
-        students[0].userId,
-      )
-    : null;
-  const latest = report?.exams.at(-1) || null;
-  const attention =
-    report?.trends.filter((trend) => trend.latestAccuracy < 50).length || 0;
+  const report = students[0] ? await getOdkAudienceStudentReport({ userId, role: "PARENT" }, students[0].userId) : null;
+  const pair = report ? previousComparable(report.exams) : null;
+  const latest = pair ? report!.exams.find((exam) => exam.id === pair.latest.id)! : null;
+  const change = pair ? netChange(pair.latest, pair.previous) : null;
+  const summary = report ? reportSummarySentences(report.exams, report.trends) : [];
   return (
     <>
-      <PrimaryCard
-        eyebrow="Son açıklanan sonuç"
-        title={
-          latest
-            ? `${report?.student.name} · ${latest.title}`
-            : students.length
-              ? "Açıklanmış sonuç henüz yok"
-              : "Bağlı öğrenci bulunmuyor"
+      <PageHeader
+        title="Deneme Ligi"
+        description="Açıklanmış sonuçlar yalnız öğrencinin kendi önceki denemeleriyle karşılaştırılır."
+        metadata={
+          report ? (
+            <span className="text-[13.5px] text-pn-text-secondary">
+              Öğrenci: <strong className="font-semibold text-pn-text">{report.student.name}</strong>
+              {students.length > 1 ? <span className="text-pn-text-muted"> · diğer öğrenciler raporda</span> : null}
+            </span>
+          ) : undefined
         }
-        copy={
-          latest
-            ? `${latest.totalNet.toFixed(2)} net · ${latest.correctCount} doğru · ${latest.wrongCount} yanlış · ${latest.blankCount} boş`
-            : "Sonuçlar yalnız admin kontrol edip açıkladıktan sonra burada görünür."
+        actions={
+          students.length ? (
+            <Link href="/panel/odk/veli/raporlar" className={buttonClass("primary", "md")}>
+              Gelişim raporu
+            </Link>
+          ) : undefined
         }
-        href="/panel/odk/veli/raporlar"
-        action="Gelişim raporunu aç"
       />
-      <section className="mt-4 grid gap-3 sm:grid-cols-3">
-        <MetricCard
-          icon={UsersRound}
-          label="Bağlı öğrenci"
-          value={students.length}
-          tone="sky"
-        />
-        <MetricCard
-          icon={CheckCircle2}
-          label="Açıklanan deneme"
-          value={report?.exams.length || 0}
-          tone="mint"
-        />
-        <MetricCard
-          icon={LineChart}
-          label="Gelişim alanı"
-          value={attention}
-          tone="yellow"
-        />
-      </section>
+      {!students.length ? (
+        <EmptyState className="mt-6" title="Bağlı öğrenci bulunmuyor." body="Öğrenci hesabı bağlandığında sonuçlar burada görünür." />
+      ) : !latest ? (
+        <EmptyState className="mt-6" title="Açıklanmış sonuç henüz yok." body="Sonuçlar kontrol edilip açıklandıktan sonra burada görünür." />
+      ) : (
+        <Section title="Son açıklanan sonuç" divider={false}>
+          <p className="text-[15px] font-semibold text-pn-text">
+            {latest.title}
+            <span className="ml-2 text-[13px] font-normal text-pn-text-muted">{DATE.format(latest.takenAt)}</span>
+          </p>
+          <PropertyList className="mt-3">
+            <PropertyRow label="Net">{latest.totalNet.toFixed(2)}</PropertyRow>
+            <PropertyRow label="Doğru · yanlış · boş">
+              {latest.correctCount} · {latest.wrongCount} · {latest.blankCount}
+            </PropertyRow>
+            <PropertyRow label="Kendi önceki denemesine göre">
+              {change === null ? "İlk deneme" : `${change > 0 ? "+" : ""}${change.toFixed(2)} net`}
+            </PropertyRow>
+          </PropertyList>
+          {summary.length ? (
+            <div className="mt-4 space-y-1 text-[14.5px] leading-[1.65] text-pn-text">
+              {summary.map((sentence) => (
+                <p key={sentence}>{sentence}</p>
+              ))}
+            </div>
+          ) : null}
+        </Section>
+      )}
     </>
   );
 }
 
 export async function OdkHome({ session }: { session: SessionUser }) {
-  // Öğrenci Bugün'ü kendi düzeninde (§11.1); diğer roller aşağıdaki karşılama düzeninde.
+  // Öğrenci Bugün'ü kendi düzeninde (§11.1).
   if (session.role === "STUDENT") return <StudentDenemeLigiHome session={session} />;
   // ADMIN tek personel ana sayfasını kullanır (§11.8).
   if (session.role === "ADMIN") redirect("/panel/odk/yonetim");
-  const copy = COPY[session.role];
   return (
-    <PanelShell
-      role={session.role}
-      fullName={session.fullName}
-      email={session.email}
-      product="ODK"
-    >
-      <PanelPageHeader
-        eyebrow={copy.eyebrow}
-        title={copy.title}
-        description={copy.body}
-        icon={LineChart}
-      />
-      {session.role === "TEACHER" ? (
-        <TeacherHome userId={session.userId} />
-      ) : (
-        <ParentHome userId={session.userId} />
-      )}
+    <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK" pageTitle="Deneme Ligi">
+      <div className="max-w-[900px]">
+        {session.role === "TEACHER" ? <TeacherHome userId={session.userId} /> : <ParentHome userId={session.userId} />}
+      </div>
     </PanelShell>
   );
 }

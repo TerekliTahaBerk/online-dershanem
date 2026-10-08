@@ -8,10 +8,13 @@ export function GidisatHero({
   title,
   periodLabel,
   sentences,
+  metadata,
 }: {
   title: string;
   periodLabel: string;
   sentences: string[];
+  /** Başlık altındaki özellik satırı (ör. velinin öğrenci bağlamı). */
+  metadata?: React.ReactNode;
 }) {
   const lead = sentences[0];
   const rest = sentences.slice(1, 3);
@@ -24,6 +27,7 @@ export function GidisatHero({
       <h1 className={`mt-1.5 ${PAGE_TITLE_CLASS}`}>
         {title}
       </h1>
+      {metadata ? <div className="mt-2">{metadata}</div> : null}
       {lead ? (
         <p className="mt-3 max-w-[54ch] text-[15px] leading-[1.55] text-pn-text">
           {lead}

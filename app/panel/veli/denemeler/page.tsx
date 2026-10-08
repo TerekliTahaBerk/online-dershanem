@@ -6,8 +6,8 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
 import { productLabel } from "@/lib/auth/roles";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { ChildSwitcher } from "@/components/panel/parent/child-switcher";
-import { PanelHeading, PanelEmpty } from "@/components/panel/ui";
+import { ChildContext } from "@/components/panel/parent/child-context";
+import { EmptyState, PanelHeading, buttonClass } from "@/components/panel/ui";
 import { MockExamWorkspace } from "@/components/panel/mock-exam-workspace";
 import { mockExamViewInclude, toMockExamView } from "@/lib/mock-exam-view";
 import { withParentStudentContext } from "@/lib/parent-home-summary";
@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
  * Bu ekran tasarım geçişinde geride kalmıştı: eski `--site-*` token'ları,
  * kendi öğrenci seçicisi ve kendi veli-çocuk çözümü vardı. Artık panelin
  * ortak parçalarını kullanır — `resolveParentScope` (güvenlik sınırı tek
- * yerde), topbar'daki `ChildSwitcher` ve dc token'ları.
+ * yerde), başlıktaki öğrenci bağlamı (`ChildContext`) ve panel token'ları.
  *
  * ÜRÜN ERİŞİMİ: tasarımın en önemli davranışı burada. Seçili çocuğun deneme
  * ürünü yoksa ekran boş bırakılmaz; tasarımdaki kesikli çerçeveli dürüst
@@ -44,6 +44,8 @@ export default async function ParentMockExamsPage({
     session.userId,
     studentId,
   );
+  // Hangi çocuğun verisine bakıldığı başlığın özellik satırında (§9.7).
+  const childContext = <ChildContext options={children} selectedId={selected?.id ?? null} basePath="/panel/veli/denemeler" />;
 
   const shell = (body: React.ReactNode) => (
     <PanelShell
@@ -51,13 +53,6 @@ export default async function ParentMockExamsPage({
       fullName={session.fullName}
       email={session.email}
       pageTitle="Denemeler"
-      topbarSlot={
-        <ChildSwitcher
-          options={children}
-          selectedId={selected?.id ?? null}
-          basePath="/panel/veli/denemeler"
-        />
-      }
     >
       <div className="max-w-[1000px]">{body}</div>
     </PanelShell>
@@ -67,7 +62,8 @@ export default async function ParentMockExamsPage({
     return shell(
       <>
         <PanelHeading title="Denemeler" />
-        <PanelEmpty
+        <EmptyState
+          className="mt-6"
           title="Öğrenci bağlantın hazırlanıyor."
           body="Bağlantı kurulduğunda çocuğunun deneme özeti burada görünür."
         />
@@ -80,15 +76,12 @@ export default async function ParentMockExamsPage({
   const canSeeExams = products.includes("OD") || products.includes("ODK");
 
   /*
-   * Başlıkta ÇOCUĞUN ADI durur. Tasarımın başlığı yalnız "Denemeler" ama
-   * `ChildSwitcher` tek çocuklu velide hiç basılmıyor; o durumda ekranda
-   * kimin verisine bakıldığı hiçbir yerde yazmaz. Veli panelinde bu kabul
-   * edilemez (§23 — hangi öğrencinin verisi olduğu her ekranda açık kalmalı),
-   * o yüzden ad üst etikete alındı.
+   * Başlığın özellik satırında ÇOCUĞUN ADI durur (tek çocuklu velide de):
+   * hangi öğrencinin verisine bakıldığı her ekranda açık kalmalı (§23, §9.7).
    */
   const heading = (
     <PanelHeading
-      eyebrow={selected.name}
+      metadata={childContext}
       title="Denemeler"
       description={
         products.length
@@ -102,21 +95,19 @@ export default async function ParentMockExamsPage({
     return shell(
       <>
         {heading}
-        <section className="mt-6 max-w-[700px] rounded-[14px] border border-dashed border-[#CBD6D0] bg-white p-6">
-          <h2 className="text-[17px] font-bold text-dc-ink">
-            Bu öğrencide deneme üyeliği yok
-          </h2>
-          <p className="mt-2 text-[14.5px] leading-[1.65] text-dc-ink-muted">
-            Deneme Ligi eklendiğinde denemeler, sonuç dağılımı ve gelişim
-            karşılaştırması bu ekranda görünür.
-          </p>
-          <Link
-            href={withParentStudentContext("/panel/veli/hesap", selected.id)}
-            className="mt-4 inline-block rounded-od border border-[#DDE4E0] bg-white px-[18px] py-[11px] text-[13.5px] font-bold text-dc-ink transition-colors hover:border-dc-brand"
-          >
-            Hesap ve pakete git
-          </Link>
-        </section>
+        <EmptyState
+          className="mt-6 max-w-[700px]"
+          title="Bu öğrencide deneme üyeliği yok"
+          body="Deneme Ligi eklendiğinde denemeler, sonuç dağılımı ve gelişim karşılaştırması bu ekranda görünür."
+          action={
+            <Link
+              href={withParentStudentContext("/panel/veli/hesap", selected.id)}
+              className={buttonClass("secondary", "md")}
+            >
+              Hesap ve pakete git
+            </Link>
+          }
+        />
       </>,
     );
   }
@@ -132,7 +123,8 @@ export default async function ParentMockExamsPage({
     <>
       {heading}
       {exams.length === 0 ? (
-        <PanelEmpty
+        <EmptyState
+          className="mt-6"
           title="Henüz kayıtlı deneme yok."
           body="Öğretmen veya koç bir deneme sonucu girdiğinde net dağılımı ve gelişim burada görünür."
         />
