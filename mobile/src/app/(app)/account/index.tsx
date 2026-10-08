@@ -1,0 +1,45 @@
+import { useRouter } from 'expo-router';
+import { StyleSheet, View } from 'react-native';
+
+import { Button, PageHeader, Row, Screen, Section, StatusBadge, Text } from '@/design/primitives';
+import { APP_VERSION } from '@/config/app-info';
+import { PRODUCT_STATE_PRESENTATION, ROLE_LABEL } from '@/features/shell/labels';
+import { useReadyBootstrap, useSession } from '@/lib/auth/session-provider';
+
+/**
+ * Hesap ve ayarlar merkezi (web `/panel/ayarlar` alt kümesi): kimlik, ürün
+ * durumları, güvenlik (parola, oturumlar), çıkış. Profil düzenleme ve
+ * bildirim tercihleri sonraki fazlarda (M5/M8).
+ */
+export default function AccountScreen() {
+  const bootstrap = useReadyBootstrap();
+  const { signOut } = useSession();
+  const router = useRouter();
+  const products = bootstrap.workspace?.products ?? [];
+  return (
+    <Screen>
+      <PageHeader title={bootstrap.user.fullName ?? 'Hesabım'} context={<Text tone="muted" variant="meta">{ROLE_LABEL[bootstrap.user.role]}</Text>} />
+      <Section first title="Kimlik">
+        <Row title="E-posta" subtitle={bootstrap.user.email} />
+        <Row title="Rol" subtitle={ROLE_LABEL[bootstrap.user.role]} />
+      </Section>
+      <Section title="Ürünler">
+        {products.map((product) => (
+          <Row key={product.code} title={product.label} trailing={<StatusBadge label={PRODUCT_STATE_PRESENTATION[product.state].label} tone={PRODUCT_STATE_PRESENTATION[product.state].tone} />} />
+        ))}
+      </Section>
+      <Section title="Güvenlik">
+        <Row title="Parolayı değiştir" onPress={() => router.push('/account/password')} testID="account-password" />
+        <Row title="Oturumlar" subtitle="Bu hesabın açık olduğu cihazlar" onPress={() => router.push('/account/sessions')} testID="account-sessions" />
+      </Section>
+      <View style={styles.footer}>
+        <Button label="Çıkış yap" variant="secondary" onPress={() => void signOut()} testID="account-sign-out" />
+        <Text variant="meta" tone="muted" style={styles.center}>
+          Uygulama sürümü {APP_VERSION ?? 'bilinmiyor'}
+        </Text>
+      </View>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({ footer: { gap: 12 }, center: { textAlign: 'center' } });

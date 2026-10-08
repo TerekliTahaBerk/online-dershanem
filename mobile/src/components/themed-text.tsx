@@ -1,6 +1,7 @@
 import { Platform, StyleSheet, Text, type TextProps } from 'react-native';
 
-import { BrandColors, Fonts, ThemeColor } from '@/constants/theme';
+import { BrandColors, ThemeColor } from '@/constants/theme';
+import { font } from '@/design/tokens';
 import { useTheme } from '@/hooks/use-theme';
 
 export type ThemedTextProps = TextProps & {
@@ -66,7 +67,7 @@ const styles = StyleSheet.create({
     color: BrandColors.brandStrong,
   },
   code: {
-    fontFamily: Fonts.mono,
+    fontFamily: font.medium,
     fontWeight: Platform.select({ android: 700 }) ?? 500,
     fontSize: 12,
   },
