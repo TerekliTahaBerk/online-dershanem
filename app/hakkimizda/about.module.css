@@ -1,0 +1,55 @@
+.page { color: #183d30; }
+.section { padding-block: 80px; }
+.eyebrow { margin-bottom: 19px; font-size: 11px; font-weight: 750; letter-spacing: .12em; color: #557044; }
+.page h2 { font-family: var(--font-display); font-size: clamp(29px, 3.2vw, 44px); line-height: 1.22; letter-spacing: -.035em; font-weight: 800; }
+.page h2 span { color: #0c7c57; }
+.mission { display: grid; grid-template-columns: 1fr 1fr; gap: 70px; align-items: start; scroll-margin-top: 88px; }
+.prose p { color: #56665b; font-size: 16px; line-height: 1.85; }
+.prose p + p { margin-top: 20px; }
+.prose .missionNote { border-left: 3px solid #fdd81d; padding-left: 20px; font-weight: 650; color: #183d30; }
+.productsSection { background: #fcfaf4; border-block: 1px solid #e7e8dc; }
+.heading { max-width: 750px; }
+.heading > p:last-child:not(.eyebrow) { max-width: 630px; margin-top: 22px; color: #56665b; font-size: 16px; line-height: 1.8; }
+.products { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 32px; margin-top: 45px; }
+.product { --accent: #0c7c57; display: flex; flex-direction: column; border-top: 2px solid var(--accent); padding-top: 20px; }
+.OD { --accent: #0c7c57; }
+.OK { --accent: #0754c9; }
+.ODK { --accent: #5b2599; }
+.KPSS { --accent: #98640c; }
+.productTop { display: flex; align-items: center; justify-content: space-between; color: var(--accent); }
+.productTop > span:first-child { font-family: var(--font-display); font-size: 40px; font-weight: 800; letter-spacing: -.04em; }
+.productTop > span:last-child { font-size: 12px; font-variant-numeric: tabular-nums; }
+.product h3 { margin-top: 20px; font-size: 16px; font-weight: 750; color: var(--accent); }
+.product > p { margin-block: 16px 20px; font-size: 15px; line-height: 1.8; color: #56665b; }
+.product > a { display: flex; align-items: center; justify-content: space-between; min-height: 44px; margin-top: auto; color: var(--accent); font-size: 14px; font-weight: 750; }
+.principles { display: grid; grid-template-columns: 1fr 1fr; column-gap: 60px; margin-top: 40px; }
+.principle { display: flex; align-items: baseline; gap: 22px; border-top: 1px solid #dfe5d9; padding-block: 28px; }
+.number { font-size: 12px; font-weight: 700; color: #83937a; font-variant-numeric: tabular-nums; }
+.principle h3 { font-size: 20px; line-height: 1.4; font-weight: 750; }
+.principle p { margin-top: 11px; font-size: 15px; line-height: 1.8; color: #56665b; }
+.dino { background: #183d30; color: #fcfaf4; }
+.dinoGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 70px; align-items: center; padding-block: 65px; }
+.dino .eyebrow { color: #b9d4a9; }
+.dino h2 span { color: #fdd81d; }
+.dinoBody p { font-size: 15px; line-height: 1.85; color: #e0e9db; }
+.dinoBody p + p { margin-top: 16px; color: #b9cbb6; font-size: 13px; }
+.dinoBody a { display: inline-flex; align-items: center; gap: 24px; min-height: 48px; margin-top: 22px; color: #fdd81d; font-size: 14px; font-weight: 750; }
+.closing { text-align: center; }
+.closing > p:not(.eyebrow) { max-width: 610px; margin: 23px auto 0; color: #56665b; font-size: 16px; line-height: 1.85; }
+.actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.primary, .secondary { display: inline-flex; justify-content: center; align-items: center; gap: 20px; min-height: 52px; padding: 13px 25px; border-radius: 100px; border: 1px solid #ccd3c5; font-size: 14px; font-weight: 750; }
+.primary { background: #183d30; color: #fff; border-color: #183d30; }
+.primary:hover { background: #0c7c57; }
+.secondary:hover { background: #eff3e9; }
+.page a:focus-visible { outline: 3px solid #0754c9; outline-offset: 5px; }
+.dino a:focus-visible { outline-color: #fdd81d; }
+@media (max-width: 767px) {
+  .section { padding-block: 50px; }
+  .mission, .dinoGrid { grid-template-columns: 1fr; gap: 26px; }
+  .products { grid-template-columns: 1fr; gap: 32px; }
+  .productTop > span:first-child { font-size: 35px; }
+  .principles { grid-template-columns: 1fr; margin-top: 30px; }
+  .principle { gap: 16px; padding-block: 23px; }
+  .dinoGrid { padding-block: 45px; }
+  .actions > a { width: 100%; max-width: 330px; }
+}

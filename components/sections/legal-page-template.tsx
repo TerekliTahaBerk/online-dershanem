@@ -1,147 +1,64 @@
 import Link from "next/link";
-import { ArrowRight, Mail, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, Mail } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
-import { PageHero } from "@/components/site/page-hero";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
+import styles from "./legal-page-template.module.css";
 
-type LegalSection = {
-  title: string;
-  paragraphs: string[];
-};
-
-type LegalPageTemplateProps = {
+export type LegalSection = { title: string; paragraphs: string[] };
+type Props = {
   pageTitle: string;
   intro: string;
   effectiveDate: string;
   sections: LegalSection[];
+  summary: { title: string; text: string }[];
+  reviewNote?: string;
+  sources: { title: string; href: string }[];
 };
-
-/**
- * Yasal sayfa şablonu (KVKK / Gizlilik / İade) — yeni public site dili:
- * site-scope + büyük serif hero + numaralı, yuvarlak köşeli metin kartları.
- */
-export function LegalPageTemplate({
-  pageTitle,
-  intro,
-  effectiveDate,
-  sections,
-}: LegalPageTemplateProps) {
-  const sectionId = (title: string) =>
-    title
-      .toLocaleLowerCase("tr-TR")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/ı/g, "i")
-      .replace(/ğ/g, "g")
-      .replace(/ş/g, "s")
-      .replace(/ç/g, "c")
-      .replace(/ö/g, "o")
-      .replace(/ü/g, "u")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
-  const pathByTitle: Record<string, string> = {
-    "İade Politikası": "/iade/",
-    "Gizlilik Politikası": "/gizlilik/",
-    "KVKK Aydınlatma Metni": "/kvkk/",
-  };
-  const canonicalPath = pathByTitle[pageTitle] ?? "/";
-
+const pages = [
+  { title: "Gizlilik Politikası", label: "Gizlilik", href: "/gizlilik" },
+  { title: "KVKK Aydınlatma Metni", label: "KVKK", href: "/kvkk" },
+  { title: "İade Politikası", label: "İptal & İade", href: "/iade" },
+];
+export function LegalPageTemplate({ pageTitle, intro, effectiveDate, sections, summary, reviewNote, sources }: Props) {
+  const current = pages.find((page) => page.title === pageTitle)!;
   return (
     <div className="site-scope">
-      <SchemaJsonLd
-        schema={breadcrumbJsonLd([
-          { name: "Ana Sayfa", url: "/" },
-          { name: pageTitle, url: canonicalPath },
-        ])}
-      />
+      <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana Sayfa", url: "/" }, { name: pageTitle, url: current.href }])} />
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
-        <PageHero
-          eyebrow="Yasal Bilgilendirme"
-          align="left"
-          title={pageTitle}
-          subtitle={intro}
-          actions={
-            <p className="inline-flex min-h-11 items-center gap-2 rounded-full border border-(--site-line) bg-white px-4 py-2 text-[13px] text-(--site-muted)">
-              <ShieldCheck
-                size={15}
-                className="text-(--brand-olive)"
-                aria-hidden="true"
-              />
-              Yürürlük tarihi:
-              <strong className="font-semibold text-(--site-ink)">
-                {effectiveDate}
-              </strong>
-            </p>
-          }
-        />
-
-        <section className="site-container py-14 sm:py-20">
-          <div className="grid gap-10 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-16">
-            <aside className="lg:sticky lg:top-28 lg:self-start">
-              <p className="site-kicker">Bu metinde</p>
-              <nav
-                aria-label={`${pageTitle} bölüm başlıkları`}
-                className="mt-4 border-y border-(--site-line)"
-              >
-                {sections.map((section, index) => (
-                  <Link
-                    key={section.title}
-                    href={`#${sectionId(section.title)}`}
-                    className="flex min-h-12 items-center gap-3 border-b border-(--site-line) py-3 text-[13.5px] leading-5 text-(--site-body) last:border-b-0 hover:text-(--brand-olive)"
-                  >
-                    <span className="text-xs font-bold text-(--site-muted)">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    {section.title.replace(/^\d+\.\s*/, "")}
-                  </Link>
-                ))}
+        <header className={styles.hero}>
+          <div className="site-container">
+            <p className={styles.eyebrow}>Açık bilgi. Net koşullar.</p>
+            <h1>{pageTitle}</h1>
+            <p className={styles.intro}>{intro}</p>
+            <p className={styles.date}>Metin güncellemesi <span aria-hidden="true">·</span> {effectiveDate}</p>
+            <nav className={styles.tabs} aria-label="Yasal bilgilendirme sayfaları">
+              {pages.map((page) => <Link key={page.href} href={page.href} aria-current={page === current ? "page" : undefined}>{page.label}</Link>)}
+            </nav>
+          </div>
+        </header>
+        <div className={`site-container ${styles.content}`}>
+          <div className={styles.summary}>
+            {summary.map((item, i) => <div key={item.title}><span className={styles.number}>0{i + 1}</span><h2>{item.title}</h2><p>{item.text}</p></div>)}
+          </div>
+          {reviewNote && <aside className={styles.notice} aria-label="Metin hazırlık durumu"><strong>İnceleme taslağı</strong><p>{reviewNote}</p></aside>}
+          <div className={styles.layout}>
+            <aside className={styles.sidebar}>
+              <p className={styles.eyebrow}>Bu sayfada</p>
+              <nav aria-label={`${pageTitle} bölüm başlıkları`}>
+                {sections.map((section, i) => <a key={section.title} href={`#bolum-${i + 1}`}><span>{String(i + 1).padStart(2, "0")}</span>{section.title}</a>)}
               </nav>
-              <div className="mt-5 rounded-[18px] border border-(--site-line) bg-(--site-bg-warm) p-4">
-                <Mail
-                  size={17}
-                  className="text-(--brand-olive)"
-                  aria-hidden="true"
-                />
-                <p className="mt-3 text-[12.5px] leading-6 text-(--site-body)">
-                  Bu metinle ilgili bir sorunuz varsa ekibimize yazabilirsiniz.
-                </p>
-                <Link
-                  href="/iletisim"
-                  className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-(--brand-olive) hover:underline"
-                >
-                  İletişime geç <ArrowRight size={14} aria-hidden="true" />
-                </Link>
-              </div>
+              <div className={styles.help}><Mail size={20} aria-hidden="true" /><h2>Bir sorunuz mu var?</h2><p>Talebinizi doğru ekibe ulaştıralım.</p><Link href="/iletisim">Bize ulaşın <ArrowUpRight size={16} aria-hidden="true" /></Link></div>
             </aside>
-
-            <div className="overflow-hidden rounded-[26px] border border-(--site-line) bg-white px-6 sm:px-10">
-              {sections.map((section, idx) => (
-                <article
-                  key={section.title}
-                  id={sectionId(section.title)}
-                  className="scroll-mt-28 border-b border-(--site-line) py-8 last:border-b-0 sm:py-10"
-                >
-                  <div className="flex items-start gap-4">
-                    <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-(--brand-olive-soft) text-xs font-bold text-(--brand-olive)">
-                      {String(idx + 1).padStart(2, "0")}
-                    </span>
-                    <h2 className="font-display text-[22px] font-normal leading-tight tracking-[-0.01em] text-(--site-ink) sm:text-[27px]">
-                      {section.title}
-                    </h2>
-                  </div>
-                  <div className="mt-5 space-y-4 pl-0 text-[15px] leading-7 text-(--site-body) sm:pl-12">
-                    {section.paragraphs.map((paragraph) => (
-                      <p key={paragraph}>{paragraph}</p>
-                    ))}
-                  </div>
-                </article>
-              ))}
+            <div className={styles.document}>
+              {sections.map((section, i) => <section key={section.title} id={`bolum-${i + 1}`} className={styles.section}><div className={styles.sectionTitle}><span className={styles.number}>{String(i + 1).padStart(2, "0")}</span><h2>{section.title}</h2></div>{section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</section>)}
+              <div className={styles.sources}><h2>İlgili resmî kaynaklar</h2>{sources.map((source) => <a key={source.href} href={source.href} target="_blank" rel="noreferrer">{source.title}<ArrowUpRight size={14} aria-hidden="true" /></a>)}</div>
             </div>
           </div>
-        </section>
+          <section className={styles.contact}><div><p className={styles.eyebrow}>İletişim</p><h2>Sorunuz cevapsız kalmasın.</h2><p>Gizlilik, kişisel veriler veya iade talebiniz için bize yazın.</p></div><a href="mailto:iletisim@onlinedershanem.com">E-posta gönder <ArrowUpRight size={18} aria-hidden="true" /></a></section>
+        </div>
       </main>
       <SiteFooter />
     </div>

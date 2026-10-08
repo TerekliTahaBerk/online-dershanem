@@ -1,0 +1,12 @@
+.page { padding-block: 42px 65px; background: #fff; --brand-orange-ink: #0c7c57; --brand-orange: #0c7c57; --brand-orange-soft: #f0f4e8; }
+.article { max-width: 780px; margin-inline: auto; }
+.back { display: inline-flex; align-items: center; min-height: 44px; margin-bottom: 27px; font-size: 13px; font-weight: 700; color: #59705d; }
+.header { text-align: center; }
+.header h1 { font-size: clamp(31px, 4vw, 53px); color: #183d30; line-height: 1.18; }
+.header > p:first-child { display: inline-block; padding: 6px 13px; border-radius: 100px; background: #eff3e9; }
+.header > p { margin-inline: auto; max-width: 700px; }
+.header > div { justify-content: center; }
+.article > nav { border-radius: 0; border-inline: 0; }
+.article > aside { border-radius: 0; border: 0; border-left: 3px solid #e3c328; background: #fcfaf4; }
+.article > div > section { padding-top: 12px; }
+@media (max-width: 639px) { .page { padding-block: 25px 45px; } .back { margin-bottom: 20px; } }

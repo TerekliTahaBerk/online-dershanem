@@ -1,7 +1,11 @@
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { BlogIndex } from "@/components/blog/blog-index";
-import { ProductClosingCta } from "@/components/product/product-sections";
+import { EditorialProductHero } from "@/components/product/editorial-product-hero";
+import { ArrowDown, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { blogPublishedAt, estimateBlogReadingMinutes, formatBlogDate } from "@/lib/blog-meta";
+import styles from "@/components/blog/blog.module.css";
 import { blogPosts } from "@/lib/blog-content";
 import { siteUrl } from "@/lib/content";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
@@ -29,11 +33,21 @@ export default function BlogPage() {
       />
       <SiteHeader />
       <main id="main-content" tabIndex={-1}>
-        <BlogIndex posts={blogPosts} />
-        <ProductClosingCta
-          title="Yazıyı okudun, sırada plan var."
-          body="Ders, koçluk ve denemeyi ihtiyacına göre seç."
+        <EditorialProductHero
+          tone="lesson"
+          titleId="blog-title"
+          lines={[{ text: "Yeni bir bakış açısı." }, { text: "Daha bilinçli", emphasis: "bir adım." }]}
+          description="Nasıl çalışmalı, nereden başlamalı, deneme sonuçlarını nasıl okumalı? LGS ve YKS hazırlığında öğrenciler ve veliler için çalışma yöntemleri, planlama ve öğrenme üzerine rehberler."
+          actions={<a href="#yazilar">Yazıları keşfet <ArrowDown size={18} aria-hidden="true" /></a>}
         />
+        <BlogIndex posts={blogPosts.map((post) => ({
+          slug: post.slug, category: post.category, title: post.title,
+          excerpt: post.excerpt, cardSnippet: post.cardSnippet, featured: post.featured,
+          readingMinutes: estimateBlogReadingMinutes(post), date: formatBlogDate(blogPublishedAt[post.slug]),
+        }))} />
+        <section className={styles.closing}>
+          <div className="site-container"><h2>Okuduklarını <span>bir sonraki adımına taşı.</span></h2><p>Canlı ders, kişisel çalışma planı ve online denemeden ihtiyacın olanı seç; sana uygun hazırlık düzenini kur.</p><Link href="/paketler">Paketini oluştur <ArrowRight size={18} aria-hidden="true" /></Link></div>
+        </section>
       </main>
       <SiteFooter />
     </div>

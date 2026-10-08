@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import styles from "./article.module.css";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site/site-header";
@@ -98,10 +99,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <main
         id="main-content"
         tabIndex={-1}
-        className="bg-(--site-bg-warm) py-10 sm:py-20"
+        className={styles.page}
       >
         <Container>
-          <article className="mx-auto max-w-3xl sm:rounded-3xl sm:border sm:border-(--site-line) sm:bg-white sm:p-10 sm:shadow-[0_1px_2px_rgba(20,20,15,0.04)]">
+          <article className={styles.article}>
+            <Link href="/blog" className={styles.back}>← Tüm yazılar</Link>
+            <header className={styles.header}>
             <p className="text-xs font-semibold uppercase tracking-wide text-(--brand-orange-ink)">
               {post.category}
             </p>
@@ -124,6 +127,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               <span aria-hidden="true">·</span>
               <span>Son kontrol {formatBlogDate(reviewedAt)}</span>
             </div>
+
+            </header>
 
             {post.summary?.length ? (
               <aside
