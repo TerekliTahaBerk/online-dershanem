@@ -194,8 +194,8 @@ export default function OnlineDershanemPage() {
           title="Canlı derse başla."
           body="İstersen yalnız ders, istersen koçluk ve denemeyle birlikte."
           secondaryCta={{
-            href: "/ders-paketleri",
-            label: "Ders Paketlerini Gör",
+            href: "/paketler",
+            label: "Paketini Oluştur",
           }}
         />
       </main>

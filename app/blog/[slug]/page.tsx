@@ -268,7 +268,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 href={
                   post.cta.href ??
                   (/(Paket|Sistemini İncele)/i.test(post.cta.buttonLabel)
-                    ? "/ders-paketleri/"
+                    ? "/paketler"
                     : "/iletisim/")
                 }
                 className="site-btn site-btn-primary mt-5"

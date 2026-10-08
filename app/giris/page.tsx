@@ -57,7 +57,7 @@ function LoginScreen({
   registered: boolean;
 }) {
   return (
-    <AuthCard title="Tekrar hoş geldin" showDenemeLigiLogo>
+    <AuthCard title="Tekrar hoş geldin" showProductLogos>
       <LoginForm resetSuccess={resetSuccess} registered={registered} />
 
       <p className="mt-5 text-center text-[13px] leading-relaxed text-dc-ink-muted">
@@ -80,7 +80,7 @@ function RenewingNotice() {
       className="site-scope grid min-h-dvh place-items-center px-6 py-10 text-center"
     >
       <div className="w-full max-w-[460px]">
-        <AuthBrandLogos showDenemeLigiLogo />
+        <AuthBrandLogos showProductLogos />
         <Image
           src="/panel-yenileniyor-seffaf.png"
           alt="Bilgisayar başında çalışan onlinedershanem. karakteri"

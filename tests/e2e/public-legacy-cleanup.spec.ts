@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { publicLegacyRedirects } from "../../lib/public-legacy-redirects";
 
-const landings = ["/hakkimizda", "/sss", "/lgs", "/yks", "/matematik", "/online-ozel-ders"];
+const landings = ["/hakkimizda", "/sss", "/online-ozel-ders"];
 
 test("aliases send a single permanent HTTP redirect with query parameters intact", async ({ request }) => {
   for (const route of publicLegacyRedirects) {

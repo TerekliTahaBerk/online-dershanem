@@ -81,7 +81,7 @@ const newBlogPosts: BlogPost[] = [
         ],
         links: [
           { label: "Deneme analizini adım adım öğrenin", href: "/blog/matematik-deneme-analizi" },
-          { label: "LGS matematik paketini inceleyin", href: "/lgs" }
+          { label: "LGS matematik paketini inceleyin", href: "/urunler/online-dershanem" }
         ]
       },
       {
@@ -99,7 +99,7 @@ const newBlogPosts: BlogPost[] = [
       title: "LGS matematik planını birlikte hazırlayalım",
       text: "En fazla dört öğrencilik canlı derste öğrencinin seviyesine göre çalışma yönünü belirleyelim.",
       buttonLabel: "LGS Paketini İncele",
-      href: "/lgs"
+      href: "/urunler/online-dershanem"
     },
     relatedSlugs: ["lgs-yeni-nesil-matematik-sorulari", "matematik-deneme-analizi", "lgs-matematikte-zorlananlar-icin"]
   },
@@ -155,7 +155,7 @@ const newBlogPosts: BlogPost[] = [
         ],
         links: [
           { label: "TYT problem çözme hızını geliştirme rehberi", href: "/blog/tyt-matematik-problem-cozme-hizi" },
-          { label: "YKS matematik ders paketini görün", href: "/yks" }
+          { label: "YKS matematik ders paketini görün", href: "/urunler/online-dershanem" }
         ]
       },
       {
@@ -173,7 +173,7 @@ const newBlogPosts: BlogPost[] = [
       title: "TYT ve AYT matematik düzenini birlikte oluşturalım",
       text: "YKS paketinin canlı ders ve ders sonrası yönlendirme modelini inceleyin.",
       buttonLabel: "YKS Paketini İncele",
-      href: "/yks"
+      href: "/urunler/online-dershanem"
     },
     relatedSlugs: ["ayt-matematik-calisma-programi", "tyt-matematik-problem-cozme-hizi", "yks-matematik-net-artirma"]
   },
@@ -229,7 +229,7 @@ const newBlogPosts: BlogPost[] = [
         ],
         links: [
           { label: "Matematik deneme analiz şablonunu kullanın", href: "/blog/matematik-deneme-analizi" },
-          { label: "YKS matematik paketini inceleyin", href: "/yks" }
+          { label: "YKS matematik paketini inceleyin", href: "/urunler/online-dershanem" }
         ]
       },
       {
@@ -243,7 +243,7 @@ const newBlogPosts: BlogPost[] = [
       title: "AYT matematikte sıradaki adımı belirleyin",
       text: "TYT ve AYT hedeflerini birlikte ele alan YKS matematik paketini görün.",
       buttonLabel: "YKS Paketini İncele",
-      href: "/yks"
+      href: "/urunler/online-dershanem"
     },
     relatedSlugs: ["tyt-matematik-calisma-programi", "matematikte-temel-eksigi-nasil-kapatilir", "matematik-deneme-analizi"]
   },
@@ -301,7 +301,7 @@ const newBlogPosts: BlogPost[] = [
         ],
         links: [
           { label: "Online matematik dersi nasıl olmalı?", href: "/blog/online-matematik-dersi-nasil-olmali" },
-          { label: "LGS ve YKS paketlerini karşılaştırın", href: "/ders-paketleri" }
+          { label: "LGS ve YKS paketlerini karşılaştırın", href: "/paketler" }
         ]
       }
     ],
@@ -375,7 +375,7 @@ const newBlogPosts: BlogPost[] = [
         ],
         links: [
           { label: "LGS matematik çalışma programını kurun", href: "/blog/lgs-matematik-calisma-programi" },
-          { label: "LGS canlı matematik paketini inceleyin", href: "/lgs" }
+          { label: "LGS canlı matematik paketini inceleyin", href: "/urunler/online-dershanem" }
         ]
       }
     ],
@@ -383,7 +383,7 @@ const newBlogPosts: BlogPost[] = [
       title: "Yeni nesil sorularda çözüm adımlarını birlikte gösterelim",
       text: "En fazla dört öğrencilik canlı derste öğrenci çözümünü gösterir ve takıldığı adımda geri bildirim alır.",
       buttonLabel: "LGS Paketini İncele",
-      href: "/lgs"
+      href: "/urunler/online-dershanem"
     },
     relatedSlugs: ["lgs-matematik-calisma-programi", "matematik-deneme-analizi", "lgs-online-ders-net-artirma"]
   },
@@ -444,7 +444,7 @@ const newBlogPosts: BlogPost[] = [
         ],
         links: [
           { label: "TYT matematik çalışma programına dönün", href: "/blog/tyt-matematik-calisma-programi" },
-          { label: "YKS matematik paketini inceleyin", href: "/yks" }
+          { label: "YKS matematik paketini inceleyin", href: "/urunler/online-dershanem" }
         ]
       }
     ],
@@ -452,7 +452,7 @@ const newBlogPosts: BlogPost[] = [
       title: "TYT matematikte sıradaki çalışma adımını belirleyin",
       text: "Canlı derste çözüm adımlarının gösterildiği YKS matematik paketini inceleyin.",
       buttonLabel: "YKS Paketini İncele",
-      href: "/yks"
+      href: "/urunler/online-dershanem"
     },
     relatedSlugs: ["tyt-matematik-calisma-programi", "matematik-deneme-analizi", "yks-matematik-net-artirma"]
   },
@@ -517,7 +517,7 @@ const newBlogPosts: BlogPost[] = [
           "Ücret, taahhüt ve iptal koşulları açık mı?"
         ],
         links: [
-          { label: "LGS ve YKS paketlerini karşılaştırın", href: "/ders-paketleri" },
+          { label: "LGS ve YKS paketlerini karşılaştırın", href: "/paketler" },
           { label: "Tüm sık sorulan soruları görün", href: "/sss" }
         ]
       }
@@ -530,7 +530,7 @@ const newBlogPosts: BlogPost[] = [
       title: "Ders modelini ve fiyatı şeffaf biçimde inceleyin",
       text: `${subjectPackageGroups[0].packages.map((pkg) => `${pkg.name}: ${pkg.discountedPrice}`).join(". ")}. Ayda ${subjectPackageGroups[0].packages[0].lessonsPerMonth} canlı, ${subjectPackageGroups[0].packages[0].lessonDurationMinutes} dakikalık ders içerir.`,
       buttonLabel: "Paketleri Karşılaştır",
-      href: "/ders-paketleri"
+      href: "/paketler"
     },
     relatedSlugs: ["online-dershane-secim-rehberi-2026", "ozel-ders-mi-kucuk-grup-mu", "matematikte-temel-eksigi-nasil-kapatilir"]
   },
@@ -608,7 +608,7 @@ const newBlogPosts: BlogPost[] = [
       title: "Deneme analizini ders sonrası yönlendirmeye bağlayın",
       text: "Öğrencinin hangi adımı çalışacağını netlikle gösteren LGS ve YKS matematik paketlerini inceleyin.",
       buttonLabel: "Paketleri Karşılaştır",
-      href: "/ders-paketleri"
+      href: "/paketler"
     },
     relatedSlugs: ["lgs-matematik-calisma-programi", "tyt-matematik-calisma-programi", "deneme-analizi-nasil-yapilir"]
   }
