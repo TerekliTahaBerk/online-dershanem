@@ -203,13 +203,13 @@ export function OdkPilotControl({
 
   return (
     <div className="grid gap-5 xl:grid-cols-[390px_minmax(0,1fr)]">
-      <section className="panel-surface h-fit p-5 sm:p-6">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white h-fit p-5 sm:p-6">
         <h2 className="text-sm font-extrabold">Açık katılımcı listesi</h2>
         <p className="mt-2 text-xs leading-5 text-(--site-muted)">
           Her rol bilinçli seçilir. Öğrenci ve veliler için aktif Deneme Ligi ürün
           erişimi zorunludur.
         </p>
-        <label className="panel-field mt-4">
+        <label className="pn-field mt-4">
           Pilot adı
           <input
             value={name}
@@ -288,7 +288,7 @@ export function OdkPilotControl({
             needsSecondStudent
           }
           onClick={() => void create()}
-          className="panel-primary-button mt-4 w-full"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px] mt-4 w-full"
         >
           Pilot taslağı oluştur
         </button>
@@ -308,7 +308,7 @@ export function OdkPilotControl({
               Aynı anda yalnız bir açık pilot koşusu bulunabilir.
             </p>
           </div>
-          <label className="panel-field">
+          <label className="pn-field">
             Durdurma nedeni
             <select
               className="w-auto"
@@ -334,7 +334,7 @@ export function OdkPilotControl({
           {rows.map((run) => {
             const presentation = pilotStatusPresentation[run.status];
             return (
-              <article key={run.id} className="panel-surface p-5">
+              <article key={run.id} className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
@@ -355,7 +355,7 @@ export function OdkPilotControl({
                     {run.status === "DRAFT" ? (
                       <button
                         disabled={busy}
-                        className="panel-quick-action panel-quick-action-primary"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
                         onClick={() => void transition(run, "ACTIVATE")}
                       >
                         <CirclePlay size={14} /> Aktive et
@@ -365,21 +365,21 @@ export function OdkPilotControl({
                       <>
                         <button
                           disabled={busy}
-                          className="panel-quick-action"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                           onClick={() => void transition(run, "PAUSE")}
                         >
                           <CirclePause size={14} /> Duraklat
                         </button>
                         <button
                           disabled={busy}
-                          className="panel-quick-action"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                           onClick={() => void transition(run, "COMPLETE")}
                         >
                           <SquareCheckBig size={14} /> Tamamla
                         </button>
                         <button
                           disabled={busy}
-                          className="panel-quick-action text-rose-700"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] text-rose-700"
                           onClick={() => void transition(run, "ROLLBACK")}
                         >
                           <ShieldAlert size={14} /> Geri al
@@ -390,14 +390,14 @@ export function OdkPilotControl({
                       <>
                         <button
                           disabled={busy}
-                          className="panel-quick-action panel-quick-action-primary"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
                           onClick={() => void transition(run, "RESUME")}
                         >
                           <RotateCcw size={14} /> Sürdür
                         </button>
                         <button
                           disabled={busy}
-                          className="panel-quick-action text-rose-700"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] text-rose-700"
                           onClick={() => void transition(run, "ROLLBACK")}
                         >
                           <ShieldAlert size={14} /> Geri al

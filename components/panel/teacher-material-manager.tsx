@@ -58,7 +58,7 @@ export function TeacherMaterialManager({
   return (
     <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
       <form
-        className="panel-surface h-fit p-5"
+        className="overflow-hidden rounded-[10px] border border-pn-border bg-white h-fit p-5"
         onSubmit={async (event) => {
           event.preventDefault();
           const formElement = event.currentTarget;
@@ -123,7 +123,7 @@ export function TeacherMaterialManager({
           name="groupId"
           required
           aria-label="Grup"
-          className="panel-input mt-4"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-4"
         >
           <option value="">Grup seçin</option>
           {groups.map((group) => (
@@ -137,7 +137,7 @@ export function TeacherMaterialManager({
             name="kind"
             defaultValue="LINK"
             aria-label="Materyal türü"
-            className="panel-input mt-2"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
           >
             <option value="LINK">Bağlantı</option>
             <option value="PDF">PDF bağlantısı</option>
@@ -147,7 +147,7 @@ export function TeacherMaterialManager({
         <input
           name="title"
           required
-          className="panel-input mt-2"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
           placeholder="Materyal başlığı"
         />
         {source === "LINK" ? (
@@ -155,7 +155,7 @@ export function TeacherMaterialManager({
             name="url"
             type="url"
             required
-            className="panel-input mt-2"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
             placeholder="https://..."
           />
         ) : (
@@ -165,7 +165,7 @@ export function TeacherMaterialManager({
               type="file"
               accept="application/pdf,video/mp4,.pdf,.mp4"
               required
-              className="panel-input mt-2 file:mr-3 file:rounded-lg file:border-0 file:bg-(--brand-olive-soft) file:px-3 file:py-1 file:text-xs file:font-bold file:text-(--brand-olive)"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2 file:mr-3 file:rounded-lg file:border-0 file:bg-(--brand-olive-soft) file:px-3 file:py-1 file:text-xs file:font-bold file:text-(--brand-olive)"
             />
             <p className="mt-2 text-[10.5px] leading-4 text-(--site-muted)">
               PDF veya MP4 · en fazla 4 MB · dosya yalnızca yetkili grup
@@ -175,7 +175,7 @@ export function TeacherMaterialManager({
         )}
         <textarea
           name="description"
-          className="panel-input mt-2 min-h-24"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2 min-h-24"
           placeholder="Kısa kullanım yönlendirmesi"
         />
         <label className="mt-3 flex items-center gap-3 rounded-2xl border border-(--site-line) p-3 text-xs font-bold">
@@ -184,13 +184,13 @@ export function TeacherMaterialManager({
         </label>
         <textarea
           name="transcript"
-          className="panel-input mt-2 min-h-28"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2 min-h-28"
           maxLength={8000}
           placeholder="İsteğe bağlı metin dökümü / erişilebilir metin alternatifi"
         />
         <button
           disabled={busy}
-          className="site-btn site-btn-primary site-btn-sm mt-4 w-full"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-8 px-2.5 text-[13px] mt-4 w-full"
         >
           {busy
             ? "Paylaşılıyor"

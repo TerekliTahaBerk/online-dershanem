@@ -194,7 +194,7 @@ export default async function AdminQualityPage() {
         </article>
       </section>
 
-      <section className="mt-5 panel-surface overflow-hidden">
+      <section className="rounded-[10px] border border-pn-border bg-white mt-5 overflow-hidden">
         <div className="border-b border-(--site-line) p-5">
           <h2 className="text-sm font-extrabold">
             Başlangıca göre gözlenen değişim
@@ -268,7 +268,7 @@ export default async function AdminQualityPage() {
         </div>
       </section>
 
-      <section className="mt-5 panel-surface p-5">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-5 p-5">
         <div className="flex gap-3">
           <Info
             size={18}

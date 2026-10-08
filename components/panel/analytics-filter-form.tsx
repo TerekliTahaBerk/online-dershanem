@@ -12,7 +12,7 @@ export function AnalyticsFilterForm({
     <form
       method="get"
       action={action}
-      className="panel-surface flex flex-wrap gap-3 p-4"
+      className="overflow-hidden rounded-[10px] border border-pn-border bg-white flex flex-wrap gap-3 p-4"
     >
       <label className="text-xs font-bold text-(--site-muted)">
         Başlangıç

@@ -619,7 +619,7 @@ export default async function BusinessSectionPage({
           <>
             <form
               method="get"
-              className="panel-surface mb-4 flex flex-wrap gap-3 p-4"
+              className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 flex flex-wrap gap-3 p-4"
             >
               <label className="text-xs">
                 Başlangıç
@@ -690,7 +690,7 @@ export default async function BusinessSectionPage({
                 icon={Bot}
               />
             </section>
-            <section className="panel-surface mt-5 p-5">
+            <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-5 p-5">
               <h2 className="text-sm font-extrabold">Operasyon özeti</h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
                 <p className="rounded-xl bg-emerald-50 p-4 text-sm">
@@ -756,7 +756,7 @@ export default async function BusinessSectionPage({
             <InboxAutoRefresh />
             <form
               method="get"
-              className="panel-surface mb-4 grid gap-2 p-3 sm:grid-cols-3 xl:grid-cols-6"
+              className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 grid gap-2 p-3 sm:grid-cols-3 xl:grid-cols-6"
               aria-label="Konuşma filtreleri"
             >
               <input
@@ -818,7 +818,7 @@ export default async function BusinessSectionPage({
               </button>
             </form>
             <div className="grid gap-4 xl:grid-cols-[360px_1fr]">
-              <section className="panel-surface overflow-hidden">
+              <section className="rounded-[10px] border border-pn-border bg-white overflow-hidden">
                 <p className="border-b border-(--site-line) px-4 py-3 text-xs font-bold text-(--site-muted)">
                   Filtreye uyan toplam {inboxTotal} konuşma ·{" "}
                   {conversations.length} tanesi gösteriliyor
@@ -883,7 +883,7 @@ export default async function BusinessSectionPage({
                   </Link>
                 ) : null}
               </section>
-              <section className="panel-surface p-5">
+              <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
                 {selected ? (
                   <>
                     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1160,7 +1160,7 @@ export default async function BusinessSectionPage({
             {can("lead:write") ? (
               <form
                 action={createManualLead}
-                className="panel-surface mb-4 grid gap-3 p-4 sm:grid-cols-5"
+                className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 grid gap-3 p-4 sm:grid-cols-5"
               >
                 <UnitField units={access.units} />
                 <input
@@ -1260,7 +1260,7 @@ export default async function BusinessSectionPage({
             {section === "kampanyalar" ? (
               <form
                 action={createCampaign}
-                className="panel-surface mb-4 grid gap-3 p-4 sm:grid-cols-5"
+                className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 grid gap-3 p-4 sm:grid-cols-5"
               >
                 <UnitField units={access.units} />
                 <input
@@ -1301,7 +1301,7 @@ export default async function BusinessSectionPage({
             ) : (
               <form
                 action={createAdvertisement}
-                className="panel-surface mb-4 grid gap-2 p-4 sm:grid-cols-3 xl:grid-cols-6"
+                className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 grid gap-2 p-4 sm:grid-cols-3 xl:grid-cols-6"
               >
                 <select
                   required
@@ -1403,7 +1403,7 @@ export default async function BusinessSectionPage({
             {can("finance:write") ? (
               <form
                 action={createFinancialTransaction}
-                className="panel-surface mb-4 grid gap-3 p-4 sm:grid-cols-3 xl:grid-cols-5"
+                className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 grid gap-3 p-4 sm:grid-cols-3 xl:grid-cols-5"
               >
                 <UnitField units={access.units} />
                 <select
@@ -1540,7 +1540,7 @@ export default async function BusinessSectionPage({
                 icon={BarChart3}
               />
             </section>
-            <section className="panel-surface mt-4 grid gap-4 p-4 md:grid-cols-2">
+            <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-4 grid gap-4 p-4 md:grid-cols-2">
               <div>
                 <h2 className="text-sm font-extrabold">Muhasebe dönemleri</h2>
                 {periods.map((item) => (
@@ -1643,7 +1643,7 @@ export default async function BusinessSectionPage({
                 ownerNames={ownerNameMap}
               />
             ) : null}
-            <section className="panel-surface p-5">
+            <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
               <h2 className="font-extrabold">Dışa aktarma</h2>
               <p className="mt-2 text-sm text-(--site-muted)">
                 Tüm hücreler CSV formula injection korumasıyla hazırlanır.
@@ -1662,7 +1662,7 @@ export default async function BusinessSectionPage({
             <div className="grid gap-4 xl:grid-cols-2">
               <form
                 action={createKnowledgeEntry}
-                className="panel-surface grid gap-3 p-4 sm:grid-cols-2"
+                className="overflow-hidden rounded-[10px] border border-pn-border bg-white grid gap-3 p-4 sm:grid-cols-2"
               >
                 <UnitField units={access.units} />
                 <h2 className="font-extrabold sm:col-span-2">Bilgi kaydı</h2>
@@ -1716,7 +1716,7 @@ export default async function BusinessSectionPage({
               </form>
               <form
                 action={createPromptVersion}
-                className="panel-surface grid gap-3 p-4"
+                className="overflow-hidden rounded-[10px] border border-pn-border bg-white grid gap-3 p-4"
               >
                 <UnitField units={access.units} />
                 <h2 className="font-extrabold">AI prompt sürümü</h2>
@@ -1749,7 +1749,7 @@ export default async function BusinessSectionPage({
             {knowledge.length ? (
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 {knowledge.map((x) => (
-                  <article key={x.id} className="panel-surface p-4">
+                  <article key={x.id} className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
                     <div className="flex justify-between">
                       <strong>{x.title}</strong>
                       <span className="text-[10px]">
@@ -1826,7 +1826,7 @@ export default async function BusinessSectionPage({
               {["INSTAGRAM", "OPENAI", "META_ADS", "EMAIL"].map((provider) => {
                 const item = integrations.find((x) => x.provider === provider);
                 return (
-                  <article key={provider} className="panel-surface p-5">
+                  <article key={provider} className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
                     <strong>{provider}</strong>
                     <p className="mt-2 text-sm">
                       {item?.status || "DISCONNECTED"}
@@ -1849,7 +1849,7 @@ export default async function BusinessSectionPage({
         )}
         {section === "sistem-kayitlari" && (
           <div className="grid gap-4 xl:grid-cols-2">
-            <section className="panel-surface p-4">
+            <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
               <h2 className="mb-3 font-extrabold">Arka plan işleri</h2>
               {jobs.map((x) => (
                 <p key={x.id} className="border-t py-2 text-xs">
@@ -1858,7 +1858,7 @@ export default async function BusinessSectionPage({
                 </p>
               ))}
             </section>
-            <section className="panel-surface p-4">
+            <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
               <h2 className="mb-3 font-extrabold">Audit kayıtları</h2>
               {audit.map((x) => (
                 <p key={x.id} className="border-t py-2 text-xs">
@@ -1871,7 +1871,7 @@ export default async function BusinessSectionPage({
         )}
         {section === "ayarlar" && (
           <div className="grid gap-4 xl:grid-cols-2">
-            <section className="panel-surface p-5">
+            <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
               <h2 className="font-extrabold">Güvenli varsayılanlar</h2>
               <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-(--site-body)">
                 <li>AI başlangıç modu: SUGGESTION</li>
@@ -1907,7 +1907,7 @@ export default async function BusinessSectionPage({
               ) : null}
             </section>
             {can("role:read") ? (
-              <section className="panel-surface p-5">
+              <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
                 <h2 className="font-extrabold">İş birimi rolleri</h2>
                 {can("role:write") ? (
                   <form action={assignBusinessRole} className="mt-3 grid gap-2">
@@ -1993,7 +1993,7 @@ function DataTable({
   rows: React.ReactNode[];
 }) {
   return rows.length ? (
-    <div className="panel-surface overflow-x-auto">
+    <div className="overflow-hidden rounded-[10px] border border-pn-border bg-white overflow-x-auto">
       <table className="w-full min-w-[720px] text-left text-xs">
         <thead>
           <tr>

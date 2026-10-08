@@ -23,6 +23,7 @@
     "build": "npm run validate:deploy-env && prisma generate && next build",
     "build:nomigrate": "npm run validate:deploy-env && prisma generate && next build",
     "build:analyze": "prisma generate && next build && node scripts/report-route-bundles.mjs --top 10",
+    "perf:budget:panel": "node scripts/report-route-bundles.mjs --prefix /panel --top 10 --max-gzip-kb 420",
     "analyze:bundle": "next experimental-analyze",
     "audit:ci": "node scripts/check-npm-audit.mjs",
     "start": "next start",

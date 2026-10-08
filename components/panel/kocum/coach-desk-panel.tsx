@@ -169,7 +169,7 @@ export function CoachDeskPanel({
 
   return (
     <section
-      className="panel-surface p-5 sm:p-6"
+      className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5 sm:p-6"
       aria-labelledby={`coach-desk-${studentId}`}
     >
       <p className="text-xs font-extrabold uppercase tracking-[.07em] text-(--brand-olive)">
@@ -192,26 +192,26 @@ export function CoachDeskPanel({
             <FilePlus2 size={14} /> Görev ekle
           </p>
           <label className="mt-2 block">
-            <span className="panel-label">Başlık</span>
+            <span className="block text-[12.5px] font-medium text-pn-text-secondary">Başlık</span>
             <input
-              className="panel-input mt-1"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
           </label>
           <div className="mt-2 grid grid-cols-2 gap-2">
             <label>
-              <span className="panel-label">Ders</span>
+              <span className="block text-[12.5px] font-medium text-pn-text-secondary">Ders</span>
               <input
-                className="panel-input mt-1"
+                className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
               />
             </label>
             <label>
-              <span className="panel-label">Tür</span>
+              <span className="block text-[12.5px] font-medium text-pn-text-secondary">Tür</span>
               <select
-                className="panel-input mt-1"
+                className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1"
                 value={taskKind}
                 onChange={(e) => setTaskKind(e.target.value as typeof taskKind)}
               >
@@ -225,32 +225,32 @@ export function CoachDeskPanel({
           </div>
           <div className="mt-2 grid grid-cols-3 gap-2">
             <label>
-              <span className="panel-label">Tarih</span>
+              <span className="block text-[12.5px] font-medium text-pn-text-secondary">Tarih</span>
               <input
                 type="date"
-                className="panel-input mt-1"
+                className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1"
                 value={scheduledFor}
                 onChange={(e) => setScheduledFor(e.target.value)}
               />
             </label>
             <label>
-              <span className="panel-label">Süre (dk)</span>
+              <span className="block text-[12.5px] font-medium text-pn-text-secondary">Süre (dk)</span>
               <input
                 type="number"
                 min={5}
                 max={480}
-                className="panel-input mt-1"
+                className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1"
                 value={durationMinutes}
                 onChange={(e) => setDurationMinutes(Number(e.target.value))}
               />
             </label>
             <label>
-              <span className="panel-label">Soru hedefi</span>
+              <span className="block text-[12.5px] font-medium text-pn-text-secondary">Soru hedefi</span>
               <input
                 type="number"
                 min={0}
                 max={500}
-                className="panel-input mt-1"
+                className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1"
                 value={targetValue}
                 onChange={(e) => setTargetValue(Number(e.target.value))}
               />
@@ -260,7 +260,7 @@ export function CoachDeskPanel({
             type="button"
             disabled={busy}
             onClick={() => void addTask()}
-            className="panel-quick-action panel-quick-action-primary mt-3"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px] mt-3"
           >
             Görevi ekle
           </button>
@@ -274,7 +274,7 @@ export function CoachDeskPanel({
             {templates.length ? (
               <>
                 <select
-                  className="panel-input mt-2"
+                  className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
                   value={templateId}
                   onChange={(e) => setTemplateId(e.target.value)}
                   aria-label="Haftalık plan şablonu"
@@ -289,7 +289,7 @@ export function CoachDeskPanel({
                   type="button"
                   disabled={busy}
                   onClick={() => void applyTemplate()}
-                  className="panel-quick-action mt-2"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] mt-2"
                 >
                   Şablonu plana uygula
                 </button>
@@ -312,7 +312,7 @@ export function CoachDeskPanel({
               type="button"
               disabled={busy || !planId}
               onClick={() => void copyPlan()}
-              className="panel-quick-action mt-2"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] mt-2"
             >
               Kopyala ve eksikleri taşı
             </button>
@@ -324,9 +324,9 @@ export function CoachDeskPanel({
             <NotebookPen size={14} /> Koç notu
           </p>
           <label className="mt-2 block">
-            <span className="panel-label">Görünürlük (varsayılan: iç not)</span>
+            <span className="block text-[12.5px] font-medium text-pn-text-secondary">Görünürlük (varsayılan: iç not)</span>
             <select
-              className="panel-input mt-1"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1"
               value={noteVisibility}
               onChange={(e) =>
                 setNoteVisibility(e.target.value as typeof noteVisibility)
@@ -338,7 +338,7 @@ export function CoachDeskPanel({
             </select>
           </label>
           <textarea
-            className="panel-input mt-2 min-h-[80px]"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2 min-h-[80px]"
             value={noteBody}
             onChange={(e) => setNoteBody(e.target.value)}
             placeholder="Not"
@@ -347,7 +347,7 @@ export function CoachDeskPanel({
             type="button"
             disabled={busy}
             onClick={() => void saveNote()}
-            className="panel-quick-action mt-2"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] mt-2"
           >
             Notu kaydet
           </button>
@@ -356,41 +356,41 @@ export function CoachDeskPanel({
         <div className="rounded-xl border border-(--site-line) p-3">
           <p className="text-xs font-extrabold">Haftalık özet</p>
           <label className="mt-2 block">
-            <span className="panel-label">Güçlü</span>
+            <span className="block text-[12.5px] font-medium text-pn-text-secondary">Güçlü</span>
             <input
-              className="panel-input mt-1"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1"
               value={summaryStrengths}
               onChange={(e) => setSummaryStrengths(e.target.value)}
             />
           </label>
           <label className="mt-2 block">
-            <span className="panel-label">Odak</span>
+            <span className="block text-[12.5px] font-medium text-pn-text-secondary">Odak</span>
             <input
-              className="panel-input mt-1"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1"
               value={summaryFocus}
               onChange={(e) => setSummaryFocus(e.target.value)}
             />
           </label>
           <label className="mt-2 block">
-            <span className="panel-label">Gelecek hafta</span>
+            <span className="block text-[12.5px] font-medium text-pn-text-secondary">Gelecek hafta</span>
             <input
-              className="panel-input mt-1"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1"
               value={summaryNext}
               onChange={(e) => setSummaryNext(e.target.value)}
             />
           </label>
           <label className="mt-2 block">
-            <span className="panel-label">Öğrenci metni</span>
+            <span className="block text-[12.5px] font-medium text-pn-text-secondary">Öğrenci metni</span>
             <textarea
-              className="panel-input mt-1 min-h-[56px]"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 min-h-[56px]"
               value={summaryStudent}
               onChange={(e) => setSummaryStudent(e.target.value)}
             />
           </label>
           <label className="mt-2 block">
-            <span className="panel-label">Veli metni</span>
+            <span className="block text-[12.5px] font-medium text-pn-text-secondary">Veli metni</span>
             <textarea
-              className="panel-input mt-1 min-h-[56px]"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 min-h-[56px]"
               value={summaryParent}
               onChange={(e) => setSummaryParent(e.target.value)}
             />
@@ -400,7 +400,7 @@ export function CoachDeskPanel({
               type="button"
               disabled={busy}
               onClick={() => void publishSummary(false)}
-              className="panel-quick-action"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
             >
               Taslak kaydet
             </button>
@@ -408,7 +408,7 @@ export function CoachDeskPanel({
               type="button"
               disabled={busy}
               onClick={() => void publishSummary(true)}
-              className="panel-quick-action panel-quick-action-primary"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
             >
               Yayınla
             </button>

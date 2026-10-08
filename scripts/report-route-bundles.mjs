@@ -9,9 +9,11 @@
  * bütçe gzip üzerinden kontrol edilir.
  *
  *   node scripts/report-route-bundles.mjs [--top 10] [--include-api]
- *                                         [--max-gzip-kb 250] [--json]
+ *                                         [--max-gzip-kb 250] [--prefix /panel] [--json]
  *
  * `--max-gzip-kb` verilirse bütçeyi aşan route varken çıkış kodu 1 olur.
+ * `--prefix` yalnız o önekle başlayan route'ları raporlar ve bütçeler
+ * (panel bütçesi: `npm run perf:budget:panel`, Design Phase 8).
  */
 import { readFileSync } from "node:fs";
 import { gzipSync } from "node:zlib";
@@ -26,6 +28,7 @@ const option = (name, fallback) => {
 const statsPath = option("--stats", ".next/diagnostics/route-bundle-stats.json");
 const top = Number.parseInt(option("--top", "10"), 10);
 const maxGzipKb = option("--max-gzip-kb", null);
+const prefix = option("--prefix", null);
 
 let stats;
 try {
@@ -46,6 +49,7 @@ function chunkSize(path) {
 
 const routes = stats
   .filter((entry) => flag("--include-api") || !entry.route.startsWith("/api/"))
+  .filter((entry) => !prefix || entry.route === prefix || entry.route.startsWith(`${prefix}/`))
   .map((entry) => {
     let raw = 0;
     let gzip = 0;

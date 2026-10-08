@@ -59,7 +59,7 @@ export function TeacherDigestReview({ initialRows }: { initialRows: Row[] }) {
   return (
     <div className="space-y-4">
       {rows.map((row) => (
-        <article key={row.studentId} className="panel-surface p-5 sm:p-6">
+        <article key={row.studentId} className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="font-extrabold">{row.name}</h2>
@@ -75,7 +75,7 @@ export function TeacherDigestReview({ initialRows }: { initialRows: Row[] }) {
               type="button"
               onClick={() => void generate(row.studentId)}
               disabled={row.digest?.status === "PUBLISHED"}
-              className="panel-quick-action"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
             >
               <RefreshCw size={14} />{" "}
               {row.digest ? "Taslağı yenile" : "Sakin özet hazırla"}
@@ -97,7 +97,7 @@ export function TeacherDigestReview({ initialRows }: { initialRows: Row[] }) {
                 <button
                   type="button"
                   onClick={() => void publish(row)}
-                  className="panel-quick-action panel-quick-action-primary mt-4"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px] mt-4"
                 >
                   <CheckCircle2 size={14} /> Öğrenci ve veliye aynı anda yayınla
                 </button>

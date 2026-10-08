@@ -18,7 +18,7 @@ export function PanelErrorState({
   homeHref?: string;
 }) {
   return (
-    <main className="site-scope pn-scope grid min-h-[70vh] place-items-center px-4 py-12">
+    <main className="pn-scope grid min-h-[70vh] place-items-center px-4 py-12">
       <section className="w-full max-w-[480px]" role="alert">
         <span className="grid h-10 w-10 place-items-center rounded-md bg-(--pn-tone-warning-soft) text-(--pn-tone-warning)">
           <AlertTriangle size={20} aria-hidden="true" />

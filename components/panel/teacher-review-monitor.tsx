@@ -56,7 +56,7 @@ export function TeacherReviewMonitor({ students }: { students: StudentRow[] }) {
   }
   return (
     <div className="space-y-5">
-      <section className="panel-surface p-5">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
         <h2 className="flex items-center gap-2 text-sm font-extrabold">
           <Plus size={16} /> Kendi materyalimden tekrar ekle
         </h2>
@@ -65,7 +65,7 @@ export function TeacherReviewMonitor({ students }: { students: StudentRow[] }) {
           erişilebilir bir referans verin.
         </p>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <label className="panel-field">
+          <label className="pn-field">
             Öğrenci
             <select
               value={studentId}
@@ -78,7 +78,7 @@ export function TeacherReviewMonitor({ students }: { students: StudentRow[] }) {
               ))}
             </select>
           </label>
-          <label className="panel-field">
+          <label className="pn-field">
             Kısa çalışma başlığı
             <input
               value={title}
@@ -87,7 +87,7 @@ export function TeacherReviewMonitor({ students }: { students: StudentRow[] }) {
               placeholder="Örn. Köklü ifadelerde işlem sırası"
             />
           </label>
-          <label className="panel-field">
+          <label className="pn-field">
             Kaynak referansı
             <input
               value={sourceReference}
@@ -105,7 +105,7 @@ export function TeacherReviewMonitor({ students }: { students: StudentRow[] }) {
               sourceReference.trim().length < 2
             }
             onClick={() => void create()}
-            className="panel-primary-button"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
           >
             <Plus size={14} /> Tekrar ekle
           </button>
@@ -116,7 +116,7 @@ export function TeacherReviewMonitor({ students }: { students: StudentRow[] }) {
           ) : null}
         </div>
       </section>
-      <section className="panel-surface overflow-hidden">
+      <section className="rounded-[10px] border border-pn-border bg-white overflow-hidden">
         <div className="border-b border-(--site-line) p-5">
           <h2 className="flex items-center gap-2 text-sm font-extrabold">
             <RotateCcw size={16} /> Kuyruk gözetimi

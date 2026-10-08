@@ -77,7 +77,7 @@ export default async function ManagementAnalyticsPage({
         <a
           href={`/api/panel/analytics/export?${qs}`}
           download
-          className="panel-quick-action panel-quick-action-primary"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
         >
           <Download size={15} /> CSV (PII yok)
         </a>
@@ -126,7 +126,7 @@ export default async function ManagementAnalyticsPage({
       </section>
 
       {gidisat ? (
-        <section className="mt-6 panel-surface p-5">
+        <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-6 p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="text-sm font-extrabold text-(--site-ink)">
@@ -211,7 +211,7 @@ export default async function ManagementAnalyticsPage({
       ) : null}
 
       <section className="mt-6 grid gap-4 xl:grid-cols-2">
-        <article className="panel-surface p-5">
+        <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
           <h2 className="text-sm font-extrabold text-(--site-ink)">
             Ticari özet
           </h2>
@@ -239,7 +239,7 @@ export default async function ManagementAnalyticsPage({
             Ürün bazında satış →
           </Link>
         </article>
-        <article className="panel-surface p-5">
+        <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
           <h2 className="text-sm font-extrabold text-(--site-ink)">
             Öğrenci risk & öğretmen işleri
           </h2>
@@ -262,7 +262,7 @@ export default async function ManagementAnalyticsPage({
         </article>
       </section>
 
-      <section className="mt-6 panel-surface p-5">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-6 p-5">
         <h2 className="text-sm font-extrabold text-(--site-ink)">
           Kohort başarı (gizlilik eşikli)
         </h2>

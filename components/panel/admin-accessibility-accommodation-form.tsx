@@ -41,20 +41,20 @@ export function AdminAccessibilityAccommodationForm({
     router.refresh();
   }
   return (
-    <section className="panel-surface mt-5 p-5">
+    <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-5 p-5">
       <h2 className="text-sm font-extrabold">Akademik makul düzenleme</h2>
       <p className="mt-2 text-xs leading-5 text-(--site-body)">
         Tanı veya belge metni girmeyin. Yalnız öğretmenin uygulaması gereken
         işlevsel düzenlemeyi seçin.
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <label className="panel-label">
+        <label className="block text-[12.5px] font-medium text-pn-text-secondary">
           Değerlendirme ek süresi
           <select
             aria-label="Değerlendirme ek süresi"
             value={extra}
             onChange={(event) => setExtra(Number(event.target.value))}
-            className="panel-input mt-2"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
           >
             <option value={0}>Ek süre yok</option>
             <option value={25}>%25 ek süre</option>
@@ -82,7 +82,7 @@ export function AdminAccessibilityAccommodationForm({
           type="button"
           disabled={busy}
           onClick={save}
-          className="panel-quick-action panel-quick-action-primary"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
         >
           {busy ? "Kaydediliyor…" : "Düzenlemeyi kaydet"}
         </button>

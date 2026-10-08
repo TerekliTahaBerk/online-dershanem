@@ -102,7 +102,7 @@ export function PublicOdkPackageCard({ item }: { item: PublicOdkPackage }) {
       </ul>
       <Link
         href={`/odk-paketleri/${contract.package.slug}`}
-        className="site-btn site-btn-primary mt-7 w-full justify-center"
+        className="inline-flex items-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px] mt-7 w-full justify-center"
       >
         Paketi ve tarihleri incele
       </Link>

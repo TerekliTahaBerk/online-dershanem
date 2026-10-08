@@ -71,7 +71,7 @@ export default async function AdminStudent360Page({
                 defaultValue={
                   bundle.currentCoachId ?? bundle.coachOptions[0]?.id ?? ""
                 }
-                className="panel-input py-2 text-xs"
+                className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2 text-xs"
               >
                 {!bundle.coachOptions.length ? (
                   <option value="">Aktif koç bulunamadı</option>
@@ -93,7 +93,7 @@ export default async function AdminStudent360Page({
                 type="number"
                 min={1}
                 defaultValue={bundle.currentCadenceDays ?? ""}
-                className="panel-input py-2 text-xs"
+                className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2 text-xs"
                 placeholder="Sıklık"
               />
             </div>

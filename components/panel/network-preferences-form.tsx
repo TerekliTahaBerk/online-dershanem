@@ -56,7 +56,7 @@ export function NetworkPreferencesForm({ initial }: { initial: Preference }) {
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1.1fr_.9fr]">
-      <section className="panel-surface p-5 sm:p-6">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5 sm:p-6">
         <h2 className="text-lg font-extrabold">Bağlantı ve cihaz tercihleri</h2>
         <div className="mt-5 space-y-3">
           <button
@@ -120,12 +120,12 @@ export function NetworkPreferencesForm({ initial }: { initial: Preference }) {
           type="button"
           disabled={busy}
           onClick={() => void save()}
-          className="panel-quick-action panel-quick-action-primary mt-2"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px] mt-2"
         >
           {busy ? "Kaydediliyor…" : "Tercihleri kaydet"}
         </button>
       </section>
-      <section className="panel-surface p-5 sm:p-6">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5 sm:p-6">
         <h2 className="flex items-center gap-2 text-lg font-extrabold">
           {offline.online ? <Wifi size={18} /> : <WifiOff size={18} />} Cihaz
           kuyruğu
@@ -155,7 +155,7 @@ export function NetworkPreferencesForm({ initial }: { initial: Preference }) {
             type="button"
             onClick={() => void offline.retryNow()}
             disabled={!offline.online || !offline.queuedCount}
-            className="panel-quick-action"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
           >
             <RefreshCw size={14} /> Şimdi eşitle
           </button>
@@ -163,7 +163,7 @@ export function NetworkPreferencesForm({ initial }: { initial: Preference }) {
             type="button"
             onClick={() => void offline.clearDeviceQueue()}
             disabled={!offline.queuedCount && !offline.conflictCount}
-            className="panel-quick-action text-rose-700"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] text-rose-700"
           >
             <Trash2 size={14} /> Cihaz kuyruğunu sil
           </button>

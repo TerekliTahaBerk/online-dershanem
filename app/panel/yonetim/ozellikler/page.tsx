@@ -163,7 +163,7 @@ export default async function PanelFeatureInventoryPage() {
 
       <section className="mt-5 space-y-3" aria-label="Panel özellik envanteri">
         {snapshot.map((feature) => (
-          <article key={feature.key} className="panel-surface p-5 sm:p-6">
+          <article key={feature.key} className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5 sm:p-6">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">

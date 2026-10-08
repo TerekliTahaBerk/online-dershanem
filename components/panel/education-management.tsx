@@ -144,27 +144,27 @@ export function EducationManagement({
                     name="name"
                     required
                     defaultValue={group.name}
-                    className="panel-input"
+                    className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                     aria-label="Grup adı"
                   />
                   <input
                     name="subject"
                     required
                     defaultValue={group.subject}
-                    className="panel-input"
+                    className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                     aria-label="Ders"
                   />
                   <input
                     name="level"
                     defaultValue={group.level}
-                    className="panel-input"
+                    className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                     aria-label="Seviye"
                     placeholder="Seviye"
                   />
                   <select
                     name="teacherId"
                     defaultValue={group.teacherId}
-                    className="panel-input"
+                    className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                     aria-label="Öğretmen"
                     disabled
                   >
@@ -184,7 +184,7 @@ export function EducationManagement({
                   </Link>
                   <button
                     disabled={busy === group.id}
-                    className="panel-quick-action panel-quick-action-primary"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
                   >
                     <Pencil size={14} />
                     {busy === group.id ? "Kaydediliyor" : "Kaydet"}
@@ -329,7 +329,7 @@ export function EducationManagement({
                   name="title"
                   required
                   defaultValue={lesson.title}
-                  className="panel-input"
+                  className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                   aria-label="Ders başlığı"
                 />
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
@@ -338,13 +338,13 @@ export function EducationManagement({
                     required
                     type="datetime-local"
                     defaultValue={localInput(lesson.startsAt)}
-                    className="panel-input"
+                    className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                     aria-label="Ders zamanı"
                   />
                   <select
                     name="status"
                     defaultValue={lesson.status}
-                    className="panel-input"
+                    className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                     aria-label="Ders durumu"
                   >
                     <option value="PLANNED">Planlı</option>
@@ -356,7 +356,7 @@ export function EducationManagement({
                   <select
                     name="action"
                     defaultValue="UPDATE"
-                    className="panel-input"
+                    className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                     aria-label="İşlem türü"
                   >
                     <option value="UPDATE">Genel güncelleme</option>
@@ -368,7 +368,7 @@ export function EducationManagement({
                   <select
                     name="scope"
                     defaultValue="ONE"
-                    className="panel-input"
+                    className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                     aria-label="Kapsam"
                   >
                     <option value="ONE">Sadece bu ders</option>
@@ -379,13 +379,13 @@ export function EducationManagement({
                   <input
                     name="meetingUrl"
                     type="url"
-                    className="panel-input"
+                    className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                     placeholder="https:// toplantı linki"
                     aria-label="Toplantı linki"
                   />
                   <select
                     name="substituteTeacherId"
-                    className="panel-input"
+                    className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                     aria-label="Yeni öğretmen"
                   >
                     <option value="">Öğretmen seç</option>
@@ -402,7 +402,7 @@ export function EducationManagement({
                   </p>
                   <button
                     disabled={busy === lesson.id}
-                    className="panel-quick-action panel-quick-action-primary"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
                   >
                     <Pencil size={14} />
                     {busy === lesson.id ? "Kaydediliyor" : "Dersi güncelle"}

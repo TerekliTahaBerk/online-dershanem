@@ -126,7 +126,7 @@ export function StudentCheckInForm({
   );
   return (
     <div className="space-y-6">
-      <section className="panel-card p-5">
+      <section className="rounded-[10px] border border-pn-border bg-white p-5">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-extrabold">60 saniyelik check-in</h2>
           <span className="rounded-full bg-(--panel-nav-active) px-3 py-1 text-xs font-bold">
@@ -142,7 +142,7 @@ export function StudentCheckInForm({
             Hangi destek alanı?
             <select
               aria-label="Check-in grubu"
-              className="panel-input mt-2"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
               value={groupId}
               onChange={(event) => setGroupId(event.target.value)}
             >
@@ -218,7 +218,7 @@ export function StudentCheckInForm({
             type="button"
             disabled={busy || remaining < 1 || !groupId}
             onClick={submit}
-            className="panel-primary-button w-full sm:w-auto"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px] w-full sm:w-auto"
           >
             {busy ? "Kaydediliyor…" : "Check-in'i kaydet"}
           </button>
@@ -229,7 +229,7 @@ export function StudentCheckInForm({
         <div className="mt-3 grid gap-3">
           {items.length ? (
             items.map((item) => (
-              <article key={item.id} className="panel-card p-4">
+              <article key={item.id} className="rounded-[10px] border border-pn-border bg-white p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <b>{item.groupName}</b>
                   <span className="text-xs text-(--site-muted)">
@@ -268,7 +268,7 @@ export function StudentCheckInForm({
                               true,
                             )
                           }
-                          className="panel-primary-button text-xs"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-xs"
                         >
                           İşime yaradı
                         </button>
@@ -281,7 +281,7 @@ export function StudentCheckInForm({
                               false,
                             )
                           }
-                          className="panel-secondary-button text-xs"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-xs"
                         >
                           Henüz değil
                         </button>

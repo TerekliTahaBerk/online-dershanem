@@ -66,7 +66,7 @@ export function TodayCard({
               {row.action ? (
                 <Link
                   href={row.action.href}
-                  className={`flex-none ${row.action.primary ? "panel-quick-action panel-quick-action-primary" : "panel-quick-action"}`}
+                  className={`flex-none ${row.action.primary ? "inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]" : "inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"}`}
                 >
                   {row.action.label}
                 </Link>

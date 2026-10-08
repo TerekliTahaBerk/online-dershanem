@@ -65,7 +65,7 @@ export function NotificationPreferences({
     if (response.ok) router.refresh();
   }
   return (
-    <section className="panel-surface p-5">
+    <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
       <h2 className="text-sm font-extrabold text-(--site-ink)">
         Bildirim tercihleri
       </h2>
@@ -151,7 +151,7 @@ export function NotificationPreferences({
               type="button"
               disabled={!ready || busy !== null}
               onClick={() => void markAllRead()}
-              className="panel-quick-action"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
             >
               {busy === "read"
                 ? "Güncelleniyor"
@@ -162,7 +162,7 @@ export function NotificationPreferences({
             type="button"
             disabled={!ready || busy !== null}
             onClick={() => void save()}
-            className="panel-quick-action panel-quick-action-primary"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
           >
             {busy === "save" ? "Kaydediliyor" : "Kaydet"}
           </button>

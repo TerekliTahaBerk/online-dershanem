@@ -22,7 +22,7 @@ page.tsx
        ├─ summarizeGroup360Ops()     saf
        ├─ sekme bazlı Prisma sorguları
        └─ findOpenGroupScheduleConflicts()
-  └─ Group360View                    components/panel/group-360-view.tsx
+  └─ Group360View                    components/panel/group-360/index.tsx
 ```
 
 Saf kurallar: `lib/panel/group-360.ts`  

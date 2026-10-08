@@ -580,15 +580,47 @@ a {
   /* Yoğunluk: satır yüksekliği */
   --pn-row-h: 40px;
 }
-/* Panel kabuğu: beyaz çalışma alanı. `.site-scope` zeminini ve turuncu odak
-   halkasını panel içinde ezer (özgüllük 0,2,0). */
-.site-scope.pn-scope {
+/* Panel kabuğu: beyaz çalışma alanı. Design Phase 8'den beri panel
+   `.site-scope` taşımaz; zemin, odak halkası ve metin kırılımı burada. */
+.pn-scope {
   background: var(--pn-canvas);
   color: var(--pn-text);
 }
-.site-scope.pn-scope :where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
-  outline-color: var(--pn-focus);
+.pn-scope :where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid var(--pn-focus);
+  outline-offset: 3px;
 }
+.pn-scope :where(h1, h2, h3) {
+  text-wrap: balance;
+}
+.pn-scope p {
+  text-wrap: pretty;
+}
+/* Ad alan grubu (eski `panel-field` yerine): etiket + denetim dikey. */
+.pn-field {
+  display: grid;
+  gap: 0.375rem;
+  color: var(--pn-text-secondary);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.pn-field :where(input, select, textarea) {
+  width: 100%;
+  border: 1px solid var(--pn-border-strong);
+  border-radius: 0.375rem;
+  background: #fff;
+  padding: 0.5rem 0.75rem;
+  color: var(--pn-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+.pn-field :where(input, select, textarea):focus {
+  border-color: var(--pn-accent);
+  outline: none;
+}
+
 /* Yan panel hareketi (azaltılmış harekette `motion-safe` ile kapalı). */
 @keyframes pn-drawer-in {
   from { transform: translateX(24px); opacity: 0; }
@@ -908,138 +940,12 @@ html {
   }
 }
 
-.panel-label {
-  display: block;
-  color: var(--dc-ink);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-}
-.panel-input {
-  width: 100%;
-  border: 1px solid var(--dc-line);
-  border-radius: 10px;
-  background: #fff;
-  padding: 0.72rem 0.82rem;
-  color: var(--site-ink);
-  font: inherit;
-  line-height: 1.45;
-  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
-}
-.panel-input::placeholder { color: #97968d; }
-.panel-input:hover { border-color: #d3cebf; }
-.panel-input:focus {
-  border-color: var(--dc-brand);
-  outline: none;
-  box-shadow: 0 0 0 3px var(--dc-brand-soft);
-}
-.panel-input:disabled {
-  cursor: not-allowed;
-  background: var(--site-bg-warm);
-  color: var(--site-muted);
-  opacity: .78;
-}
-.panel-field {
-  display: grid;
-  gap: .4rem;
-  color: var(--site-ink);
-  font-size: .75rem;
-  font-weight: 750;
-}
-.panel-field :where(input, select, textarea) {
-  width: 100%;
-  border: 1px solid var(--site-line);
-  border-radius: 13px;
-  background: #fff;
-  padding: .72rem .82rem;
-  color: var(--site-ink);
-  font: inherit;
-  font-weight: 500;
-  line-height: 1.45;
-}
-.panel-field :where(input, select, textarea):focus {
-  border-color: var(--dc-brand);
-  outline: none;
-  box-shadow: 0 0 0 3px var(--dc-brand-soft);
-}
-.panel-primary-button,
-.panel-secondary-button {
-  display: inline-flex;
-  min-height: 42px;
-  align-items: center;
-  justify-content: center;
-  gap: .45rem;
-  border: 1px solid transparent;
-  border-radius: 13px;
-  padding: .68rem 1rem;
-  font-size: .75rem;
-  font-weight: 800;
-  line-height: 1.2;
-  transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .15s ease;
-}
-.panel-primary-button {
-  border-color: var(--brand-olive);
-  background: var(--brand-olive);
-  color: #fff;
-  box-shadow: 0 10px 26px -18px rgba(44,58,32,.75);
-}
-.panel-primary-button:hover:not(:disabled) {
-  border-color: var(--brand-olive-hover);
-  background: var(--brand-olive-hover);
-  transform: translateY(-1px);
-}
-.panel-secondary-button {
-  border-color: var(--site-line);
-  background: #fff;
-  color: var(--site-ink);
-}
-.panel-secondary-button:hover:not(:disabled) { border-color: #d2cec2; background: var(--site-bg-warm); }
-.panel-primary-button:disabled,
-.panel-secondary-button:disabled,
-.panel-quick-action:disabled,
 .site-btn:disabled {
   cursor: not-allowed;
   opacity: .5;
   transform: none;
   box-shadow: none;
 }
-.panel-action-card {
-  border: 1px solid var(--site-line);
-  border-radius: 24px;
-  background: #fff;
-  padding: 1.25rem;
-  box-shadow: 0 18px 55px -42px rgba(20,20,15,.35);
-}
-.panel-action-icon { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; border-radius: 14px; }
-.panel-card-title { margin-top: .9rem; color: var(--site-ink); font-size: 1rem; font-weight: 750; letter-spacing: -.02em; }
-.panel-card-copy { margin-top: .25rem; color: var(--site-body); font-size: .78rem; line-height: 1.55; }
-/* Onaylı tasarımın panel kartı: düz beyaz, 1px #E7EBE8, 14px radius, gölgesiz.
-   Bu sınıf admin alt sayfalarında yaygın kullanıldığı için buradan
-   hizalamak tüm o ekranları tek noktadan tasarıma çeker. */
-.panel-surface {
-  overflow: hidden;
-  border: 1px solid var(--dc-line);
-  border-radius: 14px;
-  background: #fff;
-}
-.panel-quick-action {
-  display: inline-flex;
-  min-height: 44px;
-  align-items: center;
-  justify-content: center;
-  gap: .45rem;
-  border: 1px solid #DDE4E0;
-  border-radius: 10px;
-  background: #fff;
-  padding: .65rem .85rem;
-  color: var(--site-ink);
-  font-size: .8rem;
-  font-weight: 700;
-  transition: border-color .15s ease, background-color .15s ease;
-}
-.panel-quick-action:hover { border-color: var(--dc-brand); }
-.panel-quick-action-primary { border-color: var(--dc-brand-strong); background: var(--dc-brand-strong); color: #fff; }
-.panel-quick-action-primary:hover { border-color: var(--dc-brand-hover); background: var(--dc-brand-hover); }
 .panel-metric-card {
   border: 1px solid var(--dc-line);
   border-radius: 14px;
@@ -1057,9 +963,7 @@ html {
 .panel-attention-amber { background: #fff3c5; color: #765b0a; }
 .panel-attention-blue { background: #e8f2fa; color: #24527c; }
 @media (prefers-reduced-motion: reduce) {
-  .panel-quick-action,
   .panel-metric-card { transition: none; }
-  .panel-quick-action:hover,
   .panel-metric-card:hover { transform: none; }
 }
 /* Highlight kelime — yumuşak adaçayı pill zemin (referans: "tek yerden") */
@@ -2211,10 +2115,10 @@ section[id]:target { animation: sectionTargetPulse 0.65s ease-out; }
 
 /* Panel erişilebilirlik tercihleri: yalnız oturumlu panel kabuğu tarafından uygulanır. */
 html[data-panel-text-scale="large"] { font-size: 112.5%; }
-html[data-panel-spacing="comfortable"] .site-scope { letter-spacing: .015em; }
-html[data-panel-spacing="comfortable"] .site-scope :where(p, li, label) { line-height: 1.75 !important; }
-html[data-panel-spacing="comfortable"] .site-scope :where(button, a, input, select, textarea) { line-height: 1.55; }
-html[data-panel-contrast="high"] .site-scope {
+html[data-panel-spacing="comfortable"] :is(.site-scope, .pn-scope) { letter-spacing: .015em; }
+html[data-panel-spacing="comfortable"] :is(.site-scope, .pn-scope) :where(p, li, label) { line-height: 1.75 !important; }
+html[data-panel-spacing="comfortable"] :is(.site-scope, .pn-scope) :where(button, a, input, select, textarea) { line-height: 1.55; }
+html[data-panel-contrast="high"] :is(.site-scope, .pn-scope) {
   --site-ink: #000000;
   --site-body: #171717;
   --site-muted: #303030;
@@ -2227,28 +2131,33 @@ html[data-panel-contrast="high"] .site-scope {
   --brand-olive-hover: #14220d;
   --brand-olive-soft: #e1ead7;
   --panel-nav-active: #dce8d2;
+  --pn-text: #000000;
+  --pn-text-secondary: #171717;
+  --pn-text-muted: #303030;
+  --pn-border: #505050;
+  --pn-border-strong: #303030;
 }
-html[data-panel-contrast="high"] .site-scope :where(input, select, textarea, button, a) { border-color: currentColor; }
-html[data-panel-motion="reduced"] .site-scope *,
-html[data-panel-motion="reduced"] .site-scope *::before,
-html[data-panel-motion="reduced"] .site-scope *::after {
+html[data-panel-contrast="high"] :is(.site-scope, .pn-scope) :where(input, select, textarea, button, a) { border-color: currentColor; }
+html[data-panel-motion="reduced"] :is(.site-scope, .pn-scope) *,
+html[data-panel-motion="reduced"] :is(.site-scope, .pn-scope) *::before,
+html[data-panel-motion="reduced"] :is(.site-scope, .pn-scope) *::after {
   scroll-behavior: auto !important;
   animation-duration: .01ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: .01ms !important;
 }
-html[data-panel-motion="reduced"] .site-scope :where(.panel-quick-action, .panel-metric-card):hover { transform: none !important; }
+html[data-panel-motion="reduced"] :is(.site-scope, .pn-scope) .panel-metric-card:hover { transform: none !important; }
 
-.site-scope :where(button, summary) {
+:is(.site-scope, .pn-scope) :where(button, summary) {
   min-width: 24px;
   min-height: 24px;
 }
 .odk-panel-scope :where(button, summary) { min-height: 40px; }
 .odk-panel-scope :where(input[type="checkbox"], input[type="radio"]) { min-width: 18px; min-height: 18px; }
 
-html[data-panel-low-data="true"] .site-scope :where(.backdrop-blur-xl, .backdrop-blur-md) {
+html[data-panel-low-data="true"] :is(.site-scope, .pn-scope) :where(.backdrop-blur-xl, .backdrop-blur-md) {
   backdrop-filter: none !important;
 }
-html[data-panel-low-data="true"] .site-scope :where(.animate-pulse, .animate-spin) {
+html[data-panel-low-data="true"] :is(.site-scope, .pn-scope) :where(.animate-pulse, .animate-spin) {
   animation: none !important;
 }

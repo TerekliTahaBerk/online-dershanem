@@ -75,7 +75,7 @@ export function TeacherRecoveryManager({ rows }: { rows: Row[] }) {
       </p>
       <div className="space-y-4">
         {rows.map((row) => (
-          <article key={row.attendanceId} className="panel-surface p-5 sm:p-6">
+          <article key={row.attendanceId} className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5 sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-extrabold uppercase tracking-[.06em] text-(--brand-olive)">
@@ -136,7 +136,7 @@ export function TeacherRecoveryManager({ rows }: { rows: Row[] }) {
                     row.package.status !== "DRAFT")
                 }
                 onClick={() => generate(row)}
-                className="panel-quick-action"
+                className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
               >
                 <RefreshCcw size={14} />{" "}
                 {row.package
@@ -148,7 +148,7 @@ export function TeacherRecoveryManager({ rows }: { rows: Row[] }) {
                   type="button"
                   disabled={busy !== null}
                   onClick={() => publish(row)}
-                  className="panel-quick-action panel-quick-action-primary"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
                 >
                   <Send size={14} /> Öğrenciye yayınla
                 </button>
@@ -157,7 +157,7 @@ export function TeacherRecoveryManager({ rows }: { rows: Row[] }) {
           </article>
         ))}
         {!rows.length ? (
-          <div className="panel-surface p-9 text-center">
+          <div className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-9 text-center">
             <PackageCheck className="mx-auto text-(--site-muted)" />
             <p className="mt-3 text-sm font-bold">
               Son 30 günde telafi paketi bekleyen devamsızlık yok.

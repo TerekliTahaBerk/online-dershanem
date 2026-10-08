@@ -67,7 +67,7 @@ export function CoachNoteComposer({ studentId, studentName }: { studentId: strin
           value={body}
           onChange={(event) => setBody(event.target.value)}
           maxLength={2000}
-          className="panel-input min-h-24 resize-y"
+          className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-h-24 resize-y"
         />
       </label>
       <fieldset>

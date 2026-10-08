@@ -109,7 +109,7 @@ export default async function OdkPilotPage() {
         ))}
       </section>
 
-      <section className="mt-5 panel-surface p-5 sm:p-6">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-5 p-5 sm:p-6">
         <div className="flex items-start gap-3">
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-(--panel-nav-active) text-(--brand-olive)">
             <ShieldCheck size={19} />

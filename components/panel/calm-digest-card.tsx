@@ -81,7 +81,7 @@ export function CalmDigestCard({
         : "Evde sorulabilecek bir soru";
 
   return (
-    <section className="panel-surface overflow-hidden">
+    <section className="rounded-[10px] border border-pn-border bg-white overflow-hidden">
       <div className="bg-[linear-gradient(135deg,#f6f8ed,#fff_55%,#fff8dc)] p-6 sm:p-8">
         <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[.08em] text-(--brand-olive)">
           <HeartHandshake size={16} /> Bu hafta, sakin bir bakış
@@ -141,7 +141,7 @@ export function CalmDigestCard({
               trackParentAction("HELPFUL");
               void save(true, anxietyPulse);
             }}
-            className="panel-quick-action"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
           >
             Yararlıydı
           </button>
@@ -153,7 +153,7 @@ export function CalmDigestCard({
               trackParentAction("NOT_HELPFUL");
               void save(false, anxietyPulse);
             }}
-            className="panel-quick-action"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
           >
             Yararlı değildi
           </button>
@@ -170,7 +170,7 @@ export function CalmDigestCard({
                 void save(helpful, value);
               }
             }}
-            className="panel-input max-w-56"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 max-w-56"
           >
             <option value="">Kaygı düzeyi (isteğe bağlı)</option>
             <option value="1">Hiç kaygı yaratmadı</option>

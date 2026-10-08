@@ -53,7 +53,7 @@ export function StudentWeeklyGoal({ initial }: { initial: string }) {
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             maxLength={180}
-            className="panel-input min-h-24 resize-none"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-h-24 resize-none"
             aria-label="Haftalık hedef"
           />
           <div className="mt-3 flex items-center justify-between gap-3">
@@ -62,7 +62,7 @@ export function StudentWeeklyGoal({ initial }: { initial: string }) {
             </span>
             <button
               disabled={busy || draft.trim().length < 3}
-              className="panel-quick-action panel-quick-action-primary"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
             >
               <Check size={14} /> {busy ? "Kaydediliyor" : "Hedefi kaydet"}
             </button>

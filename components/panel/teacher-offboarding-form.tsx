@@ -120,7 +120,7 @@ export function TeacherOffboardingForm({ teacherId }: { teacherId: string }) {
           <select
             value={transferTeacherId}
             onChange={(event) => setTransferTeacherId(event.target.value)}
-            className="panel-input mt-1 py-2 text-xs"
+            className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 py-2 text-xs"
           >
             <option value="">Öğretmen seçin</option>
             {preview.options.teacherTransfers.map((teacher) => (
@@ -138,7 +138,7 @@ export function TeacherOffboardingForm({ teacherId }: { teacherId: string }) {
               onChange={(event) =>
                 setTransferCoachTeacherId(event.target.value)
               }
-              className="panel-input mt-1 py-2 text-xs"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 py-2 text-xs"
             >
               <option value="">Koç öğretmen seçin</option>
               {preview.options.coachTransfers.map((teacher) => (
@@ -157,7 +157,7 @@ export function TeacherOffboardingForm({ teacherId }: { teacherId: string }) {
               onChange={(event) =>
                 setTransferInterventionOwnerId(event.target.value)
               }
-              className="panel-input mt-1 py-2 text-xs"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1 py-2 text-xs"
             >
               <option value="">Sorumlu seçin</option>
               {preview.options.interventionOwners.map((owner) => (

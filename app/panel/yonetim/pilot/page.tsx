@@ -57,7 +57,7 @@ export default async function PilotRolloutPage() {
               : "Kapılar tamamlanmalı"
         }
       />
-      <section className="mt-7 panel-surface p-5 sm:p-6">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-7 p-5 sm:p-6">
         <div className="flex items-start gap-3">
           <span className="grid h-10 w-10 place-items-center rounded-2xl bg-emerald-100 text-emerald-700">
             <ShieldCheck size={19} />

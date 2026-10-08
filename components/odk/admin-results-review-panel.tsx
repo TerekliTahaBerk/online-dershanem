@@ -138,7 +138,7 @@ export function AdminResultsReviewPanel({
     return (
       <section
         id="adim-sonuc"
-        className="panel-surface scroll-mt-36 p-5 sm:p-6"
+        className="overflow-hidden rounded-[10px] border border-pn-border bg-white scroll-mt-36 p-5 sm:p-6"
       >
         <p className="text-xs text-(--site-muted)">
           Sonuç özeti yükleniyor…
@@ -148,7 +148,7 @@ export function AdminResultsReviewPanel({
   }
 
   return (
-    <section id="adim-sonuc" className="panel-surface scroll-mt-36 p-5 sm:p-6">
+    <section id="adim-sonuc" className="overflow-hidden rounded-[10px] border border-pn-border bg-white scroll-mt-36 p-5 sm:p-6">
       <div className="flex items-start gap-3">
         <span className="panel-metric-icon panel-tone-sky">
           <BarChart3 size={17} />
@@ -306,7 +306,7 @@ export function AdminResultsReviewPanel({
           <button
             type="button"
             disabled={Boolean(busy)}
-            className="panel-primary-button"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
             onClick={() => void previewRelease()}
           >
             {busy === "preview" ? (
@@ -337,7 +337,7 @@ export function AdminResultsReviewPanel({
                 <button
                   type="button"
                   disabled={Boolean(busy) || pending.publishable < 1}
-                  className="panel-primary-button"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
                   onClick={() => void publish()}
                 >
                   {busy === "publish" ? <Loader2 size={14} className="animate-spin" /> : null} Sonuçları yayınla
@@ -345,7 +345,7 @@ export function AdminResultsReviewPanel({
                 <button
                   type="button"
                   disabled={Boolean(busy)}
-                  className="panel-secondary-button"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
                   onClick={() => setPending(null)}
                 >
                   Vazgeç

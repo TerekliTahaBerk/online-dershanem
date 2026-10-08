@@ -559,11 +559,11 @@ export default async function AdminCoachingPage({
             </fieldset>
             <label className="grid gap-1 text-[13px] font-medium text-pn-text">
               Görüşme sıklığı (gün)
-              <input name="cadenceDays" type="number" min={1} className="panel-input w-32" />
+              <input name="cadenceDays" type="number" min={1} className="rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 w-32" />
             </label>
             <label className="grid gap-1 text-[13px] font-medium text-pn-text">
               Kapasite aşımı gerekçesi
-              <input name="overrideReason" maxLength={500} className="panel-input" />
+              <input name="overrideReason" maxLength={500} className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60" />
               <span className="text-[12px] font-normal text-pn-text-muted">Kapasitesi dolu bir koç seçerseniz zorunludur; denetim kaydına yazılır.</span>
             </label>
             <button type="submit" className={buttonClass("primary", "md")}>

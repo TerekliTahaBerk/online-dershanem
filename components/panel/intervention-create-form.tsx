@@ -97,7 +97,7 @@ export function InterventionCreateForm({
   }
 
   return (
-    <div className={compact ? "" : "panel-surface p-5 sm:p-6"}>
+    <div className={compact ? "" : "overflow-hidden rounded-[10px] border border-pn-border bg-white p-5 sm:p-6"}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-extrabold uppercase tracking-[.06em] text-(--brand-olive)">
@@ -112,7 +112,7 @@ export function InterventionCreateForm({
         </div>
         <button
           type="button"
-          className="panel-quick-action panel-quick-action-primary"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
           onClick={() => setOpen((current) => !current)}
         >
           <Plus size={14} /> {open ? "Kapat" : "Yeni müdahale"}
@@ -121,7 +121,7 @@ export function InterventionCreateForm({
 
       {open ? (
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          <label className="panel-field text-xs font-bold">
+          <label className="pn-field text-xs font-bold">
             Öğrenci
             <select
               value={studentId}
@@ -135,7 +135,7 @@ export function InterventionCreateForm({
               ))}
             </select>
           </label>
-          <label className="panel-field text-xs font-bold">
+          <label className="pn-field text-xs font-bold">
             Sorun tipi
             <select
               value={reasonCode}
@@ -151,7 +151,7 @@ export function InterventionCreateForm({
               ))}
             </select>
           </label>
-          <label className="panel-field text-xs font-bold sm:col-span-2">
+          <label className="pn-field text-xs font-bold sm:col-span-2">
             Kısa açıklama
             <textarea
               value={explanation}
@@ -162,7 +162,7 @@ export function InterventionCreateForm({
               className="mt-2 w-full rounded-2xl border border-(--site-line) bg-white p-3 text-sm"
             />
           </label>
-          <label className="panel-field text-xs font-bold">
+          <label className="pn-field text-xs font-bold">
             Aksiyon
             <input
               value={suggestedAction}
@@ -172,7 +172,7 @@ export function InterventionCreateForm({
               className="mt-2 w-full rounded-xl border border-(--site-line) bg-white px-3 py-2 text-sm"
             />
           </label>
-          <label className="panel-field text-xs font-bold">
+          <label className="pn-field text-xs font-bold">
             Takip tarihi
             <input
               type="date"
@@ -186,7 +186,7 @@ export function InterventionCreateForm({
               type="button"
               disabled={!canSubmit || busy}
               onClick={() => void submit()}
-              className="panel-quick-action panel-quick-action-primary"
+              className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
             >
               Kaydı oluştur
             </button>

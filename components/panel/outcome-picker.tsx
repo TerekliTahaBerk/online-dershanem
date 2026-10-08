@@ -178,7 +178,7 @@ export function OutcomePicker({
                       ),
                     )
                   }
-                  className="panel-input mt-2 py-2 text-xs"
+                  className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2 py-2 text-xs"
                 >
                   {Object.entries(evidenceLabels).map(([key, label]) => (
                     <option key={key} value={key}>
@@ -201,7 +201,7 @@ export function OutcomePicker({
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              className="panel-input pl-9 text-xs"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 pl-9 text-xs"
               placeholder="Kod, konu veya beceri ara"
               aria-label="Kazanım ara"
             />

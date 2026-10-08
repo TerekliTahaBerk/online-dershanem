@@ -39,7 +39,7 @@ export function RelationshipUpdateForm({
         value={value}
         onChange={(event) => setValue(event.target.value)}
         placeholder="Yakınlık"
-        className="panel-input max-w-[140px] py-1.5 text-[11.5px]"
+        className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 max-w-[140px] py-1.5 text-[11.5px]"
       />
       <button
         type="button"

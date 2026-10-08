@@ -14,7 +14,7 @@ function Pulse({ className }: { className: string }) {
  */
 export default function PanelLoading() {
   return (
-    <div className="site-scope pn-scope flex min-h-dvh" aria-busy="true">
+    <div className="pn-scope flex min-h-dvh" aria-busy="true">
       <p className="sr-only" role="status">
         Sayfa yükleniyor
       </p>

@@ -91,7 +91,7 @@ export default async function ProductSelectorPage() {
 
   return (
     <OfflineSyncProvider scope={offlineSessionScope(session.sessionId)} available={false} enabled={false} lowDataMode={false}>
-      <main id="main-content" tabIndex={-1} className="site-scope dc-panel-bg min-h-dvh px-4 py-8 sm:px-8 sm:py-12">
+      <main id="main-content" tabIndex={-1} className="pn-scope min-h-dvh px-4 py-8 sm:px-8 sm:py-12">
         <div className="mx-auto w-full max-w-[1040px]">
           <header className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">

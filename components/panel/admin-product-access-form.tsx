@@ -41,7 +41,7 @@ export function AdminProductAccessForm({
   }
 
   return (
-    <section className="panel-surface mt-5 p-5">
+    <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-5 p-5">
       <h2 className="flex items-center gap-2 text-sm font-extrabold text-(--site-ink)">
         <Boxes size={16} /> Ürün erişimi
       </h2>
@@ -82,7 +82,7 @@ export function AdminProductAccessForm({
             type="button"
             disabled={busy}
             onClick={() => void save()}
-            className="panel-quick-action panel-quick-action-primary"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
           >
             <Save size={14} /> {busy ? "Kaydediliyor" : "Erişimi kaydet"}
           </button>

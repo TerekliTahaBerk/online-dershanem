@@ -114,7 +114,7 @@ export function AutomationRulesPanel({
       {canWrite ? (
         <form
           action={createAutomationRule}
-          className="panel-surface grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3"
+          className="overflow-hidden rounded-[10px] border border-pn-border bg-white grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3"
         >
           <h2 className="font-extrabold sm:col-span-2 xl:col-span-3">
             Yeni otomasyon kuralı
@@ -292,7 +292,7 @@ export function AutomationRulesPanel({
       {rules.length ? (
         <div className="space-y-3">
           {rules.map((rule) => (
-            <article key={rule.id} className="panel-surface p-4">
+            <article key={rule.id} className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <strong>{rule.name}</strong>

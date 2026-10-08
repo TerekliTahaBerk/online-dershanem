@@ -19,7 +19,7 @@ export function NoProductAccess({ role, start = null }: { role: UserRole; start?
   if (!isStaff) return <div className="max-w-[640px]">
     <h1 className="mb-5 text-2xl font-bold text-dc-ink">Hoş geldiniz</h1>
     <OdStartCard start={start} />
-    {!start && <Link href="/paketler" className="site-btn site-btn-primary">Paketini Oluştur</Link>}
+    {!start && <Link href="/paketler" className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]">Paketini Oluştur</Link>}
   </div>;
 
   return (
@@ -43,7 +43,7 @@ export function NoProductAccess({ role, start = null }: { role: UserRole; start?
 
         {!isStaff ? (
           <div className="mt-5 flex flex-wrap gap-3">
-            <Link href="/paketler" className="site-btn site-btn-primary">
+            <Link href="/paketler" className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]">
               Paketini Oluştur
             </Link>
             <Link

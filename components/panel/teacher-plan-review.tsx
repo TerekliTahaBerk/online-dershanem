@@ -81,7 +81,7 @@ export function TeacherPlanReview({ plans: initial }: { plans: Plan[] }) {
   }
   if (!plans.length)
     return (
-      <div className="panel-surface p-8 text-center">
+      <div className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-8 text-center">
         <ListChecks className="mx-auto text-(--site-muted)" />
         <h2 className="mt-3 font-extrabold">İncelenecek plan yok.</h2>
         <p className="mt-1 text-sm text-(--site-muted)">
@@ -143,7 +143,7 @@ export function TeacherPlanReview({ plans: initial }: { plans: Plan[] }) {
                 type="button"
                 onClick={() => void approve(plan)}
                 disabled={busyId !== null}
-                className="panel-quick-action panel-quick-action-primary"
+                className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
               >
                 <CheckCircle2 size={14} aria-hidden="true" />{" "}
                 {busyId === plan.id ? "Onaylanıyor…" : "Onayla ve kilitle"}

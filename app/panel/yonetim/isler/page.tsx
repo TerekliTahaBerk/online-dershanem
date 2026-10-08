@@ -300,7 +300,7 @@ export default async function OperationsPage({ searchParams }: { searchParams: P
 
       {tab === "aktivasyon" ? (
         <>
-      <section className="panel-surface mt-7 p-5" aria-label="İlk ders göstergeleri">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-7 p-5" aria-label="İlk ders göstergeleri">
         <h2 className="text-sm font-extrabold">İlk ders göstergeleri · son 90 günde ödeme yapan yeni öğrenciler</h2>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
           <div>
@@ -356,7 +356,7 @@ export default async function OperationsPage({ searchParams }: { searchParams: P
         />
       </section>
 
-      <section className="panel-surface mt-7">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-7">
         <div className="flex flex-col gap-3 border-b border-(--site-line) p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-sm font-extrabold text-(--site-ink)">
@@ -594,7 +594,7 @@ export default async function OperationsPage({ searchParams }: { searchParams: P
 
       {tab === "istisnalar" ? (
         <>
-      <section className="panel-surface mt-7">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-7">
         <div className="flex flex-col gap-3 border-b border-(--site-line) p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-sm font-extrabold text-(--site-ink)">
@@ -704,7 +704,7 @@ export default async function OperationsPage({ searchParams }: { searchParams: P
         </div>
       </section>
 
-      <section className="panel-surface mt-7">
+      <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-7">
         <div className="flex flex-wrap items-start justify-between gap-3 border-b border-(--site-line) p-5">
           <div>
             <h2 className="text-sm font-extrabold text-(--site-ink)">
@@ -866,7 +866,7 @@ export default async function OperationsPage({ searchParams }: { searchParams: P
 
       {tab === "sistem" ? (
         <>
-      <section id="cron-durumu" className="panel-surface mt-7 scroll-mt-24">
+      <section id="cron-durumu" className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-7 scroll-mt-24">
         <div className="flex flex-col gap-3 border-b border-(--site-line) p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="flex items-center gap-2 text-sm font-extrabold text-(--site-ink)">
@@ -967,7 +967,7 @@ export default async function OperationsPage({ searchParams }: { searchParams: P
         </div>
       </section>
 
-      <section id="eposta-kuyrugu" className="panel-surface mt-7 scroll-mt-24">
+      <section id="eposta-kuyrugu" className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-7 scroll-mt-24">
         <div className="flex items-center justify-between gap-3 border-b border-(--site-line) p-5">
           <div>
             <h2 className="flex items-center gap-2 text-sm font-extrabold text-(--site-ink)">

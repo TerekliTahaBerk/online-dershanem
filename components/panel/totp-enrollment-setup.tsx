@@ -144,7 +144,7 @@ export function TotpEnrollmentSetup({
           <button
             type="button"
             onClick={() => void copySecret()}
-            className="site-btn site-btn-secondary min-h-11 shrink-0 px-4"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover text-[13.5px] min-h-11 shrink-0 px-4"
           >
             {copied ? (
               <Check size={16} aria-hidden="true" />
@@ -157,7 +157,7 @@ export function TotpEnrollmentSetup({
       </div>
 
       {coarsePointer && otpauthUri ? (
-        <a href={otpauthUri} className="site-btn site-btn-secondary w-full">
+        <a href={otpauthUri} className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] w-full">
           <ExternalLink size={16} aria-hidden="true" /> Doğrulama uygulamasında
           aç
         </a>
@@ -189,7 +189,7 @@ export function TotpEnrollmentSetup({
       <button
         type="submit"
         disabled={pending || code.length !== 6}
-        className="site-btn site-btn-primary w-full min-h-12"
+        className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black px-3.5 text-[13.5px] w-full min-h-12"
       >
         Kurulumu doğrula
       </button>
@@ -240,7 +240,7 @@ export function MfaCodeInput({
       <button
         type="submit"
         disabled={pending}
-        className="site-btn site-btn-secondary w-full min-h-12"
+        className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover px-3.5 text-[13.5px] w-full min-h-12"
       >
         {pending ? "Doğrulanıyor..." : "Kodu doğrula"}
       </button>

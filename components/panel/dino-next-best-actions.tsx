@@ -61,7 +61,7 @@ export function DinoNextBestActions({ items }: { items: NextBestAction[] }) {
               {"href" in item.action ? (
                 <Link
                   href={item.action.href}
-                  className="site-btn site-btn-secondary text-[12.5px]"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[12.5px]"
                 >
                   {getActionLabel(item.action)}
                 </Link>

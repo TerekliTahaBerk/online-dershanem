@@ -131,7 +131,7 @@ export function LeadDetailPanel({
 
   return (
     <div className="space-y-4">
-      <header className="panel-surface p-4">
+      <header className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-[11px] font-extrabold uppercase tracking-[.08em] text-(--brand-olive)">
@@ -173,7 +173,7 @@ export function LeadDetailPanel({
       </header>
 
       {(duplicates.length > 0 || suggestion) && canWrite ? (
-        <section className="panel-surface border-amber-200 bg-amber-50 p-4">
+        <section className="overflow-hidden rounded-[10px] border border-amber-200 bg-amber-50 p-4">
           <h3 className="text-xs font-extrabold text-amber-950">
             Olası tekrar kayıtlar
           </h3>
@@ -220,7 +220,7 @@ export function LeadDetailPanel({
       ) : null}
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <section className="panel-surface space-y-3 p-4">
+        <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white space-y-3 p-4">
           <h3 className="text-xs font-extrabold">Profil</h3>
           <dl className="grid grid-cols-2 gap-2 text-xs">
             <div>
@@ -364,7 +364,7 @@ export function LeadDetailPanel({
           )}
         </section>
 
-        <section className="panel-surface space-y-3 p-4">
+        <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white space-y-3 p-4">
           <h3 className="text-xs font-extrabold">Takip / not / görev</h3>
           {canWrite ? (
             <>
@@ -480,7 +480,7 @@ export function LeadDetailPanel({
       </div>
 
       {lead.stage === "WON" || lead.wonAt ? (
-        <section className="panel-surface p-4">
+        <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
           <h3 className="text-xs font-extrabold">
             Kazanıldı — satış / sipariş
           </h3>
@@ -547,7 +547,7 @@ export function LeadDetailPanel({
       ) : null}
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <section className="panel-surface p-4">
+        <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
           <h3 className="text-xs font-extrabold">Instagram konuşması</h3>
           {lead.conversation ? (
             <>
@@ -578,7 +578,7 @@ export function LeadDetailPanel({
           )}
         </section>
 
-        <section className="panel-surface p-4">
+        <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
           <h3 className="text-xs font-extrabold">Teklifler / ödemeler</h3>
           {lead.financialTransactions.length ? (
             lead.financialTransactions.map((tx) => (
