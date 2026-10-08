@@ -136,6 +136,8 @@ export function evaluateConfiguration(input: {
     productionSeverity,
   );
   addInvalidWhenPresent("ODK_ROLLOUT_MODE", (value) => value === "disabled" || value === "pilot" || value === "general", "warning");
+  // Mobil minimum sürüm kapısı isteğe bağlıdır; yanlış biçim kapıyı sessizce kapatır.
+  addInvalidWhenPresent("MOBILE_MIN_SUPPORTED_VERSION", (value) => /^\d{1,4}\.\d{1,4}\.\d{1,6}$/.test(value), "warning");
   addInvalidWhenPresent("STAFF_PRODUCT_ASSIGNMENTS", (value) => value === "legacy" || value === "shadow" || value === "enforce", "warning");
   for (const key of ODK_READINESS_KEYS.filter((key) => key !== "ODK_ROLLOUT_MODE")) {
     addInvalidWhenPresent(key, (value) => value === "true" || value === "false", "warning");

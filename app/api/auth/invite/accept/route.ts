@@ -8,6 +8,7 @@ import { hashInviteToken } from "@/lib/auth/invitation";
 import { hashPassword } from "@/lib/auth/password";
 import { validatePasswordStrength } from "@/lib/auth/password-policy";
 import { createSession, revokeAllUserSessions } from "@/lib/auth/session";
+import { loginTransport } from "@/lib/auth/client-transport";
 import { postAuthenticationPath } from "@/lib/auth/products";
 import { PANEL_ENABLED } from "@/lib/panel-config";
 
@@ -95,9 +96,11 @@ export async function POST(request: Request) {
   }
 
   await revokeAllUserSessions(user.id);
+  const transport = loginTransport(request.headers);
   const { token } = await createSession(user.id, user.role, {
     ip,
     userAgent: request.headers.get("user-agent"),
+    setCookie: transport.setCookie,
   });
 
   await logAudit({
@@ -109,13 +112,12 @@ export async function POST(request: Request) {
     payload: { ip },
   });
 
-  const isMobileClient = request.headers.get("x-od-client") === "mobile";
   return NextResponse.json({
     redirect: await postAuthenticationPath({
       userId: user.id,
       role: user.role,
       mustChangePassword: false,
     }),
-    ...(isMobileClient ? { token } : {}),
+    ...(transport.returnToken ? { token } : {}),
   });
 }

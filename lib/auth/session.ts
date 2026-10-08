@@ -6,7 +6,7 @@ import { cookies, headers } from "next/headers";
 import type { ProductCode, UserRole, UserStatus } from "@prisma/client";
 import { withPrismaResilience } from "@/lib/prisma-resilience";
 import { SESSION_POLICIES, absoluteSessionExpiry, sessionExpiryReason } from "@/lib/auth/session-policy";
-import { parseBearerToken } from "@/lib/auth/bearer-token";
+import { resolveRequestCredential, type RequestCredential } from "@/lib/auth/bearer-token";
 
 /**
  * Oturum yönetimi.
@@ -41,18 +41,23 @@ function hashToken(token: string): string {
 }
 
 /**
- * Çerezi bulamazsa mobil istemciler için `Authorization: Bearer` header'ına
- * bakar. Route handler'larda `next/headers`'ın `headers()`'ı isteğin gerçek
- * header'larını verir — imza değişmediği için tüm çağıranlar (guards.ts,
- * api-guards.ts, sayfalar) dokunulmadan bu yoldan da faydalanır.
+ * İsteğin oturum kimlik bilgisini okur: httpOnly çerez ve/veya
+ * `Authorization: Bearer` (native mobil). Karar `resolveRequestCredential`
+ * içindedir — çerez ile Bearer farklıysa oturum AÇILMAZ (fail-closed). Web
+ * akışı `Authorization` göndermediği için davranışı değişmez.
  */
-async function resolveToken(): Promise<string | null> {
+async function readRequestCredential(): Promise<RequestCredential> {
   const store = await cookies();
-  const cookieToken = store.get(SESSION_COOKIE_NAME)?.value;
-  if (cookieToken) return cookieToken;
-
   const h = await headers();
-  return parseBearerToken(h.get("authorization"));
+  const credential = resolveRequestCredential({
+    cookieToken: store.get(SESSION_COOKIE_NAME)?.value,
+    authorization: h.get("authorization"),
+  });
+  if (credential.kind === "conflict") {
+    // Token değerleri ASLA loglanmaz; yalnız neden.
+    console.warn("[auth] çakışan oturum kimlik bilgisi reddedildi", { reason: credential.reason });
+  }
+  return credential;
 }
 
 /**
@@ -64,7 +69,7 @@ async function resolveToken(): Promise<string | null> {
 export async function createSession(
   userId: string,
   role: UserRole,
-  meta: { ip?: string | null; userAgent?: string | null; mfaVerified?: boolean } = {},
+  meta: { ip?: string | null; userAgent?: string | null; mfaVerified?: boolean; setCookie?: boolean } = {},
 ): Promise<{ token: string; expiresAt: Date }> {
   // 256 bit opak token — tahmin edilemez, içinde bilgi taşımaz.
   const token = randomBytes(32).toString("base64url");
@@ -83,6 +88,11 @@ export async function createSession(
       },
     }),
   );
+
+  // Native mobil istemci token'ı gövdeden alıp SecureStore'da tutar; ona
+  // çerez yazmak cihazın çerez deposunda ikinci, yönetilmeyen bir kimlik
+  // bırakır (bkz. docs/mobile/m1-auth-security-review.md).
+  if (meta.setCookie === false) return { token, expiresAt };
 
   const store = await cookies();
   store.set(SESSION_COOKIE_NAME, token, {
@@ -108,9 +118,27 @@ export async function createSession(
  * (layout + sayfa + guard hepsi çağırıyor).
  */
 export const getSession = cache(async (): Promise<SessionUser | null> => {
-  const token = await resolveToken();
-  if (!token) return null;
+  const credential = await readRequestCredential();
+  return credential.kind === "token" ? loadSessionForToken(credential.token) : null;
+});
 
+/**
+ * Kimlik bilgilerinden oturum çözer — `getSession` ile AYNI kural, istek
+ * kapsamı olmadan (entegrasyon testleri ve kapsam dışı çağıranlar için).
+ */
+export async function resolveSessionFromCredentials(input: {
+  cookieToken: string | null | undefined;
+  authorization: string | null | undefined;
+}): Promise<SessionUser | null> {
+  const credential = resolveRequestCredential(input);
+  return credential.kind === "token" ? loadSessionForToken(credential.token) : null;
+}
+
+/**
+ * Token'dan oturum yükler: iptal / askı / mutlak ve boşta süre kontrolleri
+ * ve `lastSeenAt` güncellemesi tek koşullu yazımla (ADR 0012).
+ */
+export async function loadSessionForToken(token: string): Promise<SessionUser | null> {
   const session = await withPrismaResilience((db) =>
     db.session.findUnique({
       where: { tokenHash: hashToken(token) },
@@ -164,7 +192,7 @@ export const getSession = cache(async (): Promise<SessionUser | null> => {
     stepUpAt: session.stepUpAt,
     activeProduct: session.activeProduct,
   };
-});
+}
 
 /** Tek oturumu iptal eder (çıkış). */
 export async function revokeSession(sessionId: string): Promise<void> {
