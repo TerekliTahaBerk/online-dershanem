@@ -11,13 +11,9 @@ const routes = [
   // Paket kurucu: sitedeki en etkileşimli public yüzey ve fiyat/indirim
   // gösteriminin tek yeri — sweep dışında kalmamalı.
   "/paketler",
-  "/ders-paketleri",
-  "/lgs",
-  "/yks",
   "/iletisim",
   "/sss",
   "/hakkimizda",
-  "/matematik",
   "/online-ozel-ders",
   "/sepet",
 ];

@@ -13,8 +13,7 @@ export const metadata: Metadata = {
 const POPULAR_LINKS = [
   { href: "/paketler", label: "Paketini oluştur", note: "Ders, koçluk ve deneme" },
   { href: "/urunler", label: "Ürünler", note: "Üç ürünü karşılaştır" },
-  { href: "/lgs", label: "LGS canlı öğrenme", note: "Küçük grup canlı ders" },
-  { href: "/yks", label: "YKS canlı öğrenme", note: "TYT ve AYT için canlı ders" },
+  { href: "/urunler/online-dershanem", label: "Canlı öğrenme", note: "LGS ve YKS için küçük grup canlı ders" },
   { href: "/sss", label: "Sıkça sorulan sorular", note: "Fiyat, ders ve ödeme" },
   { href: "/iletisim", label: "İletişim", note: "WhatsApp, telefon, form" },
 ];

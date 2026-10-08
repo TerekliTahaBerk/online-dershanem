@@ -97,8 +97,7 @@ export const homeFaqs: Faq[] = [
  *
  * Tasarımdaki "Yardım merkezi" için depoda bir route YOK; uydurma bağlantı
  * yerine mevcut gerçek destek sayfalarına bağlanır (§11 — yasal/destek route
- * uydurulmaz, çalışan bağlantı kaldırılmaz). LGS/YKS ve ders seçenekleri
- * bağlantıları SEO değeri taşıdığı için rehber sütununda korunur.
+ * uydurulmaz, çalışan bağlantı kaldırılmaz).
  */
 export const footerColumns = [
   {
@@ -111,10 +110,6 @@ export const footerColumns = [
   {
     title: "Rehberler",
     links: [
-      { label: "LGS canlı ders", href: "/lgs" },
-      { label: "YKS canlı ders", href: "/yks" },
-      { label: "Ders seçenekleri", href: "/ders-paketleri" },
-      { label: "Matematik", href: "/matematik" },
       { label: "Blog", href: "/blog" },
     ],
   },

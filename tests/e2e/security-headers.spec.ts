@@ -7,7 +7,7 @@ import { expect, test } from "@playwright/test";
  * analitik/ödeme entegrasyonlarının gerekli origin'lerini korur.
  */
 
-const ROUTES = ["/", "/yks", "/sss", "/iletisim", "/giris", "/sepet"];
+const ROUTES = ["/", "/urunler/online-dershanem", "/sss", "/iletisim", "/giris", "/sepet"];
 
 test.describe("güvenlik header'ları", () => {
   test("bütün ana route'larda CSP ve sertleştirme header'ları bulunur", async ({ request }) => {
@@ -57,7 +57,7 @@ test.describe("güvenlik header'ları", () => {
     expect(secondNonce).toBeTruthy();
     expect(firstNonce).not.toBe(secondNonce);
 
-    const response = await page.goto("/yks", { waitUntil: "networkidle" });
+    const response = await page.goto("/urunler/online-dershanem", { waitUntil: "networkidle" });
     const responseNonce = response?.headers()["content-security-policy"]?.match(/'nonce-([^']+)'/)?.[1];
     const inlineNonces = await page.locator("script:not([src])").evaluateAll((scripts) =>
       scripts.map((script) => (script as HTMLScriptElement).nonce),
@@ -89,7 +89,7 @@ test.describe("güvenlik header'ları", () => {
       if (/Content Security Policy|Refused to (load|execute|connect)/i.test(text)) violations.push(text);
     });
 
-    for (const route of ["/", "/yks", "/giris"]) {
+    for (const route of ["/", "/urunler/online-dershanem", "/giris"]) {
       await page.goto(route, { waitUntil: "networkidle" });
     }
 

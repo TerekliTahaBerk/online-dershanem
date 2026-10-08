@@ -1,40 +1,12 @@
+import { RouteLoading } from "@/components/site/route-loading";
+import { SiteHeader } from "@/components/site/site-header";
+import PanelLoading from "@/app/panel/loading";
+
 /**
- * Root-level loading skeleton — Next.js App Router segmenti yüklenirken görünür.
- * Public sayfalar için varsayılan loading UI.
+ * Kök yükleme sınırı — public sayfalar arası geçişte (ör. ana sayfa →
+ * hakkımızda) Link prefetch'i bu iskeleti önceden alır, tıklama anında
+ * gösterilir. Hedef adrese göre doğru kabuk `RouteLoading` içinde seçilir.
  */
 export default function Loading() {
-  return (
-    <div
-      role="status"
-      aria-busy="true"
-      aria-label="Sayfa yükleniyor"
-      className="site-scope min-h-screen bg-(--site-bg-warm)"
-    >
-      <span className="sr-only">Sayfa yükleniyor, lütfen bekleyin.</span>
-      <div className="mx-auto max-w-[1080px] px-5 py-16 sm:px-8">
-        {/* Header skeleton */}
-        <div className="space-y-4">
-          <div className="h-8 w-2/3 animate-pulse rounded-md bg-(--site-line)" />
-          <div className="h-4 w-1/2 animate-pulse rounded-md bg-(--site-line-soft)" />
-        </div>
-
-        {/* Content blocks skeleton */}
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="rounded-od-xl border border-(--site-line) bg-white p-6"
-            >
-              <div className="h-5 w-1/3 animate-pulse rounded-sm bg-(--site-line)" />
-              <div className="mt-4 space-y-2">
-                <div className="h-3 w-full animate-pulse rounded-sm bg-(--site-line-soft)" />
-                <div className="h-3 w-5/6 animate-pulse rounded-sm bg-(--site-line-soft)" />
-                <div className="h-3 w-2/3 animate-pulse rounded-sm bg-(--site-line-soft)" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+  return <RouteLoading siteHeader={<SiteHeader />} panelLoading={<PanelLoading />} />;
 }

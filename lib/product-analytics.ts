@@ -20,7 +20,7 @@ export function productCta(href: string, origin: string) {
     if (url.origin === form.origin && url.pathname === form.pathname) return { cta_kind: "application" };
     if (url.origin !== origin) return undefined;
     if (url.pathname === "/iletisim" && url.hash === "#on-gorusme") return { cta_kind: "pre_meeting" };
-    if (["/paketler", "/ders-paketleri", "/kocluk-paketleri", "/odk-paketleri"].includes(url.pathname)) return { cta_kind: "packages" };
+    if (["/paketler", "/kocluk-paketleri", "/odk-paketleri"].includes(url.pathname)) return { cta_kind: "packages" };
     const target = analyticsProduct(url.pathname);
     if (target && !url.hash) return { cta_kind: "product_navigation", target_product: target };
     if (url.hash === "#nasil-isler") return { cta_kind: "how_it_works" };

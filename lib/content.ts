@@ -161,7 +161,7 @@ export const blogPosts = [
       title: "Sana uygun paketi birlikte seçelim",
       text: "Tek başına çalışırken nerede takıldığını görmek zordur. Hangi dersten başlaman gerektiğini ekibimizle konuşalım.",
       buttonLabel: "Paketleri İncele",
-      href: "/ders-paketleri"
+      href: "/paketler"
     },
     relatedSlugs: ["online-ozel-ders-mi-dershane-mi", "yks-online-ders-calisma-plani", "online-dershane-fiyatlari-2026"]
   },
@@ -337,7 +337,7 @@ export const blogPosts = [
       title: "Net artışı için haftalık planı çıkaralım",
       text: "Bunu tek başına uygulamak zor geliyorsa öğrencinin seviyesine göre haftalık planı birlikte hazırlayalım.",
       buttonLabel: "Paketleri İncele",
-      href: "/ders-paketleri"
+      href: "/paketler"
     },
     relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "online-dershane-fiyatlari-2026"]
   },
@@ -380,7 +380,7 @@ export const blogPosts = [
       title: "Küçük grup + düzenli takibi birlikte deneyin",
       text: "Öğrencinin seviyesine göre ders planını birlikte çıkaralım.",
       buttonLabel: "Paketleri İncele",
-      href: "/ders-paketleri"
+      href: "/paketler"
     },
     relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "yks-online-ders-calisma-plani"]
   },
@@ -420,7 +420,7 @@ export const blogPosts = [
       title: "e dershane yaklaşımımızı yakından incele",
       text: "Öğrencinin seviyesine göre hangi dersten başlaman gerektiğini birlikte konuşalım.",
       buttonLabel: "Paketleri İncele",
-      href: "/ders-paketleri"
+      href: "/paketler"
     },
     relatedSlugs: ["online-dershane-nedir", "online-ozel-ders-mi-dershane-mi", "online-dershane-fiyatlari-2026"]
   },
@@ -530,7 +530,7 @@ export const blogPosts = [
       title: "Matematik çalışma planını birlikte hazırlayalım",
       text: "Mevcut matematik seviyeni analiz edip küçük grup dersinde ilk 4 haftalık planını birlikte çıkaralım.",
       buttonLabel: "YKS Matematik Paketini İncele",
-      href: "/yks"
+      href: "/urunler/online-dershanem"
     },
     relatedSlugs: ["yks-online-ders-calisma-plani", "online-dershane-nedir", "online-dershane-fiyatlari-2026"]
   },
@@ -564,7 +564,7 @@ export const blogPosts = [
       title: "LGS matematik paketini incele",
       text: "Öğrencinin matematik seviyesini ölçüp hangi konudan başlaman gerektiğini belirleyelim.",
       buttonLabel: "LGS Matematik Paketini İncele",
-      href: "/lgs"
+      href: "/urunler/online-dershanem"
     },
     relatedSlugs: ["lgs-online-ders-net-artirma", "online-dershane-nedir", "online-ozel-ders-mi-dershane-mi"]
   },

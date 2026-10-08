@@ -195,8 +195,12 @@ test.describe("eski public adresler", () => {
     ["/tyt-deneme-kulubu", /\/urunler\/online-deneme-kulubum\/?$/],
     ["/lgs-deneme-kulubu", /\/urunler\/online-deneme-kulubum\/?$/],
     ["/online-dershane", /\/urunler\/online-dershanem\/?$/],
-    ["/tyt", /\/yks\/?$/],
-    ["/ayt", /\/yks\/?$/],
+    ["/tyt", /\/urunler\/online-dershanem\/?$/],
+    ["/ayt", /\/urunler\/online-dershanem\/?$/],
+    ["/lgs", /\/urunler\/online-dershanem\/?$/],
+    ["/yks", /\/urunler\/online-dershanem\/?$/],
+    ["/matematik", /\/urunler\/online-dershanem\/?$/],
+    ["/ders-paketleri", /\/paketler\/?$/],
   ];
 
   for (const [route, expected] of legacyRedirects) {
@@ -208,11 +212,7 @@ test.describe("eski public adresler", () => {
   }
 
   const preservedRoutes = [
-    "/ders-paketleri",
-    "/matematik",
     "/online-ozel-ders",
-    "/lgs",
-    "/yks",
     "/sss",
     "/iletisim",
     "/giris",

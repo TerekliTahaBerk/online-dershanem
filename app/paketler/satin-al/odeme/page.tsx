@@ -89,7 +89,7 @@ export default async function OdPaymentPage({
       >
         <PaytrIframeShell
           breadcrumb={[
-            { label: "Ders Paketleri", href: "/ders-paketleri" },
+            { label: "Paketler", href: "/paketler" },
             { label: "Bilgiler", href: editHref },
             { label: "Ödeme" },
           ]}

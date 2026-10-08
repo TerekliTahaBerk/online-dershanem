@@ -35,17 +35,14 @@ export default function OnlineOzelDersPage() {
             {formats.map((format) => <article key={format.title} className="rounded-dc-card border border-dc-line bg-white p-7"><p className="text-[13px] font-semibold text-dc-brand-strong">{format.detail}</p><h3 className="mt-4 text-[23px] font-bold text-dc-ink">{format.title}</h3><p className="mt-3 text-[16px] leading-7 text-dc-ink-body">{format.body}</p></article>)}
           </div>
           <p className="mt-6 max-w-3xl text-[16px] leading-7 text-dc-ink-body">onlinedershanem. farklı derslerde canlı öğrenme sunar. Bu rehber format seçimine yardımcı olur; güncel ders listesi, fiyat ve başlangıç koşulları ürün sayfasında ve paket kurucuda yer alır.</p>
-          <Link href="/ders-paketleri" className="mt-4 inline-flex min-h-11 items-center font-semibold text-dc-brand-strong">Doğrudan satın alınabilir matematik seçenekleri →</Link>
         </section>
         <section className="border-y border-dc-line-soft bg-dc-surface-muted">
           <div className="site-container py-(--dc-section-tight)">
             <h2 className="text-[24px] font-bold text-dc-ink">Seçimini destekleyen rehberler</h2>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {[
-                { href: "/matematik", label: "Matematikte çalışma ve canlı destek" },
+                { href: "/urunler/online-dershanem", label: "LGS ve YKS canlı öğrenme" },
                 { href: "/blog/online-ozel-ders-mi-dershane-mi", label: "Online özel ders mi dershane mi?" },
-                { href: "/lgs", label: "LGS canlı öğrenme rehberi" },
-                { href: "/yks", label: "YKS canlı öğrenme rehberi" },
               ].map((link) => <Link key={link.href} href={link.href} className="rounded-dc-card-sm border border-dc-line bg-white p-5 font-semibold text-dc-ink">{link.label} →</Link>)}
             </div>
           </div>

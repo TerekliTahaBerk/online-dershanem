@@ -1,9 +1,13 @@
 /** Public marketing aliases. Exact paths leave package checkout children intact. */
 export const publicLegacyRedirects = [
-  { source: "/matematik-ders-paketi", destination: "/ders-paketleri", permanent: true },
-  { source: "/paket", destination: "/ders-paketleri", permanent: true },
-  { source: "/tyt", destination: "/yks", permanent: true },
-  { source: "/ayt", destination: "/yks", permanent: true },
+  { source: "/matematik-ders-paketi", destination: "/paketler", permanent: true },
+  { source: "/paket", destination: "/paketler", permanent: true },
+  { source: "/ders-paketleri", destination: "/paketler", permanent: true },
+  { source: "/lgs", destination: "/urunler/online-dershanem", permanent: true },
+  { source: "/yks", destination: "/urunler/online-dershanem", permanent: true },
+  { source: "/matematik", destination: "/urunler/online-dershanem", permanent: true },
+  { source: "/tyt", destination: "/urunler/online-dershanem", permanent: true },
+  { source: "/ayt", destination: "/urunler/online-dershanem", permanent: true },
   { source: "/online-dershane", destination: "/urunler/online-dershanem", permanent: true },
   { source: "/deneme-kulubu", destination: "/urunler/online-deneme-kulubum", permanent: true },
   { source: "/odk", destination: "/urunler/online-deneme-kulubum", permanent: true },

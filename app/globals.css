@@ -2161,3 +2161,38 @@ html[data-panel-low-data="true"] :is(.site-scope, .pn-scope) :where(.backdrop-bl
 html[data-panel-low-data="true"] :is(.site-scope, .pn-scope) :where(.animate-pulse, .animate-spin) {
   animation: none !important;
 }
+
+/* Sayfa geçişi iskeleti (components/site/route-loading.tsx). Hızlı geçişlerde
+   yanıp sönmesin diye kemikler 120 ms gecikmeyle belirir; ardından marka
+   tonunda soldan sağa akan parıltı. */
+/* Köşe yarıçapı varsayılanı katman içinde: `rounded-*` yardımcıları ezebilsin. */
+@layer components {
+  .route-loading-bone { border-radius: 8px; }
+}
+.route-loading-bone {
+  background: linear-gradient(
+      100deg,
+      transparent 20%,
+      rgb(255 255 255 / 0.75) 50%,
+      transparent 80%
+    )
+    0 0 / 200% 100% no-repeat,
+    color-mix(in srgb, var(--dc-brand) 9%, #eef1ee);
+  opacity: 0;
+  animation:
+    route-loading-in 220ms ease-out 120ms forwards,
+    route-loading-shimmer 1.3s ease-in-out 340ms infinite;
+}
+@keyframes route-loading-in {
+  to { opacity: 1; }
+}
+@keyframes route-loading-shimmer {
+  from { background-position: 150% 0, 0 0; }
+  to { background-position: -50% 0, 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-loading-bone {
+    opacity: 1;
+    animation: none;
+  }
+}
