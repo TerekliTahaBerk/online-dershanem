@@ -63,7 +63,6 @@ export function PanelNav({
               <Link
                 key={item.id}
                 href={href}
-                prefetch
                 onClick={onNavigate}
                 aria-current={active ? "page" : undefined}
                 className={`relative flex min-h-11 items-center rounded-md px-2.5 py-1.5 text-[14px] lg:min-h-9 lg:text-[13.5px] transition-colors ${

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import type { Prisma, ProductCode, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { PASSWORD_CHANGE_PATH, PRODUCT_SELECTOR_PATH } from "@/lib/auth/roles";
@@ -24,8 +25,15 @@ function activeMembershipWhere(userId: string, now: Date): Prisma.ProductMembers
  * birebir aynıdır; registry ürünleri (KPSS) burada görünmez. KPSS Görev 5'ten
  * sonra KPSS satırlarında `product` dolu olduğu için süzgeç `not null` değil,
  * açıkça legacy üçlüdür — aksi halde KPSS registry `is_active` kapısını atlardı.
+ *
+ * `cache()`: panel kabuğu, sayfa guard'ı ve sayfa verisi aynı istekte aynı
+ * argümanlarla çağırır; sorgu istek başına bir kez çalışır.
  */
-export async function getAccessibleProducts(userId: string, role: UserRole, now = new Date()): Promise<ProductCode[]> {
+export const getAccessibleProducts = cache(async function getAccessibleProducts(
+  userId: string,
+  role: UserRole,
+  now = new Date(),
+): Promise<ProductCode[]> {
   // Personel: ADMIN üç üründe de çalışır (break-glass). TEACHER'ın ürünleri
   // `STAFF_PRODUCT_ASSIGNMENTS` moduna göre ya eski kural (üçü; shadow'da yeni
   // kuralla karşılaştırılıp loglanır) ya da `ProductStaffAssignment` satırlarıdır.
@@ -38,7 +46,7 @@ export async function getAccessibleProducts(userId: string, role: UserRole, now 
     orderBy: { product: "asc" },
   });
   return memberships.flatMap((membership) => (membership.product ? [membership.product] : []));
-}
+});
 
 export async function hasProductAccess(userId: string, role: UserRole, product: ProductCode): Promise<boolean> {
   return hasProductEntitlement(await getAccessibleProducts(userId, role), product);

@@ -134,7 +134,6 @@ export function PanelMobileNav({
               <li key={item.id}>
                 <Link
                   href={href}
-                  prefetch
                   aria-current={active ? "page" : undefined}
                   className={`block min-h-11 rounded-od px-1.5 py-2 text-center text-[11.5px] font-semibold leading-tight transition-colors sm:px-2 sm:text-[12.5px] ${
                     active
