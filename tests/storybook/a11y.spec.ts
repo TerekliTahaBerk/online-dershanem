@@ -24,6 +24,12 @@ test("tüm Storybook hikâyeleri WCAG taramasını geçer", async ({ page, reque
       const root = page.locator("#storybook-root");
       await expect.soft(root, `${story.id} render edilmedi`).not.toBeEmpty();
       if (await root.evaluate((element) => element.childElementCount === 0)) return;
+      // Açılış animasyonu (ör. Drawer'ın kayma/solma geçişi) sürerken renkler
+      // yarı saydam karışır ve kontrast yanlış ölçülür; sonlu animasyonların
+      // bitmesi beklenir (E2E taramalarıyla aynı kural).
+      await page.waitForFunction(() =>
+        document.getAnimations().every((animation) => animation.playState !== "running" || animation.effect?.getTiming().iterations === Infinity),
+      );
       const result = await accessibilityScan(page).include("#storybook-root").analyze();
       expect.soft(result.violations, `${story.id}:\n${describeViolations(result.violations)}`).toEqual([]);
     });
