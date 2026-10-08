@@ -4,24 +4,24 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
 
 | # | Karar | Durum |
 | --- | --- | --- |
-| MD-01 | Mevcut `mobile/` Expo projesi yerinde, artımlı göç edilir | Öneri |
-| MD-02 | Ayrı BFF yok; Next.js içinde ince JSON okuma uçları | Öneri |
-| MD-03 | Tek bootstrap ucu (`GET /api/panel/me`) navigasyonu sunucuda hesaplar | Öneri |
-| MD-04 | Çalışma alanı = `Session.activeProduct`; mobilin yerel kopyası yalnız önbellek | Öneri |
-| MD-05 | Sunucu durumu için TanStack Query; global durum kütüphanesi yok | Öneri |
-| MD-06 | Sözleşme tipleri tek kaynakta, yalnız-tip modül olarak paylaşılır | Öneri |
+| MD-01 | Mevcut `mobile/` Expo projesi yerinde, artımlı göç edilir | Uygulandı (M1) |
+| MD-02 | Ayrı BFF yok; Next.js içinde ince JSON okuma uçları | Uygulandı (M1) |
+| MD-03 | Tek bootstrap ucu (`GET /api/panel/me`) navigasyonu sunucuda hesaplar | Uygulandı (M1) |
+| MD-04 | Çalışma alanı = `Session.activeProduct`; mobilin yerel kopyası yalnız önbellek | Uygulandı (M1) |
+| MD-05 | Sunucu durumu için TanStack Query; global durum kütüphanesi yok | Uygulandı (M1) |
+| MD-06 | Sözleşme tipleri tek kaynakta, yalnız-tip modül olarak paylaşılır | Uygulandı (M1) |
 | MD-07 | v1 kapsamı: öğrenci + veli; öğretmen/koç seçili akışlar; ADMIN ve Deneme Ligi personeli kapsam dışı | Öneri |
 | MD-08 | Deneme Ligi sınav çözme v1'de native değil | **Açık** |
 | MD-09 | Uygulama içi satın alma yok; kilitli ürünler bilgi kartı | **Açık** (hukuk/mağaza) |
 | MD-10 | Push: Expo Push Service + `Notification` tablosundan beslenen cron dağıtıcısı | Öneri |
-| MD-11 | Mobil çerez kullanmaz; sunucu mobil girişte çerez set etmez, Bearer'ı önceliklendirir | Öneri |
-| MD-12 | Yol sürümlemesi yok; eklemeli sözleşme + minimum sürüm kapısı | Öneri |
+| MD-11 | Mobil çerez kullanmaz; sunucu mobil girişte çerez set etmez; çerez ≠ Bearer çakışmasında oturum açılmaz | Uygulandı (M1) |
+| MD-12 | Yol sürümlemesi yok; eklemeli sözleşme + minimum sürüm kapısı | Uygulandı (M1) |
 | MD-13 | Çevrimdışı: v1 salt okuma önbelleği; çevrimdışı mutasyon kuyruğu M8 | Öneri |
-| MD-14 | Derin bağlantı: özel şema v1, universal/app link M8 | Öneri |
-| MD-15 | Test: jest-expo + RNTL (M1), E2E (Maestro) M9 | Öneri |
-| MD-16 | Şablon artıkları ve yalnız-mobil eski uçların emekliliği | Öneri |
-| MD-17 | Expo web hedefi desteklenmez | Öneri |
-| MD-18 | Durum etiketleri ve metinler sunucudan; mobil iş kuralı tutmaz | Öneri |
+| MD-14 | Derin bağlantı: özel şema v1, universal/app link M8 | Kısmen (M1) |
+| MD-15 | Test: jest-expo + RNTL (M1), E2E (Maestro) M9 | Kısmen (M1) |
+| MD-16 | Şablon artıkları ve yalnız-mobil eski uçların emekliliği | Kısmen (M1) |
+| MD-17 | Expo web hedefi desteklenmez | Uygulandı (M1) |
+| MD-18 | Durum etiketleri ve metinler sunucudan; mobil iş kuralı tutmaz | Uygulandı (M1) |
 
 ---
 
@@ -121,7 +121,7 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
 
 **Bağlam.** `resolveToken()` çerezi Bearer'dan önce okur. Login ve davet kabulü mobil istekte de httpOnly çerez set eder. iOS/Android'de RN `fetch` varsayılan olarak sistem çerez deposunu kullanır.
 
-**Karar.** (1) Mobil istemci tüm isteklerde `credentials: "omit"`. (2) Sunucu: `X-Od-Client: mobile` girişlerinde `createSession` çerez yazmaz (yeni `setCookie: false` seçeneği). (3) `resolveToken`: `Authorization` başlığı varsa onu kullanır (web bu başlığı hiç göndermediği için davranış değişmez). Her üçü için birim + entegrasyon testi.
+**Karar.** (1) Mobil istemci tüm isteklerde `credentials: "omit"`. (2) Sunucu: `X-Od-Client: mobile` girişlerinde `createSession` çerez yazmaz (`setCookie: false`). (3) **M1'de güncellendi:** çerez ve Bearer birlikte gelip FARKLI ise oturum açılmaz (fail-closed); "Bearer'ı tercih et" yerine bu seçildi çünkü geçersiz Bearer'da çereze sessizce düşmek veya çerezi yok saymak her iki yönde de yanlış kimlik riskini taşır. Web `Authorization` göndermediği için davranışı değişmez. Uygulama ve testler: `docs/mobile/m1-auth-security-review.md`.
 
 ## MD-12 — Sürümleme
 

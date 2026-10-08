@@ -17,6 +17,8 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
 
 ## M1 — Mobil temel ve kimlik doğrulama
 
+> **Durum: uygulandı.** Gerçekleşen kapsam, sapmalar ve test sonuçları: [m1-implementation-report.md](./m1-implementation-report.md), [m1-test-results.md](./m1-test-results.md). M2 girdisi: [m2-handoff.md](./m2-handoff.md).
+
 **Bağımlılıklar.** Yok (giriş fazı). MD-01, MD-02, MD-03, MD-05, MD-06, MD-11, MD-12, MD-17 kararlarının onaylanması.
 
 **Teslimatlar.**
