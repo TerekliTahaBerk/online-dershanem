@@ -23,12 +23,15 @@ const css = readFileSync(`${ROOT}app/globals.css`, "utf8").replace(/\/\*[\s\S]*?
 const FILES = ["mobile/src/design/tokens.ts", "mobile/src/design/products.ts"];
 const read = (file) => readFileSync(`${ROOT}${file}`, "utf8");
 
+/** Değişken adını regex içinde birebir eşleşecek şekilde kaçırır (tüm özel karakterler). */
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\-]/g, "\\$&");
+
 /** Panel katmanı öncelikli: önce `.pn-scope {` bloğu, sonra dosyanın geri kalanı. */
 function declaration(name) {
   const pnStart = css.indexOf(".pn-scope {");
   const scopes = pnStart >= 0 ? [css.slice(pnStart, css.indexOf("}", pnStart)), css] : [css];
   for (const scope of scopes) {
-    const match = new RegExp(`^\\s*${name.replace(/[-]/g, "\\-")}\\s*:\\s*([^;]+);`, "m").exec(scope);
+    const match = new RegExp(`^\\s*${escapeRegExp(name)}\\s*:\\s*([^;]+);`, "m").exec(scope);
     if (match) return match[1].trim();
   }
   return null;
