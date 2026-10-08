@@ -10,6 +10,7 @@ import { normalizeEmail } from "@/lib/auth/email";
 import { hashPassword, needsRehash, verifyAgainstDummy, verifyPassword } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
 import { postAuthenticationPath } from "@/lib/auth/products";
+import { evaluateClientVersion, loginTransport } from "@/lib/auth/client-transport";
 
 /**
  * Parola ile giriş.
@@ -38,8 +39,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Panel şu anda kapalı." }, { status: 503 });
   }
 
+  // Desteklenmeyen mobil sürüm parolayı göndermeden önce durdurulur. Web
+  // istekleri (X-Od-Client başlığı olmayan) bu kapıdan etkilenmez.
+  const version = evaluateClientVersion(request.headers, process.env.MOBILE_MIN_SUPPORTED_VERSION);
+  if (!version.ok) {
+    return NextResponse.json(
+      { error: "Uygulamanın bu sürümü artık desteklenmiyor. Lütfen güncelleyin.", code: version.code, minSupportedVersion: version.minSupportedVersion },
+      { status: 426, headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
   const ip = getClientIp(request.headers);
   const policy = RATE_LIMIT_POLICIES.login;
+  const transport = loginTransport(request.headers);
 
   const guard = await guardMutation({
     action: policy.action,
@@ -165,7 +177,7 @@ export async function POST(request: Request) {
   // Existing broad E2E suites can opt into a non-production bypass. The
   // dedicated MFA suite explicitly disables it and production can never use it.
   const e2eMfaBypass = process.env.CI === "true" && process.env.VERCEL_ENV !== "production" && process.env.PANEL_E2E_ADMIN_MFA_BYPASS === "true" && user.role === "ADMIN" && user.email.endsWith(".e2e@example.com");
-  const { token } = await createSession(user.id, user.role, { ip, userAgent: request.headers.get("user-agent"), mfaVerified: e2eMfaBypass });
+  const { token } = await createSession(user.id, user.role, { ip, userAgent: request.headers.get("user-agent"), mfaVerified: e2eMfaBypass, setCookie: transport.setCookie });
 
   await logAudit({
     actorUserId: user.id,
@@ -176,12 +188,14 @@ export async function POST(request: Request) {
     payload: { ip },
   });
 
-  // Native mobil istemci httpOnly çerezi okuyamaz — yalnızca bu işaretle
-  // gelen isteklerde ham token gövdeye eklenir; tarayıcı akışı bunu hiç görmez.
-  const isMobileClient = request.headers.get("x-od-client") === "mobile";
-
-  return NextResponse.json({
-    redirect: await postAuthenticationPath({ userId: user.id, role: user.role, mustChangePassword: user.mustChangePassword, mfaVerifiedAt: e2eMfaBypass ? new Date() : null }),
-    ...(isMobileClient ? { token } : {}),
-  });
+  // Native mobil istemci httpOnly çerezi okuyamaz: token yalnız gövdede,
+  // çerez hiç yazılmaz. Tarayıcı akışı token'ı hiç görmez (`loginTransport`).
+  // `X-Od-Client` kimlik kanıtı değildir; parola zaten doğrulandı.
+  return NextResponse.json(
+    {
+      redirect: await postAuthenticationPath({ userId: user.id, role: user.role, mustChangePassword: user.mustChangePassword, mfaVerifiedAt: e2eMfaBypass ? new Date() : null }),
+      ...(transport.returnToken ? { token } : {}),
+    },
+    transport.returnToken ? { headers: { "Cache-Control": "no-store" } } : undefined,
+  );
 }

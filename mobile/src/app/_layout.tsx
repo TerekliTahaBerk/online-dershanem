@@ -1,65 +1,75 @@
+import { Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold, useFonts } from '@expo-google-fonts/manrope';
 import { DefaultTheme, Stack, ThemeProvider } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
-import { BrandColors } from '@/constants/theme';
-import { SessionProvider, useSession } from '@/lib/auth-context';
+import { NEUTRAL_THEME, productTheme } from '@/design/products';
+import { DesignProvider } from '@/design/theme';
+import { color } from '@/design/tokens';
+import { SessionProvider, useSession } from '@/lib/auth/session-provider';
 
-SplashScreen.preventAutoHideAsync();
+void SplashScreen.preventAutoHideAsync();
 
-function RootNavigator() {
-  const { token, isLoading } = useSession();
+const NAV_THEME = { ...DefaultTheme, colors: { ...DefaultTheme.colors, background: color.canvas, card: color.canvas, border: color.border, text: color.text, primary: color.focus } };
+
+/**
+ * Kök navigatör: hangi rota grubunun açık olduğu YALNIZ durum makinesinden
+ * (`deriveAppState`, kaynağı sunucu bootstrap'ı) gelir. Her grup
+ * `Stack.Protected` ile korunur; korumalı olmayan bir rotaya derin bağlantı
+ * gelirse Expo Router kullanıcıyı açık olan ilk rotaya döndürür.
+ */
+function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
+  const { state } = useSession();
+  const status = state.status;
+  const booting = status === 'BOOTING' || !fontsReady;
 
   useEffect(() => {
-    if (!isLoading) SplashScreen.hideAsync();
-  }, [isLoading]);
+    if (!booting) void SplashScreen.hideAsync();
+  }, [booting]);
 
-  if (isLoading) return null;
+  const theme = status === 'WORKSPACE_READY' ? productTheme(state.workspace) : NEUTRAL_THEME;
+  if (booting) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Protected guard={!!token}>
-        <Stack.Screen name="(tabs)" />
-        {/* Web'in kenar çubuğundaki her öğe ayrı bir sekme OLMUYOR (5 sekme
-            sınırı) — Denemeler/Gelişim, Ana Sayfa'dan itilen (pushed) ekranlar,
-            web'de de bunlar Ana Sayfa'dan link ile açılıyor (§"Sonucu ve
-            analizi aç →"). */}
-        <Stack.Screen
-          name="denemeler"
-          options={{ headerShown: true, title: 'Denemeler', headerTintColor: BrandColors.brandStrong }}
-        />
-        <Stack.Screen
-          name="gelisim"
-          options={{ headerShown: true, title: 'Gelişim', headerTintColor: BrandColors.brandStrong }}
-        />
-        <Stack.Screen
-          name="hedefler"
-          options={{ headerShown: true, title: 'Hedefler', headerTintColor: BrandColors.brandStrong }}
-        />
-        <Stack.Screen
-          name="materyaller"
-          options={{ headerShown: true, title: 'Materyaller', headerTintColor: BrandColors.brandStrong }}
-        />
-      </Stack.Protected>
-      <Stack.Protected guard={!token}>
-        <Stack.Screen name="sign-in" />
-      </Stack.Protected>
-    </Stack>
+    <DesignProvider product={theme}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.canvas } }}>
+        <Stack.Protected guard={status === 'UNAUTHENTICATED' || status === 'AUTHENTICATING'}>
+          <Stack.Screen name="sign-in" />
+          <Stack.Screen name="forgot-password" />
+        </Stack.Protected>
+        <Stack.Protected guard={status === 'UPGRADE_REQUIRED'}>
+          <Stack.Screen name="upgrade" />
+        </Stack.Protected>
+        <Stack.Protected guard={status === 'BOOTSTRAP_ERROR'}>
+          <Stack.Screen name="bootstrap-error" />
+        </Stack.Protected>
+        <Stack.Protected guard={status === 'PASSWORD_CHANGE_REQUIRED'}>
+          <Stack.Screen name="change-password" />
+        </Stack.Protected>
+        <Stack.Protected guard={status === 'MFA_REQUIRED'}>
+          <Stack.Screen name="mfa" />
+        </Stack.Protected>
+        <Stack.Protected guard={status === 'WORKSPACE_SELECTION'}>
+          <Stack.Screen name="workspace-select" />
+        </Stack.Protected>
+        <Stack.Protected guard={status === 'WORKSPACE_READY'}>
+          <Stack.Screen name="(app)" />
+        </Stack.Protected>
+      </Stack>
+    </DesignProvider>
   );
 }
 
 export default function RootLayout() {
-  // Web paneli karanlık mod desteklemiyor (`--dc-*` yalnız `:root`'ta
-  // tanımlı) — mobil de kasıtlı olarak TEK, ışık temasında (bkz.
-  // `constants/theme.ts` ve `app.json`'daki `userInterfaceStyle: "light"`).
-  // Sistem koyu modundayken gezinme kromu koyu, içerik açık kalıp
-  // uyumsuz görünmesin diye burada da sabit `DefaultTheme` kullanılıyor.
+  const [fontsLoaded, fontError] = useFonts({ Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold });
+  // Font yüklenemezse sistem fontuyla devam edilir; uygulama açılışı bloklanmaz.
+  const fontsReady = fontsLoaded || Boolean(fontError);
   return (
-    <ThemeProvider value={DefaultTheme}>
+    <ThemeProvider value={NAV_THEME}>
       <StatusBar style="dark" />
       <SessionProvider>
-        <RootNavigator />
+        <RootNavigator fontsReady={fontsReady} />
       </SessionProvider>
     </ThemeProvider>
   );

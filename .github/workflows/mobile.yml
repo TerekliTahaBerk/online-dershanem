@@ -1,0 +1,59 @@
+name: Mobile
+
+# Expo uygulaması (`mobile/`) ve paylaşılan mobil sözleşmeler için kapı.
+# Kök CI (`ci.yml`) mobili kapsamaz: kök tsconfig / ESLint `mobile/**`'ı
+# hariç tutar ve mobilin kendi kilit dosyası vardır. Sunucu tarafı mobil
+# testleri (bootstrap, çerez/Bearer) kök CI'daki unit + integration ve E2E
+# işlerinde koşar.
+on:
+  pull_request:
+    branches: [main, test]
+    paths:
+      - "mobile/**"
+      - "lib/mobile-contracts/**"
+      - "scripts/check-mobile-*.mjs"
+      - "app/globals.css"
+      - ".github/workflows/mobile.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: mobile-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  mobile:
+    name: Mobile typecheck, lint, tests, bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - name: Contract boundary (no server code in mobile bundle)
+        working-directory: .
+        run: node scripts/check-mobile-contracts.mjs
+      - name: Design tokens in sync with web panel
+        working-directory: .
+        run: node scripts/check-mobile-tokens.mjs
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test:ci
+      # Metro paketlemesi: rota ağacı, @contracts alias'ı ve native modül
+      # importları gerçekten çözülüyor mu? Ağ gerektirmeyen yerel export.
+      - name: Bundle (Android, iOS)
+        env:
+          EXPO_OFFLINE: "1"
+          CI: "1"
+        run: |
+          npx expo export --platform android --output-dir "$RUNNER_TEMP/mobile-export-android"
+          npx expo export --platform ios --output-dir "$RUNNER_TEMP/mobile-export-ios"
