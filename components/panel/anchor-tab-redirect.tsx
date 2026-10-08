@@ -4,11 +4,12 @@ import { useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 /**
- * Eski bölüm çapaları (`#adim-sonuc` vb.) sekmeli çalışma alanında doğru
- * sekmeyi açar: başka sayfalardaki bağlantılar kırılmaz (§15.2). Çapa korunur
- * ki sekme açıldıktan sonra bölüme kaydırılsın.
+ * Sekmeye bölünmüş sayfalarda eski bölüm çapaları (`#adim-sonuc`,
+ * `#eposta-kuyrugu` vb.) doğru `?sekme=` değerini açar: başka sayfalardaki
+ * bağlantılar kırılmaz. Çapa korunur ki sekme açıldıktan sonra bölüme
+ * kaydırılsın. Kullananlar: deneme çalışma alanı (§15.2), aktivasyon masası.
  */
-export function ExamTabAnchorRedirect({ anchors, activeTab }: { anchors: Record<string, string>; activeTab: string }) {
+export function AnchorTabRedirect({ anchors, activeTab }: { anchors: Record<string, string>; activeTab: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

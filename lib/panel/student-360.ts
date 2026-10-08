@@ -256,6 +256,19 @@ export function visibleStudent360Tabs(input: {
   return tabs;
 }
 
+/**
+ * Yetki ilişkiye göre daralır, yalnız role göre değil (§12): OD ilişkisi
+ * olmayan koç (erişim modu "coach") Öğrenme'yi yalnız özet (Gelişim) olarak
+ * görür; ders, ödev ve takvim ayrıntısı OD öğretmeni ve yönetime kalır.
+ */
+export function restrictStudent360SectionsForAccess(
+  tabs: readonly Student360Tab[],
+  mode: "admin" | "teacher_group" | "teacher_direct" | "coach",
+): Student360Tab[] {
+  if (mode !== "coach") return [...tabs];
+  return tabs.filter((tab) => tab !== "dersler" && tab !== "odevler" && tab !== "takvim");
+}
+
 export function parseStudent360Tab(
   raw: string | string[] | undefined,
   allowed: readonly Student360Tab[],

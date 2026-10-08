@@ -16,7 +16,19 @@ import {
   optionLabel,
 } from "@/lib/account/dictionaries";
 import { PanelShell } from "@/components/panel/panel-shell";
-import { PanelCard, PanelEmpty, PanelFilterLink, PanelHeading, PanelStatusBadge } from "@/components/panel/ui";
+import {
+  EmptyState,
+  PageHeader,
+  PanelTable,
+  PanelTableCell,
+  PanelTableRow,
+  PropertyList,
+  PropertyRow,
+  StatusBadge,
+  UrlDrawer,
+  ViewTabs,
+  buttonClass,
+} from "@/components/panel/ui";
 import { SignupContactControl } from "@/components/panel/signups/signup-contact-control";
 import { ChildAccountForm } from "@/components/panel/signups/child-account-form";
 
@@ -69,7 +81,7 @@ function telHref(phone: string | null) {
 export default async function SignupsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sekme?: string; filtre?: string; sayfa?: string }>;
+  searchParams: Promise<{ sekme?: string; filtre?: string; sayfa?: string; onizle?: string }>;
 }) {
   const session = await requireRole("ADMIN");
   const params = await searchParams;
@@ -84,24 +96,40 @@ export default async function SignupsPage({
 
   return (
     <PanelShell role={session.role} fullName={session.fullName} email={session.email} pageTitle="Yeni kayıtlar">
-      <PanelHeading
+      <PageHeader
         title="Yeni kayıtlar"
-        description="Kendi kaydını açan öğrenci ve veliler. Ara, durumunu işaretle, velinin çocuğu için öğrenci hesabını aç ve öğretmen ata."
+        description="Kendi kaydını açan öğrenci ve veliler. Ara, durumunu işaretle, velinin çocuğu için öğrenci hesabını aç."
       />
-      <nav aria-label="Sekmeler" className="mt-5 flex flex-wrap gap-2">
-        <PanelFilterLink href="/panel/yonetim/basvurular" active={tab === "kayitlar"}>
-          Kayıtlar · {newCount} aranmadı
-        </PanelFilterLink>
-        <PanelFilterLink href="/panel/yonetim/basvurular?sekme=cocuklar" active={tab === "cocuklar"}>
-          Hesabı bekleyen çocuklar · {pendingCount}
-        </PanelFilterLink>
-      </nav>
-      {tab === "kayitlar" ? <SignupList filter={filter} page={page} /> : <PendingChildren />}
+      <div className="mt-2">
+        <ViewTabs
+          label="Yeni kayıt görünümleri"
+          activeId={tab}
+          tabs={[
+            { id: "kayitlar", label: "Kayıtlar", href: "/panel/yonetim/basvurular", count: newCount },
+            { id: "cocuklar", label: "Hesabı bekleyen çocuklar", href: "/panel/yonetim/basvurular?sekme=cocuklar", count: pendingCount },
+          ]}
+        />
+      </div>
+      {tab === "kayitlar" ? <SignupList filter={filter} page={page} preview={params.onizle} /> : <PendingChildren />}
     </PanelShell>
   );
 }
 
-async function SignupList({ filter, page }: { filter: Filter; page: number }) {
+function signupHref(filter: Filter, page: number, preview?: string) {
+  const params = new URLSearchParams();
+  if (filter !== "tumu") params.set("filtre", filter);
+  if (page > 1) params.set("sayfa", String(page));
+  if (preview) params.set("onizle", preview);
+  const text = params.toString();
+  return text ? `/panel/yonetim/basvurular?${text}` : "/panel/yonetim/basvurular";
+}
+
+/**
+ * Kayıt listesi: karar bilgisi tabloda (kim, ne istiyor, satın aldı mı, form,
+ * iletişim durumu); ayrıntı ve durum işaretleme satırın yan panelinde
+ * (`?onizle=kayit:<id>`). Ara / WhatsApp satırda ve panelde.
+ */
+async function SignupList({ filter, page, preview }: { filter: Filter; page: number; preview?: string }) {
   const where: Prisma.UserWhereInput = { registrationSource: "SELF_SIGNUP", ...filterWhere(filter) };
   const [total, users] = await Promise.all([
     prisma.user.count({ where }),
@@ -141,164 +169,160 @@ async function SignupList({ filter, page }: { filter: Filter; page: number }) {
     matchedOrders.map((order) => String((order.buyerInfo as Record<string, unknown> | null)?.email ?? "").toLowerCase()),
   );
 
+  const previewId = preview?.startsWith("kayit:") ? preview.slice("kayit:".length) : null;
+  const selected = previewId ? users.find((user) => user.id === previewId) ?? null : null;
+  const callLinks = (user: (typeof users)[number], size: "sm" | "md" = "sm") => {
+    const tel = telHref(user.phone);
+    return (
+      <span className="flex flex-wrap gap-1.5">
+        {tel ? (
+          <a href={tel} className={buttonClass("secondary", size)}>
+            <Phone size={14} aria-hidden="true" /> Ara<span className="sr-only"> · {user.fullName || user.email}</span>
+          </a>
+        ) : null}
+        {user.phone ? (
+          <a
+            href={whatsAppLink(user.phone, `Merhaba ${user.fullName ?? ""}, onlinedershanem.'den ulaşıyoruz.`)}
+            target="_blank"
+            rel="noreferrer"
+            className={buttonClass("ghost", size)}
+          >
+            <MessageCircle size={14} aria-hidden="true" /> WhatsApp<span className="sr-only"> · {user.fullName || user.email}</span>
+          </a>
+        ) : null}
+      </span>
+    );
+  };
+
   return (
-    <section className="mt-5">
-      <div className="flex flex-wrap gap-2">
+    <section className="mt-4">
+      <nav aria-label="Kayıt süzgeci" className="flex flex-wrap gap-1.5">
         {FILTERS.map((item) => (
-          <PanelFilterLink
+          <Link
             key={item.value}
-            href={`/panel/yonetim/basvurular${item.value === "tumu" ? "" : `?filtre=${item.value}`}`}
-            active={filter === item.value}
+            href={signupHref(item.value, 1)}
+            aria-current={filter === item.value ? "page" : undefined}
+            className={`inline-flex min-h-8 items-center rounded-full border px-3 text-[13px] ${
+              filter === item.value ? "border-pn-text bg-pn-text font-semibold text-white" : "border-pn-border text-pn-text-secondary hover:bg-pn-hover"
+            }`}
           >
             {item.label}
-          </PanelFilterLink>
+          </Link>
         ))}
-      </div>
-      <p className="mt-3 text-[12.5px] text-dc-ink-faint">{total} kayıt</p>
+      </nav>
+      <p className="mt-3 text-[13px] tabular-nums text-pn-text-muted">{total} kayıt</p>
 
       {users.length === 0 ? (
-        <PanelEmpty title="Kayıt yok" body="Bu filtrede kendi kaydını açan kullanıcı bulunmuyor." />
+        <EmptyState className="mt-3" title="Bu süzgeçte kayıt yok." body="Kendi kaydını açan kullanıcılar burada listelenir." />
       ) : (
-        <ul className="mt-3 flex flex-col gap-3">
+        <PanelTable caption="Yeni kayıtlar" columns={["Ad", "Tür", "İlgilendiği", "Satın alma", "Form", "İletişim", "Kayıt", ""]}>
           {users.map((user) => {
             const profile = user.signupProfile;
-            const tel = telHref(user.phone);
             const paid = user._count.paidOdOrders + user._count.paidOdkOrders;
             const matched = matchedEmails.has(user.email.toLowerCase());
+            const formDone = Boolean(user.contactFormSubmittedAt || user._count.contactFormSubmissions);
             return (
-              <li key={user.id}>
-                <PanelCard>
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Link href={`/panel/yonetim/kullanicilar/${user.id}`} className="text-[15.5px] font-bold text-dc-ink hover:underline">
-                          {user.fullName || user.email}
-                        </Link>
-                        <PanelStatusBadge tone={user.role === "PARENT" ? "info" : "neutral"} label={user.role === "PARENT" ? "Veli" : "Öğrenci"} />
-                        {profile?.purchaseStatus === "ALREADY_PURCHASED" || matched ? (
-                          <PanelStatusBadge tone="warning" label={matched ? "Ödenmiş sipariş eşleşti" : "Satın aldığını belirtti"} />
-                        ) : null}
-                        {paid ? <PanelStatusBadge tone="success" label={`${paid} ödeme`} /> : null}
-                        {user.contactFormSubmittedAt || user._count.contactFormSubmissions ? (
-                          <PanelStatusBadge tone="success" label="Form dolduruldu" />
-                        ) : (
-                          <PanelStatusBadge tone="neutral" label="Form yok" />
-                        )}
-                      </div>
-                      <p className="mt-1 text-[13px] text-dc-ink-muted">
-                        {user.email} · {user.phone ?? "telefon yok"} · {DATE.format(user.createdAt)}
-                      </p>
-                      <dl className="mt-3 grid gap-x-6 gap-y-1.5 text-[13px] sm:grid-cols-2">
-                        <div>
-                          <dt className="inline text-dc-ink-faint">İlgilendiği: </dt>
-                          <dd className="inline text-dc-ink">
-                            {profile?.interestedProducts.length ? profile.interestedProducts.map(productLabel).join(", ") : "—"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="inline text-dc-ink-faint">Durum: </dt>
-                          <dd className="inline text-dc-ink">{optionLabel(PURCHASE_STATUS_OPTIONS, profile?.purchaseStatus) ?? "—"}</dd>
-                        </div>
-                        {profile?.existingOrderRef ? (
-                          <div>
-                            <dt className="inline text-dc-ink-faint">Sipariş referansı: </dt>
-                            <dd className="inline text-dc-ink">{profile.existingOrderRef}</dd>
-                          </div>
-                        ) : null}
-                        <div>
-                          <dt className="inline text-dc-ink-faint">Ulaşım: </dt>
-                          <dd className="inline text-dc-ink">
-                            {optionLabel(CONTACT_CHANNEL_OPTIONS, profile?.preferredChannel) ?? "—"} ·{" "}
-                            {optionLabel(CONTACT_TIME_OPTIONS, profile?.preferredContactTime) ?? "—"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="inline text-dc-ink-faint">Konum: </dt>
-                          <dd className="inline text-dc-ink">{[profile?.city, profile?.district].filter(Boolean).join(" / ") || "—"}</dd>
-                        </div>
-                        {user.role === "STUDENT" ? (
-                          <div>
-                            <dt className="inline text-dc-ink-faint">Eğitim: </dt>
-                            <dd className="inline text-dc-ink">
-                              {optionLabel(CLASS_LEVEL_OPTIONS, user.studentProfile?.classLevel) ?? "—"} ·{" "}
-                              {optionLabel(EXAM_TYPE_OPTIONS, user.studentProfile?.examType) ?? "—"}
-                              {user.studentProfile?.schoolName ? ` · ${user.studentProfile.schoolName}` : ""}
-                            </dd>
-                          </div>
-                        ) : (
-                          <div>
-                            <dt className="inline text-dc-ink-faint">Çocuklar: </dt>
-                            <dd className="inline text-dc-ink">
-                              {user.pendingChildren.length ? `${user.pendingChildren.map((child) => child.fullName).join(", ")} (hesap bekliyor)` : "—"}
-                            </dd>
-                          </div>
-                        )}
-                        {user.role === "STUDENT" && profile?.guardianName ? (
-                          <div>
-                            <dt className="inline text-dc-ink-faint">Veli: </dt>
-                            <dd className="inline text-dc-ink">
-                              {profile.guardianName}
-                              {profile.guardianPhone ? ` · ${profile.guardianPhone}` : ""}
-                            </dd>
-                          </div>
-                        ) : null}
-                        <div>
-                          <dt className="inline text-dc-ink-faint">Aktif ürün: </dt>
-                          <dd className="inline text-dc-ink">
-                            {user.productMemberships.length ? user.productMemberships.map((m) => productLabel(m.product!)).join(", ") : "Yok"}
-                          </dd>
-                        </div>
-                        {profile?.heardFrom ? (
-                          <div>
-                            <dt className="inline text-dc-ink-faint">Kaynak: </dt>
-                            <dd className="inline text-dc-ink">{optionLabel(HEARD_FROM_OPTIONS, profile.heardFrom)}</dd>
-                          </div>
-                        ) : null}
-                      </dl>
-                      {profile?.note ? <p className="mt-2 rounded-lg bg-dc-surface-soft px-3 py-2 text-[13px] text-dc-ink">“{profile.note}”</p> : null}
-                    </div>
-                    <div className="flex shrink-0 flex-wrap gap-2">
-                      {tel ? (
-                        <a href={tel} className="inline-flex items-center gap-1.5 rounded-lg border border-dc-line bg-white px-3 py-2 text-[13px] font-semibold text-dc-ink">
-                          <Phone size={14} aria-hidden="true" /> Ara
-                        </a>
-                      ) : null}
-                      {user.phone ? (
-                        <a
-                          href={whatsAppLink(user.phone, `Merhaba ${user.fullName ?? ""}, onlinedershanem.'den ulaşıyoruz.`)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-dc-line bg-white px-3 py-2 text-[13px] font-semibold text-dc-ink"
-                        >
-                          <MessageCircle size={14} aria-hidden="true" /> WhatsApp
-                        </a>
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="mt-4 border-t border-dc-line-soft pt-3">
-                    <SignupContactControl userId={user.id} status={profile?.contactStatus ?? "NEW"} note={profile?.contactNote ?? null} />
-                    {profile?.contactedAt ? (
-                      <p className="mt-1 text-[12px] text-dc-ink-faint">
-                        Son durum: {optionLabel(CONTACT_STATUS_OPTIONS, profile.contactStatus)} · {DATE.format(profile.contactedAt)}
-                      </p>
-                    ) : null}
-                  </div>
-                </PanelCard>
-              </li>
+              <PanelTableRow key={user.id}>
+                <PanelTableCell>
+                  <Link href={signupHref(filter, page, `kayit:${user.id}`)} scroll={false} className="font-medium text-pn-text underline-offset-2 hover:underline">
+                    {user.fullName || user.email}
+                  </Link>
+                  <span className="block text-[12.5px] text-pn-text-muted">{user.phone ?? user.email}</span>
+                </PanelTableCell>
+                <PanelTableCell>{user.role === "PARENT" ? "Veli" : "Öğrenci"}</PanelTableCell>
+                <PanelTableCell>{profile?.interestedProducts.length ? profile.interestedProducts.map(productLabel).join(", ") : "—"}</PanelTableCell>
+                <PanelTableCell>
+                  {paid ? (
+                    <StatusBadge tone="success" label={`${paid} ödeme`} />
+                  ) : matched ? (
+                    <StatusBadge tone="warning" label="Ödenmiş sipariş eşleşti" />
+                  ) : profile?.purchaseStatus === "ALREADY_PURCHASED" ? (
+                    <StatusBadge tone="warning" label="Satın aldığını belirtti" />
+                  ) : (
+                    optionLabel(PURCHASE_STATUS_OPTIONS, profile?.purchaseStatus) ?? "—"
+                  )}
+                </PanelTableCell>
+                <PanelTableCell>{formDone ? <StatusBadge tone="success" label="Dolduruldu" /> : <span className="text-pn-text-muted">Yok</span>}</PanelTableCell>
+                <PanelTableCell>{optionLabel(CONTACT_STATUS_OPTIONS, profile?.contactStatus ?? "NEW") ?? "—"}</PanelTableCell>
+                <PanelTableCell>
+                  <span className="tabular-nums">{DATE.format(user.createdAt)}</span>
+                </PanelTableCell>
+                <PanelTableCell label="Eylem">{callLinks(user)}</PanelTableCell>
+              </PanelTableRow>
             );
           })}
-        </ul>
+        </PanelTable>
       )}
 
       {total > PAGE_SIZE ? (
         <nav aria-label="Sayfalar" className="mt-4 flex gap-2">
           {page > 1 ? (
-            <PanelFilterLink active={false} href={`/panel/yonetim/basvurular?filtre=${filter}&sayfa=${page - 1}`}>Önceki</PanelFilterLink>
+            <Link href={signupHref(filter, page - 1)} className={buttonClass("secondary", "sm")}>
+              Önceki
+            </Link>
           ) : null}
           {page * PAGE_SIZE < total ? (
-            <PanelFilterLink active={false} href={`/panel/yonetim/basvurular?filtre=${filter}&sayfa=${page + 1}`}>Sonraki</PanelFilterLink>
+            <Link href={signupHref(filter, page + 1)} className={buttonClass("secondary", "sm")}>
+              Sonraki
+            </Link>
           ) : null}
         </nav>
+      ) : null}
+
+      {selected ? (
+        <UrlDrawer title={selected.fullName || selected.email} description={`${selected.role === "PARENT" ? "Veli" : "Öğrenci"} · ${DATE.format(selected.createdAt)}`}>
+          {(() => {
+            const profile = selected.signupProfile;
+            return (
+              <div className="space-y-5">
+                {callLinks(selected, "md")}
+                <PropertyList>
+                  <PropertyRow label="İletişim">{[selected.email, selected.phone].filter(Boolean).join(" · ")}</PropertyRow>
+                  <PropertyRow label="İlgilendiği">{profile?.interestedProducts.length ? profile.interestedProducts.map(productLabel).join(", ") : "—"}</PropertyRow>
+                  <PropertyRow label="Satın alma">{optionLabel(PURCHASE_STATUS_OPTIONS, profile?.purchaseStatus) ?? "—"}</PropertyRow>
+                  {profile?.existingOrderRef ? <PropertyRow label="Sipariş referansı">{profile.existingOrderRef}</PropertyRow> : null}
+                  <PropertyRow label="Ulaşım">
+                    {optionLabel(CONTACT_CHANNEL_OPTIONS, profile?.preferredChannel) ?? "—"} · {optionLabel(CONTACT_TIME_OPTIONS, profile?.preferredContactTime) ?? "—"}
+                  </PropertyRow>
+                  <PropertyRow label="Konum">{[profile?.city, profile?.district].filter(Boolean).join(" / ") || "—"}</PropertyRow>
+                  {selected.role === "STUDENT" ? (
+                    <PropertyRow label="Eğitim">
+                      {optionLabel(CLASS_LEVEL_OPTIONS, selected.studentProfile?.classLevel) ?? "—"} · {optionLabel(EXAM_TYPE_OPTIONS, selected.studentProfile?.examType) ?? "—"}
+                      {selected.studentProfile?.schoolName ? ` · ${selected.studentProfile.schoolName}` : ""}
+                    </PropertyRow>
+                  ) : (
+                    <PropertyRow label="Çocuklar">
+                      {selected.pendingChildren.length ? `${selected.pendingChildren.map((child) => child.fullName).join(", ")} (hesap bekliyor)` : "—"}
+                    </PropertyRow>
+                  )}
+                  {selected.role === "STUDENT" && profile?.guardianName ? (
+                    <PropertyRow label="Veli">
+                      {profile.guardianName}
+                      {profile.guardianPhone ? ` · ${profile.guardianPhone}` : ""}
+                    </PropertyRow>
+                  ) : null}
+                  <PropertyRow label="Aktif ürün">
+                    {selected.productMemberships.length ? selected.productMemberships.map((m) => productLabel(m.product!)).join(", ") : "Yok"}
+                  </PropertyRow>
+                  {profile?.heardFrom ? <PropertyRow label="Kaynak">{optionLabel(HEARD_FROM_OPTIONS, profile.heardFrom)}</PropertyRow> : null}
+                </PropertyList>
+                {profile?.note ? <p className="rounded-md bg-pn-surface-subtle px-3 py-2 text-[13.5px] text-pn-text">“{profile.note}”</p> : null}
+                <div className="border-t border-pn-border pt-4">
+                  <h3 className="mb-2 text-[13.5px] font-semibold text-pn-text">İletişim durumu</h3>
+                  <SignupContactControl userId={selected.id} status={profile?.contactStatus ?? "NEW"} note={profile?.contactNote ?? null} />
+                  {profile?.contactedAt ? (
+                    <p className="mt-1 text-[12.5px] text-pn-text-muted">
+                      Son durum: {optionLabel(CONTACT_STATUS_OPTIONS, profile.contactStatus)} · {DATE.format(profile.contactedAt)}
+                    </p>
+                  ) : null}
+                </div>
+                <Link href={`/panel/yonetim/kullanicilar/${selected.id}`} className={buttonClass("secondary", "md")}>
+                  Kişi detayını aç
+                </Link>
+              </div>
+            );
+          })()}
+        </UrlDrawer>
       ) : null}
     </section>
   );
@@ -329,52 +353,50 @@ async function PendingChildren() {
 
   if (!sorted.length) {
     return (
-      <div className="mt-5">
-        <PanelEmpty title="Bekleyen çocuk yok" body="Velilerin bildirdiği bütün çocukların hesabı açılmış." />
-      </div>
+      <EmptyState className="mt-5" title="Bekleyen çocuk yok." body="Velilerin bildirdiği bütün çocukların hesabı açılmış." />
     );
   }
 
   return (
-    <ul className="mt-5 flex flex-col gap-3">
+    <ul aria-label="Hesabı bekleyen çocuklar" className="mt-5 divide-y divide-pn-border-subtle rounded-lg border border-pn-border">
       {sorted.map((child) => {
         const paidOrders = [...child.odOrders.map((order) => order.packageName), ...child.odkOrders.map((order) => order.package.title)];
         const tel = telHref(child.parent.phone);
         return (
-          <li key={child.id}>
-            <PanelCard variant={paidOrders.length ? "emphasis" : "default"}>
+          <li key={child.id} className={`px-4 py-4 ${paidOrders.length ? "bg-(--pn-tone-warning-soft)" : ""}`}>
+            <div>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-[15.5px] font-bold text-dc-ink">{child.fullName}</p>
-                    {paidOrders.length ? <PanelStatusBadge tone="warning" label="Ödeme alındı · hesap bekliyor" /> : null}
+                    <p className="text-[14.5px] font-semibold text-pn-text">{child.fullName}</p>
+                    {paidOrders.length ? <StatusBadge tone="warning" label="Ödeme alındı · hesap bekliyor" /> : null}
                   </div>
-                  <p className="mt-1 text-[13px] text-dc-ink-muted">
+                  <p className="mt-1 text-[13px] text-pn-text-muted">
                     {optionLabel(CLASS_LEVEL_OPTIONS, child.classLevel) ?? "—"} · {optionLabel(EXAM_TYPE_OPTIONS, child.examType) ?? "—"}
                     {child.schoolName ? ` · ${child.schoolName}` : ""} · bildirildi {DATE.format(child.createdAt)}
                   </p>
-                  <p className="mt-1 text-[13px] text-dc-ink">
+                  <p className="mt-1 text-[13px] text-pn-text">
                     Veli:{" "}
                     <Link href={`/panel/yonetim/kullanicilar/${child.parent.id}`} className="font-semibold hover:underline">
                       {child.parent.fullName || child.parent.email}
                     </Link>{" "}
                     · {child.parent.phone ?? "telefon yok"} · {child.parent.email}
                   </p>
-                  {paidOrders.length ? <p className="mt-1 text-[13px] text-dc-ink">Paketler: {paidOrders.join(", ")}</p> : null}
+                  {paidOrders.length ? <p className="mt-1 text-[13px] text-pn-text">Paketler: {paidOrders.join(", ")}</p> : null}
                   {child.email || child.phone ? (
-                    <p className="mt-1 text-[12.5px] text-dc-ink-muted">Çocuğun iletişimi: {[child.email, child.phone].filter(Boolean).join(" · ")}</p>
+                    <p className="mt-1 text-[12.5px] text-pn-text-muted">Çocuğun iletişimi: {[child.email, child.phone].filter(Boolean).join(" · ")}</p>
                   ) : null}
                 </div>
                 {tel ? (
-                  <a href={tel} className="inline-flex items-center gap-1.5 rounded-lg border border-dc-line bg-white px-3 py-2 text-[13px] font-semibold text-dc-ink">
-                    <Phone size={14} aria-hidden="true" /> Veliyi ara
+                  <a href={tel} className={buttonClass("secondary", "sm")}>
+                    <Phone size={14} aria-hidden="true" /> Veliyi ara<span className="sr-only"> · {child.fullName}</span>
                   </a>
                 ) : null}
               </div>
-              <div className="mt-4 border-t border-dc-line-soft pt-3">
+              <div className="mt-4 border-t border-pn-border pt-3">
                 <ChildAccountForm childId={child.id} defaultEmail={child.email} defaultName={child.fullName} parentPhone={child.parent.phone} />
               </div>
-            </PanelCard>
+            </div>
           </li>
         );
       })}

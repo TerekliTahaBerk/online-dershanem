@@ -312,3 +312,14 @@ test("bölüm kümesi veri yükleme kararlarını verir", async () => {
   const legacy = deriveStudent360QueryRequirements({ access, tab: "dersler", flags: allFlagsOn });
   assert.equal(legacy.needsLessons, true);
 });
+
+test("OD ilişkisi olmayan koç Öğrenme'yi yalnız özet olarak görür", async () => {
+  const { restrictStudent360SectionsForAccess, resolveStudent360Location, visibleStudent360Groups } = await import("./panel/student-360");
+  const teacherTabs = visibleStudent360Tabs({ role: "TEACHER", canViewCommerce: false, flags: allFlagsOn });
+  const coach = restrictStudent360SectionsForAccess(teacherTabs, "coach");
+  assert.equal(coach.includes("dersler") || coach.includes("odevler") || coach.includes("takvim"), false);
+  assert.ok(coach.includes("gelisim"));
+  assert.ok(visibleStudent360Groups(coach).includes("ogrenme"));
+  assert.equal(resolveStudent360Location({ sekme: "dersler", sections: coach }).view, "gelisim", "eski ders bağlantısı özete düşer");
+  assert.deepEqual(restrictStudent360SectionsForAccess(teacherTabs, "teacher_group"), teacherTabs);
+});

@@ -3,7 +3,6 @@ import {
   Activity,
   AlertTriangle,
   Clock3,
-  CreditCard,
   MailWarning,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
@@ -11,7 +10,8 @@ import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { OrderLinkForm } from "@/components/panel/order-link-form";
 import { OdOnboardingControl } from "@/components/panel/od-onboarding-control";
-import { AdminPageHeader } from "@/components/panel/admin-page-header";
+import { PageHeader, ViewTabs } from "@/components/panel/ui";
+import { AnchorTabRedirect } from "@/components/panel/anchor-tab-redirect";
 import { LeadStatusControl } from "@/components/panel/lead-status-control";
 import { EmailRetryButton } from "@/components/panel/email-retry-button";
 import { evaluateCronHeartbeats } from "@/lib/jobs/health";
@@ -31,8 +31,30 @@ import { ORDER_PAYMENT_STATUS_PRESENTATION, READINESS_STATUS_PRESENTATION } from
 
 export const dynamic = "force-dynamic";
 
-export default async function OperationsPage() {
+const ACTIVATION_TABS = [
+  { id: "aktivasyon", label: "Aktivasyon" },
+  { id: "istisnalar", label: "İstisnalar" },
+  { id: "siparisler", label: "Siparişler ve talepler" },
+  { id: "sistem", label: "Sistem" },
+] as const;
+type ActivationTab = (typeof ACTIVATION_TABS)[number]["id"];
+/** Eski bölüm çapaları → sekme (Gelen kutusu ve cron uyarıları `#cron-durumu`'na bağlanır). */
+const ACTIVATION_ANCHOR_TABS: Record<string, ActivationTab> = {
+  "cron-durumu": "sistem",
+  "eposta-kuyrugu": "sistem",
+};
+
+/**
+ * AKTİVASYON MASASI (`/panel/yonetim/isler`, docs/panel-design-roadmap.md
+ * §13) — sekmeler (`?sekme=`): Aktivasyon (ilk ders göstergeleri, yerleştirme
+ * ölçüleri, ödeme sonrası aktivasyon kuyruğu) · İstisnalar (birleşik iş
+ * kutusu, hazırlık kontrolü) · Siparişler ve talepler · Sistem (cron, e-posta
+ * kuyruğu). Bölümlerin içeriği ve eylemleri değişmedi.
+ */
+export default async function OperationsPage({ searchParams }: { searchParams: Promise<{ sekme?: string }> }) {
   const session = await requireRole("ADMIN");
+  const requestedTab = (await searchParams).sekme;
+  const tab: ActivationTab = ACTIVATION_TABS.find((item) => item.id === requestedTab)?.id ?? "aktivasyon";
   const now = new Date();
   const dayStart = istanbulDayStart(now);
   const dayEnd = istanbulNextDayStart(now);
@@ -257,14 +279,27 @@ export default async function OperationsPage() {
       fullName={session.fullName}
       email={session.email}
     >
-      <AdminPageHeader
-        eyebrow="İşler / Aktivasyon masası"
-        title="Yeni öğrenciyi aktif et"
-        description="Ödeme sonrası hesap, veli, grup ve ilk ders adımlarını tek operasyon masasında yönetin."
-        icon={CreditCard}
-        meta={`${openUnifiedOperations.length} açık operasyon istisnası`}
+      <AnchorTabRedirect anchors={ACTIVATION_ANCHOR_TABS} activeTab={tab} />
+      <PageHeader
+        title="Aktivasyon masası"
+        description="Ödeme sonrası hesap, veli, grup ve ilk ders adımlarını; operasyon istisnalarını, siparişleri ve sistem işlerini tek yerden yönetin."
+        metadata={`${openUnifiedOperations.length} açık operasyon istisnası · ${onboardingQueue.length} aktivasyon bekliyor`}
       />
+      <div className="mt-2">
+        <ViewTabs
+          label="Aktivasyon masası"
+          activeId={tab}
+          tabs={ACTIVATION_TABS.map((item) => ({
+            id: item.id,
+            label: item.label,
+            href: item.id === "aktivasyon" ? "/panel/yonetim/isler" : `/panel/yonetim/isler?sekme=${item.id}`,
+            count: item.id === "aktivasyon" ? onboardingQueue.length : item.id === "istisnalar" ? openUnifiedOperations.length : item.id === "sistem" ? emailQueue.length : undefined,
+          }))}
+        />
+      </div>
 
+      {tab === "aktivasyon" ? (
+        <>
       <section className="panel-surface mt-7 p-5" aria-label="İlk ders göstergeleri">
         <h2 className="text-sm font-extrabold">İlk ders göstergeleri · son 90 günde ödeme yapan yeni öğrenciler</h2>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -284,185 +319,6 @@ export default async function OperationsPage() {
           </div>
         </dl>
         <p className="mt-3 text-xs leading-5 text-(--site-muted)">En az beş örnek gerekir. İptal edilen dersler ve yenilemeler hariçtir. {firstLessonMetrics.waitingCount} ilk ders bekliyor; {firstLessonMetrics.missingAttendanceCount} katılım sonucu bekliyor. {firstLessonMetrics.paidCount} ödenmiş başlangıcın {firstLessonMetrics.linkedLeadCount} tanesinde kayıtlı lead bağlantısı var; kimlik bilgisiyle tahmini eşleştirme yapılmaz.</p>
-      </section>
-
-      <section className="panel-surface mt-7">
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-(--site-line) p-5">
-          <div>
-            <h2 className="text-sm font-extrabold text-(--site-ink)">
-              Operasyon hazırlık kontrolü
-            </h2>
-            <p className="mt-1 text-xs text-(--site-muted)">
-              Kritik günlük işler panel içinde tamamlanabiliyor mu, yoksa
-              SQL/Prisma müdahalesi gerekiyor mu?
-            </p>
-          </div>
-          <span
-            className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${
-              readinessStatus === "GO"
-                ? "bg-emerald-100 text-emerald-800"
-                : "bg-amber-100 text-amber-900"
-            }`}
-          >
-            {READINESS_STATUS_PRESENTATION[readinessStatus].label}
-          </span>
-        </div>
-        <div
-          className="overflow-x-auto p-5"
-          tabIndex={0}
-          role="region"
-          aria-label="İş durumu tablosu"
-        >
-          <table className="min-w-[760px] w-full text-left text-[12.5px]">
-            <thead>
-              <tr className="border-b border-(--site-line) text-[11px] uppercase tracking-[.06em] text-(--site-muted)">
-                <th className="px-2 py-2">İş</th>
-                <th className="px-2 py-2">Panel kapsamı</th>
-                <th className="px-2 py-2">Durum</th>
-                <th className="px-2 py-2">Not</th>
-              </tr>
-            </thead>
-            <tbody>
-              {readinessRows.map((row) => (
-                <tr
-                  key={row.task}
-                  className="border-b border-(--site-line) align-top"
-                >
-                  <td className="px-2 py-2.5 font-semibold text-(--site-ink)">
-                    {row.task}
-                  </td>
-                  <td className="px-2 py-2.5 text-(--site-body)">
-                    {row.coverage}
-                  </td>
-                  <td className="px-2 py-2.5">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
-                        row.status === "GO"
-                          ? "bg-emerald-100 text-emerald-800"
-                          : "bg-amber-100 text-amber-900"
-                      }`}
-                    >
-                      {READINESS_STATUS_PRESENTATION[row.status].label}
-                    </span>
-                  </td>
-                  <td className="px-2 py-2.5 text-(--site-muted)">
-                    {row.note}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section className="panel-surface mt-7">
-        <div className="flex flex-col gap-3 border-b border-(--site-line) p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-sm font-extrabold text-(--site-ink)">
-              Birleşik iş kutusu
-            </h2>
-            <p className="mt-1 text-xs text-(--site-muted)">
-              Sahip, son tarih, sıradaki işlem ve çözülme durumuyla gerçek
-              operasyon istisnalarını tek listede izleyin.
-            </p>
-          </div>
-          <span className="w-fit rounded-full bg-slate-100 px-2.5 py-1 text-xs font-extrabold text-slate-700">
-            {openUnifiedOperations.length} açık · {unifiedOperations.length}{" "}
-            toplam
-          </span>
-        </div>
-
-        <div className="divide-y divide-(--site-line)">
-          {unifiedOperations.slice(0, 40).map((item) => {
-            const overdue = Boolean(
-              item.dueAt && item.dueAt < now && item.resolution === "OPEN",
-            );
-            const severityTone =
-              item.severity === "BLOCKING"
-                ? "bg-rose-100 text-rose-800"
-                : item.severity === "ACTION_REQUIRED"
-                  ? "bg-amber-100 text-amber-900"
-                  : "bg-slate-100 text-slate-700";
-            return (
-              <article key={item.id} className="p-5">
-                <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold ${severityTone}`}
-                      >
-                        {item.severity}
-                      </span>
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold ${
-                          item.resolution === "OPEN"
-                            ? "bg-amber-50 text-amber-800"
-                            : "bg-emerald-100 text-emerald-800"
-                        }`}
-                      >
-                        {item.resolution === "OPEN" ? "Açık" : "Çözüldü"}
-                      </span>
-                      {overdue ? (
-                        <span className="flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-[10px] font-extrabold text-rose-800">
-                          <AlertTriangle size={11} /> Son tarih geçti
-                        </span>
-                      ) : null}
-                    </div>
-                    <h3 className="mt-2 text-sm font-extrabold text-(--site-ink)">
-                      {item.title}
-                    </h3>
-                    <p className="mt-1 text-xs text-(--site-muted)">
-                      {item.detail}
-                    </p>
-                  </div>
-                  <dl className="grid min-w-[320px] grid-cols-2 gap-3 text-[10.5px]">
-                    <div>
-                      <dt className="text-(--site-muted)">Sorumlu</dt>
-                      <dd className="mt-1 font-bold text-(--site-ink)">
-                        {item.owner}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-(--site-muted)">
-                        Sıradaki işlem
-                      </dt>
-                      <dd className="mt-1 font-bold text-(--site-ink)">
-                        {item.nextAction}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-(--site-muted)">Son tarih</dt>
-                      <dd
-                        className={`mt-1 font-bold ${overdue ? "text-rose-700" : "text-(--site-ink)"}`}
-                      >
-                        {item.dueAt ? dateTime.format(item.dueAt) : "Tanımsız"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-(--site-muted)">Olay zamanı</dt>
-                      <dd className="mt-1 font-bold text-(--site-ink)">
-                        {dateTime.format(item.createdAt)}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-                <div className="mt-3">
-                  <Link
-                    href={item.href}
-                    className="text-xs font-bold text-(--brand-olive) underline-offset-2 hover:underline"
-                  >
-                    {item.ctaLabel}
-                  </Link>
-                </div>
-              </article>
-            );
-          })}
-          {!unifiedOperations.length ? (
-            <p className="p-8 text-center text-sm text-(--site-muted)">
-              Açık operasyon istisnası yok.
-            </p>
-          ) : null}
-        </div>
       </section>
 
       <section className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -733,6 +589,283 @@ export default async function OperationsPage() {
         </div>
       </section>
 
+        </>
+      ) : null}
+
+      {tab === "istisnalar" ? (
+        <>
+      <section className="panel-surface mt-7">
+        <div className="flex flex-col gap-3 border-b border-(--site-line) p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-sm font-extrabold text-(--site-ink)">
+              Birleşik iş kutusu
+            </h2>
+            <p className="mt-1 text-xs text-(--site-muted)">
+              Sahip, son tarih, sıradaki işlem ve çözülme durumuyla gerçek
+              operasyon istisnalarını tek listede izleyin.
+            </p>
+          </div>
+          <span className="w-fit rounded-full bg-slate-100 px-2.5 py-1 text-xs font-extrabold text-slate-700">
+            {openUnifiedOperations.length} açık · {unifiedOperations.length}{" "}
+            toplam
+          </span>
+        </div>
+
+        <div className="divide-y divide-(--site-line)">
+          {unifiedOperations.slice(0, 40).map((item) => {
+            const overdue = Boolean(
+              item.dueAt && item.dueAt < now && item.resolution === "OPEN",
+            );
+            const severityTone =
+              item.severity === "BLOCKING"
+                ? "bg-rose-100 text-rose-800"
+                : item.severity === "ACTION_REQUIRED"
+                  ? "bg-amber-100 text-amber-900"
+                  : "bg-slate-100 text-slate-700";
+            return (
+              <article key={item.id} className="p-5">
+                <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold ${severityTone}`}
+                      >
+                        {item.severity}
+                      </span>
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold ${
+                          item.resolution === "OPEN"
+                            ? "bg-amber-50 text-amber-800"
+                            : "bg-emerald-100 text-emerald-800"
+                        }`}
+                      >
+                        {item.resolution === "OPEN" ? "Açık" : "Çözüldü"}
+                      </span>
+                      {overdue ? (
+                        <span className="flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-1 text-[10px] font-extrabold text-rose-800">
+                          <AlertTriangle size={11} /> Son tarih geçti
+                        </span>
+                      ) : null}
+                    </div>
+                    <h3 className="mt-2 text-sm font-extrabold text-(--site-ink)">
+                      {item.title}
+                    </h3>
+                    <p className="mt-1 text-xs text-(--site-muted)">
+                      {item.detail}
+                    </p>
+                  </div>
+                  <dl className="grid min-w-[320px] grid-cols-2 gap-3 text-[10.5px]">
+                    <div>
+                      <dt className="text-(--site-muted)">Sorumlu</dt>
+                      <dd className="mt-1 font-bold text-(--site-ink)">
+                        {item.owner}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-(--site-muted)">
+                        Sıradaki işlem
+                      </dt>
+                      <dd className="mt-1 font-bold text-(--site-ink)">
+                        {item.nextAction}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-(--site-muted)">Son tarih</dt>
+                      <dd
+                        className={`mt-1 font-bold ${overdue ? "text-rose-700" : "text-(--site-ink)"}`}
+                      >
+                        {item.dueAt ? dateTime.format(item.dueAt) : "Tanımsız"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-(--site-muted)">Olay zamanı</dt>
+                      <dd className="mt-1 font-bold text-(--site-ink)">
+                        {dateTime.format(item.createdAt)}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+                <div className="mt-3">
+                  <Link
+                    href={item.href}
+                    className="text-xs font-bold text-(--brand-olive) underline-offset-2 hover:underline"
+                  >
+                    {item.ctaLabel}
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
+          {!unifiedOperations.length ? (
+            <p className="p-8 text-center text-sm text-(--site-muted)">
+              Açık operasyon istisnası yok.
+            </p>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="panel-surface mt-7">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-(--site-line) p-5">
+          <div>
+            <h2 className="text-sm font-extrabold text-(--site-ink)">
+              Operasyon hazırlık kontrolü
+            </h2>
+            <p className="mt-1 text-xs text-(--site-muted)">
+              Kritik günlük işler panel içinde tamamlanabiliyor mu, yoksa
+              SQL/Prisma müdahalesi gerekiyor mu?
+            </p>
+          </div>
+          <span
+            className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${
+              readinessStatus === "GO"
+                ? "bg-emerald-100 text-emerald-800"
+                : "bg-amber-100 text-amber-900"
+            }`}
+          >
+            {READINESS_STATUS_PRESENTATION[readinessStatus].label}
+          </span>
+        </div>
+        <div
+          className="overflow-x-auto p-5"
+          tabIndex={0}
+          role="region"
+          aria-label="İş durumu tablosu"
+        >
+          <table className="min-w-[760px] w-full text-left text-[12.5px]">
+            <thead>
+              <tr className="border-b border-(--site-line) text-[11px] uppercase tracking-[.06em] text-(--site-muted)">
+                <th className="px-2 py-2">İş</th>
+                <th className="px-2 py-2">Panel kapsamı</th>
+                <th className="px-2 py-2">Durum</th>
+                <th className="px-2 py-2">Not</th>
+              </tr>
+            </thead>
+            <tbody>
+              {readinessRows.map((row) => (
+                <tr
+                  key={row.task}
+                  className="border-b border-(--site-line) align-top"
+                >
+                  <td className="px-2 py-2.5 font-semibold text-(--site-ink)">
+                    {row.task}
+                  </td>
+                  <td className="px-2 py-2.5 text-(--site-body)">
+                    {row.coverage}
+                  </td>
+                  <td className="px-2 py-2.5">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${
+                        row.status === "GO"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-amber-100 text-amber-900"
+                      }`}
+                    >
+                      {READINESS_STATUS_PRESENTATION[row.status].label}
+                    </span>
+                  </td>
+                  <td className="px-2 py-2.5 text-(--site-muted)">
+                    {row.note}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+        </>
+      ) : null}
+
+      {tab === "siparisler" ? (
+        <>
+      <div className="mt-7 grid gap-6 xl:grid-cols-2">
+        <section>
+          <h2 className="text-sm font-bold text-(--site-ink)">
+            Siparişler{" "}
+            <span className="text-(--site-muted)">({orders.length})</span>
+          </h2>
+          <div className="mt-3 space-y-2">
+            {orders.map((order) => (
+              <div
+                key={order.id}
+                className="rounded-2xl border border-(--site-line) bg-white p-4 shadow-(--panel-card-shadow)"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <Link
+                      href={`/panel/yonetim/siparisler/${order.id}`}
+                      className="text-sm font-bold text-(--site-ink) underline-offset-2 hover:underline"
+                    >
+                      {order.packageName}
+                    </Link>
+                    <p className="mt-1 text-xs text-(--site-muted)">
+                      {order.user?.fullName ||
+                        order.user?.email ||
+                        "Henüz hesaba bağlanmadı"}
+                    </p>
+                  </div>
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                      order.status === "PAID"
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-amber-50 text-amber-800"
+                    }`}
+                  >
+                    {ORDER_PAYMENT_STATUS_PRESENTATION[order.status].label} ·{" "}
+                    {(order.totalCents / 100).toLocaleString("tr-TR")} ₺
+                  </span>
+                </div>
+                <OrderLinkForm
+                  orderId={order.id}
+                  students={students}
+                  currentUserId={order.userId}
+                />
+              </div>
+            ))}
+            {!orders.length ? (
+              <p className="rounded-2xl border border-dashed border-(--site-line) p-5 text-sm text-(--site-muted)">
+                Henüz sipariş yok.
+              </p>
+            ) : null}
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-bold text-(--site-ink)">
+            Talepler{" "}
+            <span className="text-(--site-muted)">({leads.length})</span>
+          </h2>
+          <div className="mt-3 space-y-2">
+            {leads.map((lead) => (
+              <div
+                key={lead.id}
+                className="flex items-center justify-between gap-3 rounded-2xl border border-(--site-line) bg-white p-4 shadow-(--panel-card-shadow)"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold text-(--site-ink)">
+                    {lead.fullName}
+                  </p>
+                  <p className="mt-1 truncate text-xs text-(--site-muted)">
+                    {lead.phone} · {lead.examType} · {lead.targetGoal}
+                  </p>
+                </div>
+                <LeadStatusControl id={lead.id} status={lead.intakeStatus} />
+              </div>
+            ))}
+            {!leads.length ? (
+              <p className="rounded-2xl border border-dashed border-(--site-line) p-5 text-sm text-(--site-muted)">
+                Henüz talep yok.
+              </p>
+            ) : null}
+          </div>
+        </section>
+      </div>
+
+        </>
+      ) : null}
+
+      {tab === "sistem" ? (
+        <>
       <section id="cron-durumu" className="panel-surface mt-7 scroll-mt-24">
         <div className="flex flex-col gap-3 border-b border-(--site-line) p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -834,89 +967,6 @@ export default async function OperationsPage() {
         </div>
       </section>
 
-      <div className="mt-7 grid gap-6 xl:grid-cols-2">
-        <section>
-          <h2 className="text-sm font-bold text-(--site-ink)">
-            Siparişler{" "}
-            <span className="text-(--site-muted)">({orders.length})</span>
-          </h2>
-          <div className="mt-3 space-y-2">
-            {orders.map((order) => (
-              <div
-                key={order.id}
-                className="rounded-2xl border border-(--site-line) bg-white p-4 shadow-(--panel-card-shadow)"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <Link
-                      href={`/panel/yonetim/siparisler/${order.id}`}
-                      className="text-sm font-bold text-(--site-ink) underline-offset-2 hover:underline"
-                    >
-                      {order.packageName}
-                    </Link>
-                    <p className="mt-1 text-xs text-(--site-muted)">
-                      {order.user?.fullName ||
-                        order.user?.email ||
-                        "Henüz hesaba bağlanmadı"}
-                    </p>
-                  </div>
-                  <span
-                    className={`rounded-full px-2.5 py-1 text-xs font-bold ${
-                      order.status === "PAID"
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-amber-50 text-amber-800"
-                    }`}
-                  >
-                    {ORDER_PAYMENT_STATUS_PRESENTATION[order.status].label} ·{" "}
-                    {(order.totalCents / 100).toLocaleString("tr-TR")} ₺
-                  </span>
-                </div>
-                <OrderLinkForm
-                  orderId={order.id}
-                  students={students}
-                  currentUserId={order.userId}
-                />
-              </div>
-            ))}
-            {!orders.length ? (
-              <p className="rounded-2xl border border-dashed border-(--site-line) p-5 text-sm text-(--site-muted)">
-                Henüz sipariş yok.
-              </p>
-            ) : null}
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-sm font-bold text-(--site-ink)">
-            Talepler{" "}
-            <span className="text-(--site-muted)">({leads.length})</span>
-          </h2>
-          <div className="mt-3 space-y-2">
-            {leads.map((lead) => (
-              <div
-                key={lead.id}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-(--site-line) bg-white p-4 shadow-(--panel-card-shadow)"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-bold text-(--site-ink)">
-                    {lead.fullName}
-                  </p>
-                  <p className="mt-1 truncate text-xs text-(--site-muted)">
-                    {lead.phone} · {lead.examType} · {lead.targetGoal}
-                  </p>
-                </div>
-                <LeadStatusControl id={lead.id} status={lead.intakeStatus} />
-              </div>
-            ))}
-            {!leads.length ? (
-              <p className="rounded-2xl border border-dashed border-(--site-line) p-5 text-sm text-(--site-muted)">
-                Henüz talep yok.
-              </p>
-            ) : null}
-          </div>
-        </section>
-      </div>
-
       <section id="eposta-kuyrugu" className="panel-surface mt-7 scroll-mt-24">
         <div className="flex items-center justify-between gap-3 border-b border-(--site-line) p-5">
           <div>
@@ -983,6 +1033,10 @@ export default async function OperationsPage() {
           ) : null}
         </div>
       </section>
+
+        </>
+      ) : null}
+
     </PanelShell>
   );
 }
