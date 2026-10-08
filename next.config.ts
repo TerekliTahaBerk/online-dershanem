@@ -76,6 +76,14 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+  images: {
+    // Marka görselleri 1254 px kaynak PNG'ler; AVIF aynı kalitede WebP'den
+    // belirgin küçük. Desteklemeyen tarayıcı WebP alır.
+    formats: ["image/avif", "image/webp"],
+    // Optimize edilmiş çıktı bir hafta CDN/tarayıcı önbelleğinde kalır.
+    // Aynı dosya adıyla değişen görsel en geç bu sürede yenilenir.
+    minimumCacheTTL: 60 * 60 * 24 * 7,
+  },
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },
