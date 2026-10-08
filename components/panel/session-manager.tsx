@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Laptop, Loader2, LogOut } from "lucide-react";
+import { sessionDeviceLabel } from "@/lib/auth/session-device";
 
 type ManagedSession = {
   id: string;
@@ -19,31 +20,7 @@ const SESSION_DATE_FORMATTER = new Intl.DateTimeFormat("tr-TR", {
   timeStyle: "short",
 });
 
-function deviceLabel(userAgent: string | null): string {
-  if (!userAgent) return "Bilinmeyen cihaz";
-  const browser = userAgent.includes("Edg/")
-    ? "Edge"
-    : userAgent.includes("Chrome/")
-      ? "Chrome"
-      : userAgent.includes("Firefox/")
-        ? "Firefox"
-        : userAgent.includes("Safari/")
-          ? "Safari"
-          : "Tarayıcı";
-  const system =
-    userAgent.includes("iPhone") || userAgent.includes("iPad")
-      ? "iOS"
-      : userAgent.includes("Android")
-        ? "Android"
-        : userAgent.includes("Mac OS")
-          ? "macOS"
-          : userAgent.includes("Windows")
-            ? "Windows"
-            : userAgent.includes("Linux")
-              ? "Linux"
-              : null;
-  return system ? `${browser} · ${system}` : browser;
-}
+const deviceLabel = sessionDeviceLabel;
 
 export function SessionManager({ sessions }: { sessions: ManagedSession[] }) {
   const router = useRouter();

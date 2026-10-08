@@ -43,18 +43,18 @@ export async function POST(request: Request) {
 
   // Gerçek oturum (preview overlay'siz): seçim aktörün oturumuna yazılır.
   const actor = await getSession();
-  if (!actor) return NextResponse.json({ error: "Oturumunuz sona ermiş." }, { status: 401 });
+  if (!actor) return NextResponse.json({ error: "Oturumunuz sona ermiş.", code: "UNAUTHENTICATED" }, { status: 401 });
 
   const products = await getAccessibleProducts(actor.userId, actor.role);
   if (!products.includes(product)) {
-    return NextResponse.json({ error: "Bu ürüne erişiminiz yok." }, { status: 403 });
+    return NextResponse.json({ error: "Bu ürüne erişiminiz yok.", code: "PRODUCT_ACCESS_REQUIRED" }, { status: 403 });
   }
   if (!(await checkProductPanelPilot(actor.userId, actor.role, product))) {
-    return NextResponse.json({ error: "Bu panel şu anda erişime kapalı." }, { status: 403 });
+    return NextResponse.json({ error: "Bu panel şu anda erişime kapalı.", code: "PILOT_UNAVAILABLE" }, { status: 403 });
   }
 
   const entry = await resolveProductEntryPath(actor, product);
-  if (!entry) return NextResponse.json({ error: "Bu ürüne erişiminiz yok." }, { status: 403 });
+  if (!entry) return NextResponse.json({ error: "Bu ürüne erişiminiz yok.", code: "PRODUCT_ACCESS_REQUIRED" }, { status: 403 });
 
   await prisma.session.update({ where: { id: actor.sessionId }, data: { activeProduct: product } });
   return NextResponse.json({ redirect: entry });
