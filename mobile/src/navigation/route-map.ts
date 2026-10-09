@@ -79,6 +79,22 @@ export function mapNotificationHref(href: string | null | undefined, navigation:
   return mapOdDetailPath(path, navigation) ?? mapOdkDetailPath(path, navigation) ?? { kind: 'none' };
 }
 
+/**
+ * Bildirim web yolunun AİT OLDUĞU çalışma alanı (çapraz çalışma alanı
+ * yönlendirmesi için). Yalnız ürüne özgü yollar eşlenir; ortak / belirsiz
+ * yollar (ayarlar, bildirimler, check-in, haftalık özet) null — mevcut
+ * çalışma alanında kalınır. Yetki kararı DEĞİLDİR: geçişten sonra hedef yeni
+ * menüde yeniden doğrulanır.
+ */
+export function workspaceForWebPath(href: string | null | undefined): 'OD' | 'OK' | 'ODK' | null {
+  const path = normalizeWebPath(href);
+  if (!path) return null;
+  if (/^\/panel\/odk\/ogrenci(?:\/|$)/.test(path)) return 'ODK';
+  if (/^\/panel\/ogrenci\/(?:yon|plan|kocluk|hedefler)(?:\/|$)/.test(path)) return 'OK';
+  if (/^\/panel\/ogrenci\/(?:takvim|odevler|materyaller|tekrar|telafi|analiz)(?:\/|$)/.test(path)) return 'OD';
+  return null;
+}
+
 export function expoHrefFor(target: NativeTarget): string | null {
   switch (target.kind) {
     case 'tab':

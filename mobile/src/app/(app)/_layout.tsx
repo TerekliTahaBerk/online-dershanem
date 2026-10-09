@@ -1,13 +1,17 @@
 import { Stack } from 'expo-router';
 
 import { useDesign } from '@/design/theme';
+import { PushRuntime } from '@/features/push/push-runtime';
 import { color, font } from '@/design/tokens';
 
 /** Hazır çalışma alanı: sekmeler + üzerine itilen ekranlar (başlıklı). */
 export default function AppLayout() {
   const { product } = useDesign();
   return (
-    <Stack
+    <>
+      {/* M5: bildirim dokunuşu / soğuk başlangıç / rozet — yalnız hazır çalışma alanında. */}
+      <PushRuntime />
+      <Stack
       screenOptions={{
         headerTintColor: product.accent,
         headerTitleStyle: { fontFamily: font.semibold, color: color.text },
@@ -21,6 +25,7 @@ export default function AppLayout() {
       <Stack.Screen name="account/index" options={{ title: 'Hesap ve ayarlar' }} />
       <Stack.Screen name="account/sessions" options={{ title: 'Oturumlar' }} />
       <Stack.Screen name="account/password" options={{ title: 'Parola' }} />
+      <Stack.Screen name="account/notifications" options={{ title: 'Bildirim ayarları' }} />
       <Stack.Screen name="od/assignment/[id]" options={{ title: 'Çalışma' }} />
       <Stack.Screen name="od/lesson/[id]" options={{ title: 'Ders' }} />
       <Stack.Screen name="od/review-recovery" options={{ title: 'Tekrar ve telafi' }} />
@@ -28,5 +33,6 @@ export default function AppLayout() {
       <Stack.Screen name="odk/exam/[id]/index" options={{ title: 'Deneme' }} />
       <Stack.Screen name="odk/exam/[id]/result" options={{ title: 'Sonuç' }} />
     </Stack>
+    </>
   );
 }

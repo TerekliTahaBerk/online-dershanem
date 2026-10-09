@@ -31,6 +31,9 @@ export default function AccountScreen() {
       <Section title="Güvenlik">
         <Row title="Parolayı değiştir" onPress={() => router.push('/account/password')} testID="account-password" />
         <Row title="Oturumlar" subtitle="Bu hesabın açık olduğu cihazlar" onPress={() => router.push('/account/sessions')} testID="account-sessions" />
+        {bootstrap.user.role === 'STUDENT' || bootstrap.user.role === 'PARENT' ? (
+          <Row title="Bildirim ayarları" subtitle="Telefon bildirimleri, kategoriler, sessiz saatler" onPress={() => router.push('/account/notifications')} testID="account-notifications" />
+        ) : null}
       </Section>
       <View style={styles.footer}>
         <Button label="Çıkış yap" variant="secondary" onPress={() => void signOut()} testID="account-sign-out" />
