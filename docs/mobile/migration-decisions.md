@@ -161,3 +161,17 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
 - **Check-in:** OD ve Yön için tek native ekran; sunucu kuralları (OD grubu öncelikli, grubu yoksa koç ataması; haftalık hak; açık yardım isteği tekilliği) değişmedi.
 - **Test politikası (M3):** Kullanıcı talimatıyla M3'te YENİ test yazılmadı; yalnız mevcut paketler koşuldu. M3'ün bilinçli olarak değiştirdiği davranışa (Yön yer tutucusu → Yön ekranları, check-in yer tutucusu → native ekran) dayanan mevcut beklentiler güncellendi.
 
+## MD-20 — Deneme Ligi (M4) sınırları
+
+**Karar.**
+- **Sınav yürütme native değil:**
+  - Mobil deneme başlatmaz, sürdürmez, cevap yazmaz, kalp atışı / bütünlük olayı göndermez, teslim etmez.
+  - AVAILABLE ve IN_PROGRESS durumunda web sınav ekranı sistem tarayıcısında açılır; token, çerez veya tek kullanımlık giriş taşınmaz.
+  - Native çalıştırıcı veya SSO devri ayrı bir güvenlik incelemesi gerektirir.
+- **Salt okunur ayrıntı:** Mobil ayrıntı ucu süresi dolmuş denemeyi teslim etmez (`finalizeExpired: false`). Web davranışı değişmedi.
+- **Doğru cevap:** Soru başına doğru cevap yalnız cevap anahtarı yayınındayken mobil yanıta girer. Web sonuç sayfasındaki farklı davranış bir bulgudur; karar bekler (m4-security-review §5).
+- **Karşılaştırma:** Yalnız aynı sınav ailesinde, öğrencinin kendi yayınlanmış sonuçlarıyla yapılır. Sıralama, lig ve yüzdelik yoktur.
+- **ODK çalışma alanındaki ortak öğeler:** Çalışmalar, Analiz, check-in ve özet web devam yoluna gider. OD/Yön'deki `odk-exams` çalışma alanı geçişi önerir.
+- **Liste sınırı:** Liste en yeni 50 denemeyle sınırlıdır; aşılırsa `truncated` ile açıkça bildirilir.
+- **Test politikası (M4):** Kullanıcı talimatıyla yeni test yazılmadı. Sınırlar geçici, commit'lenmeyen bir betikle doğrulandı.
+

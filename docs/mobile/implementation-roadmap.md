@@ -108,6 +108,8 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
 
 ## M4 — Deneme Ligi deneyimi (öğrenci)
 
+> **Durum: uygulandı (kalıcı M4 testleri kullanıcı talimatıyla yazılmadı).** [m4-implementation-report.md](./m4-implementation-report.md), [m4-api-contracts.md](./m4-api-contracts.md), [m4-screen-migration.md](./m4-screen-migration.md), [m4-security-review.md](./m4-security-review.md), [m4-test-results.md](./m4-test-results.md). M5 girdisi: [m5-handoff.md](./m5-handoff.md).
+
 **Bağımlılıklar.** M1; MD-08 kararı (en azından seçenek 1 onayı).
 
 **Teslimatlar.**
