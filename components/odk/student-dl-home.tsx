@@ -1,8 +1,6 @@
 import Link from "next/link";
 import type { SessionUser } from "@/lib/auth/session";
-import { prisma } from "@/lib/prisma";
-import { listStudentExams } from "@/lib/odk/student-exam-server";
-import { releasedResultsWithDelta, studentExamState } from "@/lib/odk/student-exam-state";
+import { loadOdkStudentHome } from "@/lib/odk/student-dashboard-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   EmptyState,
@@ -38,58 +36,8 @@ const DAY = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", t
 const NET = new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export async function StudentDenemeLigiHome({ session }: { session: SessionUser }) {
-  const exams = await listStudentExams(session.userId);
-  const now = new Date();
-  const states = exams.map((exam) => ({ exam, state: studentExamState(exam) }));
-
-  const active = states.find((item) => item.state.key === "IN_PROGRESS") ?? null;
-  const available = states
-    .filter((item) => item.state.key === "AVAILABLE")
-    .sort((a, b) => (a.exam.startsAt?.getTime() ?? 0) - (b.exam.startsAt?.getTime() ?? 0))[0];
-  const upcoming = states
-    .filter((item) => item.state.key === "UPCOMING")
-    .sort((a, b) => (a.exam.startsAt?.getTime() ?? 0) - (b.exam.startsAt?.getTime() ?? 0))[0];
-  const next = active ?? available ?? upcoming ?? null;
-
-  const releasedAttempts = states
-    .filter((item) => item.state.key === "RESULT_RELEASED" && item.exam.attempts[0])
-    .map((item) => ({ exam: item.exam, attemptId: item.exam.attempts[0]!.id }));
-  const scores = releasedAttempts.length
-    ? await prisma.odkExamAttempt.findMany({
-        where: { id: { in: releasedAttempts.map((item) => item.attemptId) }, score: { is: { publicationStatus: "PUBLISHED" } } },
-        select: {
-          id: true,
-          submittedAt: true,
-          score: {
-            select: {
-              totalNet: true,
-              outcomeScores: {
-                orderBy: [{ accuracyRate: "asc" }, { outcome: { code: "asc" } }],
-                take: 3,
-                select: { accuracyRate: true, questionCount: true, outcome: { select: { code: true, title: true } } },
-              },
-            },
-          },
-        },
-      })
-    : [];
-  const scoreById = new Map(scores.map((row) => [row.id, row]));
-  const results = releasedResultsWithDelta(
-    releasedAttempts
-      .filter((item) => scoreById.get(item.attemptId)?.score)
-      .map((item) => ({
-        examId: item.exam.id,
-        title: item.exam.title,
-        family: item.exam.family,
-        at: item.exam.resultsReleasedAt ?? item.exam.startsAt ?? scoreById.get(item.attemptId)!.submittedAt ?? now,
-        net: Number(scoreById.get(item.attemptId)!.score!.totalNet),
-      })),
-  );
-  const latest = results[0] ?? null;
-  const trendFamily = latest?.family;
-  const trend = results.filter((row) => row.family === trendFamily).slice().reverse();
-  const latestAttemptId = latest ? releasedAttempts.find((item) => item.exam.id === latest.examId)?.attemptId : null;
-  const focus = latestAttemptId ? scoreById.get(latestAttemptId)?.score?.outcomeScores ?? [] : [];
+  // Okuma `lib/odk/student-dashboard-server.ts`'te; mobil uç (`/api/odk/student/home`) aynı yükleyiciyi kullanır.
+  const { next, results, latest, trend, trendFamily, focus, now } = await loadOdkStudentHome(session.userId);
 
   const nextLine = (() => {
     if (!next) return null;

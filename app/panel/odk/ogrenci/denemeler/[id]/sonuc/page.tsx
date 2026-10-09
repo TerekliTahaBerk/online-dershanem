@@ -2,12 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, FileText } from "lucide-react";
 import { requireProductRole } from "@/lib/auth/guards";
-import { getReleasedStudentResult } from "@/lib/odk/student-exam-server";
-import { getAccessibleProducts } from "@/lib/auth/products";
-import { buildResultNextStepRecommendations } from "@/lib/odk/result-next-step";
+import { loadOdkStudentResult } from "@/lib/odk/student-result-server";
+import { classifyOutcome, inTrack as inTrackSection, previousComparableDelta, resultTrackView } from "@/lib/odk/student-result-view";
 import { buildOutcomeDeterministicReason } from "@/lib/panel/dino-explanations";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
-import { prisma } from "@/lib/prisma";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   EmptyState,
@@ -25,7 +23,6 @@ import {
   ViewTabs,
   buttonClass,
 } from "@/components/panel/ui";
-import { AYT_TRACK_LABEL, aytTrackSections } from "@/lib/odk/student-exam-state";
 import { DinoExplanationAction } from "@/components/panel/dino-explanation-action";
 import { TrackedPanelLink } from "@/components/panel/tracked-panel-link";
 
@@ -69,8 +66,10 @@ export default async function OdkStudentResultPage({
 }) {
   const session = await requireProductRole("ODK", "STUDENT");
   const { id } = await params;
-  const data = await getReleasedStudentResult(id, session.userId);
-  if (!data) notFound();
+  // Okuma `lib/odk/student-result-server.ts`'te; mobil uç (`/api/odk/student/exams/[id]/result`) aynı yükleyiciyi kullanır.
+  const loaded = await loadOdkStudentResult({ userId: session.userId, role: session.role, examId: id });
+  if (!loaded) notFound();
+  const { data, hasOK, fieldTrack, weak, topSignal, recommendations } = loaded;
   const {
     exam,
     score,
@@ -81,60 +80,7 @@ export default async function OdkStudentResultPage({
     coachSuggestions,
     sectionBreakdown,
   } = data;
-  const products = await getAccessibleProducts(session.userId, session.role);
-  const hasOK = products.includes("OK");
-  const hasOD = products.includes("OD");
-  const student = await prisma.studentProfile.findUnique({
-    where: { userId: session.userId },
-    select: { id: true, fieldTrack: true },
-  });
   const query = await searchParams;
-  const weak = weakOutcomeSignals.filter((signal) => signal.needsReview);
-  const topSignal = weak[0] || weakOutcomeSignals[0] || null;
-  const [latestPlan, relatedReviewItem, relatedRecovery] = await Promise.all([
-    hasOK && student
-      ? prisma.weeklyPlan.findFirst({
-          where: { studentId: student.id },
-          orderBy: { weekStart: "desc" },
-          select: { status: true },
-        })
-      : Promise.resolve(null),
-    hasOD && student && topSignal
-      ? prisma.reviewItem.findFirst({
-          where: {
-            studentId: student.id,
-            outcomeId: topSignal.outcomeId,
-            status: "ACTIVE",
-          },
-          select: { id: true },
-        })
-      : Promise.resolve(null),
-    hasOD && student && topSignal
-      ? prisma.recoveryPackage.findFirst({
-          where: {
-            studentId: student.id,
-            status: { in: ["PUBLISHED", "COMPLETED"] },
-            lesson: {
-              outcomeLinks: { some: { outcomeId: topSignal.outcomeId } },
-            },
-          },
-          orderBy: { dueAt: "asc" },
-          select: { lessonId: true },
-        })
-      : Promise.resolve(null),
-  ]);
-  const recommendations = buildResultNextStepRecommendations({
-    weakOutcomeSignals,
-    hasOK,
-    hasOD,
-    hasPlan: Boolean(latestPlan),
-    answerKeyAvailable,
-    answerKeyHref: `/api/odk/student/exams/${id}/answer-key`,
-    reviewHref: relatedReviewItem ? "/panel/ogrenci/tekrar" : undefined,
-    recoveryHref: relatedRecovery
-      ? `/panel/ogrenci/telafi?lessonId=${encodeURIComponent(relatedRecovery.lessonId)}`
-      : undefined,
-  });
   const reasonCode: "NEEDS_REVIEW" | "NO_SIGNAL" = topSignal?.needsReview ? "NEEDS_REVIEW" : "NO_SIGNAL";
   const evidenceBand = topSignal?.confidence || "NA";
   const ageBand = ageBandFromDate(exam.resultsReleasedAt);
@@ -171,10 +117,11 @@ export default async function OdkStudentResultPage({
   }
   // AYT alan görünümü (§11.5): öğrencinin alanı biliniyorsa varsayılan "Benim alanım".
   const familyCode = String(exam.examFamilyRef?.code ?? exam.family ?? "");
-  const trackCodes = familyCode.startsWith("AYT") ? aytTrackSections(student?.fieldTrack) : null;
-  const trackLabel = trackCodes && student?.fieldTrack ? AYT_TRACK_LABEL[student.fieldTrack.toUpperCase()] : null;
+  const trackView = resultTrackView(familyCode, fieldTrack);
+  const trackCodes = trackView.sectionCodes;
+  const trackLabel = trackView.label;
   const trackMode: "benim" | "tumu" = trackCodes && query.alan !== "tumu" ? "benim" : "tumu";
-  const inTrack = (code: string | undefined) => trackMode === "tumu" || !trackCodes || (code ? trackCodes.includes(code) : false);
+  const inTrack = (code: string | undefined) => trackMode === "tumu" || inTrackSection(trackView, code);
   const sections = (Array.isArray(sectionBreakdown) ? (sectionBreakdown as SectionRow[]) : []).filter((section) => inTrack(section.code));
   const trackNet = trackMode === "benim" ? sections.reduce((sum, section) => sum + Number(section.net ?? 0), 0) : null;
 
@@ -204,17 +151,15 @@ export default async function OdkStudentResultPage({
     return qs ? `${baseHref}?${qs}` : baseHref;
   };
 
-  const currentIndex = comparison.findIndex((item) => item.examId === id);
-  const previous = currentIndex > 0 ? comparison[currentIndex - 1] : null;
-  const delta = previous ? Math.round((Number(score.totalNet) - previous.totalNet) * 100) / 100 : null;
+  const { delta } = previousComparableDelta(comparison, id, Number(score.totalNet));
 
   const outcomes = score.outcomeScores.map((item) => ({
     item,
     accuracy: Number(item.accuracyRate),
     signal: weakOutcomeSignals.find((entry) => entry.outcomeId === item.outcomeId) || null,
   }));
-  const strong = outcomes.filter((row) => row.accuracy >= 70 && !row.signal?.needsReview).sort((a, b) => b.accuracy - a.accuracy);
-  const improve = outcomes.filter((row) => !(row.accuracy >= 70 && !row.signal?.needsReview));
+  const strong = outcomes.filter((row) => classifyOutcome(row.accuracy, row.signal) === "strong").sort((a, b) => b.accuracy - a.accuracy);
+  const improve = outcomes.filter((row) => classifyOutcome(row.accuracy, row.signal) === "improve");
   const slowest = [...timeAnalysis.sections]
     .filter((section) => inTrack(section.sectionCode))
     .sort((a, b) => b.totalActiveMs - a.totalActiveMs)[0];

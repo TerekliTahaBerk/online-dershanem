@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { requireProductRole } from "@/lib/auth/guards";
-import { prisma } from "@/lib/prisma";
-import { listStudentExams } from "@/lib/odk/student-exam-server";
-import { studentExamState, type StudentExamTab } from "@/lib/odk/student-exam-state";
+import { loadOdkStudentExamList } from "@/lib/odk/student-dashboard-server";
+import type { StudentExamTab } from "@/lib/odk/student-exam-state";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   EmptyState,
@@ -44,37 +43,8 @@ export default async function OdkStudentExamsPage({ searchParams }: { searchPara
   const session = await requireProductRole("ODK", "STUDENT");
   const requested = (await searchParams).gorunum;
   const tab = TABS.find((item) => item.id === requested)?.id ?? "tumu";
-  const exams = await listStudentExams(session.userId);
-  const rows = exams.map((exam) => ({ exam, state: studentExamState(exam) }));
-  const active = rows.find((row) => row.state.key === "IN_PROGRESS") ?? null;
-
-  const releasedAttemptIds = rows
-    .filter((row) => row.state.key === "RESULT_RELEASED" && row.exam.attempts[0])
-    .map((row) => row.exam.attempts[0]!.id);
-  const scores = releasedAttemptIds.length
-    ? await prisma.odkExamAttempt.findMany({
-        where: { id: { in: releasedAttemptIds }, score: { is: { publicationStatus: "PUBLISHED" } } },
-        select: { id: true, score: { select: { totalNet: true } } },
-      })
-    : [];
-  const netByAttempt = new Map(scores.map((row) => [row.id, row.score ? Number(row.score.totalNet) : null]));
-
-  const counts = {
-    tumu: rows.length,
-    yaklasan: rows.filter((row) => row.state.tab === "yaklasan").length,
-    acik: rows.filter((row) => row.state.tab === "acik").length,
-    tamamlanan: rows.filter((row) => row.state.tab === "tamamlanan").length,
-  };
-  // Tümü: önce açık, sonra yaklaşan (yakın tarih önce), sonra tamamlanan (yeni önce).
-  const order = { acik: 0, yaklasan: 1, tamamlanan: 2 } as const;
-  const visible = rows
-    .filter((row) => tab === "tumu" || row.state.tab === tab)
-    .sort((a, b) => {
-      if (order[a.state.tab] !== order[b.state.tab]) return order[a.state.tab] - order[b.state.tab];
-      const at = a.exam.startsAt?.getTime() ?? 0;
-      const bt = b.exam.startsAt?.getTime() ?? 0;
-      return a.state.tab === "tamamlanan" ? bt - at : at - bt;
-    });
+  // Okuma `lib/odk/student-dashboard-server.ts`'te; mobil uç (`/api/odk/student/exams`) aynı yükleyiciyi kullanır.
+  const { rows, visible, active, counts, netOf } = await loadOdkStudentExamList(session.userId, tab);
 
   return (
     <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK" pageTitle="Denemeler">
@@ -117,7 +87,7 @@ export default async function OdkStudentExamsPage({ searchParams }: { searchPara
           {visible.length ? (
             <PanelTable caption="Denemeler" columns={["Deneme", "Tür", "Tarih", "Durum", "Süre", "Sonuç"]}>
               {visible.map(({ exam, state }) => {
-                const net = exam.attempts[0] ? netByAttempt.get(exam.attempts[0].id) : null;
+                const net = netOf({ exam, state });
                 return (
                   <PanelTableRow key={exam.id}>
                     <PanelTableCell>
