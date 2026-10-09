@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
+import { loadStudentLessonDetail } from "@/lib/panel/student-lesson-detail-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   List,
@@ -42,57 +42,14 @@ export default async function StudentLessonDetailPage({
   const session = await requireRole("STUDENT");
   const { id } = await params;
 
-  const profile = await prisma.studentProfile.findUnique({
-    where: { userId: session.userId },
-  });
-  if (!profile) notFound();
+  // Sorgular ve görünürlük kuralları mobil JSON ucuyla ORTAK yükleyicide
+  // (`lib/panel/student-lesson-detail-server.ts`); davranış değişmedi.
+  const detail = await loadStudentLessonDetail({ studentUserId: session.userId, lessonId: id });
+  if (!detail) notFound();
 
-  // Öğrencinin kayıtlı olduğu grupların dersleri dışına çıkılamaz.
-  const enrollments = await prisma.enrollment.findMany({
-    where: { studentId: profile.id },
-    select: { groupId: true },
-  });
-  const groupIds = enrollments.map((e) => e.groupId);
-
-  const lesson = await prisma.lesson.findFirst({
-    where: { id, groupId: { in: groupIds } },
-    include: {
-      group: { select: { name: true } },
-      teacher: { select: { fullName: true } },
-      notes: {
-        where: { OR: [{ studentId: null }, { studentId: profile.id }] },
-      },
-      attendances: {
-        where: { studentId: profile.id },
-        select: { status: true },
-      },
-    },
-  });
-  if (!lesson) notFound();
-
-  const shared = lesson.notes.find((n) => n.studentId === null);
-  const personal = lesson.notes.find((n) => n.studentId === profile.id);
-  const attendance = lesson.attendances[0]?.status;
-
-  const assignments = await prisma.assignment.findMany({
-    where: { groupId: lesson.groupId, isActive: true },
-    orderBy: { dueAt: "desc" },
-    take: 3,
-    include: {
-      progress: { where: { studentId: profile.id }, select: { status: true } },
-    },
-  });
-
-  const attendanceLabel =
-    attendance === "PRESENT"
-      ? "Katıldın"
-      : attendance === "LATE"
-        ? "Geç katıldın"
-        : attendance === "ABSENT"
-          ? "Katılmadın"
-          : attendance === "EXCUSED"
-            ? "Mazeretli"
-            : "Katılım işlenmedi";
+  const { lesson, sharedNote: shared, personalNote, assignments } = detail;
+  const attendance = detail.attendance;
+  const attendanceLabel = detail.attendanceView.label;
 
   return (
     <PanelShell
@@ -129,10 +86,10 @@ export default async function StudentLessonDetailPage({
           </p>
         </Section>
 
-        {personal?.note ? (
+        {personalNote ? (
           <Section title="Öğretmen notu">
             <blockquote className="border-l-2 border-pn-accent pl-4 text-[14.5px] leading-[1.65] text-pn-text-secondary">
-              &ldquo;{personal.note}&rdquo;
+              &ldquo;{personalNote}&rdquo;
             </blockquote>
           </Section>
         ) : null}
@@ -144,7 +101,7 @@ export default async function StudentLessonDetailPage({
           {assignments.length ? (
             <List label="Bu derste verilen çalışmalar">
               {assignments.map((a) => {
-                const done = a.progress[0]?.status === "DONE";
+                const done = a.done;
                 return (
                   <ListRow
                     key={a.id}

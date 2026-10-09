@@ -25,6 +25,8 @@ export const MOBILE_API_ERROR_CODES = [
   "RATE_LIMIT",
   "ORIGIN",
   "ADMIN_PREVIEW_READONLY",
+  /** M2: özellik bayrağı kapalı (404). Mobil ekranı gizler, hata göstermez. */
+  "FEATURE_DISABLED",
 ] as const;
 export type MobileApiErrorCode = (typeof MOBILE_API_ERROR_CODES)[number];
 

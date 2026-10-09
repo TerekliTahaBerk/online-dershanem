@@ -34,7 +34,9 @@ function walk(dir) {
 const IMPORT_SPEC = /(?:import|export)\s+(?:type\s+)?(?:[^'";]*?\sfrom\s+)?["']([^"']+)["']/g;
 const offenders = [];
 
-for (const file of walk(CONTRACT_DIR)) {
+// `*.test.ts` yalnız Node test koşucusunda çalışır; mobil bundle'a girmez
+// (mobil tsconfig ve Metro onları dışlar).
+for (const file of walk(CONTRACT_DIR).filter((path) => !path.endsWith(".test.ts"))) {
   const source = readFileSync(file, "utf8");
   const rel = relative(ROOT, file);
   for (const match of source.matchAll(IMPORT_SPEC)) {

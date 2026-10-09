@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { hashPassword } from "../../lib/auth/password";
 import { parseMobileBootstrap, type MobileBootstrap } from "../../lib/mobile-contracts/bootstrap";
 import { parseSessionList } from "../../lib/mobile-contracts/api";
+import { parseAssignmentList, parseInsights, parseLessonDetail, parseLessonList, parseOdHome, parseRecovery, parseReviewQueue, parseWeeklyDigest } from "../../lib/mobile-contracts/student";
 import { hasE2EEnv } from "./env-requirements";
 import { uniqueTestClientIp } from "./helpers/client-ip";
 
@@ -220,5 +221,141 @@ test.describe.serial("M1 mobil API sözleşmesi", () => {
     expect(missing.status()).toBe(426);
     const web = await context.post("/api/auth/login", { headers: ORIGIN, data: student() });
     expect(web.status()).toBe(200);
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * M2 — OD öğrenci uçları (Bearer, ürün kapısı, sözleşme, eşzamanlılık)
+ * ------------------------------------------------------------------ */
+
+const odkStudent = () => ({ email: process.env.PANEL_E2E_ODK_STUDENT_EMAIL!, password: process.env.PANEL_E2E_ODK_STUDENT_PASSWORD! });
+const m2UserIds: string[] = [];
+
+async function bearer(credentials: { email: string; password: string }) {
+  const { context, body } = await mobileLogin(credentials.email, credentials.password);
+  expect(body.token, body.error).toBeTruthy();
+  return { context, headers: { ...MOBILE, authorization: `Bearer ${body.token}` } };
+}
+
+/** Paylaşılan seed ödevlerini bozmamak için yazma testleri geçici grup + öğrenci kullanır. */
+async function temporaryOdStudentWithAssignment() {
+  const password = `M2-${randomUUID()}`;
+  const passwordHash = await hashPassword(password);
+  const teacher = await db.user.create({ data: { email: `m2-e2e-t-${randomUUID().slice(0, 8)}@example.com`, passwordHash, mustChangePassword: false, inviteAcceptedAt: new Date(), role: "TEACHER", status: "ACTIVE", fullName: "M2 Öğretmen" } });
+  const user = await db.user.create({ data: { email: `m2-e2e-s-${randomUUID().slice(0, 8)}@example.com`, passwordHash, mustChangePassword: false, inviteAcceptedAt: new Date(), role: "STUDENT", status: "ACTIVE", fullName: "M2 Öğrenci" } });
+  m2UserIds.push(teacher.id, user.id);
+  const profile = await db.studentProfile.create({ data: { userId: user.id } });
+  await db.productMembership.create({ data: { userId: user.id, product: "OD", startsAt: new Date(0) } });
+  const group = await db.group.create({ data: { name: "M2 E2E grubu", subject: "Matematik", teacherId: teacher.id } });
+  await db.enrollment.create({ data: { groupId: group.id, studentId: profile.id } });
+  const assignment = await db.assignment.create({ data: { groupId: group.id, createdById: teacher.id, title: "M2 E2E ödevi", dueAt: new Date(Date.now() + 86400000) } });
+  await db.assignmentProgress.create({ data: { assignmentId: assignment.id, studentId: profile.id } });
+  return { email: user.email, password, assignmentId: assignment.id };
+}
+
+test.describe.serial("M2 mobil OD öğrenci API sözleşmesi", () => {
+  test.skip(!hasE2EEnv("studentAccount", "odkStudentAccount", "foreignLesson"), "E2E hesapları tanımlı değil");
+
+  test.afterAll(async () => {
+    await db.group.deleteMany({ where: { teacherId: { in: m2UserIds } } });
+    await db.productMembership.deleteMany({ where: { userId: { in: m2UserIds } } });
+    await db.studentProfile.deleteMany({ where: { userId: { in: m2UserIds } } });
+    await db.session.deleteMany({ where: { userId: { in: m2UserIds } } });
+    await db.auditLog.deleteMany({ where: { OR: [{ actorUserId: { in: m2UserIds } }, { entityId: { in: m2UserIds } }] } });
+    await db.user.deleteMany({ where: { id: { in: m2UserIds } } });
+  });
+
+  test("OD Bugün (?scope=OD): sözleşmeye uyar, yalnız OD verisi; parametresiz istek eski yanıt biçimini korur", async () => {
+    const { context, headers } = await bearer(student());
+    const scoped = await context.get("/api/panel/student/home?scope=OD", { headers });
+    expect(scoped.status(), await scoped.text()).toBe(200);
+    expect(scoped.headers()["cache-control"]).toContain("no-store");
+    const parsed = parseOdHome(await scoped.json());
+    if (!parsed.ok) throw new Error(parsed.error);
+    expect(parsed.value.scope).toBe("OD");
+    const text = JSON.stringify(parsed.value);
+    expect(text).not.toContain("/panel/ogrenci/plan");
+    expect(text).not.toContain("/panel/odk/");
+
+    const legacy = await context.get("/api/panel/student/home", { headers });
+    expect(legacy.status()).toBe(200);
+    const legacyBody = await legacy.json();
+    for (const key of ["products", "today", "weeklyPlan", "latestExam", "trend", "hasODK"]) expect(legacyBody).toHaveProperty(key);
+    const invalid = await context.get("/api/panel/student/home?scope=ODK", { headers });
+    expect(invalid.status()).toBe(400);
+  });
+
+  test("Deneme Ligi-only öğrenci OD uçlarına erişemez: 404 PRODUCT_ACCESS_REQUIRED", async () => {
+    const { context, headers } = await bearer(odkStudent());
+    for (const path of ["/api/panel/student/home?scope=OD", "/api/panel/assignments?scope=OD", "/api/panel/student/insights", "/api/panel/student/lessons/e2e-lesson", "/api/panel/student/review-queue", "/api/panel/student/recovery", "/api/panel/student/weekly-digest"]) {
+      const response = await context.get(path, { headers });
+      expect(response.status(), path).toBe(404);
+      expect((await response.json()).code, path).toBe("PRODUCT_ACCESS_REQUIRED");
+    }
+  });
+
+  test("ders detayı: kendi dersi sözleşmeye uyar; yabancı ders 404; kimliksiz 401", async () => {
+    const { context, headers } = await bearer(student());
+    const own = await context.get("/api/panel/student/lessons/e2e-lesson", { headers });
+    expect(own.status(), await own.text()).toBe(200);
+    const parsed = parseLessonDetail(await own.json());
+    if (!parsed.ok) throw new Error(parsed.error);
+    expect(parsed.value.lesson.id).toBe("e2e-lesson");
+    if (parsed.value.join.state !== "OPEN") expect(parsed.value.join.url).toBeNull();
+    const foreign = await context.get(`/api/panel/student/lessons/${process.env.PANEL_E2E_FOREIGN_LESSON_ID}`, { headers });
+    expect(foreign.status()).toBe(404);
+    const anonymous = await context.get("/api/panel/student/lessons/e2e-lesson", { headers: MOBILE });
+    expect(anonymous.status()).toBe(401);
+  });
+
+  test("çalışmalar (?scope=OD): Yön plan görevi taşımaz; ders listesi eklemeli alanlarla sözleşmeye uyar", async () => {
+    const { context, headers } = await bearer(student());
+    const list = await context.get("/api/panel/assignments?scope=OD", { headers });
+    expect(list.status()).toBe(200);
+    const body = await list.json();
+    expect(body.planTasks).toEqual([]);
+    const parsed = parseAssignmentList(body);
+    if (!parsed.ok) throw new Error(parsed.error);
+    const lessons = await context.get("/api/panel/student/lessons?durum=yaklasan", { headers });
+    const lessonList = parseLessonList(await lessons.json());
+    if (!lessonList.ok) throw new Error(lessonList.error);
+  });
+
+  test("ilerleme eşzamanlılığı (Bearer, Origin yok): sürüm + mutationKey; aynı anahtar tekrar uygulanmaz; eski sürüm 409", async () => {
+    const temp = await temporaryOdStudentWithAssignment();
+    const { context, headers } = await bearer(temp);
+    const path = `/api/panel/assignments/${temp.assignmentId}/progress`;
+    const key = randomUUID();
+    const first = await context.patch(path, { headers, data: { status: "IN_PROGRESS", expectedVersion: 1, mutationKey: key } });
+    expect(first.status(), await first.text()).toBe(200);
+    expect(await first.json()).toMatchObject({ ok: true, version: 2, replayed: false });
+    const replay = await context.patch(path, { headers, data: { status: "IN_PROGRESS", expectedVersion: 1, mutationKey: key } });
+    expect(await replay.json()).toMatchObject({ ok: true, version: 2, replayed: true });
+    const stale = await context.patch(path, { headers, data: { status: "DONE", expectedVersion: 1, mutationKey: randomUUID() } });
+    expect(stale.status()).toBe(409);
+    expect((await stale.json()).code).toBe("ASSIGNMENT_PROGRESS_CONFLICT");
+    const row = await db.assignmentProgress.findFirstOrThrow({ where: { assignmentId: temp.assignmentId }, select: { status: true, version: true } });
+    expect(row).toEqual({ status: "IN_PROGRESS", version: 2 });
+  });
+
+  test("gidişat, tekrar, telafi, haftalık özet: sözleşmeye uyar (bayraklar E2E ortamında açık)", async () => {
+    const { context, headers } = await bearer(student());
+    const insights = parseInsights(await (await context.get("/api/panel/student/insights", { headers })).json());
+    if (!insights.ok) throw new Error(insights.error);
+    const review = parseReviewQueue(await (await context.get("/api/panel/student/review-queue", { headers })).json());
+    if (!review.ok) throw new Error(review.error);
+    const recovery = parseRecovery(await (await context.get("/api/panel/student/recovery", { headers })).json());
+    if (!recovery.ok) throw new Error(recovery.error);
+    expect(JSON.stringify(recovery.value)).not.toContain("ÖZEL TELAFİYE GİRMEMELİ");
+    const digest = parseWeeklyDigest(await (await context.get("/api/panel/student/weekly-digest", { headers })).json());
+    if (!digest.ok) throw new Error(digest.error);
+  });
+
+  test("kimlikli materyal dosyası: yabancı grubun dosyası Bearer ile 404, kimliksiz 401", async () => {
+    const { context, headers } = await bearer(student());
+    const foreign = await context.get("/api/panel/materials/e2e-material-private-foreign/file", { headers });
+    expect(foreign.status()).toBe(404);
+    const anonymous = await context.get("/api/panel/materials/e2e-material-private-foreign/file", { headers: MOBILE });
+    expect(anonymous.status()).toBe(401);
   });
 });

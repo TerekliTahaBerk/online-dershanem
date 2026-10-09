@@ -1,6 +1,7 @@
 import type { ProductCode } from "@prisma/client";
 import { ISTANBUL_TIME_ZONE, formatIstanbulDateInput } from "@/lib/istanbul-time";
 import type { StudentHomeProductData } from "@/lib/panel/student-home-data";
+import { lessonJoinWindow } from "@/lib/panel/lesson-join";
 
 const TR_TIME = new Intl.DateTimeFormat("tr-TR", {
   timeZone: ISTANBUL_TIME_ZONE,
@@ -104,10 +105,7 @@ export function buildStudentHomeActionPlan(input: ActionBuildInput): StudentHome
   if (hasOD && productData.OD) {
     for (const lesson of productData.OD.todayLessons) {
       const startsAt = lesson.startsAt.getTime();
-      const deltaMinutes = Math.round((startsAt - now.getTime()) / 60000);
-      const startsSoon = deltaMinutes >= 0 && deltaMinutes <= 30;
-      const activeNow = deltaMinutes < 0 && deltaMinutes >= -90;
-      const joinsNow = startsSoon || activeNow;
+      const { minutesUntilStart: deltaMinutes, startsSoon, activeNow, joinsNow } = lessonJoinWindow(lesson.startsAt, now);
       addCandidate(candidates, {
         id: `lesson-${lesson.id}`,
         entityKey: `lesson:${lesson.id}`,

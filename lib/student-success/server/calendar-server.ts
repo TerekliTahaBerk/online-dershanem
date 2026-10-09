@@ -173,6 +173,8 @@ export async function getStudentToday(input: {
   studentId: string;
   studentUserId: string;
   now?: Date;
+  /** Verilirse yalnız bu ürünlerin olayları (ör. mobil OD çalışma alanı: `["OD"]`). */
+  products?: ProductCode[];
 }): Promise<{ events: UnifiedCalendarEvent[]; dayStart: Date; dayEnd: Date }> {
   const now = input.now ?? new Date();
   const dayStart = istanbulDayStart(now);
@@ -183,6 +185,7 @@ export async function getStudentToday(input: {
     studentUserId: input.studentUserId,
     from: dayStart,
     to: weekEnd,
+    products: input.products,
   });
   return { events, dayStart, dayEnd };
 }

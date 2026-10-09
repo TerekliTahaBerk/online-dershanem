@@ -32,13 +32,20 @@ export async function getStudentHomeData(input: {
   userId: string;
   role: UserRole;
   now?: Date;
+  /**
+   * Çalışma alanı kapsamı (mobil OD Bugün). Verilirse yalnız bu ürünün
+   * sorguları çalışır; diğer ürünlerin (Yön planı, Deneme Ligi sonuçları)
+   * verisi hiç yüklenmez. Verilmezse davranış değişmedi (web + eski mobil).
+   */
+  scope?: "OD";
 }): Promise<StudentHomeData> {
   const flags = getPanelFeatureFlags();
-  const products = await filterPilotAllowedProducts(
+  const allowed = await filterPilotAllowedProducts(
     input.userId,
     input.role,
     await getAccessibleProducts(input.userId, input.role),
   );
+  const products = input.scope ? allowed.filter((product) => product === input.scope) : allowed;
   if (products.length === 0) return { products, profile: null, productData: emptyProductData, unifiedToday: null };
 
   const profile = await prisma.studentProfile.findUnique({
@@ -139,6 +146,7 @@ export async function getStudentHomeData(input: {
       studentId: profile.id,
       studentUserId: input.userId,
       now: input.now ?? new Date(),
+      ...(input.scope ? { products: [input.scope] } : {}),
     });
     unifiedToday = buildSerializedUnifiedToday({
       events,

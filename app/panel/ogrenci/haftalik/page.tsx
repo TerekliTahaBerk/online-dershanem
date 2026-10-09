@@ -1,23 +1,18 @@
 import { notFound } from "next/navigation";
 import { HeartHandshake } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelEmptyState } from "@/components/panel/empty-state";
 import { CalmDigestCard } from "@/components/panel/calm-digest-card";
-import { recordPanelProductEvent } from "@/lib/panel-product-events";
+import { loadStudentWeeklyDigest, recordWeeklyDigestViewed } from "@/lib/panel/student-review-recovery-server";
 import { PAGE_DESCRIPTION_CLASS, PAGE_EYEBROW_CLASS, PAGE_TITLE_CLASS } from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 export default async function StudentWeeklyDigestPage() {
   const session = await requireRole("STUDENT");
   if (!getPanelFeatureFlags().parentWeeklyDigest) notFound();
-  const digest = await prisma.weeklyDigest.findFirst({
-    where: { status: "PUBLISHED", student: { userId: session.userId } },
-    orderBy: { weekStart: "desc" },
-    include: { feedback: { where: { userId: session.userId }, take: 1 } },
-  });
+  const digest = await loadStudentWeeklyDigest({ studentUserId: session.userId });
   if (!digest)
     return (
       <PanelShell
@@ -31,25 +26,8 @@ export default async function StudentWeeklyDigestPage() {
         />
       </PanelShell>
     );
-  const ageDays = digest.publishedAt
-    ? (Date.now() - digest.publishedAt.getTime()) / 86400000
-    : 0;
-  await recordPanelProductEvent(
-    {
-      name: "weekly_digest_viewed",
-      properties: {
-        actorRole: "STUDENT",
-        trendBand: digest.trendBand as
-          | "IMPROVING"
-          | "STEADY"
-          | "BUILDING"
-          | "LIMITED_DATA",
-        ageBand: ageDays <= 2 ? "0-2D" : ageDays <= 7 ? "3-7D" : "8D+",
-      },
-    },
-    session.role,
-  );
-  const feedback = digest.feedback[0];
+  await recordWeeklyDigestViewed(digest, session.role);
+  const feedback = digest.feedback;
   return (
     <PanelShell
       role={session.role}
