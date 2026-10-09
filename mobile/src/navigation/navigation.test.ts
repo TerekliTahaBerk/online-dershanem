@@ -21,9 +21,11 @@ describe('native ekran eşlemesi (rol + çalışma alanı + menü kimliği)', ()
     expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OK', item: item('goals') }).key).toBe('yon-goals');
   });
 
-  it('Deneme Ligi öğrencisi OD ekranlarına DÜŞMEZ (M4 yer tutucu)', () => {
-    for (const id of ['today', 'assignments', 'odk-exams', 'lessons']) {
-      expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'ODK', item: item(id) })).toMatchObject({ key: 'placeholder', phase: 'M4' });
+  it('Deneme Ligi öğrencisi OD ekranlarına DÜŞMEZ (M4: Bugün ve Denemeler Deneme Ligi ekranları)', () => {
+    expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'ODK', item: item('today') }).key).toBe('odk-home');
+    expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'ODK', item: item('odk-exams') }).key).toBe('odk-exams');
+    for (const id of ['assignments', 'lessons']) {
+      expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'ODK', item: item(id) })).toMatchObject({ key: 'placeholder', phase: 'LATER' });
     }
   });
 

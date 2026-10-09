@@ -3,6 +3,9 @@ import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { color } from '@/design/tokens';
+import OdkExamsScreen from '@/features/odk/odk-exams';
+import OdkHomeScreen from '@/features/odk/odk-home';
+import OdkSwitchScreen from '@/features/odk/odk-switch';
 import OdAssignmentsScreen from '@/features/od/od-assignments';
 import OdHomeScreen from '@/features/od/od-home';
 import OdLessonsScreen from '@/features/od/od-lessons';
@@ -25,7 +28,7 @@ import { PlaceholderScreen } from './placeholder-screen';
 /**
  * Native ekranlar yalnız ait oldukları çalışma alanında, sunucu menüsü onları
  * içerdiğinde açılır. OD ekranları M2'de, Yön ekranları ve ortak check-in
- * M3'te yeni mimariye taşındı; eski (legacy) ekran kalmadı.
+ * M3'te, Deneme Ligi M4'te yeni mimariye taşındı; eski (legacy) ekran kalmadı.
  */
 const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElement> = {
   'od-home': () => <OdHomeScreen />,
@@ -43,6 +46,9 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'yon-plan': () => <YonPlanScreen />,
   'yon-goals': () => <YonGoalsScreen />,
   'yon-weekly': () => <YonWeeklyScreen />,
+  'odk-home': () => <OdkHomeScreen />,
+  'odk-exams': () => <OdkExamsScreen />,
+  'odk-switch': () => <OdkSwitchScreen />,
 };
 
 

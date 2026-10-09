@@ -55,6 +55,18 @@ function mapOdDetailPath(path: string, navigation: Navigation): NativeTarget | n
   return null;
 }
 
+/**
+ * Deneme Ligi web yolları → native detay. Yalnız Deneme Ligi çalışma
+ * alanında "Denemeler" yetkili menüdeyken; sınav ekranı (`/coz`) native
+ * değildir → ayrıntıya düşer (oradan güvenli web devamı).
+ */
+function mapOdkDetailPath(path: string, navigation: Navigation): NativeTarget | null {
+  const match = /^\/panel\/odk\/ogrenci\/denemeler\/([\w-]{1,64})(\/sonuc|\/coz)?$/.exec(path);
+  if (!match) return null;
+  if (!navHas(navigation, 'odk-exams')) return { kind: 'none' };
+  return { kind: 'detail', href: match[2] === '/sonuc' ? `/odk/exam/${match[1]}/result` : `/odk/exam/${match[1]}` };
+}
+
 /** Bildirim href'i → yetkili native hedef. Eşleşme yoksa `none` (liste ekranında kalınır). */
 export function mapNotificationHref(href: string | null | undefined, navigation: Navigation | null): NativeTarget {
   const path = normalizeWebPath(href);
@@ -64,7 +76,7 @@ export function mapNotificationHref(href: string | null | undefined, navigation:
   const items = [...navigation.primary, ...navigation.sections.flatMap((section) => section.items)];
   const exact = items.find((item) => normalizeWebPath(item.webPath) === path);
   if (exact) return targetForNavId(navigation, exact.id);
-  return mapOdDetailPath(path, navigation) ?? { kind: 'none' };
+  return mapOdDetailPath(path, navigation) ?? mapOdkDetailPath(path, navigation) ?? { kind: 'none' };
 }
 
 export function expoHrefFor(target: NativeTarget): string | null {
@@ -83,7 +95,7 @@ export function expoHrefFor(target: NativeTarget): string | null {
 }
 
 /** İzinli native rota önekleri (derin bağlantılar). Diğer her şey ana ekrana düşer. */
-const ALLOWED_DEEP_LINK = /^\/(?:$|slot-[1-3]$|menu$|notifications$|account(?:\/(?:sessions|password))?$|screen\/[\w-]{1,64}$|od\/(?:lesson|assignment)\/[\w-]{1,64}$|od\/review-recovery$|yon\/task\/[\w-]{1,64}$|forgot-password$)/;
+const ALLOWED_DEEP_LINK = /^\/(?:$|slot-[1-3]$|menu$|notifications$|account(?:\/(?:sessions|password))?$|screen\/[\w-]{1,64}$|od\/(?:lesson|assignment)\/[\w-]{1,64}$|od\/review-recovery$|yon\/task\/[\w-]{1,64}$|odk\/exam\/[\w-]{1,64}(?:\/result)?$|forgot-password$)/;
 
 /**
  * Sistemden gelen yol (`onlinedershanem://...`) → güvenli uygulama yolu.

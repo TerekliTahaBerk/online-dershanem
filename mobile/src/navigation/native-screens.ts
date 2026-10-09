@@ -28,9 +28,12 @@ export type NativeScreenKey =
   | 'yon-plan'
   | 'yon-goals'
   | 'yon-weekly'
+  | 'odk-home'
+  | 'odk-exams'
+  | 'odk-switch'
   | 'placeholder';
 
-export type PlannedPhase = 'M2' | 'M4' | 'M6' | 'M7' | 'WEB' | 'LATER';
+export type PlannedPhase = 'M2' | 'M6' | 'M7' | 'WEB' | 'LATER';
 
 export type NativeScreen = {
   key: NativeScreenKey;
@@ -52,6 +55,8 @@ const OD_STUDENT: Record<string, NativeScreenKey> = {
   'weekly-digest': 'od-weekly-digest',
   // OD + Yön ORTAK check-in (M3): tek ekran, sunucu kuralları değişmedi.
   'check-in': 'check-in',
+  // Deneme Ligi (ayrı ürün): yalnız çalışma alanı geçişi; OD dış denemeleri DEĞİL.
+  'odk-exams': 'odk-switch',
 };
 
 /**
@@ -75,6 +80,18 @@ const OK_STUDENT: Record<string, NativeScreenKey> = {
   'weekly-digest': 'yon-weekly',
   // Dış deneme ucu OD veya Yön üyeliğini kabul eder (`requireApiAnyProductRole(["OD","OK"])`).
   'mock-exams': 'external-mock-exams',
+  'odk-exams': 'odk-switch',
+};
+
+/**
+ * Deneme Ligi (ODK) öğrencisi — M4. `odk-exams` ODK denemeleridir (OD
+ * `mock-exams` dış denemeleri değil). Bu çalışma alanında görünen OD / Yön
+ * kaynaklı ortak öğeler (Çalışmalar, Analiz, check-in, özet…) açık web devam
+ * yoluna gider: Deneme Ligi ekranlarında başka ürün verisi okunmaz.
+ */
+const ODK_STUDENT: Record<string, NativeScreenKey> = {
+  today: 'odk-home',
+  'odk-exams': 'odk-exams',
 };
 
 /**
@@ -90,7 +107,7 @@ function placeholderPhase(role: MobileRole, workspace: MobileProductCode | null)
   if (role === 'ADMIN') return 'WEB';
   // Yön'de bilinmeyen öğe: güvenli taraf, açık web devam yolu.
   if (workspace === 'OK') return 'LATER';
-  if (workspace === 'ODK') return 'M4';
+  if (workspace === 'ODK') return 'LATER';
   return 'M2';
 }
 
@@ -99,8 +116,10 @@ export function resolveNativeScreen(input: { role: MobileRole; workspace: Mobile
   let key: NativeScreenKey | undefined;
   if (role === 'STUDENT' && workspace === 'OD') key = OD_STUDENT[item.id];
   else if (role === 'STUDENT' && workspace === 'OK') key = OK_STUDENT[item.id];
+  else if (role === 'STUDENT' && workspace === 'ODK') key = ODK_STUDENT[item.id];
   if (key) return { key, navId: item.id, title: item.label, webPath: item.webPath };
-  const webOnly = role === 'STUDENT' && ((workspace === 'OD' && OD_WEB_ONLY.has(item.id)) || (workspace === 'OK' && OK_WEB_ONLY.has(item.id)));
+  // Deneme Ligi öğrencisinde eşlenmemiş her öğe bilinçli web devam yoludur.
+  const webOnly = role === 'STUDENT' && ((workspace === 'OD' && OD_WEB_ONLY.has(item.id)) || (workspace === 'OK' && OK_WEB_ONLY.has(item.id)) || workspace === 'ODK');
   const phase = webOnly ? 'LATER' : placeholderPhase(role, workspace);
   return { key: 'placeholder', navId: item.id, title: item.label, webPath: item.webPath, phase };
 }
@@ -112,7 +131,6 @@ export function findNavItem(navigation: { primary: MobileNavItem[]; sections: { 
 
 export const PHASE_COPY: Record<PlannedPhase, string> = {
   M2: 'Bu bölüm onlinedershanem. mobil deneyiminin bir sonraki adımında uygulamaya gelecek.',
-  M4: 'Deneme Ligi ekranları mobil uygulamaya bir sonraki aşamada gelecek. Denemeleri şimdilik web panelinden çözebilirsin.',
   M6: 'Veli ekranları mobil uygulamaya sonraki aşamada gelecek.',
   M7: 'Öğretmen ve koç ekranları mobil uygulamaya sonraki aşamada gelecek.',
   WEB: 'Yönetim işlemleri güvenlik gereği web panelinden yapılır.',

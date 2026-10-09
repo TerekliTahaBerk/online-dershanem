@@ -85,7 +85,7 @@ describe('M1 uygulama akışları', () => {
   it('Deneme Ligi-only öğrenci OD ekranına düşmez', async () => {
     const server = await boot([account('dl@example.com', makeBootstrap({ products: { ODK: 'ACTIVE' } }))]);
     await signIn('dl@example.com');
-    expect(await screen.findByTestId('placeholder-today', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByTestId('odk-home', {}, WAIT)).toBeTruthy();
     expect(server.called('GET', '/api/panel/student/home')).toHaveLength(0);
   });
 

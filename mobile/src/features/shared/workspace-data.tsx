@@ -19,7 +19,7 @@ import { hasNavItem } from '@/navigation/od-targets';
  * - Önbellek yalnız bellektedir (cihaz depolamasına yazılmaz).
  * - Bir ürünün verisi yalnız o ürünün çalışma alanı etkinken istenir.
  */
-export type WorkspaceProduct = Extract<MobileProductCode, 'OD' | 'OK'>;
+export type WorkspaceProduct = Extract<MobileProductCode, 'OD' | 'OK' | 'ODK'>;
 
 export function useWorkspaceKey(product: WorkspaceProduct, resource: string, params?: Record<string, string | number | null>): QueryKey {
   const bootstrap = useReadyBootstrap();
@@ -30,7 +30,7 @@ export function useWorkspaceQuery<T>(
   product: WorkspaceProduct,
   resource: string,
   fetcher: (api: ApiClient, signal: AbortSignal) => Promise<T>,
-  options: { params?: Record<string, string | number | null>; enabled?: boolean } = {},
+  options: { params?: Record<string, string | number | null>; enabled?: boolean; gcTime?: number } = {},
 ) {
   const { api } = useSession();
   const bootstrap = useReadyBootstrap();
@@ -39,6 +39,8 @@ export function useWorkspaceQuery<T>(
     queryKey: queryKeys.workspaceResource(bootstrap.user.id, product, resource, options.params),
     queryFn: ({ signal }) => fetcher(api, signal),
     enabled: active && (options.enabled ?? true),
+    // Hassas kaynaklar (ör. sınav sonucu) kullanılmadığında bellekte daha kısa tutulabilir.
+    ...(options.gcTime !== undefined ? { gcTime: options.gcTime } : {}),
   });
 }
 
