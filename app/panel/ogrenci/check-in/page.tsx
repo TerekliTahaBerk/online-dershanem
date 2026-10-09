@@ -1,13 +1,8 @@
 import { notFound } from "next/navigation";
 import { HandHeart } from "lucide-react";
 import { requireFirstAccessibleProductRole } from "@/lib/auth/guards";
-import { prisma } from "@/lib/prisma";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
-import {
-  studentCheckInWeekEnd,
-  studentCheckInWeekStart,
-  STUDENT_CHECK_IN_WEEKLY_LIMIT,
-} from "@/lib/student-check-in";
+import { loadStudentCheckIn } from "@/lib/panel/student-check-in-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentCheckInForm } from "@/components/panel/student-check-in-form";
 import {
@@ -20,60 +15,10 @@ export const dynamic = "force-dynamic";
 export default async function StudentCheckInPage() {
   const { session } = await requireFirstAccessibleProductRole(["OD", "OK"], "STUDENT");
   if (!getPanelFeatureFlags().studentCheckIn) notFound();
-  const profile = await prisma.studentProfile.findUnique({
-    where: { userId: session.userId },
-    include: {
-      enrollments: {
-        where: { endedAt: null, group: { isActive: true } },
-        include: { group: { select: { id: true, name: true, subject: true } } },
-      },
-      coachAssignments: { where: { endedAt: null }, select: { id: true } },
-      checkIns: {
-        orderBy: { createdAt: "desc" },
-        take: 8,
-        include: {
-          group: { select: { name: true } },
-          helpRequest: {
-            include: {
-              responses: {
-                orderBy: { createdAt: "desc" },
-                take: 1,
-                select: { action: true },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
-  if (!profile) notFound();
-  const weeklyCount = await prisma.studentCheckIn.count({
-    where: {
-      studentId: profile.id,
-      createdAt: {
-        gte: studentCheckInWeekStart(),
-        lt: studentCheckInWeekEnd(),
-      },
-    },
-  });
-  const history = profile.checkIns.map((item) => ({
-    id: item.id,
-    groupName: item.group?.name ?? "Yön Koçluk",
-    energy: item.energy,
-    confidence: item.confidence,
-    barrier: item.barrier,
-    shared: item.shareWithTeacher,
-    createdAt: item.createdAt.toISOString(),
-    request: item.helpRequest
-      ? {
-          id: item.helpRequest.id,
-          status: item.helpRequest.status,
-          version: item.helpRequest.version,
-          helpful: item.helpRequest.helpful,
-          action: item.helpRequest.responses[0]?.action || null,
-        }
-      : null,
-  }));
+  // Okuma `lib/panel/student-check-in-server.ts`'te; mobil uç (`/api/panel/student/check-in`) aynı yükleyiciyi kullanır.
+  const data = await loadStudentCheckIn({ userId: session.userId });
+  if (!data) notFound();
+  const history = data.history.map((item) => ({ ...item, createdAt: item.createdAt.toISOString() }));
   return (
     <PanelShell
       role={session.role}
@@ -94,9 +39,9 @@ export default async function StudentCheckInPage() {
       </header>
       <div className="mt-7">
         <StudentCheckInForm
-          groups={profile.enrollments.length ? profile.enrollments.map((item) => item.group) : profile.coachAssignments.map((item) => ({ id: `coach:${item.id}`, name: "Yön Koçluk", subject: "Koçunla takip" }))}
+          groups={data.targets.map((target) => (target.kind === "GROUP" ? { id: target.groupId, name: target.name, subject: target.subject } : { id: `coach:${target.coachAssignmentId}`, name: target.name, subject: "Koçunla takip" }))}
           history={history}
-          remaining={Math.max(0, STUDENT_CHECK_IN_WEEKLY_LIMIT - weeklyCount)}
+          remaining={data.remaining}
         />
       </div>
     </PanelShell>

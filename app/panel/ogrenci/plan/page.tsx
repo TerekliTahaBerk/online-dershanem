@@ -1,14 +1,13 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { requireFirstAccessibleProductRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentAdaptivePlan } from "@/components/panel/student-adaptive-plan/index";
 import { DinoExplanationAction } from "@/components/panel/dino-explanation-action";
 import { PanelPageHeader, PanelEmpty } from "@/components/panel/ui";
-import { getStudentCoaching } from "@/lib/panel/coaching";
 import { examCountdownCapacity } from "@/lib/adaptive-plan";
-import { KPSS_PRODUCT_CODE, getPlanProductByCode } from "@/lib/kocum/plan-product";
+import { KPSS_PRODUCT_CODE } from "@/lib/kocum/plan-product";
+import { loadStudentPlan } from "@/lib/kocum/student-plan-server";
 import { buildPlanDeterministicReason } from "@/lib/panel/dino-explanations";
 import {
   addIstanbulCalendarDays,
@@ -50,10 +49,9 @@ export default async function StudentPlanPage() {
   );
   if (!getPanelFeatureFlags().adaptivePlan) notFound();
 
-  const profile = await prisma.studentProfile.findUnique({
-    where: { userId: session.userId },
-    include: { planPreference: true },
-  });
+  // Okuma `lib/kocum/student-plan-server.ts`'te; mobil uç (`/api/panel/student/plan`) aynı yükleyiciyi kullanır.
+  const data = await loadStudentPlan({ userId: session.userId, productCode, includeUpcomingOdkExams: true });
+  const profile = data?.profile ?? null;
 
   const shell = (children: React.ReactNode) => (
     <PanelShell
@@ -78,56 +76,7 @@ export default async function StudentPlanPage() {
     );
   }
 
-  const plan = await prisma.weeklyPlan.findFirst({
-    where: { studentId: profile.id },
-    orderBy: { weekStart: "desc" },
-    include: {
-      tasks: { orderBy: [{ scheduledFor: "asc" }, { position: "asc" }] },
-      productRef: { select: { code: true } },
-    },
-  });
-
-  /*
-   * Kapasite seçimi ve plan onayı `StudentAdaptivePlan` içinde.
-   *
-   * Tasarım geçişinde bu sayfa salt okunur bir listeye indirilmişti: öğrenci
-   * uygun günlerini/süresini bildiremiyor, üretilen planı onaylayamıyor,
-   * değişiklik isteyemiyordu. Bileşen ve uçlar
-   * (`/api/panel/adaptive-plan/...`) yerinde duruyordu, yalnız hiçbir sayfadan
-   * render edilmiyordu.
-   */
-  const coaching = await getStudentCoaching(profile.id);
-  const [coachSummary, upcomingExams] = await Promise.all([
-    prisma.weeklyCoachSummary.findFirst({
-      where: { studentId: profile.id, status: "PUBLISHED" },
-      orderBy: { weekStart: "desc" },
-      select: {
-        studentVisibleText: true,
-        strengths: true,
-        focusAreas: true,
-        nextWeekFocus: true,
-      },
-    }),
-    prisma.odkExam.findMany({
-      where: {
-        status: { in: ["SCHEDULED", "LIVE"] },
-        startsAt: {
-          gte: new Date(),
-          lte: addIstanbulCalendarDays(new Date(), 14),
-        },
-        assignments: {
-          some: {
-            studentUserId: session.userId,
-            isActive: true,
-            revokedAt: null,
-          },
-        },
-      },
-      orderBy: { startsAt: "asc" },
-      take: 3,
-      select: { id: true, title: true, startsAt: true },
-    }),
-  ]);
+  const { plan, coaching, coachSummary, upcomingExams, planProduct } = data!;
   const start = plan ? istanbulWeekStart(plan.weekStart) : null;
   const end = start ? addIstanbulCalendarDays(start, 6) : null;
   const flags = getPanelFeatureFlags();
@@ -156,7 +105,6 @@ export default async function StudentPlanPage() {
    * girildiği ürün kodundan. Böylece öğrenciye "koç onayı bekleniyor" arayüzü
    * yalnız gerçekten bir onay bekleyen üründe gösterilir.
    */
-  const planProduct = await getPlanProductByCode(plan ? plan.productRef.code : productCode);
   const requiresApproval = planProduct.requiresPlanApproval;
 
   /*
