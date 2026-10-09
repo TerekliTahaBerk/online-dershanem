@@ -150,3 +150,14 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
 ## MD-18 — Sunum kuralları sunucuda
 
 **Karar.** Okuma modelleri hazır `{ label, tone }`, `state.key`, `nextAction`, metin özetleri taşır (`status-vocabulary`, `student-exam-state`, `yon-today`, `result-next-step`, `trendCaption` benzeri). Mobil enum çevirisi, net hesaplama, durum türetme veya "sıradaki adım" mantığı içermez. Navigasyon etiketleri bootstrap'tan; ekran başlıkları `PANEL_DOMAIN` alt kümesi. Ürün telemetrisi mevcut `POST /api/panel/events` (izin listeli olaylar) ile gönderilir; mobil kaynağı ayırmak gerekirse olay şemasına ek alan ayrı PR'dır.
+
+## MD-19 — Yön (M3) sunum ve kapsam kararları
+
+**Karar.**
+- **Taslak plan:** Mobil, öğrenciye yayınlanmamış (DRAFT) planın görevlerini almaz; yalnız durum ve görev sayısı gelir. Web Planım taslak görevleri salt okunur listeler; mobil daha dar davranır (gizlilik tarafında).
+- **Yön "Çalışmalar":** Yön çalışma alanındaki `assignments` menü öğesi OD ödev ekranına değil, bu haftanın yayında Yön plan görevlerine (`yon-work`) gider; OD ucu çağrılmaz.
+- **Görüşme:** Öğrenciye mobilde yalnız saat değişikliği TALEBİ (`REQUEST`) açılır. Koçun önerdiği yeni saatin onayı (`ACCEPT`) web devam yoluyla yapılır; `SAVE` / `COMPLETE` öğrenciye hiç açılmaz.
+- **Ortak haftalık özet (Yön):** `WeeklyDigest` uçları OD üyeliği ister (mevcut politika). Yön "Haftalık" ekranı ortak özeti yalnız öğrencinin aktif OD üyeliği varken ister; yayınlanmış koç özeti (`WeeklyCoachSummary`) ayrı başlıkla gösterilir. Politika genişletilmedi.
+- **Check-in:** OD ve Yön için tek native ekran; sunucu kuralları (OD grubu öncelikli, grubu yoksa koç ataması; haftalık hak; açık yardım isteği tekilliği) değişmedi.
+- **Test politikası (M3):** Kullanıcı talimatıyla M3'te YENİ test yazılmadı; yalnız mevcut paketler koşuldu. M3'ün bilinçli olarak değiştirdiği davranışa (Yön yer tutucusu → Yön ekranları, check-in yer tutucusu → native ekran) dayanan mevcut beklentiler güncellendi.
+

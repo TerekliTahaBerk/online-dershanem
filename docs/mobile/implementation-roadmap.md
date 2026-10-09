@@ -82,6 +82,8 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
 
 ## M3 — Yön Koçluk deneyimi (öğrenci)
 
+> **Durum: uygulandı.** [m3-implementation-report.md](./m3-implementation-report.md), [m3-api-contracts.md](./m3-api-contracts.md), [m3-screen-migration.md](./m3-screen-migration.md), [m3-security-review.md](./m3-security-review.md), [m3-test-results.md](./m3-test-results.md). M4 girdisi: [m4-handoff.md](./m4-handoff.md).
+
 **Bağımlılıklar.** M1; M2'deki liste/satır primitives. Ön koşul doğrulama: Yön Bugün görev işaretlemesinin `adaptivePlan` kapalıyken web'deki davranışı (audit §2.4 notu).
 
 **Teslimatlar.**
