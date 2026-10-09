@@ -56,6 +56,8 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
 
 ## M2 — OD öğrenci deneyimi
 
+> **Durum: uygulandı.** [m2-implementation-report.md](./m2-implementation-report.md), [m2-screen-migration.md](./m2-screen-migration.md), [m2-test-results.md](./m2-test-results.md). M3 girdisi: [m3-handoff.md](./m3-handoff.md).
+
 **Bağımlılıklar.** M1 (bootstrap, kabuk, primitives).
 
 **Teslimatlar.**

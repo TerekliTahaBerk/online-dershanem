@@ -19,9 +19,9 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
 | MD-13 | Çevrimdışı: v1 salt okuma önbelleği; çevrimdışı mutasyon kuyruğu M8 | Öneri |
 | MD-14 | Derin bağlantı: özel şema v1, universal/app link M8 | Kısmen (M1) |
 | MD-15 | Test: jest-expo + RNTL (M1), E2E (Maestro) M9 | Kısmen (M1) |
-| MD-16 | Şablon artıkları ve yalnız-mobil eski uçların emekliliği | Kısmen (M1) |
+| MD-16 | Şablon artıkları ve yalnız-mobil eski uçların emekliliği | Kısmen (M1; M2: yeni ekran `student/progress` kullanmaz, uç eski sürümler için korunur) |
 | MD-17 | Expo web hedefi desteklenmez | Uygulandı (M1) |
-| MD-18 | Durum etiketleri ve metinler sunucudan; mobil iş kuralı tutmaz | Uygulandı (M1) |
+| MD-18 | Durum etiketleri ve metinler sunucudan; mobil iş kuralı tutmaz | Uygulandı (M1, M2: web sayfası + JSON ucu ortak yükleyici) |
 
 ---
 
