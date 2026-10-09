@@ -14,6 +14,8 @@ import type { MobileNavItem } from '@contracts/bootstrap';
 export type NativeTarget =
   | { kind: 'tab'; slot: 0 | 1 | 2 | 3; navId: string }
   | { kind: 'screen'; navId: string }
+  /** OD detay rotası (`/od/...`); yalnız yetkili menü öğesi varken üretilir. */
+  | { kind: 'detail'; href: string }
   | { kind: 'notifications' }
   | { kind: 'none' };
 
@@ -36,6 +38,23 @@ export function targetForNavId(navigation: Navigation, navId: string): NativeTar
   return exists ? { kind: 'screen', navId } : { kind: 'none' };
 }
 
+const navHas = (navigation: Navigation, navId: string) => [...navigation.primary, ...navigation.sections.flatMap((section) => section.items)].some((item) => item.id === navId);
+
+/**
+ * Öğrenci OD detay yolları (web) → native detay. Ders detayı yalnız "Dersler",
+ * tekrar/telafi yalnız "Tekrar ve telafi" menüde varken açılır. Sorgu dizesi
+ * (ör. `?lessonId=`) zaten atılmıştır; telafi sekmesi yine doğru açılır.
+ */
+function mapOdDetailPath(path: string, navigation: Navigation): NativeTarget | null {
+  const lesson = /^\/panel\/ogrenci\/takvim\/([\w-]{1,64})$/.exec(path);
+  if (lesson) return navHas(navigation, 'lessons') ? { kind: 'detail', href: `/od/lesson/${lesson[1]}` } : { kind: 'none' };
+  if (path === '/panel/ogrenci/tekrar' || path === '/panel/ogrenci/telafi') {
+    if (!navHas(navigation, 'review-recovery')) return { kind: 'none' };
+    return { kind: 'detail', href: `/od/review-recovery?tab=${path.endsWith('telafi') ? 'telafi' : 'tekrar'}` };
+  }
+  return null;
+}
+
 /** Bildirim href'i → yetkili native hedef. Eşleşme yoksa `none` (liste ekranında kalınır). */
 export function mapNotificationHref(href: string | null | undefined, navigation: Navigation | null): NativeTarget {
   const path = normalizeWebPath(href);
@@ -44,7 +63,8 @@ export function mapNotificationHref(href: string | null | undefined, navigation:
   if (!navigation) return { kind: 'none' };
   const items = [...navigation.primary, ...navigation.sections.flatMap((section) => section.items)];
   const exact = items.find((item) => normalizeWebPath(item.webPath) === path);
-  return exact ? targetForNavId(navigation, exact.id) : { kind: 'none' };
+  if (exact) return targetForNavId(navigation, exact.id);
+  return mapOdDetailPath(path, navigation) ?? { kind: 'none' };
 }
 
 export function expoHrefFor(target: NativeTarget): string | null {
@@ -53,6 +73,8 @@ export function expoHrefFor(target: NativeTarget): string | null {
       return target.slot === 0 ? '/' : `/slot-${target.slot}`;
     case 'screen':
       return `/screen/${encodeURIComponent(target.navId)}`;
+    case 'detail':
+      return target.href;
     case 'notifications':
       return '/notifications';
     case 'none':
@@ -61,7 +83,7 @@ export function expoHrefFor(target: NativeTarget): string | null {
 }
 
 /** İzinli native rota önekleri (derin bağlantılar). Diğer her şey ana ekrana düşer. */
-const ALLOWED_DEEP_LINK = /^\/(?:$|slot-[1-3]$|menu$|notifications$|account(?:\/(?:sessions|password))?$|screen\/[\w-]{1,64}$|forgot-password$)/;
+const ALLOWED_DEEP_LINK = /^\/(?:$|slot-[1-3]$|menu$|notifications$|account(?:\/(?:sessions|password))?$|screen\/[\w-]{1,64}$|od\/(?:lesson|assignment)\/[\w-]{1,64}$|od\/review-recovery$|forgot-password$)/;
 
 /**
  * Sistemden gelen yol (`onlinedershanem://...`) → güvenli uygulama yolu.

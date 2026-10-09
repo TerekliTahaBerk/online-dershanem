@@ -45,6 +45,10 @@ export function makeBootstrap(options: {
   mfa?: { enrolled: boolean; totp: boolean; recoveryCodes: boolean; passkey: boolean };
   minSupportedVersion?: string | null;
   unread?: number;
+  /** Sunucu `PanelFeatureFlags` (yalnız verilenler; diğerleri false). */
+  flags?: Record<string, boolean>;
+  /** Menüye eklenecek öğeler (sunucunun bayrakla eklediği gibi): [id, etiket, webPath]. */
+  extraNav?: [string, string, string][];
 } = {}): MobileBootstrap {
   const role = options.role ?? 'STUDENT';
   const gate = options.gate ?? 'READY';
@@ -71,8 +75,8 @@ export function makeBootstrap(options: {
             products,
             activeProduct,
             selectionRequired: activeProduct === null && products.filter((product) => product.state === 'ACTIVE').length > 1,
-            navigation: { primary, sections: [{ id: 'more', title: 'DAHA FAZLA', items: toItems(nav.sections) }] },
-            flags: { assignmentEvidence: false },
+            navigation: { primary, sections: [{ id: 'more', title: 'DAHA FAZLA', items: toItems([...nav.sections, ...(options.extraNav ?? [])]) }] },
+            flags: { assignmentEvidence: false, ...options.flags },
             capabilities: { staffPermissions: role === 'TEACHER' ? ['od:lesson:teach'] : [] },
             parent: role === 'PARENT' ? { children: [{ studentId: 'sp-1', name: 'Can' }] } : null,
             unreadNotifications: options.unread ?? 0,

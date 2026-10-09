@@ -1,6 +1,7 @@
 import { makeBootstrap } from '@/test/fixtures';
 
 import { findNavItem, resolveNativeScreen } from './native-screens';
+import { hrefForOdTarget } from './od-targets';
 import { expoHrefFor, mapNotificationHref, normalizeWebPath, sanitizeIncomingPath, targetForNavId } from './route-map';
 
 const item = (id: string, webPath = `/panel/x/${id}`) => ({ id, label: id, webPath });
@@ -76,5 +77,67 @@ describe('bildirim ve derin bağlantı eşlemesi', () => {
     expect(sanitizeIncomingPath('onlinedershanem://panel/yonetim')).toBe('/');
     expect(sanitizeIncomingPath('onlinedershanem://screen/../../etc')).toBe('/');
     expect(sanitizeIncomingPath('onlinedershanem://reset?token=secret')).toBe('/');
+  });
+});
+
+describe('M2 OD menü denetimi ve hedefler', () => {
+  const nav = (ids: string[]) => ({ primary: ids.slice(0, 4).map((id) => item(id)), sections: [{ items: ids.slice(4).map((id) => item(id)) }] });
+
+  it('OD menüsündeki her öğe native ekrana ya da açık web devam yoluna gider (ölü bağlantı yok)', () => {
+    const native: Record<string, string> = {
+      today: 'od-home',
+      assignments: 'od-assignments',
+      lessons: 'od-lessons',
+      materials: 'od-materials',
+      analiz: 'od-progress',
+      'review-recovery': 'od-review-recovery',
+      'weekly-digest': 'od-weekly-digest',
+      'mock-exams': 'external-mock-exams',
+    };
+    for (const [id, key] of Object.entries(native)) expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OD', item: item(id) }).key).toBe(key);
+    for (const id of ['check-in', 'dino', 'progress']) {
+      expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OD', item: item(id) })).toMatchObject({ key: 'placeholder', phase: 'LATER' });
+    }
+  });
+
+  it('Yön çalışma alanındaki tekrar/özet öğeleri OD ekranına düşmez', () => {
+    expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OK', item: item('weekly-digest') }).key).toBe('placeholder');
+    expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OK', item: item('review-recovery') }).key).toBe('placeholder');
+    expect(resolveNativeScreen({ role: 'PARENT', workspace: 'OD', item: item('weekly-digest') }).key).toBe('placeholder');
+  });
+
+  it('sunucu hedefi yalnız yetkili menü öğesi varsa native rotaya çevrilir', () => {
+    const full = nav(['today', 'assignments', 'lessons', 'analiz', 'materials', 'review-recovery']);
+    expect(hrefForOdTarget({ type: 'lesson', lessonId: 'l1' }, full)).toBe('/od/lesson/l1');
+    expect(hrefForOdTarget({ type: 'assignment', assignmentId: 'a1' }, full)).toBe('/od/assignment/a1');
+    expect(hrefForOdTarget({ type: 'assignments' }, full)).toBe('/slot-1');
+    expect(hrefForOdTarget({ type: 'lessons' }, full)).toBe('/slot-2');
+    expect(hrefForOdTarget({ type: 'review' }, full)).toBe('/od/review-recovery?tab=tekrar');
+    expect(hrefForOdTarget({ type: 'recovery', lessonId: 'l9' }, full)).toBe('/od/review-recovery?tab=telafi&lessonId=l9');
+    expect(hrefForOdTarget({ type: 'none' }, full)).toBeNull();
+    const minimal = nav(['today', 'assignments']);
+    expect(hrefForOdTarget({ type: 'lesson', lessonId: 'l1' }, minimal)).toBeNull();
+    expect(hrefForOdTarget({ type: 'review' }, minimal)).toBeNull();
+    expect(hrefForOdTarget({ type: 'lesson', lessonId: '../x' }, full)).toBeNull();
+    expect(hrefForOdTarget({ type: 'recovery', lessonId: '../x' }, full)).toBe('/od/review-recovery?tab=telafi');
+    expect(hrefForOdTarget({ type: 'lesson', lessonId: 'l1' }, null)).toBeNull();
+  });
+
+  it('bildirim: ders detayı ve tekrar/telafi web yolları yalnız yetkili menüyle native detaya eşlenir', () => {
+    const full = nav(['today', 'assignments', 'lessons', 'analiz', 'review-recovery']);
+    expect(mapNotificationHref('/panel/ogrenci/takvim/l1', full)).toEqual({ kind: 'detail', href: '/od/lesson/l1' });
+    expect(mapNotificationHref('/panel/ogrenci/telafi?lessonId=l1', full)).toEqual({ kind: 'detail', href: '/od/review-recovery?tab=telafi' });
+    expect(mapNotificationHref('/panel/ogrenci/tekrar', full)).toEqual({ kind: 'detail', href: '/od/review-recovery?tab=tekrar' });
+    expect(mapNotificationHref('/panel/ogrenci/takvim/l1', nav(['today', 'assignments']))).toEqual({ kind: 'none' });
+    expect(mapNotificationHref('/panel/ogrenci/takvim/../x', full)).toEqual({ kind: 'none' });
+    expect(expoHrefFor({ kind: 'detail', href: '/od/lesson/l1' })).toBe('/od/lesson/l1');
+  });
+
+  it('derin bağlantı: OD detay rotaları izinli, yol hileleri reddedilir', () => {
+    expect(sanitizeIncomingPath('onlinedershanem://od/lesson/abc')).toBe('/od/lesson/abc');
+    expect(sanitizeIncomingPath('onlinedershanem://od/assignment/abc?token=x')).toBe('/od/assignment/abc');
+    expect(sanitizeIncomingPath('onlinedershanem://od/review-recovery?tab=telafi')).toBe('/od/review-recovery');
+    expect(sanitizeIncomingPath('onlinedershanem://od/lesson/../../account')).toBe('/');
+    expect(sanitizeIncomingPath('onlinedershanem://od/mock-exam/x')).toBe('/');
   });
 });

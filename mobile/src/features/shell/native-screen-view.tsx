@@ -8,6 +8,8 @@ import OdHomeScreen from '@/features/od/od-home';
 import OdLessonsScreen from '@/features/od/od-lessons';
 import OdMaterialsScreen from '@/features/od/od-materials';
 import OdProgressScreen from '@/features/od/od-progress';
+import OdReviewRecoveryScreen from '@/features/od/od-review-recovery';
+import OdWeeklyDigestScreen from '@/features/od/od-weekly-digest';
 import OkGoalsScreen from '@/features/ok/ok-goals';
 import ExternalMockExamsScreen from '@/features/shared/external-mock-exams';
 import type { NativeScreen, NativeScreenKey } from '@/navigation/native-screens';
@@ -15,8 +17,9 @@ import type { NativeScreen, NativeScreenKey } from '@/navigation/native-screens'
 import { PlaceholderScreen } from './placeholder-screen';
 
 /**
- * M1'de korunan ekranlar (M2–M4'te yeniden yazılacak) yalnız ait oldukları
- * çalışma alanında, sunucu menüsü onları içerdiğinde açılır.
+ * Native ekranlar yalnız ait oldukları çalışma alanında, sunucu menüsü onları
+ * içerdiğinde açılır. OD ekranları M2'de yeni mimariye taşındı; `ok-goals`
+ * (Yön) M1'den korunan eski ekrandır (M3).
  */
 const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElement> = {
   'od-home': () => <OdHomeScreen />,
@@ -24,12 +27,12 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'od-assignments': () => <OdAssignmentsScreen />,
   'od-materials': () => <OdMaterialsScreen />,
   'od-progress': () => <OdProgressScreen />,
+  'od-review-recovery': () => <OdReviewRecoveryScreen />,
+  'od-weekly-digest': () => <OdWeeklyDigestScreen />,
   'external-mock-exams': () => <ExternalMockExamsScreen />,
   'ok-goals': () => <OkGoalsScreen />,
 };
 
-/** Eskiden yığın (başlıklı) ekran olan ve üst güvenli alanı kendisi bırakmayanlar. */
-const NEEDS_TOP_INSET_IN_TAB: ReadonlySet<NativeScreenKey> = new Set(['od-materials', 'od-progress', 'external-mock-exams', 'ok-goals']);
 
 export function NativeScreenView({ screen, context }: { screen: NativeScreen; context: 'tab' | 'stack' }) {
   const insets = useSafeAreaInsets();
@@ -41,9 +44,9 @@ export function NativeScreenView({ screen, context }: { screen: NativeScreen; co
     );
   }
   const content = SCREENS[screen.key]();
-  if (context === 'tab' && NEEDS_TOP_INSET_IN_TAB.has(screen.key)) {
-    return <View style={[styles.flex, { paddingTop: insets.top }]}>{content}</View>;
-  }
+  // Sekmede başlık çubuğu yok: ekranlar (`Screen`) üst güvenli alanı kendisi
+  // bırakmaz; yığında başlık çubuğu bırakır.
+  if (context === 'tab') return <View style={[styles.flex, { paddingTop: insets.top }]}>{content}</View>;
   return content;
 }
 

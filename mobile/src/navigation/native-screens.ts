@@ -18,11 +18,13 @@ export type NativeScreenKey =
   | 'od-assignments'
   | 'od-materials'
   | 'od-progress'
+  | 'od-review-recovery'
+  | 'od-weekly-digest'
   | 'external-mock-exams'
   | 'ok-goals'
   | 'placeholder';
 
-export type PlannedPhase = 'M2' | 'M3' | 'M4' | 'M6' | 'M7' | 'WEB';
+export type PlannedPhase = 'M2' | 'M3' | 'M4' | 'M6' | 'M7' | 'WEB' | 'LATER';
 
 export type NativeScreen = {
   key: NativeScreenKey;
@@ -38,10 +40,19 @@ const OD_STUDENT: Record<string, NativeScreenKey> = {
   lessons: 'od-lessons',
   assignments: 'od-assignments',
   materials: 'od-materials',
-  progress: 'od-progress',
   analiz: 'od-progress',
   'mock-exams': 'external-mock-exams',
+  'review-recovery': 'od-review-recovery',
+  'weekly-digest': 'od-weekly-digest',
 };
+
+/**
+ * OD menüsünde olup M2'de bilinçli olarak native olmayan öğeler (açık
+ * web devam yolu): `check-in` (OD + Yön ortak form; Yön tarafı M3),
+ * `dino` (Dino AI, ayrı karar), `progress` (yalnız `progressInsights`
+ * KAPALIYKEN menüde; eski "Gelişim" — yeni ekran eski ucu kullanmaz).
+ */
+const OD_WEB_ONLY: ReadonlySet<string> = new Set(['check-in', 'dino', 'progress']);
 
 const OK_STUDENT: Record<string, NativeScreenKey> = {
   goals: 'ok-goals',
@@ -64,7 +75,8 @@ export function resolveNativeScreen(input: { role: MobileRole; workspace: Mobile
   if (role === 'STUDENT' && workspace === 'OD') key = OD_STUDENT[item.id];
   else if (role === 'STUDENT' && workspace === 'OK') key = OK_STUDENT[item.id];
   if (key) return { key, navId: item.id, title: item.label, webPath: item.webPath };
-  return { key: 'placeholder', navId: item.id, title: item.label, webPath: item.webPath, phase: placeholderPhase(role, workspace) };
+  const phase = role === 'STUDENT' && workspace === 'OD' && OD_WEB_ONLY.has(item.id) ? 'LATER' : placeholderPhase(role, workspace);
+  return { key: 'placeholder', navId: item.id, title: item.label, webPath: item.webPath, phase };
 }
 
 /** Navigasyondan id ile öğe bulur (önce birincil, sonra bölümler). */
@@ -79,4 +91,5 @@ export const PHASE_COPY: Record<PlannedPhase, string> = {
   M6: 'Veli ekranları mobil uygulamaya sonraki aşamada gelecek.',
   M7: 'Öğretmen ve koç ekranları mobil uygulamaya sonraki aşamada gelecek.',
   WEB: 'Yönetim işlemleri güvenlik gereği web panelinden yapılır.',
+  LATER: 'Bu bölüm mobil uygulamada henüz yok. Web panelinden kullanmaya devam edebilirsin.',
 };

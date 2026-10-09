@@ -9,6 +9,7 @@ import { ApiError } from '@/lib/api/errors';
 import { deriveAppState, type AppState } from '@/lib/auth/app-state';
 import { createGateRefreshPolicy } from '@/lib/auth/gate-refresh';
 import { tokenStore } from '@/lib/auth/token-store';
+import { clearMaterialFiles } from '@/lib/files/material-files';
 import { queryKeys, sessionKeyFor } from '@/lib/query/keys';
 import { createQueryClient, wireQueryEnvironment } from '@/lib/query/query-client';
 
@@ -100,6 +101,8 @@ export function SessionProvider({ children, queryClient: injectedClient }: Props
     gatePolicy.current.reset();
     await tokenStore.clear();
     queryClient.clear();
+    // Kimlikli indirilmiş materyaller önbellekten silinir (sonraki hesaba kalmaz).
+    clearMaterialFiles();
   }
 
   expireRef.current = () => {
@@ -115,6 +118,7 @@ export function SessionProvider({ children, queryClient: injectedClient }: Props
     try {
       // Önceki hesaptan kalabilecek her şey yeni kimlik açılmadan silinir.
       queryClient.clear();
+      clearMaterialFiles();
       const { token: newToken } = await endpoints.login(api, email, password);
       await tokenStore.write(newToken);
       tokenRef.current = newToken;

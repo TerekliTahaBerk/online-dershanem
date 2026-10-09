@@ -21,6 +21,9 @@ export default function AppLayout() {
       <Stack.Screen name="account/index" options={{ title: 'Hesap ve ayarlar' }} />
       <Stack.Screen name="account/sessions" options={{ title: 'Oturumlar' }} />
       <Stack.Screen name="account/password" options={{ title: 'Parola' }} />
+      <Stack.Screen name="od/assignment/[id]" options={{ title: 'Çalışma' }} />
+      <Stack.Screen name="od/lesson/[id]" options={{ title: 'Ders' }} />
+      <Stack.Screen name="od/review-recovery" options={{ title: 'Tekrar ve telafi' }} />
     </Stack>
   );
 }
