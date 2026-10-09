@@ -162,7 +162,7 @@ describe('M2.2 Çalışmalar', () => {
   it('Yön çalışma alanında OD çalışma detayı (derin bağlantı) açılmaz; OD ucu çağrılmaz', async () => {
     const h = await boot([account('yon@example.com', makeBootstrap({ products: { OK: 'ACTIVE' } }))]);
     await signIn(h, 'yon@example.com');
-    await h.screen.findByTestId('placeholder-today', {}, WAIT);
+    await h.screen.findByTestId('yon-today', {}, WAIT);
     await go('/od/assignment/a-1');
     expect(await h.screen.findByText('Bu bölüm bu çalışma alanında yok', {}, WAIT)).toBeTruthy();
     expect(h.server.called('GET', '/api/panel/assignments')).toHaveLength(0);

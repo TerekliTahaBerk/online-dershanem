@@ -74,7 +74,7 @@ describe('M2.1 OD Bugün', () => {
     ]);
     await signIn(h, 'ada@example.com');
     await press(h, await h.screen.findByTestId('od-other-OK', {}, WAIT));
-    expect(await h.screen.findByTestId('placeholder-today', {}, WAIT)).toBeTruthy();
+    expect(await h.screen.findByTestId('yon-today', {}, WAIT)).toBeTruthy();
     expect(h.server.called('POST', '/api/panel/active-product')[0].body).toEqual({ product: 'OK' });
   });
 

@@ -15,10 +15,10 @@ describe('native ekran eşlemesi (rol + çalışma alanı + menü kimliği)', ()
     expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OD', item: item('analiz') }).key).toBe('od-progress');
   });
 
-  it('Yön öğrencisi OD ekranlarına DÜŞMEZ; Bugün ve Çalışmalar yer tutucu (M3), Hedefler korunur', () => {
-    expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OK', item: item('today') })).toMatchObject({ key: 'placeholder', phase: 'M3' });
-    expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OK', item: item('assignments') })).toMatchObject({ key: 'placeholder', phase: 'M3' });
-    expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OK', item: item('goals') }).key).toBe('ok-goals');
+  it('Yön öğrencisi OD ekranlarına DÜŞMEZ; Bugün, Çalışmalar ve Hedefler Yön ekranlarıdır (M3)', () => {
+    expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OK', item: item('today') }).key).toBe('yon-today');
+    expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OK', item: item('assignments') }).key).toBe('yon-work');
+    expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OK', item: item('goals') }).key).toBe('yon-goals');
   });
 
   it('Deneme Ligi öğrencisi OD ekranlarına DÜŞMEZ (M4 yer tutucu)', () => {
@@ -93,15 +93,16 @@ describe('M2 OD menü denetimi ve hedefler', () => {
       'review-recovery': 'od-review-recovery',
       'weekly-digest': 'od-weekly-digest',
       'mock-exams': 'external-mock-exams',
+      'check-in': 'check-in',
     };
     for (const [id, key] of Object.entries(native)) expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OD', item: item(id) }).key).toBe(key);
-    for (const id of ['check-in', 'dino', 'progress']) {
+    for (const id of ['dino', 'progress']) {
       expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OD', item: item(id) })).toMatchObject({ key: 'placeholder', phase: 'LATER' });
     }
   });
 
   it('Yön çalışma alanındaki tekrar/özet öğeleri OD ekranına düşmez', () => {
-    expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OK', item: item('weekly-digest') }).key).toBe('placeholder');
+    expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OK', item: item('weekly-digest') }).key).toBe('yon-weekly');
     expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OK', item: item('review-recovery') }).key).toBe('placeholder');
     expect(resolveNativeScreen({ role: 'PARENT', workspace: 'OD', item: item('weekly-digest') }).key).toBe('placeholder');
   });

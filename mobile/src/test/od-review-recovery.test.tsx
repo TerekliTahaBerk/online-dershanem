@@ -98,7 +98,7 @@ describe('M2.6 Tekrar, telafi ve kalan OD menüsü', () => {
     expect(h.server.called('GET', '/api/panel/student/recovery')).toHaveLength(0);
   });
 
-  it('haftalık özet gösterilir ve geri bildirim sunucuya yazılır; check-in ve Dino AI açık web devam yolu sunar (kırık ekran yok)', async () => {
+  it('haftalık özet gösterilir ve geri bildirim sunucuya yazılır; check-in native ekran açar (kırık ekran yok)', async () => {
     const bootstrap = makeBootstrap({
       flags: { parentWeeklyDigest: true, studentCheckIn: true },
       extraNav: [
@@ -122,8 +122,8 @@ describe('M2.6 Tekrar, telafi ve kalan OD menüsü', () => {
     await press(h, digest.getByTestId('digest-helpful'));
     expect(await digest.findByText('Geri bildirimin kaydedildi.', {}, WAIT)).toBeTruthy();
     expect(h.server.called('POST', '/api/panel/weekly-digests/wd-1/feedback')[0].body).toEqual({ helpful: true, anxietyPulse: null });
+    // M3: check-in artık OD + Yön ortak native ekran.
     await go('/screen/check-in');
-    const placeholder = within(await h.screen.findByTestId('placeholder-check-in', {}, WAIT));
-    expect(placeholder.getByText('Bu bölüm mobil uygulamada henüz yok. Web panelinden kullanmaya devam edebilirsin.')).toBeTruthy();
+    expect(await h.screen.findByTestId('check-in', {}, WAIT)).toBeTruthy();
   });
 });

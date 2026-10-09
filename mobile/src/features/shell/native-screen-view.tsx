@@ -10,16 +10,22 @@ import OdMaterialsScreen from '@/features/od/od-materials';
 import OdProgressScreen from '@/features/od/od-progress';
 import OdReviewRecoveryScreen from '@/features/od/od-review-recovery';
 import OdWeeklyDigestScreen from '@/features/od/od-weekly-digest';
-import OkGoalsScreen from '@/features/ok/ok-goals';
+import CheckInScreen from '@/features/shared/check-in';
 import ExternalMockExamsScreen from '@/features/shared/external-mock-exams';
+import YonCoachingScreen from '@/features/yon/yon-coaching';
+import YonGoalsScreen from '@/features/yon/yon-goals';
+import YonPlanScreen from '@/features/yon/yon-plan';
+import YonTodayScreen from '@/features/yon/yon-today';
+import YonWeeklyScreen from '@/features/yon/yon-weekly';
+import YonWorkScreen from '@/features/yon/yon-work';
 import type { NativeScreen, NativeScreenKey } from '@/navigation/native-screens';
 
 import { PlaceholderScreen } from './placeholder-screen';
 
 /**
  * Native ekranlar yalnız ait oldukları çalışma alanında, sunucu menüsü onları
- * içerdiğinde açılır. OD ekranları M2'de yeni mimariye taşındı; `ok-goals`
- * (Yön) M1'den korunan eski ekrandır (M3).
+ * içerdiğinde açılır. OD ekranları M2'de, Yön ekranları ve ortak check-in
+ * M3'te yeni mimariye taşındı; eski (legacy) ekran kalmadı.
  */
 const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElement> = {
   'od-home': () => <OdHomeScreen />,
@@ -30,7 +36,13 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'od-review-recovery': () => <OdReviewRecoveryScreen />,
   'od-weekly-digest': () => <OdWeeklyDigestScreen />,
   'external-mock-exams': () => <ExternalMockExamsScreen />,
-  'ok-goals': () => <OkGoalsScreen />,
+  'check-in': () => <CheckInScreen />,
+  'yon-today': () => <YonTodayScreen />,
+  'yon-work': () => <YonWorkScreen />,
+  'yon-coaching': () => <YonCoachingScreen />,
+  'yon-plan': () => <YonPlanScreen />,
+  'yon-goals': () => <YonGoalsScreen />,
+  'yon-weekly': () => <YonWeeklyScreen />,
 };
 
 

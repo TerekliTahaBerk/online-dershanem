@@ -21,10 +21,16 @@ export type NativeScreenKey =
   | 'od-review-recovery'
   | 'od-weekly-digest'
   | 'external-mock-exams'
-  | 'ok-goals'
+  | 'check-in'
+  | 'yon-today'
+  | 'yon-work'
+  | 'yon-coaching'
+  | 'yon-plan'
+  | 'yon-goals'
+  | 'yon-weekly'
   | 'placeholder';
 
-export type PlannedPhase = 'M2' | 'M3' | 'M4' | 'M6' | 'M7' | 'WEB' | 'LATER';
+export type PlannedPhase = 'M2' | 'M4' | 'M6' | 'M7' | 'WEB' | 'LATER';
 
 export type NativeScreen = {
   key: NativeScreenKey;
@@ -44,27 +50,46 @@ const OD_STUDENT: Record<string, NativeScreenKey> = {
   'mock-exams': 'external-mock-exams',
   'review-recovery': 'od-review-recovery',
   'weekly-digest': 'od-weekly-digest',
+  // OD + Yön ORTAK check-in (M3): tek ekran, sunucu kuralları değişmedi.
+  'check-in': 'check-in',
 };
 
 /**
- * OD menüsünde olup M2'de bilinçli olarak native olmayan öğeler (açık
- * web devam yolu): `check-in` (OD + Yön ortak form; Yön tarafı M3),
- * `dino` (Dino AI, ayrı karar), `progress` (yalnız `progressInsights`
- * KAPALIYKEN menüde; eski "Gelişim" — yeni ekran eski ucu kullanmaz).
+ * OD menüsünde olup bilinçli olarak native olmayan öğeler (açık web devam
+ * yolu): `dino` (Dino AI, ayrı karar), `progress` (yalnız
+ * `progressInsights` KAPALIYKEN menüde; eski "Gelişim").
  */
-const OD_WEB_ONLY: ReadonlySet<string> = new Set(['check-in', 'dino', 'progress']);
+const OD_WEB_ONLY: ReadonlySet<string> = new Set(['dino', 'progress']);
 
+/**
+ * Yön (OK) öğrencisi — M3. `assignments` Yön'de OD ödev ekranına DEĞİL,
+ * Yön plan görevlerinin listesine (`yon-work`) gider.
+ */
 const OK_STUDENT: Record<string, NativeScreenKey> = {
-  goals: 'ok-goals',
+  today: 'yon-today',
+  assignments: 'yon-work',
+  coaching: 'yon-coaching',
+  plan: 'yon-plan',
+  goals: 'yon-goals',
+  'check-in': 'check-in',
+  'weekly-digest': 'yon-weekly',
   // Dış deneme ucu OD veya Yön üyeliğini kabul eder (`requireApiAnyProductRole(["OD","OK"])`).
   'mock-exams': 'external-mock-exams',
 };
+
+/**
+ * Yön menüsünde olup native olmayan öğeler (açık web devam yolu):
+ * `analiz` / `progress` (akademik gidişat OD verisine dayanır — OD
+ * çalışma alanında native), `dino` (ayrı karar).
+ */
+const OK_WEB_ONLY: ReadonlySet<string> = new Set(['analiz', 'progress', 'dino']);
 
 function placeholderPhase(role: MobileRole, workspace: MobileProductCode | null): PlannedPhase {
   if (role === 'PARENT') return 'M6';
   if (role === 'TEACHER') return 'M7';
   if (role === 'ADMIN') return 'WEB';
-  if (workspace === 'OK') return 'M3';
+  // Yön'de bilinmeyen öğe: güvenli taraf, açık web devam yolu.
+  if (workspace === 'OK') return 'LATER';
   if (workspace === 'ODK') return 'M4';
   return 'M2';
 }
@@ -75,7 +100,8 @@ export function resolveNativeScreen(input: { role: MobileRole; workspace: Mobile
   if (role === 'STUDENT' && workspace === 'OD') key = OD_STUDENT[item.id];
   else if (role === 'STUDENT' && workspace === 'OK') key = OK_STUDENT[item.id];
   if (key) return { key, navId: item.id, title: item.label, webPath: item.webPath };
-  const phase = role === 'STUDENT' && workspace === 'OD' && OD_WEB_ONLY.has(item.id) ? 'LATER' : placeholderPhase(role, workspace);
+  const webOnly = role === 'STUDENT' && ((workspace === 'OD' && OD_WEB_ONLY.has(item.id)) || (workspace === 'OK' && OK_WEB_ONLY.has(item.id)));
+  const phase = webOnly ? 'LATER' : placeholderPhase(role, workspace);
   return { key: 'placeholder', navId: item.id, title: item.label, webPath: item.webPath, phase };
 }
 
@@ -86,7 +112,6 @@ export function findNavItem(navigation: { primary: MobileNavItem[]; sections: { 
 
 export const PHASE_COPY: Record<PlannedPhase, string> = {
   M2: 'Bu bölüm onlinedershanem. mobil deneyiminin bir sonraki adımında uygulamaya gelecek.',
-  M3: 'Yön Koçluk ekranları mobil uygulamaya bir sonraki aşamada gelecek.',
   M4: 'Deneme Ligi ekranları mobil uygulamaya bir sonraki aşamada gelecek. Denemeleri şimdilik web panelinden çözebilirsin.',
   M6: 'Veli ekranları mobil uygulamaya sonraki aşamada gelecek.',
   M7: 'Öğretmen ve koç ekranları mobil uygulamaya sonraki aşamada gelecek.',

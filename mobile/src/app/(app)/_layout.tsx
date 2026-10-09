@@ -24,6 +24,7 @@ export default function AppLayout() {
       <Stack.Screen name="od/assignment/[id]" options={{ title: 'Çalışma' }} />
       <Stack.Screen name="od/lesson/[id]" options={{ title: 'Ders' }} />
       <Stack.Screen name="od/review-recovery" options={{ title: 'Tekrar ve telafi' }} />
+      <Stack.Screen name="yon/task/[id]" options={{ title: 'Görev' }} />
     </Stack>
   );
 }

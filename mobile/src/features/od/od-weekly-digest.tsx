@@ -10,7 +10,8 @@ import { ApiError } from '@/lib/api/errors';
 import { useSession } from '@/lib/auth/session-provider';
 import { formatDayMonth } from '@/lib/format/istanbul';
 
-import { QueryView, useInvalidateOd, useOdQuery, usePullToRefresh } from './shared';
+import { useInvalidateWorkspace, type WorkspaceProduct } from '../shared/workspace-data';
+import { QueryView, useOdQuery, usePullToRefresh } from './shared';
 
 /**
  * OD · HAFTALIK ÖZET — web `app/panel/ogrenci/haftalik`.
@@ -25,30 +26,38 @@ export default function OdWeeklyDigestScreen() {
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="od-weekly-digest">
       <PageHeader title="Haftalık özet" description="Ailenin gördüğü özet burada. Özel öğretmen notların bu özete eklenmez." />
       <QueryView query={query} disabledTitle="Haftalık özet şu anda açık değil.">
-        {(data) =>
-          data.state === 'NONE' ? (
-            <EmptyState title="Haftalık özet henüz yayınlanmadı." body="Öğretmenin önizlemeyi tamamladığında sen ve ailen aynı özeti göreceksiniz." />
-          ) : (
-            <>
-              <Text tone="muted" variant="meta">{`${formatDayMonth(data.digest.dataThrough)} tarihine kadarki veriler`}</Text>
-              <Section title="Bu hafta iyi gidenler" first>
-                <View style={styles.card}>
-                  <Text tone="secondary">{data.digest.goodThingOne}</Text>
-                  <Text tone="secondary">{data.digest.goodThingTwo}</Text>
-                </View>
-              </Section>
-              <Section title="Destek olabilecek alan">
-                <Text tone="secondary">{data.digest.supportArea}</Text>
-              </Section>
-              <Section title="Evde konuşmak için">
-                <Text tone="secondary">{data.digest.homeQuestion}</Text>
-              </Section>
-              <DigestFeedback digest={data} />
-            </>
-          )
-        }
+        {(data) => <WeeklyDigestContent data={data} product="OD" />}
       </QueryView>
     </Screen>
+  );
+}
+
+/**
+ * Özet gövdesi — OD ekranı ve Yön "Haftalık" ekranı (öğrencinin OD üyeliği
+ * varken) aynı bileşeni kullanır. `product` yalnız yazmadan sonra hangi
+ * çalışma alanı önbelleğinin yenileneceğini seçer.
+ */
+export function WeeklyDigestContent({ data, product }: { data: MobileWeeklyDigest; product: WorkspaceProduct }) {
+  if (data.state === 'NONE') {
+    return <EmptyState title="Haftalık özet henüz yayınlanmadı." body="Öğretmenin önizlemeyi tamamladığında sen ve ailen aynı özeti göreceksiniz." />;
+  }
+  return (
+    <>
+      <Text tone="muted" variant="meta">{`${formatDayMonth(data.digest.dataThrough)} tarihine kadarki veriler`}</Text>
+      <Section title="Bu hafta iyi gidenler" first>
+        <View style={styles.card}>
+          <Text tone="secondary">{data.digest.goodThingOne}</Text>
+          <Text tone="secondary">{data.digest.goodThingTwo}</Text>
+        </View>
+      </Section>
+      <Section title="Destek olabilecek alan">
+        <Text tone="secondary">{data.digest.supportArea}</Text>
+      </Section>
+      <Section title="Evde konuşmak için">
+        <Text tone="secondary">{data.digest.homeQuestion}</Text>
+      </Section>
+      <DigestFeedback digest={data} product={product} />
+    </>
   );
 }
 
@@ -60,9 +69,9 @@ const PULSE = [
   { value: 5, label: 'Kaygı yarattı' },
 ];
 
-function DigestFeedback({ digest }: { digest: Extract<MobileWeeklyDigest, { state: 'READY' }> }) {
+function DigestFeedback({ digest, product }: { digest: Extract<MobileWeeklyDigest, { state: 'READY' }>; product: WorkspaceProduct }) {
   const { api } = useSession();
-  const invalidate = useInvalidateOd();
+  const invalidate = useInvalidateWorkspace(product);
   const [helpful, setHelpful] = useState<boolean | null>(digest.feedback?.helpful ?? null);
   const [pulse, setPulse] = useState<number | null>(digest.feedback?.anxietyPulse ?? null);
   const [message, setMessage] = useState<{ tone: 'success' | 'critical'; text: string } | null>(null);

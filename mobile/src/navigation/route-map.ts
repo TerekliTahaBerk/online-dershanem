@@ -83,7 +83,7 @@ export function expoHrefFor(target: NativeTarget): string | null {
 }
 
 /** İzinli native rota önekleri (derin bağlantılar). Diğer her şey ana ekrana düşer. */
-const ALLOWED_DEEP_LINK = /^\/(?:$|slot-[1-3]$|menu$|notifications$|account(?:\/(?:sessions|password))?$|screen\/[\w-]{1,64}$|od\/(?:lesson|assignment)\/[\w-]{1,64}$|od\/review-recovery$|forgot-password$)/;
+const ALLOWED_DEEP_LINK = /^\/(?:$|slot-[1-3]$|menu$|notifications$|account(?:\/(?:sessions|password))?$|screen\/[\w-]{1,64}$|od\/(?:lesson|assignment)\/[\w-]{1,64}$|od\/review-recovery$|yon\/task\/[\w-]{1,64}$|forgot-password$)/;
 
 /**
  * Sistemden gelen yol (`onlinedershanem://...`) → güvenli uygulama yolu.
