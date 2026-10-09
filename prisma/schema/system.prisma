@@ -64,6 +64,7 @@ model Notification {
   preferenceKey String?      @map("preference_key")
   digestMode Boolean         @default(false) @map("digest_mode")
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pushDeliveries PushDelivery[]
 
   @@index([userId, readAt, createdAt])
   @@index([deliveryPending, availableAt])
@@ -84,6 +85,12 @@ model NotificationPreference {
   quietEndMinute Int?       @map("quiet_end_minute")
   dailyDigest Boolean      @default(false) @map("daily_digest")
   dailyDigestMinute Int?    @map("daily_digest_minute")
+  /// M5: mobil push bildirimi. GİZLİLİK ÖNCELİKLİ varsayılan KAPALI — göç
+  /// mevcut kullanıcıları push'a dahil etmez; kullanıcı açıkça açar ve
+  /// işletim sistemi izni de gerekir.
+  pushEnabled     Boolean  @default(false) @map("push_enabled")
+  /// M5: Deneme Ligi deneme hatırlatması / sonuç / cevap anahtarı bildirimleri.
+  examUpdates     Boolean  @default(true) @map("exam_updates")
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -403,4 +410,86 @@ model RetentionMark {
   @@unique([model, recordId])
   @@index([category, purgeAfter])
   @@map("retention_marks")
+}
+
+// ---------------------------------------------------------------------------
+// M5 — Mobil push: cihaz kaydı ve kalıcı teslim kuyruğu.
+// Push bir TESLİM kanalıdır; olay kaynağı kanonik `Notification` tablosudur.
+// ---------------------------------------------------------------------------
+
+enum PushPlatform {
+  IOS
+  ANDROID
+}
+
+/// Teslim durumu. `ACCEPTED` = Expo bileti kabul etti; `PROVIDER_ACCEPTED` =
+/// Expo makbuzu APNs/FCM'nin kabul ettiğini söyledi. Hiçbiri cihaza ulaştığını
+/// veya öğrencinin gördüğünü KANITLAMAZ (görülme = uygulama içi `readAt`).
+enum PushDeliveryState {
+  PENDING
+  CLAIMED
+  ACCEPTED
+  PROVIDER_ACCEPTED
+  RETRY
+  FAILED
+  CANCELED
+}
+
+/// Kayıtlı cihaz. Bir push token'ı aynı anda TEK kullanıcıya bağlıdır
+/// (`expoPushToken` benzersiz); hesap değişiminde eski kayıt silinir. Kullanıcı
+/// ve oturum sunucu oturumundan çözülür, istemciden alınmaz.
+model PushDevice {
+  id               String         @id @default(cuid())
+  userId           String         @map("user_id")
+  sessionId        String         @map("session_id")
+  expoPushToken    String         @unique @map("expo_push_token")
+  platform         PushPlatform
+  appVersion       String         @map("app_version")
+  projectId        String?        @map("project_id")
+  appEnvironment   String?        @map("app_environment")
+  permissionStatus String?        @map("permission_status")
+  /// Bu andan ÖNCE oluşturulan bildirimler bu cihaza gönderilmez (geçmiş birikim yok).
+  activatedAt      DateTime       @default(now()) @map("activated_at") @db.Timestamptz(3)
+  lastSeenAt       DateTime       @default(now()) @map("last_seen_at") @db.Timestamptz(3)
+  revokedAt        DateTime?      @map("revoked_at") @db.Timestamptz(3)
+  revokedReason    String?        @map("revoked_reason")
+  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session          Session        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  deliveries       PushDelivery[]
+
+  @@index([userId, revokedAt])
+  @@index([sessionId])
+  @@index([revokedAt, lastSeenAt])
+  @@map("push_devices")
+}
+
+/// (bildirim, cihaz) başına TEK mantıksal teslim. Kiralama (`claimToken` +
+/// `leaseExpiresAt`) eşzamanlı işçilerin aynı satırı işlemesini engeller;
+/// fiziksel tam-bir-kez teslim garanti EDİLMEZ (sağlayıcı yinelenebilir).
+model PushDelivery {
+  id               String            @id @default(cuid())
+  notificationId   String            @map("notification_id")
+  deviceId         String            @map("device_id")
+  state            PushDeliveryState @default(PENDING)
+  attempts         Int               @default(0)
+  claimToken       String?           @map("claim_token")
+  leaseExpiresAt   DateTime?         @map("lease_expires_at") @db.Timestamptz(3)
+  nextAttemptAt    DateTime          @default(now()) @map("next_attempt_at") @db.Timestamptz(3)
+  submittedAt      DateTime?         @map("submitted_at") @db.Timestamptz(3)
+  ticketId         String?           @map("ticket_id")
+  receiptStatus    String?           @map("receipt_status")
+  receiptCheckedAt DateTime?         @map("receipt_checked_at") @db.Timestamptz(3)
+  lastErrorCode    String?           @map("last_error_code")
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+  notification     Notification      @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  device           PushDevice        @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, deviceId])
+  @@index([state, nextAttemptAt])
+  @@index([state, submittedAt])
+  @@index([createdAt])
+  @@map("push_deliveries")
 }
