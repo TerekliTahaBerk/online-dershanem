@@ -19,7 +19,7 @@ export const color = {
   textSecondary: '#4E5C56', // --pn-text-secondary (= --dc-ink-body)
   textMuted: '#5f6e67', // --pn-text-muted
   focus: '#0c7c57', // --pn-focus
-  /** Birincil buton dolgusu ürün bağımsızdır (web: "ürün vurgusu butonlarda değil"). */
+  /** Giriş marka rengi; panel eylemleri color.text kullanır. */
   primary: '#0C7C57', // --dc-brand-strong
   primaryPressed: '#0C6B4C', // --dc-brand-hover
   onPrimary: '#ffffff',
@@ -50,12 +50,14 @@ export const font = {
   medium: 'Manrope_500Medium',
   semibold: 'Manrope_600SemiBold',
   bold: 'Manrope_700Bold',
+  extrabold: 'Manrope_800ExtraBold',
 } as const;
 
 /** Tipografi ölçeği — docs/panel-design-roadmap.md §5.3 (mobil değerler). */
 export const type = {
-  pageTitle: { fontFamily: font.bold, fontSize: 20, lineHeight: 28, letterSpacing: -0.3 },
-  sectionTitle: { fontFamily: font.semibold, fontSize: 15, lineHeight: 22, letterSpacing: -0.075 },
+  pageTitle: { fontFamily: font.bold, fontSize: 22, lineHeight: 30, letterSpacing: -0.44 },
+  authTitle: { fontFamily: font.extrabold, fontSize: 22, lineHeight: 30, letterSpacing: -0.44 },
+  sectionTitle: { fontFamily: font.semibold, fontSize: 15, lineHeight: 22, letterSpacing: -0.15 },
   subsection: { fontFamily: font.semibold, fontSize: 13.5, lineHeight: 20 },
   label: { fontFamily: font.medium, fontSize: 12.5, lineHeight: 18 },
   body: { fontFamily: font.regular, fontSize: 14, lineHeight: 22 },
@@ -76,3 +78,12 @@ export const touchTarget = 44;
 
 /** Satır yüksekliği: öğrenci/veli "comfortable" 48; personel 44 (dokunma alt sınırı). */
 export const rowHeight = { comfortable: 48, standard: 44 } as const;
+
+/** AuthCard: web kimlik ekranı; panelden ayrı bir yüzey. */
+export const auth = {
+  canvas: '#FBFCFA', // --dc-canvas
+  border: '#DDE4E0',
+  radius: 12,
+  controlHeight: 52,
+  columnWidth: 380,
+} as const;

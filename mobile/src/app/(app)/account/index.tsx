@@ -2,6 +2,9 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, PageHeader, Row, Screen, Section, StatusBadge, Text } from '@/design/primitives';
+import { ProductLogo } from '@/design/brand';
+import { Bell, KeyRound, Monitor, ShieldCheck, Trash2 } from 'lucide-react-native';
+import { color } from '@/design/tokens';
 import { APP_VERSION } from '@/config/app-info';
 import { PRODUCT_STATE_PRESENTATION, ROLE_LABEL } from '@/features/shell/labels';
 import { useReadyBootstrap, useSession } from '@/lib/auth/session-provider';
@@ -25,19 +28,19 @@ export default function AccountScreen() {
       </Section>
       <Section title="Ürünler">
         {products.map((product) => (
-          <Row key={product.code} title={product.label} trailing={<StatusBadge label={PRODUCT_STATE_PRESENTATION[product.state].label} tone={PRODUCT_STATE_PRESENTATION[product.state].tone} />} />
+          <Row key={product.code} leading={<ProductLogo product={product.code} size={32} />} title={product.label} trailing={<StatusBadge label={PRODUCT_STATE_PRESENTATION[product.state].label} tone={PRODUCT_STATE_PRESENTATION[product.state].tone} />} />
         ))}
       </Section>
       <Section title="Güvenlik">
-        <Row title="Parolayı değiştir" onPress={() => router.push('/account/password')} testID="account-password" />
-        <Row title="Oturumlar" subtitle="Bu hesabın açık olduğu cihazlar" onPress={() => router.push('/account/sessions')} testID="account-sessions" />
+        <Row leading={<KeyRound size={19} color={color.textSecondary} strokeWidth={1.7} />} title="Parolayı değiştir" onPress={() => router.push('/account/password')} testID="account-password" />
+        <Row leading={<Monitor size={19} color={color.textSecondary} strokeWidth={1.7} />} title="Oturumlar" subtitle="Bu hesabın açık olduğu cihazlar" onPress={() => router.push('/account/sessions')} testID="account-sessions" />
         {bootstrap.user.role === 'STUDENT' || bootstrap.user.role === 'PARENT' ? (
-          <Row title="Bildirim ayarları" subtitle="Telefon bildirimleri, kategoriler, sessiz saatler" onPress={() => router.push('/account/notifications')} testID="account-notifications" />
+          <Row leading={<Bell size={19} color={color.textSecondary} strokeWidth={1.7} />} title="Bildirim ayarları" subtitle="Telefon bildirimleri, kategoriler, sessiz saatler" onPress={() => router.push('/account/notifications')} testID="account-notifications" />
         ) : null}
       </Section>
       <Section title="Gizlilik ve hesap">
-        <Row title="Gizlilik politikası" onPress={() => router.push('/account/privacy')} />
-        <Row title="Hesabımı sil" subtitle="Silme talebi ve veri saklama bilgileri" onPress={() => router.push('/account/deletion')} />
+        <Row leading={<ShieldCheck size={19} color={color.textSecondary} strokeWidth={1.7} />} title="Gizlilik politikası" onPress={() => router.push('/account/privacy')} />
+        <Row leading={<Trash2 size={19} color={color.textSecondary} strokeWidth={1.7} />} title="Hesabımı sil" subtitle="Silme talebi ve veri saklama bilgileri" onPress={() => router.push('/account/deletion')} />
       </Section>
       <View style={styles.footer}>
         <Button label="Çıkış yap" variant="secondary" onPress={() => void signOut()} testID="account-sign-out" />

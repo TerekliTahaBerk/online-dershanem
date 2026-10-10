@@ -14,7 +14,7 @@ const MIN_LENGTH = 10;
  * sonra durum İSTEMCİDE değiştirilmez: bootstrap yeniden çekilir, kapı
  * ancak sunucu `mustChangePassword=false` derse açılır.
  */
-export function ChangePasswordForm({ onDone }: { onDone?: () => void }) {
+export function ChangePasswordForm({ onDone, variant = 'panel' }: { onDone?: () => void; variant?: 'panel' | 'auth' }) {
   const { api, refreshBootstrap } = useSession();
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
@@ -59,6 +59,7 @@ export function ChangePasswordForm({ onDone }: { onDone?: () => void }) {
       {success ? <Banner tone="success">Parolan değiştirildi. Diğer cihazlardaki oturumlar kapatıldı.</Banner> : null}
       {error ? <Banner tone="critical">{error}</Banner> : null}
       <TextField
+        variant={variant}
         label="Mevcut parola"
         value={current}
         onChangeText={setCurrent}
@@ -70,6 +71,7 @@ export function ChangePasswordForm({ onDone }: { onDone?: () => void }) {
         onSubmitEditing={() => nextRef.current?.focus()}
       />
       <TextField
+        variant={variant}
         ref={nextRef}
         label="Yeni parola"
         value={next}
@@ -83,6 +85,7 @@ export function ChangePasswordForm({ onDone }: { onDone?: () => void }) {
         onSubmitEditing={() => confirmRef.current?.focus()}
       />
       <TextField
+        variant={variant}
         ref={confirmRef}
         label="Yeni parola (tekrar)"
         value={confirm}
@@ -95,7 +98,7 @@ export function ChangePasswordForm({ onDone }: { onDone?: () => void }) {
         returnKeyType="go"
         onSubmitEditing={submit}
       />
-      <Button label="Parolayı değiştir" onPress={submit} loading={busy} disabled={!canSubmit} testID="change-password-submit" />
+      <Button variant={variant === 'auth' ? 'auth' : 'primary'} label="Parolayı değiştir" onPress={submit} loading={busy} disabled={!canSubmit} testID="change-password-submit" />
     </>
   );
 }

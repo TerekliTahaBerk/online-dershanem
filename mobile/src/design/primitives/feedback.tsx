@@ -1,5 +1,6 @@
 import { useEffect, useRef, type PropsWithChildren, type ReactNode } from 'react';
-import { Animated, Modal, Pressable, StyleSheet, View } from 'react-native';
+import { X } from 'lucide-react-native';
+import { Animated, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError } from '@/lib/api/errors';
@@ -13,7 +14,7 @@ export function EmptyState({ title, body, action }: { title: string; body?: stri
   return (
     <View style={styles.state} accessibilityRole="summary">
       <Text variant="sectionTitle">{title}</Text>
-      {body ? <Text tone="secondary" style={styles.center}>{body}</Text> : null}
+      {body ? <Text tone="secondary">{body}</Text> : null}
       {action}
     </View>
   );
@@ -29,7 +30,7 @@ export function ErrorState({ error, onRetry, title = 'Bir sorun oluştu' }: { er
   return (
     <View style={styles.state} accessibilityRole="alert">
       <Text variant="sectionTitle">{title}</Text>
-      <Text tone="secondary" style={styles.center}>
+      <Text tone="secondary">
         {message}
       </Text>
       {onRetry && retryable ? <Button label="Tekrar dene" variant="secondary" onPress={onRetry} /> : null}
@@ -95,10 +96,10 @@ export function BottomSheet({ visible, title, onClose, children }: PropsWithChil
             {title}
           </Text>
           <Pressable accessibilityRole="button" accessibilityLabel="Kapat" hitSlop={12} onPress={onClose} style={styles.sheetClose}>
-            <Text tone="secondary">Kapat</Text>
+            <X size={20} color={color.textSecondary} />
           </Pressable>
         </View>
-        <View style={styles.sheetBody}>{children}</View>
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.sheetBody}>{children}</ScrollView>
       </SafeAreaView>
     </Modal>
   );
@@ -106,15 +107,14 @@ export function BottomSheet({ visible, title, onClose, children }: PropsWithChil
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  center: { textAlign: 'center' },
-  state: { alignItems: 'center', gap: space[3], paddingVertical: space[10], paddingHorizontal: space[4] },
+  state: { alignItems: 'flex-start', gap: space[3], padding: space[4], borderWidth: 1, borderStyle: 'dashed', borderColor: color.borderStrong, borderRadius: radius.card },
   skeleton: { gap: space[3], paddingVertical: space[2] },
   skeletonRow: { height: 16, borderRadius: radius.control, backgroundColor: color.border },
   banner: { borderRadius: radius.card, padding: space[3], gap: space[1] },
   scrim: { flex: 1, backgroundColor: 'rgba(20, 32, 28, 0.32)' },
-  sheet: { backgroundColor: color.canvas, borderTopLeftRadius: 16, borderTopRightRadius: 16, paddingHorizontal: space[4], paddingBottom: space[4] },
+  sheet: { maxHeight: '85%', backgroundColor: color.canvas, borderTopLeftRadius: 16, borderTopRightRadius: 16, paddingHorizontal: space[4], paddingBottom: space[4] },
   sheetHandle: { alignSelf: 'center', width: 36, height: 4, borderRadius: 2, backgroundColor: color.borderStrong, marginTop: space[2] },
   sheetHeader: { flexDirection: 'row', alignItems: 'center', paddingVertical: space[3] },
-  sheetClose: { minHeight: 44, justifyContent: 'center' },
+  sheetClose: { minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' },
   sheetBody: { gap: space[2] },
 });

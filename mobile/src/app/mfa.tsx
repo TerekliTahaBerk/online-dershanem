@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
-import { Banner, Button, PageHeader, Screen, TextField } from '@/design/primitives';
+import { Banner, Button, TextField } from '@/design/primitives';
+import { AuthScreen } from '@/features/auth/auth-screen';
 import { openOnWeb } from '@/features/shell/web-continuation';
 import * as endpoints from '@/lib/api/endpoints';
 import { ApiError } from '@/lib/api/errors';
@@ -46,25 +47,24 @@ export default function MfaGate() {
   if (!methods?.totp) {
     const passkeyOnly = Boolean(methods?.passkey);
     return (
-      <Screen edges={['top', 'left', 'right', 'bottom']}>
-        <PageHeader title="İkinci faktör gerekli" />
+      <AuthScreen title="İkinci faktör gerekli">
         <Banner tone="warning" title={passkeyOnly ? 'Geçiş anahtarı mobilde henüz desteklenmiyor' : 'İkinci faktör kurulumu gerekiyor'}>
           {passkeyOnly
             ? 'Hesabın yalnız geçiş anahtarı ile doğrulanıyor. Web panelinde doğrulama yap veya bir doğrulayıcı uygulama ekle; ardından burada "Durumu kontrol et"e dokun.'
             : 'Bu hesap için ikinci faktör kurulumu web panelinden yapılır. Kurulumu tamamladıktan sonra burada doğrulama kodunu girebilirsin.'}
         </Banner>
-        <Button label="Web panelinde devam et" onPress={() => void openOnWeb('/giris/mfa')} accessibilityHint="Tarayıcıda açılır; web oturumuyla giriş yapmanız gerekebilir." />
+        <Button variant="auth" label="Web panelinde devam et" onPress={() => void openOnWeb('/giris/mfa')} accessibilityHint="Tarayıcıda açılır; web oturumuyla giriş yapmanız gerekebilir." />
         {footer}
-      </Screen>
+      </AuthScreen>
     );
   }
 
   const valid = method === 'TOTP' ? /^\d{6}$/.test(code.trim()) : code.trim().length >= 6;
   return (
-    <Screen edges={['top', 'left', 'right', 'bottom']}>
-      <PageHeader title="İkinci faktör doğrulaması" description={method === 'TOTP' ? 'Doğrulayıcı uygulamadaki 6 haneli kodu gir.' : 'Kayıtlı kurtarma kodlarından birini gir. Her kod yalnız bir kez kullanılabilir.'} />
+    <AuthScreen title="İkinci faktör doğrulaması" description={method === 'TOTP' ? 'Doğrulayıcı uygulamadaki 6 haneli kodu gir.' : 'Kayıtlı kurtarma kodlarından birini gir. Her kod yalnız bir kez kullanılabilir.'}>
       {error ? <Banner tone="critical">{error}</Banner> : null}
       <TextField
+        variant="auth"
         label={method === 'TOTP' ? 'Doğrulama kodu' : 'Kurtarma kodu'}
         value={code}
         onChangeText={setCode}
@@ -78,7 +78,7 @@ export default function MfaGate() {
         onSubmitEditing={() => valid && void verify()}
         testID="mfa-code"
       />
-      <Button label="Doğrula" onPress={verify} loading={busy} disabled={!valid || busy} testID="mfa-submit" />
+      <Button variant="auth" label="Doğrula" onPress={verify} loading={busy} disabled={!valid || busy} testID="mfa-submit" />
       {methods.recoveryCodes ? (
         <Button
           label={method === 'TOTP' ? 'Kurtarma kodu kullan' : 'Doğrulayıcı kodu kullan'}
@@ -92,6 +92,6 @@ export default function MfaGate() {
       ) : null}
       {methods.passkey ? <Button label="Geçiş anahtarıyla web'de doğrula" variant="quiet" onPress={() => void openOnWeb('/giris/mfa')} /> : null}
       {footer}
-    </Screen>
+    </AuthScreen>
   );
 }
