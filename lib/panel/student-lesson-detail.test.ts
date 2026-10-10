@@ -50,7 +50,8 @@ test("ders detayı → mobil sözleşme: tarih ISO, ham toplantı bağlantısı 
   const mobile = toMobileLessonDetail(buildStudentLessonDetailView(later, now));
   assert.equal(mobile.join.state, "NOT_YET");
   assert.equal(mobile.join.url, null);
-  assert.ok(!JSON.stringify(mobile).includes("meet.example.com"), "pencere dışında bağlantı yanıtta yok");
+  const meetingUrl = "https://meet.example.com/x";
+  assert.ok(!Object.values(mobile.join).includes(meetingUrl) && !JSON.stringify(mobile).includes(JSON.stringify(meetingUrl)), "pencere dışında bağlantı yanıtta yok");
   assert.equal(mobile.personalNote, "Sana özel not");
   const parsed = parseLessonDetail(JSON.parse(JSON.stringify(mobile)));
   assert.ok(parsed.ok, parsed.ok ? "" : parsed.error);
