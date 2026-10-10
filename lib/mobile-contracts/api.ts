@@ -27,6 +27,12 @@ export const MOBILE_API_ERROR_CODES = [
   "ADMIN_PREVIEW_READONLY",
   /** M2: özellik bayrağı kapalı (404). Mobil ekranı gizler, hata göstermez. */
   "FEATURE_DISABLED",
+  /**
+   * M6: veli için istenen çocuk (StudentProfile.id) bağlı, aktif, akademik
+   * izinli ve veliye görünür değil (404). Başka ailenin çocuğu ile var olmayan
+   * kimlik AYIRT EDİLMEZ. Mobil seçili çocuğu bırakır, listeyi yeniler.
+   */
+  "CHILD_NOT_FOUND",
 ] as const;
 export type MobileApiErrorCode = (typeof MOBILE_API_ERROR_CODES)[number];
 

@@ -1,8 +1,7 @@
 import { CoachingSessions } from "@/components/panel/coaching-sessions";
-import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/auth/guards";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
-import { getStudentCoaching } from "@/lib/panel/coaching";
+import { loadParentCoaching } from "@/lib/panel/parent-coaching-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildContext } from "@/components/panel/parent/child-context";
 import {
@@ -12,14 +11,7 @@ import {
   PropertyRow,
   Section,
 } from "@/components/panel/ui";
-import {
-  addIstanbulCalendarDays,
-  formatIstanbulDateInput,
-  ISTANBUL_TIME_ZONE,
-  istanbulWeekStart,
-} from "@/lib/istanbul-time";
-import { buildParentKocumSummary, buildWeeklyKocumMetrics } from "@/lib/kocum";
-import { getStudentGoals } from "@/lib/panel/goals";
+import { ISTANBUL_TIME_ZONE } from "@/lib/istanbul-time";
 
 export const dynamic = "force-dynamic";
 
@@ -88,61 +80,9 @@ export default async function ParentCoachingPage({
     );
   }
 
-  const [plan, coaching, publishedSummary, goals] = await Promise.all([
-    /*
-     * VELİYE YALNIZ YAYINLANMIŞ PLAN.
-     *
-     * Bu sorguda durum süzgeci YOKTU: koçun üzerinde çalıştığı `DRAFT` plan —
-     * ve `weekStart` süzgeci de olmadığı için AYLAR ÖNCESİNE ait bir plan —
-     * veliye "Bu hafta" başlığı altında tamamlanma yüzdesi olarak
-     * gösteriliyordu. Veli, koç daha yayınlamadan yarım bir taslağın %0
-     * tamamlandığını görüyordu.
-     *
-     * Alan seçimi de daraltıldı: `tasks: true` öğrencinin kendi notunu
-     * (`studentNote`) ve zorluk/enerji girdilerini de çekiyordu; veli
-     * ekranının bu alanlara hiç ihtiyacı yok (§17).
-     */
-    prisma.weeklyPlan.findFirst({
-      where: { studentId: selected.id, status: "APPROVED" },
-      orderBy: { weekStart: "desc" },
-      select: {
-        weekStart: true,
-        tasks: {
-          select: {
-            id: true,
-            status: true,
-            scheduledFor: true,
-            durationMinutes: true,
-            actualMinutes: true,
-            targetType: true,
-            targetValue: true,
-            actualQuestions: true,
-            subject: true,
-          },
-        },
-      },
-    }),
-    getStudentCoaching(selected.id),
-    prisma.weeklyCoachSummary.findFirst({
-      where: { studentId: selected.id, status: "PUBLISHED" },
-      orderBy: { weekStart: "desc" },
-      select: {
-        planCompletionPct: true,
-        strengths: true,
-        focusAreas: true,
-        nextWeekFocus: true,
-        parentVisibleText: true,
-      },
-    }),
-    getStudentGoals(selected.id),
-  ]);
-  // Veli yalnız PARENT_VISIBLE notları görür (`canViewerSeeCoachNote`).
-  const parentNotes = await prisma.coachNote.findMany({
-    where: { studentId: selected.id, visibility: "PARENT_VISIBLE" },
-    orderBy: { createdAt: "desc" },
-    take: 3,
-    select: { id: true, body: true, createdAt: true },
-  });
+  // Ortak yükleyici (mobil `GET /api/panel/parent/coaching` ile aynı): yalnız
+  // APPROVED + Yön Koçluk (OK) planı, PUBLISHED koç özeti, PARENT_VISIBLE notlar.
+  const { coaching, week, notes: parentNotes, goals } = await loadParentCoaching(selected);
 
   const coachCard = coaching ? (
     <Section id="koc" title="Koç" divider={false}>
@@ -196,7 +136,7 @@ export default async function ParentCoachingPage({
     </Section>
   ) : null;
 
-  if (!plan) {
+  if (!week) {
     return shell(
       <>
         <PageHeader title="Yön Koçluk" metadata={childContext} />
@@ -214,42 +154,7 @@ export default async function ParentCoachingPage({
     );
   }
 
-  const start = istanbulWeekStart(plan.weekStart);
-  const end = addIstanbulCalendarDays(start, 6);
-  const todayKey = formatIstanbulDateInput(new Date());
-  const metrics = buildWeeklyKocumMetrics(
-    plan.tasks.map((task) => ({
-      id: task.id,
-      status: task.status,
-      scheduledFor: task.scheduledFor,
-      durationMinutes: task.durationMinutes,
-      actualMinutes: task.actualMinutes,
-      targetType: task.targetType,
-      targetValue: task.targetValue,
-      actualQuestions: task.actualQuestions,
-      subject: task.subject,
-    })),
-    todayKey,
-    formatIstanbulDateInput,
-  );
-
-  const primaryGoal =
-    goals.find((goal) => goal.percent != null) ?? goals[0] ?? null;
-
-  const parentSummary = buildParentKocumSummary({
-    planCompletionPct:
-      publishedSummary?.planCompletionPct ?? metrics.planCompletionPct,
-    completedMinutes: metrics.completedMinutes,
-    plannedMinutes: metrics.plannedMinutes,
-    overdueCount: metrics.taskOverdue,
-    previousOverdueCount: null,
-    goalLabel: primaryGoal?.label ?? null,
-    goalPercent: primaryGoal?.percent ?? null,
-    publishedParentText: publishedSummary?.parentVisibleText ?? null,
-    strengths: publishedSummary?.strengths ?? null,
-    focusAreas: publishedSummary?.focusAreas ?? null,
-    nextWeekFocus: publishedSummary?.nextWeekFocus ?? coaching?.focus ?? null,
-  });
+  const { start, end, summary: parentSummary } = week;
 
   return shell(
     <>

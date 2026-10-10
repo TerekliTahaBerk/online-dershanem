@@ -1,10 +1,7 @@
 import { requirePanelRole } from "@/lib/auth/guards";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
-import { prisma } from "@/lib/prisma";
-import {
-  ASSIGNMENT_DISPLAY_LABELS,
-  deriveAssignmentDisplayStatus,
-} from "@/lib/panel/assignment-display";
+import { ASSIGNMENT_DISPLAY_LABELS } from "@/lib/panel/assignment-display";
+import { loadParentAssignments } from "@/lib/panel/parent-assignments-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildContext } from "@/components/panel/parent/child-context";
 import {
@@ -59,48 +56,8 @@ export default async function ParentAssignmentsPage({
     );
   }
 
-  const now = new Date();
-  const enrollments = await prisma.enrollment.findMany({
-    where: { studentId: selected.id, endedAt: null },
-    select: { groupId: true },
-  });
-  const groupIds = enrollments.map((row) => row.groupId);
-
-  const assignments = groupIds.length
-    ? await prisma.assignment.findMany({
-        where: { groupId: { in: groupIds }, isActive: true },
-        orderBy: { dueAt: "asc" },
-        take: 40,
-        select: {
-          id: true,
-          title: true,
-          description: true,
-          dueAt: true,
-          createdBy: { select: { fullName: true, email: true } },
-          progress: {
-            where: { studentId: selected.id },
-            select: { status: true },
-            take: 1,
-          },
-          submissions: {
-            where: { studentId: selected.id },
-            orderBy: { attemptNumber: "desc" },
-            take: 1,
-            select: { status: true },
-          },
-        },
-      })
-    : [];
-
-  const rows = assignments.map((assignment) => {
-    const status = deriveAssignmentDisplayStatus({
-      progress: assignment.progress[0]?.status ?? null,
-      dueAt: assignment.dueAt,
-      now,
-      submissionStatus: assignment.submissions[0]?.status ?? null,
-    });
-    return { assignment, status };
-  });
+  // Ortak yükleyici (mobil `GET /api/panel/parent/assignments` ile aynı).
+  const rows = (await loadParentAssignments(selected)).map((assignment) => ({ assignment, status: assignment.status }));
 
   const active = rows.filter((row) =>
     ["ATANDI", "GORULDU", "DEVAM_EDIYOR", "GEC"].includes(row.status),
@@ -124,7 +81,7 @@ export default async function ParentAssignmentsPage({
                 <span className="font-medium text-pn-text">{assignment.title}</span>
                 {assignment.description ? <span className="mt-0.5 block text-[12.5px] text-pn-text-muted line-clamp-2">{assignment.description}</span> : null}
               </PanelTableCell>
-              <PanelTableCell>{assignment.createdBy.fullName || assignment.createdBy.email}</PanelTableCell>
+              <PanelTableCell>{assignment.createdByName}</PanelTableCell>
               <PanelTableCell>
                 <span className="tabular-nums">{DATE.format(assignment.dueAt)}</span>
               </PanelTableCell>
