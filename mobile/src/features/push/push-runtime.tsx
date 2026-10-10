@@ -10,7 +10,10 @@ import { useReadyBootstrap, useSession } from '@/lib/auth/session-provider';
 import { setBadge } from '@/lib/push/native-push';
 import { syncPushRegistration } from '@/lib/push/registration';
 import { queryKeys, sessionKeyFor } from '@/lib/query/keys';
-import { expoHrefFor, mapNotificationHref, workspaceForWebPath } from '@/navigation/route-map';
+import { parentNavIdForWebPath } from '@contracts/parent';
+
+import { useParentContext } from '@/features/parent/parent-context';
+import { expoHrefFor, mapNotificationHref, parentStudentIdFromHref, workspaceForWebPath } from '@/navigation/route-map';
 
 /**
  * Push çalışma zamanı (M5) — yalnız hazır çalışma alanında (`(app)` düzeni)
@@ -24,6 +27,12 @@ import { expoHrefFor, mapNotificationHref, workspaceForWebPath } from '@/navigat
  *  4. Hedef başka çalışma alanındaysa ve o ürün ACTIVE ise mevcut geçiş
  *     (`selectWorkspace`) yapılır; YENİ menü gelince hedef tekrar çözülür.
  *     Tek deneme: döngü yok. Çözülemezse bildirim kutusu açılır.
+ *  5. VELİ (M6): hedef çocuk kapsamlı bir veli ekranıysa çocuk, sunucudan
+ *     okunan bildirim kaydındaki `studentId`'den alınır ve GÜNCEL çocuk
+ *     listesiyle yeniden doğrulanır. Listede yoksa (bağlantı bitti) veya
+ *     birden çok çocuk varken kayıt çocuğu belirtmiyorsa (belirsiz) bildirim
+ *     kutusu açılır — başka çocuğa sessizce düşülmez. Yükte çocuk adı /
+ *     kimliği YOKTUR (M5 politikası).
  */
 
 // Ön planda: sistem afişi ve listeye eklenir, ses yok (uygulama içi kutu ayrıca güncellenir).
@@ -63,6 +72,9 @@ export function PushRuntime() {
   const [pending, setPending] = useState<{ href: string; workspace: 'OD' | 'OK' | 'ODK' } | null>(null);
   const navigation = bootstrap.workspace?.navigation ?? null;
   const activeProduct = bootstrap.workspace?.activeProduct ?? null;
+  const parent = useParentContext();
+  const parentRef = useRef(parent);
+  parentRef.current = parent;
   const ctx = useRef({ navigation, activeProduct, products: bootstrap.workspace?.products ?? [] });
   ctx.current = { navigation, activeProduct, products: bootstrap.workspace?.products ?? [] };
 
@@ -89,6 +101,10 @@ export function PushRuntime() {
       }
     }
     await refreshCounters();
+    if (bootstrap.user.role === 'PARENT' && !(await resolveParentChild(item.href))) {
+      router.push('/notifications');
+      return;
+    }
     const target = mapNotificationHref(item.href, ctx.current.navigation);
     const href = expoHrefFor(target);
     if (href) {
@@ -108,6 +124,22 @@ export function PushRuntime() {
       return;
     }
     router.push('/notifications');
+  }
+
+  /** Veli hedefi için doğru çocuğu seçer; güvenle belirlenemezse false. */
+  async function resolveParentChild(href: string | null): Promise<boolean> {
+    const navId = parentNavIdForWebPath(href);
+    // Çocuk kapsamlı olmayan hedef (bildirimler, hesap) veya veli dışı yol.
+    if (!navId || navId === 'account') return true;
+    const context = parentRef.current;
+    if (!context) return false;
+    const studentId = parentStudentIdFromHref(href);
+    if (studentId) return context.selectFromTrustedSource(studentId);
+    // Kayıt çocuğu belirtmiyor: yalnız tek çocuk varsa belirsizlik yoktur.
+    const fresh = await context.childrenQuery.refetch();
+    const children = fresh.data?.children ?? [];
+    if (children.length !== 1) return false;
+    return context.selectFromTrustedSource(children[0].studentId);
   }
 
   // Çalışma alanı geçişinden sonra hedefi YENİ menüyle bir kez çöz.

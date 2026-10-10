@@ -42,6 +42,7 @@ const CODE_KIND: Partial<Record<MobileApiErrorCode, ApiErrorKind>> = {
   ORIGIN: 'forbidden',
   ADMIN_PREVIEW_READONLY: 'forbidden',
   FEATURE_DISABLED: 'feature_disabled',
+  CHILD_NOT_FOUND: 'not_found',
 };
 
 export function isKnownErrorCode(code: unknown): code is MobileApiErrorCode {

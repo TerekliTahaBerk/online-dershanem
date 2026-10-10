@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 
 import { useDesign } from '@/design/theme';
+import { ParentContextProvider } from '@/features/parent/parent-context';
 import { PushRuntime } from '@/features/push/push-runtime';
 import { color, font } from '@/design/tokens';
 
@@ -8,7 +9,8 @@ import { color, font } from '@/design/tokens';
 export default function AppLayout() {
   const { product } = useDesign();
   return (
-    <>
+    // M6: veli çocuk bağlamı (yalnız PARENT rolünde etkin; diğer rollerde geçirgen).
+    <ParentContextProvider>
       {/* M5: bildirim dokunuşu / soğuk başlangıç / rozet — yalnız hazır çalışma alanında. */}
       <PushRuntime />
       <Stack
@@ -33,6 +35,6 @@ export default function AppLayout() {
       <Stack.Screen name="odk/exam/[id]/index" options={{ title: 'Deneme' }} />
       <Stack.Screen name="odk/exam/[id]/result" options={{ title: 'Sonuç' }} />
     </Stack>
-    </>
+    </ParentContextProvider>
   );
 }

@@ -21,6 +21,16 @@ import YonPlanScreen from '@/features/yon/yon-plan';
 import YonTodayScreen from '@/features/yon/yon-today';
 import YonWeeklyScreen from '@/features/yon/yon-weekly';
 import YonWorkScreen from '@/features/yon/yon-work';
+import ParentAccountScreen from '@/features/parent/parent-account';
+import ParentAssignmentsScreen from '@/features/parent/parent-assignments';
+import ParentCoachingScreen from '@/features/parent/parent-coaching';
+import ParentExternalExamsScreen from '@/features/parent/parent-external-exams';
+import ParentHomeScreen from '@/features/parent/parent-home';
+import ParentInsightsScreen from '@/features/parent/parent-insights';
+import ParentLessonsScreen from '@/features/parent/parent-lessons';
+import ParentOdkReportsScreen from '@/features/parent/parent-odk-reports';
+import ParentTeachersScreen from '@/features/parent/parent-teachers';
+import ParentWeeklyScreen from '@/features/parent/parent-weekly';
 import type { NativeScreen, NativeScreenKey } from '@/navigation/native-screens';
 
 import { PlaceholderScreen } from './placeholder-screen';
@@ -28,7 +38,7 @@ import { PlaceholderScreen } from './placeholder-screen';
 /**
  * Native ekranlar yalnız ait oldukları çalışma alanında, sunucu menüsü onları
  * içerdiğinde açılır. OD ekranları M2'de, Yön ekranları ve ortak check-in
- * M3'te, Deneme Ligi M4'te yeni mimariye taşındı; eski (legacy) ekran kalmadı.
+ * M3'te, Deneme Ligi M4'te, veli ekranları M6'da yeni mimariye taşındı.
  */
 const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElement> = {
   'od-home': () => <OdHomeScreen />,
@@ -49,6 +59,16 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'odk-home': () => <OdkHomeScreen />,
   'odk-exams': () => <OdkExamsScreen />,
   'odk-switch': () => <OdkSwitchScreen />,
+  'parent-home': () => <ParentHomeScreen />,
+  'parent-lessons': () => <ParentLessonsScreen />,
+  'parent-assignments': () => <ParentAssignmentsScreen />,
+  'parent-teachers': () => <ParentTeachersScreen />,
+  'parent-insights': () => <ParentInsightsScreen />,
+  'parent-coaching': () => <ParentCoachingScreen />,
+  'parent-odk-reports': () => <ParentOdkReportsScreen />,
+  'parent-external-exams': () => <ParentExternalExamsScreen />,
+  'parent-weekly': () => <ParentWeeklyScreen />,
+  'parent-account': () => <ParentAccountScreen />,
 };
 
 

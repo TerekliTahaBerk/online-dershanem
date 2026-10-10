@@ -18,6 +18,16 @@ export const queryKeys = {
   workspace: (userId: string, workspace: MobileProductCode | null) => ['user', userId, 'workspace', workspace ?? 'none'] as const,
   workspaceResource: (userId: string, workspace: MobileProductCode | null, resource: string, params?: Record<string, string | number | null>) =>
     [...queryKeys.workspace(userId, workspace), resource, params ?? {}] as const,
+  /**
+   * M6 veli: ÇOCUK kapsamlı. `['user', veliId, 'parent', 'PARENT', studentId, kaynak]`
+   * — çocuk değişince eski çocuğun anahtarı asla eşleşmez; çalışma alanı
+   * değişimi bu kapsamı silmez (veri çalışma alanına değil çocuğa aittir).
+   */
+  parent: (userId: string) => ['user', userId, 'parent', 'PARENT'] as const,
+  parentChildren: (userId: string) => [...queryKeys.parent(userId), 'children'] as const,
+  parentAccount: (userId: string) => [...queryKeys.parent(userId), 'account'] as const,
+  parentChild: (userId: string, studentId: string) => [...queryKeys.parent(userId), 'child', studentId] as const,
+  parentResource: (userId: string, studentId: string, resource: string) => [...queryKeys.parentChild(userId, studentId), resource] as const,
 };
 
 /** Token'dan geri döndürülemez kısa bir anahtar (FNV-1a). Token önbellek anahtarına girmez. */

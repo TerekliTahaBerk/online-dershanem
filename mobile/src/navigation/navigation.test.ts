@@ -30,7 +30,8 @@ describe('native ekran eşlemesi (rol + çalışma alanı + menü kimliği)', ()
   });
 
   it('veli, öğretmen ve yönetim öğrenci ekranına düşmez', () => {
-    expect(resolveNativeScreen({ role: 'PARENT', workspace: 'OD', item: item('today') })).toMatchObject({ key: 'placeholder', phase: 'M6' });
+    // M6: veli `today` öğrenci Bugün'üne değil, veli Bugün'üne gider.
+    expect(resolveNativeScreen({ role: 'PARENT', workspace: 'OD', item: item('today') })).toMatchObject({ key: 'parent-home' });
     expect(resolveNativeScreen({ role: 'TEACHER', workspace: 'OD', item: item('today') })).toMatchObject({ key: 'placeholder', phase: 'M7' });
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('today') })).toMatchObject({ key: 'placeholder', phase: 'WEB' });
   });
@@ -106,7 +107,8 @@ describe('M2 OD menü denetimi ve hedefler', () => {
   it('Yön çalışma alanındaki tekrar/özet öğeleri OD ekranına düşmez', () => {
     expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OK', item: item('weekly-digest') }).key).toBe('yon-weekly');
     expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'OK', item: item('review-recovery') }).key).toBe('placeholder');
-    expect(resolveNativeScreen({ role: 'PARENT', workspace: 'OD', item: item('weekly-digest') }).key).toBe('placeholder');
+    // M6: veli haftalık özeti öğrenci OD özetine değil, veli özetine gider.
+    expect(resolveNativeScreen({ role: 'PARENT', workspace: 'OD', item: item('weekly-digest') }).key).toBe('parent-weekly');
   });
 
   it('sunucu hedefi yalnız yetkili menü öğesi varsa native rotaya çevrilir', () => {

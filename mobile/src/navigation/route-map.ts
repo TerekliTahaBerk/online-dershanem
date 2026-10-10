@@ -89,9 +89,36 @@ export function mapNotificationHref(href: string | null | undefined, navigation:
 export function workspaceForWebPath(href: string | null | undefined): 'OD' | 'OK' | 'ODK' | null {
   const path = normalizeWebPath(href);
   if (!path) return null;
-  if (/^\/panel\/odk\/ogrenci(?:\/|$)/.test(path)) return 'ODK';
+  if (/^\/panel\/odk\/(?:ogrenci|veli)(?:\/|$)/.test(path)) return 'ODK';
+  // M6 veli: menü etkin çalışma alanına göre kapsamlıdır (`lib/panel/navigation.ts`).
+  if (/^\/panel\/veli\/(?:takvim|odevler|ogretmenler|denemeler)(?:\/|$)/.test(path)) return 'OD';
+  if (/^\/panel\/veli\/kocluk(?:\/|$)/.test(path)) return 'OK';
   if (/^\/panel\/ogrenci\/(?:yon|plan|kocluk|hedefler)(?:\/|$)/.test(path)) return 'OK';
   if (/^\/panel\/ogrenci\/(?:takvim|odevler|materyaller|tekrar|telafi|analiz)(?:\/|$)/.test(path)) return 'OD';
+  return null;
+}
+
+/**
+ * Bildirim KAYDININ (sunucudan, kimlikli uçtan okunan) `href`'indeki
+ * `studentId` (StudentProfile.id). Yalnız biçim kontrolü yapar; YETKİ
+ * DEĞİLDİR — çağıran güncel veli çocuk listesiyle yeniden doğrular. Push
+ * yükünden veya dış derin bağlantıdan gelen kimlik bu fonksiyona verilmez.
+ */
+export function parentStudentIdFromHref(href: string | null | undefined): string | null {
+  if (!href) return null;
+  const query = href.split('#')[0].split('?')[1];
+  if (!query) return null;
+  for (const part of query.split('&')) {
+    const [key, raw] = part.split('=');
+    if (key !== 'studentId' || !raw) continue;
+    let value: string;
+    try {
+      value = decodeURIComponent(raw);
+    } catch {
+      return null;
+    }
+    return /^[\w-]{1,64}$/.test(value) ? value : null;
+  }
   return null;
 }
 

@@ -160,14 +160,14 @@ describe('M1 uygulama akışları', () => {
     expect(await screen.findByText('Aktif çalışma alanın yok', {}, WAIT)).toBeTruthy();
   });
 
-  it('veli, öğretmen ve yönetim kendi bilinçli yer tutucularını görür (öğrenci sekmesi değil)', async () => {
+  it('veli kendi native ekranını (M6), öğretmen ve yönetim kendi bilinçli yer tutucularını görür (öğrenci sekmesi değil)', async () => {
     const server = await boot([
       account('veli@example.com', makeBootstrap({ role: 'PARENT', products: { OD: 'ACTIVE' } })),
       account('ogretmen@example.com', makeBootstrap({ role: 'TEACHER', products: { OD: 'ACTIVE' }, activeProduct: null })),
       account('yonetim@example.com', makeBootstrap({ role: 'ADMIN', products: { OD: 'ACTIVE', OK: 'ACTIVE', ODK: 'ACTIVE' }, activeProduct: null })),
     ]);
     await signIn('veli@example.com');
-    expect(await screen.findByTestId('placeholder-today', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByTestId('parent-home', {}, WAIT)).toBeTruthy();
     expect(server.called('GET', '/api/panel/student/home')).toHaveLength(0);
     await signOutViaAccount();
     await signIn('ogretmen@example.com');
