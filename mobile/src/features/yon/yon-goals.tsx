@@ -37,22 +37,22 @@ export default function YonGoalsScreen() {
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="yon-goals">
       <PageHeader
         title="Hedeflerim"
-        description={query.data?.coachName ? `${query.data.coachName} ile belirlediğin hedefler ve şu anki durumun. Hedefleri koçun günceller.` : 'Belirlenen hedeflerin ve şu anki durumun.'}
+        description={query.data?.coachName ? `${query.data.coachName} ile belirlediğin hedefler ve şu an neredesin. Hedeflerini koçun günceller.` : 'Hedeflerin ve şu an neredesin.'}
       />
       <QueryView query={query}>
         {(data) =>
           !data.profile ? (
-            <EmptyState title="Profilin hazırlanıyor." body="Öğrenci profilin tamamlandığında hedeflerin burada görünür." />
+            <EmptyState title="Hesabını hazırlıyoruz." body="Her şey hazır olduğunda hedeflerini burada göreceksin." />
           ) : (
             <>
               {data.examLine || data.targetRank ? (
                 <Section title="Sınav ve sıralama" first>
-                  <Row title="Sınav" meta={data.examLine || 'Sınav belirlenmedi'} />
-                  {data.targetRank ? <Row title="Hedef sıralama" meta={RANK.format(data.targetRank)} subtitle="Gereken net aralığını koçun belirler." /> : null}
+                  <Row title="Sınav" meta={data.examLine || 'Henüz seçilmedi'} />
+                  {data.targetRank ? <Row title="Hedef sıralama" meta={RANK.format(data.targetRank)} subtitle="Bu sıralama için gereken net aralığını koçunla belirleyeceksiniz." /> : null}
                 </Section>
               ) : null}
               {data.goals.length === 0 ? (
-                <EmptyState title="Henüz hedef belirlenmedi." body="Koçunla birlikte net ve plan hedeflerini belirlediğinizde burada takip edebilirsin." />
+                <EmptyState title="Henüz bir hedefin yok." body="Koçunla birlikte hedeflerini belirlediğinizde ilerlemeni buradan takip edebilirsin." />
               ) : (
                 GROUPS.map((group) => {
                   const items = data.goals.filter((goal) => group.kinds.includes(goal.kind));
@@ -81,11 +81,11 @@ function GoalRow({ goal }: { goal: MobileGoal }) {
     <View style={styles.goal} testID={`yon-goal-${goal.id}`}>
       <View style={styles.head}>
         <Text variant="bodyStrong" style={styles.flex}>{goal.label}</Text>
-        {goal.status === 'ACHIEVED' ? <StatusBadge label="Ulaşıldı" tone="success" /> : goal.status === 'PAUSED' ? <StatusBadge label="Duraklatıldı" tone="neutral" /> : null}
+        {goal.status === 'ACHIEVED' ? <StatusBadge label="Başardın!" tone="success" /> : goal.status === 'PAUSED' ? <StatusBadge label="Duraklatıldı" tone="neutral" /> : null}
       </View>
       <Text tone="secondary" variant="secondary">{`Hedef ${NUM.format(goal.target)}${goal.kind === 'PLAN_COMPLETION' ? '%' : ''} · ${currentLabel(goal)}`}</Text>
       <Text tone="muted" variant="meta">
-        {`${goal.current === null ? 'Bu başlıkta henüz ölçüm yok; ilerleme çizilmiyor.' : `Kaynak: ${goal.basis ?? '—'}`}${goal.nearTermNote ? ` · Yakın hedef: ${goal.nearTermNote}` : ''}`}
+        {`${goal.current === null ? 'Bu hedef için henüz ölçüm yok; ilk veri gelince ilerlemeni göreceksin.' : `Kaynak: ${goal.basis ?? '—'}`}${goal.nearTermNote ? ` · Yakın hedef: ${goal.nearTermNote}` : ''}`}
       </Text>
       {goal.percent !== null && goal.band !== null ? (
         <View style={styles.track} accessible accessibilityRole="progressbar" accessibilityLabel={`${goal.label} ilerlemesi`} accessibilityValue={{ min: 0, max: 100, now: Math.round(goal.percent) }}>

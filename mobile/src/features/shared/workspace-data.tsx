@@ -112,19 +112,19 @@ type QueryViewProps<T> = {
  * erişim yok, bilinmeyen sunucu / sözleşme hatası (tekrar dene).
  * Oturum süresi dolması (401) merkezi olarak oturumu kapatır.
  */
-export function QueryView<T>({ query, children, rows = 5, disabledTitle = 'Bu bölüm şu anda kullanıma açık değil.' }: QueryViewProps<T>) {
+export function QueryView<T>({ query, children, rows = 5, disabledTitle = 'Bu bölüm şimdilik kapalı.' }: QueryViewProps<T>) {
   const online = useOnline();
   const error = query.error;
   if (query.data !== undefined) {
     return (
       <>
         {!online ? (
-          <Banner tone="warning" title="Çevrimdışısın">
-            Gösterilen bilgiler son bağlantıdaki hâli. Bağlantı gelince yenilenir.
+          <Banner tone="warning" title="İnternet bağlantın yok gibi">
+            Gördüklerin son bağlantındaki hâli. Bağlantın gelince kendiliğinden yenilenecek.
           </Banner>
         ) : error ? (
-          <Banner tone="warning" title="Güncellenemedi">
-            {error instanceof ApiError ? error.message : 'Son bilgiler gösteriliyor.'}
+          <Banner tone="warning" title="Son bilgileri getiremedik">
+            {error instanceof ApiError ? error.message : 'Şimdilik en son kaydedilen hâlini görüyorsun.'}
           </Banner>
         ) : null}
         {children(query.data)}
@@ -133,11 +133,11 @@ export function QueryView<T>({ query, children, rows = 5, disabledTitle = 'Bu b�
   }
   if (error instanceof ApiError && error.kind === 'feature_disabled') return <EmptyState title={disabledTitle} />;
   if (error instanceof ApiError && (error.kind === 'product_access' || error.kind === 'forbidden')) {
-    return <EmptyState title="Bu bölüme erişimin yok" body={error.message} />;
+    return <EmptyState title="Bu bölüm sana açık değil" body={error.message} />;
   }
   if (error) return <ErrorState error={error} onRetry={() => void query.refetch()} />;
   if (!online && query.fetchStatus === 'paused') {
-    return <EmptyState title="Çevrimdışısın" body="Bağlantı geldiğinde bu bölüm otomatik yüklenecek." />;
+    return <EmptyState title="İnternet bağlantın yok gibi" body="Bağlantın gelir gelmez burayı kendiliğinden yükleyeceğiz." />;
   }
   return <Skeleton rows={rows} />;
 }
@@ -152,7 +152,7 @@ export function WorkspaceRouteGate({ product, navId, children }: { product: Work
   const bootstrap = useReadyBootstrap();
   const allowed = bootstrap.workspace?.activeProduct === product && hasNavItem(bootstrap.workspace.navigation, navId);
   if (!allowed) {
-    return <EmptyState title="Bu bölüm bu çalışma alanında yok" body="Bağlantı başka bir çalışma alanına ait olabilir veya erişimin değişmiş olabilir." />;
+    return <EmptyState title="Bu bölümü burada bulamadık" body="Bağlantı başka bir alana ait olabilir ya da erişimin değişmiş olabilir." />;
   }
   return <>{children}</>;
 }

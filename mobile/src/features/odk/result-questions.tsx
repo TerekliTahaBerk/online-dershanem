@@ -31,10 +31,10 @@ export function ResultQuestions({ questions, answerKeyAvailable }: { questions: 
           { value: 'tumu', label: 'Tümü' },
           { value: 'yanlis', label: 'Yanlış', count: questions.filter((item) => item.result === 'WRONG').length },
           { value: 'bos', label: 'Boş', count: questions.filter((item) => item.result === 'BLANK').length },
-          { value: 'isaretli', label: 'İşaretli', count: questions.filter((item) => item.marked).length },
+          { value: 'isaretli', label: 'İşaretlediklerin', count: questions.filter((item) => item.marked).length },
         ]}
       />
-      {!answerKeyAvailable ? <Text tone="muted" variant="meta">Doğru cevaplar, cevap anahtarı yayınlandığında görünür.</Text> : null}
+      {!answerKeyAvailable ? <Text tone="muted" variant="meta">Doğru cevapları, cevap anahtarı yayınlanınca burada göreceksin.</Text> : null}
       {visible.length ? (
         visible.map((item) => (
           <Row
@@ -48,7 +48,7 @@ export function ResultQuestions({ questions, answerKeyAvailable }: { questions: 
           />
         ))
       ) : (
-        <Text tone="secondary">Bu filtrede soru yok.</Text>
+        <Text tone="secondary">Bu filtreye uyan bir soru yok.</Text>
       )}
       <BottomSheet visible={open !== null} title={open ? `Soru ${open.number}` : ''} onClose={() => setOpen(null)}>
         {open ? (
@@ -57,12 +57,12 @@ export function ResultQuestions({ questions, answerKeyAvailable }: { questions: 
             <Row title="Sonuç" trailing={<StatusBadge label={RESULT_LABEL[open.result]} tone={RESULT_TONE[open.result]} />} />
             <Row title="Cevabın" meta={open.selectedOption ?? 'Boş bıraktın'} />
             <Row title="Doğru cevap" meta={open.correctOption ?? 'Cevap anahtarı yayınlanınca'} />
-            <Row title="Süre" meta={open.activeDurationMs != null ? `${Math.round(open.activeDurationMs / 1000)} sn` : 'Süre kaydı yok'} />
+            <Row title="Süre" meta={open.activeDurationMs != null ? `${Math.round(open.activeDurationMs / 1000)} sn` : 'Kayıtlı değil'} />
             {open.marked ? <StatusBadge label="İşaretlemiştin" tone="warning" /> : null}
             {open.outcomes.map((outcome) => (
               <Row key={outcome.code} title={outcome.title} subtitle={`${outcome.code}${outcome.primary ? ' · ana kazanım' : ''}`} />
             ))}
-            <Text tone="muted" variant="meta">Sorunun kendisi deneme kitapçığındadır.</Text>
+            <Text tone="muted" variant="meta">Sorunun tamamına deneme kitapçığından bakabilirsin.</Text>
           </View>
         ) : null}
       </BottomSheet>

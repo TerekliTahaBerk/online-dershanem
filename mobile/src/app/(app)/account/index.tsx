@@ -33,14 +33,14 @@ export default function AccountScreen() {
       </Section>
       <Section title="Güvenlik">
         <Row leading={<KeyRound size={19} color={color.textSecondary} strokeWidth={1.7} />} title="Parolayı değiştir" onPress={() => router.push('/account/password')} testID="account-password" />
-        <Row leading={<Monitor size={19} color={color.textSecondary} strokeWidth={1.7} />} title="Oturumlar" subtitle="Bu hesabın açık olduğu cihazlar" onPress={() => router.push('/account/sessions')} testID="account-sessions" />
+        <Row leading={<Monitor size={19} color={color.textSecondary} strokeWidth={1.7} />} title="Oturumlar" subtitle="Hesabının açık olduğu cihazlar" onPress={() => router.push('/account/sessions')} testID="account-sessions" />
         {bootstrap.user.role === 'STUDENT' || bootstrap.user.role === 'PARENT' ? (
           <Row leading={<Bell size={19} color={color.textSecondary} strokeWidth={1.7} />} title="Bildirim ayarları" subtitle="Telefon bildirimleri, kategoriler, sessiz saatler" onPress={() => router.push('/account/notifications')} testID="account-notifications" />
         ) : null}
       </Section>
       <Section title="Gizlilik ve hesap">
         <Row leading={<ShieldCheck size={19} color={color.textSecondary} strokeWidth={1.7} />} title="Gizlilik politikası" onPress={() => router.push('/account/privacy')} />
-        <Row leading={<Trash2 size={19} color={color.textSecondary} strokeWidth={1.7} />} title="Hesabımı sil" subtitle="Silme talebi ve veri saklama bilgileri" onPress={() => router.push('/account/deletion')} />
+        <Row leading={<Trash2 size={19} color={color.textSecondary} strokeWidth={1.7} />} title="Hesabımı sil" subtitle="Silme talebi ve verilerinin saklanması" onPress={() => router.push('/account/deletion')} />
       </Section>
       <View style={styles.footer}>
         <Button label="Çıkış yap" variant="secondary" onPress={() => void signOut()} testID="account-sign-out" />

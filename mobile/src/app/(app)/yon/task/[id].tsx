@@ -14,7 +14,7 @@ export default function YonTaskRoute() {
   const taskId = typeof params.id === 'string' && /^[\w-]{1,64}$/.test(params.id) ? params.id : null;
   return (
     <YonRouteGate navId="plan">
-      {taskId ? <YonTaskDetailScreen taskId={taskId} /> : <EmptyState title="Görev bulunamadı." />}
+      {taskId ? <YonTaskDetailScreen taskId={taskId} /> : <EmptyState title="Bu görevi bulamadık." />}
     </YonRouteGate>
   );
 }

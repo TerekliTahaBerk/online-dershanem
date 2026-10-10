@@ -33,10 +33,10 @@ export const FIELD_LABEL: Record<YonCompletionField, string> = {
   actualCorrect: 'Doğru',
   actualIncorrect: 'Yanlış',
   actualBlank: 'Boş',
-  actualMinutes: 'Geçen süre (dk)',
+  actualMinutes: 'Kaç dakika sürdü?',
   studentNote: 'Notun',
-  difficultyFelt: 'Zorluk (1–5)',
-  energyFelt: 'Çalışma hissi (1–5)',
+  difficultyFelt: 'Ne kadar zordu? (1–5)',
+  energyFelt: 'Nasıl hissettin? (1–5)',
 };
 
 export const COMPLETE_LABEL: Record<Exclude<YonCompleteStatus, 'IN_PROGRESS'>, string> = {
@@ -104,7 +104,7 @@ export function parseCompletionDraft(fields: YonCompletionField[], draft: Partia
       values[field] = null;
       continue;
     }
-    if (!/^\d+$/.test(raw)) return { values, error: `${FIELD_LABEL[field]} için tam sayı gir.` };
+    if (!/^\d+$/.test(raw)) return { values, error: `${FIELD_LABEL[field]} için bir tam sayı yazar mısın?` };
     values[field] = Number(raw);
   }
   return { values, error: null };

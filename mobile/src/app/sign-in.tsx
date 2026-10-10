@@ -31,7 +31,7 @@ export default function SignInScreen() {
     try {
       await signIn(email.trim(), password);
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : 'Giriş yapılamadı. Bağlantınızı kontrol edin.');
+      setError(cause instanceof ApiError ? cause.message : 'Giriş yapamadık. Bağlantını kontrol edip bir daha dener misin?');
       if (Platform.OS === 'ios') void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setSubmitting(false);
@@ -43,7 +43,7 @@ export default function SignInScreen() {
 
   return (
     <AuthScreen title="Tekrar hoş geldin">
-        {notice === 'SESSION_EXPIRED' ? <Banner tone="warning">Oturumun sona erdi. Lütfen tekrar giriş yap.</Banner> : null}
+        {notice === 'SESSION_EXPIRED' ? <Banner tone="warning">Güvenliğin için oturumunu kapattık. Kaldığın yerden devam etmek için tekrar giriş yap.</Banner> : null}
         {error ? <Banner tone="critical">{error}</Banner> : null}
         <TextField
           variant="auth"

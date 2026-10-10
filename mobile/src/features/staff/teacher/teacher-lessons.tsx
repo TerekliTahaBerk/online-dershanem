@@ -37,7 +37,7 @@ export default function TeacherLessonsScreen() {
               ))}
             </Section>
           ) : (
-            <EmptyState title={range === 'yaklasan' ? 'Yaklaşan dersin yok' : 'Son 30 günde ders yok'} />
+            <EmptyState title={range === 'yaklasan' ? 'Yaklaşan dersiniz yok' : 'Son 30 günde ders yok'} />
           )
         }
       </QueryView>

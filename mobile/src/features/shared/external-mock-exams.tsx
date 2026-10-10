@@ -34,18 +34,18 @@ export default function ExternalMockExamsScreen() {
 
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="external-mock-exams">
-      <PageHeader title="Dış denemelerim" description="Okulda, kursta veya başka bir platformda çözdüğün deneme sonuçları." />
+      <PageHeader title="Dış denemelerim" description="Okulda, kursta ya da başka bir platformda çözdüğün denemelerin." />
       {!allowed ? (
-        <EmptyState title="Bu bölüm bu çalışma alanında yok" />
+        <EmptyState title="Bu bölümü burada bulamadık" />
       ) : (
-        <QueryView query={query} disabledTitle="Deneme analizi şu anda açık değil.">
+        <QueryView query={query} disabledTitle="Deneme analizi şimdilik kapalı.">
           {(data) => {
-            if (!data.profile) return <EmptyState title="Profilin hazırlanıyor." />;
+            if (!data.profile) return <EmptyState title="Hesabını hazırlıyoruz." body="Her şey hazır olduğunda denemelerini burada göreceksin." />;
             if (!data.exams.length) {
               return (
                 <EmptyState
-                  title="Henüz dış deneme sonucun yok."
-                  body="Deneme sonucunu web panelinden ekleyebilirsin; burada analizini görürsün."
+                  title="Henüz eklediğin bir deneme yok."
+                  body="Çözdüğün bir denemenin sonucunu web panelinden ekle; analizini burada görürsün."
                   action={entryUrl ? <Button label="Web panelinde deneme ekle" variant="secondary" onPress={() => void openOnWeb('/panel/ogrenci/denemeler')} /> : undefined}
                 />
               );
@@ -58,13 +58,13 @@ export default function ExternalMockExamsScreen() {
                     <Row
                       title="Toplam net"
                       meta={current.total.toLocaleString('tr-TR')}
-                      subtitle={current.delta === null ? 'Karşılaştırma için önceki deneme yok' : `Önceki denemene göre ${current.delta >= 0 ? '+' : ''}${current.delta.toLocaleString('tr-TR')}`}
+                      subtitle={current.delta === null ? 'Karşılaştırmak için önceki bir denemen yok' : `Önceki denemene göre ${current.delta >= 0 ? '+' : ''}${current.delta.toLocaleString('tr-TR')}`}
                     />
                     {current.sections.map((section) => (
                       <Row key={section.id} title={section.subjectName} meta={`${section.net.toLocaleString('tr-TR')} net`} subtitle={`${section.correctCount} doğru · ${section.incorrectCount} yanlış`} />
                     ))}
-                    {current.nextAction ? <Banner tone="info" title="Sonraki adım">{current.nextAction}</Banner> : null}
-                    <Text tone="muted" variant="meta">Karşılaştırma yalnızca kendi geçmiş denemelerinle yapılır.</Text>
+                    {current.nextAction ? <Banner tone="info" title="Şimdi ne yapabilirsin?">{current.nextAction}</Banner> : null}
+                    <Text tone="muted" variant="meta">Seni yalnızca kendi geçmiş denemelerinle karşılaştırıyoruz.</Text>
                   </Section>
                 ) : null}
                 <Section title="Tüm denemeler">
@@ -75,7 +75,7 @@ export default function ExternalMockExamsScreen() {
                       title={exam.title}
                       meta={formatDayMonth(exam.takenAt)}
                       selected={current?.id === exam.id}
-                      trailing={current?.id === exam.id ? <StatusBadge label="Gösteriliyor" tone="info" /> : null}
+                      trailing={current?.id === exam.id ? <StatusBadge label="Şu an açık" tone="info" /> : null}
                       onPress={current?.id === exam.id ? undefined : () => setExamId(exam.id)}
                     />
                   ))}

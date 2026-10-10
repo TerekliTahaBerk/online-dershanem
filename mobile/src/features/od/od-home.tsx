@@ -46,7 +46,7 @@ function summaryLine(home: MobileOdHome): string | undefined {
   const due = home.today.filter((item) => item.kind === 'ASSIGNMENT_DUE').length;
   const parts = [lessons ? `${lessons} ders` : null, due ? `${due} ödev teslimi` : null, home.week?.dueReviews ? `${home.week.dueReviews} tekrar` : null].filter(Boolean);
   if (parts.length) return `Bugün ${parts.join(' · ')}.`;
-  return home.now ? undefined : 'Bugün için planlanmış bir çalışma görünmüyor.';
+  return home.now ? undefined : 'Bugün takvimin boş; dilersen kendine küçük bir tekrar ayır.';
 }
 
 export default function OdHomeScreen() {
@@ -70,7 +70,7 @@ export default function OdHomeScreen() {
 
 function OdHomeBody({ home, now }: { home: MobileOdHome; now: Date }) {
   if (home.state === 'NO_PROFILE') {
-    return <EmptyState title="Profilin hazırlanıyor." body="Öğrenci profilin tamamlandığında derslerin ve çalışmaların burada görünecek." />;
+    return <EmptyState title="Hesabını hazırlıyoruz." body="Her şey hazır olduğunda derslerini ve çalışmalarını burada göreceksin." />;
   }
   return (
     <>
@@ -90,8 +90,8 @@ function NowBlock({ action }: { action: MobileOdAction | null }) {
     return (
       <View style={styles.now} testID="od-now-empty">
         <Text variant="caption" tone="muted">Şimdi</Text>
-        <Text variant="sectionTitle" accessibilityRole="header">Bekleyen bir çalışma görünmüyor</Text>
-        <Text tone="secondary">Derslerine göz atabilir veya gidişatını inceleyebilirsin.</Text>
+        <Text variant="sectionTitle" accessibilityRole="header">Şu an bekleyen bir işin yok</Text>
+        <Text tone="secondary">Bu boşluğu iyi değerlendir: derslerine göz atabilir ya da gidişatına bakabilirsin.</Text>
         <View style={styles.actions}>
           {nav.has('lessons') && nav.navigation ? <Button label="Derslerim" variant="secondary" onPress={() => nav.push(expoHrefFor(targetForNavId(nav.navigation!, 'lessons')))} /> : null}
           {insights && nav.navigation ? <Button label="Gidişatıma Bak" variant="secondary" onPress={() => nav.push(expoHrefFor(targetForNavId(nav.navigation!, insights)))} /> : null}
@@ -110,7 +110,7 @@ function NowBlock({ action }: { action: MobileOdAction | null }) {
         {href ? (
           <Button label={action.ctaLabel} onPress={() => nav.push(href)} testID="od-now-cta" accessibilityHint={action.joinable ? 'Ders detayında katılım bağlantısı açılır.' : undefined} />
         ) : webFallback ? (
-          <Button label="Web panelinde aç" variant="secondary" onPress={() => void openOnWeb(action.webPath)} />
+          <Button label="Web'de aç" variant="secondary" onPress={() => void openOnWeb(action.webPath)} />
         ) : null}
       </View>
     </View>
@@ -137,7 +137,7 @@ function TodaySection({ items, now }: { items: MobileOdTodayItem[]; now: Date })
           );
         })
       ) : (
-        <Text tone="secondary">Bugün için planlanmış bir ders veya teslim yok. Yeni ders veya ödev geldiğinde burada görünecek.</Text>
+        <Text tone="secondary">Bugün dersin ya da teslimin yok. Yeni bir şey eklendiğinde ilk burada göreceksin.</Text>
       )}
     </Section>
   );
@@ -148,22 +148,22 @@ function WeekSection({ week }: { week: MobileOdWeek }) {
   const assignments = nav.navigation ? expoHrefFor(targetForNavId(nav.navigation, 'assignments')) : null;
   return (
     <Section title="Bu hafta">
-      <Row title="Dersler" meta={week.lessonsPlanned ? `${week.lessonsPlanned} ders` : 'Ders yok'} subtitle={week.lessonsRemainingToday ? `Bugün ${week.lessonsRemainingToday} ders kaldı` : null} />
+      <Row title="Dersler" meta={week.lessonsPlanned ? `${week.lessonsPlanned} ders` : 'Ders yok'} subtitle={week.lessonsRemainingToday ? `Bugün ${week.lessonsRemainingToday} dersin daha var` : null} />
       <Row
-        title="Bu hafta teslim edilecekler"
+        title="Bu haftaki teslimlerin"
         meta={week.assignmentsDue ? `${week.assignmentsCompleted}/${week.assignmentsDue} tamamlandı` : 'Teslim yok'}
         onPress={assignments && week.assignmentsDue ? () => nav.push(assignments) : undefined}
       />
       {week.pendingAssignments ? (
         <Row
-          title="Bekleyen çalışmalar"
+          title="Sırada bekleyenler"
           meta={`${week.pendingAssignments}`}
-          subtitle={week.overdueAssignments ? `${week.overdueAssignments} çalışmanın süresi geçti` : null}
+          subtitle={week.overdueAssignments ? `${week.overdueAssignments} çalışmanın süresi geçti; yetiştirmek için hâlâ geç değil` : null}
           onPress={assignments ? () => nav.push(assignments) : undefined}
         />
       ) : null}
       {week.dueReviews !== null && week.dueReviews > 0 ? (
-        <Row title="Bugünkü tekrarlar" meta={`${week.dueReviews}`} onPress={nav.has('review-recovery') ? () => nav.push(hrefForOdTarget({ type: 'review' }, nav.navigation)) : undefined} />
+        <Row title="Bugünün tekrarları" meta={`${week.dueReviews}`} onPress={nav.has('review-recovery') ? () => nav.push(hrefForOdTarget({ type: 'review' }, nav.navigation)) : undefined} />
       ) : null}
     </Section>
   );
@@ -173,9 +173,9 @@ function InsightSection({ sentence }: { sentence: string }) {
   const nav = useOdNavigation();
   const target = nav.has('analiz') ? 'analiz' : nav.has('progress') ? 'progress' : null;
   return (
-    <Section title="Akademik gidişat">
+    <Section title="Gidişatın">
       <Text tone="secondary">{sentence}</Text>
-      {target && nav.navigation ? <Button label="Gidişatım" variant="quiet" onPress={() => nav.push(expoHrefFor(targetForNavId(nav.navigation!, target)))} /> : null}
+      {target && nav.navigation ? <Button label="Ayrıntılara bak" variant="quiet" onPress={() => nav.push(expoHrefFor(targetForNavId(nav.navigation!, target)))} /> : null}
     </Section>
   );
 }
@@ -201,7 +201,7 @@ function OtherWorkspaces() {
       await selectWorkspace(code);
       router.replace('/');
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : 'Çalışma alanı değiştirilemedi.');
+      setError(cause instanceof ApiError ? cause.message : 'Geçiş yapamadık. Bağlantını kontrol edip bir daha dener misin?');
     } finally {
       setPending(null);
     }
@@ -215,7 +215,7 @@ function OtherWorkspaces() {
           key={product.code}
           testID={`od-other-${product.code}`}
           title={product.label || PRODUCT_FALLBACK_LABEL[product.code]}
-          subtitle="Ayrı çalışma alanı · geçiş yapar"
+          subtitle="Dokununca bu alana geçersin"
           leading={<ProductLogo product={product.code} size={32} />}
           trailing={pending === product.code ? <Text tone="muted">…</Text> : null}
           disabled={pending !== null}

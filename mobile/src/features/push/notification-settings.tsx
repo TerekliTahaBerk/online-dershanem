@@ -25,7 +25,7 @@ const CATEGORIES: { key: keyof MobileNotificationPreferences; title: string; sub
   { key: 'assignment', title: 'Çalışmalar ve ödevler', subtitle: 'Yeni çalışma ve teslim hatırlatmaları' },
   { key: 'lessonSummary', title: 'Dersler ve koçluk', subtitle: 'Ders hatırlatmaları, ders özetleri, görüşme güncellemeleri' },
   { key: 'absence', title: 'Devamsızlık', subtitle: 'Derse katılım bildirimleri' },
-  { key: 'weeklyDigest', title: 'Haftalık özet', subtitle: 'Yayınlanan haftalık özetler' },
+  { key: 'weeklyDigest', title: 'Haftalık özet', subtitle: 'Haftanın özeti yayınlandığında' },
   { key: 'examUpdates', title: 'Deneme Ligi', subtitle: 'Deneme hatırlatması, sonuç ve cevap anahtarı' },
 ];
 
@@ -73,7 +73,7 @@ export default function NotificationSettingsScreen() {
       await save.mutateAsync(patch);
       if (success) setMessage({ tone: 'success', text: success });
     } catch (error) {
-      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Tercih kaydedilemedi.' });
+      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Tercihini kaydedemedik. Bir daha dener misin?' });
     }
   }
 
@@ -82,15 +82,15 @@ export default function NotificationSettingsScreen() {
     const state = await requestPermission();
     setPermission(state);
     if (state.status !== 'granted') {
-      setMessage({ tone: 'warning', text: 'Telefon bildirimleri için izin verilmedi. İstersen sistem ayarlarından açabilirsin; uygulama içi bildirimler çalışmaya devam eder.' });
+      setMessage({ tone: 'warning', text: 'Telefon bildirimlerine izin verilmedi. İstersen telefonunun ayarlarından açabilirsin; uygulama içindeki bildirimler gelmeye devam eder.' });
       return;
     }
     try {
       await save.mutateAsync({ pushEnabled: true });
       const result = await syncPushRegistration(api, bootstrap.user.id, { force: true });
-      setMessage(result === 'REGISTERED' || result === 'ALREADY' ? { tone: 'success', text: 'Telefon bildirimleri açıldı. Gönderim zamanlaması ağ ve cihaz koşullarına bağlıdır.' } : { tone: 'warning', text: 'Tercih kaydedildi, ancak bu cihaz kaydedilemedi.' });
+      setMessage(result === 'REGISTERED' || result === 'ALREADY' ? { tone: 'success', text: 'Telefon bildirimlerin açıldı! Bildirimlerin ne zaman ulaşacağı bağlantına ve telefonuna göre biraz değişebilir.' } : { tone: 'warning', text: 'Tercihini kaydettik ama bu telefonu kaydedemedik. Biraz sonra tekrar dener misin?' });
     } catch (error) {
-      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Telefon bildirimleri açılamadı. Bağlantını kontrol et.' });
+      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Telefon bildirimlerini açamadık. Bağlantını kontrol edip bir daha dener misin?' });
     }
   }
 
@@ -99,23 +99,23 @@ export default function NotificationSettingsScreen() {
     try {
       await save.mutateAsync({ pushEnabled: false });
       await unregisterCurrentDevice(api).catch(() => undefined);
-      setMessage({ tone: 'success', text: 'Telefon bildirimleri kapatıldı. Uygulama içi bildirimler sürüyor.' });
+      setMessage({ tone: 'success', text: 'Telefon bildirimlerini kapattık. Uygulama içindeki bildirimler gelmeye devam edecek.' });
     } catch (error) {
-      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Tercih kaydedilemedi.' });
+      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Tercihini kaydedemedik. Bir daha dener misin?' });
     }
   }
 
   if (bootstrap.user.role !== 'STUDENT' && bootstrap.user.role !== 'PARENT') {
     return (
       <Screen>
-        <EmptyState title="Bildirim ayarları bu hesap için mobilde açık değil." />
+        <EmptyState title="Bildirim ayarları bu hesapta mobilde henüz açık değil." />
       </Screen>
     );
   }
 
   return (
     <Screen testID="notification-settings">
-      <PageHeader title="Bildirim ayarları" description="Tercihler bundan sonraki bildirimleri etkiler. Telefon bildirimlerinde ad, not veya puan gibi kişisel ayrıntılar gösterilmez." />
+      <PageHeader title="Bildirim ayarları" description="Seçtiklerin bundan sonraki bildirimlerde geçerli olur. Telefon bildirimlerinde ad, not ya da puan gibi kişisel ayrıntıları göstermeyiz." />
       {message ? <Banner tone={message.tone}>{message.text}</Banner> : null}
       {query.isPending ? (
         <Skeleton rows={6} />
@@ -128,11 +128,11 @@ export default function NotificationSettingsScreen() {
               <Text tone="secondary">{SUPPORT_COPY[support.reason]}</Text>
             ) : (
               <>
-                <Row title="Sistem izni" meta={permission?.status === 'granted' ? 'Verildi' : permission?.status === 'denied' ? 'Reddedildi' : 'Henüz sorulmadı'} />
+                <Row title="Sistem izni" meta={permission?.status === 'granted' ? 'Verildi' : permission?.status === 'denied' ? 'Verilmedi' : 'Henüz sorulmadı'} />
                 <View style={styles.row}>
                   <View style={styles.flex}>
                     <Text variant="bodyStrong">Telefon bildirimleri</Text>
-                    <Text tone="muted" variant="meta">Açarsan, yeni bildirimler telefonuna da gönderilir. Sessiz saatlerde gönderim ertelenir.</Text>
+                    <Text tone="muted" variant="meta">Açarsan yeni bildirimler telefonuna da gelir. Sessiz saatlerinde seni rahatsız etmeyiz.</Text>
                   </View>
                   <Switch
                     value={Boolean(query.data?.pushEnabled) && permission?.status === 'granted'}
@@ -145,8 +145,8 @@ export default function NotificationSettingsScreen() {
                 </View>
                 {permission?.status === 'denied' ? (
                   <View style={styles.hint}>
-                    <Text tone="secondary" variant="secondary">İzin sistem ayarlarında kapalı. Uygulama tekrar sormaz; açmak için sistem ayarlarını kullan.</Text>
-                    <Button label="Sistem ayarlarını aç" variant="secondary" onPress={() => void Linking.openSettings()} />
+                    <Text tone="secondary" variant="secondary">Bildirim izni telefonunun ayarlarında kapalı. Uygulama bir daha soramıyor; açmak için ayarlara gitmen yeterli.</Text>
+                    <Button label="Telefon ayarlarını aç" variant="secondary" onPress={() => void Linking.openSettings()} />
                   </View>
                 ) : null}
               </>
@@ -164,7 +164,7 @@ export default function NotificationSettingsScreen() {
             ))}
           </Section>
           <Section title="Sessiz saatler">
-            <Text tone="muted" variant="meta">Bu saatlerde telefon bildirimi gönderilmez; hâlâ geçerliyse sonradan gönderilir (İstanbul saati).</Text>
+            <Text tone="muted" variant="meta">Bu saatlerde telefonuna bildirim göndermeyiz; hâlâ önemliyse sonra iletiriz (İstanbul saati).</Text>
             <View accessibilityRole="radiogroup" accessibilityLabel="Sessiz saatler">
               {QUIET_PRESETS.map((preset) => (
                 <Row
@@ -181,7 +181,7 @@ export default function NotificationSettingsScreen() {
             <View style={styles.row}>
               <View style={styles.flex}>
                 <Text variant="bodyStrong">Günün gelişmeleri tek bildirimde</Text>
-                <Text tone="muted" variant="meta">{"Açıkken hatırlatmalar 18:00'de tek özet olarak gelir."}</Text>
+                <Text tone="muted" variant="meta">{"Açıkken hatırlatmaları 18:00'de tek bir özette toplarız."}</Text>
               </View>
               <Switch
                 value={Boolean(query.data?.dailyDigest)}

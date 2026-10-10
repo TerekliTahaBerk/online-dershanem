@@ -22,14 +22,14 @@ export default function OdMaterialsScreen() {
   const refresh = usePullToRefresh(() => query.refetch());
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="od-materials">
-      <PageHeader title="Kaynaklar" description="Öğretmenlerinin paylaştığı PDF, video ve bağlantılar." />
+      <PageHeader title="Kaynaklarım" description="Öğretmenlerinin senin için paylaştığı PDF'ler, videolar ve bağlantılar." />
       <QueryView query={query}>
         {(data) => {
-          if (!data.profile) return <EmptyState title="Profilin hazırlanıyor." body="Öğrenci profilin tamamlandığında kaynakların burada listelenir." />;
-          if (!data.materials.length) return <EmptyState title="Henüz paylaşılan kaynak yok." body="Öğretmenin bir kaynak paylaştığında burada görünecek." />;
+          if (!data.profile) return <EmptyState title="Hesabını hazırlıyoruz." body="Her şey hazır olduğunda kaynaklarını burada bulacaksın." />;
+          if (!data.materials.length) return <EmptyState title="Henüz paylaşılan bir kaynak yok." body="Öğretmenin bir kaynak paylaştığında burada seni bekliyor olacak." />;
           return (
             <>
-              {data.lowDataMode ? <Banner tone="info">Düşük veri modu açık: metin dökümü olan kaynaklar önde.</Banner> : null}
+              {data.lowDataMode ? <Banner tone="info">Düşük veri modun açık; metin dökümü olan kaynakları öne aldık.</Banner> : null}
               {data.materials.map((material) => (
                 <MaterialItem key={material.id} material={material} />
               ))}
@@ -51,7 +51,7 @@ function MaterialItem({ material }: { material: MobileMaterial }) {
     <View style={styles.item} testID={`material-${material.id}`}>
       <View style={styles.badges}>
         <StatusBadge label={KIND_LABEL[material.kind]} />
-        {material.preferred ? <StatusBadge label="Tercihinle uyumlu" tone="success" /> : null}
+        {material.preferred ? <StatusBadge label="Sana uygun" tone="success" /> : null}
         {material.captionsAvailable ? <StatusBadge label="Altyazı var" tone="info" /> : null}
         {material.transcript ? <StatusBadge label="Metin dökümü var" tone="info" /> : null}
       </View>

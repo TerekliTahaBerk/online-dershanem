@@ -66,7 +66,7 @@ describe('M2.5 Gidişatım ve dış denemeler', () => {
     fireEvent.changeText(view.getByTestId('weekly-goal-input'), '  Üç deneme çözeceğim.  ');
     const before = h.server.called('GET', '/api/panel/student/insights').length;
     await press(h, view.getByTestId('weekly-goal-save'));
-    expect(await view.findByText('Hedefin kaydedildi.', {}, WAIT)).toBeTruthy();
+    expect(await view.findByText('Hedefini kaydettik. Başarılar!', {}, WAIT)).toBeTruthy();
     expect(h.server.called('PATCH', '/api/panel/student/weekly-goal')[0].body).toEqual({ goal: 'Üç deneme çözeceğim.' });
     await waitFor(() => expect(h.server.called('GET', '/api/panel/student/insights').length).toBeGreaterThan(before), WAIT);
     expect(await view.findByText('Üç deneme çözeceğim.', {}, WAIT)).toBeTruthy();
@@ -87,7 +87,7 @@ describe('M2.5 Gidişatım ve dış denemeler', () => {
     fireEvent.changeText(view.getByTestId('weekly-goal-input'), 'Her gün okuma.');
     await press(h, view.getByTestId('weekly-goal-save'));
     expect(await view.findByText('Çok fazla deneme yapıldı.', {}, WAIT)).toBeTruthy();
-    expect(view.queryByText('Hedefin kaydedildi.')).toBeNull();
+    expect(view.queryByText('Hedefini kaydettik. Başarılar!')).toBeNull();
   });
 
   it('progressInsights kapalı (404 FEATURE_DISABLED): kırık ekran değil, açıklama', async () => {
@@ -96,7 +96,7 @@ describe('M2.5 Gidişatım ve dış denemeler', () => {
     ]);
     await signIn(h, 'ada@example.com');
     const view = await openProgress(h);
-    expect(await view.findByText('Gidişat analizi şu anda açık değil.', {}, WAIT)).toBeTruthy();
+    expect(await view.findByText('Gidişat ekranı şimdilik kapalı.', {}, WAIT)).toBeTruthy();
   });
 
   it('dış denemeler: bayrak + menü öğesiyle açılır; Deneme Ligi uçları asla çağrılmaz; deneme seçimi sunucudan', async () => {

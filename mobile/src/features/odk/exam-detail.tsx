@@ -29,7 +29,7 @@ export default function OdkExamDetailScreen({ examId }: { examId: string }) {
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="odk-exam-detail">
       {query.error instanceof ApiError && query.error.kind === 'not_found' && !query.data ? (
-        <EmptyState title="Deneme bulunamadı." body="Bu deneme sana açık değil, yayından kalkmış veya erişim hakkın sona ermiş olabilir." />
+        <EmptyState title="Bu denemeyi bulamadık." body="Sana açık olmayabilir, yayından kaldırılmış ya da erişim süren dolmuş olabilir." />
       ) : (
         <QueryView query={query}>{(detail) => <DetailBody detail={detail} />}</QueryView>
       )}
@@ -40,7 +40,7 @@ export default function OdkExamDetailScreen({ examId }: { examId: string }) {
 function windowCopy(detail: MobileOdkExamDetail): string {
   const { startsAt, endsAt } = detail.exam;
   if (startsAt && endsAt) return `${formatDateTime(startsAt)} – ${formatDateTime(endsAt)}`;
-  return startsAt ? formatDateTime(startsAt) : 'Başlama saati bekleniyor';
+  return startsAt ? formatDateTime(startsAt) : 'Başlama saati yakında belli olacak';
 }
 
 function DetailBody({ detail }: { detail: MobileOdkExamDetail }) {
@@ -67,7 +67,7 @@ function DetailBody({ detail }: { detail: MobileOdkExamDetail }) {
         <Row title="Süre" meta={`${exam.durationMinutes} dakika${plan && exam.sessionTotalMinutes ? ` (aralar hariç; toplam ${exam.sessionTotalMinutes} dk)` : ''}`} />
         <Row title="Geç giriş" meta={exam.lateEntryMinutes ? `Başlangıçtan sonra ${exam.lateEntryMinutes} dk` : 'Yok'} />
         <Row title="Deneme hakkı" meta={`${exam.attemptLimit}`} />
-        <Row title="Gözetim" meta={exam.meetRequired ? 'Meet zorunlu' : 'Meet gerekmiyor'} />
+        <Row title="Gözetim" meta={exam.meetRequired ? 'Meet açık olmalı' : 'Meet gerekmiyor'} />
       </Section>
       {plan ? (
         <Section title="Oturum planı">
@@ -79,13 +79,13 @@ function DetailBody({ detail }: { detail: MobileOdkExamDetail }) {
               meta={`${item.durationMinutes} dk${index < plan.length - 1 && item.breakAfterMinutes ? ` + ${item.breakAfterMinutes} dk ara` : ''}`}
             />
           ))}
-          <Text tone="muted" variant="meta">Oturumlar sırayla açılır; biten oturumun cevapları kilitlenir. Oturum sırası, süreler ve teslim web sınav sistemi tarafından yönetilir.</Text>
+          <Text tone="muted" variant="meta">Oturumlar sırayla açılır; biten oturumun cevapları kilitlenir. Sıra, süreler ve teslimi sınav sistemi senin yerine takip eder.</Text>
         </Section>
       ) : null}
       <Section title="Kurallar">
-        <Text tone="secondary">• Süre sunucuda tutulur; sayfayı kapatmak süreyi durdurmaz.</Text>
-        <Text tone="secondary">• Her cevap seçtiğin anda kaydedilir; süre bitince deneme otomatik teslim edilir.</Text>
-        {exam.meetRequired ? <Text tone="secondary">• Deneme boyunca Meet görüşmesinde kalman gerekir.</Text> : null}
+        <Text tone="secondary">• Süren bizim tarafımızda işler; sayfayı kapatsan da süre durmaz.</Text>
+        <Text tone="secondary">• Her cevabın seçtiğin anda kaydedilir; süre bitince denemen kendiliğinden teslim edilir.</Text>
+        {exam.meetRequired ? <Text tone="secondary">• Deneme boyunca Meet görüşmesinde kalman gerekiyor.</Text> : null}
       </Section>
     </>
   );
@@ -96,19 +96,19 @@ function StateBlock({ detail }: { detail: MobileOdkExamDetail }) {
   const router = useRouter();
   const { state } = detail;
   const canOpenWeb = Boolean(webUrlFor(detail.webPath));
-  const webNotice = 'Deneme mobil uygulamada çözülmez. Denemeye desteklenen bilgisayar ve tarayıcı üzerinden katılmalısın. Bağlantı sınav bilgilerini açar; tarayıcıda ayrıca giriş gerekebilir.';
+  const webNotice = 'Denemeler telefondan değil, bilgisayardan çözülüyor. Desteklenen bir tarayıcıyla katılman gerekiyor. Bağlantı sınav bilgilerini açar; tarayıcıda yeniden giriş yapman gerekebilir.';
   switch (state.key) {
     case 'UPCOMING':
       return (
         <Banner tone="info" title="Henüz açılmadı">
-          {`${detail.exam.startsAt ? `${formatDateTime(detail.exam.startsAt)}'da açılır. ` : ''}Erken başlatma yok.`}
+          {`${detail.exam.startsAt ? `${formatDateTime(detail.exam.startsAt)}'da açılacak. ` : ''}Erken başlatılamıyor; o saatte hazır ol yeter.`}
         </Banner>
       );
     case 'AVAILABLE':
       return (
         <View style={styles.block} testID="odk-available">
-          <Text variant="bodyStrong">Deneme bilgisayardan katılıma açık</Text>
-          <Text tone="secondary" variant="secondary">{`${webNotice} Başlattığında ${detail.exam.durationMinutes} dakikalık süren sunucuda işlemeye başlar ve durdurulamaz.`}</Text>
+          <Text variant="bodyStrong">Deneme açıldı; bilgisayardan katılabilirsin</Text>
+          <Text tone="secondary" variant="secondary">{`${webNotice} Başlattığın anda ${detail.exam.durationMinutes} dakikalık süren işlemeye başlar ve durdurulamaz. Başarılar!`}</Text>
           {canOpenWeb ? <Button label="Web sınav ekranında aç" onPress={() => void openOnWeb(detail.webPath)} testID="odk-open-web" /> : null}
         </View>
       );
@@ -116,8 +116,8 @@ function StateBlock({ detail }: { detail: MobileOdkExamDetail }) {
       const left = minutesLeft(detail.attempt?.deadlineAt ?? null, new Date(detail.serverNow));
       return (
         <View style={styles.block} testID="odk-in-progress">
-          <Text variant="bodyStrong">{`Denemen devam ediyor${left !== null ? ` — yaklaşık ${left} dk kaldı` : ''}`}</Text>
-          <Text tone="secondary" variant="secondary">{`Süre sunucuda işlemeye devam ediyor; cevapların kayıtlı. ${webNotice}`}</Text>
+          <Text variant="bodyStrong">{`Denemen devam ediyor${left !== null ? `; yaklaşık ${left} dakikan kaldı` : ''}`}</Text>
+          <Text tone="secondary" variant="secondary">{`Süren işlemeye devam ediyor; merak etme, cevapların kayıtlı. ${webNotice}`}</Text>
           {canOpenWeb ? <Button label="Web'de denemeye devam et" onPress={() => void openOnWeb(detail.webPath)} testID="odk-continue-web" /> : null}
         </View>
       );
@@ -125,22 +125,22 @@ function StateBlock({ detail }: { detail: MobileOdkExamDetail }) {
     case 'WAITING_RESULT':
       return (
         <Banner tone="neutral" title={detail.attempt?.expired ? 'Süre doldu' : 'Denemen teslim edildi'}>
-          {detail.attempt?.expired ? 'Denemen süre sonunda otomatik teslim edilir. ' : ''}Sonucun açıklandığında burada görebileceksin.
+          {detail.attempt?.expired ? 'Denemeni süre sonunda senin için teslim ettik. ' : ''}Eline sağlık! Sonucun açıklandığında burada göreceksin.
         </Banner>
       );
     case 'RESULT_RELEASED': {
       const href = resultHref(detail.exam.id);
       return (
         <View style={styles.block}>
-          <Text variant="bodyStrong">Sonucun ve kazanım analizin açıklandı.</Text>
+          <Text variant="bodyStrong">Sonucun ve konu analizin hazır!</Text>
           {href ? <Button label="Sonucunu gör" onPress={() => router.push(href as Href)} testID="odk-open-result" /> : null}
         </View>
       );
     }
     case 'MISSED':
-      return <Banner tone="neutral" title="Kaçırıldı">{detail.startBlockedReason ?? 'Bu denemenin giriş süresi doldu.'}</Banner>;
+      return <Banner tone="neutral" title="Bu denemeyi kaçırdın">{detail.startBlockedReason ?? 'Giriş süresi doldu. Üzülme, sıradaki denemede görüşürüz.'}</Banner>;
     default:
-      return <Banner tone="neutral" title="Kapandı">{detail.startBlockedReason ?? 'Bu deneme şu anda sınava açık değil.'}</Banner>;
+      return <Banner tone="neutral" title="Kapandı">{detail.startBlockedReason ?? 'Bu deneme şu an girişe açık değil.'}</Banner>;
   }
 }
 

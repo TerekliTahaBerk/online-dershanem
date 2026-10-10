@@ -26,10 +26,10 @@ export default function YonWeeklyScreen() {
   const refresh = usePullToRefresh(() => Promise.all([planEnabled ? plan.refetch() : null, digestEnabled && hasOd ? digest.refetch() : null]));
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="yon-weekly">
-      <PageHeader title="Haftalık özet" description="Koçunun yayınladığı haftalık özet ve ailenle aynı anda gördüğün ortak özet." />
+      <PageHeader title="Haftalık özet" description="Koçunun bu hafta için yazdıkları ve ailenle birlikte gördüğün ortak özet." />
       <Section title="Koçunun haftalık özeti" first>
         {planEnabled ? (
-          <QueryView query={plan} rows={2} disabledTitle="Koç özeti şu anda açık değil.">
+          <QueryView query={plan} rows={2} disabledTitle="Koç özeti şimdilik kapalı.">
             {(data) =>
               data.state === 'READY' && data.coachSummary ? (
                 <>
@@ -40,21 +40,21 @@ export default function YonWeeklyScreen() {
                   {data.coachSummary.nextWeekFocus ? <Row title="Gelecek hafta" subtitle={data.coachSummary.nextWeekFocus} /> : null}
                 </>
               ) : (
-                <Text tone="secondary">Koçun henüz bir haftalık özet yayınlamadı.</Text>
+                <Text tone="secondary">Koçun bu haftanın özetini henüz yazmadı.</Text>
               )
             }
           </QueryView>
         ) : (
-          <Text tone="secondary">Koçunun haftalık özeti hazır olduğunda burada görünecek.</Text>
+          <Text tone="secondary">Koçunun haftalık özeti hazır olunca burada göreceksin.</Text>
         )}
       </Section>
       <Section title="Ortak haftalık özet">
         {!digestEnabled ? (
-          <Text tone="secondary">Haftalık özet şu anda açık değil.</Text>
+          <Text tone="secondary">Haftalık özet şimdilik kapalı.</Text>
         ) : !hasOd ? (
-          <EmptyState title="Ortak özet onlinedershanem. derslerine bağlı." body="Derslerin olduğunda öğretmeninin yayınladığı özet burada da görünür." />
+          <EmptyState title="Ortak özet onlinedershanem. derslerinden gelir." body="Derslerin başladığında öğretmeninin hazırladığı özeti burada da göreceksin." />
         ) : (
-          <QueryView query={digest} disabledTitle="Haftalık özet şu anda açık değil.">
+          <QueryView query={digest} disabledTitle="Haftalık özet şimdilik kapalı.">
             {(data) => <WeeklyDigestContent data={data} product="OK" />}
           </QueryView>
         )}

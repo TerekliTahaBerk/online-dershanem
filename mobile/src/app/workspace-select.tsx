@@ -28,7 +28,7 @@ export default function WorkspaceSelectScreen() {
     try {
       await selectWorkspace(code);
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : 'Çalışma alanı seçilemedi.');
+      setError(cause instanceof ApiError ? cause.message : 'Seçimini kaydedemedik. Bir daha dener misin?');
     } finally {
       setPending(null);
     }
@@ -50,12 +50,12 @@ export default function WorkspaceSelectScreen() {
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']}>
       <View style={styles.identity}><ProductLogo size={32} /><Text variant="bodyStrong" style={{ flex: 1 }}>{bootstrap?.user.fullName ?? 'Hoş geldin'}</Text></View>
-      <PageHeader title="Hangi panele girmek istiyorsun?" description="Panelini seç; istediğin zaman menüdeki “Panel değiştir” ile diğerine geçebilirsin." />
+      <PageHeader title="Hangi panele girmek istiyorsun?" description="Birini seç; istediğin zaman menüdeki “Panel değiştir” ile diğerine geçebilirsin." />
       {error ? <Banner tone="critical">{error}</Banner> : null}
       {hasActive ? null : (
         <EmptyState
-          title="Aktif çalışma alanın yok"
-          body={products.some((product) => product.state === 'PREPARING') ? 'Öğrenci hesabı açıldığında çalışma alanın burada aktif olacak.' : 'Hesabında aktif bir ürün bulunmuyor. Sorun olduğunu düşünüyorsan ekibimizle iletişime geç.'}
+          title="Henüz açık bir panelin yok"
+          body={products.some((product) => product.state === 'PREPARING') ? 'Öğrenci hesabı açılınca panelin burada açılacak.' : 'Hesabında şu an açık bir ürün görünmüyor. Bir yanlışlık olduğunu düşünüyorsan bize yaz, hemen bakalım.'}
         />
       )}
       <Section first>
@@ -81,5 +81,5 @@ export default function WorkspaceSelectScreen() {
   );
 }
 
-const PRODUCT_DESCRIPTION = { OD: 'Çok dersli canlı öğrenme', OK: 'Planlama ve sürdürülebilir takip', ODK: 'Ölçme, analiz ve sonraki adım' };
+const PRODUCT_DESCRIPTION = { OD: 'Canlı dersler, ödevler ve kaynaklar', OK: 'Kişisel planın ve koçunla takip', ODK: 'Denemeler, sonuçlar ve sıradaki adımın' };
 const styles = StyleSheet.create({ identity: { flexDirection: 'row', alignItems: 'center', gap: space[3] }, product: { borderWidth: 1, borderColor: color.border, borderRadius: radius.card, paddingHorizontal: space[3], paddingVertical: space[2], marginBottom: space[3] } });

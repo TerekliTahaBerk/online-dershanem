@@ -44,7 +44,7 @@ export function useProgressWrite(assignment: MobileAssignment | undefined) {
     try {
       await mutation.mutateAsync({ assignmentId: assignment.id, status, expectedVersion: assignment.version, mutationKey: write.key });
       pending.current = null;
-      setFeedback({ tone: 'success', message: status === 'DONE' ? 'Çalışma tamamlandı olarak kaydedildi.' : 'İlerlemen kaydedildi.' });
+      setFeedback({ tone: 'success', message: status === 'DONE' ? 'Süper, çalışmayı tamamladın!' : 'İlerlemeni kaydettik.' });
       await invalidate();
     } catch (error) {
       const transient = error instanceof ApiError && (error.transient || error.kind === 'invalid_response');
@@ -52,12 +52,12 @@ export function useProgressWrite(assignment: MobileAssignment | undefined) {
       // tekrar denerse sunucu aynı yazmayı ikinci kez uygulamaz.
       if (!transient) pending.current = null;
       if (error instanceof ApiError && error.code === CONFLICT) {
-        setFeedback({ tone: 'warning', message: 'Bu çalışmanın durumu başka bir yerde (ör. web panelinde) değişti. Son durum yüklendi; yeniden seçebilirsin.' });
+        setFeedback({ tone: 'warning', message: 'Bu çalışmanın durumu başka bir yerden (ör. web panelinden) değişmiş. Son hâlini getirdik; dilersen yeniden seçebilirsin.' });
         await invalidate();
         return;
       }
       if (error instanceof ApiError && error.kind === 'conflict') await invalidate();
-      setFeedback({ tone: 'critical', message: error instanceof ApiError ? error.message : 'Durum kaydedilemedi. Tekrar dene.' });
+      setFeedback({ tone: 'critical', message: error instanceof ApiError ? error.message : 'Durumunu kaydedemedik. Bir daha dener misin?' });
     }
   }
 
@@ -88,14 +88,14 @@ export function useEvidenceSubmit(assignment: MobileAssignment | undefined) {
     try {
       const result = await mutation.mutateAsync({ assignmentId: assignment.id, textEvidence, idempotencyKey: write.key });
       pending.current = null;
-      setFeedback({ tone: 'success', message: result.attemptNumber > 1 ? 'Yeni denemen öğretmenine gönderildi.' : 'Kanıtın öğretmen değerlendirmesine gönderildi.' });
+      setFeedback({ tone: 'success', message: result.attemptNumber > 1 ? 'Yeni denemeni öğretmenine gönderdik.' : 'Gönderdik! Öğretmenin bakıp sana dönecek.' });
       await invalidate();
       return true;
     } catch (error) {
       const transient = error instanceof ApiError && (error.transient || error.kind === 'invalid_response');
       if (!transient) pending.current = null;
       if (error instanceof ApiError && error.kind === 'conflict') await invalidate();
-      setFeedback({ tone: 'critical', message: error instanceof ApiError ? error.message : 'Kanıt gönderilemedi. Tekrar dene.' });
+      setFeedback({ tone: 'critical', message: error instanceof ApiError ? error.message : 'Gönderemedik. Bağlantını kontrol edip bir daha dener misin?' });
       return false;
     }
   }

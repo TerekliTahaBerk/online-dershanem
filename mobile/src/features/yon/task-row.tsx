@@ -30,7 +30,7 @@ export function YonTaskRow({ task, canOpen, showDate = false, testID }: { task: 
         </View>
       }
       onPress={href ? () => router.push(href as Href) : undefined}
-      accessibilityHint={href ? 'Görevin ayrıntısı ve durum seçenekleri açılır.' : undefined}
+      accessibilityHint={href ? 'Görevin ayrıntılarını açar; buradan durumunu bildirebilirsin.' : undefined}
     />
   );
 }

@@ -31,7 +31,7 @@ describe('M2.3 Dersler ve ders detayı', () => {
     expect(detail.getByText('“Ada için not”')).toBeTruthy();
     expect(detail.getByText('Kesir çalışması')).toBeTruthy();
     expect(detail.queryByTestId('lesson-join')).toBeNull();
-    expect(detail.getByText(/Katılım bağlantısı .* açılır\./)).toBeTruthy();
+    expect(detail.getByText(/Derse katılım bağlantısı .* açılacak\./)).toBeTruthy();
   });
 
   it('katılım penceresi açık: yalnız sunucunun verdiği http(s) bağlantısı açılır', async () => {

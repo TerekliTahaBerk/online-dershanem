@@ -6,7 +6,7 @@ import { fetchParentInsights } from '@/lib/api/parent';
 import { useParentQuery } from './parent-context';
 import { ParentQueryView, ParentScreen, usePullToRefresh } from './parent-shared';
 
-const DIRECTION = { up: 'yükseliyor', down: 'tekrar öneriliyor', steady: 'dengeli', limited: 'yeterli ölçüm yok' } as const;
+const DIRECTION = { up: 'yükseliyor', down: 'tekrar öneriliyor', steady: 'dengeli', limited: 'henüz yeterli ölçüm yok' } as const;
 const fmt = (value: number) => value.toLocaleString('tr-TR', { maximumFractionDigits: 2 });
 
 /**
@@ -20,8 +20,8 @@ export default function ParentInsightsScreen() {
   return (
     <ParentScreen title="Gelişim" testID="parent-insights" refresh={refresh}>
       {(child) => (
-        <ParentQueryView query={query} child={child} disabledTitle="Gelişim özeti şu anda açık değil.">
-          {(data) => (data.state === 'PREPARING' ? <EmptyState title="Özet hazırlanıyor" body="Öğrenci verileri göründüğünde gelişim burada açılır." /> : <InsightsBody data={data} />)}
+        <ParentQueryView query={query} child={child} disabledTitle="Gelişim özeti şimdilik kapalı.">
+          {(data) => (data.state === 'PREPARING' ? <EmptyState title="Özet hazırlanıyor" body="Öğrencinizin ilk verileri geldiğinde gelişimini burada görebilirsiniz." /> : <InsightsBody data={data} />)}
         </ParentQueryView>
       )}
     </ParentScreen>
@@ -38,10 +38,10 @@ function InsightsBody({ data }: { data: MobileParentInsightsReady }) {
     <>
       <Text tone="muted" variant="meta">{data.periodRange || data.periodLabel}</Text>
       <Section title="Özet" first>
-        {data.narrative.length ? data.narrative.map((line, index) => <Text key={`${index}-${line}`}>{line}</Text>) : <Text tone="secondary">Gösterilecek özet henüz yok.</Text>}
+        {data.narrative.length ? data.narrative.map((line, index) => <Text key={`${index}-${line}`}>{line}</Text>) : <Text tone="secondary">Özet henüz oluşmadı.</Text>}
       </Section>
       {data.isEmpty ? (
-        <EmptyState title="Henüz gösterilecek veri yok" body="Ders katılımı, çalışmalar ve denemeler biriktikçe gidişat burada oluşur." />
+        <EmptyState title="Gidişat yeni yeni şekilleniyor" body="Ders katılımı, çalışmalar ve denemeler biriktikçe öğrencinizin gidişatını burada görebilirsiniz." />
       ) : (
         <>
           {data.hasExamAccess ? (
@@ -52,7 +52,7 @@ function InsightsBody({ data }: { data: MobileParentInsightsReady }) {
                   {academic.netTrend.map((point) => <Row key={point.label} title={point.label} meta={`${fmt(point.net)} net`} />)}
                 </>
               ) : (
-                <Text tone="secondary">Grafik için en az iki deneme gerekiyor. İkinci deneme sonucu girildiğinde gelişim burada görünür.</Text>
+                <Text tone="secondary">Eğilimi görebilmek için en az iki deneme sonucu gerekiyor. İkinci sonuç girildiğinde gelişimi burada görebilirsiniz.</Text>
               )}
               {academic.subjects.map((subject) => <Row key={subject.name} title={subject.name} meta={DIRECTION[subject.direction]} />)}
               {academic.subjectCaption ? <Text tone="muted" variant="meta">{academic.subjectCaption}</Text> : null}
@@ -61,7 +61,7 @@ function InsightsBody({ data }: { data: MobileParentInsightsReady }) {
             </Section>
           ) : (
             <Section title="Deneme eğilimi">
-              <Text tone="secondary">Bu öğrencide deneme ürünü yok. Aşağıda ders katılımı ve çalışma tamamlama görünüyor.</Text>
+              <Text tone="secondary">Bu öğrencinin deneme üyeliği yok. Aşağıda ders katılımını ve çalışma tamamlama durumunu görebilirsiniz.</Text>
             </Section>
           )}
           <Section title="Öğrenme düzeni">

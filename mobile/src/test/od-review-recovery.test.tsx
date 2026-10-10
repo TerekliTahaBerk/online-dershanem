@@ -34,14 +34,14 @@ describe('M2.6 Tekrar, telafi ve kalan OD menüsü', () => {
     await view.findByText('Kesirler tekrarı', {}, WAIT);
     h.server.override('POST /api/panel/review-queue/rv-1/respond', () => Promise.reject(new TypeError('Network request failed')));
     await press(h, view.getByTestId('review-rv-1-CORRECT'));
-    expect(await view.findByText('Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edin.', {}, WAIT)).toBeTruthy();
+    expect(await view.findByText('Sunucuya ulaşamadık. İnternet bağlantını kontrol edip bir daha dener misin?', {}, WAIT)).toBeTruthy();
     h.server.override('POST /api/panel/review-queue/rv-1/respond', null);
     await press(h, view.getByTestId('review-rv-1-CORRECT'));
     await waitFor(() => expect(h.server.called('POST', '/api/panel/review-queue/rv-1/respond')).toHaveLength(2), WAIT);
     const [first, second] = h.server.called('POST', '/api/panel/review-queue/rv-1/respond');
     expect((first.body as { idempotencyKey: string }).idempotencyKey).toMatch(UUID);
     expect(second.body).toEqual(first.body);
-    expect(await view.findByText('Bugün için tekrar yok.', {}, WAIT)).toBeTruthy();
+    expect(await view.findByText('Bugünlük tekrarların bitti.', {}, WAIT)).toBeTruthy();
     expect(h.server.called('POST', '/api/panel/review-queue/rv-1/defer')).toHaveLength(0);
   });
 
@@ -57,7 +57,7 @@ describe('M2.6 Tekrar, telafi ve kalan OD menüsü', () => {
     await signIn(h, 'ada@example.com');
     const view = await open(h, '/od/review-recovery');
     await press(h, await view.findByTestId('review-rv-1-defer', {}, WAIT));
-    expect(await view.findByText('Bu tekrar yarına ertelendi.', {}, WAIT)).toBeTruthy();
+    expect(await view.findByText('Tamam, bu tekrarı yarına bıraktık.', {}, WAIT)).toBeTruthy();
   });
 
   it('telafi: bağlantıdaki ders öne; adım tamamla + mini kontrol sunucu onayından sonra; tamamlanma sunucudan', async () => {
@@ -75,7 +75,7 @@ describe('M2.6 Tekrar, telafi ve kalan OD menüsü', () => {
     await press(h, await view.findByTestId('recovery-step-ri-1', {}, WAIT));
     expect(await view.findByText('Adım tamamlandı olarak kaydedildi.', {}, WAIT)).toBeTruthy();
     await press(h, view.getByTestId('recovery-rp-1-READY'));
-    expect(await view.findByText('Telafi tamamlandı.', {}, WAIT)).toBeTruthy();
+    expect(await view.findByText('Telafiyi tamamladın, aferin!', {}, WAIT)).toBeTruthy();
     expect(h.server.called('POST', '/api/panel/recovery-packages/rp-1/checkpoint')[0].body).toEqual({ response: 'READY' });
   });
 
@@ -94,7 +94,7 @@ describe('M2.6 Tekrar, telafi ve kalan OD menüsü', () => {
     await signIn(h, 'ada@example.com');
     await h.screen.findByTestId('od-home', {}, WAIT);
     await go('/od/review-recovery?tab=telafi');
-    expect(await h.screen.findByText('Bu bölüm bu çalışma alanında yok', {}, WAIT)).toBeTruthy();
+    expect(await h.screen.findByText('Bu bölümü burada bulamadık', {}, WAIT)).toBeTruthy();
     expect(h.server.called('GET', '/api/panel/student/recovery')).toHaveLength(0);
   });
 
@@ -120,7 +120,7 @@ describe('M2.6 Tekrar, telafi ve kalan OD menüsü', () => {
     const digest = within(await h.screen.findByTestId('od-weekly-digest', {}, WAIT));
     expect(await digest.findByText('Tüm derslere katıldın.', {}, WAIT)).toBeTruthy();
     await press(h, digest.getByTestId('digest-helpful'));
-    expect(await digest.findByText('Geri bildirimin kaydedildi.', {}, WAIT)).toBeTruthy();
+    expect(await digest.findByText('Teşekkürler, geri bildirimini aldık.', {}, WAIT)).toBeTruthy();
     expect(h.server.called('POST', '/api/panel/weekly-digests/wd-1/feedback')[0].body).toEqual({ helpful: true, anxietyPulse: null });
     // M3: check-in artık OD + Yön ortak native ekran.
     await go('/screen/check-in');

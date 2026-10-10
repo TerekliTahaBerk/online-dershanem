@@ -24,7 +24,7 @@ export default function OdkHomeScreen() {
   const refresh = usePullToRefresh(() => query.refetch());
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="odk-home">
-      <PageHeader title="Deneme Ligi" context={<Text tone="muted" variant="meta">{formatLongDate(new Date())}</Text>} description="Sıradaki denemen, açıklanan sonuçların ve odaklanman gereken konular." />
+      <PageHeader title="Deneme Ligi" context={<Text tone="muted" variant="meta">{formatLongDate(new Date())}</Text>} description="Sıradaki denemen, sonuçların ve şimdi odaklanman gereken konular burada." />
       <QueryView query={query}>{(home) => <HomeBody home={home} />}</QueryView>
     </Screen>
   );
@@ -56,12 +56,12 @@ function HomeBody({ home }: { home: MobileOdkHome }) {
             );
           })
         ) : (
-          <Text tone="secondary">Açıklanan sonuç olduğunda burada görünecek.</Text>
+          <Text tone="secondary">İlk sonucun açıklandığında burada göreceksin.</Text>
         )}
       </Section>
       {home.trend ? (
         <Section title="Gelişimim">
-          <Text tone="muted" variant="meta">Yalnız kendi önceki denemelerinle, aynı sınav türünde karşılaştırılır.</Text>
+          <Text tone="muted" variant="meta">Seni yalnızca kendinle, aynı türdeki önceki denemelerinle karşılaştırıyoruz.</Text>
           <Text>{`${home.trend.family} netin ${formatNet(home.trend.points[0].net)} → ${formatNet(home.trend.points[home.trend.points.length - 1].net)} · son ${home.trend.points.length} deneme`}</Text>
           {home.trend.points.map((point) => (
             <Row key={point.examId} title={point.title} subtitle={formatDayMonth(point.at)} meta={`${formatNet(point.net)} net`} />
@@ -70,7 +70,7 @@ function HomeBody({ home }: { home: MobileOdkHome }) {
       ) : null}
       {home.focus ? (
         <Section title="Odak konularım">
-          <Text tone="muted" variant="meta">{`${home.focus.examTitle} sonucuna göre en çok gelişim bekleyen kazanımlar.`}</Text>
+          <Text tone="muted" variant="meta">{`${home.focus.examTitle} sonucuna göre biraz daha çalışırsan en çok fark yaratacak konular.`}</Text>
           {home.focus.items.map((item) => (
             <Row key={item.code} title={item.title} subtitle={item.code} meta={`%${item.accuracy.toFixed(0)} · ${item.questionCount} soru`} />
           ))}
@@ -91,7 +91,7 @@ function NextExam({ exam }: { exam: MobileOdkExamRow | null }) {
   if (!exam) {
     return (
       <Section title="Sıradaki deneme" first>
-        <EmptyState title="Henüz planlanmış bir denemen yok." body="Yeni deneme açıldığında burada görünecek." />
+        <EmptyState title="Şimdilik planlanmış bir denemen yok." body="Yeni bir deneme açıldığında ilk burada göreceksin." />
       </Section>
     );
   }
@@ -99,13 +99,13 @@ function NextExam({ exam }: { exam: MobileOdkExamRow | null }) {
   const line =
     exam.state.key === 'IN_PROGRESS'
       ? left !== null
-        ? `Devam ediyor — ${left} dk kaldı`
+        ? `Devam ediyor; ${left} dakikan kaldı`
         : 'Devam ediyor'
       : exam.state.key === 'AVAILABLE'
-        ? 'Şimdi başlayabilirsin (web sınav ekranında)'
+        ? 'Hazırsan başlayabilirsin (bilgisayardan, web sınav ekranında)'
         : exam.startsAt
           ? `${formatShortDateTime(exam.startsAt)}'da açılır`
-          : 'Saat bekleniyor';
+          : 'Saati yakında belli olacak';
   const href = examHref(exam.id);
   return (
     <Section title={exam.state.key === 'IN_PROGRESS' ? 'Devam eden deneme' : 'Sıradaki deneme'} first>
@@ -116,7 +116,7 @@ function NextExam({ exam }: { exam: MobileOdkExamRow | null }) {
         </View>
         <Text variant="sectionTitle" accessibilityRole="header">{exam.title}</Text>
         <Text tone="secondary">{`${line}${exam.durationMinutes ? ` · ${exam.durationMinutes} dakika` : ''}`}</Text>
-        {href ? <Button label={exam.state.key === 'IN_PROGRESS' ? 'Ayrıntı ve devam' : 'Denemeye git'} onPress={() => router.push(href as Href)} testID="odk-next-cta" /> : null}
+        {href ? <Button label={exam.state.key === 'IN_PROGRESS' ? 'Denemene dön' : 'Denemeye git'} onPress={() => router.push(href as Href)} testID="odk-next-cta" /> : null}
       </View>
     </Section>
   );

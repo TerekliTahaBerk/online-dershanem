@@ -52,11 +52,11 @@ export default function NotificationsScreen() {
       try {
         await markRead.mutateAsync(item.id);
       } catch (cause) {
-        setNotice(cause instanceof ApiError ? cause.message : 'Bildirim okundu olarak işaretlenemedi.');
+        setNotice(cause instanceof ApiError ? cause.message : 'Bildirimi okundu olarak işaretleyemedik. Bir daha dener misin?');
         return;
       }
     }
-    if (!openNotificationHref(item.href) && item.href) setNotice('Bu bildirimin içeriği bu çalışma alanında veya mobilde henüz açılamıyor.');
+    if (!openNotificationHref(item.href) && item.href) setNotice('Bu bildirimin içeriğini burada ya da mobilde henüz açamıyoruz; web panelinden bakabilirsin.');
   }
 
   const items = query.data?.pages.flatMap((page) => page.notifications) ?? [];
@@ -89,12 +89,12 @@ export default function NotificationsScreen() {
           </View>
           {unreadTotal > 0 ? <Button label="Tümünü okundu say" variant="quiet" loading={markRead.isPending && markRead.variables === undefined} onPress={() => markRead.mutate(undefined)} /> : null}
           {notice ? <Banner tone="info">{notice}</Banner> : null}
-          {markRead.isError && !notice ? <Banner tone="critical">{markRead.error instanceof ApiError ? markRead.error.message : 'İşlem tamamlanamadı.'}</Banner> : null}
+          {markRead.isError && !notice ? <Banner tone="critical">{markRead.error instanceof ApiError ? markRead.error.message : 'Bunu şu an yapamadık. Bir daha dener misin?'}</Banner> : null}
           {query.isPending ? <Skeleton rows={5} /> : null}
           {query.isError && !query.data ? <ErrorState error={query.error} onRetry={() => void query.refetch()} /> : null}
         </View>
       }
-      ListEmptyComponent={query.isSuccess ? <EmptyState title={filter === 'unread' ? 'Okunmamış bildirim yok' : 'Henüz bildirim yok'} body="Yeni bildirimler burada görünür." /> : null}
+      ListEmptyComponent={query.isSuccess ? <EmptyState title={filter === 'unread' ? 'Okunmamış bildirimin yok' : 'Henüz bir bildirimin yok'} body="Yeni bir şey olduğunda ilk burada göreceksin." /> : null}
       renderItem={({ item }) => (
         <Pressable
           accessibilityRole="button"

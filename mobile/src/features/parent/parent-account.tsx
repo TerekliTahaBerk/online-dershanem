@@ -30,7 +30,7 @@ export default function ParentAccountScreen() {
           <>
             <Section title="Veli" first>
               <Row title={data.parent.fullName || 'Ad belirtilmemiş'} subtitle={data.parent.email} />
-              {!data.parent.hasPhone ? <Text tone="secondary">Telefon numaranız kayıtlı değil; web panelindeki hesap ayarlarından ekleyebilirsiniz.</Text> : null}
+              {!data.parent.hasPhone ? <Text tone="secondary">Telefon numaranız kayıtlı değil. Size daha kolay ulaşabilmemiz için web panelindeki hesap ayarlarından ekleyebilirsiniz.</Text> : null}
             </Section>
             <Section title="Bağlı öğrenciler">
               {data.children.length ? (
@@ -45,7 +45,7 @@ export default function ParentAccountScreen() {
                   />
                 ))
               ) : (
-                <EmptyState title="Hesabınıza bağlı öğrenci görünmüyor" body="Bağlantı eksikse eğitim koordinatörünüzle görüşebilirsiniz." />
+                <EmptyState title="Hesabınıza bağlı bir öğrenci görünmüyor" body="Bir eksiklik olduğunu düşünüyorsanız eğitim koordinatörünüz hemen yardımcı olur." />
               )}
             </Section>
             <Section title="Ayarlar">

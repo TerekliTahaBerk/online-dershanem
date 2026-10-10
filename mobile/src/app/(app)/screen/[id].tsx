@@ -19,7 +19,7 @@ export default function MenuItemScreen() {
     return (
       <Screen>
         <Stack.Screen options={{ title: 'Bulunamadı' }} />
-        <EmptyState title="Bu bölüm bu çalışma alanında yok" body="Bağlantı başka bir çalışma alanına ait olabilir veya erişimin değişmiş olabilir." />
+        <EmptyState title="Bu bölümü burada bulamadık" body="Bağlantı başka bir alana ait olabilir ya da erişimin değişmiş olabilir." />
       </Screen>
     );
   }

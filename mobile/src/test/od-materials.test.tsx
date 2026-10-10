@@ -64,7 +64,7 @@ describe('M2.4 Kaynaklar', () => {
   it('liste: tür, tercih ve erişilebilirlik işaretleri; metin dökümü açılır', async () => {
     const { h, view } = await openMaterials();
     expect(await view.findByText('Kesirler özet', {}, WAIT)).toBeTruthy();
-    expect(view.getByText('Tercihinle uyumlu')).toBeTruthy();
+    expect(view.getByText('Sana uygun')).toBeTruthy();
     expect(view.getByText('Altyazı var')).toBeTruthy();
     await press(h, view.getByText('Metin dökümünü oku'));
     expect(view.getByText('Kesir, bir bütünün eş parçalarıdır.')).toBeTruthy();

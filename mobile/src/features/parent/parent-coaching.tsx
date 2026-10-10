@@ -25,18 +25,18 @@ export default function ParentCoachingScreen() {
 }
 
 function CoachingBody({ data }: { data: MobileParentCoaching }) {
-  if (!data.available) return <EmptyState title="Bu öğrencide Yön Koçluk bulunmuyor" body="Koçluk eklendiğinde haftalık plan, tamamlanma oranı ve koç özeti burada görünür." />;
+  if (!data.available) return <EmptyState title="Bu öğrencinin Yön Koçluk üyeliği yok" body="Koçluk eklendiğinde haftalık planı, tamamlanma oranını ve koç özetini burada görebilirsiniz." />;
   return (
     <>
       {data.coach ? (
         <Section title="Koç" first>
           <Row title="Koçu" meta={data.coach.name} />
-          <Row title="Sonraki görüşme" meta={data.coach.awaitingNewTime ? 'Yeni saat bekleniyor' : data.coach.nextScheduledAt ? formatShortDateTime(data.coach.nextScheduledAt) : 'Planlanmadı'} />
+          <Row title="Sonraki görüşme" meta={data.coach.awaitingNewTime ? 'Yeni saat belirleniyor' : data.coach.nextScheduledAt ? formatShortDateTime(data.coach.nextScheduledAt) : 'Planlanmadı'} />
           {data.coach.focus ? <Row title="Haftanın odağı" subtitle={data.coach.focus} /> : null}
           {data.coach.sharedNote ? <View style={parentStyles.card}><Text tone="secondary">{data.coach.sharedNote}</Text></View> : null}
         </Section>
       ) : (
-        <Section title="Koç" first><Text tone="secondary">Koç ataması tamamlandığında burada görünür.</Text></Section>
+        <Section title="Koç" first><Text tone="secondary">Koç ataması tamamlandığında koçun bilgilerini burada görebilirsiniz.</Text></Section>
       )}
 
       {data.sessions.length ? (
@@ -55,11 +55,11 @@ function CoachingBody({ data }: { data: MobileParentCoaching }) {
         {data.week ? (
           <>
             <Text tone="muted" variant="meta">{`${formatDayMonth(data.week.start)} – ${formatDayMonth(data.week.end)}`}</Text>
-            <Text variant="bodyStrong">{data.week.planCompletionPct === null ? 'Plan tamamlanma bilgisi henüz yok.' : `Planın %${data.week.planCompletionPct}'i tamamlandı.`}</Text>
+            <Text variant="bodyStrong">{data.week.planCompletionPct === null ? 'Plan tamamlanma bilgisi henüz oluşmadı.' : `Bu haftaki planın %${data.week.planCompletionPct}'i tamamlandı.`}</Text>
             {data.week.lines.map((line, index) => <Text key={`${index}-${line}`} tone="secondary">{line}</Text>)}
           </>
         ) : (
-          <EmptyState title="Bu hafta için plan yayınlanmadı" body="Koç haftalık planı yayınladığında tamamlanma özeti burada görünür." />
+          <EmptyState title="Bu haftanın planı henüz yayınlanmadı" body="Koç planı yayınladığında tamamlanma özetini burada görebilirsiniz." />
         )}
       </Section>
 
@@ -84,7 +84,7 @@ function CoachingBody({ data }: { data: MobileParentCoaching }) {
         </Section>
       ) : null}
 
-      <Text tone="muted" variant="meta">Bu ekran sakin bir özet sunar. İç koç notları, ham check-in ayrıntıları ve diğer öğrencilerin verisi paylaşılmaz.</Text>
+      <Text tone="muted" variant="meta">Bu ekran size sakin bir özet sunar. Öğrencinin güven içinde konuşabilmesi için koçun iç notları ve check-in ayrıntıları burada yer almaz.</Text>
     </>
   );
 }

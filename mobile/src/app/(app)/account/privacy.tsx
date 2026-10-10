@@ -13,8 +13,8 @@ export default function PrivacyScreen() {
   }
   return <Screen>
     <PageHeader title="Gizlilik" />
-    <Text>Hesap, eğitim ve isteğe bağlı bildirim verilerinin işlenmesi hakkında web sitesindeki güncel gizlilik açıklamasını inceleyebilirsiniz.</Text>
-    {error ? <Banner tone="critical">Gizlilik sayfası açılamadı. Bağlantınızı kontrol edip tekrar deneyin.</Banner> : null}
+    <Text>Hesap, eğitim ve isteğe bağlı bildirim verilerinin nasıl işlendiğini web sitemizdeki güncel gizlilik açıklamasında okuyabilirsin.</Text>
+    {error ? <Banner tone="critical">Gizlilik sayfasını açamadık. Bağlantını kontrol edip bir daha dener misin?</Banner> : null}
     <Button label="Gizlilik politikasını aç" onPress={() => void open()} />
   </Screen>;
 }

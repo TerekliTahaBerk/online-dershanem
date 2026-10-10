@@ -38,10 +38,10 @@ export function useMaterialOpener() {
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(file.uri, material.mimeType ? { mimeType: material.mimeType, dialogTitle: material.title } : { dialogTitle: material.title });
       } else {
-        setError({ id: material.id, message: 'Bu cihazda dosyayı açabilecek bir uygulama bulunamadı.' });
+        setError({ id: material.id, message: 'Bu dosyayı açabilecek bir uygulama telefonunda bulamadık.' });
       }
     } catch {
-      setError({ id: material.id, message: 'Kaynak açılamadı. Bağlantını kontrol edip tekrar dene.' });
+      setError({ id: material.id, message: 'Kaynağı açamadık. Bağlantını kontrol edip bir daha dener misin?' });
     } finally {
       setOpeningId(null);
     }

@@ -11,13 +11,13 @@ export default function AccountDeletionScreen() {
     } catch { setError(true); }
   }
   return <Screen>
-    <PageHeader title="Hesabımı sil" description="Hesabınızın ve ilişkili kişisel verilerinizin silinmesini talep edebilirsiniz." />
+    <PageHeader title="Hesabımı sil" description="Hesabının ve ona bağlı kişisel verilerinin silinmesini isteyebilirsin." />
     <Section first title="Talep süreci">
-      <Text>Hesabınıza kayıtlı e-posta adresinizden iletisim@onlinedershanem.com adresine hesap silme talebinizi iletin. Parolanızı veya doğrulama kodunuzu paylaşmayın.</Text>
-      <Text>Talep gönderimi hesabınızı hemen silmez veya kapatmaz. Kimliğiniz ve varsa veli–öğrenci ilişkileri doğrulanır. Eğitim ve mali kayıtların saklama yükümlülükleri ayrıca değerlendirilir. Saklanan kayıtlar ve işlemin sonucu size bildirilmelidir.</Text>
-      <Text>Hesabı devre dışı bırakmak verilerin silindiği anlamına gelmez. Silme kapsamı ve tamamlanma süresi destek ekibi tarafından teyit edilmelidir.</Text>
+      <Text>Hesabına kayıtlı e-posta adresinden iletisim@onlinedershanem.com adresine hesap silme talebini gönder. Parolanı ya da doğrulama kodunu asla paylaşma.</Text>
+      <Text>Talebini göndermek hesabını hemen silmez ya da kapatmaz. Önce kimliğin ve varsa veli–öğrenci bağlantıları doğrulanır. Eğitim ve mali kayıtların saklama yükümlülükleri ayrıca değerlendirilir. Saklanan kayıtları ve işlemin sonucunu sana bildiririz.</Text>
+      <Text>Hesabın devre dışı bırakılması verilerinin silindiği anlamına gelmez. Neyin silineceğini ve ne kadar süreceğini destek ekibimiz sana ayrıca teyit eder.</Text>
     </Section>
-    {error ? <Banner tone="critical">E-posta uygulaması açılamadı. Yukarıdaki adrese kayıtlı e-posta adresinizden yazabilirsiniz.</Banner> : null}
+    {error ? <Banner tone="critical">E-posta uygulamasını açamadık. Yukarıdaki adrese, hesabına kayıtlı e-posta adresinden yazabilirsin.</Banner> : null}
     <Button label="Silme talebi için e-posta hazırla" variant="secondary" onPress={() => void request()} />
   </Screen>;
 }

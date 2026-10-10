@@ -35,7 +35,7 @@ export default function OdReviewRecoveryScreen({ initialTab, lessonId }: { initi
     return (
       <Screen testID="od-review-recovery">
         <PageHeader title="Tekrar ve telafi" />
-        <EmptyState title="Bu bölüm şu anda kullanıma açık değil." />
+        <EmptyState title="Bu bölüm şimdilik kapalı." body="Açıldığında seni burada bekliyor olacak." />
       </Screen>
     );
   }
@@ -63,7 +63,7 @@ export default function OdReviewRecoveryScreen({ initialTab, lessonId }: { initi
 function ReviewTab() {
   const query = useOdQuery('review-queue', (api, signal) => fetchReviewQueue(api, signal));
   return (
-    <QueryView query={query} disabledTitle="Tekrar kuyruğu şu anda açık değil.">
+    <QueryView query={query} disabledTitle="Tekrarlar şimdilik kapalı.">
       {(data) => <ReviewBody data={data} onRefresh={() => void query.refetch()} />}
     </QueryView>
   );
@@ -76,15 +76,15 @@ const REVIEW_CHOICES = [
 ];
 
 function ReviewBody({ data, onRefresh }: { data: MobileReviewQueue; onRefresh: () => void }) {
-  if (data.state === 'NO_PROFILE') return <EmptyState title="Tekrar profilin hazırlanıyor." />;
+  if (data.state === 'NO_PROFILE') return <EmptyState title="Tekrarlarını hazırlıyoruz." body="Çok yakında burada olacak." />;
   return (
     <>
-      <Text tone="secondary">{`Bugün yalnız birkaç küçük tekrar. En fazla ${data.dailyLimit} çalışma gösterilir; yanlış veya emin olmamak ilerlemeni silmez.`}</Text>
+      <Text tone="secondary">{`Bugün için birkaç kısa tekrar ayırdık (en fazla ${data.dailyLimit}). Yanlış yapmak ya da emin olmamak sorun değil; ilerlemen silinmez.`}</Text>
       <Text tone="muted" variant="meta">{`${data.activeCount} aktif · ${data.masteredCount} öğrenildi`}</Text>
       {data.items.length ? (
         data.items.map((item) => <ReviewItem key={item.id} item={item} />)
       ) : (
-        <EmptyState title="Bugün için tekrar yok." body="Yeni tekrar zamanı geldiğinde burada görünecek." action={<Button label="Yenile" variant="quiet" onPress={onRefresh} />} />
+        <EmptyState title="Bugünlük tekrarların bitti." body="Bir sonraki tekrar zamanı geldiğinde burada olacak." action={<Button label="Yenile" variant="quiet" onPress={onRefresh} />} />
       )}
     </>
   );
@@ -107,11 +107,11 @@ function ReviewItem({ item }: { item: Extract<MobileReviewQueue, { state: 'READY
     try {
       const result = await respond.mutateAsync({ response, idempotencyKey: key.current.key });
       key.current = null;
-      setMessage({ tone: 'success', text: result.status === 'MASTERED' ? 'Harika, bu konu öğrenildi.' : result.nextDueAt ? `Sonraki dönüş: ${formatDayMonth(result.nextDueAt)}.` : 'Yanıtın kaydedildi.' });
+      setMessage({ tone: 'success', text: result.status === 'MASTERED' ? 'Harika, bu konuyu artık biliyorsun!' : result.nextDueAt ? `Tamam, ${formatDayMonth(result.nextDueAt)} tarihinde bu soruya tekrar bakacağız.` : 'Yanıtını kaydettik.' });
       await invalidate();
     } catch (error) {
       if (!(error instanceof ApiError && error.transient)) key.current = null;
-      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Yanıt kaydedilemedi.' });
+      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Yanıtını kaydedemedik. Bir daha dener misin?' });
     }
   }
 
@@ -119,7 +119,7 @@ function ReviewItem({ item }: { item: Extract<MobileReviewQueue, { state: 'READY
     setMessage(null);
     try {
       await defer.mutateAsync();
-      setMessage({ tone: 'success', text: 'Bu tekrar yarına ertelendi.' });
+      setMessage({ tone: 'success', text: 'Tamam, bu tekrarı yarına bıraktık.' });
       await invalidate();
     } catch (error) {
       setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Ertelenemedi.' });
@@ -137,7 +137,7 @@ function ReviewItem({ item }: { item: Extract<MobileReviewQueue, { state: 'READY
           {noteOpen ? <Text tone="secondary">{item.solutionNote}</Text> : null}
         </>
       ) : null}
-      <Text variant="label" tone="secondary">Bu soruyu şimdi nasıl çözdün?</Text>
+      <Text variant="label" tone="secondary">Bu soruyu bu sefer nasıl çözdün?</Text>
       <View style={styles.choices}>
         {REVIEW_CHOICES.map((choice) => (
           <View key={choice.value} style={styles.choice}>
@@ -157,20 +157,20 @@ const CHECKPOINT_LABEL: Record<(typeof RECOVERY_CHECKPOINT_RESPONSES)[number], s
 function RecoveryTab({ lessonId }: { lessonId: string | null }) {
   const query = useOdQuery('recovery', (api, signal) => fetchRecovery(api, signal));
   return (
-    <QueryView query={query} disabledTitle="Telafi paketleri şu anda açık değil.">
+    <QueryView query={query} disabledTitle="Telafiler şimdilik kapalı.">
       {(data) => <RecoveryBody data={data} lessonId={lessonId} />}
     </QueryView>
   );
 }
 
 function RecoveryBody({ data, lessonId }: { data: MobileRecovery; lessonId: string | null }) {
-  if (data.state === 'NO_PROFILE') return <EmptyState title="Profilin hazırlanıyor." />;
-  if (!data.packages.length) return <EmptyState title="Bekleyen telafi yok." body="Bir dersi kaçırırsan öğretmenin hazırladığı telafi burada görünür." />;
+  if (data.state === 'NO_PROFILE') return <EmptyState title="Hesabını hazırlıyoruz." body="Her şey hazır olduğunda telafilerini burada göreceksin." />;
+  if (!data.packages.length) return <EmptyState title="Bekleyen telafin yok." body="Bir dersi kaçırırsan öğretmenin senin için bir telafi hazırlar; burada bulursun." />;
   // Bağlantıdaki ders öne alınır (web ile aynı sıralama kuralı).
   const ordered = lessonId ? [...data.packages].sort((a, b) => (a.lessonId === lessonId ? -1 : b.lessonId === lessonId ? 1 : 0)) : data.packages;
   return (
     <>
-      <Text tone="secondary">Kaçırdığın dersi kısa sürede toparlayabilirsin: konu özeti, materyal ve küçük çalışma tek sırada hazır.</Text>
+      <Text tone="secondary">Kaçırdığın dersi kısa sürede yakalayabilirsin: konu özeti, materyal ve küçük bir çalışma seni sırayla bekliyor.</Text>
       {ordered.map((item) => (
         <RecoveryPackage key={item.id} item={item} highlighted={item.lessonId === lessonId} />
       ))}
@@ -198,7 +198,7 @@ function RecoveryPackage({ item, highlighted }: { item: RecoveryPackageRow; high
       setMessage({ tone: 'success', text: success(result) });
       await invalidate();
     } catch (error) {
-      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'İşlem kaydedilemedi.' });
+      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Kaydedemedik. Bir daha dener misin?' });
     }
   }
 
@@ -245,7 +245,7 @@ function RecoveryPackage({ item, highlighted }: { item: RecoveryPackageRow; high
       </Section>
       <Section title="Mini kontrol">
         <Text tone="secondary">{item.checkpointPrompt}</Text>
-        {item.checkpointResponse ? <Text tone="muted" variant="meta">{`Yanıtın: ${CHECKPOINT_LABEL[item.checkpointResponse]}`}</Text> : null}
+        {item.checkpointResponse ? <Text tone="muted" variant="meta">{`Son yanıtın: ${CHECKPOINT_LABEL[item.checkpointResponse]}`}</Text> : null}
         {!done ? (
           <View style={styles.choices}>
             {RECOVERY_CHECKPOINT_RESPONSES.map((response) => (
@@ -256,7 +256,7 @@ function RecoveryPackage({ item, highlighted }: { item: RecoveryPackageRow; high
                 variant={item.checkpointResponse === response ? 'primary' : 'secondary'}
                 disabled={busy}
                 loading={checkpoint.isPending && checkpoint.variables === response}
-                onPress={() => void run(() => checkpoint.mutateAsync(response), (result) => (result.completed ? 'Telafi tamamlandı.' : 'Yanıtın kaydedildi.'))}
+                onPress={() => void run(() => checkpoint.mutateAsync(response), (result) => (result.completed ? 'Telafiyi tamamladın, aferin!' : 'Yanıtını kaydettik.'))}
               />
             ))}
           </View>

@@ -47,7 +47,7 @@ function Inbox({ data, refetch, product }: { data: MobileHelpInbox; refetch: () 
     try {
       await mutation.mutateAsync({ item: selected, action });
       setSelected(null);
-      setState({ tone: 'success', message: 'Yanıtın öğrenciye iletildi.' });
+      setState({ tone: 'success', message: 'Yanıtınız öğrenciye iletildi.' });
       await invalidate();
     } catch (error) {
       setSelected(null);
@@ -85,7 +85,7 @@ function Inbox({ data, refetch, product }: { data: MobileHelpInbox; refetch: () 
       ) : null}
       <BottomSheet visible={Boolean(selected)} title={selected ? `${selected.studentName} için destek adımı` : ''} onClose={() => setSelected(null)}>
         <View style={staffStyles.gap}>
-          <Text tone="secondary">Seçtiğin adım öğrenciye bildirilir.</Text>
+          <Text tone="secondary">Seçtiğiniz adım öğrenciye bildirilir.</Text>
           {data.actions.map((action) => (
             <Row key={action.value} title={action.label} disabled={mutation.isPending} onPress={() => void respond(action.value)} testID={`help-action-${action.value}`} />
           ))}

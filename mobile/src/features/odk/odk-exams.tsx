@@ -34,7 +34,7 @@ export default function OdkExamsScreen() {
   const counts = query.data?.counts;
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="odk-exams">
-      <PageHeader title="Denemelerim" description="Devam eden denemen, başlayabileceğin ve yaklaşan denemeler, açıklanan sonuçların." />
+      <PageHeader title="Denemelerim" description="Devam eden, başlayabileceğin ve yaklaşan denemelerin; bir de açıklanan sonuçların." />
       <SegmentedTabs label="Deneme görünümü" value={view} onChange={setView} options={VIEWS.map((item) => ({ ...item, count: counts?.[item.value] }))} />
       <QueryView query={query}>
         {(data) => (
@@ -43,21 +43,21 @@ export default function OdkExamsScreen() {
               <View style={styles.active} accessibilityRole="summary" testID="odk-active">
                 <Text variant="bodyStrong">{`${data.active.title} devam ediyor`}</Text>
                 <Text tone="secondary" variant="secondary">
-                  {`${data.active.deadlineAt ? `Bitiş ${formatShortDateTime(data.active.deadlineAt)}. ` : ''}Süre sunucuda işliyor; denemeye web sınav ekranından devam edilir.`}
+                  {`${data.active.deadlineAt ? `Bitiş ${formatShortDateTime(data.active.deadlineAt)}. ` : ''}Süren işlemeye devam ediyor; denemene bilgisayardan, web sınav ekranından devam edebilirsin.`}
                 </Text>
-                {examHref(data.active.id) ? <Button label="Ayrıntı ve devam" variant="secondary" onPress={() => router.push(examHref(data.active!.id) as Href)} /> : null}
+                {examHref(data.active.id) ? <Button label="Denemene dön" variant="secondary" onPress={() => router.push(examHref(data.active!.id) as Href)} /> : null}
               </View>
             ) : null}
             {data.exams.length ? (
               data.exams.map((exam) => <OdkExamRow key={exam.id} exam={exam} />)
             ) : (
               <EmptyState
-                title={data.counts.tumu ? 'Bu görünümde deneme yok.' : 'Henüz yayınlanmış bir denemen yok.'}
-                body={data.counts.tumu ? undefined : 'Yeni deneme açıldığında burada görünecek.'}
+                title={data.counts.tumu ? 'Burada şimdilik bir deneme yok.' : 'Henüz sana açılmış bir deneme yok.'}
+                body={data.counts.tumu ? undefined : 'Yeni bir deneme açıldığında ilk burada göreceksin.'}
               />
             )}
             {data.truncated ? (
-              <Banner tone="info">{`Yalnız en yeni ${data.limit} deneme gösteriliyor. Daha eski denemeler için web panelini kullanabilirsin.`}</Banner>
+              <Banner tone="info">{`Burada en yeni ${data.limit} denemeni görüyorsun. Daha eskilerine web panelinden ulaşabilirsin.`}</Banner>
             ) : null}
           </>
         )}

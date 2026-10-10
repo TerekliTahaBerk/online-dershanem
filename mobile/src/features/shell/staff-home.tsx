@@ -24,7 +24,7 @@ export function StaffHomeScreen() {
     <Screen testID={`staff-home-${role}`}>
       <PageHeader title={firstName ? `Merhaba ${firstName}` : 'Merhaba'} context={<Text tone="muted" variant="meta">{ROLE_LABEL[role]}</Text>} />
       <Banner tone="info" title={role === 'ADMIN' ? 'Yönetim web panelinde' : 'Çalışma alanı bulunamadı'}>
-        {role === 'ADMIN' ? PHASE_COPY.WEB : 'Hesabına bağlı etkin bir öğretmen çalışma alanı yok. Web panelinden devam edebilirsin.'}
+        {role === 'ADMIN' ? PHASE_COPY.WEB : 'Hesabınıza bağlı etkin bir öğretmen çalışma alanı görünmüyor. Web panelinden devam edebilirsiniz.'}
       </Banner>
       <Section title="Şimdilik">
         <Row title="Bildirimler" meta={unread > 0 ? `${unread} okunmamış` : null} onPress={() => router.push('/notifications')} />

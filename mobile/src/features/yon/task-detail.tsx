@@ -24,11 +24,11 @@ export default function YonTaskDetailScreen({ taskId }: { taskId: string }) {
   const refresh = usePullToRefresh(() => query.refetch());
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="yon-task">
-      <QueryView query={query} disabledTitle="Haftalık plan şu anda açık değil.">
+      <QueryView query={query} disabledTitle="Haftalık plan şimdilik kapalı.">
         {(data) => {
           const plan = data.state === 'READY' ? data.plan : null;
           const task = plan?.tasks.find((item) => item.id === taskId);
-          if (!plan || !task) return <EmptyState title="Görev bulunamadı." body="Görev planından kaldırılmış veya plan değişmiş olabilir. Planım ekranından güncel görevlerine bakabilirsin." />;
+          if (!plan || !task) return <EmptyState title="Bu görevi bulamadık." body="Planından çıkarılmış ya da planın değişmiş olabilir. Güncel görevlerine Planım ekranından bakabilirsin." />;
           return <TaskBody key={`${task.id}:${task.status}`} task={task} canComplete={plan.canComplete} />;
         }}
       </QueryView>
@@ -80,12 +80,12 @@ function TaskBody({ task, canComplete }: { task: MobileYonTask; canComplete: boo
           <Row title="Gerçekleşen" meta={[task.actualQuestions !== null ? `${task.actualQuestions} soru` : null, task.actualMinutes !== null ? `${task.actualMinutes} dk` : null].filter(Boolean).join(' · ')} />
         ) : null}
         {task.studentNote ? <Row title="Notun" subtitle={task.studentNote} /> : null}
-        {task.linkedAssignment ? <Text tone="muted" variant="meta">Bu görev bir onlinedershanem. ödevine bağlı; ilerlemesi ödevinle birlikte tek kayıtta tutulur.</Text> : null}
+        {task.linkedAssignment ? <Text tone="muted" variant="meta">Bu görev bir onlinedershanem. ödevine bağlı; burada işaretlediğinde ödevin de güncellenir.</Text> : null}
       </Section>
       {!canComplete ? (
-        <Text tone="secondary">Görevleri plan onaylandığında işaretleyebilirsin.</Text>
+        <Text tone="secondary">Plan onaylanınca bu görevi işaretleyebileceksin.</Text>
       ) : open ? (
-        <Section title="Durumunu bildir">
+        <Section title="Nasıl gitti?">
           {mode ? (
             <View style={styles.form}>
               <Text variant="subsection">{COMPLETE_LABEL[mode]}</Text>

@@ -16,9 +16,9 @@ import { QueryView, useOdNavigation, usePullToRefresh } from './shared';
  */
 
 const EMPTY: Record<AssignmentTab, { title: string; body: string }> = {
-  pending: { title: 'Bekleyen çalışma yok.', body: 'Öğretmenin yeni bir çalışma eklediğinde burada görünecek.' },
-  submitted: { title: 'Teslim edilen çalışma yok.', body: 'Tamamladığın veya öğretmenine gönderdiğin çalışmalar burada listelenir.' },
-  reviewed: { title: 'Değerlendirilen çalışma yok.', body: 'Öğretmenin onayladığı kanıtlı çalışmalar burada görünür.' },
+  pending: { title: 'Bekleyen çalışman yok.', body: 'Her şey yolunda görünüyor. Öğretmenin yeni bir çalışma eklediğinde burada göreceksin.' },
+  submitted: { title: 'Henüz teslim ettiğin bir çalışma yok.', body: 'Tamamladığın ya da öğretmenine gönderdiğin çalışmalar burada birikecek.' },
+  reviewed: { title: 'Değerlendirilen çalışman yok.', body: 'Öğretmenin bir çalışmanı onayladığında burada göreceksin.' },
 };
 
 export default function OdAssignmentsScreen() {
@@ -26,9 +26,9 @@ export default function OdAssignmentsScreen() {
   const refresh = usePullToRefresh(() => query.refetch());
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="od-assignments">
-      <PageHeader title="Çalışmalar" description="Öğretmeninin verdiği ödevler." />
+      <PageHeader title="Çalışmalarım" description="Öğretmenlerinin sana verdiği ödevler ve çalışmalar." />
       <QueryView query={query}>
-        {(data) => (data.profile ? <AssignmentTabs data={data} /> : <EmptyState title="Profilin hazırlanıyor." body="Öğrenci profilin tamamlandığında çalışmaların burada listelenir." />)}
+        {(data) => (data.profile ? <AssignmentTabs data={data} /> : <EmptyState title="Hesabını hazırlıyoruz." body="Her şey hazır olduğunda çalışmalarını burada göreceksin." />)}
       </QueryView>
     </Screen>
   );
@@ -58,7 +58,7 @@ function AssignmentRow({ assignment, evidenceEnabled }: { assignment: MobileAssi
   const nav = useOdNavigation();
   const status = statusPresentation(assignment, evidenceEnabled, new Date());
   const href = assignmentDetailHref(assignment.id);
-  const evidence = usesEvidenceFlow(assignment, evidenceEnabled) ? ' · Kanıt istenir' : '';
+  const evidence = usesEvidenceFlow(assignment, evidenceEnabled) ? ' · Nasıl yaptığını anlatman isteniyor' : '';
   return (
     <Row
       testID={`assignment-${assignment.id}`}

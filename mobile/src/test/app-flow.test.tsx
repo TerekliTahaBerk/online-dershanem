@@ -142,9 +142,9 @@ describe('M1 uygulama akışları', () => {
     await signIn('temp@example.com');
     expect(await screen.findByText('Parolanı belirle', {}, WAIT)).toBeTruthy();
     expect(server.calls.filter((call) => call.path.startsWith('/api/panel/') && call.path !== '/api/panel/me')).toHaveLength(0);
-    fireEvent.changeText(screen.getByLabelText('Mevcut parola'), 'Parola-1234');
-    fireEvent.changeText(screen.getByLabelText('Yeni parola'), 'Yepyeni-Parola-99');
-    fireEvent.changeText(screen.getByLabelText('Yeni parola (tekrar)'), 'Yepyeni-Parola-99');
+    fireEvent.changeText(screen.getByLabelText('Şu anki parolan'), 'Parola-1234');
+    fireEvent.changeText(screen.getByLabelText('Yeni parolan'), 'Yepyeni-Parola-99');
+    fireEvent.changeText(screen.getByLabelText('Yeni parolan (tekrar)'), 'Yepyeni-Parola-99');
     await act(async () => {
       fireEvent.press(screen.getByTestId('change-password-submit'));
     });
@@ -204,7 +204,7 @@ describe('M1 uygulama akışları', () => {
   it('aktif ürünü olmayan öğrenci açıklamalı boş durum görür', async () => {
     await boot([account('yok@example.com', makeBootstrap({ products: {}, activeProduct: null }))]);
     await signIn('yok@example.com');
-    expect(await screen.findByText('Aktif çalışma alanın yok', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByText('Henüz açık bir panelin yok', {}, WAIT)).toBeTruthy();
   });
 
   it('veli kendi native ekranını (M6), öğretmen ve yönetim kendi bilinçli yer tutucularını görür (öğrenci sekmesi değil)', async () => {
@@ -266,7 +266,7 @@ describe('M1 uygulama akışları', () => {
     const server = await boot([account('ada@example.com', makeBootstrap({ products: { OD: 'ACTIVE' } }))]);
     server.override('GET /api/panel/student/home', () => new Response(JSON.stringify({ error: 'Oturumunuz sona ermiş.', code: 'UNAUTHENTICATED' }), { status: 401 }));
     await signIn('ada@example.com');
-    expect(await screen.findByText('Oturumun sona erdi. Lütfen tekrar giriş yap.', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByText('Güvenliğin için oturumunu kapattık. Kaldığın yerden devam etmek için tekrar giriş yap.', {}, WAIT)).toBeTruthy();
     expect(secureStore.__store.size).toBe(0);
   });
 
@@ -274,13 +274,13 @@ describe('M1 uygulama akışları', () => {
     const server = await boot([account('ada@example.com', makeBootstrap({ products: { OK: 'ACTIVE' } }))]);
     server.override('GET /api/panel/me', () => Promise.reject(new TypeError('Network request failed')));
     await signIn('ada@example.com');
-    expect(await screen.findByText('Hesap bilgileri yüklenemedi', {}, { timeout: 15000 })).toBeTruthy();
+    expect(await screen.findByText('Hesap bilgilerini yükleyemedik', {}, { timeout: 15000 })).toBeTruthy();
     expect(screen.queryByTestId('yon-today')).toBeNull();
     server.override('GET /api/panel/me', () => new Response('{"contractVersion":1,"user":{}}', { status: 200 }));
     await act(async () => {
       fireEvent.press(screen.getByText('Tekrar dene'));
     });
-    expect(await screen.findByText('Sunucudan beklenmeyen bir yanıt alındı.', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByText('Beklenmedik bir yanıt aldık. Bir daha dener misin?', {}, WAIT)).toBeTruthy();
     server.override('GET /api/panel/me', null);
     await act(async () => {
       fireEvent.press(screen.getByText('Tekrar dene'));
@@ -311,7 +311,7 @@ describe('M1 uygulama akışları', () => {
     await act(async () => {
       fireEvent.press(await screen.findByText('Deneme sonucu', {}, WAIT));
     });
-    expect(await screen.findByText('Bu bildirimin içeriği bu çalışma alanında veya mobilde henüz açılamıyor.', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByText('Bu bildirimin içeriğini burada ya da mobilde henüz açamıyoruz; web panelinden bakabilirsin.', {}, WAIT)).toBeTruthy();
     await act(async () => {
       fireEvent.press(screen.getByText('Yeni kaynak'));
     });

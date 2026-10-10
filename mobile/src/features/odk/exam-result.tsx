@@ -28,7 +28,7 @@ export default function OdkExamResultScreen({ examId }: { examId: string }) {
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="odk-result">
       {query.error instanceof ApiError && query.error.kind === 'not_found' && !query.data ? (
-        <EmptyState title="Sonuç henüz açıklanmadı." body="Sonucun açıklandığında burada görünür. Erişim hakkın sona ermişse sonuç gösterilmez." />
+        <EmptyState title="Sonucun henüz açıklanmadı." body="Açıklandığında burada göreceksin. Erişim süren dolduysa sonucu burada gösteremiyoruz." />
       ) : (
         <QueryView query={query}>{(result) => <ResultBody result={result} />}</QueryView>
       )}
@@ -49,7 +49,7 @@ function ResultBody({ result }: { result: MobileOdkResult }) {
       <PageHeader
         title="Deneme sonucun"
         context={<FamilyTag family={result.exam.family} />}
-        description={`${result.exam.title}${result.exam.resultsReleasedAt ? ` · ${formatDayMonth(result.exam.resultsReleasedAt)}` : ''}. Sonucun yalnız kendi cevapların ve kilitli cevap anahtarıyla hesaplandı.`}
+        description={`${result.exam.title}${result.exam.resultsReleasedAt ? ` · ${formatDayMonth(result.exam.resultsReleasedAt)}` : ''}. Sonucun yalnızca senin cevapların ve kilitli cevap anahtarıyla hesaplandı.`}
       />
       <View style={styles.summary} accessible accessibilityLabel={`Net ${formatNet(result.summary.totalNet)}`}>
         <Text variant="caption" tone="muted">Net</Text>
@@ -72,7 +72,7 @@ function ResultBody({ result }: { result: MobileOdkResult }) {
               { value: 'tumu', label: 'Tüm bölümler' },
             ]}
           />
-          <Text tone="muted" variant="meta">Ham net gösterilir; puan tahmini değildir.</Text>
+          <Text tone="muted" variant="meta">Burada ham netini görüyorsun; bu bir puan tahmini değil.</Text>
         </View>
       ) : null}
       {scoped(result.sections).length ? (
@@ -87,16 +87,16 @@ function ResultBody({ result }: { result: MobileOdkResult }) {
           ))}
         </Section>
       ) : null}
-      <Section title="Güçlü alanlar">
-        {strong.length ? strong.map((item) => <OutcomeRow key={item.code} item={item} />) : <Text tone="secondary">Bu denemede belirgin güçlü kazanım yok.</Text>}
+      <Section title="İyi olduğun konular">
+        {strong.length ? strong.map((item) => <OutcomeRow key={item.code} item={item} />) : <Text tone="secondary">Bu denemede öne çıkan bir konu olmadı; her deneme yeni bir başlangıç.</Text>}
       </Section>
-      <Section title="Geliştirilecek alanlar">
-        {improve.length ? improve.map((item) => <OutcomeRow key={item.code} item={item} />) : <Text tone="secondary">Geliştirilecek kazanım görünmüyor.</Text>}
+      <Section title="Biraz daha çalışabileceğin konular">
+        {improve.length ? improve.map((item) => <OutcomeRow key={item.code} item={item} />) : <Text tone="secondary">Bu denemede eksik görünen bir konu yok, harika!</Text>}
       </Section>
       <Section title="Zaman analizi">
         {timeSections.length ? (
           <>
-            {slowest ? <Text tone="secondary" variant="secondary">{`En çok süre: ${slowest.title} (${Math.round(slowest.totalActiveMs / 60000)} dk).`}</Text> : null}
+            {slowest ? <Text tone="secondary" variant="secondary">{`En çok vakit ayırdığın bölüm: ${slowest.title} (${Math.round(slowest.totalActiveMs / 60000)} dk).`}</Text> : null}
             {timeSections.map((section) => (
               <Row
                 key={section.code}
@@ -110,7 +110,7 @@ function ResultBody({ result }: { result: MobileOdkResult }) {
             ) : null}
           </>
         ) : (
-          <Text tone="secondary">Bu deneme için geçerli süre verisi yok.</Text>
+          <Text tone="secondary">Bu deneme için süre bilgisi kaydedilmemiş.</Text>
         )}
       </Section>
       <Section title="Soru dökümü" action={result.answerKey.available && result.answerKey.hasFile ? <AnswerKeyButton examId={result.exam.id} /> : undefined}>
@@ -118,7 +118,7 @@ function ResultBody({ result }: { result: MobileOdkResult }) {
       </Section>
       {result.comparison.length > 1 ? (
         <Section title={`${result.exam.family} net gelişimi`}>
-          <Text tone="muted" variant="meta">Yalnız kendi açıklanan denemelerinle.</Text>
+          <Text tone="muted" variant="meta">Yalnızca kendi açıklanan denemelerinle karşılaştırılır.</Text>
           {result.comparison.map((item) => (
             <Row key={item.examId} title={item.title} subtitle={formatDayMonth(item.takenAt)} meta={`${formatNet(item.totalNet)} net`} selected={item.current} />
           ))}
@@ -154,7 +154,7 @@ function NextSteps({ result }: { result: MobileOdkResult }) {
   if (!items.length && !result.coachSuggestions.length) {
     return (
       <Section title="Sonraki adım">
-        <EmptyState title="Şu an net bir çalışma önerisi üretilemedi." body="Yeni ölçümle sinyal netleştiğinde bir sonraki adım burada görünür." />
+        <EmptyState title="Şimdilik net bir öneri çıkaramadık." body="Bir sonraki denemenle tablo netleşince sana ne çalışabileceğini burada söyleyeceğiz." />
       </Section>
     );
   }
@@ -163,7 +163,7 @@ function NextSteps({ result }: { result: MobileOdkResult }) {
       {cross.error ? <Banner tone="critical">{cross.error}</Banner> : null}
       {answerKey.error ? <Banner tone="warning">{answerKey.error}</Banner> : null}
       {result.coachSuggestions.map((item) => (
-        <Row key={item.outcomeCode} title={`Koçundan plan önerisi · ${item.subject} → ${item.topic}`} subtitle={`${item.label} Plana ekleme koçunun onayıyla yapılır.`} />
+        <Row key={item.outcomeCode} title={`Koçundan plan önerisi · ${item.subject} → ${item.topic}`} subtitle={`${item.label} Koçun onaylarsa planına eklenir.`} />
       ))}
       {items.map((item, index) => {
         const target = item.target;

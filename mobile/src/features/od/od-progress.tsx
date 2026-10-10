@@ -36,12 +36,12 @@ export default function OdProgressScreen() {
   const refresh = usePullToRefresh(() => query.refetch());
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="od-progress">
-      <QueryView query={query} disabledTitle="Gidişat analizi şu anda açık değil.">
+      <QueryView query={query} disabledTitle="Gidişat ekranı şimdilik kapalı.">
         {(data) =>
           data.state === 'NO_PROFILE' ? (
             <>
               <PageHeader title="Gidişatın" />
-              <EmptyState title="Profilin hazırlanıyor." body="Öğrenci profilin tamamlandığında analiz özetin burada açılır." />
+              <EmptyState title="Hesabını hazırlıyoruz." body="Her şey hazır olduğunda gidişatını burada göreceksin." />
             </>
           ) : (
             <InsightsBody data={data} />
@@ -66,16 +66,16 @@ function InsightsBody({ data }: { data: MobileInsightsReady }) {
       </View>
       <WeeklyGoal goal={data.weeklyGoal} />
       {data.isEmpty ? (
-        <EmptyState title="Henüz gösterilecek veri yok." body="Derslerin işlendikçe, çalışmaların tamamlandıkça ve denemelerin girildikçe gidişatın burada birikir." />
+        <EmptyState title="Gidişatın yeni yeni şekilleniyor." body="Derslere katıldıkça, çalışmalarını tamamladıkça ve denemelerin girildikçe burada nasıl ilerlediğini göreceksin." />
       ) : (
         <>
-          <Section title="Akademik">
+          <Section title="Derslerdeki durumun">
             {data.academic.examCount < 2 ? (
-              <Text tone="secondary">Deneme eğilimi için en az iki sonuç gerekiyor. İkinci deneme girildiğinde net değişimin burada görünür.</Text>
+              <Text tone="secondary">Eğilimi görmek için en az iki deneme sonucu lazım. İkinci denemen girildiğinde net değişimini burada göreceksin.</Text>
             ) : (
               <>
                 <Row
-                  title="Toplam net değişimi"
+                  title="Toplam netindeki değişim"
                   meta={data.academic.netDelta === null ? '—' : `${data.academic.netDelta >= 0 ? '+' : ''}${formatNet(data.academic.netDelta)}`}
                   subtitle={data.academic.netTrend.map((point) => `${point.label} ${formatNet(point.net)}`).join(' · ')}
                 />
@@ -85,14 +85,14 @@ function InsightsBody({ data }: { data: MobileInsightsReady }) {
               </>
             )}
             {data.academic.strengths.map((item) => (
-              <Text key={`s-${item.subject}`} tone="secondary">{`Güçlü: ${item.sentence}`}</Text>
+              <Text key={`s-${item.subject}`} tone="secondary">{`İyi gidiyor: ${item.sentence}`}</Text>
             ))}
             {data.academic.supportAreas.map((item) => (
               <Text key={`d-${item.subject}`} tone="secondary">{`Destek: ${item.sentence}`}</Text>
             ))}
             {data.academic.subjectCaption ? <Text tone="muted" variant="meta">{data.academic.subjectCaption}</Text> : null}
           </Section>
-          <Section title="Çalışma davranışı">
+          <Section title="Çalışma alışkanlıkların">
             <RateRow title="Derslere katılım" rate={data.behavioral.attendance} unit="ders" />
             <RateRow title="Çalışma tamamlama" rate={data.behavioral.assignments} unit="çalışma" />
           </Section>
@@ -100,7 +100,7 @@ function InsightsBody({ data }: { data: MobileInsightsReady }) {
       )}
       {data.mockExamAnalysis && nav.has('mock-exams') && nav.navigation ? (
         <Section title="Dış denemelerim">
-          <Text tone="secondary">Okulda, kursta veya başka bir platformda çözdüğün deneme sonuçları. Deneme Ligi sonuçların ayrı çalışma alanındadır.</Text>
+          <Text tone="secondary">Okulda, kursta ya da başka bir platformda çözdüğün denemeler. Deneme Ligi sonuçlarını kendi alanında bulabilirsin.</Text>
           <Button label="Dış denemelerimi gör" variant="secondary" onPress={() => nav.push(expoHrefFor(targetForNavId(nav.navigation!, 'mock-exams')))} />
         </Section>
       ) : null}
@@ -109,7 +109,7 @@ function InsightsBody({ data }: { data: MobileInsightsReady }) {
 }
 
 function RateRow({ title, rate, unit }: { title: string; rate: { percent: number | null; numerator: number; denominator: number }; unit: string }) {
-  if (rate.percent === null || rate.denominator === 0) return <Row title={title} meta="Henüz veri yok" />;
+  if (rate.percent === null || rate.denominator === 0) return <Row title={title} meta="Henüz yok" />;
   return <Row title={title} meta={`%${Math.round(rate.percent)}`} subtitle={`${rate.numerator} / ${rate.denominator} ${unit}`} />;
 }
 
@@ -133,16 +133,16 @@ function WeeklyGoal({ goal }: { goal: string | null }) {
     try {
       await mutation.mutateAsync(draft.trim());
       setEditing(false);
-      setMessage({ tone: 'success', text: 'Hedefin kaydedildi.' });
+      setMessage({ tone: 'success', text: 'Hedefini kaydettik. Başarılar!' });
       await invalidate();
     } catch (error) {
-      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Hedef kaydedilemedi.' });
+      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Hedefini kaydedemedik. Bir daha dener misin?' });
     }
   }
 
   return (
     <View style={styles.goal} testID="weekly-goal">
-      <Text variant="caption" tone="muted">Bu haftaki kişisel hedefim</Text>
+      <Text variant="caption" tone="muted">Bu haftaki hedefim</Text>
       {message ? <Banner tone={message.tone}>{message.text}</Banner> : null}
       {editing ? (
         <>
@@ -163,7 +163,7 @@ function WeeklyGoal({ goal }: { goal: string | null }) {
         </>
       ) : (
         <>
-          <Text variant="bodyStrong">{goal ?? 'Henüz bu hafta için bir hedef yazmadın.'}</Text>
+          <Text variant="bodyStrong">{goal ?? 'Bu hafta için kendine küçük bir hedef koymaya ne dersin?'}</Text>
           <Button
             testID="weekly-goal-edit"
             label={goal ? 'Hedefi düzenle' : 'Hedef yaz'}

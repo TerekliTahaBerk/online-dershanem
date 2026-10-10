@@ -23,7 +23,7 @@ export function FamilyTag({ family }: { family: string }) {
 export function OdkExamRow({ exam }: { exam: MobileOdkExamRow }) {
   const router = useRouter();
   const href = rowHref(exam);
-  const meta = [exam.startsAt ? formatShortDateTime(exam.startsAt) : 'Tarih bekleniyor', exam.durationMinutes ? `${exam.durationMinutes} dk` : null].filter(Boolean).join(' · ');
+  const meta = [exam.startsAt ? formatShortDateTime(exam.startsAt) : 'Tarihi yakında belli olacak', exam.durationMinutes ? `${exam.durationMinutes} dk` : null].filter(Boolean).join(' · ');
   return (
     <Row
       testID={`odk-exam-${exam.id}`}

@@ -26,7 +26,7 @@ export default function YonCoachingScreen() {
   const description =
     data?.state === 'READY' && data.coach
       ? `${data.coach.name}${data.coach.cadenceDays ? ` · ${data.coach.cadenceDays} günde bir görüşme` : ''}`
-      : 'Koçluk görüşmeni ve koçunun notlarını buradan takip edebilirsin.';
+      : 'Koçunla görüşmelerin ve sana bıraktığı notlar burada.';
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="yon-coaching">
       <PageHeader title="Koçum" description={description} />
@@ -37,24 +37,24 @@ export default function YonCoachingScreen() {
 
 function CoachingBody({ hub }: { hub: MobileYonCoaching }) {
   if (hub.state === 'NO_PROFILE') {
-    return <EmptyState title="Profilin hazırlanıyor." body="Öğrenci profilin tamamlandığında koçluk durumun burada görünecek." />;
+    return <EmptyState title="Hesabını hazırlıyoruz." body="Her şey hazır olduğunda koçunu ve görüşmelerini burada göreceksin." />;
   }
   return (
     <>
       {hub.coach ? (
         <Section title="Koçun" first>
           <Row title="Koç" meta={hub.coach.name} />
-          <Row title="Sonraki görüşme" meta={hub.coach.overdue ? 'Yeni saat bekleniyor' : hub.coach.nextScheduledAt ? formatDateTime(hub.coach.nextScheduledAt) : 'Planlanmadı'} />
+          <Row title="Sonraki görüşme" meta={hub.coach.overdue ? 'Yeni saat belirleniyor' : hub.coach.nextScheduledAt ? formatDateTime(hub.coach.nextScheduledAt) : 'Planlanmadı'} />
           {hub.coach.lastCompletedAt ? <Row title="Son görüşme" meta={formatDayMonth(hub.coach.lastCompletedAt)} /> : null}
           {hub.coach.focus ? <Row title="Bu haftanın odağı" subtitle={hub.coach.focus} /> : null}
         </Section>
       ) : (
-        <EmptyState title="Henüz atanmış koç görünmüyor." body="Koç ataması yapıldığında görüşme bilgisi ve yönlendirmeler burada açılır." />
+        <EmptyState title="Koçunla çok yakında tanışacaksın." body="Koçun belli olduğunda görüşmelerin ve önerileri burada olacak." />
       )}
       {hub.coach ? (
         <Section title="Görüşmeler">
-          <Text tone="secondary" variant="secondary">Saat uymuyorsa nedenini seçip değişiklik isteyebilirsin.</Text>
-          {hub.upcoming.length ? hub.upcoming.map((session) => <SessionCard key={`${session.id}:${session.version}`} session={session} />) : <Text tone="secondary">Planlanmış bir görüşme yok.</Text>}
+          <Text tone="secondary" variant="secondary">Saat sana uymuyorsa nedenini seçip değişiklik isteyebilirsin.</Text>
+          {hub.upcoming.length ? hub.upcoming.map((session) => <SessionCard key={`${session.id}:${session.version}`} session={session} />) : <Text tone="secondary">Şimdilik planlanmış bir görüşmen yok.</Text>}
         </Section>
       ) : null}
       <Section title="Ortak notlar">
@@ -66,13 +66,13 @@ function CoachingBody({ hub }: { hub: MobileYonCoaching }) {
             </View>
           ))
         ) : (
-          <Text tone="secondary">Bu hafta için yeni koç notu yok.</Text>
+          <Text tone="secondary">Koçun bu hafta henüz yeni bir not bırakmadı.</Text>
         )}
       </Section>
       <Section title="Yapılacaklar">
-        <Text tone="secondary" variant="secondary">Koçunun bu hafta senin için eklediği çalışmalar.</Text>
+        <Text tone="secondary" variant="secondary">Koçunun bu hafta sana özel eklediği çalışmalar.</Text>
         {hub.coachTasks === null ? (
-          <Text tone="secondary">Koçunla belirlediğiniz çalışmalar hazır olduğunda burada görünecek.</Text>
+          <Text tone="secondary">Koçunla belirlediğiniz çalışmalar hazır olunca burada göreceksin.</Text>
         ) : hub.coachTasks.length ? (
           hub.coachTasks.map((task) => (
             <Row
@@ -85,7 +85,7 @@ function CoachingBody({ hub }: { hub: MobileYonCoaching }) {
             />
           ))
         ) : (
-          <Text tone="secondary">Bu hafta koçunun eklediği yayında bir çalışma yok. Plan görevlerin Bugün sayfasında.</Text>
+          <Text tone="secondary">Koçun bu hafta ayrıca bir çalışma eklemedi. Plan görevlerin Bugün sayfasında seni bekliyor.</Text>
         )}
       </Section>
       {hub.past.length ? (
@@ -95,7 +95,7 @@ function CoachingBody({ hub }: { hub: MobileYonCoaching }) {
               key={item.id}
               title={formatDayMonth(item.at)}
               subtitle={item.focus}
-              trailing={<StatusBadge label={item.status === 'COMPLETED' ? 'Yapıldı' : item.status === 'CANCELLED' ? 'İptal' : 'Kaçırıldı'} tone={item.status === 'COMPLETED' ? 'success' : 'neutral'} />}
+              trailing={<StatusBadge label={item.status === 'COMPLETED' ? 'Yapıldı' : item.status === 'CANCELLED' ? 'İptal edildi' : 'Kaçırıldı'} tone={item.status === 'COMPLETED' ? 'success' : 'neutral'} />}
             />
           ))}
         </Section>
@@ -116,11 +116,11 @@ function SessionCard({ session }: { session: MobileCoachingSession }) {
   const meetingUrl = session.meetingUrl && !past && isSafeExternalUrl(session.meetingUrl) ? session.meetingUrl : null;
   return (
     <View style={styles.session} testID={`yon-session-${session.id}`}>
-      <Text variant="bodyStrong">{past ? 'Yeni saat bekleniyor' : formatDateTime(session.scheduledAt)}</Text>
+      <Text variant="bodyStrong">{past ? 'Yeni saat belirleniyor' : formatDateTime(session.scheduledAt)}</Text>
       {accept.feedback ? <Banner tone={accept.feedback.tone}>{accept.feedback.message}</Banner> : null}
       {request.feedback ? <Banner tone={request.feedback.tone}>{request.feedback.message}</Banner> : null}
       {session.rescheduleRequestedAt ? (
-        <Text tone="secondary" variant="secondary">{`Saat değişikliği talebin alındı.${session.rescheduleReason ? ` ${RESCHEDULE_REASON_LABEL[session.rescheduleReason]}` : ''}`}</Text>
+        <Text tone="secondary" variant="secondary">{`Saat değişikliği isteğin koçuna ulaştı.${session.rescheduleReason ? ` ${RESCHEDULE_REASON_LABEL[session.rescheduleReason]}` : ''}`}</Text>
       ) : null}
       {session.proposedAt ? (
         <>
@@ -133,17 +133,17 @@ function SessionCard({ session }: { session: MobileCoachingSession }) {
         {!session.rescheduleRequestedAt ? <Button label="Saat değiştir" variant="secondary" onPress={() => setOpen(true)} testID={`yon-reschedule-${session.id}`} /> : null}
       </View>
       <BottomSheet visible={confirm} title="Yeni görüşme saatini onayla" onClose={() => { if (!accept.submitting) setConfirm(false); }}>
-        <Text>{session.proposedAt ? formatDateTime(session.proposedAt) : 'Güncel saat önerisi bulunmuyor.'}</Text>
+        <Text>{session.proposedAt ? formatDateTime(session.proposedAt) : 'Şu an önerilmiş yeni bir saat yok.'}</Text>
         <Button label="Bu saati onaylıyorum" testID="yon-accept-confirm" loading={accept.submitting} disabled={!online} onPress={async () => { await accept.submit(); setConfirm(false); }} />
       </BottomSheet>
-      <BottomSheet visible={open} title="Saat değişikliği nedeni" onClose={() => setOpen(false)}>
+      <BottomSheet visible={open} title="Saat neden uymuyor?" onClose={() => setOpen(false)}>
         <View accessibilityRole="radiogroup" accessibilityLabel="Saat değişikliği nedeni">
           {YON_RESCHEDULE_REASONS.map((value) => (
             <Row key={value} title={RESCHEDULE_REASON_LABEL[value]} selected={reason === value} onPress={() => setReason(value)} testID={`yon-reason-${value}`} />
           ))}
         </View>
         <Button
-          label="Talebi ilet"
+          label="Koçuma ilet"
           loading={request.submitting}
           testID="yon-reschedule-submit"
           onPress={async () => {

@@ -24,8 +24,8 @@ export default function OdWeeklyDigestScreen() {
   const refresh = usePullToRefresh(() => query.refetch());
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="od-weekly-digest">
-      <PageHeader title="Haftalık özet" description="Ailenin gördüğü özet burada. Özel öğretmen notların bu özete eklenmez." />
-      <QueryView query={query} disabledTitle="Haftalık özet şu anda açık değil.">
+      <PageHeader title="Haftalık özet" description="Ailenin de gördüğü haftalık özetin. Öğretmeninin sana özel notları buraya eklenmez." />
+      <QueryView query={query} disabledTitle="Haftalık özet şimdilik kapalı.">
         {(data) => <WeeklyDigestContent data={data} product="OD" />}
       </QueryView>
     </Screen>
@@ -39,7 +39,7 @@ export default function OdWeeklyDigestScreen() {
  */
 export function WeeklyDigestContent({ data, product }: { data: MobileWeeklyDigest; product: WorkspaceProduct }) {
   if (data.state === 'NONE') {
-    return <EmptyState title="Haftalık özet henüz yayınlanmadı." body="Öğretmenin önizlemeyi tamamladığında sen ve ailen aynı özeti göreceksiniz." />;
+    return <EmptyState title="Bu haftanın özeti henüz hazır değil." body="Öğretmenin özeti tamamladığında sen ve ailen aynı anda göreceksiniz." />;
   }
   return (
     <>
@@ -50,7 +50,7 @@ export function WeeklyDigestContent({ data, product }: { data: MobileWeeklyDiges
           <Text tone="secondary">{data.digest.goodThingTwo}</Text>
         </View>
       </Section>
-      <Section title="Destek olabilecek alan">
+      <Section title="Biraz daha destek isteyen alan">
         <Text tone="secondary">{data.digest.supportArea}</Text>
       </Section>
       <Section title="Evde konuşmak için">
@@ -84,21 +84,21 @@ function DigestFeedback({ digest, product }: { digest: Extract<MobileWeeklyDiges
       // Seçim yalnız sunucu kaydettikten sonra işaretli gösterilir.
       setHelpful(nextHelpful);
       setPulse(nextPulse);
-      setMessage({ tone: 'success', text: 'Geri bildirimin kaydedildi.' });
+      setMessage({ tone: 'success', text: 'Teşekkürler, geri bildirimini aldık.' });
       await invalidate();
     } catch (error) {
-      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Geri bildirim kaydedilemedi.' });
+      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Geri bildirimini kaydedemedik. Bir daha dener misin?' });
     }
   }
 
   return (
-    <Section title="Bu özet sana nasıl hissettirdi?">
+    <Section title="Bu özet sana nasıl geldi?">
       {message ? <Banner tone={message.tone}>{message.text}</Banner> : null}
       <View style={styles.row}>
-        <Button testID="digest-helpful" label="Yararlıydı" variant={helpful === true ? 'primary' : 'secondary'} disabled={mutation.isPending} onPress={() => void save(true, pulse)} />
-        <Button testID="digest-not-helpful" label="Yararlı değildi" variant={helpful === false ? 'primary' : 'secondary'} disabled={mutation.isPending} onPress={() => void save(false, pulse)} />
+        <Button testID="digest-helpful" label="İşime yaradı" variant={helpful === true ? 'primary' : 'secondary'} disabled={mutation.isPending} onPress={() => void save(true, pulse)} />
+        <Button testID="digest-not-helpful" label="Pek yaramadı" variant={helpful === false ? 'primary' : 'secondary'} disabled={mutation.isPending} onPress={() => void save(false, pulse)} />
       </View>
-      <Text variant="label" tone="secondary">Kaygı düzeyi (isteğe bağlı)</Text>
+      <Text variant="label" tone="secondary">Seni ne kadar kaygılandırdı? (isteğe bağlı)</Text>
       <View style={styles.row} accessibilityRole="radiogroup" accessibilityLabel="Özet kaygı düzeyi">
         {PULSE.map((option) => (
           <Button key={option.value} testID={`digest-pulse-${option.value}`} label={option.label} variant={pulse === option.value ? 'primary' : 'quiet'} disabled={mutation.isPending} onPress={() => void save(helpful, option.value)} />

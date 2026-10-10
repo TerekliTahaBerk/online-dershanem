@@ -29,7 +29,7 @@ const BARRIER = {
   TIME_LOAD: 'Çalışma yükünü yetiştiremiyorum',
   ACCESS_TECH: 'Erişim veya cihaz sorunu var',
   NEED_EXAMPLE: 'Bir örneğe daha ihtiyacım var',
-  OTHER: 'Başka bir çalışma engeli var',
+  OTHER: 'Başka bir şey zorluyor',
 } as const;
 
 const targetKey = (target: MobileCheckInTarget) => (target.kind === 'GROUP' ? `group:${target.groupId}` : `coach:${target.coachAssignmentId}`);
@@ -41,11 +41,11 @@ export default function CheckInScreen() {
   const refresh = usePullToRefresh(() => query.refetch());
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="check-in">
-      <PageHeader title="Check-in" description="Nasıl ilerlediğini fark et, gerekirse yardım iste. Puan, sıralama ve serbest metin yok; veli bu alanı göremez." />
-      <QueryView query={query} disabledTitle="Check-in şu anda açık değil.">
+      <PageHeader title="Check-in" description="Bu hafta nasıl gittiğini fark et, gerekirse yardım iste. Puan da sıralama da yok; ailen bu alanı göremez." />
+      <QueryView query={query} disabledTitle="Check-in şimdilik kapalı.">
         {(data) =>
           data.state === 'NO_PROFILE' ? (
-            <EmptyState title="Profilin hazırlanıyor." />
+            <EmptyState title="Hesabını hazırlıyoruz." body="Her şey hazır olduğunda check-in yapabileceksin." />
           ) : (
             <>
               <CheckInForm key={data.remaining} data={data} product={product} />
@@ -96,50 +96,50 @@ function CheckInForm({ data, product }: { data: Extract<MobileCheckInState, { st
         shareWithTeacher: share || help,
         helpRequested: help,
       });
-      setMessage({ tone: 'success', text: help ? 'Check-in kaydedildi; yardım isteğin iletildi.' : "Check-in'in kaydedildi." });
+      setMessage({ tone: 'success', text: help ? 'Check-in\'ini kaydettik ve yardım isteğini ilettik. Yalnız değilsin.' : "Check-in'ini kaydettik, teşekkürler!" });
       await invalidate();
     } catch (error) {
       const uncertain = error instanceof ApiError && (error.transient || error.kind === 'invalid_response');
       setMessage({
         tone: error instanceof ApiError && error.kind === 'conflict' ? 'warning' : 'critical',
-        text: uncertain ? 'Bağlantı kesildi; kaydın oluşmuş olabilir. Geçmişini yenileyip kontrol et.' : error instanceof ApiError ? error.message : 'Check-in kaydedilemedi.',
+        text: uncertain ? 'Bağlantı koptu; check-in\'in kaydedilmiş olabilir. Geçmişini yenileyip bir bakar mısın?' : error instanceof ApiError ? error.message : 'Check-in\'ini kaydedemedik. Bir daha dener misin?',
       });
       if (uncertain || (error instanceof ApiError && error.kind === 'conflict')) await invalidate();
     }
   }
 
   if (!data.targets.length) {
-    return <EmptyState title="Check-in için aktif bir destek alanın yok." body="Bir derse kayıtlı olduğunda veya koç ataman yapıldığında check-in burada açılır." />;
+    return <EmptyState title="Check-in için henüz bir dersin ya da koçun yok." body="Bir derse kaydolduğunda ya da koçunla eşleştiğinde check-in burada açılacak." />;
   }
 
   return (
-    <Section title="60 saniyelik check-in" first action={<StatusBadge label={`Bu hafta ${data.remaining} hak`} tone="info" />}>
-      <Text tone="secondary" variant="secondary">Bu bir sınav, tanı veya puan değildir. Nasıl ilerlediğini anlamana yardımcı olur.</Text>
+    <Section title="60 saniyelik check-in" first action={<StatusBadge label={`Bu hafta ${data.remaining} hakkın var`} tone="info" />}>
+      <Text tone="secondary" variant="secondary">Bu bir sınav değil; doğru ya da yanlış cevap yok. Sadece nasıl hissettiğini anlamana yardımcı olur.</Text>
       {message ? <Banner tone={message.tone}>{message.text}</Banner> : null}
       {data.targets.length > 1 ? (
-        <View style={styles.group} accessibilityRole="radiogroup" accessibilityLabel="Hangi destek alanı?">
-          <Text variant="label" tone="secondary">Hangi destek alanı?</Text>
+        <View style={styles.group} accessibilityRole="radiogroup" accessibilityLabel="Hangi ders ya da koçluk için?">
+          <Text variant="label" tone="secondary">Hangi ders ya da koçluk için?</Text>
           {data.targets.map((item) => (
-            <Row key={targetKey(item)} title={item.name} subtitle={item.kind === 'GROUP' ? item.subject : 'Koçunla takip'} selected={target === targetKey(item)} onPress={() => setTarget(targetKey(item))} />
+            <Row key={targetKey(item)} title={item.name} subtitle={item.kind === 'GROUP' ? item.subject : 'Koçunla birlikte'} selected={target === targetKey(item)} onPress={() => setTarget(targetKey(item))} />
           ))}
         </View>
       ) : (
-        <Row title="Destek alanı" meta={data.targets[0].name} />
+        <Row title="Check-in alanı" meta={data.targets[0].name} />
       )}
       <Options label="Enerjin nasıl?" values={ENERGY} selected={energy} onSelect={setEnergy} testPrefix="check-energy" />
-      <Options label="Çalışmana güvenin nasıl?" values={CONFIDENCE} selected={confidence} onSelect={setConfidence} testPrefix="check-confidence" />
-      <Options label="Şu anki çalışma engelin" values={BARRIER} selected={barrier} onSelect={setBarrier} testPrefix="check-barrier" />
+      <Options label="Çalışmana ne kadar güveniyorsun?" values={CONFIDENCE} selected={confidence} onSelect={setConfidence} testPrefix="check-confidence" />
+      <Options label="Seni en çok ne zorluyor?" values={BARRIER} selected={barrier} onSelect={setBarrier} testPrefix="check-barrier" />
       <View style={styles.toggle}>
         <View style={styles.flex}>
           <Text variant="bodyStrong">{product === 'OK' ? 'Koçum görsün' : 'Öğretmenim görsün'}</Text>
-          <Text tone="muted" variant="meta">Kapalıysa yalnız sen görürsün. Veliye hiçbir durumda gösterilmez.</Text>
+          <Text tone="muted" variant="meta">Kapalıysa yalnızca sen görürsün. Ailene hiçbir durumda gösterilmez.</Text>
         </View>
         <Switch value={share || help} disabled={help} onValueChange={setShare} trackColor={{ true: theme.accent }} accessibilityLabel={product === 'OK' ? 'Koçum görsün' : 'Öğretmenim görsün'} testID="check-share" />
       </View>
       <View style={[styles.toggle, styles.help]}>
         <View style={styles.flex}>
           <Text variant="bodyStrong">{product === 'OK' ? 'Koçumdan yardım istiyorum' : 'Öğretmenimden yardım istiyorum'}</Text>
-          <Text tone="muted" variant="meta">Bildirim gider; 24 saat içinde küçük bir destek adımı hedeflenir. Açık bir yardım isteğin varken yenisi açılmaz.</Text>
+          <Text tone="muted" variant="meta">Hemen haber veririz; 24 saat içinde sana küçük bir destek adımıyla dönmeye çalışırız. Açık bir isteğin varken yenisini açamazsın.</Text>
         </View>
         <Switch
           value={help}
@@ -152,11 +152,11 @@ function CheckInForm({ data, product }: { data: Extract<MobileCheckInState, { st
           testID="check-help"
         />
       </View>
-      <Banner tone="critical" title="Acil durum alanı değildir.">
+      <Banner tone="critical" title="Burası acil durumlar için değil.">
         Kendine veya başkasına zarar verme riski varsa 112’yi ara ve güvendiğin bir yetişkine hemen söyle.
       </Banner>
       <Button label="Check-in'i kaydet" loading={mutation.isPending} disabled={data.remaining < 1 || !selected} onPress={() => void submit()} testID="check-submit" />
-      {data.remaining < 1 ? <Text tone="muted" variant="meta">Bu hafta iki check-in tamamladın. Yeni hafta başladığında tekrar uğrayabilirsin.</Text> : null}
+      {data.remaining < 1 ? <Text tone="muted" variant="meta">{"Bu haftaki iki check-in'ini yaptın, teşekkürler! Yeni hafta başlayınca yine bekleriz."}</Text> : null}
     </Section>
   );
 }
@@ -164,7 +164,7 @@ function CheckInForm({ data, product }: { data: Extract<MobileCheckInState, { st
 function History({ items, product }: { items: MobileCheckInHistoryItem[]; product: WorkspaceProduct }) {
   return (
     <Section title="Geçmişim">
-      {items.length ? items.map((item) => <HistoryItem key={item.id} item={item} product={product} />) : <Text tone="secondary">Henüz check-in yok.</Text>}
+      {items.length ? items.map((item) => <HistoryItem key={item.id} item={item} product={product} />) : <Text tone="secondary">Henüz check-in yapmadın. İlkini yapmaya ne dersin?</Text>}
     </Section>
   );
 }
@@ -182,7 +182,7 @@ function HistoryItem({ item, product }: { item: MobileCheckInHistoryItem; produc
       await mutation.mutateAsync(helpful);
       await invalidate();
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : 'Geri bildirim kaydedilemedi.');
+      setMessage(error instanceof ApiError ? error.message : 'Geri bildirimini kaydedemedik. Bir daha dener misin?');
       if (error instanceof ApiError && error.kind === 'conflict') await invalidate();
     }
   }
@@ -192,12 +192,12 @@ function HistoryItem({ item, product }: { item: MobileCheckInHistoryItem; produc
     <View style={styles.history} testID={`check-history-${item.id}`}>
       <View style={styles.head}>
         <Text variant="bodyStrong" style={styles.historyTitle}>{item.targetName}</Text>
-        <Text tone="muted" variant="meta">{`${formatDayMonth(item.createdAt)} · ${item.shared ? 'Paylaşıldı' : 'Yalnız bende'}`}</Text>
+        <Text tone="muted" variant="meta">{`${formatDayMonth(item.createdAt)} · ${item.shared ? 'Paylaşıldı' : 'Yalnızca bende'}`}</Text>
       </View>
       <Text tone="secondary" variant="secondary">{`${ENERGY[item.energy]} · ${CONFIDENCE[item.confidence]} · ${BARRIER[item.barrier]}`}</Text>
       {request ? (
         <View style={styles.request}>
-          <Text variant="bodyStrong">{request.status === 'OPEN' ? 'Yanıt bekleniyor' : request.status === 'CLOSED' ? 'Destek tamamlandı' : 'Destek adımı'}</Text>
+          <Text variant="bodyStrong">{request.status === 'OPEN' ? 'Yanıt yolda' : request.status === 'CLOSED' ? 'Destek tamamlandı' : 'Sana önerilen adım'}</Text>
           {request.actionLabel ? <Text tone="secondary">{request.actionLabel}</Text> : null}
           {message ? <Banner tone="critical">{message}</Banner> : null}
           {request.status === 'RESPONDED' && request.helpful === null ? (

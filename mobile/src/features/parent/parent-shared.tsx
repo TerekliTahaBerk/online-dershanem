@@ -17,7 +17,7 @@ export { usePullToRefresh };
 const PRODUCT_LABEL = { OD: 'onlinedershanem.', OK: 'Yön Koçluk', ODK: 'Deneme Ligi' } as const;
 
 export function productList(products: readonly ('OD' | 'OK' | 'ODK')[]): string {
-  return products.length ? products.map((code) => PRODUCT_LABEL[code]).join(' · ') : 'Aktif ürün yok';
+  return products.length ? products.map((code) => PRODUCT_LABEL[code]).join(' · ') : 'Açık üyelik yok';
 }
 
 /**
@@ -80,10 +80,10 @@ function ChildSelection({ revoked }: { revoked: boolean }) {
     <View style={styles.gap}>
       {revoked ? (
         <Banner tone="warning" title="Öğrenci erişimi değişti">
-          Seçili öğrencinin bilgileri artık bu hesapla paylaşılmıyor. Görüntülemek istediğiniz öğrenciyi seçin.
+          Seçili öğrencinin bilgileri artık bu hesapla paylaşılmıyor. Lütfen görmek istediğiniz öğrenciyi seçin.
         </Banner>
       ) : (
-        <Text tone="secondary">Bilgilerini görmek istediğiniz öğrenciyi seçin.</Text>
+        <Text tone="secondary">Hangi öğrencinizin bilgilerini görmek istersiniz?</Text>
       )}
       {context.children.map((child: MobileParentChild) => (
         <Row key={child.studentId} testID={`parent-select-${child.studentId}`} title={child.name} subtitle={productList(child.products)} onPress={() => context.selectChild(child.studentId)} />
@@ -96,12 +96,12 @@ function NoChildren({ revoked }: { revoked: boolean }) {
   const bootstrap = useReadyBootstrap();
   const preparing = (bootstrap.workspace?.products ?? []).some((product) => product.state === 'PREPARING');
   if (preparing) {
-    return <EmptyState title="Öğrenci hesabı hazırlanıyor" body="Ödemeniz alındı; öğrenci hesabı açıldığında bilgiler burada görünecek. Bu bir hata değildir." />;
+    return <EmptyState title="Öğrenci hesabı hazırlanıyor" body="Ödemeniz alındı, teşekkür ederiz. Öğrenci hesabı açılır açılmaz bilgileri burada görebileceksiniz; bu bir hata değil, kısa bir hazırlık süreci." />;
   }
   return (
     <EmptyState
       title={revoked ? 'Öğrenci erişimi değişti' : 'Henüz bağlı öğrenci yok'}
-      body={revoked ? 'Bu hesapla paylaşılan bir öğrenci bilgisi kalmadı. Bir yanlışlık olduğunu düşünüyorsanız eğitim koordinatörünüzle görüşün.' : 'Hesabınız öğrencinizle eşleştirildiğinde bilgiler burada görünür.'}
+      body={revoked ? 'Bu hesapla paylaşılan bir öğrenci bilgisi kalmadı. Bir yanlışlık olduğunu düşünüyorsanız eğitim koordinatörünüz hemen yardımcı olur.' : 'Hesabınız öğrencinizle eşleştirildiğinde bilgilerini burada görebilirsiniz.'}
     />
   );
 }

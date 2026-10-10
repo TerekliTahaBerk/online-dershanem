@@ -12,5 +12,5 @@ import { OdkRouteGate } from '@/features/odk/shared';
  */
 export default function OdkExamRoute() {
   const params = useLocalSearchParams<{ id?: string }>();
-  return <OdkRouteGate>{isSafeExamId(params.id) ? <OdkExamDetailScreen examId={params.id} /> : <EmptyState title="Deneme bulunamadı." />}</OdkRouteGate>;
+  return <OdkRouteGate>{isSafeExamId(params.id) ? <OdkExamDetailScreen examId={params.id} /> : <EmptyState title="Bu denemeyi bulamadık." />}</OdkRouteGate>;
 }

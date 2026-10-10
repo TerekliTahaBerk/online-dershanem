@@ -116,7 +116,7 @@ function Notes({ data, online }: { data: MobileCoachStudentDetail; online: boole
   async function save() {
     if (!ready) return;
     if (visibility !== 'INTERNAL') {
-      const ok = await confirmAction({ title: 'Paylaşılan not', message: `${VISIBILITY_HINT[visibility]} Göndermek istiyor musun?`, confirmLabel: 'Kaydet' });
+      const ok = await confirmAction({ title: 'Paylaşılan not', message: `${VISIBILITY_HINT[visibility]} Göndermek istiyor musunuz?`, confirmLabel: 'Kaydet' });
       if (!ok) return;
     }
     setState(null);

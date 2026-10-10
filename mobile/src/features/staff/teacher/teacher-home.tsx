@@ -53,7 +53,7 @@ function HomeBody({ home }: { home: MobileTeacherHome }) {
             />
           ))
         ) : (
-          <EmptyState title="Bugün planlanmış dersin yok" />
+          <EmptyState title="Bugün planlanmış dersiniz yok" />
         )}
       </Section>
       <Section title="Bekleyen işler">
@@ -74,12 +74,12 @@ function HomeBody({ home }: { home: MobileTeacherHome }) {
             );
           })
         ) : (
-          <Text tone="secondary">Şu an bekleyen bir işin yok.</Text>
+          <Text tone="secondary">Şu an bekleyen bir işiniz yok.</Text>
         )}
       </Section>
       {home.attention.length ? (
         <Section title="Dikkat gerektiren öğrenciler">
-          <Text tone="muted" variant="meta">Sunucudaki sinyallerden; yalnız kendi gruplarındaki öğrenciler.</Text>
+          <Text tone="muted" variant="meta">Yalnızca kendi gruplarınızdaki öğrenciler, sistemdeki sinyallere göre listelenir.</Text>
           {home.attention.map((item) => <Row key={item.studentId} title={item.studentName} subtitle={`${item.groupName} · ${item.reason}`} meta={item.lastSignal} />)}
         </Section>
       ) : null}

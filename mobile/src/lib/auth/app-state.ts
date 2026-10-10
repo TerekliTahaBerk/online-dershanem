@@ -85,7 +85,7 @@ export function deriveAppState(input: AppStateInput): AppState {
 
   const workspace = bootstrap.workspace;
   // READY ama çalışma alanı verisi yok: sözleşme bunu engeller; yine de kapalı tarafta kal.
-  if (!workspace) return { status: 'BOOTSTRAP_ERROR', error: input.bootstrapError ?? ({ kind: 'invalid_response', message: 'Çalışma alanı bilgisi alınamadı.' } as ApiError) };
+  if (!workspace) return { status: 'BOOTSTRAP_ERROR', error: input.bootstrapError ?? ({ kind: 'invalid_response', message: 'Panel bilgilerini getiremedik. Bir daha dener misin?' } as ApiError) };
 
   if (workspace.activeProduct) return { status: 'WORKSPACE_READY', bootstrap, workspace: workspace.activeProduct };
   if (!needsWorkspace(bootstrap.user.role)) return { status: 'WORKSPACE_READY', bootstrap, workspace: null };

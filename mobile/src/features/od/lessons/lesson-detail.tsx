@@ -28,7 +28,7 @@ export function LessonDetailScreen({ lessonId }: { lessonId: string }) {
 function JoinSection({ detail, onRefresh }: { detail: MobileLessonDetail; onRefresh: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const { join, lesson } = detail;
-  if (lesson.status === 'CANCELLED') return <Banner tone="neutral" title="Bu ders iptal edildi" />;
+  if (lesson.status === 'CANCELLED') return <Banner tone="neutral" title="Bu ders iptal edildi">Yeni bir ders planlandığında takviminde göreceksin.</Banner>;
   if (join.state === 'OPEN' && isSafeExternalUrl(join.url)) {
     const url = join.url;
     return (
@@ -40,7 +40,7 @@ function JoinSection({ detail, onRefresh }: { detail: MobileLessonDetail; onRefr
           accessibilityHint="Canlı ders bağlantısı tarayıcıda veya toplantı uygulamasında açılır."
           onPress={() => {
             setError(null);
-            Linking.openURL(url).catch(() => setError('Bağlantı açılamadı. Toplantı uygulamasının yüklü olduğundan emin ol.'));
+            Linking.openURL(url).catch(() => setError('Bağlantıyı açamadık. Toplantı uygulamasının telefonunda yüklü olduğundan emin olup tekrar dener misin?'));
           }}
         />
       </Section>
@@ -49,7 +49,7 @@ function JoinSection({ detail, onRefresh }: { detail: MobileLessonDetail; onRefr
   if (join.state === 'NOT_YET' && join.opensAt) {
     return (
       <Section first>
-        <Text tone="secondary">{`Katılım bağlantısı ${formatTime(join.opensAt)}'da açılır.`}</Text>
+        <Text tone="secondary">{`Derse katılım bağlantısı ${formatTime(join.opensAt)}'da açılacak. Biraz erken gelirsen burayı yenilemen yeterli.`}</Text>
         <Button label="Yenile" variant="quiet" onPress={onRefresh} />
       </Section>
     );
@@ -73,19 +73,19 @@ function LessonDetailBody({ detail, onRefresh }: { detail: MobileLessonDetail; o
       </Section>
       {missed && detail.recovery && nav.has('review-recovery') ? (
         <Section title="Telafi">
-          <Text tone="secondary">{detail.recovery.status === 'COMPLETED' ? 'Bu dersin telafisini tamamladın.' : 'Bu ders için hazırlanmış bir telafi paketin var.'}</Text>
+          <Text tone="secondary">{detail.recovery.status === 'COMPLETED' ? 'Bu dersin telafisini tamamladın, eline sağlık!' : 'Kaçırdığın bu ders için senin için bir telafi hazırlandı. Kısa sürede yetişebilirsin.'}</Text>
           {detail.recovery.status === 'PUBLISHED' ? <Button testID="lesson-recovery" label="Telafiye başla" onPress={() => nav.push(reviewRecoveryHref('telafi', lesson.id))} /> : null}
         </Section>
       ) : null}
       <Section title="Derste ne işlendi?">
-        <Text tone="secondary">{detail.topic || 'Öğretmen bu dersin özetini henüz eklemedi. Eklendiğinde burada görünecek.'}</Text>
+        <Text tone="secondary">{detail.topic || 'Öğretmenin bu dersin özetini henüz eklemedi. Eklediğinde burada göreceksin.'}</Text>
       </Section>
       {detail.personalNote ? (
-        <Section title="Öğretmen notu">
+        <Section title="Öğretmeninin notu">
           <Text tone="secondary">{`“${detail.personalNote}”`}</Text>
         </Section>
       ) : null}
-      <Section title="Verilen çalışma">
+      <Section title="Bu dersten çalışmaların">
         {detail.homework ? <Text tone="secondary">{detail.homework}</Text> : null}
         {detail.assignments.length ? (
           detail.assignments.map((assignment) => {
@@ -101,7 +101,7 @@ function LessonDetailBody({ detail, onRefresh }: { detail: MobileLessonDetail; o
             );
           })
         ) : !detail.homework ? (
-          <Text tone="muted">Bu ders için çalışma verilmedi.</Text>
+          <Text tone="muted">Bu dersten sana bir çalışma verilmedi.</Text>
         ) : null}
       </Section>
       {detail.nextGoal ? (
@@ -110,7 +110,7 @@ function LessonDetailBody({ detail, onRefresh }: { detail: MobileLessonDetail; o
         </Section>
       ) : null}
       <Text tone="muted" variant="meta">
-        Bu dersin veliye açık özeti: işlenen konu, katılım ve verilen çalışma. Öğretmenin sana özel notu veliyle paylaşılmaz.
+        Ailen bu dersten yalnızca işlenen konuyu, katılımını ve verilen çalışmayı görür. Öğretmeninin sana özel notu yalnızca sende kalır.
       </Text>
     </>
   );

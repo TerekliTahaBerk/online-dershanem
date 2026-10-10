@@ -35,11 +35,11 @@ export default function YonPlanScreen() {
   const refresh = usePullToRefresh(() => query.refetch());
   const data = query.data;
   const description =
-    data?.state === 'READY' && data.plan ? `${formatDayMonth(data.plan.weekStart)} – ${formatDayMonth(data.plan.weekEnd)}` : 'Uygun günlerini ve süreni bildir; planın ondan sonra kurulur.';
+    data?.state === 'READY' && data.plan ? `${formatDayMonth(data.plan.weekStart)} – ${formatDayMonth(data.plan.weekEnd)}` : 'Uygun günlerini ve ayırabileceğin süreyi söyle; planını buna göre kuralım.';
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="yon-plan">
       <PageHeader title="Bu haftanın planı" description={description} />
-      <QueryView query={query} disabledTitle="Haftalık plan şu anda açık değil.">
+      <QueryView query={query} disabledTitle="Haftalık plan şimdilik kapalı.">
         {(plan) => <PlanBody data={plan} />}
       </QueryView>
     </Screen>
@@ -48,13 +48,13 @@ export default function YonPlanScreen() {
 
 function PlanBody({ data }: { data: MobileYonPlan }) {
   if (data.state === 'NO_PROFILE') {
-    return <EmptyState title="Profilin hazırlanıyor." body="Öğrenci profilin tamamlandığında koçunun kurduğu plan burada görünecek." />;
+    return <EmptyState title="Hesabını hazırlıyoruz." body="Her şey hazır olduğunda koçunun senin için kurduğu planı burada göreceksin." />;
   }
   const plan = data.plan;
   return (
     <>
       {!plan ? (
-        <EmptyState title="Henüz bir planın yok." body="Uygun günlerini ve süreni bildir; koçun planını bu bilgilere göre kurar." />
+        <EmptyState title="Henüz bir planın yok." body="Uygun günlerini ve ayırabileceğin süreyi aşağıdan söyle; koçun planını buna göre kursun." />
       ) : (
         <>
           <PlanStatus plan={plan} requiresApproval={data.requiresApproval} />
@@ -82,11 +82,11 @@ function PlanStatus({ plan, requiresApproval }: { plan: Plan; requiresApproval: 
   return (
     <Section title="Plan durumu" first>
       <View style={styles.statusRow}>
-        <StatusBadge label={plan.status === 'DRAFT' && requiresApproval ? 'Koç onayı bekliyor' : plan.statusLabel} tone={tone} />
+        <StatusBadge label={plan.status === 'DRAFT' && requiresApproval ? 'Koçunun onayında' : plan.statusLabel} tone={tone} />
         {plan.status === 'CHANGE_REQUESTED' && plan.changeRequestCategory ? <Text tone="secondary" variant="secondary">{CHANGE_CATEGORY_LABEL[plan.changeRequestCategory] ?? ''}</Text> : null}
       </View>
       {plan.status === 'DRAFT' ? (
-        <Text tone="secondary">{`Planın hazırlanıyor${plan.draftTaskCount ? ` (${plan.draftTaskCount} çalışma)` : ''}. Koçun onayladığında görevler burada açılır.`}</Text>
+        <Text tone="secondary">{`Planın hazırlanıyor${plan.draftTaskCount ? ` (${plan.draftTaskCount} çalışma)` : ''}. Koçun onayladığında görevlerin burada açılacak.`}</Text>
       ) : (
         <>
           <Text tone="secondary">{`${plan.progress.completed}/${plan.progress.total} görev tamamlandı · ${minutesLabel(plan.progress.completedMinutes)} / ${minutesLabel(plan.progress.plannedMinutes)}${plan.progress.remaining ? ` · ${plan.progress.remaining} görev kaldı` : ''}`}</Text>
@@ -95,7 +95,7 @@ function PlanStatus({ plan, requiresApproval }: { plan: Plan; requiresApproval: 
               <ProgressFill percent={plan.progress.percent} />
             </View>
           ) : null}
-          {!plan.canComplete ? <Text tone="muted" variant="meta">Görevleri bu plan onaylandığında işaretleyebilirsin.</Text> : null}
+          {!plan.canComplete ? <Text tone="muted" variant="meta">Plan onaylanınca görevlerini buradan işaretleyebileceksin.</Text> : null}
         </>
       )}
     </Section>
@@ -133,7 +133,7 @@ function WeekView({ plan, todayKey }: { plan: Plan; todayKey: string }) {
           );
         })}
       </View>
-      {tasks.length ? tasks.map((task) => <YonTaskRow key={task.id} task={task} canOpen={plan.canComplete} />) : <Text tone="secondary">Bu güne planlanmış görev yok.</Text>}
+      {tasks.length ? tasks.map((task) => <YonTaskRow key={task.id} task={task} canOpen={plan.canComplete} />) : <Text tone="secondary">Bu gün için bir görevin yok; dinlenmek de planın bir parçası.</Text>}
     </Section>
   );
 }
@@ -145,7 +145,7 @@ function ChangeRequest({ plan }: { plan: Plan }) {
   return (
     <Section title="Plan sana uymuyor mu?">
       {request.feedback ? <Banner tone={request.feedback.tone}>{request.feedback.message}</Banner> : null}
-      <Text tone="secondary">Yoğunluğu veya günleri koçuna bildirebilirsin. Talep sonrası plan koçunun onayına döner.</Text>
+      <Text tone="secondary">Fazla yoğun geldiyse ya da günler uymuyorsa koçuna söyle. Koçun planını senin için yeniden düzenler.</Text>
       <Button label="Değişiklik iste" variant="secondary" onPress={() => setOpen(true)} testID="yon-plan-change" />
       <BottomSheet visible={open} title="Değişiklik iste" onClose={() => setOpen(false)}>
         <View accessibilityRole="radiogroup" accessibilityLabel="Değişiklik seçeneği" style={styles.options}>
@@ -177,7 +177,7 @@ function Preferences({ initial }: { initial: MobileYonPreference }) {
   const saver = usePreferenceSave();
   const changed = draft.minutesPerDay !== initial.minutesPerDay || draft.availableDays.join(',') !== initial.availableDays.join(',');
   return (
-    <Section title="Tercihlerin">
+    <Section title="Çalışma tercihlerin">
       {saver.feedback ? <Banner tone={saver.feedback.tone}>{saver.feedback.message}</Banner> : null}
       <Text variant="label" tone="secondary">Çalışmak istediğim günler</Text>
       <View style={styles.dayRow}>

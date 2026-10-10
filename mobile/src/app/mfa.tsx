@@ -31,7 +31,7 @@ export default function MfaGate() {
       setCode('');
       await refreshBootstrap();
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : 'Kod doğrulanamadı.');
+      setError(cause instanceof ApiError ? cause.message : 'Kodu doğrulayamadık. Kontrol edip bir daha dener misin?');
     } finally {
       setBusy(false);
     }
@@ -50,8 +50,8 @@ export default function MfaGate() {
       <AuthScreen title="İkinci faktör gerekli">
         <Banner tone="warning" title={passkeyOnly ? 'Geçiş anahtarı mobilde henüz desteklenmiyor' : 'İkinci faktör kurulumu gerekiyor'}>
           {passkeyOnly
-            ? 'Hesabın yalnız geçiş anahtarı ile doğrulanıyor. Web panelinde doğrulama yap veya bir doğrulayıcı uygulama ekle; ardından burada "Durumu kontrol et"e dokun.'
-            : 'Bu hesap için ikinci faktör kurulumu web panelinden yapılır. Kurulumu tamamladıktan sonra burada doğrulama kodunu girebilirsin.'}
+            ? 'Hesabın yalnızca geçiş anahtarıyla doğrulanıyor. Web panelinden doğrulama yap ya da bir doğrulayıcı uygulama ekle; sonra burada "Durumu kontrol et"e dokun.'
+            : 'İkinci faktör kurulumunu web panelinden yapman gerekiyor. Kurulumu bitirince doğrulama kodunu burada girebilirsin.'}
         </Banner>
         <Button variant="auth" label="Web panelinde devam et" onPress={() => void openOnWeb('/giris/mfa')} accessibilityHint="Tarayıcıda açılır; web oturumuyla giriş yapmanız gerekebilir." />
         {footer}
@@ -61,7 +61,7 @@ export default function MfaGate() {
 
   const valid = method === 'TOTP' ? /^\d{6}$/.test(code.trim()) : code.trim().length >= 6;
   return (
-    <AuthScreen title="İkinci faktör doğrulaması" description={method === 'TOTP' ? 'Doğrulayıcı uygulamadaki 6 haneli kodu gir.' : 'Kayıtlı kurtarma kodlarından birini gir. Her kod yalnız bir kez kullanılabilir.'}>
+    <AuthScreen title="İkinci faktör doğrulaması" description={method === 'TOTP' ? 'Doğrulayıcı uygulamadaki 6 haneli kodu gir.' : 'Kayıtlı kurtarma kodlarından birini gir. Her kod yalnızca bir kez kullanılabilir.'}>
       {error ? <Banner tone="critical">{error}</Banner> : null}
       <TextField
         variant="auth"

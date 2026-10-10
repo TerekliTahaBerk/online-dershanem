@@ -36,10 +36,10 @@ describe('Çalışmalar sunum modeli', () => {
 
   it('durum rozeti: süresi geçti / tamamlandı / kanıt durumları', () => {
     expect(statusPresentation(makeAssignment({ dueAt: '2026-10-01T00:00:00.000Z' }), false, now)).toEqual({ label: 'Süresi geçti', tone: 'critical' });
-    expect(statusPresentation(makeAssignment({ status: 'DONE', dueAt: '2026-10-01T00:00:00.000Z' }), false, now)).toEqual({ label: 'Tamamlandı', tone: 'success' });
+    expect(statusPresentation(makeAssignment({ status: 'DONE', dueAt: '2026-10-01T00:00:00.000Z' }), false, now)).toEqual({ label: 'Tamamladım', tone: 'success' });
     expect(statusPresentation(makeAssignment({ status: 'IN_PROGRESS' }), false, now).label).toBe('Çalışıyorum');
     const evidence = makeAssignment({ evidenceRequired: true, submissions: [submission('SUBMITTED')] });
-    expect(statusPresentation(evidence, true, now)).toEqual({ label: 'Kanıt öğretmeninde', tone: 'info' });
+    expect(statusPresentation(evidence, true, now)).toEqual({ label: 'Öğretmeninde', tone: 'info' });
     expect(statusPresentation({ ...evidence, submissions: [submission('APPROVED')] }, true, now).tone).toBe('success');
     expect(statusPresentation({ ...evidence, submissions: [submission('CHANGES_REQUESTED')] }, true, now).tone).toBe('warning');
   });
@@ -54,7 +54,7 @@ describe('Çalışmalar sunum modeli', () => {
   });
 
   it('kanıt metni sınırları sunucu ile aynı (20–2000, boşluk hariç)', () => {
-    expect(evidenceLengthError('   kısa   ')).toMatch(/en az 20/);
+    expect(evidenceLengthError('   kısa   ')).toMatch(/[Ee]n az 20/);
     expect(evidenceLengthError('x'.repeat(20))).toBeNull();
     expect(evidenceLengthError('x'.repeat(2001))).toMatch(/en fazla 2000/);
   });

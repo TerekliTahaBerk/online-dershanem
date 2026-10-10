@@ -13,7 +13,7 @@ export default function UpgradeScreen() {
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']}>
       <PageHeader title="Güncelleme gerekli" />
-      <Banner tone="warning">Uygulamanın bu sürümü artık desteklenmiyor. Devam etmek için uygulamayı mağazadan güncelle.</Banner>
+      <Banner tone="warning">Uygulamanın yeni bir sürümü var! Devam etmek için mağazadan güncellemen yeterli.</Banner>
       <Text tone="secondary">
         Yüklü sürüm: {APP_VERSION ?? 'bilinmiyor'}
         {minimum ? ` · Gereken en düşük sürüm: ${minimum}` : ''}

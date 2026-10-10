@@ -67,7 +67,7 @@ function Body({ data, refetch }: { data: MobileCoachSessionDetail; refetch: () =
       <WriteBanner state={state} webPath="/panel/ogretmen/yon/gorusmeler" />
       {pendingRequest ? (
         <Banner tone="warning" title="Öğrenci saat değişikliği istedi">
-          {`${data.rescheduleReasonLabel ?? ''}${data.proposedAt ? ` Önerdiğin saat: ${formatShortDateTime(data.proposedAt)} (öğrenci onayı bekleniyor).` : ' Yeni bir saat önerebilirsin.'}`}
+          {`${data.rescheduleReasonLabel ?? ''}${data.proposedAt ? ` Önerdiğiniz saat: ${formatShortDateTime(data.proposedAt)} (öğrenci onayı bekleniyor).` : ' Yeni bir saat önerebilirsiniz.'}`}
         </Banner>
       ) : null}
       {isHttps(data.meetingUrl) ? (

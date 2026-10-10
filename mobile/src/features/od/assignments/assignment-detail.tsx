@@ -24,7 +24,7 @@ export function AssignmentDetailScreen({ assignmentId }: { assignmentId: string 
       <QueryView query={query}>
         {(data) => {
           const assignment = data.assignments.find((item) => item.id === assignmentId);
-          if (!assignment) return <EmptyState title="Çalışma bulunamadı" body="Bu çalışma kaldırılmış veya artık grubunda olmayabilir." />;
+          if (!assignment) return <EmptyState title="Bu çalışmayı bulamadık." body="Kaldırılmış ya da artık grubunda olmayabilir. Çalışmalarım ekranından güncel listene bakabilirsin." />;
           return <AssignmentDetailBody assignment={assignment} evidenceEnabled={data.evidenceEnabled} />;
         }}
       </QueryView>
@@ -45,7 +45,7 @@ function AssignmentDetailBody({ assignment, evidenceEnabled }: { assignment: Mob
         {assignment.teacherName ? <Row title="Öğretmen" meta={assignment.teacherName} /> : null}
       </Section>
       <Section title="Yönerge">
-        <Text tone="secondary">{assignment.description || 'Öğretmenin ek bir yönerge yazmadı.'}</Text>
+        <Text tone="secondary">{assignment.description || 'Öğretmenin bu çalışma için ek bir açıklama yazmadı.'}</Text>
       </Section>
       {evidenceFlow && assignment.criteria.length ? (
         <Section title="Değerlendirme ölçütleri">
@@ -57,7 +57,7 @@ function AssignmentDetailBody({ assignment, evidenceEnabled }: { assignment: Mob
       <ProgressSection assignment={assignment} evidenceEnabled={evidenceEnabled} />
       {evidenceFlow ? <EvidenceSection assignment={assignment} evidenceEnabled={evidenceEnabled} /> : null}
       {latest?.feedback ? (
-        <Section title="Öğretmen geri bildirimi">
+        <Section title="Öğretmeninden geri bildirim">
           <Text tone="secondary">{latest.feedback}</Text>
         </Section>
       ) : null}
@@ -71,7 +71,7 @@ function AssignmentDetailBody({ assignment, evidenceEnabled }: { assignment: Mob
               meta={submission.submittedAt ? formatDateTime(submission.submittedAt) : null}
               trailing={
                 <StatusBadge
-                  label={submission.status === 'APPROVED' ? 'Onaylandı' : submission.status === 'CHANGES_REQUESTED' ? 'Düzeltme istendi' : 'Değerlendirmede'}
+                  label={submission.status === 'APPROVED' ? 'Onaylandı' : submission.status === 'CHANGES_REQUESTED' ? 'Küçük bir düzeltme istendi' : 'Öğretmeninde'}
                   tone={submission.status === 'APPROVED' ? 'success' : submission.status === 'CHANGES_REQUESTED' ? 'warning' : 'info'}
                 />
               }
@@ -138,10 +138,10 @@ function EvidenceSection({ assignment, evidenceEnabled }: { assignment: MobileAs
       {evidence.feedback ? <Banner tone={evidence.feedback.tone}>{evidence.feedback.message}</Banner> : null}
       {open ? (
         <>
-          <Text tone="secondary">{latest ? 'Öğretmenin düzeltme istedi. Yeni denemeni yazıp gönderebilirsin.' : 'Çalışmanı nasıl yaptığını kısaca anlat; öğretmenin ölçütlere göre değerlendirecek.'}</Text>
+          <Text tone="secondary">{latest ? 'Öğretmenin küçük bir düzeltme istedi. Geri bildirime göz at, yeni denemeni yazıp gönder.' : 'Çalışmanı nasıl yaptığını kısaca anlat; öğretmenin ölçütlere göre bakıp sana dönecek.'}</Text>
           <TextField
             testID="evidence-input"
-            label="Kanıt metni"
+            label="Ne yaptığını anlat"
             value={draft}
             onChangeText={setDraft}
             onBlur={() => setTouched(true)}
@@ -163,7 +163,7 @@ function EvidenceSection({ assignment, evidenceEnabled }: { assignment: MobileAs
           />
         </>
       ) : (
-        <Text tone="secondary">{latest?.status === 'APPROVED' ? 'Bu çalışma öğretmenin tarafından onaylandı.' : 'Gönderimin öğretmen değerlendirmesinde.'}</Text>
+        <Text tone="secondary">{latest?.status === 'APPROVED' ? 'Öğretmenin bu çalışmanı onayladı, eline sağlık!' : 'Gönderin öğretmeninde; değerlendirdiğinde burada göreceksin.'}</Text>
       )}
     </Section>
   );

@@ -18,7 +18,7 @@ export default function OdkSwitchScreen() {
   const active = odk?.state === 'ACTIVE';
   return (
     <Screen testID="odk-switch">
-      <PageHeader title="Deneme Ligi" description="Deneme Ligi denemelerin ve sonuçların kendi çalışma alanında." />
+      <PageHeader title="Deneme Ligi" description="Deneme Ligi denemelerin ve sonuçların kendi alanında seni bekliyor." />
       {error ? <Banner tone="critical">{error}</Banner> : null}
       {active ? (
         <Button
@@ -31,14 +31,14 @@ export default function OdkSwitchScreen() {
             try {
               await selectWorkspace('ODK');
             } catch {
-              setError('Çalışma alanı değiştirilemedi. Tekrar dene.');
+              setError('Geçiş yapamadık. Bir daha dener misin?');
             } finally {
               setPending(false);
             }
           }}
         />
       ) : (
-        <EmptyState title="Deneme Ligi erişimin yok." body="Erişimin açıldığında denemelerin burada görünecek." />
+        <EmptyState title="Deneme Ligi henüz hesabında açık değil." body="Erişimin açıldığında denemelerini burada göreceksin." />
       )}
     </Screen>
   );

@@ -24,8 +24,8 @@ export function EmptyState({ title, body, action }: { title: string; body?: stri
  * Hata durumu: sunucunun kullanıcıya gösterilebilir mesajı ya da sınıfa göre
  * genel metin. Ham yığın / teknik ayrıntı gösterilmez.
  */
-export function ErrorState({ error, onRetry, title = 'Bir sorun oluştu' }: { error: unknown; onRetry?: () => void; title?: string }) {
-  const message = error instanceof ApiError ? error.message : 'Beklenmeyen bir hata oluştu.';
+export function ErrorState({ error, onRetry, title = 'Bir şeyler ters gitti' }: { error: unknown; onRetry?: () => void; title?: string }) {
+  const message = error instanceof ApiError ? error.message : 'Beklenmedik bir sorunla karşılaştık. Bir daha dener misin?';
   const retryable = !(error instanceof ApiError) || error.transient || error.kind === 'invalid_response' || error.kind === 'rate_limited';
   return (
     <View style={styles.state} accessibilityRole="alert">

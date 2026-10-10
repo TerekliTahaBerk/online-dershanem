@@ -13,7 +13,7 @@ import { queryKeys } from '@/lib/query/keys';
 import { isChildNotFound, useParentContext, useParentQuery } from './parent-context';
 import { ParentQueryView, ParentScreen, parentStyles, usePullToRefresh } from './parent-shared';
 
-const TREND_LABEL = { IMPROVING: 'Gelişiyor', STEADY: 'Dengeli', BUILDING: 'Temel oluşuyor', LIMITED_DATA: 'Sınırlı veri' } as const;
+const TREND_LABEL = { IMPROVING: 'Gelişiyor', STEADY: 'Dengeli', BUILDING: 'Temel oluşuyor', LIMITED_DATA: 'Veri henüz az' } as const;
 const PULSE = [
   { value: 1, label: 'Hiç kaygı yaratmadı' },
   { value: 2, label: 'Çok az' },
@@ -31,9 +31,9 @@ export default function ParentWeeklyScreen() {
   const query = useParentQuery('digests', fetchParentDigest);
   const refresh = usePullToRefresh(() => query.refetch());
   return (
-    <ParentScreen title="Haftalık özet" description="Haftada bir sakin bakış" testID="parent-weekly" refresh={refresh}>
+    <ParentScreen title="Haftalık özet" description="Haftada bir kez, sakin bir bakış" testID="parent-weekly" refresh={refresh}>
       {(child) => (
-        <ParentQueryView query={query} child={child} disabledTitle="Haftalık özet şu anda açık değil.">
+        <ParentQueryView query={query} child={child} disabledTitle="Haftalık özet şimdilik kapalı.">
           {(data) => <WeeklyBody data={data} child={child} />}
         </ParentQueryView>
       )}
@@ -59,18 +59,18 @@ function WeeklyBody({ data, child }: { data: MobileParentDigest; child: MobilePa
           {data.feedbackAvailable ? (
             <DigestFeedback digestId={digest.id} studentId={child.studentId} initial={digest.feedback} />
           ) : (
-            <Text tone="muted" variant="meta">Bu özet için geri bildirim web panelinden verilebilir.</Text>
+            <Text tone="muted" variant="meta">Bu özetle ilgili görüşünüzü web panelinden paylaşabilirsiniz.</Text>
           )}
         </>
       ) : (
-        <EmptyState title="Haftalık özet henüz yayınlanmadı" body="Öğretmen önizlemeyi tamamladığında öğrenciyle aynı anda burada açılır." />
+        <EmptyState title="Bu haftanın özeti henüz hazır değil" body="Öğretmen özeti tamamladığında öğrencinizle aynı anda burada okuyabilirsiniz." />
       )}
-      <Section title="Sistemden görünenler · önümüzdeki günler">
-        <Text tone="muted" variant="meta">Bu liste otomatik takvim ve koçluk kayıtlarından gelir; öğretmen özeti değildir.</Text>
+      <Section title="Önümüzdeki günler">
+        <Text tone="muted" variant="meta">Bu liste takvim ve koçluk kayıtlarından otomatik oluşur; öğretmenin yazdığı bir özet değildir.</Text>
         {data.upcoming.length ? (
           data.upcoming.map((item) => <Row key={`${item.kind}-${item.at}`} title={item.title} meta={formatShortDateTime(item.at)} />)
         ) : (
-          <Text tone="secondary">Önümüzdeki iki hafta için planlanmış ders veya görüşme görünmüyor.</Text>
+          <Text tone="secondary">Önümüzdeki iki hafta için planlanmış bir ders ya da görüşme görünmüyor.</Text>
         )}
       </Section>
     </>
@@ -101,22 +101,22 @@ function DigestFeedback({ digestId, studentId, initial }: { digestId: string; st
       await client.invalidateQueries({ queryKey: queryKeys.parentResource(bootstrap.user.id, studentId, 'digests') });
     } catch (error) {
       if (isChildNotFound(error) || (error instanceof ApiError && error.kind === 'not_found')) {
-        setMessage({ tone: 'critical', text: 'Bu özet artık görüntülenemiyor. Sayfayı yenileyin.' });
+        setMessage({ tone: 'critical', text: 'Bu özet artık görüntülenemiyor. Lütfen sayfayı yenileyin.' });
         await client.invalidateQueries({ queryKey: queryKeys.parentResource(bootstrap.user.id, studentId, 'digests') });
         return;
       }
-      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Geri bildirim kaydedilemedi. Bağlantınızı kontrol edip tekrar deneyin.' });
+      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Görüşünüzü kaydedemedik. Bağlantınızı kontrol edip tekrar dener misiniz?' });
     }
   }
 
   return (
-    <Section title="Bu özet size nasıl hissettirdi?">
+    <Section title="Bu özet size nasıl geldi?">
       {message ? <Banner tone={message.tone}>{message.text}</Banner> : null}
       <View style={parentStyles.row}>
         <Button testID="parent-digest-helpful" label="Yararlıydı" variant={helpful === true ? 'primary' : 'secondary'} disabled={mutation.isPending} onPress={() => void save(true, pulse)} />
         <Button testID="parent-digest-not-helpful" label="Yararlı değildi" variant={helpful === false ? 'primary' : 'secondary'} disabled={mutation.isPending} onPress={() => void save(false, pulse)} />
       </View>
-      <Text variant="label" tone="secondary">Kaygı düzeyi (isteğe bağlı)</Text>
+      <Text variant="label" tone="secondary">Sizi ne kadar kaygılandırdı? (isteğe bağlı)</Text>
       <View style={parentStyles.row} accessibilityRole="radiogroup" accessibilityLabel="Özet kaygı düzeyi">
         {PULSE.map((option) => (
           <Button key={option.value} testID={`parent-digest-pulse-${option.value}`} label={option.label} variant={pulse === option.value ? 'primary' : 'quiet'} disabled={mutation.isPending} onPress={() => void save(helpful, option.value)} />

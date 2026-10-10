@@ -8,5 +8,5 @@ import { OdkRouteGate } from '@/features/odk/shared';
 /** Açıklanmış sonuç — kapı ayrıntıyla aynı; yayın koşulu sunucuda (yoksa 404). */
 export default function OdkResultRoute() {
   const params = useLocalSearchParams<{ id?: string }>();
-  return <OdkRouteGate>{isSafeExamId(params.id) ? <OdkExamResultScreen examId={params.id} /> : <EmptyState title="Sonuç bulunamadı." />}</OdkRouteGate>;
+  return <OdkRouteGate>{isSafeExamId(params.id) ? <OdkExamResultScreen examId={params.id} /> : <EmptyState title="Bu sonucu bulamadık." />}</OdkRouteGate>;
 }

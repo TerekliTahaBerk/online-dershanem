@@ -26,14 +26,14 @@ export default function ForgotPasswordScreen() {
     try {
       setMessage(await endpoints.requestPasswordReset(api, email.trim()));
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : 'İstek gönderilemedi.');
+      setError(cause instanceof ApiError ? cause.message : 'İsteğini gönderemedik. Bağlantını kontrol edip bir daha dener misin?');
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <AuthScreen title="Şifremi unuttum" description="E-posta adresini yaz; hesabın varsa sıfırlama bağlantısı gönderilir.">
+    <AuthScreen title="Şifremi unuttum" description="Hiç sorun değil. E-posta adresini yaz; hesabın varsa sana bir sıfırlama bağlantısı gönderelim.">
       {message ? <Banner tone="success">{message}</Banner> : null}
       {error ? <Banner tone="critical">{error}</Banner> : null}
       <TextField variant="auth" label="E-posta" value={email} onChangeText={setEmail} autoCapitalize="none" autoComplete="email" keyboardType="email-address" textContentType="username" returnKeyType="send" onSubmitEditing={submit} />

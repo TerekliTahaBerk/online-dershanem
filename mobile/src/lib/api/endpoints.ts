@@ -27,7 +27,7 @@ export async function logout(api: ApiClient): Promise<void> {
 
 export async function requestPasswordReset(api: ApiClient, email: string): Promise<string> {
   const body = await api.request<{ message?: string }>('/api/auth/forgot-password', { method: 'POST', body: { email }, authenticated: false });
-  return body?.message ?? 'Hesap varsa parola sıfırlama bağlantısı e-posta adresine gönderildi.';
+  return body?.message ?? 'Bu adrese ait bir hesap varsa sıfırlama bağlantısını gönderdik. Gelen kutunu (ve gereksiz klasörünü) kontrol etmeyi unutma.';
 }
 
 export async function fetchBootstrap(api: ApiClient, signal?: AbortSignal): Promise<MobileBootstrap> {

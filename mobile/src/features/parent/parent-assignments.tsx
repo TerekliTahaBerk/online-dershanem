@@ -19,7 +19,7 @@ export default function ParentAssignmentsScreen() {
   const query = useParentQuery('assignments', fetchParentAssignments);
   const refresh = usePullToRefresh(() => query.refetch());
   return (
-    <ParentScreen title="Ödevler" description="Ödevleri öğrenci ve öğretmen yönetir; burada yalnız izlenir." testID="parent-assignments" refresh={refresh}>
+    <ParentScreen title="Ödevler" description="Ödevleri öğrenciniz ve öğretmeni birlikte yürütür; buradan gelişmeleri takip edebilirsiniz." testID="parent-assignments" refresh={refresh}>
       {(child) => <ParentQueryView query={query} child={child}>{(data) => <AssignmentsBody data={data} />}</ParentQueryView>}
     </ParentScreen>
   );
@@ -27,8 +27,8 @@ export default function ParentAssignmentsScreen() {
 
 function AssignmentsBody({ data }: { data: MobileParentAssignments }) {
   const [group, setGroup] = useState<Group>('active');
-  if (!data.available) return <EmptyState title="Bu öğrencide ödev ürünü yok" body="onlinedershanem. eklendiğinde öğretmen ödevleri burada görünür." />;
-  if (!data.assignments.length) return <EmptyState title="Aktif ödev yok" body="Öğretmenden ödev geldiğinde burada görünür." />;
+  if (!data.available) return <EmptyState title="Bu öğrencinin onlinedershanem. üyeliği yok" body="Üyelik eklendiğinde öğretmen ödevlerini burada görebilirsiniz." />;
+  if (!data.assignments.length) return <EmptyState title="Şu an devam eden bir ödev yok" body="Öğretmen yeni bir ödev verdiğinde burada görebilirsiniz." />;
   const rows = data.assignments.filter((row) => row.group === group);
   return (
     <Section first>
@@ -54,7 +54,7 @@ function AssignmentsBody({ data }: { data: MobileParentAssignments }) {
           />
         ))
       ) : (
-        <Text tone="secondary">Bu grupta ödev yok.</Text>
+        <Text tone="secondary">Bu bölümde ödev bulunmuyor.</Text>
       )}
     </Section>
   );

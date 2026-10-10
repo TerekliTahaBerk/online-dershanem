@@ -23,9 +23,9 @@ export const TAB_LABEL: Record<AssignmentTab, string> = {
 
 /** Web `StudentAssignmentList` ile aynı kopya. */
 export const PROGRESS_LABEL: Record<AssignmentProgressStatus, string> = {
-  TODO: 'Başlanmadı',
+  TODO: 'Başlamadım',
   IN_PROGRESS: 'Çalışıyorum',
-  DONE: 'Tamamlandı',
+  DONE: 'Tamamladım',
 };
 
 export const RUBRIC_LABEL = { NEEDS_WORK: 'Bir adım daha', DEVELOPING: 'Gelişiyor', MEETS: 'Karşılıyor' } as const;
@@ -62,8 +62,8 @@ export function isOverdue(assignment: MobileAssignment, now: Date): boolean {
 export function statusPresentation(assignment: MobileAssignment, evidenceEnabled: boolean, now: Date): { label: string; tone: Tone } {
   if (usesEvidenceFlow(assignment, evidenceEnabled)) {
     const latest = latestSubmission(assignment);
-    if (latest?.status === 'SUBMITTED') return { label: 'Kanıt öğretmeninde', tone: 'info' };
-    if (latest?.status === 'APPROVED') return { label: 'Kanıt onaylandı', tone: 'success' };
+    if (latest?.status === 'SUBMITTED') return { label: 'Öğretmeninde', tone: 'info' };
+    if (latest?.status === 'APPROVED') return { label: 'Onaylandı', tone: 'success' };
     if (latest?.status === 'CHANGES_REQUESTED') return { label: 'Yeniden deneyebilirsin', tone: 'warning' };
   }
   if (isOverdue(assignment, now)) return { label: 'Süresi geçti', tone: 'critical' };
@@ -92,8 +92,8 @@ export function allowedProgress(assignment: MobileAssignment, evidenceEnabled: b
 
 export function evidenceLengthError(text: string): string | null {
   const length = text.trim().length;
-  if (length < ASSIGNMENT_EVIDENCE_MIN) return `Kanıt metni en az ${ASSIGNMENT_EVIDENCE_MIN} karakter olmalı.`;
-  if (length > ASSIGNMENT_EVIDENCE_MAX) return `Kanıt metni en fazla ${ASSIGNMENT_EVIDENCE_MAX} karakter olabilir.`;
+  if (length < ASSIGNMENT_EVIDENCE_MIN) return `Biraz daha anlatır mısın? En az ${ASSIGNMENT_EVIDENCE_MIN} karakter yazman gerekiyor.`;
+  if (length > ASSIGNMENT_EVIDENCE_MAX) return `Metnin biraz uzun oldu; en fazla ${ASSIGNMENT_EVIDENCE_MAX} karakter yazabilirsin.`;
   return null;
 }
 
