@@ -37,7 +37,7 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
    - `SessionProvider` → `AppStateProvider`: token + bootstrap + çalışma alanı.
    - Kök navigatör: giriş → (güncelleme gerekli) → (parola değişikliği) → (MFA: TOTP / kurtarma kodu) → (çalışma alanı seçici) → rol navigatörü.
    - Çalışma alanı seçici ve değiştirici (`POST /api/panel/active-product`); kilitli/pilot kapalı/hazırlanıyor kartları; satın alma bağlantısı yok (MD-09).
-   - Öğrenci/veli: bootstrap `navigation.primary` → alt sekmeler + Menü; personel ve ADMIN: bilgi ekranı (M7'ye kadar).
+   - Öğrenci/veli: bootstrap `navigation.primary` → alt sekmeler + Menü; personel ve ADMIN: bilgi ekranı (M7'ye kadar; M7'den beri öğretmen çalışma alanının native Bugün'ü, ADMIN yalnız web).
    - Global bildirim zili + mevcut bildirim listesinin taşınması; `notification-links` tablosunun yeniden yazımı ve testleri.
    - Ayarlar merkezi (salt okuma profil, oturumlar + iptal, parola değiştir, çıkış).
    - Sign-in: `redirect` işleme, 423/403 mesajları, "Parolamı unuttum".
@@ -179,6 +179,15 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
 ---
 
 ## M7 — Öğretmen ve koç deneyimi
+
+> **Durum: uygulandı ve yerel olarak doğrulandı; gerçek cihaz / staging doğrulaması YOK.** Kalıcı M7 testleri kullanıcı talimatıyla yazılmadı (yalnız M7'nin bilinçli değiştirdiği 1 eski mobil beklenti güncellendi). [m7-implementation-report.md](./m7-implementation-report.md), [m7-api-contracts.md](./m7-api-contracts.md), [m7-screen-migration.md](./m7-screen-migration.md), [m7-staff-permission-review.md](./m7-staff-permission-review.md), [m7-security-review.md](./m7-security-review.md), [m7-mutation-safety.md](./m7-mutation-safety.md), [m7-validation-results.md](./m7-validation-results.md), [m7-iphone-smoke-checklist.md](./m7-iphone-smoke-checklist.md). M8 girdisi: [m8-handoff.md](./m8-handoff.md).
+>
+> Plandan sapmalar:
+> - Yazmalar yalnız mevcut uçlarla yapılır; personel okuma uçları `requireStaffApi` (ürün rolü + personel izni) kullanır.
+> - `STAFF_PRODUCT_ASSIGNMENTS` modu değiştirilmedi (üretim modu BLOCKED).
+> - Ödev oluşturma ve ders ödev taslağı web'de kaldı.
+> - Yardım kutusu Yön menüsünde; yanıt OD rolü ister (S-3).
+> - İkinci değerlendirme / öneri incelemesi mevcut uçta 404 döner; mobil bunu yeniden yükleme ile ele alır.
 
 **Bağımlılıklar.** M1, M5; `STAFF_PRODUCT_ASSIGNMENTS` modunun (shadow/enforce) üretimdeki durumunun netleşmesi; MD-07 onayı.
 

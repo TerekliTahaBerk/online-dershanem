@@ -24,6 +24,7 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
 | MD-18 | Durum etiketleri ve metinler sunucudan; mobil iş kuralı tutmaz | Uygulandı (M1, M2: web sayfası + JSON ucu ortak yükleyici) |
 | MD-21 | Push (M5) uygulama kararları: varsayılan kapalı, genel metin, gönderim anında yeniden uygunluk, çalışma modları | Uygulandı (M5; üretim NO-GO) |
 | MD-22 | Veli (M6): çocuk kapsamı sunucuda, `CHILD_NOT_FOUND`, bellek içi seçim, salt okunur ekranlar | Uygulandı (M6; cihaz doğrulaması yok) |
+| MD-23 | Öğretmen / koç (M7): rol + ürün + personel izni + kaynak ilişkisi; mod değişmedi; mevcut yazma uçları, sürüm + tekrar anahtarı; ADMIN web-only | Uygulandı (M7; cihaz doğrulaması yok) |
 
 ---
 
@@ -214,3 +215,20 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
 - **Deneme ayrımı:** Deneme Ligi raporu (`/api/odk/parent/report`) ile okul / kurum dış denemeleri (`/api/panel/parent/external-exams`) ayrı uç ve ayrı ekrandır.
 - **Ticaret:** Mobilde fiyat, sipariş, ödeme ve satın alma yok (MD-09). Paket görüşmesi web devam yolu.
 - **Test politikası (M6):** Yeni otomatik test yazılmadı. M6'nın bilinçli değiştirdiği davranışa dayanan 3 eski mobil beklenti güncellendi (veli yer tutucusu → veli ekranları). Sınırlar geçici, commit'lenmeyen probe ile doğrulandı.
+
+## MD-23 — Öğretmen ve koç (M7) yetki ve yazma kararları
+
+**Karar.**
+- **Yetki sırası:** oturum + MFA kapıları → TEACHER rolü → ürün erişimi → personel izni (`hasStaffPermission`, `STAFF_PRODUCT_ASSIGNMENTS` moduna uyar) → kaynak ilişkisi. Bootstrap yetenekleri ve menü yalnız görünürlüktür.
+- **Mod:** `STAFF_PRODUCT_ASSIGNMENTS` değiştirilmedi. Varsayılan shadow; üretime enforce sessizce geçirilmez. Üretim modu BLOCKED (operasyon).
+- **ADMIN:** mobil personel uçları ADMIN'e 403 döner. ADMIN mobilde yalnız bilgi ekranı + web devamıdır.
+- **Okuma uçları:** `/api/panel/staff/teacher/*`, `/api/panel/staff/coach/*`, `/api/odk/staff/related-reports`; `private, no-store`. Web öğretmen ders / yardım / ödevler sayfaları ve koç çalışma alanı aynı `lib/` yükleyicilerini kullanır.
+- **Yazma:** yalnız mevcut uçlar, yalnız çevrimiçi, iyimser tamamlama yok. Sürüm (`expectedVersion` / `expectedPlanVersion`) ve sabit tekrar anahtarı (`idempotencyKey`) mevcut sözleşmeye göre gönderilir. 409 → yeniden yükleme + bilinçli tekrar. 428 → web devamı (atlatma yok).
+- **Koç kapsamı:** yalnız aktif `CoachAssignment`. OD grup öğretmenliği Yön koçluk verisi açmaz.
+- **Gizlilik:**
+  - Görüşme özel notu ve INTERNAL koç notu yalnız `ok:note:read_private` ile ve yalnız detayda döner; Bugün / liste yanıtlarında yoktur.
+  - Not görünürlüğü mobilde açıkça seçilir; varsayılan INTERNAL.
+  - Bağlantılar yalnız HTTPS açılır ve loglanmaz.
+- **Kimlik:** öğrenci kimliği `StudentProfile.id`. ODK `User.id` dönüşümü yalnız sunucuda ve yalnız ilişkili öğrenciler içinde yapılır.
+- **Kapsam dışı:** ODK yönetim izinleri, ödev oluşturma, ders ödev taslağı, personel push'u.
+- **Test politikası (M7):** Yeni otomatik test yazılmadı. M7'nin bilinçli değiştirdiği davranışa dayanan 1 eski mobil beklenti güncellendi (öğretmen yer tutucusu → öğretmen Bugün). Sınırlar geçici, commit'lenmeyen probe ile doğrulandı.
