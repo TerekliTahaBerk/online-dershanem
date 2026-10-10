@@ -131,6 +131,10 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
 
 ## M5 — Push bildirimleri ve senkronizasyon
 
+> **Durum: uygulandı ve yerel olarak doğrulandı; staging / üretim doğrulaması YOK (üretim NO-GO).** Kalıcı M5 testleri kullanıcı talimatıyla yazılmadı; gerçek cihaz testi yapılmadı. [m5-implementation-report.md](./m5-implementation-report.md), [m5-api-contracts.md](./m5-api-contracts.md), [m5-device-lifecycle.md](./m5-device-lifecycle.md), [m5-delivery-architecture.md](./m5-delivery-architecture.md), [m5-security-review.md](./m5-security-review.md), [m5-validation-results.md](./m5-validation-results.md), [m5-rollout-runbook.md](./m5-rollout-runbook.md). M6 girdisi: [m6-handoff.md](./m6-handoff.md).
+>
+> Plandan sapmalar: `pushEnabled` varsayılanı **false** (MD-10'daki true yerine; MD-21); `examUpdates` tercih alanı eklendi; Deneme Ligi öğrenci olay bildirimleri (`ODK_STUDENT_NOTIFICATIONS`) eklendi; çalışma modu `PUSH_DELIVERY_MODE` (DISABLED / DRY_RUN / ENABLED).
+
 **Bağımlılıklar.** M1 (bildirim zili, bağlantı eşlemesi, ayarlar). Sunucu kısmı M2 ile paralel başlayabilir. EAS proje kurulumu (M9'un bir kısmı öne çekilir: iOS APNs anahtarı, Android FCM kimliği EAS'e).
 
 **Teslimatlar.**

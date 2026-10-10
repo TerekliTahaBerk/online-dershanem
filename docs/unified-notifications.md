@@ -69,3 +69,30 @@ filtrelerini geri alma patch'inde koruyun; böylece bekleyen ve e-posta için
 saklanan satırlar eski kodda müşteri ekranına açılmaz. Veriyi silerek geri
 alma yapılmaz. Yeniden teslimata geçmeden önce bekleyen kaynaklar ve tercihler
 merkezi worker ile tekrar doğrulanmalıdır.
+
+## Mobil push kanalı (M5)
+
+Push, kanonik `Notification` satırlarının **ek bir teslim kanalıdır**. Yeni
+bildirim veritabanı veya kuyruk yoktur; üreticiler değişmez. Ayrıntı:
+[mobile/m5-delivery-architecture.md](./mobile/m5-delivery-architecture.md).
+
+- `push-dispatch` cron'u (2 dk) görünür, okunmamış, bekleme dışı satırları
+  etkin cihazlara dağıtır (`push_deliveries`, bildirim × cihaz tekil).
+- Varsayılan `PUSH_DELIVERY_MODE=DISABLED`; kullanıcı düzeyinde
+  `pushEnabled` varsayılan false.
+- Push yalnız STUDENT / PARENT içindir. Ödeme / finans ve personel
+  bildirimleri push'a çıkmaz.
+- Sessiz saat, kategori tercihi, oturum / cihaz geçerliliği ve kaynak
+  geçerliliği **gönderim anında** yeniden değerlendirilir. Doğrudan yazılan
+  bildirimler de sessiz saate uyar.
+- Kilit ekranı metni kategoriye göre geneldir; yük yalnız `notificationId`
+  taşır, içerik uygulamada kimlikli uçtan (`GET /api/panel/notifications/[id]`)
+  okunur.
+- Deneme Ligi öğrenci olayları (REMINDER / OPEN / RESULT / ANSWER_KEY)
+  `odk-exam-lifecycle` içinde üretilir; anahtar
+  `{userId}:ODK_EXAM:{examId}:{KIND}:{sürüm}`, tercih anahtarı `examUpdates`,
+  bayrak `ODK_STUDENT_NOTIFICATIONS=ENABLED` (varsayılan kapalı).
+
+Geri alma: `PUSH_DELIVERY_MODE=DISABLED` anında gönderimi durdurur; 0115
+eklemeli migration korunur. Runbook:
+[mobile/m5-rollout-runbook.md](./mobile/m5-rollout-runbook.md).

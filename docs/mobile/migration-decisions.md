@@ -13,7 +13,7 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
 | MD-07 | v1 kapsamı: öğrenci + veli; öğretmen/koç seçili akışlar; ADMIN ve Deneme Ligi personeli kapsam dışı | Öneri |
 | MD-08 | Deneme Ligi sınav çözme v1'de native değil | **Açık** |
 | MD-09 | Uygulama içi satın alma yok; kilitli ürünler bilgi kartı | **Açık** (hukuk/mağaza) |
-| MD-10 | Push: Expo Push Service + `Notification` tablosundan beslenen cron dağıtıcısı | Öneri |
+| MD-10 | Push: Expo Push Service + `Notification` tablosundan beslenen cron dağıtıcısı | Uygulandı (M5; MD-21 ile güncellendi) |
 | MD-11 | Mobil çerez kullanmaz; sunucu mobil girişte çerez set etmez; çerez ≠ Bearer çakışmasında oturum açılmaz | Uygulandı (M1) |
 | MD-12 | Yol sürümlemesi yok; eklemeli sözleşme + minimum sürüm kapısı | Uygulandı (M1) |
 | MD-13 | Çevrimdışı: v1 salt okuma önbelleği; çevrimdışı mutasyon kuyruğu M8 | Öneri |
@@ -22,6 +22,7 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
 | MD-16 | Şablon artıkları ve yalnız-mobil eski uçların emekliliği | Kısmen (M1; M2: yeni ekran `student/progress` kullanmaz, uç eski sürümler için korunur) |
 | MD-17 | Expo web hedefi desteklenmez | Uygulandı (M1) |
 | MD-18 | Durum etiketleri ve metinler sunucudan; mobil iş kuralı tutmaz | Uygulandı (M1, M2: web sayfası + JSON ucu ortak yükleyici) |
+| MD-21 | Push (M5) uygulama kararları: varsayılan kapalı, genel metin, gönderim anında yeniden uygunluk, çalışma modları | Uygulandı (M5; üretim NO-GO) |
 
 ---
 
@@ -175,3 +176,27 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
 - **Liste sınırı:** Liste en yeni 50 denemeyle sınırlıdır; aşılırsa `truncated` ile açıkça bildirilir.
 - **Test politikası (M4):** Kullanıcı talimatıyla yeni test yazılmadı. Sınırlar geçici, commit'lenmeyen bir betikle doğrulandı.
 
+## MD-21 — Push (M5) uygulama kararları
+
+**Bağlam.** MD-10 mimarisi uygulandı; uygulama sırasında aşağıdaki noktalar netleşti veya MD-10'dan ayrıldı.
+
+**Karar.**
+- **Varsayılan kapalı:**
+  - `NotificationPreference.pushEnabled` varsayılanı **false**. MD-10 true öneriyordu; kullanıcı izni ve açık seçim gerekir.
+  - Sunucu çalışma modu `PUSH_DELIVERY_MODE` varsayılanı **DISABLED**. Bilinmeyen değer de DISABLED sayılır. DRY_RUN Expo'yu çağırmaz.
+- **Kapsam:** Yalnız STUDENT / PARENT. Personel push'u M7'ye kadar yok. Ödeme / finans bildirimi push'a hiç sınıflanmaz.
+- **Gizlilik:**
+  - Push başlık / gövdesi bildirimin kendi metni değil, kategoriye göre sabit genel metindir.
+  - Yük yalnız `notificationId` taşır. İçerik `GET /api/panel/notifications/[id]` ile sahiplik kontrollü okunur.
+- **Gönderim anında yeniden uygunluk:** Kullanıcı, oturum, cihaz, tercih, kategori, okunma, kaynak geçerliliği ve sessiz saat gönderimde yeniden değerlendirilir. Fan-out anındaki durum yetki sayılmaz.
+- **Birikim yok:** Cihazın `activatedAt`'inden önce oluşmuş ve 24 saatten eski bildirimler gönderilmez.
+- **Kanal ilişkisi:** Push, uygulama içi bildirimin bir kanalıdır; `inAppEnabled = false` push'u da kapatır. Bu bir başlangıç sınırlamasıdır.
+- **Teslim garantisi:** En az bir kez. Zaman aşımı sonrası yeniden deneme yinelenebilir; mantıksal tekilleştirme bildirim × cihaz düzeyindedir.
+- **Deneme Ligi olayları:**
+  - REMINDER / OPEN / RESULT / ANSWER_KEY, gerçek yayın kurallarıyla ve kararlı sürüm anahtarıyla üretilir.
+  - Yeni tercih anahtarı `examUpdates`.
+  - Ayrı bayrak `ODK_STUDENT_NOTIFICATIONS`, varsayılan kapalı.
+- **Tercih ucu geriye uyumu:**
+  - Web PATCH tam gövde ister (değişmedi).
+  - Mobil (`x-od-client: mobile`) kısmi gövde gönderebilir; sunucu mevcut kayıtla birleştirip aynı şemayla doğrular.
+- **Test politikası (M5):** Kullanıcı talimatıyla yeni otomatik test yazılmadı. Davranış geçici, commit'lenmeyen probe'larla doğrulandı. Kalıcı testler M5 sonrası öneri olarak listelendi (m6-handoff §3).
