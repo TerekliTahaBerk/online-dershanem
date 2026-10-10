@@ -36,3 +36,11 @@ src/features/            Ekranlar (od/, ok/, shared/ M1'de korunarak taşındı)
 ```
 
 Web hedefi (`expo start --web`) desteklenmez (MD-17).
+
+## V1.0 M9 release engineering
+
+Mobilde PAYTR, satış, fiyat, IAP, abonelik checkout veya satın alma CTA yok. M8 deferred. Başlangıç: [M9 handoff](../docs/mobile/v1-release-handoff.md), [EAS config](../docs/mobile/m9-eas-configuration.md), [kimlik checklist](../docs/mobile/m9-credentials-checklist.md). Development/preview izole staging, production onaylı HTTPS origin gerektirir. Native profiller eksik gerçek ID/EAS UUID/API config'te fail-closed çalışır. Kalıcı kimlik veya signing sırrı örnek değerle doldurulmaz.
+
+`npm ci`, `npm run typecheck`, `npm run lint`, `npm run test:ci`; repo kökünde `node scripts/check-mobile-release.mjs <ios-export-dir> <android-export-dir>`. Tipler yerelde eskiyse Expo dev server mevcut src/app ağacından `.expo/types` dosyasını yeniler; typed routes kapatılmaz. OTA fingerprint + üç kanal; manuel onay gerekir. Build/submit/publish adımları [iOS](../docs/mobile/m9-ios-build-guide.md), [TestFlight](../docs/mobile/m9-testflight-guide.md), [Android](../docs/mobile/m9-android-release-guide.md) rehberlerinde.
+
+Hesap silme giriş noktası destek talebidir; self-service tamamlama ve hukuk onayı BLOCKED. Signed build, fiziksel test ve store yayın yapılmadı. Güncel karar: [NO-GO](../docs/mobile/m9-go-no-go.md).

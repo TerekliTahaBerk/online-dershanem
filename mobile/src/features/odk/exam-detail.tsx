@@ -96,7 +96,7 @@ function StateBlock({ detail }: { detail: MobileOdkExamDetail }) {
   const router = useRouter();
   const { state } = detail;
   const canOpenWeb = Boolean(webUrlFor(detail.webPath));
-  const webNotice = 'Deneme mobil uygulamada çözülmez. Web sınav ekranı tarayıcıda açılır; orada ayrıca giriş yapman gerekebilir. Kitapçıklı denemelerde bilgisayar veya tablet önerilir.';
+  const webNotice = 'Deneme mobil uygulamada çözülmez. Denemeye desteklenen bilgisayar ve tarayıcı üzerinden katılmalısın. Bağlantı sınav bilgilerini açar; tarayıcıda ayrıca giriş gerekebilir.';
   switch (state.key) {
     case 'UPCOMING':
       return (
@@ -107,7 +107,7 @@ function StateBlock({ detail }: { detail: MobileOdkExamDetail }) {
     case 'AVAILABLE':
       return (
         <View style={styles.block} testID="odk-available">
-          <Text variant="bodyStrong">Şu anda başlayabilirsin</Text>
+          <Text variant="bodyStrong">Deneme bilgisayardan katılıma açık</Text>
           <Text tone="secondary" variant="secondary">{`${webNotice} Başlattığında ${detail.exam.durationMinutes} dakikalık süren sunucuda işlemeye başlar ve durdurulamaz.`}</Text>
           {canOpenWeb ? <Button label="Web sınav ekranında aç" onPress={() => void openOnWeb(detail.webPath)} testID="odk-open-web" /> : null}
         </View>

@@ -22,8 +22,8 @@ import { PRIVATE_NO_STORE } from "@/lib/panel/parent-api";
  *  3. Kaynak ilişkisi her yükleyicide ayrıca uygulanır (ders `teacherId`,
  *     grup öğretmeni + aktif kayıt, aktif `CoachAssignment`).
  *
- * Mevcut YAZMA uçları kendi kapılarını korur (ör. ders kapanışı
- * `requireApiOdRole("TEACHER")`); bu okuma kapısı onlardan GENİŞ değildir.
+ * M9: OD ders kapanışı / teslim değerlendirmesi / yardım yanıtı da bu kapıyı
+ * kullanır; kaynak ilişkileri ve mutation guard kontrolleri ayrıca korunur.
  */
 export { PRIVATE_NO_STORE };
 

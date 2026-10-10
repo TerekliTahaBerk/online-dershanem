@@ -81,9 +81,9 @@ describe('M2.3 Dersler ve ders detayı', () => {
     await waitFor(() => expect(h.screen.getPathname()).toBe('/od/lesson/l-1'), WAIT);
   });
 
-  it('isSafeExternalUrl yalnız http/https kabul eder', () => {
+  it('isSafeExternalUrl yalnız HTTPS kabul eder', () => {
     expect(isSafeExternalUrl('https://meet.example.com/x')).toBe(true);
-    expect(isSafeExternalUrl('http://meet.example.com/x')).toBe(true);
+    expect(isSafeExternalUrl('http://meet.example.com/x')).toBe(false);
     expect(isSafeExternalUrl('javascript:alert(1)')).toBe(false);
     expect(isSafeExternalUrl('intent://x#Intent;end')).toBe(false);
     expect(isSafeExternalUrl('bozuk')).toBe(false);

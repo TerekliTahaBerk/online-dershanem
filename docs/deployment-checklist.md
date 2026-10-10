@@ -11,3 +11,14 @@
 - Deploy sonrası sürüm eşleşmesi doğrulanır: `npm run verify:production-version` yayındaki commit'i `main`'in ucuyla karşılaştırır. Sağlıklı ama eski bir deploy da yeşil görünür; eşleşme ayrı bir kontroldür ([build provenance](build-provenance.md)).
 
 Migration öncesi salt-okunur kontroller: `SELECT migration_name FROM "_prisma_migrations" ORDER BY finished_at DESC LIMIT 5;`, OD/ODK ödenmiş sipariş adet/toplamları ve mevcut ledger adet/toplamları kaydedilir. Migration sonrası yeni kolonlar `information_schema.columns` üzerinden, foreign key `pg_constraint` üzerinden ve aynı adet/toplam sorgularıyla doğrulanır. Backfill öncesi/sonrası fark yalnız eksik ödenmiş sipariş sayısı kadar olmalıdır; fark açıklanamıyorsa deploy promote edilmez.
+
+## Mobil V1.0 (M9) — ayrı release kapısı
+
+- [ ] [Mobil release checklist](mobile/m9-release-checklist.md) Gate A/B/C ve approval ticket'ı tamam.
+- [ ] Uyumluluk sırası: onaylı backend → health/API/session/role smoke → signed mobile pilot → physical evidence → geniş dağıtım.
+- [ ] M1–M7 main'de; production deployment SHA ve push migration gerçek ortamda ayrıca doğrulanır.
+- [ ] Staging DB production'dan izole; native profile origin/identity/remote build numarası kaydı mevcut.
+- [ ] Privacy/controller/retention/child-data/commerce ve self-service deletion engelleri kapalı.
+- [ ] Push DISABLED; yalnız ayrı gerçek cihaz kanıtı ve onayla açılır.
+- [ ] EAS build metadata ve backend SHA birlikte saklanır; auto submit/OTA/publish yok.
+- [ ] TestFlight upload, App Review ve Play yayın için ayrı açık insan onayları kaydedilir.

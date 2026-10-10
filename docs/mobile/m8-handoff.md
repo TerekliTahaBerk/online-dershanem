@@ -1,3 +1,5 @@
+> **V1.0 güncellemesi:** M8 = DEFERRED / NOT REQUIRED FOR V1.0. Aşağıdaki öneriler uygulanmayacak. “M9’a başlanmaz” eski sıra notu geçersiz; M9 release engineering başladı. Güncel handoff: [v1-release-handoff](./v1-release-handoff.md).
+
 # M8 devir notu — İleri mobil yetenekler
 
 M7 tamamlandı (yerel doğrulama; gerçek cihaz yok). **M8'e başlanmadı.**

@@ -60,3 +60,7 @@ başlatılsa da ikinci bir insan onayı kapısı oluşmaz.
 Bu workflow gerçek production'a karşı çalıştırılmadan eklenmiştir. İlk gerçek
 kullanımdan önce düşük riskli bir Vercel proje/ortamında aynı komut ve secrets
 sözleşmesiyle prova edilmelidir.
+
+## Mobil V1.0 (M9)
+
+Mobil olayında [m9-monitoring-runbook](mobile/m9-monitoring-runbook.md) uygulanır. Play staged rollout halt / App Store phased release pause yeni dağıtımı sınırlar; kullanıcının yüklediği native binary geri alınmaz. Aynı fingerprint runtime için JS update republish/embedded rollback yalnız onayla; native izin/paket/entitlement uyumsuzluğunda yeni binary gerekir. Backend rollback M1–M7 mobil API'lerini ve push tablolarını korumalıdır; minimum version dağıtılmış uyumlu binary'yi kilitlememeli. Push kill switch DISABLED; öğrenci/veli in-app merkezi ayrı çalışır. Akademik veriyi silen ters migration otomatik uygulanmaz.

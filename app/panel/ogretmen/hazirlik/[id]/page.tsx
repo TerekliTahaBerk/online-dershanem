@@ -237,7 +237,7 @@ export default async function CoachPrepPage({
           <GorusmelerTab assignmentId={ownCoachAssignment!.id} studentId={student.id} userId={session.userId} nextAt={coaching?.nextScheduledAt ?? null} />
         ) : null}
 
-        {tab === "notlar" && isCoach ? <NotlarTab studentId={student.id} studentName={student.name} /> : null}
+        {tab === "notlar" && isCoach ? <NotlarTab studentId={student.id} studentName={student.name} canReadPrivate={await hasStaffPermission(session.userId, "ok:note:read_private")} /> : null}
 
         {tab === "denemeler" ? (
           <Section id="denemeler" title="Dış denemeler" divider={false} description="Okul, kurum veya yayınevi denemelerinden girilen sonuçlar.">
@@ -614,9 +614,9 @@ async function GorusmelerTab({ assignmentId, studentId, userId, nextAt }: { assi
   );
 }
 
-async function NotlarTab({ studentId, studentName }: { studentId: string; studentName: string }) {
+async function NotlarTab({ studentId, studentName, canReadPrivate }: { studentId: string; studentName: string; canReadPrivate: boolean }) {
   const notes = await prisma.coachNote.findMany({
-    where: { studentId },
+    where: { studentId, ...(canReadPrivate ? {} : { visibility: { not: "INTERNAL" as const } }) },
     orderBy: { createdAt: "desc" },
     take: 60,
     select: { id: true, body: true, visibility: true, createdAt: true, author: { select: { fullName: true, email: true } } },
@@ -627,7 +627,7 @@ async function NotlarTab({ studentId, studentName }: { studentId: string; studen
         <CoachNoteComposer studentId={studentId} studentName={studentName} />
       </Section>
       <div className="mt-8 grid gap-6 border-t border-pn-border pt-6 lg:grid-cols-3">
-        {NOTE_LANES.map((lane) => {
+        {NOTE_LANES.filter((lane) => canReadPrivate || lane.visibility !== "INTERNAL").map((lane) => {
           const laneNotes = notes.filter((note) => note.visibility === lane.visibility);
           return (
             <section key={lane.visibility} aria-labelledby={`lane-${lane.visibility}`} data-note-lane={lane.visibility}>

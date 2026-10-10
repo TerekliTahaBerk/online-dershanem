@@ -12,7 +12,7 @@ import { useParentContext } from './parent-context';
 /**
  * VELİ · HESAP — `account` amacı: akademik izni kapalı bağlantılar da ad +
  * ürünle listelenir, ama akademik veri YOKTUR. Fiyat, sipariş, ödeme ve
- * satın alma mobilde yoktur (MD-09); paket görüşmesi talebi web devam yolu.
+ * satın alma mobilde yoktur (MD-09).
  * Ayarlar, bildirimler ve oturumlar M1 / M5 ekranlarına gider.
  */
 export default function ParentAccountScreen() {
@@ -47,7 +47,6 @@ export default function ParentAccountScreen() {
               ) : (
                 <EmptyState title="Hesabınıza bağlı öğrenci görünmüyor" body="Bağlantı eksikse eğitim koordinatörünüzle görüşebilirsiniz." />
               )}
-              <Text tone="muted" variant="meta">Paket ekleme veya değiştirme için görüşme talebi web panelindeki Hesap ve paket sayfasından oluşturulur.</Text>
             </Section>
             <Section title="Ayarlar">
               <Row title="Hesap ve güvenlik" subtitle="Parola, oturumlar ve cihazlar" onPress={() => router.push('/account')} />

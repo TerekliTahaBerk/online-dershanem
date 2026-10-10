@@ -96,11 +96,11 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
 
 **Karar verilmesi gereken.** Ürün: telefon ekranında deneme çözmek adil mi (web zaten <768px'te uyarıyor)? Ölçme: mobil olaylar bütünlük skorunu nasıl etkiler? Bu kararlar verilmeden seçenek 3'e başlanmaz.
 
-## MD-09 — Ödeme ve satın alma (AÇIK)
+## MD-09 — Ödeme ve satın alma (V1.0 KARARI KESİN)
 
 **Bağlam.** Ürün seçicide `LOCKED` kartlar `/paketler`, `/odk-paketleri`, `/urunler/online-kocum` sayfalarına; veli "Hesap ve paket" sayfası ödeme akışlarına bağlanıyor; ödeme PayTR.
 
-**Öneri.** Mobilde hiçbir satın alma bağlantısı veya fiyat gösterilmez; kilitli ürün kartı yalnız ürün adı ve "Bu ürün hesabınızda aktif değil" bilgisini taşır. App Store 3.1.1 / Google Play ödeme politikalarının eğitim hizmetleri (canlı birebir ders istisnaları dahil) için yorumlanması hukuk/ürün kararıdır.
+**V1.0 kararı (ürün sahibi, 10 Ekim 2026).** Mobilde PAYTR checkout, native satış, IAP, abonelik checkout veya dış satın alma yönlendirmesi olmayacak. Mobilde hiçbir satın alma bağlantısı veya fiyat gösterilmez; kilitli ürün kartı yalnız ürün adı ve "Bu ürün hesabınızda aktif değil" bilgisini taşır. App Store 3.1.1 / Google Play ödeme politikalarının eğitim hizmetleri (canlı birebir ders istisnaları dahil) için yorumlanması hukuk/ürün kararıdır.
 
 ## MD-10 — Push mimarisi
 
@@ -232,3 +232,7 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
 - **Kimlik:** öğrenci kimliği `StudentProfile.id`. ODK `User.id` dönüşümü yalnız sunucuda ve yalnız ilişkili öğrenciler içinde yapılır.
 - **Kapsam dışı:** ODK yönetim izinleri, ödev oluşturma, ders ödev taslağı, personel push'u.
 - **Test politikası (M7):** Yeni otomatik test yazılmadı. M7'nin bilinçli değiştirdiği davranışa dayanan 1 eski mobil beklenti güncellendi (öğretmen yer tutucusu → öğretmen Bugün). Sınırlar geçici, commit'lenmeyen probe ile doğrulandı.
+
+## MD-24 — V1.0 yayın sınırı (M9)
+
+M8 = DEFERRED / NOT REQUIRED FOR V1.0. M1–M7 korunur. Mobilde satış/PAYTR/IAP/abonelik checkout/dış satın alma CTA yok. Mevcut web ticareti ayrı kalır. Commerce policy sınıflandırması satış yokluğundan otomatik geçmez. EAS remote build numbers, fingerprint runtime ve ayrı development/preview/production kanalları; hiçbir push/OTA/build submit otomatik yayımlanmaz. Privacy/legal/account deletion ve gerçek cihaz kanıtı olmadan store GO verilmez. Yeni otomatik test yok; yalnız bilinçli HTTPS kuralı için eski bir assertion güncellendi.

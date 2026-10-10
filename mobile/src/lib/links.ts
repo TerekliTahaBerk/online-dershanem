@@ -8,7 +8,10 @@ export function isSafeExternalUrl(url: string | null | undefined): url is string
   if (!url) return false;
   try {
     const parsed = new URL(url);
-    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+    if (parsed.protocol !== 'https:' || parsed.username || parsed.password) return false;
+    if (/(^|\.)paytr\.com$/i.test(parsed.hostname)) return false;
+    if (/(?:^|\/)(?:checkout|paytr|odeme|odemeler|siparis|siparisler|paketler|satin-al|billing|payments?|orders?|subscriptions?)(?:\/|$)/i.test(decodeURIComponent(parsed.pathname))) return false;
+    return true;
   } catch {
     return false;
   }

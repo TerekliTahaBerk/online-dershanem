@@ -70,7 +70,7 @@ export function selectActiveWorkspace(input: {
 
 /** Web navigasyon modelini mobil sözleşmeye çevirir; `href` yalnız `webPath` olur. */
 export function toMobileNavItems(items: readonly { id: string; label: string; href: string }[]): MobileNavItem[] {
-  return items.map((item) => ({ id: item.id, label: item.label, webPath: item.href }));
+  return items.filter((item) => !/(?:^|\/)(?:checkout|paytr|odeme|odemeler|siparis|siparisler|paketler|satin-al|billing|payments?|orders?|subscriptions?)(?:\/|$)/i.test(item.href)).map((item) => ({ id: item.id, label: item.id === "account" ? "Hesap" : item.label, webPath: item.href }));
 }
 
 export function toMobileNavSections(sections: readonly { id: string; title: string; items: readonly { id: string; label: string; href: string }[] }[]): MobileNavSection[] {

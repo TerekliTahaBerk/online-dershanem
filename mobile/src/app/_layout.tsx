@@ -1,8 +1,9 @@
 import { Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold, useFonts } from '@expo-google-fonts/manrope';
-import { DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { DefaultTheme, Stack, ThemeProvider, type ErrorBoundaryProps } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { Button, Text as NativeText, View } from 'react-native';
 
 import { NEUTRAL_THEME, productTheme } from '@/design/products';
 import { DesignProvider } from '@/design/theme';
@@ -73,4 +74,14 @@ export default function RootLayout() {
       </SessionProvider>
     </ThemeProvider>
   );
+}
+
+/** Safe root fallback; no exception text or user data in release UI/logs. */
+export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
+  useEffect(() => { void SplashScreen.hideAsync(); }, []);
+  return <View style={{ flex: 1, justifyContent: 'center', padding: 24, gap: 16, backgroundColor: color.canvas }}>
+    <NativeText accessibilityRole="header">Bu ekran açılamadı</NativeText>
+    <NativeText>Tekrar deneyin. Sorun sürerse uygulamayı yeniden açın.</NativeText>
+    <Button title="Tekrar dene" onPress={() => { void retry().catch(() => undefined); }} />
+  </View>;
 }

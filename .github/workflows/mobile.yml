@@ -57,3 +57,14 @@ jobs:
         run: |
           npx expo export --platform android --output-dir "$RUNNER_TEMP/mobile-export-android"
           npx expo export --platform ios --output-dir "$RUNNER_TEMP/mobile-export-ios"
+      - name: Release hygiene, bundle leakage and traceability
+        working-directory: .
+        env:
+          MOBILE_RELEASE_METADATA_DIR: ${{ runner.temp }}/mobile-release-metadata
+        run: node scripts/check-mobile-release.mjs "$RUNNER_TEMP/mobile-export-android" "$RUNNER_TEMP/mobile-export-ios"
+      - name: Keep unsigned export provenance
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: mobile-export-provenance-${{ github.sha }}
+          path: ${{ runner.temp }}/mobile-release-metadata/release-metadata.json
+          retention-days: 14
