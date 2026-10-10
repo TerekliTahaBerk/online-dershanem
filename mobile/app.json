@@ -9,7 +9,14 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "bundleIdentifier": "com.onlinedershanem.app",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false
+        },
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -60,6 +67,13 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "backgroundColor": "#FBFCFA"
+    "backgroundColor": "#FBFCFA",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "bd75d82a-7152-41c5-bab8-9cd14e670231"
+      }
+    },
+    "owner": "tahaberkterekli"
   }
 }
