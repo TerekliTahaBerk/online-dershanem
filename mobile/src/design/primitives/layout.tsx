@@ -1,4 +1,5 @@
 import type { PropsWithChildren, ReactNode } from 'react';
+import { ChevronRight } from 'lucide-react-native';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
@@ -15,10 +16,11 @@ type ScreenProps = PropsWithChildren<{
   footer?: ReactNode;
   contentStyle?: ViewStyle;
   testID?: string;
+  backgroundColor?: string;
 }>;
 
 /** Beyaz çalışma alanı, 16px kenar boşluğu, güvenli alan ve isteğe bağlı çekip yenileme. */
-export function Screen({ scroll = true, refreshing = false, onRefresh, edges = ['left', 'right'], footer, contentStyle, children, testID }: ScreenProps) {
+export function Screen({ scroll = true, refreshing = false, onRefresh, edges = ['left', 'right'], footer, contentStyle, children, testID, backgroundColor = color.canvas }: ScreenProps) {
   const { product } = useDesign();
   const body = scroll ? (
     <ScrollView
@@ -34,7 +36,7 @@ export function Screen({ scroll = true, refreshing = false, onRefresh, edges = [
     <View style={[styles.content, styles.flex, contentStyle]}>{children}</View>
   );
   return (
-    <SafeAreaView style={styles.screen} edges={edges} testID={testID}>
+    <SafeAreaView style={[styles.screen, { backgroundColor }]} edges={edges} testID={testID}>
       {body}
       {footer ? <View style={styles.footer}>{footer}</View> : null}
     </SafeAreaView>
@@ -46,7 +48,7 @@ export function PageHeader({ title, description, context, action }: { title: str
   return (
     <View style={styles.header}>
       <View style={styles.headerRow}>
-        <Text variant="pageTitle" accessibilityRole="header" style={styles.flex}>
+        <Text variant="pageTitle" accessibilityRole="header" style={styles.headerTitle}>
           {title}
         </Text>
         {action}
@@ -63,7 +65,7 @@ export function Section({ title, action, children, first = false }: PropsWithChi
     <View style={[styles.section, first && styles.sectionFirst]}>
       {title ? (
         <View style={styles.sectionHeader}>
-          <Text variant="sectionTitle" accessibilityRole="header" style={styles.flex}>
+          <Text variant="sectionTitle" accessibilityRole="header" style={styles.headerTitle}>
             {title}
           </Text>
           {action}
@@ -98,18 +100,18 @@ export function Row({ title, subtitle, meta, leading, trailing, onPress, selecte
         <Text variant="bodyStrong">{title}</Text>
         {subtitle ? <Text tone="secondary" variant="secondary">{subtitle}</Text> : null}
       </View>
-      {meta ? <Text tone="muted" variant="meta">{meta}</Text> : null}
-      {trailing}
+      {meta || trailing ? <View style={styles.trailing}>
+        {meta ? <Text tone="muted" variant="meta" style={styles.meta}>{meta}</Text> : null}
+        {trailing}
+      </View> : null}
       {onPress ? (
-        <Text tone="muted" accessibilityElementsHidden importantForAccessibility="no">
-          ›
-        </Text>
+        <ChevronRight size={16} color={color.textMuted} accessibilityElementsHidden importantForAccessibility="no" />
       ) : null}
     </>
   );
   if (!onPress) {
     return (
-      <View style={styles.row} testID={testID}>
+      <View style={[styles.row, disabled && styles.disabled]} testID={testID}>
         {content}
       </View>
     );
@@ -122,7 +124,7 @@ export function Row({ title, subtitle, meta, leading, trailing, onPress, selecte
       accessibilityHint={accessibilityHint}
       disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => [styles.row, selected && { backgroundColor: color.selected }, pressed && { backgroundColor: color.pressed }, disabled && styles.disabled]}>
+      style={({ pressed }) => [styles.row, selected && { backgroundColor: product.accentSoft }, pressed && { backgroundColor: color.pressed }, disabled && styles.disabled]}>
       {content}
     </Pressable>
   );
@@ -136,10 +138,13 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: space[4], paddingTop: space[4], paddingBottom: space[8], gap: space[6] },
   footer: { paddingHorizontal: space[4], paddingVertical: space[3], borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: color.border, backgroundColor: color.canvas },
   header: { gap: space[1] },
-  headerRow: { flexDirection: 'row', alignItems: 'center', gap: space[2] },
+  headerTitle: { flexGrow: 1, flexShrink: 1, flexBasis: 160 },
+  trailing: { maxWidth: '45%', flexShrink: 1, alignItems: 'flex-end', gap: space[1] },
+  meta: { textAlign: 'right' },
+  headerRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space[2] },
   section: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: color.border, paddingTop: space[4], gap: space[2] },
   sectionFirst: { borderTopWidth: 0, paddingTop: 0 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: space[2] },
+  sectionHeader: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space[2] },
   row: {
     minHeight: rowHeight.comfortable,
     flexDirection: 'row',

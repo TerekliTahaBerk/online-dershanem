@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 
-import { Banner, Button, PageHeader, Screen, TextField } from '@/design/primitives';
+import { Banner, Button, TextField } from '@/design/primitives';
+import { AuthScreen } from '@/features/auth/auth-screen';
 import * as endpoints from '@/lib/api/endpoints';
 import { ApiError } from '@/lib/api/errors';
 import { useSession } from '@/lib/auth/session-provider';
@@ -32,13 +33,12 @@ export default function ForgotPasswordScreen() {
   }
 
   return (
-    <Screen edges={['top', 'left', 'right', 'bottom']}>
-      <PageHeader title="Parolamı unuttum" description="E-posta adresini yaz; hesabın varsa sıfırlama bağlantısı gönderilir." />
+    <AuthScreen title="Şifremi unuttum" description="E-posta adresini yaz; hesabın varsa sıfırlama bağlantısı gönderilir.">
       {message ? <Banner tone="success">{message}</Banner> : null}
       {error ? <Banner tone="critical">{error}</Banner> : null}
-      <TextField label="E-posta" value={email} onChangeText={setEmail} autoCapitalize="none" autoComplete="email" keyboardType="email-address" textContentType="username" returnKeyType="send" onSubmitEditing={submit} />
-      <Button label="Bağlantı gönder" onPress={submit} loading={busy} disabled={email.trim().length < 3} />
+      <TextField variant="auth" label="E-posta" value={email} onChangeText={setEmail} autoCapitalize="none" autoComplete="email" keyboardType="email-address" textContentType="username" returnKeyType="send" onSubmitEditing={submit} />
+      <Button variant="auth" label="Bağlantı gönder" onPress={submit} loading={busy} disabled={email.trim().length < 3} />
       <Button label="Girişe dön" variant="quiet" onPress={() => router.back()} />
-    </Screen>
+    </AuthScreen>
   );
 }

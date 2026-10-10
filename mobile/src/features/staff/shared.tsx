@@ -159,7 +159,7 @@ export function DateTimeField({ label, value, onChange, minimumDate, maximumDate
 
 export const staffStyles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
-  card: { gap: space[2], backgroundColor: color.surfaceSubtle, borderRadius: radius.card, padding: space[3] },
+  card: { gap: space[2], backgroundColor: color.canvas, borderWidth: 1, borderColor: color.border, borderRadius: radius.card, padding: space[4] },
   gap: { gap: space[3] },
   input: { minHeight: 96, textAlignVertical: 'top' },
 });

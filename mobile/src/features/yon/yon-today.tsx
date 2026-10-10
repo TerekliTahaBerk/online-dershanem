@@ -1,6 +1,6 @@
 import type { MobileYonToday } from '@contracts/yon';
 import { useRouter, type Href } from 'expo-router';
-import { Linking, StyleSheet, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Button, EmptyState, PageHeader, Row, Screen, Section, StatusBadge, Text } from '@/design/primitives';
 import { useDesign } from '@/design/theme';
@@ -122,7 +122,7 @@ function WeekSection({ home }: { home: Extract<MobileYonToday, { state: 'READY' 
       {home.hasPlan ? (
         <>
           <Text tone="secondary">{`${home.week.done}/${home.week.total} görev · ${minutesLabel(home.week.doneMinutes)} / ${minutesLabel(home.week.plannedMinutes)}${home.week.remaining ? ` · ${home.week.remaining} iş kaldı` : ''}`}</Text>
-          <View style={styles.days} accessibilityLabel="Haftanın günleri">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.days} accessibilityLabel="Haftanın günleri">
             {home.week.days.map((day) => (
               <View
                 key={day.key}
@@ -135,7 +135,7 @@ function WeekSection({ home }: { home: Extract<MobileYonToday, { state: 'READY' 
                 <Text variant="numeric">{day.total ? `${day.done}/${day.total}` : '—'}</Text>
               </View>
             ))}
-          </View>
+          </ScrollView>
         </>
       ) : (
         <Text tone="secondary">Plan yayınlandığında haftalık ilerlemen burada görünür.</Text>
@@ -210,6 +210,6 @@ const styles = StyleSheet.create({
   now: { gap: space[2], borderWidth: 1, borderColor: color.border, borderRadius: radius.card, padding: space[4], marginBottom: space[2] },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2], marginTop: space[2] },
   days: { flexDirection: 'row', gap: space[1], marginTop: space[2] },
-  day: { flex: 1, alignItems: 'center', paddingVertical: space[2], borderRadius: radius.control, gap: 2 },
+  day: { minWidth: 42, flexGrow: 1, alignItems: 'center', paddingVertical: space[2], borderRadius: radius.control, gap: 2 },
   note: { gap: space[1], borderLeftWidth: 2, borderLeftColor: color.borderStrong, paddingLeft: space[3] },
 });

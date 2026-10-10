@@ -1,11 +1,10 @@
 import * as Haptics from 'expo-haptics';
-import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import { useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, View, type TextInput } from 'react-native';
+import { Platform, StyleSheet, type TextInput } from 'react-native';
 
-import appIcon from '@/assets/images/icon.png';
-import { Banner, Button, Screen, Text, TextField } from '@/design/primitives';
+import { Banner, Button, Text, TextField } from '@/design/primitives';
+import { AuthScreen } from '@/features/auth/auth-screen';
 import { space } from '@/design/tokens';
 import { ApiError } from '@/lib/api/errors';
 import { useSession } from '@/lib/auth/session-provider';
@@ -43,20 +42,11 @@ export default function SignInScreen() {
   const canSubmit = email.trim().length > 2 && password.length > 0 && !submitting;
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Screen edges={['top', 'left', 'right', 'bottom']} contentStyle={styles.content}>
-        <View style={styles.brand}>
-          <Image source={appIcon} style={styles.logo} accessibilityIgnoresInvertColors alt="" />
-          <Text variant="pageTitle" accessibilityRole="header">
-            onlinedershanem.
-          </Text>
-          <Text tone="secondary" style={styles.center}>
-            Hesabınla giriş yap.
-          </Text>
-        </View>
+    <AuthScreen title="Tekrar hoş geldin">
         {notice === 'SESSION_EXPIRED' ? <Banner tone="warning">Oturumun sona erdi. Lütfen tekrar giriş yap.</Banner> : null}
         {error ? <Banner tone="critical">{error}</Banner> : null}
         <TextField
+          variant="auth"
           label="E-posta"
           value={email}
           onChangeText={setEmail}
@@ -71,7 +61,8 @@ export default function SignInScreen() {
         />
         <TextField
           ref={passwordRef}
-          label="Parola"
+          variant="auth"
+          label="Şifre"
           value={password}
           onChangeText={setPassword}
           secureToggle
@@ -82,20 +73,14 @@ export default function SignInScreen() {
           onSubmitEditing={handleSubmit}
           testID="sign-in-password"
         />
-        <Button label="Giriş yap" onPress={handleSubmit} loading={submitting} disabled={!canSubmit} testID="sign-in-submit" />
+        <Button variant="auth" label="Giriş Yap" onPress={handleSubmit} loading={submitting} disabled={!canSubmit} testID="sign-in-submit" />
         <Link href="/forgot-password" style={styles.link}>
-          <Text tone="accent">Parolamı unuttum</Text>
+          <Text tone="secondary">Şifremi unuttum</Text>
         </Link>
-      </Screen>
-    </KeyboardAvoidingView>
+    </AuthScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  content: { flexGrow: 1, justifyContent: 'center', gap: space[4] },
-  brand: { alignItems: 'center', gap: space[2], marginBottom: space[2] },
-  logo: { width: 56, height: 56, borderRadius: 12 },
-  center: { textAlign: 'center' },
   link: { alignSelf: 'center', paddingVertical: space[3] },
 });

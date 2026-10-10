@@ -1,10 +1,12 @@
 import type { MobileProductCode } from '@contracts/bootstrap';
 import { useRouter } from 'expo-router';
+import { Check, ChevronsUpDown } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Banner, BottomSheet, Row, StatusBadge, Text } from '@/design/primitives';
-import { productTheme, PRODUCT_FALLBACK_LABEL } from '@/design/products';
+import { ProductLogo } from '@/design/brand';
+import { PRODUCT_FALLBACK_LABEL } from '@/design/products';
 import { color, radius, space, touchTarget } from '@/design/tokens';
 import { ApiError } from '@/lib/api/errors';
 import { useSession } from '@/lib/auth/session-provider';
@@ -17,7 +19,7 @@ import { PRODUCT_STATE_PRESENTATION } from './labels';
  * çekilir ve menü sunucunun döndürdüğü kapsamla kurulur. Yalnız `ACTIVE`
  * ürünler seçilebilir; diğerleri açıklamalı ve devre dışıdır.
  */
-export function WorkspaceSwitcher() {
+export function WorkspaceSwitcher({ compact = false }: { compact?: boolean }) {
   const { bootstrap, selectWorkspace } = useSession();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -27,7 +29,6 @@ export function WorkspaceSwitcher() {
   if (!workspace) return null;
 
   const current = workspace.products.find((product) => product.code === workspace.activeProduct) ?? null;
-  const theme = productTheme(current?.code);
   const selectable = workspace.products.filter((product) => product.state === 'ACTIVE').length;
 
   async function choose(code: MobileProductCode) {
@@ -51,16 +52,15 @@ export function WorkspaceSwitcher() {
         accessibilityLabel={`Çalışma alanı: ${current?.label ?? 'seçilmedi'}`}
         accessibilityHint={selectable > 1 ? 'Çalışma alanlarını listeler' : undefined}
         onPress={() => setOpen(true)}
-        style={({ pressed }) => [styles.trigger, pressed && { backgroundColor: color.pressed }]}>
-        <View style={[styles.dot, { backgroundColor: theme.accentMarker }]} />
-        <Text variant="bodyStrong" style={styles.flex} numberOfLines={1}>
-          {current?.label ?? 'Çalışma alanı seç'}
-        </Text>
-        <Text tone="muted" variant="meta">
-          Değiştir
-        </Text>
+        style={({ pressed }) => [styles.trigger, compact && styles.compact, pressed && { backgroundColor: color.pressed }]}>
+        <ProductLogo product={current?.code} size={compact ? 28 : 36} />
+        <View style={styles.flex}>
+          <Text variant="bodyStrong" numberOfLines={1}>{current?.label ?? 'Çalışma alanı seç'}</Text>
+          {!compact ? <Text variant="meta" tone="muted" numberOfLines={1}>{bootstrap?.user.fullName ?? 'Panel değiştir'}</Text> : null}
+        </View>
+        <ChevronsUpDown size={16} color={color.textMuted} />
       </Pressable>
-      <BottomSheet visible={open} title="Çalışma alanı" onClose={() => setOpen(false)}>
+      <BottomSheet visible={open} title="Panel değiştir" onClose={() => setOpen(false)}>
         {error ? <Banner tone="critical">{error}</Banner> : null}
         {workspace.products.map((product) => {
           const presentation = PRODUCT_STATE_PRESENTATION[product.state];
@@ -72,8 +72,8 @@ export function WorkspaceSwitcher() {
               subtitle={product.state === 'ACTIVE' ? null : presentation.description}
               selected={product.code === workspace.activeProduct}
               disabled={product.state !== 'ACTIVE' || pending !== null}
-              leading={<View style={[styles.dot, { backgroundColor: productTheme(product.code).accentMarker }]} />}
-              trailing={pending === product.code ? <Text tone="muted">…</Text> : <StatusBadge label={presentation.label} tone={presentation.tone} />}
+              leading={<ProductLogo product={product.code} size={36} />}
+              trailing={pending === product.code ? <Text tone="muted">…</Text> : product.code === workspace.activeProduct ? <Check size={18} color={color.focus} /> : <StatusBadge label={presentation.label} tone={presentation.tone} />}
               onPress={product.state === 'ACTIVE' && product.code !== workspace.activeProduct ? () => void choose(product.code) : undefined}
             />
           );
@@ -96,5 +96,5 @@ const styles = StyleSheet.create({
     borderColor: color.border,
     backgroundColor: color.sidebar,
   },
-  dot: { width: 8, height: 8, borderRadius: 4 },
+  compact: { borderWidth: 0, backgroundColor: color.canvas, paddingHorizontal: space[1] },
 });

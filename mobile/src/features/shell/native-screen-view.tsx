@@ -1,8 +1,4 @@
 import type { ReactElement } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-import { color } from '@/design/tokens';
 import OdkExamsScreen from '@/features/odk/odk-exams';
 import OdkHomeScreen from '@/features/odk/odk-home';
 import OdkSwitchScreen from '@/features/odk/odk-switch';
@@ -90,20 +86,8 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'teacher-odk-reports': () => <TeacherOdkReportsScreen />,
 };
 
-export function NativeScreenView({ screen, context }: { screen: NativeScreen; context: 'tab' | 'stack' }) {
-  const insets = useSafeAreaInsets();
-  if (screen.key === 'placeholder') {
-    return (
-      <View style={[styles.flex, context === 'tab' && { paddingTop: insets.top }]}>
-        <PlaceholderScreen screen={screen} />
-      </View>
-    );
-  }
-  const content = SCREENS[screen.key]();
-  // Sekmede başlık çubuğu yok: ekranlar (`Screen`) üst güvenli alanı kendisi
-  // bırakmaz; yığında başlık çubuğu bırakır.
-  if (context === 'tab') return <View style={[styles.flex, { paddingTop: insets.top }]}>{content}</View>;
-  return content;
+/** Üst güvenli alanı sekmelerde PanelHeader, detaylarda Stack header bırakır. */
+export function NativeScreenView({ screen }: { screen: NativeScreen; context: 'tab' | 'stack' }) {
+  if (screen.key === 'placeholder') return <PlaceholderScreen screen={screen} />;
+  return SCREENS[screen.key]();
 }
-
-const styles = StyleSheet.create({ flex: { flex: 1, backgroundColor: color.canvas } });

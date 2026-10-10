@@ -1,45 +1,52 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { Tabs } from 'expo-router';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Text } from '@/design/primitives';
 import { useDesign } from '@/design/theme';
-import { color } from '@/design/tokens';
-import { tabIconFor } from '@/features/shell/tab-icons';
+import { color, radius, space, touchTarget } from '@/design/tokens';
+import { NavIcon } from '@/features/shell/nav-icon';
+import { PanelHeader } from '@/features/shell/panel-header';
 import { useReadyBootstrap } from '@/lib/auth/session-provider';
 
-/**
- * Alt sekmeler sunucu menüsünden kurulur: öğrenci / velide
- * `navigation.primary` (≤4, web `mobilePrimaryNav`) + "Menü". Personel ve
- * yönetimde alt çubuk yok (web kararı, panel-design-roadmap §6.5): yalnız
- * "Bugün" ve "Menü". Sekme rotaları sabit yuvalardır; hangi ekranın açılacağı
- * `resolveNativeScreen` ile rol + çalışma alanına göre belirlenir.
- */
 const SLOTS = ['index', 'slot-1', 'slot-2', 'slot-3'] as const;
 
+/** Web mobilePrimaryNav order, with consistent selected states on iOS/Android. */
 export default function TabsLayout() {
   const bootstrap = useReadyBootstrap();
   const { product } = useDesign();
-  const role = bootstrap.user.role;
-  const learner = role === 'STUDENT' || role === 'PARENT';
+  const insets = useSafeAreaInsets();
+  const learner = bootstrap.user.role === 'STUDENT' || bootstrap.user.role === 'PARENT';
   const primary = learner ? (bootstrap.workspace?.navigation.primary ?? []).slice(0, 4) : [];
-  const unread = bootstrap.workspace?.unreadNotifications ?? 0;
+  const items = [
+    ...SLOTS.flatMap((name, index) => index === 0 || primary[index] ? [{ name, label: primary[index]?.label ?? 'Bugün', id: primary[index]?.id ?? 'today' }] : []),
+    { name: 'menu', label: 'Menü', id: 'menu' },
+  ];
 
-  return (
-    <NativeTabs backgroundColor={color.canvas} indicatorColor={product.accentSoft} iconColor={{ default: color.textMuted, selected: product.accent }} labelStyle={{ selected: { color: product.accent } }}>
-      {SLOTS.map((name, index) => {
-        const item = primary[index];
-        const label = item?.label ?? (index === 0 ? 'Bugün' : '');
-        const icon = tabIconFor(item?.id ?? 'today');
-        return (
-          <NativeTabs.Trigger key={name} name={name} hidden={index > 0 && !item}>
-            <NativeTabs.Trigger.Label>{label}</NativeTabs.Trigger.Label>
-            <NativeTabs.Trigger.Icon sf={icon.sf} md={icon.md} />
-          </NativeTabs.Trigger>
-        );
+  return <Tabs screenOptions={{ header: () => <PanelHeader />, sceneStyle: { backgroundColor: color.canvas } }} tabBar={({ state, navigation }) => (
+    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, space[2]), paddingLeft: Math.max(insets.left, space[2]), paddingRight: Math.max(insets.right, space[2]) }]} accessibilityRole="tablist">
+      {items.map((item) => {
+        const route = state.routes.find((candidate) => candidate.name === item.name);
+        if (!route) return null;
+        const selected = state.routes[state.index]?.key === route.key;
+        const ink = selected ? product.accent : color.textSecondary;
+        return <Pressable key={route.key} accessibilityRole="tab" accessibilityState={{ selected }} accessibilityLabel={item.label}
+          onPress={() => { const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true }); if (!selected && !event.defaultPrevented) navigation.navigate(route.name, route.params); }}
+          onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
+          testID={`nav-${item.id}`} style={({ pressed }) => [styles.tab, selected && { backgroundColor: product.accentSoft }, pressed && styles.pressed]}>
+          <NavIcon id={item.id} color={ink} size={19} />
+          <Text variant="caption" style={{ color: ink, textAlign: 'center' }} numberOfLines={2}>{item.label}</Text>
+        </Pressable>;
       })}
-      <NativeTabs.Trigger name="menu">
-        <NativeTabs.Trigger.Label>Menü</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="line.3.horizontal" md="menu" />
-        {unread > 0 ? <NativeTabs.Trigger.Badge>{unread > 99 ? '99+' : String(unread)}</NativeTabs.Trigger.Badge> : null}
-      </NativeTabs.Trigger>
-    </NativeTabs>
-  );
+    </View>
+  )}>
+    {SLOTS.map((name, index) => <Tabs.Screen key={name} name={name} options={{ title: primary[index]?.label ?? 'Bugün', href: index > 0 && !primary[index] ? null : undefined }} />)}
+    <Tabs.Screen name="menu" options={{ title: 'Menü' }} />
+  </Tabs>;
 }
+
+const styles = StyleSheet.create({
+  bar: { backgroundColor: color.canvas, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: color.border, flexDirection: 'row', paddingTop: space[2], gap: space[1] },
+  tab: { flex: 1, minHeight: touchTarget + 8, paddingVertical: space[2], paddingHorizontal: space[1], borderRadius: radius.control, alignItems: 'center', justifyContent: 'center', gap: space[1] },
+  pressed: { backgroundColor: color.pressed },
+});
