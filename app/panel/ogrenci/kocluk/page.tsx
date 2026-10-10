@@ -58,8 +58,8 @@ export default async function StudentCoachingHubPage() {
         <PageHeader title="Koçum" />
         <EmptyState
           className="mt-6"
-          title="Profilin hazırlanıyor."
-          body="Öğrenci profilin tamamlandığında koçluk durumun burada görünecek."
+          title="Hesabını hazırlıyoruz."
+          body="Her şey hazır olduğunda koçunu ve görüşmelerini burada göreceksin."
         />
       </>,
     );
@@ -74,7 +74,7 @@ export default async function StudentCoachingHubPage() {
         description={
           coaching
             ? `${coaching.coachName}${coaching.cadenceDays ? ` · ${coaching.cadenceDays} günde bir görüşme` : ""}`
-            : "Koçluk görüşmeni ve koçunun notlarını buradan takip edebilirsin."
+            : "Koçunla görüşmelerin ve sana bıraktığı notlar burada."
         }
         actions={
           adaptivePlanEnabled ? (
@@ -91,10 +91,10 @@ export default async function StudentCoachingHubPage() {
             <PropertyRow label="Koç">{coaching.coachName}</PropertyRow>
             <PropertyRow label="Sonraki görüşme">
               {coaching.overdue
-                ? "Yeni saat bekleniyor"
+                ? "Yeni saat belirleniyor"
                 : coaching.nextScheduledAt
                   ? DATE_TIME.format(coaching.nextScheduledAt)
-                  : "Planlanmadı"}
+                  : "Henüz planlanmadı"}
             </PropertyRow>
             {coaching.lastCompletedAt ? (
               <PropertyRow label="Son görüşme">{DATE.format(coaching.lastCompletedAt)}</PropertyRow>
@@ -105,13 +105,13 @@ export default async function StudentCoachingHubPage() {
       ) : (
         <EmptyState
           className="mt-6"
-          title="Henüz atanmış koç görünmüyor."
-          body="Koç ataması yapıldığında görüşme bilgisi ve yönlendirmeler burada açılır."
+          title="Koçunla çok yakında tanışacaksın."
+          body="Koçun belli olduğunda görüşmelerin ve önerileri burada olacak."
         />
       )}
 
       {coaching ? (
-        <Section id="gorusmeler" title="Görüşmeler" description="Saat uymuyorsa nedenini seçip değişiklik isteyebilirsin.">
+        <Section id="gorusmeler" title="Görüşmeler" description="Saat sana uymuyorsa nedenini seçip değişiklik isteyebilirsin.">
           <CoachingSessions actor={{ userId: session.userId, role: "STUDENT" }} studentId={profile.id} />
         </Section>
       ) : null}
@@ -127,13 +127,13 @@ export default async function StudentCoachingHubPage() {
             ))}
           </ul>
         ) : (
-          <p className="text-[14px] text-pn-text-muted">Bu hafta için yeni koç notu yok.</p>
+          <p className="text-[14px] text-pn-text-muted">Koçun bu hafta henüz yeni bir not bırakmadı.</p>
         )}
       </Section>
 
-      <Section id="yapilacaklar" title="Yapılacaklar" description="Koçunun bu hafta senin için eklediği çalışmalar.">
+      <Section id="yapilacaklar" title="Yapılacaklar" description="Koçunun bu hafta sana özel eklediği çalışmalar.">
         {!adaptivePlanEnabled ? (
-          <p className="text-[14px] text-pn-text-muted">Koçunla belirlediğiniz çalışmalar hazır olduğunda burada görünecek.</p>
+          <p className="text-[14px] text-pn-text-muted">Koçunla belirlediğiniz çalışmalar hazır olunca burada göreceksin.</p>
         ) : coachTasks.length ? (
           <List label="Koçunun eklediği çalışmalar">
             {coachTasks.map((task) => (
@@ -145,7 +145,7 @@ export default async function StudentCoachingHubPage() {
                   task.status === "DONE" || task.status === "PARTIAL" ? (
                     <StatusBadge label="Tamamlandı" tone="success" />
                   ) : task.status === "COULD_NOT" ? (
-                    <StatusBadge label="Yapılamadı" tone="warning" />
+                    <StatusBadge label="Yapamadım" tone="warning" />
                   ) : undefined
                 }
               />
@@ -153,7 +153,7 @@ export default async function StudentCoachingHubPage() {
           </List>
         ) : (
           <p className="text-[14px] text-pn-text-muted">
-            Bu hafta koçunun eklediği yayında bir çalışma yok. Plan görevlerin Bugün sayfasında.
+            Koçun bu hafta ayrıca bir çalışma eklemedi. Plan görevlerin Bugün sayfasında seni bekliyor.
           </p>
         )}
       </Section>
@@ -166,7 +166,7 @@ export default async function StudentCoachingHubPage() {
                 <PanelTableCell>{DATE.format(item.completedAt ?? item.scheduledAt)}</PanelTableCell>
                 <PanelTableCell>
                   <StatusBadge
-                    label={item.status === "COMPLETED" ? "Yapıldı" : item.status === "CANCELLED" ? "İptal" : "Kaçırıldı"}
+                    label={item.status === "COMPLETED" ? "Yapıldı" : item.status === "CANCELLED" ? "İptal edildi" : "Kaçırıldı"}
                     tone={item.status === "COMPLETED" ? "success" : "neutral"}
                   />
                 </PanelTableCell>

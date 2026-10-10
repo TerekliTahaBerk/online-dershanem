@@ -128,6 +128,6 @@ test.describe("LGS oturumlu deneme", () => {
     page.once("dialog", (dialog) => void dialog.accept());
     await page.getByRole("button", { name: "Denemeyi teslim et" }).click();
     await page.waitForURL(new RegExp(`/panel/odk/ogrenci/denemeler/${examId}$`), { timeout: 20_000 });
-    await expect(page.getByText("Denemen tamamlandı.").filter({ visible: true })).toBeVisible();
+    await expect(page.getByText("Denemeni tamamladın, eline sağlık!").filter({ visible: true })).toBeVisible();
   });
 });

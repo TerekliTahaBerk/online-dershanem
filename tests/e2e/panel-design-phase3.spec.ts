@@ -23,7 +23,7 @@ test.describe("Design Phase 3 — Yön Koçluk", () => {
     await page.goto("/panel/ogrenci/yon");
     const main = page.getByRole("main");
     await expect(main.getByRole("heading", { name: "Bugün", level: 1 })).toBeVisible();
-    for (const name of ["Bugünün planı", "Sıradaki görüşme", "Bu hafta", "Koçundan son not", "Hedeflerim"]) {
+    for (const name of ["Bugün senin için", "Sıradaki görüşme", "Bu hafta", "Koçundan son not", "Hedeflerim"]) {
       await expect(main.getByRole("heading", { name, level: 2 })).toBeVisible();
     }
     // Koç ataması var: koç adı özellik satırında.

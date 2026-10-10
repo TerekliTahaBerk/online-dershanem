@@ -35,8 +35,8 @@ export function decideAnswerRevision(existing: { revision: number; selectedOptio
 }
 
 export const attemptStartError = {
-  NOT_SCHEDULED: "Bu deneme henüz sınava açılmadı.",
-  NOT_STARTED: "Denemenin başlama saati henüz gelmedi.",
-  ENTRY_CLOSED: "Denemeye geç giriş süresi doldu.",
+  NOT_SCHEDULED: "Bu deneme henüz açılmadı; açıldığında burada göreceksin.",
+  NOT_STARTED: "Denemenin başlama saati henüz gelmedi. Biraz sonra tekrar uğra.",
+  ENTRY_CLOSED: "Geç giriş süresi doldu. Üzülme, sıradaki denemede görüşürüz.",
   EXAM_ENDED: "Bu denemenin süresi sona erdi.",
 } as const;

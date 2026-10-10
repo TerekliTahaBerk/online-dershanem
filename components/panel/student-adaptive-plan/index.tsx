@@ -68,10 +68,10 @@ function examCountdownHeadline(countdown: ExamCountdownView): string {
 /** Plan yoğunluğunun neden değiştiğini açıklar — kapasite artışı sürpriz olmamalı. */
 function examCountdownNote(tier: ExamCountdownView["tier"]): string {
   return {
-    FAR: "Planın normal temposunda ilerliyor.",
-    APPROACHING: "Planın biraz yoğunlaştı.",
-    NEAR: "Son haftalar: planın günlük biraz daha yoğun.",
-    FINAL_WEEK: "Son hafta: planın en yoğun temposunda.",
+    FAR: "Planın her zamanki temposunda ilerliyor.",
+    APPROACHING: "Sınav yaklaşıyor; planın biraz yoğunlaştı.",
+    NEAR: "Son haftalar: günlük planın biraz daha dolu, sen yaparsın.",
+    FINAL_WEEK: "Son hafta: planın en yoğun temposunda. Az kaldı, dayan!",
   }[tier];
 }
 
@@ -147,8 +147,8 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
     setBusy(false);
     setMessage(
       response.ok
-        ? "Tercihlerin kaydedildi."
-        : body.error || "Tercihler kaydedilemedi.",
+        ? "Tercihlerini kaydettik."
+        : body.error || "Tercihlerini kaydedemedik. Bir daha dener misin?",
     );
   }
 
@@ -204,7 +204,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
           }
         : current,
     );
-    setMessage("Göreve başladın.");
+    setMessage("Başladın, kolay gelsin!");
   }
 
   async function submitCompletion(task: Task) {
@@ -244,7 +244,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
     const body = await response.json().catch(() => ({}));
     setBusy(false);
     if (!response.ok) {
-      setMessage(body.error || "Görev güncellenemedi.");
+      setMessage(body.error || "Görevi güncelleyemedik. Bir daha dener misin?");
       return;
     }
 
@@ -271,10 +271,10 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
     setTaskParam(null);
     setMessage(
       completionDraft.status === "DONE"
-        ? "Harika — görev tamamlandı."
+        ? "Harika, bir görev daha tamam!"
         : completionDraft.status === "PARTIAL"
-          ? "Kısmi tamamlanma kaydedildi."
-          : "Durum kaydedildi.",
+          ? "Kaydettik. Yarısı bile ilerlemedir!"
+          : "Durumunu kaydettik.",
     );
   }
 
@@ -309,7 +309,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
       changeRequestCategory: overloadRequest.category,
     });
     setOverloadActionOpen(false);
-    setMessage("Değişiklik talebin koçuna iletildi.");
+    setMessage("İsteğini koçuna ilettik. Planına birlikte bakacaksınız.");
   }
 
   const tasks = plan?.tasks ?? [];
@@ -371,7 +371,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
         ) : task.status === "IN_PROGRESS" ? (
           <StatusBadge label="Başladın" tone="info" />
         ) : task.status === "COULD_NOT" ? (
-          <StatusBadge label="Yapılamadı" tone="neutral" />
+          <StatusBadge label="Yapamadım" tone="neutral" />
         ) : null}
         {canComplete && open ? (
           <button
@@ -401,10 +401,10 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
             tabIndex={-1}
             className="text-[16px] font-semibold text-pn-text outline-hidden"
           >
-            Bu hafta için aktif bir plan görünmüyor.
+            Bu hafta için henüz bir planın yok.
           </h2>
           <p className="mt-1 text-[14px] text-pn-text-secondary">
-            Aşağıdan gün ve süre tercihlerini kaydettiğinde planın hazırlanır.
+            Uygun günlerini ve ayırabileceğin süreyi aşağıdan kaydet; planını buna göre hazırlayalım.
           </p>
           <div className="mt-5 max-w-[720px]">{preferenceFields}</div>
           <div className="mt-5 flex flex-col gap-2 sm:flex-row">
@@ -487,7 +487,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
           {preference.overwhelmPulse && preference.overwhelmPulse >= 4 ? (
             <p className="mt-3 flex gap-2 rounded-md bg-(--pn-tone-warning-soft) px-3 py-2 text-[13px] text-(--pn-tone-warning)">
               <CircleAlert size={15} className="shrink-0" aria-hidden="true" />
-              Bu hafta plan yoğun görünüyor. Değişiklik isteyerek koçundan destek alabilirsin.
+              Bu hafta planın biraz yoğun görünüyor. Zorlanırsan koçundan değişiklik isteyebilirsin.
             </p>
           ) : null}
         </section>
@@ -607,7 +607,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
                 ))}
               </dl>
               <p className="mt-2 text-[12px] text-pn-text-muted">
-                Akademik bağlantı: çalışma süresi ile deneme netleri birlikte izlenebilir; bu bir neden-sonuç iddiası değildir.
+                Çalışma süren ile deneme netlerini yan yana görebilirsin; ama biri diğerinin tek nedeni değil.
               </p>
             </div>
           ) : null}
@@ -655,7 +655,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
               ) : null}
               {initialCoaching.overdue ? (
                 <p className="text-[13px] text-(--pn-tone-warning)">
-                  Görüşme zamanı geçti. Uygun bir zamanda koçundan yeni görüşme isteyebilirsin.
+                  Görüşme zamanı geçti. Sana uyan bir zamanda koçundan yeni bir görüşme isteyebilirsin.
                 </p>
               ) : null}
             </div>
@@ -672,12 +672,12 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
           </h2>
           {plan.status === "CHANGE_REQUESTED" ? (
             <p className="mt-2 text-[14px] text-pn-text-secondary">
-              Değişiklik talebin koçuna iletildi: {changeCategoryLabels[plan.changeRequestCategory ?? ""] ?? "Belirtilmedi"}
+              İsteğin koçuna ulaştı: {changeCategoryLabels[plan.changeRequestCategory ?? ""] ?? "Belirtilmedi"}
             </p>
           ) : plan.status === "APPROVED" ? (
             <div className="mt-2">
               <p className="text-[14px] text-pn-text-secondary">
-                Planım fazla yoğun veya günlerim değiştiğinde buradan koçuna talep gönderebilirsin.
+                Plan fazla yoğun gelirse ya da günlerin değişirse buradan koçuna söyleyebilirsin.
               </p>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <button
@@ -719,14 +719,14 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
                     ))}
                   </select>
                   <button type="button" disabled={busy} onClick={() => void requestChange()} className={buttonClass("primary", "md")}>
-                    Talebi Gönder
+                    Koçuma İlet
                   </button>
                 </div>
               ) : null}
             </div>
           ) : (
             <p className="mt-2 text-[14px] text-pn-text-muted">
-              Plan onaylandığında değişiklik ve destek taleplerini buradan iletebilirsin.
+              Plan onaylandığında değişiklik ve destek isteklerini buradan iletebileceksin.
             </p>
           )}
         </section>
@@ -737,7 +737,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
           open={controlsOpen}
           onClose={closeControls}
           title="Plan Tercihleri"
-          description="Planı değil, sadece ayarları buradan değiştir."
+          description="Buradan planı değil, sadece çalışma tercihlerini değiştirirsin."
           footer={
             <button
               type="button"
@@ -790,7 +790,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
             />
             {!canComplete ? (
               <p className="mt-3 text-[13px] text-pn-text-muted">
-                Plan koçun tarafından onaylandığında görevi buradan tamamlayabilirsin.
+                Koçun planı onayladığında bu görevi buradan işaretleyebileceksin.
               </p>
             ) : null}
           </>

@@ -82,19 +82,19 @@ export default async function StudentLessonDetailPage({
         <Section title="Derste ne işlendi?">
           <p className="text-[14.5px] leading-[1.7] text-pn-text-secondary">
             {shared?.topic ||
-              "Öğretmen bu dersin özetini henüz eklemedi. Eklendiğinde burada görünecek."}
+              "Öğretmenin bu dersin özetini henüz eklemedi. Eklediğinde burada göreceksin."}
           </p>
         </Section>
 
         {personalNote ? (
-          <Section title="Öğretmen notu">
+          <Section title="Öğretmeninin notu">
             <blockquote className="border-l-2 border-pn-accent pl-4 text-[14.5px] leading-[1.65] text-pn-text-secondary">
               &ldquo;{personalNote}&rdquo;
             </blockquote>
           </Section>
         ) : null}
 
-        <Section title="Verilen çalışma">
+        <Section title="Bu dersten çalışmaların">
           {shared?.homework ? (
             <p className="mb-3 text-[14.5px] leading-[1.7] text-pn-text-secondary">{shared.homework}</p>
           ) : null}
@@ -118,7 +118,7 @@ export default async function StudentLessonDetailPage({
               })}
             </List>
           ) : (
-            <p className="text-[14.5px] text-pn-text-muted">Bu ders için çalışma verilmedi.</p>
+            <p className="text-[14.5px] text-pn-text-muted">Bu dersten sana bir çalışma verilmedi.</p>
           )}
         </Section>
 
@@ -129,8 +129,8 @@ export default async function StudentLessonDetailPage({
         ) : null}
 
         <p className="mt-8 border-t border-pn-border pt-4 text-[12.5px] leading-[1.6] text-pn-text-muted">
-          Bu dersin veliye açık özeti: işlenen konu, katılım ve verilen çalışma.
-          Öğretmenin sana özel notu veliyle paylaşılmaz.
+          Ailen bu dersten yalnızca işlenen konuyu, katılımını ve verilen çalışmayı görür.
+          Öğretmeninin sana özel notu yalnızca sende kalır.
         </p>
       </div>
     </PanelShell>

@@ -93,7 +93,7 @@ export function PreferenceFields({
       </div>
       <label className="mt-4 block">
         <span className="block text-[12.5px] font-medium text-pn-text-secondary">
-          Bu planın yoğunluğu bana nasıl geliyor?
+          Bu planın yoğunluğu sana nasıl geliyor?
         </span>
         <select
           className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
@@ -129,7 +129,7 @@ export function PreferenceFields({
         <span>
           <strong className="block">Haftalık plan önerisi açık</strong>
           <span className="mt-1 block text-(--site-muted)">
-            İstediğin zaman kapatabilirsin; mevcut akademik kayıtların silinmez.
+            İstediğin zaman kapatabilirsin; şimdiye kadarki kayıtların silinmez.
           </span>
         </span>
       </label>

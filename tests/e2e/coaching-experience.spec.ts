@@ -71,7 +71,7 @@ test.describe.serial("Koçum görüşme ve yardım deneyimi", () => {
     await loginAs(page, parent); await page.goto(`/panel/veli/kocluk?studentId=${studentId}`); await expect(page.getByText("PRIVATE_ONLY_COACH", { exact: false })).toHaveCount(0); await expect(page.getByText(`Görüşme kararı ${run}`, { exact: false })).toHaveCount(0);
   });
   test("yalnız OK öğrencisinin özel check-in'i görünmez, yardımı atanmış koça gider", async ({ page }) => {
-    await loginAs(page, student); await page.goto("/panel/ogrenci/check-in"); await expect(page.getByRole("heading", { name: "Nasıl ilerlediğini fark et, gerekirse yardım iste." })).toBeVisible();
+    await loginAs(page, student); await page.goto("/panel/ogrenci/check-in"); await expect(page.getByRole("heading", { name: "Bu hafta nasıl gidiyor? Fark et, gerekirse yardım iste." })).toBeVisible();
     const input = { coachAssignmentId: assignmentId, energy: "LOW", confidence: "BUILDING", barrier: "NEED_EXAMPLE", shareWithTeacher: false, helpRequested: false };
     const privateResponse = await page.request.post("/api/panel/student-check-ins", { data: input, headers: origin }); expect(privateResponse.status(), await privateResponse.text()).toBe(201);
     await loginAs(page, teacher); await page.goto("/panel/ogretmen/yardim"); await expect(page.getByText(`Koçum Öğrencisi ${run}`, { exact: true })).toHaveCount(0);

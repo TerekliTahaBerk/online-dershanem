@@ -67,8 +67,8 @@ export default async function StudentLessonsPage({
       <>
         <PanelHeading title="Derslerin" />
         <PanelEmpty
-          title="Profilin hazırlanıyor."
-          body="Öğrenci profilin tamamlandığında ders takvimin burada görünecek."
+          title="Hesabını hazırlıyoruz."
+          body="Her şey hazır olduğunda ders takvimini burada göreceksin."
         />
       </>,
     );
@@ -132,13 +132,13 @@ export default async function StudentLessonsPage({
         <PanelEmpty
           title={
             filter === "yaklasan"
-              ? "Yaklaşan ders yok."
-              : "Tamamlanmış ders yok."
+              ? "Yaklaşan bir dersin yok."
+              : "Henüz tamamlanan bir ders yok."
           }
           body={
             filter === "yaklasan"
-              ? "Yeni dersin planlandığında burada görünecek."
-              : "Ders tamamlandıkça öğretmen notlarıyla birlikte burada listelenir."
+              ? "Yeni bir ders planlandığında ilk burada göreceksin."
+              : "Derslerin işlendikçe öğretmen notlarıyla birlikte burada birikecek."
           }
         />
       ) : (

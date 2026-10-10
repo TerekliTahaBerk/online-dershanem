@@ -16,7 +16,7 @@ export function ReviewRecoveryTabs({ active }: { active: "tekrar" | "telafi" }) 
         activeId={active}
         tabs={[
           { id: "tekrar", label: "Tekrar", href: "/panel/ogrenci/tekrar" },
-          { id: "telafi", label: "Kaçırılan ders telafisi", href: "/panel/ogrenci/telafi" },
+          { id: "telafi", label: "Kaçırdığın derslerin telafisi", href: "/panel/ogrenci/telafi" },
         ]}
       />
     </div>

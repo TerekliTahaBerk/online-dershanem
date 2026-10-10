@@ -21,7 +21,7 @@ export function buildNarrativeForAudience(
 ): string[] {
   if (bundle.isEmpty) {
     if (audience === "student") {
-      return ["Henüz gösterilecek gidişat verisi yok. Ders, çalışma ve denemeler biriktikçe burada açılır."];
+      return ["Gidişatın yeni yeni şekilleniyor. Derslere katıldıkça, çalışmalarını tamamladıkça ve denemelerin girildikçe burada nasıl ilerlediğini göreceksin."];
     }
     if (audience === "parent_calm") {
       return ["Henüz yeterli ölçüm yok. Ders katılımı ve çalışmalar göründükçe özet burada oluşur."];
@@ -38,30 +38,30 @@ export function buildNarrativeForAudience(
       const last = academic.netTrend[academic.netTrend.length - 1]!.net;
       if (academic.netDelta > 0) {
         lines.push(
-          `Toplam netin ${fmtNet(first)} → ${fmtNet(last)} yükseldi. Bu ivmeyi koru.`,
+          `Toplam netin ${fmtNet(first)} → ${fmtNet(last)} yükseldi. Harika gidiyorsun, böyle devam!`,
         );
       } else if (academic.netDelta < 0) {
         lines.push(
-          `Toplam netin ${fmtNet(first)} → ${fmtNet(last)} geriledi. Destek alanlarına odaklan.`,
+          `Toplam netin ${fmtNet(first)} → ${fmtNet(last)} oldu. İnişler çıkışlar normal; aşağıdaki konulara biraz daha zaman ayırmak iyi gelecek.`,
         );
       } else {
-        lines.push(`Toplam netin ${fmtNet(last)} civarında dengeli.`);
+        lines.push(`Toplam netin ${fmtNet(last)} civarında, dengede gidiyorsun.`);
       }
     }
     if (behavioral.attendance.percent !== null) {
       lines.push(
         behavioral.attendance.percent >= 80
-          ? `Son ${behavioral.attendance.denominator} derste katılımın güçlü (%${behavioral.attendance.percent}).`
-          : `Son ${behavioral.attendance.denominator} derste katılımın %${behavioral.attendance.percent}. Düzeni güçlendir.`,
+          ? `Son ${behavioral.attendance.denominator} dersin çoğuna katıldın (%${behavioral.attendance.percent}), süper!`
+          : `Son ${behavioral.attendance.denominator} derste katılımın %${behavioral.attendance.percent}. Derslere biraz daha düzenli katılırsan farkı hemen hissedeceksin.`,
       );
     }
     if (behavioral.assignments.percent !== null) {
       lines.push(
-        `Çalışmalarının %${behavioral.assignments.percent}'i tamamlandı (${behavioral.assignments.numerator}/${behavioral.assignments.denominator}).`,
+        `Çalışmalarından ${behavioral.assignments.numerator}/${behavioral.assignments.denominator} tanesini tamamladın (%${behavioral.assignments.percent}).`,
       );
     }
     if (behavioral.plan.percent !== null) {
-      lines.push(`Haftalık planın %${behavioral.plan.percent}'si tamam.`);
+      lines.push(`Haftalık planındaki görevlerin %${behavioral.plan.percent} oranında tamam.`);
     }
     for (const s of academic.strengths.slice(0, 1)) lines.push(s.sentence);
     for (const s of academic.supportAreas.slice(0, 1)) lines.push(s.sentence);

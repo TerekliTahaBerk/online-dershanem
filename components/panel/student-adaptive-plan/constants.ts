@@ -70,9 +70,9 @@ export function fieldLabel(field: CompletionField): string {
     actualCorrect: "Doğru",
     actualIncorrect: "Yanlış",
     actualBlank: "Boş",
-    actualMinutes: "Geçen süre (dk)",
+    actualMinutes: "Kaç dakika sürdü?",
     studentNote: "Notun",
     difficultyFelt: "Zorluk (1–5)",
-    energyFelt: "Çalışma hissi (1–5)",
+    energyFelt: "Nasıl hissettin? (1–5)",
   }[field];
 }

@@ -37,7 +37,7 @@ export function YonTaskCheck({
     setBusy(false);
     if (!response?.ok) {
       const body = await response?.json().catch(() => ({}));
-      setError((body as { error?: string } | undefined)?.error || "Görev güncellenemedi.");
+      setError((body as { error?: string } | undefined)?.error || "Görevi güncelleyemedik. Bir daha dener misin?");
       return;
     }
     setChecked(true);

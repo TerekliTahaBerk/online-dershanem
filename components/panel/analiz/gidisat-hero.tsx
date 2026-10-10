@@ -59,12 +59,12 @@ export function GidisatStrengthSupport({
       <AreaList
         title="Güçlü alanlar"
         items={strengths}
-        empty="Henüz belirgin güçlü alan yok."
+        empty="Henüz öne çıkan bir güçlü alan yok."
       />
       <AreaList
         title="Destek gereken alanlar"
         items={supports}
-        empty="Şu an ek destek alanı görünmüyor."
+        empty="Şu an ek destek gerektiren bir alan görünmüyor."
       />
     </div>
   );

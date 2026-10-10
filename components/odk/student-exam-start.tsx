@@ -66,17 +66,17 @@ export function StudentExamStart({
       router.push(`/panel/odk/ogrenci/denemeler/${examId}/coz`);
       router.refresh();
     } catch {
-      setError("Bağlantı kurulamadı. Sınav oturumu başlatılmadı; tekrar deneyin.");
+      setError("Bağlantı kuramadık; denemen başlamadı, süren de işlemiyor. Bir daha dener misin?");
     } finally {
       setBusy(false);
     }
   }
 
   const checks: Array<{ ok: boolean; label: string; hint?: string }> = [
-    { ok: online, label: online ? "İnternet bağlantın açık" : "İnternet bağlantısı yok", hint: online ? undefined : "Bağlantı gelince yeniden dene." },
+    { ok: online, label: online ? "İnternet bağlantın açık" : "İnternet bağlantın yok gibi", hint: online ? undefined : "Bağlantın gelince yeniden dene." },
     {
       ok: !narrow,
-      label: narrow ? "Ekranın dar" : "Ekran genişliği uygun",
+      label: narrow ? "Ekranın biraz dar" : "Ekranın uygun",
       hint: narrow ? "Telefonda kitapçığı kâğıttan çözüp Cevaplar görünümünü kullanabilirsin." : undefined,
     },
     ...(meetRequired
@@ -113,7 +113,7 @@ export function StudentExamStart({
         <div>
           <h3 className="text-[13.5px] font-semibold text-pn-text">Meet gözetim odası</h3>
           <p className="mt-1 text-[14px] text-pn-text-secondary">
-            Sınav boyunca görüşmede kalman gerekiyor. Tarayıcı bağlantı sinyali Meet katılımının yerine geçmez.
+            Deneme boyunca görüşmede kalman gerekiyor. Bu sayfanın açık olması, Meet'e katılmış sayılman anlamına gelmiyor.
           </p>
           {meetUrl ? (
             <a href={meetUrl} target="_blank" rel="noreferrer" className={buttonClass("secondary", "md", "mt-2")}>
@@ -121,7 +121,7 @@ export function StudentExamStart({
             </a>
           ) : (
             <p role="alert" className="mt-2 rounded-md bg-(--pn-tone-critical-soft) px-3 py-2 text-[13px] font-medium text-(--pn-tone-critical)">
-              Meet bağlantısı henüz tanımlanmadı.
+              Meet bağlantısı henüz eklenmedi; birazdan tekrar bakabilirsin.
             </p>
           )}
           <label className="mt-3 flex min-h-[44px] cursor-pointer items-start gap-3 rounded-md border border-pn-border p-3 text-[14px] text-pn-text">
@@ -143,7 +143,7 @@ export function StudentExamStart({
         {!activeAttempt && confirming ? (
           <div role="group" aria-label="Başlatma onayı" className="rounded-md border border-pn-border p-3">
             <p className="text-[14px] text-pn-text">
-              Başlattığında {durationMinutes ? `${durationMinutes} dakikalık ` : ""}süren sunucuda işlemeye başlar ve durdurulamaz.
+              Başlattığın anda {durationMinutes ? `${durationMinutes} dakikalık ` : ""}süren işlemeye başlar ve durdurulamaz. Hazırsan başlayalım, başarılar!
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <button type="button" onClick={start} disabled={disabled} className={buttonClass("primary", "md")}>

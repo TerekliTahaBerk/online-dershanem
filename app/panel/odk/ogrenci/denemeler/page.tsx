@@ -51,7 +51,7 @@ export default async function OdkStudentExamsPage({ searchParams }: { searchPara
       <div className="max-w-[1100px]">
         <PageHeader
           title="Denemeler"
-          description="Devam eden denemen, başlayabileceğin ve yaklaşan denemeler, açıklanan sonuçların."
+          description="Devam eden, başlayabileceğin ve yaklaşan denemelerin; bir de açıklanan sonuçların."
         />
 
         {active ? (
@@ -110,8 +110,8 @@ export default async function OdkStudentExamsPage({ searchParams }: { searchPara
             </PanelTable>
           ) : (
             <EmptyState
-              title={rows.length ? "Bu görünümde deneme yok." : "Henüz yayınlanmış bir denemen yok."}
-              body={rows.length ? undefined : "Yeni deneme açıldığında burada görünecek."}
+              title={rows.length ? "Burada şimdilik bir deneme yok." : "Henüz sana açılmış bir deneme yok."}
+              body={rows.length ? undefined : "Yeni bir deneme açıldığında ilk burada göreceksin."}
             />
           )}
         </div>

@@ -53,8 +53,8 @@ export default async function StudentRecoveryPage({
           Bu dersi kaçırdın
         </h1>
         <p className={PAGE_DESCRIPTION_CLASS}>
-          25 dakikada toparlayabilirsin: konu özeti, materyal ve küçük çalışma
-          tek sırada hazır.
+          Dert etme, yaklaşık 25 dakikada yetişebilirsin: konu özeti, materyal
+          ve küçük bir çalışma seni sırayla bekliyor.
         </p>
       </header>
       <ReviewRecoveryTabs active="telafi" />

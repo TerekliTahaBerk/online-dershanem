@@ -212,7 +212,7 @@ test.describe("panel deneyimi", () => {
     await studentExamMain.getByLabel("Yabancı Dil blankCount").fill("10");
     await studentExamMain.getByLabel("Süre yönetimi", { exact: true }).check();
     await studentExamMain.getByRole("button", { name: "Denemeyi kaydet" }).click();
-    await expect(studentExamMain.getByText(/Deneme kaydedildi/)).toBeVisible();
+    await expect(studentExamMain.getByText(/Denemeni kaydettik/)).toBeVisible();
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.teacher);
     await page.goto("/panel/ogretmen/denemeler");
@@ -233,11 +233,11 @@ test.describe("panel deneyimi", () => {
   test("öğrenci küçük tekrarı yanıtlar, öğretmen kalıcı zorlanmayı görür", async ({ page }) => {
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/tekrar");
-    await expect(page.getByRole("heading", { name: "Bugün yalnız birkaç küçük tekrar." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Bugün için birkaç kısa tekrar." })).toBeVisible();
     await expect(page.getByText("Matematik deneme dönüşü", { exact: true }).first()).toBeVisible();
-    await page.getByRole("textbox", { name: /Kritik çözüm adımım/ }).first().fill("İşlem sırasını son adımda yeniden kontrol et.");
+    await page.getByRole("textbox", { name: /Unutmamak istediğim adım/ }).first().fill("İşlem sırasını son adımda yeniden kontrol et.");
     await page.getByRole("button", { name: "Doğru hatırladım" }).first().click();
-    await expect(page.getByText(/bir sonraki dönüş daha ileri bir tarihe yerleşti/i)).toBeVisible();
+    await expect(page.getByText(/bir dahaki sefere daha ileri bir tarihte döneceğiz/i)).toBeVisible();
     const replay = await page.evaluate(async () => { const send = async () => { const response = await fetch("/api/panel/review-queue/e2e-review-item-lesson/respond", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ response: "CORRECT", idempotencyKey: "e2e_repeat_idempotency" }) }); return response.json(); }; return [await send(), await send()]; });
     expect(replay[0].replayed).toBe(false);
     expect(replay[1].replayed).toBe(true);
@@ -345,9 +345,9 @@ test.describe("panel deneyimi", () => {
       if (await day.getAttribute("aria-pressed") !== "true") await day.click();
     }
     await page.getByRole("main").getByLabel("Bir günde ayırabileceğim süre").selectOption("45");
-    await page.getByRole("main").getByLabel("Bu planın yoğunluğu bana nasıl geliyor?").selectOption("3");
+    await page.getByRole("main").getByLabel("Bu planın yoğunluğu sana nasıl geliyor?").selectOption("3");
     await page.getByRole("button", { name: "Tercihleri Kaydet" }).click();
-    await expect(page.getByText(/Tercihlerin kaydedildi/)).toBeVisible();
+    await expect(page.getByText(/Tercihlerini kaydettik/)).toBeVisible();
     await page.getByRole("button", { name: "Planı Oluştur" }).click();
     // Öğretmen onayı gelene kadar plan taslaktır.
     await expect(page.getByText("Plan hazırlanıyor", { exact: true }).first()).toBeVisible();
@@ -399,8 +399,8 @@ test.describe("panel deneyimi", () => {
     await expect(page.getByRole("progressbar", { name: /Bu hafta [1-9]\d*\/\d+ görev tamamlandı/ })).toBeVisible();
     await page.getByRole("main").getByRole("button", { name: "Değişiklik İste" }).click();
     await page.getByRole("main").getByLabel("Plan değişiklik nedeni").selectOption("REDUCE_LIGHT");
-    await page.getByRole("main").getByRole("button", { name: "Talebi Gönder" }).click();
-    await expect(page.getByRole("main").getByText(/Değişiklik talebin koçuna iletildi/).first()).toBeVisible();
+    await page.getByRole("main").getByRole("button", { name: "Koçuma İlet" }).click();
+    await expect(page.getByRole("main").getByText(/İsteğini koçuna ilettik|İsteğin koçuna ulaştı/).first()).toBeVisible();
   });
 
   test("öğretmen dersi ABSENT ile kapatınca telafi otomatik yayınlanır ve öğrenci 72 saat akışını tamamlar", async ({ page }) => {
@@ -460,7 +460,7 @@ test.describe("panel deneyimi", () => {
     expect(sharedText).toBeTruthy();
     await expect(page.getByText("İşlem kontrolünü son adımda tekrar et.", { exact: true })).toHaveCount(0);
     await page.getByRole("button", { name: "Yararlıydı" }).click();
-    await expect(page.getByText("Geri bildirimin kaydedildi.")).toBeVisible();
+    await expect(page.getByText("Teşekkürler, geri bildirimini aldık.")).toBeVisible();
 
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.parent);
@@ -468,7 +468,7 @@ test.describe("panel deneyimi", () => {
     const parentDigestMain = page.getByRole("main");
     await expect(parentDigestMain.getByText(sharedText!, { exact: true })).toBeVisible();
     await parentDigestMain.getByLabel("Özet kaygı düzeyi").selectOption("1");
-    await expect(parentDigestMain.getByText("Geri bildirimin kaydedildi.")).toBeVisible();
+    await expect(parentDigestMain.getByText("Teşekkürler, geri bildiriminizi aldık.")).toBeVisible();
   });
 
   test("açıklanabilir müdahale sahiplenilir ve kontrollü sonuçla kapanır", async ({ page }) => {
@@ -537,10 +537,10 @@ test.describe("panel deneyimi", () => {
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/odevler");
     const card = page.getByRole("article").filter({ hasText: "E2E Yeni Nesil Sorular" });
-    const doneButton = card.getByRole("button", { name: "Tamamlandı" });
+    const doneButton = card.getByRole("button", { name: "Tamamladım" });
     await doneButton.click();
     await expect(doneButton).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByText(/Çalışma tamamlandı|İlerlemen kaydedildi/)).toBeVisible();
+    await expect(page.getByText(/çalışmayı tamamladın|İlerlemeni kaydettik/)).toBeVisible();
 
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.parent);
@@ -561,9 +561,9 @@ test.describe("panel deneyimi", () => {
     await studentCard.getByRole("button", { name: "Kanıt gönder" }).click();
     await expect(page).toHaveURL(/onizle=odev%3Ae2e-assignment-evidence|onizle=odev:e2e-assignment-evidence/);
     let drawer = page.getByRole("dialog", { name: "E2E Kanıtlı Problem Çözümü" });
-    await drawer.getByLabel("Çözüm yolunu ve kontrolünü kısaca açıkla").fill("Önce ortak çarpanı ayırdım, işlemleri sırayla yaptım ve sonucu yerine koyarak kontrol ettim.");
+    await drawer.getByLabel("Nasıl çözdüğünü ve nasıl kontrol ettiğini kısaca anlat").fill("Önce ortak çarpanı ayırdım, işlemleri sırayla yaptım ve sonucu yerine koyarak kontrol ettim.");
     await drawer.getByRole("button", { name: "Kanıtı gönder" }).click();
-    await expect(drawer.getByText(/Kanıtın öğretmen değerlendirmesine gönderildi/)).toBeVisible();
+    await expect(drawer.getByText(/Gönderdik! Öğretmenin bakıp sana dönecek/)).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(drawer).toHaveCount(0);
     await expect(page).not.toHaveURL(/onizle=/);
@@ -585,9 +585,9 @@ test.describe("panel deneyimi", () => {
     await studentCard.getByRole("button", { name: "Yeni deneme gönder" }).click();
     drawer = page.getByRole("dialog", { name: "E2E Kanıtlı Problem Çözümü" });
     await expect(drawer.getByText(/Son kontrolü bir eşitlik yazarak/)).toBeVisible();
-    await drawer.getByLabel("Yeni denemende neyi değiştirdin?").fill("Sonucu başlangıç eşitliğinde yerine koydum ve iki tarafın da aynı değeri verdiğini yazdım.");
+    await drawer.getByLabel("Bu sefer neyi farklı yaptın?").fill("Sonucu başlangıç eşitliğinde yerine koydum ve iki tarafın da aynı değeri verdiğini yazdım.");
     await drawer.getByRole("button", { name: "Yeni denemeyi gönder" }).click();
-    await expect(drawer.getByText(/Yeni denemen öğretmenine gönderildi/)).toBeVisible();
+    await expect(drawer.getByText(/Yeni denemeni öğretmenine gönderdik/)).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(drawer).toHaveCount(0);
 
@@ -603,7 +603,7 @@ test.describe("panel deneyimi", () => {
 
     await page.getByRole("button", { name: /çıkış/i }).click(); await login(page, accounts.student); await page.goto("/panel/ogrenci/odevler");
     studentCard = page.getByRole("article").filter({ hasText: "E2E Kanıtlı Problem Çözümü" }).first();
-    await expect(studentCard.getByText("Kanıt onaylandı", { exact: true })).toBeVisible();
+    await expect(studentCard.getByText("Onaylandı", { exact: true })).toBeVisible();
     await studentCard.getByRole("button", { name: "Ayrıntılar" }).click();
     drawer = page.getByRole("dialog", { name: "E2E Kanıtlı Problem Çözümü" });
     await expect(drawer.getByText("2. deneme · Onaylandı", { exact: true })).toBeVisible();
@@ -614,22 +614,22 @@ test.describe("panel deneyimi", () => {
     test.setTimeout(60_000);
     await login(page, accounts.student);
     await page.goto("/panel/ogrenci/check-in");
-    await expect(page.getByRole("heading", { name: "Nasıl ilerlediğini fark et, gerekirse yardım iste." })).toBeVisible();
-    await expect(page.getByRole("main").getByText("Veliye hiçbir durumda gösterilmez.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Bu hafta nasıl gidiyor? Fark et, gerekirse yardım iste." })).toBeVisible();
+    await expect(page.getByRole("main").getByText("Ailene hiçbir durumda gösterilmez.")).toBeVisible();
     const helpJourney = page.getByRole("main");
-    const existingJourney = helpJourney.getByText(/Öğretmen yanıtı bekleniyor|Öğretmenin destek adımı|Destek tamamlandı/);
+    const existingJourney = helpJourney.getByText(/Öğretmeninin yanıtı yolda|Öğretmeninin önerdiği adım|Destek tamamlandı/);
     if (await existingJourney.count() === 0) {
       await page.getByRole("button", { name: "Enerjim düşük" }).click();
       await page.getByRole("button", { name: "Yönlendirmeye ihtiyacım var" }).click();
       await page.getByRole("button", { name: "Bir örneğe daha ihtiyacım var" }).click();
       await helpJourney.getByLabel("Öğretmenimden yardım istiyorum").check();
       await page.getByRole("button", { name: "Check-in'i kaydet" }).click();
-      await expect(page.getByText("Check-in kaydedildi.")).toBeVisible();
+      await expect(page.getByText("Check-in'ini kaydettik, teşekkürler!")).toBeVisible();
       await expect(helpJourney.getByRole("heading", { name: "Geçmişim" })).toBeVisible();
     }
     if (await helpJourney.getByText("Destek tamamlandı").count() > 0) return;
 
-    if (await helpJourney.getByText("Öğretmenin destek adımı").count() === 0) {
+    if (await helpJourney.getByText("Öğretmeninin önerdiği adım").count() === 0) {
       await page.getByRole("button", { name: /çıkış/i }).click();
       await login(page, accounts.teacher);
       await page.goto("/panel/ogretmen/yardim");
@@ -725,7 +725,7 @@ test.describe("panel deneyimi", () => {
     await expect(page.getByText("Veri kullanımı tercihleri kaydedildi.")).toBeVisible();
     await expect(page.locator("html")).toHaveAttribute("data-panel-low-data", "true");
     await page.goto("/panel/ogrenci/materyaller");
-    await expect(page.getByRole("main").getByText(/Düşük veri açık/).first()).toBeVisible();
+    await expect(page.getByRole("main").getByText(/Düşük veri modun açık/).first()).toBeVisible();
     const accessibleMaterial = page.getByRole("article").filter({ hasText: "E2E Erişilebilir Köklü İfadeler Videosu" });
     await expect(accessibleMaterial.getByText("Metin dökümünü oku")).toBeVisible();
     await expect(accessibleMaterial.getByRole("link", { name: /Videoyu aç \(veri kullanır\)/ })).toBeVisible();
@@ -734,10 +734,10 @@ test.describe("panel deneyimi", () => {
     const assignment = page.getByRole("article").filter({ hasText: "E2E Yeni Nesil Sorular" });
     await context.setOffline(true);
     await assignment.getByRole("button", { name: "Çalışıyorum" }).click();
-    await expect(page.getByText(/ödev durumu bu cihazda güvenle bekliyor/i)).toBeVisible();
+    await expect(page.getByText(/seçimini bu cihazda sakladık/i)).toBeVisible();
     await expect(page.getByText(/1 güvenli işlem cihazda bekliyor/i)).toBeVisible();
     await context.setOffline(false);
-    await expect(page.getByText(/ödev durumu güvenle eşitlendi/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/bekleyen ödev durumunu da kaydettik/i)).toBeVisible({ timeout: 10_000 });
     await expect(page.getByRole("article").filter({ hasText: "E2E Yeni Nesil Sorular" }).getByRole("button", { name: "Çalışıyorum" })).toHaveAttribute("aria-pressed", "true");
 
     const conflict = await page.evaluate(async () => {

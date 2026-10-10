@@ -14,13 +14,13 @@ type DinoAnswerPayload = {
 
 const FALLBACK_NOTE: Record<string, string> = {
   PROVIDER_DISABLED:
-    "Dino açıklamayı şu anda hazırlayamadı. Dayanakları yine de görebilirsin.",
+    "Dino şu an bir açıklama hazırlayamadı. Neye dayandığını yine de görebilirsin.",
   EXTERNAL_TRANSFER_NOT_READY:
-    "Dino açıklamayı şu anda hazırlayamadı. Dayanakları yine de görebilirsin.",
+    "Dino şu an bir açıklama hazırlayamadı. Neye dayandığını yine de görebilirsin.",
   COST_CONFIG_MISSING:
-    "Dino açıklama yapılandırması eksik. Dayanakları yine de görebilirsin.",
-  DAILY_QUOTA: "Bugünkü Dino açıklama hakkını kullandın.",
-  NO_SOURCE_DATA: "Bu konuda açıklama yapmak için yeterli dayanak yok.",
+    "Dino şu an kullanılamıyor. Neye dayandığını yine de görebilirsin.",
+  DAILY_QUOTA: "Bugünkü Dino haklarını kullandın; yarın yine buradayız.",
+  NO_SOURCE_DATA: "Bu konuda açıklama yapabilmek için henüz yeterli bilgi yok.",
   PROMPT_INJECTION:
     "Kayıtlarda beklenmedik içerik bulundu; güvenlik için yorum üretilmedi.",
 };
@@ -30,8 +30,8 @@ export function DinoExplanationAction({
   questionKey,
   audience = "STUDENT",
   studentId,
-  openLabel = "Bu neden öneriliyor?",
-  prepareLabel = "Dino açıklamasını hazırla",
+  openLabel = "Bu neden önerildi?",
+  prepareLabel = "Dino anlatsın",
 }: {
   deterministicReason: string;
   questionKey: string;
@@ -67,7 +67,7 @@ export function DinoExplanationAction({
         .json()
         .catch(() => null)) as DinoAnswerPayload | null;
       if (!response.ok || !payload?.answer) {
-        setError(payload?.error || "Dino açıklamayı şu anda hazırlayamadı.");
+        setError(payload?.error || "Dino şu an bir açıklama hazırlayamadı.");
         return;
       }
       const answerText = payload.answer.answer?.text?.trim() || "";
@@ -76,7 +76,7 @@ export function DinoExplanationAction({
         .filter(Boolean);
       const fallbackReason = payload.answer.fallbackReason || null;
       setText(
-        answerText || "Bu konuda açıklama yapmak için yeterli dayanak yok.",
+        answerText || "Bu konuda açıklama yapabilmek için henüz yeterli bilgi yok.",
       );
       setSources(labels);
       setNote(
@@ -86,7 +86,7 @@ export function DinoExplanationAction({
           : null,
       );
     } catch {
-      setError("Dino açıklamayı şu anda hazırlayamadı.");
+      setError("Dino şu an bir açıklama hazırlayamadı.");
     } finally {
       setLoading(false);
     }
@@ -110,8 +110,8 @@ export function DinoExplanationAction({
         >
           <p className="text-[13px] text-dc-ink-body">{deterministicReason}</p>
           <p className="mt-1 text-[12px] text-dc-ink-faint">
-            Ana bilgi kaynağı yukarıdaki özettir. Dino isteğe bağlı bir açıklama
-            katmanıdır.
+            Asıl bilgi yukarıdaki özette. Dino istersen bunu sana biraz daha
+            açarak anlatır.
           </p>
           <button
             type="button"
@@ -120,7 +120,7 @@ export function DinoExplanationAction({
             className="mt-2 text-[12.5px] font-semibold text-dc-brand-strong disabled:opacity-70"
           >
             {loading
-              ? "Dino açıklamayı hazırlıyor…"
+              ? "Dino düşünüyor…"
               : text
                 ? "Dino açıklaması hazır"
                 : error

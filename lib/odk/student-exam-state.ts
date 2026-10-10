@@ -40,21 +40,21 @@ export function studentExamState(exam: StudentExamStateInput): StudentExamState 
   }
   if (attempt && attempt.status !== "VOID") {
     return exam.resultAvailable
-      ? { key: "RESULT_RELEASED", label: "Sonuç açıklandı", tone: "success", actionLabel: "Sonucu gör", href: `${base}/sonuc`, tab: "tamamlanan" }
-      : { key: "WAITING_RESULT", label: "Sonuç bekleniyor", tone: "neutral", actionLabel: "Ayrıntı", href: base, tab: "tamamlanan" };
+      ? { key: "RESULT_RELEASED", label: "Sonucun hazır", tone: "success", actionLabel: "Sonucunu gör", href: `${base}/sonuc`, tab: "tamamlanan" }
+      : { key: "WAITING_RESULT", label: "Sonuç yolda", tone: "neutral", actionLabel: "Göz at", href: base, tab: "tamamlanan" };
   }
   if (exam.startDecision.ok) {
     return { key: "AVAILABLE", label: "Başlayabilirsin", tone: "critical", actionLabel: "Denemeye git", href: base, tab: "acik" };
   }
   if (exam.startDecision.code === "NOT_STARTED") {
-    return { key: "UPCOMING", label: "Yaklaşan", tone: "info", actionLabel: "Ayrıntı", href: base, tab: "yaklasan" };
+    return { key: "UPCOMING", label: "Yaklaşıyor", tone: "info", actionLabel: "Göz at", href: base, tab: "yaklasan" };
   }
   // Pencere kapandı ve hiç (geçerli) deneme yok: kaçırıldı. Planlanmamış/iptal
   // durumları "Kapandı" olarak kalır.
   if (exam.startDecision.code === "EXAM_ENDED" || exam.startDecision.code === "ENTRY_CLOSED") {
-    return { key: "MISSED", label: "Kaçırıldı", tone: "neutral", actionLabel: "Ayrıntı", href: base, tab: "tamamlanan" };
+    return { key: "MISSED", label: "Kaçırıldı", tone: "neutral", actionLabel: "Göz at", href: base, tab: "tamamlanan" };
   }
-  return { key: "CLOSED", label: "Kapandı", tone: "neutral", actionLabel: "Ayrıntı", href: base, tab: "tamamlanan" };
+  return { key: "CLOSED", label: "Kapandı", tone: "neutral", actionLabel: "Göz at", href: base, tab: "tamamlanan" };
 }
 
 export type ReleasedResultRow = { examId: string; title: string; family: string; at: Date; net: number };

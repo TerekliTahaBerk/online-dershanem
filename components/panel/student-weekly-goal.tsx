@@ -13,7 +13,7 @@ export function StudentWeeklyGoal({ initial }: { initial: string }) {
     <section className="rounded-[14px] border border-[#eadf9e] bg-[#fff9dc] p-5">
       <div className="flex items-center justify-between gap-3">
         <span className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[.06em] text-amber-800">
-          <Target size={15} /> Bu haftaki kişisel hedefim
+          <Target size={15} /> Bu haftaki hedefim
         </span>
         <button
           type="button"
@@ -43,10 +43,10 @@ export function StudentWeeklyGoal({ initial }: { initial: string }) {
             const body = await response.json().catch(() => ({}));
             setBusy(false);
             if (!response.ok)
-              return setMessage(body.error || "Hedef kaydedilemedi.");
+              return setMessage(body.error || "Hedefini kaydedemedik. Bir daha dener misin?");
             setGoal(body.goal);
             setEditing(false);
-            setMessage("Hedefin kaydedildi.");
+            setMessage("Hedefini kaydettik. Başarılar!");
           }}
         >
           <textarea

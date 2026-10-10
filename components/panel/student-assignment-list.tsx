@@ -34,9 +34,9 @@ type Assignment = {
 };
 
 const statusCopy: Record<Status, string> = {
-  TODO: "Başlanmadı",
+  TODO: "Başlamadım",
   IN_PROGRESS: "Çalışıyorum",
-  DONE: "Tamamlandı",
+  DONE: "Tamamladım",
 };
 
 const rubricCopy = {
@@ -61,7 +61,7 @@ export function StudentAssignmentList({
     const synced = (event: Event) => {
       const detail = (event as CustomEvent<{ kind: string }>).detail;
       if (detail?.kind === "ASSIGNMENT_PROGRESS") {
-        setMessage("Cihazda bekleyen ödev durumu güvenle eşitlendi.");
+        setMessage("Bağlantın gelince bekleyen ödev durumunu da kaydettik.");
         router.refresh();
       }
     };
@@ -69,7 +69,7 @@ export function StudentAssignmentList({
       const detail = (event as CustomEvent<{ kind: string }>).detail;
       if (detail?.kind === "ASSIGNMENT_PROGRESS")
         setMessage(
-          "Ödev durumu başka yerde değişti; son durumu görüp yeniden seçin.",
+          "Bu ödevin durumu başka bir yerden değişmiş; son hâline bakıp yeniden seçebilirsin.",
         );
     };
     window.addEventListener("panel-offline-synced", synced);
@@ -85,7 +85,7 @@ export function StudentAssignmentList({
       await submitEvidenceRequest(id);
     } catch {
       setBusy(null);
-      setMessage("Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.");
+      setMessage("Bağlantı kuramadık. İnternetini kontrol edip bir daha dener misin?");
     }
   }
 
@@ -107,13 +107,13 @@ export function StudentAssignmentList({
     const body = await response.json().catch(() => ({}));
     setBusy(null);
     if (!response.ok) {
-      setMessage(body.error || "Kanıt gönderilemedi.");
+      setMessage(body.error || "Gönderemedik. Bir daha dener misin?");
       return;
     }
     setMessage(
       body.attemptNumber > 1
-        ? "Yeni denemen öğretmenine gönderildi."
-        : "Kanıtın öğretmen değerlendirmesine gönderildi.",
+        ? "Yeni denemeni öğretmenine gönderdik."
+        : "Gönderdik! Öğretmenin bakıp sana dönecek.",
     );
     router.refresh();
   }
@@ -151,22 +151,22 @@ export function StudentAssignmentList({
       );
       setMessage(
         result.state === "queued"
-          ? "Bağlantı yok; ödev durumu bu cihazda güvenle bekliyor."
+          ? "Şu an bağlantın yok; seçimini bu cihazda sakladık, bağlantı gelince kaydedeceğiz."
           : status === "DONE"
-            ? "Harika! Çalışma tamamlandı, serin büyüyor."
-            : "İlerlemen kaydedildi.",
+            ? "Harika, çalışmayı tamamladın! Serin büyüyor."
+            : "İlerlemeni kaydettik.",
       );
       // Tamamlama, canlı bölgedeki mesajla duyurulur; uçan kutlama bandı
       // panelin sakin diliyle uyuşmadığı için kaldırıldı (roadmap §5.8).
       if (result.state === "synced") router.refresh();
     } else if (result.state === "conflict") {
       setMessage(
-        "Ödev durumu başka bir sekmede değişti. Sayfayı yenileyip yeniden seçin.",
+        "Bu ödevin durumu başka bir sekmede değişmiş. Sayfayı yenileyip yeniden seçebilirsin.",
       );
     } else {
       setMessage(
         String(
-          result.body.error || "Durum kaydedilemedi. Lütfen yeniden deneyin.",
+          result.body.error || "Durumunu kaydedemedik. Bir daha dener misin?",
         ),
       );
     }
@@ -214,9 +214,9 @@ export function StudentAssignmentList({
                     <StatusBadge
                       label={
                         latest.status === "SUBMITTED"
-                          ? "Kanıt öğretmeninde"
+                          ? "Öğretmeninde"
                           : latest.status === "APPROVED"
-                            ? "Kanıt onaylandı"
+                            ? "Onaylandı"
                             : "Yeniden deneyebilirsin"
                       }
                       tone={latest.status === "APPROVED" ? "success" : latest.status === "CHANGES_REQUESTED" ? "warning" : "info"}
@@ -287,8 +287,8 @@ export function StudentAssignmentList({
         {!items.length ? (
           <EmptyState
             className="mt-4"
-            title="Aktif ödevin yok."
-            body="Öğretmenin yeni bir ödev verdiğinde burada görünecek."
+            title="Bekleyen ödevin yok."
+            body="Her şey yolunda görünüyor. Öğretmenin yeni bir ödev verdiğinde ilk burada göreceksin."
           />
         ) : null}
       </div>
@@ -345,13 +345,13 @@ function AssignmentDetail({
       <div>
         <StatusBadge label={statusLabel} tone={statusTone} />
         <p className="mt-3 text-[14px] leading-[1.6] text-pn-text-secondary">
-          {assignment.description || "Öğretmenin açıklama eklemedi."}
+          {assignment.description || "Öğretmenin bu ödev için ek bir açıklama yazmadı."}
         </p>
       </div>
       {evidenceFlow ? (
         <section aria-labelledby={`criteria-${assignment.id}`}>
           <h3 id={`criteria-${assignment.id}`} className="text-[13.5px] font-semibold text-pn-text">
-            Kanıtlı teslim · ölçütler
+            Nasıl yaptığını anlat · ölçütler
           </h3>
           <ul className="mt-2 space-y-1 text-[13px] text-pn-text-secondary">
             {assignment.criteria.map((criterion) => (
@@ -373,7 +373,7 @@ function AssignmentDetail({
           {canSubmit ? (
             <div className="mt-4">
               <label className="text-[13px] font-medium text-pn-text" htmlFor={`evidence-${assignment.id}`}>
-                {latest ? "Yeni denemende neyi değiştirdin?" : "Çözüm yolunu ve kontrolünü kısaca açıkla"}
+                {latest ? "Bu sefer neyi farklı yaptın?" : "Nasıl çözdüğünü ve nasıl kontrol ettiğini kısaca anlat"}
               </label>
               <textarea
                 id={`evidence-${assignment.id}`}
@@ -391,8 +391,8 @@ function AssignmentDetail({
                 {latest ? "Yeni denemeyi gönder" : "Kanıtı gönder"}
               </button>
               <p className="mt-2 text-[12.5px] text-pn-text-muted">
-                En az 20 karakter yaz ({evidenceText.trim().length}/20). Şimdilik yalnızca yazılı açıklama kabul ediliyor;
-                fotoğraf ve dosya desteği sonra eklenecek.
+                En az 20 karakter yazman yeterli ({evidenceText.trim().length}/20). Şimdilik yalnızca yazılı açıklama
+                gönderebiliyorsun; fotoğraf ve dosya desteği yakında geliyor.
               </p>
             </div>
           ) : null}

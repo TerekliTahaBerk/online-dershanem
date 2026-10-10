@@ -177,7 +177,7 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
     page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: "Denemeyi teslim et" }).click();
     await page.waitForURL(new RegExp(`/panel/odk/ogrenci/denemeler/${examId}$`));
-    await expect(page.getByText("Denemen tamamlandı.")).toBeVisible();
+    await expect(page.getByText("Denemeni tamamladın, eline sağlık!")).toBeVisible();
     expect((await page.request.get(`/api/odk/student/exams/${examId}/answer-key`)).status()).toBe(404);
     await page.goto(`/panel/odk/ogrenci/denemeler/${examId}/sonuc`);
     await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
@@ -212,7 +212,7 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
     await login(page);
     await page.goto(`/panel/odk/ogrenci/denemeler/${examId}/coz`);
     await page.waitForURL(new RegExp(`/panel/odk/ogrenci/denemeler/${examId}$`), { timeout: 20_000 });
-    await expect(page.getByText("Denemen tamamlandı.")).toBeVisible();
+    await expect(page.getByText("Denemeni tamamladın, eline sağlık!")).toBeVisible();
     const attempt = await prisma.odkExamAttempt.findUniqueOrThrow({ where: { id: attemptId } });
     expect(attempt.status).toBe("AUTO_SUBMITTED");
   });

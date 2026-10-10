@@ -63,6 +63,8 @@ export function MockExamEntryForm({
   const startedAt = useRef<number | null>(null);
   const started = useRef(false);
   const setStatus = onStatusChange;
+  // Öğrenci kendi denemesini girer ("sen"); personel ve veli "siz" hitabında kalır.
+  const isStudent = role === "STUDENT";
 
   function markStarted() {
     if (started.current) return;
@@ -148,7 +150,11 @@ export function MockExamEntryForm({
     setPrevious(sections);
     setSections(next);
     setPasteApplied(true);
-    setStatus("Toplu değerler uygulandı; toplamları kontrol edin.");
+    setStatus(
+      isStudent
+        ? "Değerleri yerleştirdik; toplamlara bir göz atar mısın?"
+        : "Toplu değerler uygulandı; toplamları kontrol edin.",
+    );
   }
   function toggleReason(index: number, category: MockExamErrorCategory) {
     markStarted();
@@ -159,7 +165,9 @@ export function MockExamEntryForm({
     const has = sections[index].errorCategories.includes(category);
     if (!has && selectedCount >= 3)
       return setStatus(
-        "Bir deneme için en fazla üç hata nedeni seçebilirsiniz.",
+        isStudent
+          ? "Bir deneme için en fazla üç neden seçebilirsin."
+          : "Bir deneme için en fazla üç hata nedeni seçebilirsiniz.",
       );
     updateSection(index, {
       errorCategories: has
@@ -193,9 +201,13 @@ export function MockExamEntryForm({
         }),
       });
       const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(body.error || "Deneme kaydedilemedi.");
+      if (!response.ok) throw new Error(body.error || (isStudent ? "Denemeni kaydedemedik. Bir daha dener misin?" : "Deneme kaydedilemedi."));
       onCreated(body.exam as MockExamView);
-      setStatus("Deneme kaydedildi. Analiz yeni kayıtla güncellendi.");
+      setStatus(
+        isStudent
+          ? "Denemeni kaydettik; analizin de güncellendi."
+          : "Deneme kaydedildi. Analiz yeni kayıtla güncellendi.",
+      );
       setTitle("");
       setPublisher("");
       started.current = false;
@@ -216,7 +228,11 @@ export function MockExamEntryForm({
   return (
     <Section
       title="Hızlı deneme girişi"
-      description="Doğru–yanlış–boş ve süreyi girin. Soru metni veya görseli yüklenmez."
+      description={
+        isStudent
+          ? "Doğru, yanlış, boş sayılarını ve süreni gir; gerisini biz hesaplayalım. Soru metni ya da görsel yüklemen gerekmez."
+          : "Doğru–yanlış–boş ve süreyi girin. Soru metni veya görseli yüklenmez."
+      }
       actions={<TimerReset size={19} aria-hidden className="text-pn-accent" />}
       divider={false}
       className="mt-0"
@@ -383,11 +399,12 @@ export function MockExamEntryForm({
         </div>
         <div className="mt-5">
           <h3 className="text-[14px] font-semibold text-pn-text">
-            En fazla üç hata nedeni
+            {isStudent ? "Yanlışların nereden geliyor olabilir? (en fazla üç)" : "En fazla üç hata nedeni"}
           </h3>
           <p className="mt-1 text-[12.5px] text-pn-text-muted">
-            Öğrenci seçebilir; öğretmen daha sonra düzeltebilir. Bir
-            “başarısızlık etiketi” değildir.
+            {isStudent
+              ? "Aklına gelen nedenleri seç; öğretmenin sonra düzenleyebilir. Bu bir “başarısızlık etiketi” değil, sadece sana yol gösterir."
+              : "Öğrenci seçebilir; öğretmen daha sonra düzeltebilir. Bir “başarısızlık etiketi” değildir."}
           </p>
           <div className="mt-3 space-y-3">
             {sections.map((section, index) => (

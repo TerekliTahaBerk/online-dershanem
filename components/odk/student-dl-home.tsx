@@ -55,7 +55,7 @@ export async function StudentDenemeLigiHome({ session }: { session: SessionUser 
       <div className="max-w-[920px]">
         <PageHeader
           title="Bugün"
-          description="Sıradaki denemen, açıklanan sonuçların ve odaklanman gereken konular."
+          description="Sıradaki denemen, sonuçların ve şimdi odaklanman gereken konular burada."
           actions={
             <Link href="/panel/odk/ogrenci/denemeler" className={buttonClass("secondary", "md")}>
               Tüm denemeler
@@ -84,7 +84,7 @@ export async function StudentDenemeLigiHome({ session }: { session: SessionUser 
               </Link>
             </div>
           ) : (
-            <EmptyState title="Henüz planlanmış bir denemen yok." body="Yeni deneme açıldığında burada görünecek." />
+            <EmptyState title="Şimdilik planlanmış bir denemen yok." body="Yeni bir deneme açıldığında ilk burada göreceksin." />
           )}
         </Section>
 
@@ -135,7 +135,7 @@ export async function StudentDenemeLigiHome({ session }: { session: SessionUser 
         </Section>
 
         {trend.length >= 2 ? (
-          <Section id="gelisim" title="Gelişimim" description="Yalnız kendi önceki denemelerinle karşılaştırılır.">
+          <Section id="gelisim" title="Gelişimim" description="Seni yalnızca kendinle, önceki denemelerinle karşılaştırıyoruz.">
             <div className="flex flex-wrap items-center gap-4">
               <Sparkline
                 values={trend.map((row) => row.net)}
@@ -153,7 +153,7 @@ export async function StudentDenemeLigiHome({ session }: { session: SessionUser 
           <Section
             id="odak"
             title="Odak konular"
-            description={`${latest.title} sonucuna göre en çok gelişim bekleyen kazanımlar.`}
+            description={`${latest.title} sonucuna göre biraz daha çalışırsan en çok fark yaratacak konular.`}
             actions={
               <Link href={`/panel/odk/ogrenci/denemeler/${latest.examId}/sonuc`} className={buttonClass("ghost", "sm")}>
                 Sonraki adımlar

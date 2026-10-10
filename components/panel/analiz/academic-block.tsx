@@ -10,8 +10,8 @@ import type { AcademicInsights } from "@/lib/progress-insights/types";
  */
 export function AcademicBlock({
   academic,
-  emptyTitle = "Grafik için en az iki deneme gerekiyor.",
-  emptyBody = "İkinci deneme sonucu girildiğinde gelişim eğrisi burada açılır.",
+  emptyTitle = "Eğilim için en az iki deneme sonucu gerekiyor.",
+  emptyBody = "İkinci deneme sonucu girildiğinde gelişim eğrisi burada oluşur.",
   showStrengthSupport = true,
 }: {
   academic: AcademicInsights;

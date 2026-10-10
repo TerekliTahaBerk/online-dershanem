@@ -69,8 +69,8 @@ export default async function StudentPlanPage() {
       <>
         <PanelPageHeader title="Bu haftanın planı" />
         <PanelEmpty
-          title="Profilin hazırlanıyor."
-          body="Öğrenci profilin tamamlandığında koçunun kurduğu plan burada görünecek."
+          title="Hesabını hazırlıyoruz."
+          body="Her şey hazır olduğunda koçunun senin için kurduğu planı burada göreceksin."
         />
       </>,
     );
@@ -138,7 +138,7 @@ export default async function StudentPlanPage() {
         description={
           start && end
             ? `${RANGE.format(start)} – ${RANGE.format(end)}`
-            : "Uygun günlerini ve süreni bildir; planın ondan sonra kurulur."
+            : "Uygun günlerini ve ayırabileceğin süreyi söyle; planını buna göre kuralım."
         }
       />
 
@@ -148,7 +148,7 @@ export default async function StudentPlanPage() {
             deterministicReason={planReason}
             questionKey="student_plan_why"
             openLabel="Bu plan neden böyle?"
-            prepareLabel="Dino ile plan gerekçesini açıkla"
+            prepareLabel="Dino anlatsın"
           />
         </div>
       ) : null}

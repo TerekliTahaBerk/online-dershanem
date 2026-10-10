@@ -30,11 +30,11 @@ export default async function StudentCheckInPage() {
           <HandHeart size={15} /> Sakin check-in
         </p>
         <h1 className={PAGE_TITLE_CLASS}>
-          Nasıl ilerlediğini fark et, gerekirse yardım iste.
+          Bu hafta nasıl gidiyor? Fark et, gerekirse yardım iste.
         </h1>
         <p className={PAGE_DESCRIPTION_CLASS}>
-          Puan, sıralama ve serbest metin yok. Paylaşma kararın sende; veli bu
-          alanı göremez.
+          Puan da sıralama da yok, doğru ya da yanlış cevap da. Paylaşıp
+          paylaşmamak sana kalmış; ailen bu alanı göremez.
         </p>
       </header>
       <div className="mt-7">

@@ -79,16 +79,16 @@ export function StudentReviewQueue({
       );
       setMessage(
         body.status === "MASTERED"
-          ? "Bu çalışma 30 günlük geri çağırmayı da tamamladı. Geçmişin korunuyor."
+          ? "Harika! Bu konuyu 30 gün sonra bile hatırladın; artık kalıcı."
           : response === "CORRECT"
-            ? "Güzel; bir sonraki dönüş daha ileri bir tarihe yerleşti."
+            ? "Güzel! Bu konuya bir dahaki sefere daha ileri bir tarihte döneceğiz."
             : response === "UNSURE"
               ? "Emin olmamak normal; daha yakın bir tarihte yeniden bakacağız."
-              : "Bu işaret yalnız daha yakın tekrar planlar; ilerlemen silinmedi.",
+              : "Sorun değil; bu konuya biraz daha erken döneceğiz. İlerlemen silinmedi.",
       );
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "Tekrar kaydedilemedi.",
+        error instanceof Error ? error.message : "Yanıtını kaydedemedik. Bir daha dener misin?",
       );
     } finally {
       setBusy(null);
@@ -103,10 +103,10 @@ export function StudentReviewQueue({
       setItems((current) =>
         current.filter((currentItem) => currentItem.id !== item.id),
       );
-      setMessage("Bugünlük ertelendi; yarın yeniden görebilirsin.");
+      setMessage("Tamam, bunu yarına bıraktık.");
     } else
       setMessage(
-        (await result.json().catch(() => ({}))).error || "Erteleme yapılamadı.",
+        (await result.json().catch(() => ({}))).error || "Erteleyemedik. Bir daha dener misin?",
       );
     setBusy(null);
   }
@@ -117,21 +117,21 @@ export function StudentReviewQueue({
           <RotateCcw size={18} className="text-(--brand-olive)" />
           <p className="mt-4 text-3xl font-extrabold">{items.length}</p>
           <p className="mt-1 text-xs text-(--site-muted)">
-            Bugünkü küçük tekrar
+            Bugünkü tekrarın
           </p>
         </article>
         <article className="panel-metric-card">
           <CalendarClock size={18} className="text-sky-700" />
           <p className="mt-4 text-3xl font-extrabold">{activeCount}</p>
           <p className="mt-1 text-xs text-(--site-muted)">
-            Zamana yayılmış aktif öğe
+            Takipteki konu
           </p>
         </article>
         <article className="panel-metric-card">
           <CheckCircle2 size={18} className="text-emerald-700" />
           <p className="mt-4 text-3xl font-extrabold">{masteredCount}</p>
           <p className="mt-1 text-xs text-(--site-muted)">
-            30 günlük dönüşü tamamlanan
+            Kalıcı olarak öğrendiğin
           </p>
         </article>
       </section>
@@ -151,10 +151,10 @@ export function StudentReviewQueue({
                 <span className="text-[9px] font-extrabold uppercase tracking-wide text-(--brand-olive)">
                   Bugünün {index + 1}. tekrarı ·{" "}
                   {item.sourceType === "MOCK_EXAM_SECTION"
-                    ? "Deneme dönüşü"
+                    ? "Denemeden"
                     : item.sourceType === "LESSON_OUTCOME"
-                      ? "Ders dönüşü"
-                      : "Öğretmen kaynağı"}
+                      ? "Dersten"
+                      : "Öğretmeninden"}
                 </span>
                 <h2 className="mt-2 text-sm font-extrabold leading-6">
                   {item.title}
@@ -169,7 +169,7 @@ export function StudentReviewQueue({
               />
             </div>
             <label className="pn-field mt-4">
-              Kritik çözüm adımım (isteğe bağlı)
+              Unutmamak istediğim adım (isteğe bağlı)
               <textarea
                 value={notes[item.id] || ""}
                 onChange={(event) =>
@@ -179,7 +179,7 @@ export function StudentReviewQueue({
                   }))
                 }
                 maxLength={500}
-                placeholder="Cevabı değil, bir sonraki denemede hatırlamak istediğin adımı yaz."
+                placeholder="Cevabı değil, bir dahaki sefere hatırlamak istediğin adımı yaz."
               />
             </label>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -209,7 +209,7 @@ export function StudentReviewQueue({
                 onClick={() => void defer(item)}
                 className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
               >
-                Bugün ertele
+                Yarına bırak
               </button>
             </div>
           </article>
@@ -218,11 +218,11 @@ export function StudentReviewQueue({
           <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-8 text-center">
             <CheckCircle2 size={25} className="mx-auto text-emerald-600" />
             <h2 className="mt-3 text-sm font-extrabold">
-              Bugünün küçük tekrarları tamam.
+              Bugünlük tekrarların bitti, eline sağlık!
             </h2>
             <p className="mt-2 text-xs leading-5 text-(--site-muted)">
-              Yeni bir öğe zamanı geldiğinde burada en fazla beş çalışma
-              göreceksin.
+              Bir sonraki tekrar zamanı geldiğinde burada en fazla beş kısa
+              tekrar seni bekliyor olacak.
             </p>
           </article>
         ) : null}

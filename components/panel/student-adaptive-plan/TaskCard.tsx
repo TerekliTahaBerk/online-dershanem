@@ -120,10 +120,10 @@ export function TaskCard(props: TaskCardProps) {
         >
           <p className="text-[13.5px] font-semibold text-pn-text">
             {draft.status === "DONE"
-              ? "Tamamlama bilgisi"
+              ? "Nasıl gitti?"
               : draft.status === "PARTIAL"
-                ? "Kısmi tamamlama"
-                : "Yapamadım — kısa not"}
+                ? "Ne kadarını yapabildin?"
+                : "Sorun değil; neden olmadığını kısaca yazar mısın?"}
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
             {fields.map((field) =>

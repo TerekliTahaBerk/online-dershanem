@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { PASSWORD_MIN_LENGTH } from "@/lib/auth/password-policy";
 
-export function ChangePasswordForm({ forced }: { forced: boolean }) {
+export function ChangePasswordForm({ forced, student = false }: { forced: boolean; student?: boolean }) {
   const router = useRouter();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -19,7 +19,7 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
 
     // Tekrar alanı yalnızca client'ta anlamlı — sunucuya gönderilmez.
     if (newPassword !== repeat) {
-      setError("Yeni parolalar birbiriyle eşleşmiyor.");
+      setError(student ? "İki parola birbirini tutmuyor." : "Yeni parolalar birbiriyle eşleşmiyor.");
       return;
     }
 
@@ -36,7 +36,7 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
       };
 
       if (!response.ok || !data.redirect) {
-        setError(data.error ?? "Parola değiştirilemedi.");
+        setError(data.error ?? (student ? "Parolanı değiştiremedik. Bir daha dener misin?" : "Parola değiştirilemedi."));
         setPending(false);
         return;
       }
@@ -44,7 +44,7 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
       router.replace(data.redirect);
       router.refresh();
     } catch {
-      setError("Bağlantı kurulamadı. Tekrar deneyin.");
+      setError(student ? "Bağlantı kuramadık. İnternetini kontrol edip bir daha dener misin?" : "Bağlantı kurulamadı. Tekrar deneyin.");
       setPending(false);
     }
   }
@@ -59,7 +59,7 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
           htmlFor="currentPassword"
           className="text-[13px] font-semibold text-(--site-ink)"
         >
-          {forced ? "Mevcut parola" : "Mevcut parolanız"}
+          {forced ? "Mevcut parola" : student ? "Şu anki parolan" : "Mevcut parolanız"}
         </label>
         <input
           id="currentPassword"
@@ -96,7 +96,7 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
           className="text-[12.5px] leading-5 text-(--site-muted)"
         >
           En az {PASSWORD_MIN_LENGTH} karakter. Büyük harf veya sembol zorunlu
-          değil — uzun ve hatırlayabileceğiniz bir cümle en iyisidir.
+          değil — {student ? "uzun ve kolay hatırlayacağın bir cümle en iyisi." : "uzun ve hatırlayabileceğiniz bir cümle en iyisidir."}
         </p>
       </div>
 

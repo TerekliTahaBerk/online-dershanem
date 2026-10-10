@@ -67,7 +67,7 @@ export function StudentCheckInForm({
     }
     setItems((current) => [data.checkIn as History, ...current]);
     setRemaining(data.remaining);
-    setMessage("Check-in kaydedildi.");
+    setMessage("Check-in'ini kaydettik, teşekkürler!");
     setBusy(false);
     router.refresh();
   }
@@ -134,12 +134,12 @@ export function StudentCheckInForm({
           </span>
         </div>
         <p className="mt-2 text-sm text-(--site-body)">
-          Bu bir sınav, tanı veya puan değildir. Nasıl ilerlediğini anlamana
-          yardımcı olur.
+          Bu bir sınav değil; doğru ya da yanlış cevap yok. Sadece nasıl
+          hissettiğini anlamana yardımcı olur.
         </p>
         <div className="mt-5 space-y-5">
           <label className="block text-xs font-extrabold">
-            Hangi destek alanı?
+            Hangi ders ya da koçluk için?
             <select
               aria-label="Check-in grubu"
               className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-2"
@@ -161,13 +161,13 @@ export function StudentCheckInForm({
           </fieldset>
           <fieldset>
             <legend className="mb-2 text-xs font-extrabold">
-              Çalışmana güvenin nasıl?
+              Çalışmana ne kadar güveniyorsun?
             </legend>
             {options(checkInLabels.confidence, confidence, setConfidence)}
           </fieldset>
           <fieldset>
             <legend className="mb-2 text-xs font-extrabold">
-              Şu anki çalışma engelin
+              Seni en çok ne zorluyor?
             </legend>
             {options(checkInLabels.barrier, barrier, setBarrier)}
           </fieldset>
@@ -182,7 +182,7 @@ export function StudentCheckInForm({
             <span>
               <b>Öğretmenim görsün</b>
               <span className="block text-xs text-(--site-muted)">
-                Kapalıysa yalnız sen görürsün. Veliye hiçbir durumda
+                Kapalıysa yalnızca sen görürsün. Ailene hiçbir durumda
                 gösterilmez.
               </span>
             </span>
@@ -200,13 +200,13 @@ export function StudentCheckInForm({
             <span>
               <b>Öğretmenimden yardım istiyorum</b>
               <span className="block text-xs text-amber-900">
-                Öğretmenine bildirim gider; 24 saat içinde küçük bir destek
-                adımı hedeflenir.
+                Öğretmenine hemen haber veririz; 24 saat içinde sana küçük bir
+                destek adımıyla dönmeye çalışır.
               </span>
             </span>
           </label>
           <div className="rounded-2xl bg-rose-50 p-3 text-xs leading-5 text-rose-900">
-            <b>Acil durum alanı değildir.</b> Kendine veya başkasına zarar verme
+            <b>Burası acil durumlar için değil.</b> Kendine veya başkasına zarar verme
             riski varsa 112’yi ara ve güvendiğin bir yetişkine hemen söyle.
           </div>
           {message ? (
@@ -234,7 +234,7 @@ export function StudentCheckInForm({
                   <b>{item.groupName}</b>
                   <span className="text-xs text-(--site-muted)">
                     {new Date(item.createdAt).toLocaleDateString("tr-TR")} ·{" "}
-                    {item.shared ? "Öğretmenle paylaşıldı" : "Yalnız bende"}
+                    {item.shared ? "Öğretmenimle paylaştım" : "Yalnızca bende"}
                   </span>
                 </div>
                 <p className="mt-2 text-sm">
@@ -246,10 +246,10 @@ export function StudentCheckInForm({
                   <div className="mt-3 rounded-2xl bg-(--panel-nav-active) p-3 text-sm">
                     <b>
                       {item.request.status === "OPEN"
-                        ? "Öğretmen yanıtı bekleniyor"
+                        ? "Öğretmeninin yanıtı yolda"
                         : item.request.status === "CLOSED"
                           ? "Destek tamamlandı"
-                          : "Öğretmenin destek adımı"}
+                          : "Öğretmeninin önerdiği adım"}
                     </b>
                     {item.request.action ? (
                       <p className="mt-1">
@@ -293,7 +293,7 @@ export function StudentCheckInForm({
             ))
           ) : (
             <p className="text-sm text-(--site-muted)">
-              Henüz check-in yok.
+              Henüz check-in yapmadın. İlkini yapmaya ne dersin?
             </p>
           )}
         </div>

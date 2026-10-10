@@ -51,12 +51,12 @@ export default async function StudentAnalizPage() {
           title="Gidişatın"
           periodLabel="Analiz"
           sentences={[
-            "Profilin hazırlanıyor. Tamamlandığında gidişat özetin burada açılır.",
+            "Hesabını hazırlıyoruz. Her şey hazır olduğunda gidişatını burada göreceksin.",
           ]}
         />
         <PanelEmpty
-          title="Profilin hazırlanıyor."
-          body="Öğrenci profilin tamamlandığında analiz özetin burada açılır."
+          title="Hesabını hazırlıyoruz."
+          body="Her şey hazır olduğunda gidişatını burada göreceksin."
         />
       </>,
     );
@@ -71,8 +71,8 @@ export default async function StudentAnalizPage() {
   if (!bundle) {
     return shell(
       <PanelEmpty
-        title="Profilin hazırlanıyor."
-        body="Öğrenci profilin tamamlandığında analiz özetin burada açılır."
+        title="Hesabını hazırlıyoruz."
+        body="Her şey hazır olduğunda gidişatını burada göreceksin."
       />,
     );
   }
@@ -96,15 +96,15 @@ export default async function StudentAnalizPage() {
 
       {bundle.isEmpty ? (
         <PanelEmpty
-          title="Henüz gösterilecek veri yok."
-          body="Derslerin işlendikçe, çalışmaların tamamlandıkça ve denemelerin girildikçe gidişatın burada birikir."
+          title="Gidişatın yeni yeni şekilleniyor."
+          body="Derslere katıldıkça, çalışmalarını tamamladıkça ve denemelerin girildikçe burada nasıl ilerlediğini göreceksin."
         />
       ) : (
         <>
           <AcademicBlock
             academic={bundle.academic}
-            emptyTitle="Deneme grafiği için en az iki sonuç gerekiyor."
-            emptyBody="İkinci deneme girildiğinde net eğrisi burada açılır. Katılım ve çalışmalar aşağıda."
+            emptyTitle="Grafiği çizmek için en az iki deneme sonucu lazım."
+            emptyBody="İkinci denemen girildiğinde net eğrini burada göreceksin. Katılımın ve çalışmaların aşağıda."
           />
           <BehavioralBlock behavioral={bundle.behavioral} />
         </>
@@ -114,7 +114,7 @@ export default async function StudentAnalizPage() {
         <Section
           id="dis-deneme"
           title="Dış deneme sonucu"
-          description="Okulda, kursta veya başka bir platformda çözdüğün deneme sonucunu buraya ekleyebilirsin."
+          description="Okulda, kursta ya da başka bir platformda çözdüğün bir denemenin sonucunu buraya ekleyebilirsin."
           actions={
             <Link href="/panel/ogrenci/denemeler" className={buttonClass("secondary", "sm")}>
               Dış Deneme Ekle

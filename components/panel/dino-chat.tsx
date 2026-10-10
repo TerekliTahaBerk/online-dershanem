@@ -23,18 +23,23 @@ type Turn = {
   note: string | null;
 };
 
-const FALLBACK_NOTE: Record<string, string> = {
-  PROVIDER_DISABLED:
-    "Dino açıklamayı şu anda hazırlayamadı. Dayanakları yine de görebilirsin.",
-  EXTERNAL_TRANSFER_NOT_READY:
-    "Dino açıklamayı şu anda hazırlayamadı. Dayanakları yine de görebilirsin.",
-  COST_CONFIG_MISSING:
-    "Dino açıklama yapılandırması eksik. Dayanakları yine de görebilirsin.",
-  DAILY_QUOTA: "Bugünkü Dino açıklama hakkını kullandın.",
-  NO_SOURCE_DATA: "Bu konuda açıklama yapmak için yeterli dayanak yok.",
-  PROMPT_INJECTION:
-    "Kayıtlarda beklenmedik bir içerik bulundu; güvenlik için yorum üretilmedi.",
-};
+/** Öğrenciye "sen", veli ve eğitmene "siz" diye hitap eder. */
+function fallbackNote(reason: string, audience: "STUDENT" | "PARENT" | "TEACHER"): string | undefined {
+  const student = audience === "STUDENT";
+  const sources = student ? "Neye dayandığını yine de görebilirsin." : "Dayanakları yine de görebilirsiniz.";
+  const notes: Record<string, string> = {
+    PROVIDER_DISABLED: `Dino şu an bir açıklama hazırlayamadı. ${sources}`,
+    EXTERNAL_TRANSFER_NOT_READY: `Dino şu an bir açıklama hazırlayamadı. ${sources}`,
+    COST_CONFIG_MISSING: `Dino şu an kullanılamıyor. ${sources}`,
+    DAILY_QUOTA: student
+      ? "Bugünkü Dino haklarını kullandın; yarın yine buradayız."
+      : "Bugünkü Dino açıklama hakkınızı kullandınız; yarın yeniden deneyebilirsiniz.",
+    NO_SOURCE_DATA: "Bu konuda açıklama yapabilmek için henüz yeterli bilgi yok.",
+    PROMPT_INJECTION:
+      "Kayıtlarda beklenmedik bir içerik bulundu; güvenlik için yorum üretilmedi.",
+  };
+  return notes[reason];
+}
 
 export function DinoChat({
   audience,
@@ -71,7 +76,7 @@ export function DinoChat({
       } | null;
 
       if (!response.ok || !payload?.answer) {
-        setError(payload?.error || "Dino açıklamayı şu anda hazırlayamadı.");
+        setError(payload?.error || "Dino şu an bir açıklama hazırlayamadı.");
         return;
       }
 
@@ -91,12 +96,12 @@ export function DinoChat({
           text: content?.text || "",
           sources: refs.map((ref) => ref.label || "").filter(Boolean),
           note: reason
-            ? (FALLBACK_NOTE[reason] ?? "Bu yanıt model tarafından üretilmedi.")
+            ? (fallbackNote(reason, audience) ?? "Bu yanıt model tarafından üretilmedi.")
             : null,
         },
       ]);
     } catch {
-      setError("Dino açıklamayı şu anda hazırlayamadı.");
+      setError("Dino şu an bir açıklama hazırlayamadı.");
     } finally {
       setBusy(null);
     }
@@ -156,9 +161,9 @@ export function DinoChat({
 
         {turns.length === 0 ? (
           <p className="text-[13.5px] text-dc-ink-muted">
-            Yukarıdaki sorulardan birini seçtiğinde Dino, panelindeki kendi
-            kayıtlarını özetler. Yalnız bu sorular sorulabilir; Dino serbest
-            sohbet yapmaz.
+            {audience === "STUDENT"
+              ? "Yukarıdaki sorulardan birini seç; Dino panelindeki bilgileri sana sade bir dille anlatsın. Dino şimdilik yalnızca bu soruları yanıtlıyor."
+              : "Yukarıdaki sorulardan birini seçtiğinizde Dino, paneldeki kayıtları sade bir dille özetler. Dino yalnızca bu soruları yanıtlar; serbest sohbet yapmaz."}
           </p>
         ) : null}
       </div>

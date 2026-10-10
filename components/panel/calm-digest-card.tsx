@@ -62,17 +62,23 @@ export function CalmDigestCard({
     );
     setMessage(
       response.ok
-        ? "Geri bildirimin kaydedildi."
-        : "Geri bildirim kaydedilemedi.",
+        ? viewerRole === "STUDENT"
+          ? "Teşekkürler, geri bildirimini aldık."
+          : "Teşekkürler, geri bildiriminizi aldık."
+        : viewerRole === "STUDENT"
+          ? "Geri bildirimini kaydedemedik. Bir daha dener misin?"
+          : "Geri bildiriminizi kaydedemedik. Lütfen tekrar deneyin.",
     );
   }
 
   const goodTitle =
-    viewerRole === "PARENT" ? "Neler iyi gidiyor?" : "İyi giden noktalar";
+    viewerRole === "PARENT" ? "Neler iyi gidiyor?" : viewerRole === "STUDENT" ? "Bu hafta iyi gidenler" : "İyi giden noktalar";
   const supportTitle =
     viewerRole === "PARENT"
       ? "Nerede destek gerekiyor?"
-      : "Destek gereken tek küçük alan";
+      : viewerRole === "STUDENT"
+        ? "Biraz daha destek isteyen alan"
+        : "Destek gereken tek küçük alan";
   const nextTitle =
     viewerRole === "PARENT"
       ? "Önümüzdeki hafta ne var?"
@@ -89,7 +95,9 @@ export function CalmDigestCard({
         <h2 className="mt-3 text-2xl font-semibold tracking-[-.04em]">
           {viewerRole === "PARENT"
             ? "Öğretmenin yayınladığı haftalık özet"
-            : "İki iyi giden nokta, bir küçük destek."}
+            : viewerRole === "STUDENT"
+              ? "Bu hafta iyi giden iki şey ve üzerinde durabileceğin bir alan."
+              : "İki iyi giden nokta, bir küçük destek."}
         </h2>
         <p className="mt-2 text-xs text-(--site-muted)">
           Veriler{" "}
@@ -97,7 +105,7 @@ export function CalmDigestCard({
             dateStyle: "medium",
             timeStyle: "short",
           }).format(new Date(digest.dataThrough))}{" "}
-          tarihine kadar güncel. Tek bir gün üzerinden kesin yargı kurulmaz.
+          tarihine kadar güncel. Tek bir güne bakarak kesin bir sonuca varmıyoruz.
         </p>
       </div>
       <div className="grid gap-4 p-5 sm:p-7 md:grid-cols-2">

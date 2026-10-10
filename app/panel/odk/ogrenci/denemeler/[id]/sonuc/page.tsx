@@ -185,7 +185,7 @@ export default async function OdkStudentResultPage({
         <PageHeader
           eyebrow={`${familyCode || "Deneme Ligi"} · ${exam.title}`}
           title="Deneme Sonucun"
-          description={`${exam.resultsReleasedAt ? `${DAY.format(exam.resultsReleasedAt)} · ` : ""}Sonucun yalnız kendi cevapların ve denemenin kilitli cevap anahtarı kullanılarak hesaplandı.`}
+          description={`${exam.resultsReleasedAt ? `${DAY.format(exam.resultsReleasedAt)} · ` : ""}Sonucun yalnızca senin cevapların ve denemenin kilitli cevap anahtarıyla hesaplandı.`}
         />
 
         <section aria-label="Sonuç özeti" className="mt-6 flex flex-wrap items-end gap-x-8 gap-y-3 border-y border-pn-border py-4">
@@ -240,11 +240,11 @@ export default async function OdkStudentResultPage({
           </Section>
         ) : null}
 
-        <Section id="analiz" title="Analiz" description={`${weak.length} gelişim alanı · kazanım doğruluğu ve kanıt sayısı`}>
+        <Section id="analiz" title="Analiz" description={`Üzerinde durabileceğin ${weak.length} konu · konu bazında doğru oranın`}>
           <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
             {[
-              { title: "Güçlü alanlar", rows: strong, empty: "Bu denemede belirgin güçlü kazanım yok." },
-              { title: "Geliştirilecek alanlar", rows: improve, empty: "Geliştirilecek kazanım görünmüyor." },
+              { title: "İyi olduğun konular", rows: strong, empty: "Bu denemede öne çıkan bir konu olmadı; her deneme yeni bir başlangıç." },
+              { title: "Biraz daha çalışabileceğin konular", rows: improve, empty: "Bu denemede eksik görünen bir konu yok, harika!" },
             ].map((column) => (
               <div key={column.title}>
                 <h3 className="text-[13.5px] font-semibold text-pn-text">{column.title}</h3>
@@ -279,7 +279,7 @@ export default async function OdkStudentResultPage({
           </div>
         </Section>
 
-        <Section id="zaman" title="Zaman analizi" description={slowest ? `En çok süre: ${slowest.sectionTitle} (${Math.round(slowest.totalActiveMs / 60000)} dk).` : undefined}>
+        <Section id="zaman" title="Zaman analizi" description={slowest ? `En çok vakit ayırdığın bölüm: ${slowest.sectionTitle} (${Math.round(slowest.totalActiveMs / 60000)} dk).` : undefined}>
           {timeAnalysis.sections.filter((section) => inTrack(section.sectionCode)).length ? (
             <PanelTable caption="Zaman analizi" columns={["Bölüm", "Toplam", "Doğru ort.", "Yanlış ort."]}>
               {timeAnalysis.sections
@@ -362,7 +362,7 @@ export default async function OdkStudentResultPage({
         </Section>
 
         {comparison.length > 1 ? (
-          <Section id="trend" title={`${familyCode} net gelişimi`} description="Yalnız kendi açıklanan denemelerinle.">
+          <Section id="trend" title={`${familyCode} net gelişimi`} description="Yalnızca kendi açıklanan denemelerinle karşılaştırılır.">
             <div className="flex flex-wrap items-center gap-5">
               <Sparkline values={comparison.map((item) => item.totalNet)} label={`Toplam net: ${comparison.map((item) => `${item.title} ${NET.format(item.totalNet)}`).join(", ")}`} />
               <ul className="min-w-[240px] flex-1 border-t border-pn-border">
@@ -416,8 +416,8 @@ export default async function OdkStudentResultPage({
             </ul>
           ) : (
             <EmptyState
-              title="Şu an net bir çalışma önerisi üretilemedi."
-              body="Yeni ölçümle sinyal netleştiğinde bir sonraki adım burada görünür."
+              title="Şimdilik net bir öneri çıkaramadık."
+              body="Bir sonraki denemenle tablo netleşince sana ne çalışabileceğini burada söyleyeceğiz."
             />
           )}
           {topSignal ? (
@@ -426,7 +426,7 @@ export default async function OdkStudentResultPage({
                 deterministicReason={buildOutcomeDeterministicReason(topSignal)}
                 questionKey="student_odk_reason"
                 openLabel="Bu denemeyi açıkla"
-                prepareLabel="Dino ile denemeyi açıkla"
+                prepareLabel="Dino anlatsın"
               />
             </div>
           ) : null}
@@ -484,7 +484,7 @@ export default async function OdkStudentResultPage({
             </div>
           ) : null}
           <p className="mt-5 text-[13px] text-pn-text-secondary">
-            Sorunun kendisi deneme kitapçığındadır
+            Sorunun tamamına deneme kitapçığından bakabilirsin
             {answerKeyAvailable && exam.currentVersion?.files.length ? "; çözüm için cevap anahtarını açabilirsin." : "."}
           </p>
           {answerKeyAvailable && exam.currentVersion?.files.length ? (

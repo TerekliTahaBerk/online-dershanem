@@ -61,7 +61,7 @@ export function BehavioralBlock({
 
   // Sayı kutuları yerine özellik satırları: değer + açıklama + ince ilerleme çizgisi.
   return (
-    <Section id="analiz-davranis" title="Davranışsal gidişat">
+    <Section id="analiz-davranis" title="Çalışma düzeni">
       <PropertyList>
         {cards.map((card) => (
           <PropertyRow key={card.key} label={card.title}>

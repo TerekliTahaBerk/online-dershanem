@@ -16,6 +16,8 @@ import {
 export default async function ChangePasswordPage() {
   const session = await requireSession();
   const forced = session.mustChangePassword;
+  // Öğrenciye "sen", diğer rollere "siz" diye hitap edilir.
+  const student = session.role === "STUDENT";
 
   return (
     <PanelShell
@@ -29,22 +31,29 @@ export default async function ChangePasswordPage() {
         </span>
 
         <h1 className={PAGE_TITLE_CLASS}>
-          {forced ? "Kendi parolanızı belirleyin." : "Parolanızı değiştirin."}
+          {student
+            ? forced ? "Hoş geldin! Önce kendi parolanı belirleyelim." : "Parolanı değiştir."
+            : forced ? "Kendi parolanızı belirleyin." : "Parolanızı değiştirin."}
         </h1>
 
         <p className={PAGE_DESCRIPTION_CLASS}>
-          {forced
-            ? "Devam etmeden önce yalnızca sizin bildiğiniz bir parola belirleyin."
-            : "Yeni parolanızı belirledikten sonra diğer cihazlardaki oturumlarınız kapanır."}
+          {student
+            ? forced
+              ? "Yalnızca senin bileceğin bir parola seç; sonra derslerin ve çalışmaların seni bekliyor olacak."
+              : "Yeni parolanı belirlediğinde güvenliğin için diğer cihazlardaki oturumlarını kapatırız."
+            : forced
+              ? "Devam etmeden önce yalnızca sizin bildiğiniz bir parola belirleyin."
+              : "Yeni parolanızı belirledikten sonra diğer cihazlardaki oturumlarınız kapanır."}
         </p>
 
         <div className="mt-8 rounded-[14px] border border-(--site-line) bg-white p-6">
-          <ChangePasswordForm forced={forced} />
+          <ChangePasswordForm forced={forced} student={student} />
         </div>
 
         <p className="mt-5 text-[12.5px] leading-6 text-(--site-muted)">
-          Parolanızı kaydettiğinizde bu hesaba açık olan diğer oturumlar
-          güvenlik için kapatılır.
+          {student
+            ? "Parolanı kaydettiğinde, bu hesaba açık olan diğer oturumları güvenliğin için kapatırız."
+            : "Parolanızı kaydettiğinizde bu hesaba açık olan diğer oturumlar güvenlik için kapatılır."}
         </p>
       </div>
     </PanelShell>

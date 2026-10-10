@@ -38,7 +38,7 @@ export default async function OdkStudentExamDetailPage({
       ? `${dateFormatter.format(exam.startsAt)} · ${dateFormatter.format(exam.endsAt)}`
       : exam.startsAt
         ? `${dateFormatter.format(exam.startsAt)}`
-        : "Başlama saati bekleniyor";
+        : "Başlama saati yakında belli olacak";
 
   const state = studentExamState({ id: exam.id, attempts: attempt ? [{ status: attempt.status }] : [], startDecision, resultAvailable });
   const questionCount = version.sections.reduce((sum, section) => sum + section.questions.length, 0);
@@ -73,16 +73,16 @@ export default async function OdkStudentExamDetailPage({
             </PropertyRow>
             <PropertyRow label="Açılış – kapanış">{startWindowCopy}</PropertyRow>
             <PropertyRow label="Geç giriş">{exam.lateEntryMinutes ? `Başlangıçtan sonra ${exam.lateEntryMinutes} dakika` : "Yok"}</PropertyRow>
-            <PropertyRow label="Gözetim">{exam.meetRequired ? "Meet zorunlu" : "Meet gerekmiyor"}</PropertyRow>
+            <PropertyRow label="Gözetim">{exam.meetRequired ? "Meet açık olmalı" : "Meet gerekmiyor"}</PropertyRow>
           </PropertyList>
         </Section>
 
         <Section id="kurallar" title="Kurallar">
           <ul className="list-disc space-y-1 pl-5 text-[14px] text-pn-text-secondary">
-            <li>Süre sunucuda tutulur; sayfayı kapatmak süreyi durdurmaz.</li>
-            <li>Her cevap seçtiğin anda kaydedilir; bağlantı koparsa geri gelince kayıt sürer.</li>
-            <li>Bekleyen kayıt varken teslim kapanır; süre bitince deneme otomatik teslim edilir.</li>
-            {exam.meetRequired ? <li>Deneme boyunca Meet görüşmesinde kalman gerekir.</li> : null}
+            <li>Süren bizim tarafımızda işler; sayfayı kapatsan da süre durmaz.</li>
+            <li>Her cevabın seçtiğin anda kaydedilir; bağlantın koparsa, geri geldiğinde kaldığı yerden devam eder.</li>
+            <li>Kaydedilmeyi bekleyen bir cevabın varken teslim edemezsin; süre bitince denemen kendiliğinden teslim edilir.</li>
+            {exam.meetRequired ? <li>Deneme boyunca Meet görüşmesinde kalman gerekiyor.</li> : null}
             {sessionPlan ? (
               <li>
                 Oturumlar sırayla açılır. Bir oturumu bitirince (ya da süresi dolunca) cevapları kilitlenir; aradan sonra sıradaki
@@ -96,10 +96,10 @@ export default async function OdkStudentExamDetailPage({
           {completed ? (
             <div className="rounded-md border border-pn-border p-4">
               <p className="text-[15px] font-semibold text-pn-text">
-                {submittedAwaitingResult ? "Denemen tamamlandı." : "Denemen teslim edildi."}
+                {submittedAwaitingResult ? "Denemeni tamamladın, eline sağlık!" : "Denemen teslim edildi, eline sağlık!"}
               </p>
               <p className="mt-1 text-[14px] text-pn-text-secondary">
-                {resultAvailable ? "Sonucun ve kazanım analizin açıklandı." : "Sonucun açıklandığında burada görebileceksin."}
+                {resultAvailable ? "Sonucun ve konu analizin hazır!" : "Sonucun açıklandığında burada göreceksin."}
               </p>
               {resultAvailable ? (
                 <Link href={`/panel/odk/ogrenci/denemeler/${exam.id}/sonuc`} className={buttonClass("primary", "md", "mt-3")}>
@@ -107,7 +107,7 @@ export default async function OdkStudentExamDetailPage({
                 </Link>
               ) : (
                 <p className="mt-3">
-                  <StatusBadge label="Sonuç bekleniyor" tone="neutral" />
+                  <StatusBadge label="Sonuç yolda" tone="neutral" />
                 </p>
               )}
             </div>

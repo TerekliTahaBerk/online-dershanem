@@ -10,6 +10,7 @@ export function CoachingSessionControls({ session, role }: { session: Session; r
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const last = useRef<{ payload: string; key: string } | null>(null);
+  const student = role === "STUDENT";
   async function submit(payload: Record<string, unknown>) {
     if (busy) return;
     const body = { ...payload, expectedVersion: session.version };
@@ -19,19 +20,19 @@ export function CoachingSessionControls({ session, role }: { session: Session; r
     try {
       const response = await fetch(`/api/panel/coaching-sessions/${session.id}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...body, idempotencyKey: last.current!.key }) });
       const result = await response.json();
-      setMessage(response.ok ? "Görüşme bilgisi kaydedildi." : result.error || "Görüşme kaydedilemedi.");
+      setMessage(response.ok ? (student ? "Tamamdır, koçuna ilettik." : "Görüşme bilgisi kaydedildi.") : result.error || (student ? "Kaydedemedik. Bir daha dener misin?" : "Görüşme kaydedilemedi."));
       if (response.ok || response.status === 409) router.refresh();
-    } catch { setMessage("Bağlantı kurulamadı. Tekrar deneyebilirsiniz."); }
+    } catch { setMessage(student ? "Bağlantı kuramadık. İnternetini kontrol edip bir daha dener misin?" : "Bağlantı kurulamadı. Tekrar deneyebilirsiniz."); }
     finally { setBusy(false); }
   }
   return <section aria-label="Görüşme saati" className="space-y-3 border-b border-pn-border py-4 first:pt-0">
-    <p className="font-semibold">{new Date(session.scheduledAt) < new Date() ? "Yeni saat bekleniyor" : DATE.format(new Date(session.scheduledAt))}</p>
+    <p className="font-semibold">{new Date(session.scheduledAt) < new Date() ? "Yeni saat belirleniyor" : DATE.format(new Date(session.scheduledAt))}</p>
     {session.meetingUrl && !session.proposedAt && new Date(session.scheduledAt) >= new Date() && <a className={buttonClass("primary", "md")} href={session.meetingUrl} target="_blank" rel="noreferrer">Görüşmeye katıl</a>}
-    {session.rescheduleRequestedAt && <p className="text-sm">Saat değişikliği talebiniz alındı. {session.rescheduleReason ? COACHING_RESCHEDULE_REASONS[session.rescheduleReason] : ""}</p>}
+    {session.rescheduleRequestedAt && <p className="text-sm">{student ? "Saat değişikliği isteğin koçuna ulaştı." : "Saat değişikliği talebiniz alındı."} {session.rescheduleReason ? COACHING_RESCHEDULE_REASONS[session.rescheduleReason] : ""}</p>}
     {session.proposedAt && <p className="text-sm">Önerilen saat: {DATE.format(new Date(session.proposedAt))}</p>}
     {role === "STUDENT" && session.proposedAt && <button disabled={busy} className={buttonClass("primary", "md")} onClick={() => submit({ action: "ACCEPT" })}>Yeni saati onayla</button>}
     {role !== "TEACHER" && !session.rescheduleRequestedAt && <form className="flex flex-wrap items-end gap-3" onSubmit={(event) => { event.preventDefault(); const data = new FormData(event.currentTarget); void submit({ action: "REQUEST", reason: data.get("reason") }); }}>
-      <label className="text-sm">Saat değişikliği nedeni<select name="reason" className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1">{Object.entries(COACHING_RESCHEDULE_REASONS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+      <label className="text-sm">{student ? "Saat neden uymuyor?" : "Saat değişikliği nedeni"}<select name="reason" className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 mt-1">{Object.entries(COACHING_RESCHEDULE_REASONS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
       <button disabled={busy} className={buttonClass("secondary", "md")}>Saat değiştir</button>
     </form>}
     {role === "TEACHER" && <>

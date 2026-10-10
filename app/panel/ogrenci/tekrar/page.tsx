@@ -28,8 +28,8 @@ export default async function StudentReviewPage() {
         email={session.email}
       >
         <PanelEmptyState
-          title="Tekrar profiliniz hazırlanıyor."
-          body="Öğrenci profiliniz tamamlandığında küçük tekrarlar burada açılır."
+          title="Tekrarlarını hazırlıyoruz."
+          body="Her şey hazır olduğunda kısa tekrarların burada seni bekliyor olacak."
         />
       </PanelShell>
     );
@@ -42,14 +42,14 @@ export default async function StudentReviewPage() {
     >
       <header>
         <p className={PAGE_EYEBROW_CLASS}>
-          <RotateCcw size={15} /> Beş–on dakikalık dönüş
+          <RotateCcw size={15} /> Beş–on dakikalık tekrar
         </p>
         <h1 className={PAGE_TITLE_CLASS}>
-          Bugün yalnız birkaç küçük tekrar.
+          Bugün için birkaç kısa tekrar.
         </h1>
         <p className={PAGE_DESCRIPTION_CLASS}>
-          En fazla {dailyReviewLimit} çalışma gösterilir. Yanlış veya emin
-          olmamak ilerlemeni silmez; yalnız sonraki dönüşü yaklaştırır.
+          En fazla {dailyReviewLimit} tekrar ayırdık. Yanlış yapmak ya da emin
+          olmamak sorun değil; ilerlemen silinmez, sadece o konuya biraz daha erken döneriz.
         </p>
       </header>
       <ReviewRecoveryTabs active="tekrar" />

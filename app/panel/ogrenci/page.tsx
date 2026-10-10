@@ -131,7 +131,7 @@ export default async function StudentHomePage() {
   const upcomingLessons = (od?.todayLessons ?? []).filter((lesson) => lesson.startsAt > now).length;
   const weekFacts = [
     plan ? `Plan ${plan.done}/${plan.total} görev` : null,
-    od ? (upcomingLessons ? `Bugün ${upcomingLessons} ders kaldı` : "Bugün kalan ders yok") : null,
+    od ? (upcomingLessons ? `Bugün ${upcomingLessons} dersin daha var` : "Bugünkü derslerin bitti") : null,
     odk?.upcomingExam
       ? odk.upcomingExam.startsAt
         ? `Sıradaki deneme ${TR_TIME.format(odk.upcomingExam.startsAt)}`
@@ -144,15 +144,15 @@ export default async function StudentHomePage() {
     trend.length >= 2
       ? `Toplam netin ${trend[0].net.toLocaleString("tr-TR")}'ten ${trend[trend.length - 1].net.toLocaleString("tr-TR")}'e ${
           trend[trend.length - 1].net >= trend[0].net ? "çıktı" : "indi"
-        }. Karşılaştırma yalnızca kendi geçmiş denemelerinle yapılır.`
+        }. Seni yalnızca kendi geçmiş denemelerinle karşılaştırıyoruz.`
       : "";
 
   const summaryParts = [
     actionPlan.allActions.length
-      ? `bugün ${Math.min(3, actionPlan.allActions.length)} öncelikli adımın hazır`
-      : "bugün için bekleyen bir çalışma görünmüyor",
+      ? `bugün senin için ${Math.min(3, actionPlan.allActions.length)} adım hazırladık`
+      : "bugün seni bekleyen bir iş yok",
     plan?.total ? `planında ${Math.max(0, plan.total - plan.done)} görev kaldı` : null,
-    od?.todayLessons.length ? `${od.todayLessons.length} canlı ders görünümü var` : null,
+    od?.todayLessons.length ? `bugün ${od.todayLessons.length} canlı dersin var` : null,
   ].filter(Boolean);
 
   if (primaryAction) {
@@ -212,9 +212,9 @@ export default async function StudentHomePage() {
         ) : (
           <>
             <h2 id="simdi-baslik" className="mt-1 text-[17px] font-semibold leading-snug text-pn-text">
-              Bekleyen bir çalışma görünmüyor
+              Şu an bekleyen bir işin yok
             </h2>
-            <p className="mt-1 text-[14px] text-pn-text-secondary">Haftana göz atabilir veya gelişimini inceleyebilirsin.</p>
+            <p className="mt-1 text-[14px] text-pn-text-secondary">Bu boşluğu iyi değerlendir: haftana göz atabilir ya da gidişatına bakabilirsin.</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {data.products.includes("OK") ? <ButtonLink href="/panel/ogrenci/plan">Haftayı Gör</ButtonLink> : null}
               {data.products.includes("OD") ? <ButtonLink href="/panel/ogrenci/analiz">Gidişatıma Bak</ButtonLink> : null}
@@ -224,7 +224,7 @@ export default async function StudentHomePage() {
         )}
       </section>
 
-      <Section title="Bugün" description="Dersler, ödevler, plan görevleri ve denemeler tek listede.">
+      <Section title="Bugün" description="Derslerin, ödevlerin, plan görevlerin ve denemelerin tek bir listede.">
         {todayRowCount ? (
           <List label="Bugünün çalışmaları">
             {nextRows.map((action) => (
@@ -255,7 +255,7 @@ export default async function StudentHomePage() {
             ))}
           </List>
         ) : (
-          <EmptyState title="Bugün için planlanmış bir şey yok." body="Yeni ders, ödev veya plan görevi geldiğinde burada görünecek." />
+          <EmptyState title="Bugün takvimin boş." body="Yeni bir ders, ödev ya da plan görevi geldiğinde ilk burada göreceksin." />
         )}
       </Section>
 
@@ -329,7 +329,7 @@ export default async function StudentHomePage() {
               ) : null}
             </div>
           ) : (
-            <EmptyState title="Henüz açıklanmış bir Deneme Ligi sonucun yok." body="Deneme Ligi sonuçların açıklandığında net gelişimin ve analizin burada görünür." />
+            <EmptyState title="Henüz açıklanmış bir Deneme Ligi sonucun yok." body="İlk sonucun açıklandığında net gelişimini ve analizini burada göreceksin." />
           )}
           {trendCaption ? <p className="mt-3 max-w-[720px] text-[13.5px] leading-[1.6] text-pn-text-secondary">{trendCaption}</p> : null}
           {latest?.sections.length ? (

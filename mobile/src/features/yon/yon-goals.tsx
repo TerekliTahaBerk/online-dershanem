@@ -37,7 +37,7 @@ export default function YonGoalsScreen() {
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="yon-goals">
       <PageHeader
         title="Hedeflerim"
-        description={query.data?.coachName ? `${query.data.coachName} ile belirlediğin hedefler ve şu an neredesin. Hedeflerini koçun günceller.` : 'Hedeflerin ve şu an neredesin.'}
+        description={query.data?.coachName ? `${query.data.coachName} ile belirlediğin hedefler ve onlara ne kadar yaklaştığın. Hedeflerini koçun günceller.` : 'Hedeflerin ve onlara ne kadar yaklaştığın.'}
       />
       <QueryView query={query}>
         {(data) =>

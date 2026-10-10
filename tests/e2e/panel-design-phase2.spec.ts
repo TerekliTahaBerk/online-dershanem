@@ -35,9 +35,9 @@ test.describe("Design Phase 2 — onlinedershanem. sayfaları", () => {
     await page.goto("/panel/ogrenci/tekrar");
     const tabs = page.getByRole("navigation", { name: "Tekrar ve telafi" });
     await expect(tabs.getByRole("link", { name: "Tekrar" })).toHaveAttribute("aria-current", "page");
-    await tabs.getByRole("link", { name: "Kaçırılan ders telafisi" }).click();
+    await tabs.getByRole("link", { name: "Kaçırdığın derslerin telafisi" }).click();
     await expect(page).toHaveURL(/\/panel\/ogrenci\/telafi/);
-    await expect(page.getByRole("navigation", { name: "Tekrar ve telafi" }).getByRole("link", { name: "Kaçırılan ders telafisi" })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("navigation", { name: "Tekrar ve telafi" }).getByRole("link", { name: "Kaçırdığın derslerin telafisi" })).toHaveAttribute("aria-current", "page");
   });
 
   test("öğretmen öğrenci listesini tablo olarak görür", async ({ page }) => {
@@ -73,7 +73,7 @@ test.describe("Design Phase 2 — onlinedershanem. sayfaları", () => {
     await page.waitForLoadState("networkidle");
     const row = page.getByRole("article").filter({ hasText: "E2E Yeni Nesil Sorular" }).first();
     // Durum düğmeleri satırda kalır; ayrıntı yan panelde.
-    await expect(row.getByRole("button", { name: "Tamamlandı" })).toBeVisible();
+    await expect(row.getByRole("button", { name: "Tamamladım" })).toBeVisible();
     const opener = row.getByRole("button", { name: "E2E Yeni Nesil Sorular ayrıntıları" });
     await opener.click();
     await expect(page).toHaveURL(/onizle=odev/);

@@ -288,7 +288,7 @@ export function StudentExamRunner({
         submittedRef.current = false;
         setSubmitting(false);
         setSubmitError(
-          "Kaydedilemeyen cevaplar var. Bağlantınızı kontrol edip tekrar deneyin.",
+          "Henüz kaydedilmemiş cevapların var. Bağlantını kontrol edip bir daha dener misin?",
         );
         return;
       }
@@ -302,8 +302,8 @@ export function StudentExamRunner({
           setSubmitting(false);
           setSubmitError(
             auto
-              ? "Süre doldu. Teslim sunucuda doğrulanıyor; bağlantı gelince otomatik yeniden denenecek."
-              : "Teslim işlemi tamamlanamadı. Tekrar deneyin.",
+              ? "Süre doldu. Teslimini kontrol ediyoruz; bağlantın gelince kendiliğinden tekrar deneyeceğiz."
+              : "Teslimi tamamlayamadık. Bir daha dener misin?",
           );
           return;
         }
@@ -314,8 +314,8 @@ export function StudentExamRunner({
         setOnline(false);
         setSubmitError(
           auto
-            ? "Süre doldu. Bağlantı gelince teslim otomatik yeniden denenecek."
-            : "Bağlantı kurulamadı. Cevapların korunuyor; teslimi tekrar deneyin.",
+            ? "Süre doldu. Bağlantın gelince teslimi kendiliğinden tekrar deneyeceğiz."
+            : "Bağlantı kuramadık. Merak etme, cevapların güvende; teslimi bir daha dener misin?",
         );
       }
     },
@@ -372,7 +372,7 @@ export function StudentExamRunner({
     await Promise.all(Object.values(queues.current));
     if (Object.keys(pending.current).length) {
       setSessionBusy(false);
-      setSubmitError("Kaydedilemeyen cevaplar var. Bağlantınızı kontrol edip tekrar deneyin.");
+      setSubmitError("Henüz kaydedilmemiş cevapların var. Bağlantını kontrol edip bir daha dener misin?");
       return;
     }
     try {
@@ -384,14 +384,14 @@ export function StudentExamRunner({
       const result = await response.json().catch(() => ({}));
       if (result.code === "ATTEMPT_CLOSED") return closeLocally();
       if (!response.ok) {
-        setSubmitError(result.error || "Oturum kapatılamadı. Tekrar deneyin.");
+        setSubmitError(result.error || "Oturumu kapatamadık. Bir daha dener misin?");
         return;
       }
       setClosingSession(false);
       router.refresh();
     } catch {
       setOnline(false);
-      setSubmitError("Bağlantı kurulamadı. Cevapların korunuyor; tekrar deneyin.");
+      setSubmitError("Bağlantı kuramadık. Merak etme, cevapların güvende; bir daha dener misin?");
     } finally {
       setSessionBusy(false);
     }
@@ -567,7 +567,7 @@ export function StudentExamRunner({
 
   const lockedAnswered = lockedQuestions.filter((question) => answers[question.id]?.selectedOption).length;
   const saveLabel = !online
-    ? "Çevrimdışı · kayıtlar bekliyor"
+    ? "Bağlantı yok · cevapların bekliyor"
     : errorCount
       ? `${errorCount} kayıt yeniden denenecek`
       : savingCount
@@ -670,8 +670,8 @@ export function StudentExamRunner({
           >
             {submitError ||
               (!online
-                ? "Bağlantı yok. Bekleyen cevaplar internet geri geldiğinde yeniden gönderilecek."
-                : `${errorCount} cevap henüz kaydedilemedi. Bağlantını kontrol et.`)}
+                ? "Bağlantın koptu. Merak etme, cevapların bu cihazda duruyor; internet gelince göndereceğiz."
+                : `${errorCount} cevabını henüz kaydedemedik. Bağlantını kontrol eder misin?`)}
           </div>
         ) : null}
       </header>
