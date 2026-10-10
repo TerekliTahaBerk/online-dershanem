@@ -38,7 +38,7 @@ function InsightsBody({ data }: { data: MobileParentInsightsReady }) {
     <>
       <Text tone="muted" variant="meta">{data.periodRange || data.periodLabel}</Text>
       <Section title="Özet" first>
-        {data.narrative.length ? data.narrative.map((line) => <Text key={line}>{line}</Text>) : <Text tone="secondary">Gösterilecek özet henüz yok.</Text>}
+        {data.narrative.length ? data.narrative.map((line, index) => <Text key={`${index}-${line}`}>{line}</Text>) : <Text tone="secondary">Gösterilecek özet henüz yok.</Text>}
       </Section>
       {data.isEmpty ? (
         <EmptyState title="Henüz gösterilecek veri yok" body="Ders katılımı, çalışmalar ve denemeler biriktikçe gidişat burada oluşur." />

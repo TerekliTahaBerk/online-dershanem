@@ -170,7 +170,7 @@ function EvidenceSection({ assignment, evidenceEnabled }: { assignment: MobileAs
 }
 
 const styles = StyleSheet.create({
-  progress: { flexDirection: 'row', gap: space[2] },
+  progress: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
   option: { flex: 1, minHeight: touchTarget, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: color.borderStrong, borderRadius: radius.control, paddingHorizontal: space[2] },
   dim: { opacity: 0.5 },
 });

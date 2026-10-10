@@ -19,7 +19,7 @@ export function PanelHeader() {
       <View style={styles.workspace}><WorkspaceSwitcher compact /></View>
       <Pressable accessibilityRole="button" accessibilityLabel={`Bildirimler${unread ? `, ${unread} okunmamış` : ''}`} onPress={() => router.push('/notifications')} style={({ pressed }) => [styles.action, pressed && styles.pressed]}>
         <Bell size={20} color={color.textSecondary} strokeWidth={1.7} />
-        {unread > 0 ? <View style={styles.badge}><Text variant="caption" tone="inverse">{unread > 99 ? '99+' : unread}</Text></View> : null}
+        {unread > 0 ? <View style={styles.badge}><Text variant="caption" tone="inverse" maxFontSizeMultiplier={1.2}>{unread > 99 ? '99+' : unread}</Text></View> : null}
       </Pressable>
       <Pressable accessibilityRole="button" accessibilityLabel="Hesap ve ayarlar" onPress={() => router.push('/account')} style={({ pressed }) => [styles.action, pressed && styles.pressed]}>
         <Settings size={20} color={color.textSecondary} strokeWidth={1.7} />

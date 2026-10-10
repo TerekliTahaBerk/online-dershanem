@@ -131,7 +131,7 @@ function TodaySection({ items, now }: { items: MobileOdTodayItem[]; now: Date })
               title={item.title}
               subtitle={item.subtitle}
               meta={itemTime(item, now)}
-              leading={<StatusBadge label={KIND_LABEL[item.kind]} tone={item.kind === 'LESSON' ? 'info' : item.kind === 'RECOVERY' ? 'warning' : 'neutral'} />}
+              trailing={<StatusBadge label={KIND_LABEL[item.kind]} tone={item.kind === 'LESSON' ? 'info' : item.kind === 'RECOVERY' ? 'warning' : 'neutral'} />}
               onPress={href ? () => nav.push(href) : undefined}
             />
           );

@@ -11,6 +11,9 @@
 - Menüde kullanıcı/rol, logolu ürün değiştirici, server bölüm/satır sırası ve hesap/çıkış erişimi. Ürün değişince avatar ve aktif tab rengi de değişir.
 - Kaydırılabilir ve yüksekliği sınırlı seçim penceresi; uzun satır sağ bilgileri genişliğin %45'iyle sınırlı; başlık/eylemler ve filtre etiketleri satır kırabilir. Yön hafta şeridi yatay kayabilir.
 - Veli/personel ortak bilgi kutuları beyaz yüzey, ince bordür ve aynı iç boşluk kullanır. Hesap güvenlik bağlantılarına tutarlı ikonlar eklendi.
+- İkinci tur: öğretmen, koç ve personel bilgi ana sayfalarındaki yinelenen ürün seçiciler/üst güvenli alan kaldırıldı. Telefonda uzun durumlar ve satır bilgileri başlığın altına geçer; OD/Yön/Deneme listelerinde rozetler başlığı daraltmaz.
+- Çok satırlı alanlar 112pt asgari yüksekliğe sahip. Büyük yazıda üç ve dört seçenekli kontroller satıra bölünür; iOS Dynamic Type uygulama açıkken değiştiğinde metin yeniden ölçülür. Bildirim filtreleri en az 44pt, alt navigasyon etiketleri kesilmeden büyür.
+- Uzun öğrenci adı ve panel seçimi kimliği kırpılmaz. Veli/personel açıklamalarında aynı paragraf tekrarlandığında React anahtarları çakışmaz; salt okunur seçili karşılaştırma satırı da ürün vurgusunu gösterir.
 
 API iş kuralları, server menüleri, rol/ürün kapıları, MFA ve mevcut web devam sınırları korunur. Mobilde satış, PAYTR, fiyat CTA veya checkout eklenmedi. Yeni test suite oluşturulmadı.
 
@@ -30,7 +33,7 @@ API iş kuralları, server menüleri, rol/ürün kapıları, MFA ve mevcut web d
 ## Doğrulama
 
 - Mobil TypeScript ve ESLint geçti.
-- Mevcut Jest: 15 suite / 141 test geçti. Fixture akışları rol/ürün, liste/detay, yazma, hata/yeniden deneme davranışını kapsar; piksel eşitliği ölçmez.
+- Mevcut Jest: 15 suite / 141 test geçti. Mevcut testler rol/ürün navigasyonu ile OD liste/detay, yazma ve hata/yeniden deneme davranışlarını kapsar; veli/personel için native görsel test veya piksel eşitliği ölçümü değildir.
 - Android ham Hermes string tablosunda `Bearer ` sabiti bitişik bağımsız stringlerle birleşerek yanlış alarm üretti. Tarayıcı artık `.hbc` dosyalarını Hermes ile çözüp tarıyor; çözümleme hatası kapıyı durdurur. Sentetik temiz bytecode kabul edildi, gerçek token biçimli sentetik literal reddedildi. Kontrol kaldırılmadı.
 - 33 web/native token eşlemesi ve 10 sözleşme sınırı kontrolü geçti.
 - iOS ve Android Hermes export başarılı; exportlar secret/release hygiene taramasından geçti. Bunlar imzalı binary değildir. Production config ile ilk export eksik zorunlu bundle kimliğinde güvenle durdu; doğrulama mevcut CI ile aynı unsigned/offline modda yapıldı.
@@ -39,7 +42,11 @@ API iş kuralları, server menüleri, rol/ürün kapıları, MFA ve mevcut web d
 
 ### Görsel kabul sınırları
 
-Yerel hesabın ders/koç/deneme içerikleri boş. Dolu analiz, uzun liste ve veli/personel görünümleri mevcut fixture testleri/kaynak incelemesiyle doğrulandı; bu durumların native görsel karşılaştırması yapılmış sayılmaz. Fiziksel iPhone, Android cihaz, büyük sistem yazısı, yazılım klavyesi ve offline native görsel kabulü ayrıca açık kalır. Bu işin ortak tasarım uygulaması tamamlandı; tüm rol/veri/cihaz kombinasyonları için görsel kabul tamamlandı iddiası yoktur.
+İkinci turda iPhone SE QA / iOS 26.5 / Expo Go üzerinde sözleşmelerle doğrulanan, yalnız geçici yerel QA API'sinden gelen sentetik dolu veriler kullanıldı. OD dolu ana sayfa ve gidişat; veli ana sayfa, öğrenci seçimi ve akademik gelişim; öğretmen ana sayfa/ders/hazırlık/kapanış formu; koç ana sayfa/öğrenci/görüşme/not formu; öğretmen Deneme Ligi öğrenci raporu; Yön Bugün/haftalık plan/tercihler/hedefler; Deneme Ligi ana sayfa/sonuç/yanlış filtresi/soru ayrıntısı; dolu bildirim listesi gözlemlendi. Not alanına çok satırlı içerik girildi, yazılım klavyesi açılıp kapatıldı. Tercihler ve filtreler yerelde değiştirildi; eğitim kayıtlarına yazma yapılmadı.
+
+Simülatör tercihli yazı boyutu beş kademe artırıldı; açık uygulamada bir kademe azaltılarak canlı metin ölçümü doğrulandı. Büyük yazıda ders başlığı, satırlar, alt navigasyon ve üçlü sekmeler gözlemlendi; başlangıç yazı boyutu geri getirildi. HTTP 503 hata durumu ve “Tekrar dene” ile dolu içeriğe dönüş gözlemlendi. Bu, cihazın gerçekten çevrimdışı olma testi değildir.
+
+Bu kontrol UI yerleşimi ve etkileşim kontrolüdür; canlı backend veya tüm rol/veri kombinasyonları için uçtan uca kabul değildir. Fiziksel iPhone, Android cihaz ve gerçek bağlantı kesintisi için cihaz kabulü ayrıca gereklidir. Android için bu turdaki doğrulama TypeScript/testler ve Hermes export/hijyen taramasıdır. Geçici QA API'si, sentetik oturum ve bu tur ekran kanıtları repoya eklenmedi; kullanıcının telefondaki Expo bağlantısı aynı API ile çalışmaya devam eder.
 
 ## Native ekran envanteri
 
@@ -47,42 +54,42 @@ Aşağıdaki kayıtlar rota wrapper'larını tekrar ekran saymaz. Her kayıt ort
 
 | Ekran kimliği | Özellik dosyası | Kontrol |
 | --- | --- | --- |
-| `od-home` | `mobile/src/features/od/od-home.tsx` | iOS boş durum + fixture |
+| `od-home` | `mobile/src/features/od/od-home.tsx` | iOS dolu + fixture |
 | `od-lessons` | `mobile/src/features/od/od-lessons.tsx` | Kaynak/fixture |
 | `od-assignments` | `mobile/src/features/od/od-assignments.tsx` | Kaynak/fixture |
 | `od-materials` | `mobile/src/features/od/od-materials.tsx` | Kaynak/fixture |
-| `od-progress` | `mobile/src/features/od/od-progress.tsx` | Kaynak/fixture |
+| `od-progress` | `mobile/src/features/od/od-progress.tsx` | iOS karma dolu/boş durum + fixture |
 | `od-review-recovery` | `mobile/src/features/od/od-review-recovery.tsx` | Kaynak/fixture |
 | `od-weekly-digest` | `mobile/src/features/od/od-weekly-digest.tsx` | Kaynak/fixture |
 | `external-mock-exams` | `mobile/src/features/shared/external-mock-exams.tsx` | Kaynak/fixture |
 | `check-in` | `mobile/src/features/shared/check-in.tsx` | Kaynak/fixture |
-| `yon-today` | `mobile/src/features/yon/yon-today.tsx` | iOS boş durum + fixture |
+| `yon-today` | `mobile/src/features/yon/yon-today.tsx` | iOS dolu + kaynak |
 | `yon-work` | `mobile/src/features/yon/yon-work.tsx` | Kaynak/fixture |
 | `yon-coaching` | `mobile/src/features/yon/yon-coaching.tsx` | Kaynak/fixture |
-| `yon-plan` | `mobile/src/features/yon/yon-plan.tsx` | Kaynak/fixture |
-| `yon-goals` | `mobile/src/features/yon/yon-goals.tsx` | Kaynak/fixture |
+| `yon-plan` | `mobile/src/features/yon/yon-plan.tsx` | iOS dolu/tercihler + kaynak |
+| `yon-goals` | `mobile/src/features/yon/yon-goals.tsx` | iOS dolu + kaynak |
 | `yon-weekly` | `mobile/src/features/yon/yon-weekly.tsx` | Kaynak/fixture |
-| `odk-home` | `mobile/src/features/odk/odk-home.tsx` | iOS boş durum + fixture |
+| `odk-home` | `mobile/src/features/odk/odk-home.tsx` | iOS dolu + kaynak |
 | `odk-exams` | `mobile/src/features/odk/odk-exams.tsx` | Kaynak/fixture |
 | `odk-switch` | `mobile/src/features/odk/odk-switch.tsx` | Kaynak/fixture |
-| `parent-home` | `mobile/src/features/parent/parent-home.tsx` | Kaynak/fixture |
+| `parent-home` | `mobile/src/features/parent/parent-home.tsx` | iOS dolu + kaynak |
 | `parent-lessons` | `mobile/src/features/parent/parent-lessons.tsx` | Kaynak/fixture |
 | `parent-assignments` | `mobile/src/features/parent/parent-assignments.tsx` | Kaynak/fixture |
 | `parent-teachers` | `mobile/src/features/parent/parent-teachers.tsx` | Kaynak/fixture |
-| `parent-insights` | `mobile/src/features/parent/parent-insights.tsx` | Kaynak/fixture |
+| `parent-insights` | `mobile/src/features/parent/parent-insights.tsx` | iOS dolu + kaynak |
 | `parent-coaching` | `mobile/src/features/parent/parent-coaching.tsx` | Kaynak/fixture |
 | `parent-odk-reports` | `mobile/src/features/parent/parent-odk-reports.tsx` | Kaynak/fixture |
 | `parent-external-exams` | `mobile/src/features/parent/parent-external-exams.tsx` | Kaynak/fixture |
 | `parent-weekly` | `mobile/src/features/parent/parent-weekly.tsx` | Kaynak/fixture |
 | `parent-account` | `mobile/src/features/parent/parent-account.tsx` | Kaynak/fixture |
-| `teacher-home` | `mobile/src/features/staff/teacher/teacher-home.tsx` | Kaynak/fixture |
+| `teacher-home` | `mobile/src/features/staff/teacher/teacher-home.tsx` | iOS dolu/büyük yazı + kaynak |
 | `teacher-lessons` | `mobile/src/features/staff/teacher/teacher-lessons.tsx` | Kaynak/fixture |
 | `teacher-assignments` | `mobile/src/features/staff/teacher/teacher-assignments.tsx` | Kaynak/fixture |
 | `teacher-help` | `mobile/src/features/staff/teacher/teacher-help.tsx` | Kaynak/fixture |
-| `coach-home` | `mobile/src/features/staff/coach/coach-home.tsx` | Kaynak/fixture |
+| `coach-home` | `mobile/src/features/staff/coach/coach-home.tsx` | iOS dolu + kaynak |
 | `coach-students` | `mobile/src/features/staff/coach/coach-students.tsx` | Kaynak/fixture |
 | `coach-sessions` | `mobile/src/features/staff/coach/coach-sessions.tsx` | Kaynak/fixture |
 | `coach-plans` | `mobile/src/features/staff/coach/coach-plans.tsx` | Kaynak/fixture |
-| `teacher-odk-reports` | `mobile/src/features/staff/odk/teacher-odk-reports.tsx` | Kaynak/fixture |
+| `teacher-odk-reports` | `mobile/src/features/staff/odk/teacher-odk-reports.tsx` | iOS dolu + kaynak |
 
 Detay rotaları (ders/ödev/görev/deneme/sonuç/öğretmen teslimi/koç öğrenci-plan-görüşme) ortak Stack, PageHeader, Section, Row, form ve feedback katmanını kullanır. Kimlik kapıları ile genel hesap/bildirim rotaları yukarıdaki aile eşlemesine dahildir.

@@ -1,6 +1,6 @@
 import type { PropsWithChildren, ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react-native';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, View, type ViewStyle } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, View, useWindowDimensions, type ViewStyle } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
 import { useDesign } from '../theme';
@@ -92,6 +92,8 @@ type RowProps = {
 /** Liste satırı — 48px min, basılınca nötr vurgu, seçiliyken ürün vurgulu sol çizgi. */
 export function Row({ title, subtitle, meta, leading, trailing, onPress, selected = false, disabled = false, accessibilityHint, testID }: RowProps) {
   const { product } = useDesign();
+  const { width, fontScale } = useWindowDimensions();
+  const stacked = Boolean(meta || trailing) && (width < 340 || fontScale > 1.35 || (width < 420 && (Boolean(trailing) || (meta?.length ?? 0) > 24)));
   const content = (
     <>
       {selected ? <View style={[styles.selectedBar, { backgroundColor: product.accentMarker }]} /> : null}
@@ -100,18 +102,18 @@ export function Row({ title, subtitle, meta, leading, trailing, onPress, selecte
         <Text variant="bodyStrong">{title}</Text>
         {subtitle ? <Text tone="secondary" variant="secondary">{subtitle}</Text> : null}
       </View>
-      {meta || trailing ? <View style={styles.trailing}>
-        {meta ? <Text tone="muted" variant="meta" style={styles.meta}>{meta}</Text> : null}
+      {meta || trailing ? <View style={[styles.trailing, stacked && styles.trailingStacked]}>
+        {meta ? <Text tone="muted" variant="meta" style={[styles.meta, stacked && styles.metaStacked]}>{meta}</Text> : null}
         {trailing}
       </View> : null}
       {onPress ? (
-        <ChevronRight size={16} color={color.textMuted} accessibilityElementsHidden importantForAccessibility="no" />
+        <ChevronRight style={stacked ? styles.stackedChevron : undefined} size={16} color={color.textMuted} accessibilityElementsHidden importantForAccessibility="no" />
       ) : null}
     </>
   );
   if (!onPress) {
     return (
-      <View style={[styles.row, disabled && styles.disabled]} testID={testID}>
+      <View accessibilityState={{ selected, disabled }} style={[styles.row, stacked && styles.stackedRow, selected && { backgroundColor: product.accentSoft }, disabled && styles.disabled]} testID={testID}>
         {content}
       </View>
     );
@@ -124,7 +126,7 @@ export function Row({ title, subtitle, meta, leading, trailing, onPress, selecte
       accessibilityHint={accessibilityHint}
       disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => [styles.row, selected && { backgroundColor: product.accentSoft }, pressed && { backgroundColor: color.pressed }, disabled && styles.disabled]}>
+      style={({ pressed }) => [styles.row, stacked && styles.stackedRow, selected && { backgroundColor: product.accentSoft }, pressed && { backgroundColor: color.pressed }, disabled && styles.disabled]}>
       {content}
     </Pressable>
   );
@@ -141,6 +143,7 @@ const styles = StyleSheet.create({
   headerTitle: { flexGrow: 1, flexShrink: 1, flexBasis: 160 },
   trailing: { maxWidth: '45%', flexShrink: 1, alignItems: 'flex-end', gap: space[1] },
   meta: { textAlign: 'right' },
+  metaStacked: { textAlign: 'left' },
   headerRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space[2] },
   section: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: color.border, paddingTop: space[4], gap: space[2] },
   sectionFirst: { borderTopWidth: 0, paddingTop: 0 },
@@ -155,6 +158,9 @@ const styles = StyleSheet.create({
     marginHorizontal: -space[2],
     borderRadius: 6,
   },
+  stackedRow: { flexWrap: 'wrap', paddingRight: space[6] },
+  stackedChevron: { position: 'absolute', right: space[2], top: space[4] },
+  trailingStacked: { maxWidth: '100%', width: '100%', alignItems: 'flex-start', paddingLeft: space[1] },
   leading: { minWidth: 24, alignItems: 'center' },
   selectedBar: { position: 'absolute', left: 0, top: 8, bottom: 8, width: 2, borderRadius: 1 },
   disabled: { opacity: 0.45 },

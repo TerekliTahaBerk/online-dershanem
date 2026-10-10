@@ -42,7 +42,7 @@ export function ChildBar() {
         onPress={() => setOpen(true)}
         style={({ pressed }) => [styles.bar, pressed && many && { backgroundColor: color.pressed }]}>
         <Text tone="muted" variant="meta">Öğrenci</Text>
-        <Text variant="bodyStrong" style={styles.flex} numberOfLines={1}>{selected.name}</Text>
+        <Text variant="bodyStrong" style={styles.flex}>{selected.name}</Text>
         {many ? <Text tone="muted" variant="meta">Değiştir</Text> : null}
       </Pressable>
       <ChildPicker visible={open} onClose={() => setOpen(false)} />

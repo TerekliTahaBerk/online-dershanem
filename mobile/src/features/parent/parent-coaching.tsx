@@ -56,7 +56,7 @@ function CoachingBody({ data }: { data: MobileParentCoaching }) {
           <>
             <Text tone="muted" variant="meta">{`${formatDayMonth(data.week.start)} – ${formatDayMonth(data.week.end)}`}</Text>
             <Text variant="bodyStrong">{data.week.planCompletionPct === null ? 'Plan tamamlanma bilgisi henüz yok.' : `Planın %${data.week.planCompletionPct}'i tamamlandı.`}</Text>
-            {data.week.lines.map((line) => <Text key={line} tone="secondary">{line}</Text>)}
+            {data.week.lines.map((line, index) => <Text key={`${index}-${line}`} tone="secondary">{line}</Text>)}
           </>
         ) : (
           <EmptyState title="Bu hafta için plan yayınlanmadı" body="Koç haftalık planı yayınladığında tamamlanma özeti burada görünür." />

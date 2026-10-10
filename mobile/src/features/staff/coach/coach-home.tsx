@@ -4,7 +4,6 @@ import { Button, EmptyState, PageHeader, Row, Screen, Section, StatusBadge, Text
 import { fetchCoachHome } from '@/lib/api/staff';
 import { formatLongDate, formatShortDateTime, formatTime } from '@/lib/format/istanbul';
 
-import { WorkspaceSwitcher } from '../../shell/workspace-switcher';
 import { QueryView, usePullToRefresh, useStaffQuery } from '../shared';
 
 /**
@@ -19,7 +18,6 @@ export default function CoachHomeScreen() {
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="coach-home">
       <PageHeader title="Bugün" context={<Text tone="muted" variant="meta">{formatLongDate(new Date())}</Text>} />
-      <WorkspaceSwitcher />
       <QueryView query={query}>
         {(home) => (
           <>

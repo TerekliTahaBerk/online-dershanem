@@ -179,5 +179,5 @@ function WeeklyGoal({ goal }: { goal: string | null }) {
 const styles = StyleSheet.create({
   summary: { gap: space[1] },
   goal: { gap: space[2], borderWidth: 1, borderColor: color.border, borderRadius: radius.card, padding: space[4] },
-  row: { flexDirection: 'row', gap: space[2] },
+  row: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
 });

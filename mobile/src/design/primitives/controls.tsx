@@ -1,6 +1,6 @@
 import { Eye, EyeOff } from 'lucide-react-native';
 import { forwardRef, useState, type ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, TextInput, View, useWindowDimensions, type TextInputProps } from 'react-native';
 
 import { useDesign } from '../theme';
 import { auth, color, font, radius, space, tone as toneColor, touchTarget, type Tone } from '../tokens';
@@ -37,7 +37,7 @@ export function Button({ label, onPress, variant = 'primary', loading = false, d
       ) : (
         <View style={styles.buttonInner}>
           {leading}
-          <Text variant="bodyStrong" style={[{ color: labelColor[variant] }, variant === 'auth' && styles.authButtonLabel]}>
+          <Text variant="bodyStrong" style={[styles.buttonLabel, { color: labelColor[variant] }, variant === 'auth' && styles.authButtonLabel]}>
             {label}
           </Text>
         </View>
@@ -82,7 +82,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
             setFocused(false);
             rest.onBlur?.(event);
           }}
-          style={[styles.input, variant === 'auth' && styles.authInput]}
+          style={[styles.input, variant === 'auth' && styles.authInput, rest.multiline && styles.multiline]}
           maxFontSizeMultiplier={2}
           {...rest}
         />
@@ -141,8 +141,10 @@ export function ProductMark({ label }: { label: string }) {
  */
 export function SegmentedTabs<T extends string>({ value, options, onChange, label }: { value: T; options: { value: T; label: string; count?: number }[]; onChange: (value: T) => void; label: string }) {
   const { product } = useDesign();
+  const { width, fontScale } = useWindowDimensions();
+  const wrap = options.length > 2 && (width < 360 || fontScale > 1.2);
   return (
-    <View accessibilityRole="tablist" accessibilityLabel={label} style={styles.tabs}>
+    <View accessibilityRole="tablist" accessibilityLabel={label} style={[styles.tabs, wrap && styles.tabsWrap]}>
       {options.map((option) => {
         const selected = option.value === value;
         const text = option.count === undefined ? option.label : `${option.label} (${option.count})`;
@@ -154,7 +156,7 @@ export function SegmentedTabs<T extends string>({ value, options, onChange, labe
             accessibilityState={{ selected }}
             accessibilityLabel={text}
             onPress={() => onChange(option.value)}
-            style={({ pressed }) => [styles.tab, selected && { backgroundColor: color.canvas, borderColor: color.border }, pressed && !selected && { backgroundColor: color.pressed }]}>
+            style={({ pressed }) => [styles.tab, wrap && styles.tabWrap, selected && { backgroundColor: color.canvas, borderColor: color.border }, pressed && !selected && { backgroundColor: color.pressed }]}>
             <Text variant={selected ? 'bodyStrong' : 'secondary'} style={selected ? { color: product.accent } : undefined}>
               {text}
             </Text>
@@ -187,13 +189,17 @@ const styles = StyleSheet.create({
   authButtonLabel: { fontFamily: font.bold, fontSize: 15.5 },
   authInputWrap: { minHeight: auth.controlHeight, borderRadius: auth.radius, borderColor: auth.border },
   authInput: { minHeight: auth.controlHeight, paddingHorizontal: 14 },
+  buttonLabel: { flexShrink: 1, textAlign: 'center' },
+  multiline: { minHeight: 112, maxHeight: 240, textAlignVertical: 'top', paddingVertical: space[3] },
+  tabsWrap: { flexWrap: 'wrap' },
+  tabWrap: { flexBasis: '45%', flexGrow: 1 },
   buttonInner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space[2], flexWrap: 'wrap' },
   inactive: { opacity: 0.45 },
   field: { gap: 6 },
   inputWrap: { flexDirection: 'row', alignItems: 'center', minHeight: touchTarget, borderWidth: 1, borderColor: color.borderStrong, borderRadius: radius.control, backgroundColor: color.canvas },
   input: { flex: 1, minHeight: touchTarget, paddingHorizontal: space[3], fontFamily: font.regular, fontSize: 15, color: color.text },
   reveal: { minHeight: touchTarget, minWidth: touchTarget, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space[2] },
-  badge: { alignSelf: 'flex-start', borderRadius: radius.control, paddingHorizontal: 8, paddingVertical: 3 },
+  badge: { alignSelf: 'flex-start', flexShrink: 1, maxWidth: '100%', borderRadius: radius.control, paddingHorizontal: 8, paddingVertical: 3 },
   productMark: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3 },
   tabs: { flexDirection: 'row', gap: 2, padding: 2, borderRadius: radius.card, backgroundColor: color.sidebar, borderWidth: 1, borderColor: color.border },

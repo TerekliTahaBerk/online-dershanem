@@ -35,7 +35,7 @@ export default function TabsLayout() {
           onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
           testID={`nav-${item.id}`} style={({ pressed }) => [styles.tab, selected && { backgroundColor: product.accentSoft }, pressed && styles.pressed]}>
           <NavIcon id={item.id} color={ink} size={19} />
-          <Text variant="caption" style={{ color: ink, textAlign: 'center' }} numberOfLines={2}>{item.label}</Text>
+          <Text variant="caption" style={[styles.label, { color: ink }]}>{item.label}</Text>
         </Pressable>;
       })}
     </View>
@@ -47,6 +47,7 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   bar: { backgroundColor: color.canvas, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: color.border, flexDirection: 'row', paddingTop: space[2], gap: space[1] },
-  tab: { flex: 1, minHeight: touchTarget + 8, paddingVertical: space[2], paddingHorizontal: space[1], borderRadius: radius.control, alignItems: 'center', justifyContent: 'center', gap: space[1] },
+  tab: { flex: 1, minHeight: touchTarget + 8, paddingVertical: space[2], borderRadius: radius.control, alignItems: 'center', justifyContent: 'center', gap: space[1] },
+  label: { fontSize: 11, lineHeight: 15, textAlign: 'center' },
   pressed: { backgroundColor: color.pressed },
 });

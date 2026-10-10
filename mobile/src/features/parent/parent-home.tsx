@@ -39,7 +39,7 @@ function HomeBody({ home }: { home: MobileParentHome }) {
 
       {home.academic.supportAreas.length || home.digest.supportArea ? (
         <Section title="Dikkat edilmesi gereken">
-          {home.academic.supportAreas.map((line) => <Text key={line} tone="secondary">{line}</Text>)}
+          {home.academic.supportAreas.map((line, index) => <Text key={`${index}-${line}`} tone="secondary">{line}</Text>)}
           {home.digest.supportArea ? <Text tone="secondary">{`Öğretmen özeti: ${home.digest.supportArea}`}</Text> : null}
         </Section>
       ) : null}
@@ -60,8 +60,8 @@ function HomeBody({ home }: { home: MobileParentHome }) {
       ) : null}
 
       <Section title="Bu hafta">
-        {[home.thisWeek.attendanceLabel, home.thisWeek.assignmentsLabel, home.thisWeek.planLabel].filter((line): line is string => Boolean(line)).map((line) => (
-          <Text key={line} tone="secondary">{line}</Text>
+        {[home.thisWeek.attendanceLabel, home.thisWeek.assignmentsLabel, home.thisWeek.planLabel].filter((line): line is string => Boolean(line)).map((line, index) => (
+          <Text key={`${index}-${line}`} tone="secondary">{line}</Text>
         ))}
         {home.thisWeek.upcoming.map((item) => (
           <Row key={item.id} title={item.title} subtitle={item.detail} onPress={nav.hrefFor(item.navId) ? () => nav.open(item.navId) : undefined} />
@@ -74,7 +74,7 @@ function HomeBody({ home }: { home: MobileParentHome }) {
       <Section title="Akademik gelişim">
         {home.academic.examTrendSentence ? <Text>{home.academic.examTrendSentence}</Text> : null}
         {home.academic.subjectTrends.map((trend) => <Text key={trend.subject} tone="secondary">{trend.sentence}</Text>)}
-        {home.academic.strengths.map((line) => <Text key={line} tone="secondary">{line}</Text>)}
+        {home.academic.strengths.map((line, index) => <Text key={`${index}-${line}`} tone="secondary">{line}</Text>)}
         {!home.academic.examTrendSentence && !home.academic.subjectTrends.length && !home.academic.strengths.length ? (
           <Text tone="secondary">Eğilim için henüz yeterli kayıt yok. Denemeler ve dersler biriktikçe burada görünür.</Text>
         ) : null}

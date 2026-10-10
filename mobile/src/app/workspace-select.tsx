@@ -49,7 +49,7 @@ export default function WorkspaceSelectScreen() {
 
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']}>
-      <View style={styles.identity}><ProductLogo size={32} /><Text variant="bodyStrong">{bootstrap?.user.fullName ?? 'Hoş geldin'}</Text></View>
+      <View style={styles.identity}><ProductLogo size={32} /><Text variant="bodyStrong" style={{ flex: 1 }}>{bootstrap?.user.fullName ?? 'Hoş geldin'}</Text></View>
       <PageHeader title="Hangi panele girmek istiyorsun?" description="Panelini seç; istediğin zaman menüdeki “Panel değiştir” ile diğerine geçebilirsin." />
       {error ? <Banner tone="critical">{error}</Banner> : null}
       {hasActive ? null : (
