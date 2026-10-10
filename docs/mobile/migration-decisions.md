@@ -23,6 +23,7 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
 | MD-17 | Expo web hedefi desteklenmez | Uygulandı (M1) |
 | MD-18 | Durum etiketleri ve metinler sunucudan; mobil iş kuralı tutmaz | Uygulandı (M1, M2: web sayfası + JSON ucu ortak yükleyici) |
 | MD-21 | Push (M5) uygulama kararları: varsayılan kapalı, genel metin, gönderim anında yeniden uygunluk, çalışma modları | Uygulandı (M5; üretim NO-GO) |
+| MD-22 | Veli (M6): çocuk kapsamı sunucuda, `CHILD_NOT_FOUND`, bellek içi seçim, salt okunur ekranlar | Uygulandı (M6; cihaz doğrulaması yok) |
 
 ---
 
@@ -200,3 +201,16 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
   - Web PATCH tam gövde ister (değişmedi).
   - Mobil (`x-od-client: mobile`) kısmi gövde gönderebilir; sunucu mevcut kayıtla birleştirip aynı şemayla doğrular.
 - **Test politikası (M5):** Kullanıcı talimatıyla yeni otomatik test yazılmadı. Davranış geçici, commit'lenmeyen probe'larla doğrulandı. Kalıcı testler M5 sonrası öneri olarak listelendi (m6-handoff §3).
+
+## MD-22 — Veli (M6) kapsam ve sunum kararları
+
+**Karar.**
+- **Çocuk kimliği:** `studentId` daima `StudentProfile.id`. Sunucu çocuğu `listParentVisibleChildren(parentId, "academic")` içinde arar; bulunamazsa 404 `CHILD_NOT_FOUND` döner. Başka aile, var olmayan kimlik, bitmiş bağlantı, akademik izni kapalı bağlantı ve yalnız KPSS çocuğu ayırt edilmez. Öğrenci `User.id` yalnız sunucuda çözülür (ODK raporu).
+- **İki amaç:** Akademik uçlar `academic`; yalnız hesap ucu `account`. Hesap ucu akademik yetki vermez.
+- **Seçim:** Mobil seçim yalnız bellekte. İlk çocuk yalnız açık seçim yokken varsayılır. Erişim düşünce sessiz geçiş olmaz: veri durur, önbellek silinir, açık seçim istenir.
+- **Önbellek:** Anahtarlar çocuk kapsamlıdır (`['user', veliId, 'parent', 'PARENT', 'child', studentId, kaynak]`). Çocuk değişince önceki çocuğun sorguları silinir; önceki veri gösterilmez.
+- **Salt okunur:** Veli mobilde çocuğun işine yazmaz (ödev, plan, görüşme). Tek yazma, velinin kendi haftalık özet geri bildirimidir (mevcut uç, yetki genişletilmedi).
+- **Ortak yükleyiciler:** Web Dersler / Ödevler / Koçluk / Haftalık sayfaları ve mobil uçlar aynı `lib/panel/parent-*-server.ts` fonksiyonlarını kullanır. Koçluk planına `productRef = OK` süzgeci eklendi (KPSS planı veliye düşmez).
+- **Deneme ayrımı:** Deneme Ligi raporu (`/api/odk/parent/report`) ile okul / kurum dış denemeleri (`/api/panel/parent/external-exams`) ayrı uç ve ayrı ekrandır.
+- **Ticaret:** Mobilde fiyat, sipariş, ödeme ve satın alma yok (MD-09). Paket görüşmesi web devam yolu.
+- **Test politikası (M6):** Yeni otomatik test yazılmadı. M6'nın bilinçli değiştirdiği davranışa dayanan 3 eski mobil beklenti güncellendi (veli yer tutucusu → veli ekranları). Sınırlar geçici, commit'lenmeyen probe ile doğrulandı.

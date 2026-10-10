@@ -157,6 +157,10 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
 
 ## M6 — Veli deneyimi
 
+> **Durum: uygulandı ve yerel olarak doğrulandı; gerçek cihaz / staging doğrulaması YOK.** Kalıcı M6 testleri kullanıcı talimatıyla yazılmadı (yalnız M6'nın bilinçli değiştirdiği 3 eski mobil beklenti güncellendi). [m6-implementation-report.md](./m6-implementation-report.md), [m6-api-contracts.md](./m6-api-contracts.md), [m6-screen-migration.md](./m6-screen-migration.md), [m6-parent-scope-security.md](./m6-parent-scope-security.md), [m6-privacy-review.md](./m6-privacy-review.md), [m6-validation-results.md](./m6-validation-results.md), [m6-iphone-smoke-checklist.md](./m6-iphone-smoke-checklist.md). M7 girdisi: [m7-handoff.md](./m7-handoff.md).
+>
+> Plandan sapmalar: dış denemeler ayrı uç (`/api/panel/parent/external-exams`); `GET /api/panel/parent/account` (hesap amacı); veli koçluk görüşmeleri salt okunur; haftalık özet geri bildirimi mevcut uçla ve onun OD kapısıyla (P-1 BLOCKED).
+
 **Bağımlılıklar.** M1–M4 (ekran primitives ve öğrenci okuma modelleri), M5 (veliler için en değerli kanal).
 
 **Teslimatlar.**
