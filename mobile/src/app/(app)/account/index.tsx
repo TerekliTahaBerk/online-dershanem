@@ -35,6 +35,10 @@ export default function AccountScreen() {
           <Row title="Bildirim ayarları" subtitle="Telefon bildirimleri, kategoriler, sessiz saatler" onPress={() => router.push('/account/notifications')} testID="account-notifications" />
         ) : null}
       </Section>
+      <Section title="Gizlilik ve hesap">
+        <Row title="Gizlilik politikası" onPress={() => router.push('/account/privacy')} />
+        <Row title="Hesabımı sil" subtitle="Silme talebi ve veri saklama bilgileri" onPress={() => router.push('/account/deletion')} />
+      </Section>
       <View style={styles.footer}>
         <Button label="Çıkış yap" variant="secondary" onPress={() => void signOut()} testID="account-sign-out" />
         <Text variant="meta" tone="muted" style={styles.center}>

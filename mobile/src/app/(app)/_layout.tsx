@@ -26,6 +26,8 @@ export default function AppLayout() {
       <Stack.Screen name="notifications" options={{ title: 'Bildirimler' }} />
       <Stack.Screen name="account/index" options={{ title: 'Hesap ve ayarlar' }} />
       <Stack.Screen name="account/sessions" options={{ title: 'Oturumlar' }} />
+      <Stack.Screen name="account/deletion" options={{ title: 'Hesap silme' }} />
+      <Stack.Screen name="account/privacy" options={{ title: 'Gizlilik' }} />
       <Stack.Screen name="account/password" options={{ title: 'Parola' }} />
       <Stack.Screen name="account/notifications" options={{ title: 'Bildirim ayarları' }} />
       <Stack.Screen name="od/assignment/[id]" options={{ title: 'Çalışma' }} />

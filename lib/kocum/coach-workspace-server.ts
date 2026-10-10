@@ -44,6 +44,7 @@ export async function loadCoachWorkspace(userId: string, flags: Pick<PanelFeatur
       ? prisma.weeklyPlan.findMany({
           where: {
             studentId: { in: studentIds },
+            productRef: { code: "OK" },
             weekStart: { gte: weekStart, lt: weekEnd },
             status: { in: ["DRAFT", "CHANGE_REQUESTED", "APPROVED"] },
           },

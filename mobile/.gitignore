@@ -41,3 +41,11 @@ example
 # generated native folders
 /ios
 /android
+
+# Release signing/submission files (never commit)
+credentials.json
+google-play-service-account*.json
+*.keystore
+*.ipa
+*.aab
+*.apk

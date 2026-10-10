@@ -9,7 +9,7 @@ Genel kurallar (her faz):
 - Hiçbir faz şema değişikliği yapmaz; **tek istisna M5** (push tabloları).
 
 ```text
-M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8 ──► M9
+M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M9 (V1.0); M8 DEFERRED
   └──► M5 (altyapı M2 ile paralel; mobil tarafı M2 sonrası)
 ```
 
@@ -209,7 +209,7 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
 
 ---
 
-## M8 — İleri mobil yetenekler
+## M8 — DEFERRED / NOT REQUIRED FOR V1.0 — İleri mobil yetenekler
 
 **Bağımlılıklar.** M1–M7; ilgili flag'lerin üretimde açılması; MD-08, MD-13, MD-14 kararları.
 
@@ -259,3 +259,7 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
 7. **Doğrulanacak açık sorular:** (a) `STAFF_PRODUCT_ASSIGNMENTS` üretim modu; (b) Yön görev tamamlama ucunun `adaptivePlan` kapalıyken web davranışı; (c) ADR 0015'in durumu (bootstrap flag kaynağını etkiler).
 
 M0 kapsamında M1'e başlanmamıştır.
+
+## V1.0 M9 kapsam kararı — 10 Ekim 2026
+
+**M8 = DEFERRED / NOT REQUIRED FOR V1.0.** Eski M8 teslimatları tarihsel öneridir. Native exam runner, offline DB/outbox/lesson closure, widget, biometric lock, native passkey, yeni Dino AI, staff push/messaging, advanced calendar, gamification, purchasing ve mobile admin uygulanmaz. Yalnız mevcut V1 güvenlik, hesap yaşam döngüsü ve release altyapısı kapsamda. Yeni otomatik test yazılmaz. M9 sonuçları: [m9-implementation-report](./m9-implementation-report.md); yayın kapıları: [m9-go-no-go](./m9-go-no-go.md).

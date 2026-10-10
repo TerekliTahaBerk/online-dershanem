@@ -10,12 +10,17 @@ import { WEB_BASE_URL } from '@/config/app-info';
 export function webUrlFor(path: string | null | undefined): string | null {
   if (!WEB_BASE_URL || !path) return null;
   if (!/^\/(panel|giris)(\/[\w\-./]*)?$/.test(path) || path.includes('..')) return null;
+  if (/(?:^|\/)(?:checkout|paytr|odeme|odemeler|siparis|siparisler|paket|paketler|satin-al|abonelik|billing|payments?|orders?|subscriptions?)(?:\/|$)/i.test(path)) return null;
   return `${WEB_BASE_URL}${path}`;
 }
 
 export async function openOnWeb(path: string | null | undefined): Promise<boolean> {
   const url = webUrlFor(path);
   if (!url) return false;
-  await WebBrowser.openBrowserAsync(url);
-  return true;
+  try {
+    await WebBrowser.openBrowserAsync(url);
+    return true;
+  } catch {
+    return false;
+  }
 }

@@ -339,7 +339,7 @@ export default async function OdkStudentResultPage({
                         <span className="sr-only">{item.result === "CORRECT" ? " (doğru)" : item.result === "WRONG" ? " (yanlış)" : ""}</span>
                       </span>
                     </PanelTableCell>
-                    <PanelTableCell>{item.correctOption}</PanelTableCell>
+                    <PanelTableCell>{answerKeyAvailable ? item.correctOption : "Yayınlanmadı"}</PanelTableCell>
                     <PanelTableCell>{ms != null ? `${Math.round(ms / 1000)} sn` : "—"}</PanelTableCell>
                     <PanelTableCell>
                       <Link
@@ -451,7 +451,7 @@ export default async function OdkStudentResultPage({
               ) : null}
             </PropertyRow>
             <PropertyRow label="Cevabın">{openQuestion.selectedOption || "Boş bıraktın"}</PropertyRow>
-            <PropertyRow label="Doğru cevap">{openQuestion.correctOption}</PropertyRow>
+            <PropertyRow label="Doğru cevap">{answerKeyAvailable ? openQuestion.correctOption : "Yayınlanmadı"}</PropertyRow>
             <PropertyRow label="Süre">
               {(() => {
                 const ms = data.attempt.timings.find((timing) => timing.questionId === openQuestion.questionId)?.activeDurationMs;
