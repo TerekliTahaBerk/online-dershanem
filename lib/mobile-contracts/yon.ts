@@ -293,7 +293,7 @@ const upcomingSession = v.object({
   meetingUrl: v.nullable(v.string()),
   rescheduleRequestedAt: v.nullable(v.iso()),
   rescheduleReason: v.nullable(v.oneOf(YON_RESCHEDULE_REASONS)),
-  /** Koçun önerdiği yeni saat (onay web'de). */
+  /** Koçun önerdiği yeni saat (öğrenci ACCEPT eylemiyle onaylar). */
   proposedAt: v.nullable(v.iso()),
 });
 export type MobileCoachingSession = Infer<typeof upcomingSession>;

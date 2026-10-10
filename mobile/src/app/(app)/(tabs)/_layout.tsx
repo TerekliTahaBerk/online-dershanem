@@ -16,8 +16,8 @@ export default function TabsLayout() {
   const bootstrap = useReadyBootstrap();
   const { product } = useDesign();
   const insets = useSafeAreaInsets();
-  const learner = bootstrap.user.role === 'STUDENT' || bootstrap.user.role === 'PARENT';
-  const primary = learner ? (bootstrap.workspace?.navigation.primary ?? []).slice(0, 4) : [];
+  const hasNativeTabs = bootstrap.user.role !== 'ADMIN';
+  const primary = hasNativeTabs ? (bootstrap.workspace?.navigation.primary ?? []).slice(0, 4) : [];
   const items = [
     ...SLOTS.flatMap((name, index) => index === 0 || primary[index] ? [{ name, label: primary[index]?.label ?? 'Bugün', id: primary[index]?.id ?? 'today' }] : []),
     { name: 'menu', label: 'Menü', id: 'menu' },

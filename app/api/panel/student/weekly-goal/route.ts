@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiOdRole } from "@/lib/auth/api-guards";
+import { requireApiAnyProductRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { logAudit } from "@/lib/audit";
 
 const schema = z.object({ goal: z.string().trim().min(3).max(180) });
 
 export async function PATCH(request: Request) {
-  const auth = await requireApiOdRole("STUDENT");
+  const auth = await requireApiAnyProductRole(["OD", "OK", "ODK"], "STUDENT");
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.student.weekly_goal", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:weekly-goal:${auth.session.userId}`, rateLimit: { max: 20, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });

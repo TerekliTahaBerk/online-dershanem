@@ -25,6 +25,26 @@ describe('M2.5 Gidişatım ve dış denemeler', () => {
     expect(h.server.called('GET', '/api/panel/student/progress')).toHaveLength(0);
   });
 
+  it.each(['OK', 'ODK'] as const)('%s Analiz menüsü ortak servisi açar ve hedefi aynı alanda yeniler', async (product) => {
+    let goal: string | null = null;
+    const bootstrap = makeBootstrap({ products: { [product]: 'ACTIVE' }, extraNav: [['analiz', 'Analiz', '/panel/ogrenci/analiz']] });
+    const h = await boot([account('ada@example.com', bootstrap, { routes: {
+      'GET /api/panel/student/insights': () => jsonResponse(200, makeInsights({ weeklyGoal: goal })),
+      'PATCH /api/panel/student/weekly-goal': ({ body }) => { goal = (body as { goal: string }).goal; return jsonResponse(200, { goal }); },
+    } })]);
+    await signIn(h, 'ada@example.com');
+    await go('/screen/analiz');
+    const view = within(await h.screen.findByTestId('od-progress', {}, WAIT));
+    expect(await view.findByText('Derslere düzenli katılıyorsun.', {}, WAIT)).toBeTruthy();
+    await press(h, view.getByTestId('weekly-goal-edit'));
+    fireEvent.changeText(view.getByTestId('weekly-goal-input'), 'Her gün okuma yapacağım.');
+    const before = h.server.called('GET', '/api/panel/student/insights').length;
+    await press(h, view.getByTestId('weekly-goal-save'));
+    await waitFor(() => expect(h.server.called('GET', '/api/panel/student/insights').length).toBeGreaterThan(before), WAIT);
+    expect(await view.findByText('Her gün okuma yapacağım.', {}, WAIT)).toBeTruthy();
+    expect(h.server.called('GET', '/api/panel/student/home')).toHaveLength(0);
+  });
+
   it('haftalık hedef: sınır doğrulaması; kayıt sunucu onayından sonra; gidişat yenilenir', async () => {
     let goal: string | null = null;
     const h = await boot([

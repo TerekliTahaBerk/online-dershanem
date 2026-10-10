@@ -5,20 +5,18 @@ import { Linking, StyleSheet, View } from 'react-native';
 
 import { Banner, BottomSheet, Button, EmptyState, PageHeader, Row, Screen, Section, StatusBadge, Text } from '@/design/primitives';
 import { color, space } from '@/design/tokens';
-import { openOnWeb } from '@/features/shell/web-continuation';
 import { fetchYonCoaching } from '@/lib/api/yon';
 import { formatDateTime, formatDayMonth } from '@/lib/format/istanbul';
 import { isSafeExternalUrl } from '@/lib/links';
 
-import { useRescheduleRequest } from './hooks';
+import { useAcceptSessionProposal, useRescheduleRequest } from './hooks';
 import { RESCHEDULE_REASON_LABEL, TASK_STATUS_LABEL } from './model';
-import { QueryView, usePullToRefresh, useYonQuery } from './shared';
+import { QueryView, useOnline, usePullToRefresh, useYonQuery } from './shared';
 
 /**
  * YÖN · KOÇUM — web `app/panel/ogrenci/kocluk`. Veri
- * `GET /api/panel/student/coaching` (aynı yükleyiciler). Öğrenciye açık tek
- * görüşme eylemi saat değişikliği TALEBİdir (`REQUEST`); koçun önerdiği
- * yeni saatin onayı web panelinde kalır. Koçun gizli notu ve iç notları
+ * `GET /api/panel/student/coaching` (aynı yükleyiciler). Saat değişikliği talebi ve koçun
+ * önerdiği yeni saatin onayı panelle aynı uçtan yapılır. Koçun gizli notu ve iç notları
  * sunucudan hiç gelmez. Koçun eklediği çalışmalar OD ödevlerinden ayrıdır.
  */
 export default function YonCoachingScreen() {
@@ -108,6 +106,9 @@ function CoachingBody({ hub }: { hub: MobileYonCoaching }) {
 
 function SessionCard({ session }: { session: MobileCoachingSession }) {
   const [open, setOpen] = useState(false);
+  const [confirm, setConfirm] = useState(false);
+  const accept = useAcceptSessionProposal(session);
+  const online = useOnline();
   const [reason, setReason] = useState<YonRescheduleReason>('SCHOOL_SCHEDULE');
   const request = useRescheduleRequest(session);
   const now = Date.now();
@@ -116,6 +117,7 @@ function SessionCard({ session }: { session: MobileCoachingSession }) {
   return (
     <View style={styles.session} testID={`yon-session-${session.id}`}>
       <Text variant="bodyStrong">{past ? 'Yeni saat bekleniyor' : formatDateTime(session.scheduledAt)}</Text>
+      {accept.feedback ? <Banner tone={accept.feedback.tone}>{accept.feedback.message}</Banner> : null}
       {request.feedback ? <Banner tone={request.feedback.tone}>{request.feedback.message}</Banner> : null}
       {session.rescheduleRequestedAt ? (
         <Text tone="secondary" variant="secondary">{`Saat değişikliği talebin alındı.${session.rescheduleReason ? ` ${RESCHEDULE_REASON_LABEL[session.rescheduleReason]}` : ''}`}</Text>
@@ -123,13 +125,17 @@ function SessionCard({ session }: { session: MobileCoachingSession }) {
       {session.proposedAt ? (
         <>
           <Text tone="secondary" variant="secondary">{`Önerilen saat: ${formatDateTime(session.proposedAt)}`}</Text>
-          <Button label="Yeni saati web panelinde onayla" variant="secondary" onPress={() => void openOnWeb('/panel/ogrenci/kocluk')} />
+          <Button label="Yeni saati onayla" variant="secondary" disabled={!online || Date.parse(session.proposedAt) <= now} onPress={() => setConfirm(true)} testID={`yon-accept-${session.id}`} />
         </>
       ) : null}
       <View style={styles.actions}>
         {meetingUrl ? <Button label="Görüşmeye katıl" onPress={() => void Linking.openURL(meetingUrl)} testID={`yon-join-${session.id}`} /> : null}
         {!session.rescheduleRequestedAt ? <Button label="Saat değiştir" variant="secondary" onPress={() => setOpen(true)} testID={`yon-reschedule-${session.id}`} /> : null}
       </View>
+      <BottomSheet visible={confirm} title="Yeni görüşme saatini onayla" onClose={() => { if (!accept.submitting) setConfirm(false); }}>
+        <Text>{session.proposedAt ? formatDateTime(session.proposedAt) : 'Güncel saat önerisi bulunmuyor.'}</Text>
+        <Button label="Bu saati onaylıyorum" testID="yon-accept-confirm" loading={accept.submitting} disabled={!online} onPress={async () => { await accept.submit(); setConfirm(false); }} />
+      </BottomSheet>
       <BottomSheet visible={open} title="Saat değişikliği nedeni" onClose={() => setOpen(false)}>
         <View accessibilityRole="radiogroup" accessibilityLabel="Saat değişikliği nedeni">
           {YON_RESCHEDULE_REASONS.map((value) => (

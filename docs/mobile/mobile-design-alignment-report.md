@@ -93,3 +93,14 @@ Aşağıdaki kayıtlar rota wrapper'larını tekrar ekran saymaz. Her kayıt ort
 | `teacher-odk-reports` | `mobile/src/features/staff/odk/teacher-odk-reports.tsx` | iOS dolu + kaynak |
 
 Detay rotaları (ders/ödev/görev/deneme/sonuç/öğretmen teslimi/koç öğrenci-plan-görüşme) ortak Stack, PageHeader, Section, Row, form ve feedback katmanını kullanır. Kimlik kapıları ile genel hesap/bildirim rotaları yukarıdaki aile eşlemesine dahildir.
+
+
+## İşlev eşliği — 10 Ekim ek kontrol
+
+Analiz Yön ve Deneme Ligi'nde yer tutucuya düşüyordu; artık ortak web yükleyicisini kullanan native ekran açılır. Analiz API'si ve haftalık hedef, aktif OD / OK / ODK öğrenci erişimini kabul eder; kaynak sahipliği ve pilot kapıları korunur. Analiz bildirimi etkin ürünü OD'ye zorlamaz. Öğretmen sunucu menüsünün birincil sekmelerinin gizlenmesi/boş açılması ve OD yardım kutusu eşlemesi düzeltildi. Yön öğrencisi önerilen görüşme saatini artık native onay adımıyla kabul eder; sürüm çakışmasında bilgi gösterilir ve görüşme yenilenir.
+
+Doğrulama: 15 mobil suite / 150 test, mobil ve kök TypeScript, mobil ESLint, ilgili API ESLint, 24 ilgili sunucu birim testi, 10 sözleşme / 33 token kontrolü geçti. iOS ve Android Hermes exportları ve release hygiene taraması geçti; imzalı binary değildir. Yeni gerçek-HTTP E2E regresyonu mevcut mobile-api suite'ine eklendi, tam E2E suite yerelde koşturulmadı.
+
+Gerçek yerel Next API + PostgreSQL ile yalnız OK üyeliğine sahip geçici öğrenci: Analiz okuma, haftalık hedef yazma/yeniden okuma ve OD ana sayfasına erişememe geçti. Geçici kullanıcı temizlendi. ODK-only ilk kontrol pilot kapısında beklendiği gibi durdu; ayrı aktif pilot test üyeliği oluşturma adımı otomatik onay incelemesinde reddedildi ve çalıştırılmadı. Mevcut üç ürüne erişen yerel test hesabıyla iPhone SE QA / Expo Go üzerinde Yön Analiz açıldı, haftalık hedef kaydedildi, Deneme Ligi'ne geçildi ve ortak Analiz/hedef tekrar okundu. Kullanıcının fiziksel iPhone'u kontrol edilmedi.
+
+Tam native panel eşitliği tamamlanmış değildir: yönetim, Dino, sınav çözme ve diğer açık web devamları sürer. Satış / PAYTR / checkout eklenmedi.

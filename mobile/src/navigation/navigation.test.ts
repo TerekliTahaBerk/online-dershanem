@@ -2,7 +2,7 @@ import { makeBootstrap } from '@/test/fixtures';
 
 import { findNavItem, resolveNativeScreen } from './native-screens';
 import { hrefForOdTarget } from './od-targets';
-import { expoHrefFor, mapNotificationHref, normalizeWebPath, sanitizeIncomingPath, targetForNavId } from './route-map';
+import { expoHrefFor, mapNotificationHref, normalizeWebPath, sanitizeIncomingPath, targetForNavId, workspaceForWebPath } from './route-map';
 
 const item = (id: string, webPath = `/panel/x/${id}`) => ({ id, label: id, webPath });
 
@@ -27,6 +27,10 @@ describe('native ekran eşlemesi (rol + çalışma alanı + menü kimliği)', ()
     for (const id of ['assignments', 'lessons']) {
       expect(resolveNativeScreen({ role: 'STUDENT', workspace: 'ODK', item: item(id) })).toMatchObject({ key: 'placeholder', phase: 'LATER' });
     }
+  });
+
+  it.each(['OD', 'OK', 'ODK'] as const)('%s öğrencisi paneldeki ortak Analiz ekranına gider', (workspace) => {
+    expect(resolveNativeScreen({ role: 'STUDENT', workspace, item: item('analiz') }).key).toBe('od-progress');
   });
 
   it('veli, öğretmen ve yönetim öğrenci ekranına düşmez', () => {
@@ -63,6 +67,12 @@ describe('bildirim ve derin bağlantı eşlemesi', () => {
     expect(normalizeWebPath('//evil.example/panel')).toBeNull();
     expect(normalizeWebPath('/panel/../giris')).toBeNull();
     expect(normalizeWebPath('/panel/ogrenci/')).toBe('/panel/ogrenci');
+  });
+
+  it('ortak Analiz bildirimi etkin Yön veya Deneme Ligi alanını OD alanına zorlamaz', () => {
+    expect(workspaceForWebPath('/panel/ogrenci/analiz')).toBeNull();
+    const navigation = makeBootstrap({ products: { OK: 'ACTIVE' }, extraNav: [['analiz', 'Analiz', '/panel/ogrenci/analiz']] }).workspace!.navigation;
+    expect(mapNotificationHref('/panel/ogrenci/analiz', navigation)).toEqual({ kind: 'screen', navId: 'analiz' });
   });
 
   it('native rota yolları web yollarından bağımsızdır', () => {

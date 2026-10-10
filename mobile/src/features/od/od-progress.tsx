@@ -7,13 +7,14 @@ import { Banner, Button, EmptyState, PageHeader, Row, Screen, Section, StatusBad
 import { color, radius, space } from '@/design/tokens';
 import { fetchInsights, saveWeeklyGoal } from '@/lib/api/student';
 import { ApiError } from '@/lib/api/errors';
-import { useSession } from '@/lib/auth/session-provider';
+import { useReadyBootstrap, useSession } from '@/lib/auth/session-provider';
 import { expoHrefFor, targetForNavId } from '@/navigation/route-map';
 
-import { QueryView, useInvalidateOd, useOdNavigation, useOdQuery, usePullToRefresh } from './shared';
+import { QueryView, useOdNavigation, usePullToRefresh } from './shared';
+import { useInvalidateWorkspace, useWorkspaceQuery } from '../shared/workspace-data';
 
 /**
- * OD · GİDİŞATIM — web `app/panel/ogrenci/analiz` ile AYNI servis
+ * ORTAK · GİDİŞATIM — web `app/panel/ogrenci/analiz` ile AYNI servis
  * (`GET /api/panel/student/insights` → `loadStudentProgressInsight`).
  * Metrik ve anlatı sunucudan; burada yeniden hesaplanmaz. Eski
  * `/api/panel/student/progress` bu ekranda KULLANILMAZ.
@@ -29,7 +30,9 @@ const DIRECTION: Record<'up' | 'down' | 'steady' | 'limited', { label: string; t
 const formatNet = (value: number) => value.toLocaleString('tr-TR', { maximumFractionDigits: 2 });
 
 export default function OdProgressScreen() {
-  const query = useOdQuery('insights', (api, signal) => fetchInsights(api, signal));
+  const bootstrap = useReadyBootstrap();
+  const product = bootstrap.workspace?.activeProduct ?? 'OD';
+  const query = useWorkspaceQuery(product, 'insights', (api, signal) => fetchInsights(api, signal));
   const refresh = usePullToRefresh(() => query.refetch());
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="od-progress">
@@ -116,7 +119,8 @@ function RateRow({ title, rate, unit }: { title: string; rate: { percent: number
  */
 function WeeklyGoal({ goal }: { goal: string | null }) {
   const { api } = useSession();
-  const invalidate = useInvalidateOd();
+  const bootstrap = useReadyBootstrap();
+  const invalidate = useInvalidateWorkspace(bootstrap.workspace?.activeProduct ?? 'OD');
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(goal ?? '');
   const [message, setMessage] = useState<{ tone: 'success' | 'critical'; text: string } | null>(null);

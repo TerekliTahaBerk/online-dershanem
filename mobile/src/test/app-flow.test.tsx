@@ -4,6 +4,7 @@ import { act, fireEvent, renderRouter, waitFor } from 'expo-router/testing-libra
 
 import { createFakeServer, type FakeAccount } from './fake-server';
 import { makeBootstrap } from './fixtures';
+import { jsonResponse } from './harness';
 
 /**
  * Gerçek rota ağacı (`src/app`) + gerçek oturum sağlayıcısı + sahte sunucu.
@@ -64,6 +65,52 @@ describe('M1 uygulama akışları', () => {
     await signIn('ada@example.com', 'yanlis');
     expect(await screen.findByText('E-posta veya parola hatalı.', {}, WAIT)).toBeTruthy();
     expect(secureStore.__store.size).toBe(0);
+  });
+
+  it('öğretmenin sunucudan gelen birincil sekmeleri menüden de gerçek ekran açar', async () => {
+    const bootstrap = makeBootstrap({ role: 'TEACHER' });
+    bootstrap.workspace!.navigation.primary = [
+      { id: 'today', label: 'Bugün', webPath: '/panel/ogretmen' },
+      { id: 'assignments', label: 'Çalışmalar', webPath: '/panel/ogretmen/odevler' },
+      { id: 'lessons', label: 'Dersler', webPath: '/panel/ogretmen/takvim' },
+      { id: 'help', label: 'Yardım isteyenler', webPath: '/panel/ogretmen/yardim' },
+    ];
+    await boot([account('ogretmen@example.com', bootstrap)]);
+    await signIn('ogretmen@example.com');
+    await act(async () => fireEvent.press(await screen.findByTestId('nav-assignments', {}, WAIT)));
+    expect(await screen.findByTestId('teacher-assignments', {}, WAIT)).toBeTruthy();
+    await act(async () => fireEvent.press(screen.getByTestId('nav-lessons')));
+    expect(await screen.findByTestId('teacher-lessons', {}, WAIT)).toBeTruthy();
+    await act(async () => fireEvent.press(screen.getByTestId('nav-help')));
+    expect(await screen.findByTestId('teacher-help', {}, WAIT)).toBeTruthy();
+    expect(currentServer.called('GET', '/api/panel/assignments')).toHaveLength(0);
+  });
+
+  it.each([200, 409])('Yön önerilen saat onayı: sunucu %s yanıtında güncel görüşme tekrar okunur', async (status) => {
+    let accepted = false;
+    let reads = 0;
+    const proposal = '2099-10-12T14:00:00.000Z';
+    const server = await boot([account('yon@example.com', makeBootstrap({ products: { OK: 'ACTIVE' } }), { routes: {
+      'GET /api/panel/student/coaching': () => {
+        reads++;
+        return jsonResponse(200, { contractVersion: 1, state: 'READY', generatedAt: '2026-10-10T10:00:00.000Z',
+          coach: { name: 'Koç', cadenceDays: 7, nextScheduledAt: proposal, lastCompletedAt: null, focus: null, overdue: false },
+          upcoming: [{ id: 's-1', version: accepted ? 2 : 1, scheduledAt: accepted ? proposal : '2099-10-11T14:00:00.000Z', meetingUrl: null, rescheduleRequestedAt: accepted ? null : '2026-10-10T10:00:00.000Z', rescheduleReason: accepted ? null : 'SCHOOL_SCHEDULE', proposedAt: accepted ? null : proposal }], past: [], sharedNotes: [], coachTasks: null });
+      },
+      'POST /api/panel/coaching-sessions/s-1': () => {
+        accepted = status === 200;
+        return jsonResponse(status, status === 200 ? { id: 's-1', version: 2 } : { error: 'Görüşme değişti. Güncel saati kontrol et.' });
+      },
+    } })]);
+    await signIn('yon@example.com');
+    await act(async () => fireEvent.press(await screen.findByTestId('nav-coaching', {}, WAIT)));
+    await act(async () => fireEvent.press(await screen.findByTestId('yon-accept-s-1', {}, WAIT)));
+    const before = reads;
+    await act(async () => fireEvent.press(await screen.findByTestId('yon-accept-confirm', {}, WAIT)));
+    await waitFor(() => expect(reads).toBeGreaterThan(before), WAIT);
+    expect(server.called('POST', '/api/panel/coaching-sessions/s-1')[0].body).toMatchObject({ action: 'ACCEPT', expectedVersion: 1, idempotencyKey: expect.any(String) });
+    if (status === 200) await waitFor(() => expect(screen.queryByTestId('yon-accept-s-1')).toBeNull(), WAIT);
+    else expect(await screen.findByText('Görüşme değişti. Güncel saati kontrol et.', {}, WAIT)).toBeTruthy();
   });
 
   it('OD öğrencisi: giriş → OD Bugün; token SecureStore\'da, istekler Bearer taşır', async () => {

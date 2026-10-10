@@ -107,7 +107,7 @@ export function workspaceForWebPath(href: string | null | undefined): 'OD' | 'OK
   if (/^\/panel\/veli\/(?:takvim|odevler|ogretmenler|denemeler)(?:\/|$)/.test(path)) return 'OD';
   if (/^\/panel\/veli\/kocluk(?:\/|$)/.test(path)) return 'OK';
   if (/^\/panel\/ogrenci\/(?:yon|plan|kocluk|hedefler)(?:\/|$)/.test(path)) return 'OK';
-  if (/^\/panel\/ogrenci\/(?:takvim|odevler|materyaller|tekrar|telafi|analiz)(?:\/|$)/.test(path)) return 'OD';
+  if (/^\/panel\/ogrenci\/(?:takvim|odevler|materyaller|tekrar|telafi)(?:\/|$)/.test(path)) return 'OD';
   // M7 öğretmen / koç.
   if (/^\/panel\/odk\/ogretmen(?:\/|$)/.test(path)) return 'ODK';
   if (/^\/panel\/ogretmen\/(?:yon|hazirlik)(?:\/|$)/.test(path)) return 'OK';
