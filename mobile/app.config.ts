@@ -28,8 +28,19 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     const productionOrigin = optional('MOBILE_PRODUCTION_API_ORIGIN');
     if (profile !== 'production' && (['onlinedershanem.com', 'www.onlinedershanem.com'].includes(api.hostname) || (productionOrigin && api.origin === new URL(productionOrigin).origin))) throw new Error('Internal builds must use isolated staging');
     // Keep public bundle inputs deliberately small. Values are never printed.
-    const publicKeys = new Set(['EXPO_PUBLIC_API_URL', 'EXPO_PUBLIC_APP_ENV']);
-    if (Object.keys(process.env).some((key) => key.startsWith('EXPO_PUBLIC_') && !publicKeys.has(key))) throw new Error('Unexpected public environment variable');
+    const publicKeys = new Set([
+      'EXPO_PUBLIC_API_URL',
+      'EXPO_PUBLIC_APP_ENV',
+      'EXPO_PUBLIC_USE_STATIC',
+    ]);
+    const unexpectedPublicKeys = Object.keys(process.env).filter(
+      (key) => key.startsWith('EXPO_PUBLIC_') && !publicKeys.has(key)
+    );
+    if (unexpectedPublicKeys.length > 0) {
+      throw new Error(
+        `Unexpected public environment variables: ${unexpectedPublicKeys.join(', ')}`
+      );
+    }
   }
   const releaseProfile = profile === 'preview' || profile === 'production';
   const suffix = environment === 'development' ? ' Dev' : environment === 'preview' ? ' Preview' : '';
