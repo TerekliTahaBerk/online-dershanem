@@ -67,6 +67,19 @@ function mapOdkDetailPath(path: string, navigation: Navigation): NativeTarget | 
   return { kind: 'detail', href: match[2] === '/sonuc' ? `/odk/exam/${match[1]}/result` : `/odk/exam/${match[1]}` };
 }
 
+/**
+ * Öğretmen / koç web yolları → native detay (M7). Ders yalnız "Dersler",
+ * koç öğrenci sayfası yalnız "Öğrenciler" (Yön koçluk) menüdeyken. Kaynak
+ * ilişkisi (dersin öğretmeni, aktif koç ataması) yine sunucuda doğrulanır.
+ */
+function mapStaffDetailPath(path: string, navigation: Navigation): NativeTarget | null {
+  const lesson = /^\/panel\/ogretmen\/ders\/([\w-]{1,64})$/.exec(path);
+  if (lesson) return navHas(navigation, 'lessons') ? { kind: 'detail', href: `/teacher/lesson/${lesson[1]}` } : { kind: 'none' };
+  const prep = /^\/panel\/ogretmen\/hazirlik\/([\w-]{1,64})$/.exec(path);
+  if (prep) return navHas(navigation, 'coach-students') ? { kind: 'detail', href: `/coach/student/${prep[1]}` } : { kind: 'none' };
+  return null;
+}
+
 /** Bildirim href'i → yetkili native hedef. Eşleşme yoksa `none` (liste ekranında kalınır). */
 export function mapNotificationHref(href: string | null | undefined, navigation: Navigation | null): NativeTarget {
   const path = normalizeWebPath(href);
@@ -76,7 +89,7 @@ export function mapNotificationHref(href: string | null | undefined, navigation:
   const items = [...navigation.primary, ...navigation.sections.flatMap((section) => section.items)];
   const exact = items.find((item) => normalizeWebPath(item.webPath) === path);
   if (exact) return targetForNavId(navigation, exact.id);
-  return mapOdDetailPath(path, navigation) ?? mapOdkDetailPath(path, navigation) ?? { kind: 'none' };
+  return mapOdDetailPath(path, navigation) ?? mapOdkDetailPath(path, navigation) ?? mapStaffDetailPath(path, navigation) ?? { kind: 'none' };
 }
 
 /**
@@ -95,6 +108,10 @@ export function workspaceForWebPath(href: string | null | undefined): 'OD' | 'OK
   if (/^\/panel\/veli\/kocluk(?:\/|$)/.test(path)) return 'OK';
   if (/^\/panel\/ogrenci\/(?:yon|plan|kocluk|hedefler)(?:\/|$)/.test(path)) return 'OK';
   if (/^\/panel\/ogrenci\/(?:takvim|odevler|materyaller|tekrar|telafi|analiz)(?:\/|$)/.test(path)) return 'OD';
+  // M7 öğretmen / koç.
+  if (/^\/panel\/odk\/ogretmen(?:\/|$)/.test(path)) return 'ODK';
+  if (/^\/panel\/ogretmen\/(?:yon|hazirlik)(?:\/|$)/.test(path)) return 'OK';
+  if (/^\/panel\/ogretmen\/(?:ders|takvim|odevler)(?:\/|$)/.test(path)) return 'OD';
   return null;
 }
 
@@ -138,7 +155,7 @@ export function expoHrefFor(target: NativeTarget): string | null {
 }
 
 /** İzinli native rota önekleri (derin bağlantılar). Diğer her şey ana ekrana düşer. */
-const ALLOWED_DEEP_LINK = /^\/(?:$|slot-[1-3]$|menu$|notifications$|account(?:\/(?:sessions|password))?$|screen\/[\w-]{1,64}$|od\/(?:lesson|assignment)\/[\w-]{1,64}$|od\/review-recovery$|yon\/task\/[\w-]{1,64}$|odk\/exam\/[\w-]{1,64}(?:\/result)?$|forgot-password$)/;
+const ALLOWED_DEEP_LINK = /^\/(?:$|slot-[1-3]$|menu$|notifications$|account(?:\/(?:sessions|password))?$|screen\/[\w-]{1,64}$|od\/(?:lesson|assignment)\/[\w-]{1,64}$|od\/review-recovery$|yon\/task\/[\w-]{1,64}$|odk\/exam\/[\w-]{1,64}(?:\/result)?$|teacher\/(?:lesson|submission)\/[\w-]{1,64}$|coach\/(?:student|session|plan)\/[\w-]{1,64}$|forgot-password$)/;
 
 /**
  * Sistemden gelen yol (`onlinedershanem://...`) → güvenli uygulama yolu.

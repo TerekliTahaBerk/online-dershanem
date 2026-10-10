@@ -41,6 +41,15 @@ export type NativeScreenKey =
   | 'parent-external-exams'
   | 'parent-weekly'
   | 'parent-account'
+  | 'teacher-home'
+  | 'teacher-lessons'
+  | 'teacher-assignments'
+  | 'teacher-help'
+  | 'coach-home'
+  | 'coach-students'
+  | 'coach-sessions'
+  | 'coach-plans'
+  | 'teacher-odk-reports'
   | 'placeholder';
 
 export type PlannedPhase = 'M2' | 'M6' | 'M7' | 'WEB' | 'LATER';
@@ -137,8 +146,35 @@ const PARENT: Record<string, NativeScreenKey> = {
 /** Velide bilinçli web devam yolu: `dino` (Dino AI, ayrı karar). */
 const PARENT_WEB_ONLY: ReadonlySet<string> = new Set(['dino']);
 
+/**
+ * ÖĞRETMEN / KOÇ — M7. Eşleme ÇALIŞMA ALANINA göre: OD dersleri / çalışmaları
+ * yalnız OD alanında, koç ekranları yalnız Yön (OK) alanında, ilişkili deneme
+ * raporları yalnız Deneme Ligi (ODK) alanında. Menüde görünmek YETKİ DEĞİL;
+ * her personel ucu sunucuda ürün rolü + personel izni + kaynak ilişkisini
+ * doğrular. Eşlenmeyen öğretmen öğeleri (öğrenciler, materyaller, tekrar,
+ * telafi, AI yardımcı, müdahale, özetler, analiz…) açık web devam yoludur.
+ * ADMIN için native eşleme YOK (yönetim yalnız web).
+ */
+const TEACHER_OD: Record<string, NativeScreenKey> = {
+  today: 'teacher-home',
+  lessons: 'teacher-lessons',
+  assignments: 'teacher-assignments',
+};
+const TEACHER_OK: Record<string, NativeScreenKey> = {
+  today: 'coach-home',
+  'coach-students': 'coach-students',
+  'coach-sessions': 'coach-sessions',
+  plan: 'coach-plans',
+  // S-3: web'de Yön menüsünde; yanıt ucu OD öğretmen rolü ister (sunucu).
+  help: 'teacher-help',
+};
+const TEACHER_ODK: Record<string, NativeScreenKey> = {
+  today: 'teacher-odk-reports',
+  'odk-reports': 'teacher-odk-reports',
+  'odk-teacher-reports': 'teacher-odk-reports',
+};
+
 function placeholderPhase(role: MobileRole, workspace: MobileProductCode | null): PlannedPhase {
-  if (role === 'TEACHER') return 'M7';
   if (role === 'ADMIN') return 'WEB';
   // Yön'de bilinmeyen öğe: güvenli taraf, açık web devam yolu.
   if (workspace === 'OK') return 'LATER';
@@ -153,12 +189,17 @@ export function resolveNativeScreen(input: { role: MobileRole; workspace: Mobile
   else if (role === 'STUDENT' && workspace === 'OK') key = OK_STUDENT[item.id];
   else if (role === 'STUDENT' && workspace === 'ODK') key = ODK_STUDENT[item.id];
   else if (role === 'PARENT') key = PARENT[item.id];
+  else if (role === 'TEACHER' && workspace === 'OD') key = TEACHER_OD[item.id];
+  else if (role === 'TEACHER' && workspace === 'OK') key = TEACHER_OK[item.id];
+  else if (role === 'TEACHER' && workspace === 'ODK') key = TEACHER_ODK[item.id];
   if (key) return { key, navId: item.id, title: item.label, webPath: item.webPath };
   // Deneme Ligi öğrencisinde eşlenmemiş her öğe bilinçli web devam yoludur.
   const webOnly =
     (role === 'STUDENT' && ((workspace === 'OD' && OD_WEB_ONLY.has(item.id)) || (workspace === 'OK' && OK_WEB_ONLY.has(item.id)) || workspace === 'ODK')) ||
     // Velide eşlenmemiş her öğe (ör. Dino AI) bilinçli web devam yoludur.
-    (role === 'PARENT' && (PARENT_WEB_ONLY.has(item.id) || !PARENT[item.id]));
+    (role === 'PARENT' && (PARENT_WEB_ONLY.has(item.id) || !PARENT[item.id])) ||
+    // Öğretmende eşlenmemiş her öğe bilinçli web devam yoludur (M7).
+    role === 'TEACHER';
   const phase = webOnly ? 'LATER' : placeholderPhase(role, workspace);
   return { key: 'placeholder', navId: item.id, title: item.label, webPath: item.webPath, phase };
 }
@@ -171,7 +212,7 @@ export function findNavItem(navigation: { primary: MobileNavItem[]; sections: { 
 export const PHASE_COPY: Record<PlannedPhase, string> = {
   M2: 'Bu bölüm onlinedershanem. mobil deneyiminin bir sonraki adımında uygulamaya gelecek.',
   M6: 'Bu veli bölümü mobil uygulamada henüz yok. Web panelinden kullanmaya devam edebilirsiniz.',
-  M7: 'Öğretmen ve koç ekranları mobil uygulamaya sonraki aşamada gelecek.',
+  M7: 'Bu öğretmen bölümü mobil uygulamada yok. Web panelinden kullanmaya devam edebilirsiniz.',
   WEB: 'Yönetim işlemleri güvenlik gereği web panelinden yapılır.',
   LATER: 'Bu bölüm mobil uygulamada henüz yok. Web panelinden kullanmaya devam edebilirsin.',
 };

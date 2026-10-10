@@ -32,7 +32,8 @@ describe('native ekran eşlemesi (rol + çalışma alanı + menü kimliği)', ()
   it('veli, öğretmen ve yönetim öğrenci ekranına düşmez', () => {
     // M6: veli `today` öğrenci Bugün'üne değil, veli Bugün'üne gider.
     expect(resolveNativeScreen({ role: 'PARENT', workspace: 'OD', item: item('today') })).toMatchObject({ key: 'parent-home' });
-    expect(resolveNativeScreen({ role: 'TEACHER', workspace: 'OD', item: item('today') })).toMatchObject({ key: 'placeholder', phase: 'M7' });
+    // M7: öğretmen OD `today` öğrenci Bugün'üne değil, öğretmen Bugün'üne gider.
+    expect(resolveNativeScreen({ role: 'TEACHER', workspace: 'OD', item: item('today') })).toMatchObject({ key: 'teacher-home' });
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('today') })).toMatchObject({ key: 'placeholder', phase: 'WEB' });
   });
 

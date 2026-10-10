@@ -11,7 +11,8 @@ import { openOnWeb } from './web-continuation';
 import { WorkspaceSwitcher } from './workspace-switcher';
 
 /**
- * Öğretmen / koç / Deneme Ligi personeli / yönetim için M1 bilgi ana sayfası.
+ * Yönetim (ADMIN, yalnız web) ve çalışma alanı olmayan öğretmen için bilgi
+ * ana sayfası (M7'den beri öğretmen çalışma alanı native Bugün'ü açar).
  * Sahte iş verisi göstermez; rolün mobilde neyin geleceğini ve web devam
  * yolunu açıkça söyler. Personel yetenekleri sunucudan gelir (bootstrap).
  */
@@ -28,8 +29,8 @@ export function StaffHomeScreen() {
       <Screen testID={`staff-home-${role}`}>
         <PageHeader title={firstName ? `Merhaba ${firstName}` : 'Merhaba'} context={<Text tone="muted" variant="meta">{ROLE_LABEL[role]}</Text>} />
         <WorkspaceSwitcher />
-        <Banner tone="info" title="Mobil çalışma alanın hazırlanıyor">
-          {role === 'ADMIN' ? PHASE_COPY.WEB : PHASE_COPY.M7}
+        <Banner tone="info" title={role === 'ADMIN' ? 'Yönetim web panelinde' : 'Çalışma alanı bulunamadı'}>
+          {role === 'ADMIN' ? PHASE_COPY.WEB : 'Hesabına bağlı etkin bir öğretmen çalışma alanı yok. Web panelinden devam edebilirsin.'}
         </Banner>
         <Section title="Şimdilik">
           <Row title="Bildirimler" meta={unread > 0 ? `${unread} okunmamış` : null} onPress={() => router.push('/notifications')} />

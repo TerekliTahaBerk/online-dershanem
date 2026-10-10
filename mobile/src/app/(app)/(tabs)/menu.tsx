@@ -19,7 +19,8 @@ export default function MenuScreen() {
   const insets = useSafeAreaInsets();
   const navigation = bootstrap.workspace?.navigation;
   const unread = bootstrap.workspace?.unreadNotifications ?? 0;
-  const learner = bootstrap.user.role === 'STUDENT' || bootstrap.user.role === 'PARENT';
+  // M7: öğretmen de sunucu menüsünün bölümlerini görür (ADMIN yalnız web).
+  const learner = bootstrap.user.role !== 'ADMIN';
 
   function open(navId: string) {
     if (!navigation) return;

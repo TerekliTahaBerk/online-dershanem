@@ -27,6 +27,14 @@ export const queryKeys = {
   parentChildren: (userId: string) => [...queryKeys.parent(userId), 'children'] as const,
   parentAccount: (userId: string) => [...queryKeys.parent(userId), 'account'] as const,
   parentChild: (userId: string, studentId: string) => [...queryKeys.parent(userId), 'child', studentId] as const,
+  /**
+   * M7 personel: `['user', personelId, 'workspace', ürün, 'staff', 'TEACHER', kaynak, parametreler]`.
+   * Çalışma alanı önekiyle başlar: çalışma alanı değişince `selectWorkspace`
+   * bu kapsamı da siler; çıkışta önbellek temizlenir.
+   */
+  staff: (userId: string, workspace: MobileProductCode) => [...queryKeys.workspace(userId, workspace), 'staff', 'TEACHER'] as const,
+  staffResource: (userId: string, workspace: MobileProductCode, resource: string, params?: Record<string, string | number | null>) =>
+    [...queryKeys.staff(userId, workspace), resource, params ?? {}] as const,
   parentResource: (userId: string, studentId: string, resource: string) => [...queryKeys.parentChild(userId, studentId), resource] as const,
 };
 

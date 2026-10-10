@@ -31,6 +31,15 @@ import ParentLessonsScreen from '@/features/parent/parent-lessons';
 import ParentOdkReportsScreen from '@/features/parent/parent-odk-reports';
 import ParentTeachersScreen from '@/features/parent/parent-teachers';
 import ParentWeeklyScreen from '@/features/parent/parent-weekly';
+import CoachHomeScreen from '@/features/staff/coach/coach-home';
+import CoachPlansScreen from '@/features/staff/coach/coach-plans';
+import CoachSessionsScreen from '@/features/staff/coach/coach-sessions';
+import CoachStudentsScreen from '@/features/staff/coach/coach-students';
+import TeacherOdkReportsScreen from '@/features/staff/odk/teacher-odk-reports';
+import TeacherAssignmentsScreen from '@/features/staff/teacher/teacher-assignments';
+import TeacherHelpScreen from '@/features/staff/teacher/teacher-help';
+import TeacherHomeScreen from '@/features/staff/teacher/teacher-home';
+import TeacherLessonsScreen from '@/features/staff/teacher/teacher-lessons';
 import type { NativeScreen, NativeScreenKey } from '@/navigation/native-screens';
 
 import { PlaceholderScreen } from './placeholder-screen';
@@ -38,7 +47,8 @@ import { PlaceholderScreen } from './placeholder-screen';
 /**
  * Native ekranlar yalnız ait oldukları çalışma alanında, sunucu menüsü onları
  * içerdiğinde açılır. OD ekranları M2'de, Yön ekranları ve ortak check-in
- * M3'te, Deneme Ligi M4'te, veli ekranları M6'da yeni mimariye taşındı.
+ * M3'te, Deneme Ligi M4'te, veli ekranları M6'da, öğretmen / koç ekranları
+ * M7'de yeni mimariye taşındı.
  */
 const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElement> = {
   'od-home': () => <OdHomeScreen />,
@@ -69,8 +79,16 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'parent-external-exams': () => <ParentExternalExamsScreen />,
   'parent-weekly': () => <ParentWeeklyScreen />,
   'parent-account': () => <ParentAccountScreen />,
+  'teacher-home': () => <TeacherHomeScreen />,
+  'teacher-lessons': () => <TeacherLessonsScreen />,
+  'teacher-assignments': () => <TeacherAssignmentsScreen />,
+  'teacher-help': () => <TeacherHelpScreen />,
+  'coach-home': () => <CoachHomeScreen />,
+  'coach-students': () => <CoachStudentsScreen />,
+  'coach-sessions': () => <CoachSessionsScreen />,
+  'coach-plans': () => <CoachPlansScreen />,
+  'teacher-odk-reports': () => <TeacherOdkReportsScreen />,
 };
-
 
 export function NativeScreenView({ screen, context }: { screen: NativeScreen; context: 'tab' | 'stack' }) {
   const insets = useSafeAreaInsets();
