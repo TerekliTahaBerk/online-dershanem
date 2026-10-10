@@ -32,6 +32,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       'EXPO_PUBLIC_API_URL',
       'EXPO_PUBLIC_APP_ENV',
       'EXPO_PUBLIC_USE_STATIC',
+      'EXPO_PUBLIC_PROJECT_ROOT',
     ]);
     const unexpectedPublicKeys = Object.keys(process.env).filter(
       (key) => key.startsWith('EXPO_PUBLIC_') && !publicKeys.has(key)
