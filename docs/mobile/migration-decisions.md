@@ -13,15 +13,18 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
 | MD-07 | v1 kapsamı: öğrenci + veli; öğretmen/koç seçili akışlar; ADMIN ve Deneme Ligi personeli kapsam dışı | Öneri |
 | MD-08 | Deneme Ligi sınav çözme v1'de native değil | **Açık** |
 | MD-09 | Uygulama içi satın alma yok; kilitli ürünler bilgi kartı | **Açık** (hukuk/mağaza) |
-| MD-10 | Push: Expo Push Service + `Notification` tablosundan beslenen cron dağıtıcısı | Öneri |
+| MD-10 | Push: Expo Push Service + `Notification` tablosundan beslenen cron dağıtıcısı | Uygulandı (M5; MD-21 ile güncellendi) |
 | MD-11 | Mobil çerez kullanmaz; sunucu mobil girişte çerez set etmez; çerez ≠ Bearer çakışmasında oturum açılmaz | Uygulandı (M1) |
 | MD-12 | Yol sürümlemesi yok; eklemeli sözleşme + minimum sürüm kapısı | Uygulandı (M1) |
 | MD-13 | Çevrimdışı: v1 salt okuma önbelleği; çevrimdışı mutasyon kuyruğu M8 | Öneri |
 | MD-14 | Derin bağlantı: özel şema v1, universal/app link M8 | Kısmen (M1) |
 | MD-15 | Test: jest-expo + RNTL (M1), E2E (Maestro) M9 | Kısmen (M1) |
-| MD-16 | Şablon artıkları ve yalnız-mobil eski uçların emekliliği | Kısmen (M1) |
+| MD-16 | Şablon artıkları ve yalnız-mobil eski uçların emekliliği | Kısmen (M1; M2: yeni ekran `student/progress` kullanmaz, uç eski sürümler için korunur) |
 | MD-17 | Expo web hedefi desteklenmez | Uygulandı (M1) |
-| MD-18 | Durum etiketleri ve metinler sunucudan; mobil iş kuralı tutmaz | Uygulandı (M1) |
+| MD-18 | Durum etiketleri ve metinler sunucudan; mobil iş kuralı tutmaz | Uygulandı (M1, M2: web sayfası + JSON ucu ortak yükleyici) |
+| MD-21 | Push (M5) uygulama kararları: varsayılan kapalı, genel metin, gönderim anında yeniden uygunluk, çalışma modları | Uygulandı (M5; üretim NO-GO) |
+| MD-22 | Veli (M6): çocuk kapsamı sunucuda, `CHILD_NOT_FOUND`, bellek içi seçim, salt okunur ekranlar | Uygulandı (M6; cihaz doğrulaması yok) |
+| MD-23 | Öğretmen / koç (M7): rol + ürün + personel izni + kaynak ilişkisi; mod değişmedi; mevcut yazma uçları, sürüm + tekrar anahtarı; ADMIN web-only | Uygulandı (M7; cihaz doğrulaması yok) |
 
 ---
 
@@ -150,3 +153,82 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
 ## MD-18 — Sunum kuralları sunucuda
 
 **Karar.** Okuma modelleri hazır `{ label, tone }`, `state.key`, `nextAction`, metin özetleri taşır (`status-vocabulary`, `student-exam-state`, `yon-today`, `result-next-step`, `trendCaption` benzeri). Mobil enum çevirisi, net hesaplama, durum türetme veya "sıradaki adım" mantığı içermez. Navigasyon etiketleri bootstrap'tan; ekran başlıkları `PANEL_DOMAIN` alt kümesi. Ürün telemetrisi mevcut `POST /api/panel/events` (izin listeli olaylar) ile gönderilir; mobil kaynağı ayırmak gerekirse olay şemasına ek alan ayrı PR'dır.
+
+## MD-19 — Yön (M3) sunum ve kapsam kararları
+
+**Karar.**
+- **Taslak plan:** Mobil, öğrenciye yayınlanmamış (DRAFT) planın görevlerini almaz; yalnız durum ve görev sayısı gelir. Web Planım taslak görevleri salt okunur listeler; mobil daha dar davranır (gizlilik tarafında).
+- **Yön "Çalışmalar":** Yön çalışma alanındaki `assignments` menü öğesi OD ödev ekranına değil, bu haftanın yayında Yön plan görevlerine (`yon-work`) gider; OD ucu çağrılmaz.
+- **Görüşme:** Öğrenciye mobilde yalnız saat değişikliği TALEBİ (`REQUEST`) açılır. Koçun önerdiği yeni saatin onayı (`ACCEPT`) web devam yoluyla yapılır; `SAVE` / `COMPLETE` öğrenciye hiç açılmaz.
+- **Ortak haftalık özet (Yön):** `WeeklyDigest` uçları OD üyeliği ister (mevcut politika). Yön "Haftalık" ekranı ortak özeti yalnız öğrencinin aktif OD üyeliği varken ister; yayınlanmış koç özeti (`WeeklyCoachSummary`) ayrı başlıkla gösterilir. Politika genişletilmedi.
+- **Check-in:** OD ve Yön için tek native ekran; sunucu kuralları (OD grubu öncelikli, grubu yoksa koç ataması; haftalık hak; açık yardım isteği tekilliği) değişmedi.
+- **Test politikası (M3):** Kullanıcı talimatıyla M3'te YENİ test yazılmadı; yalnız mevcut paketler koşuldu. M3'ün bilinçli olarak değiştirdiği davranışa (Yön yer tutucusu → Yön ekranları, check-in yer tutucusu → native ekran) dayanan mevcut beklentiler güncellendi.
+
+## MD-20 — Deneme Ligi (M4) sınırları
+
+**Karar.**
+- **Sınav yürütme native değil:**
+  - Mobil deneme başlatmaz, sürdürmez, cevap yazmaz, kalp atışı / bütünlük olayı göndermez, teslim etmez.
+  - AVAILABLE ve IN_PROGRESS durumunda web sınav ekranı sistem tarayıcısında açılır; token, çerez veya tek kullanımlık giriş taşınmaz.
+  - Native çalıştırıcı veya SSO devri ayrı bir güvenlik incelemesi gerektirir.
+- **Salt okunur ayrıntı:** Mobil ayrıntı ucu süresi dolmuş denemeyi teslim etmez (`finalizeExpired: false`). Web davranışı değişmedi.
+- **Doğru cevap:** Soru başına doğru cevap yalnız cevap anahtarı yayınındayken mobil yanıta girer. Web sonuç sayfasındaki farklı davranış bir bulgudur; karar bekler (m4-security-review §5).
+- **Karşılaştırma:** Yalnız aynı sınav ailesinde, öğrencinin kendi yayınlanmış sonuçlarıyla yapılır. Sıralama, lig ve yüzdelik yoktur.
+- **ODK çalışma alanındaki ortak öğeler:** Çalışmalar, Analiz, check-in ve özet web devam yoluna gider. OD/Yön'deki `odk-exams` çalışma alanı geçişi önerir.
+- **Liste sınırı:** Liste en yeni 50 denemeyle sınırlıdır; aşılırsa `truncated` ile açıkça bildirilir.
+- **Test politikası (M4):** Kullanıcı talimatıyla yeni test yazılmadı. Sınırlar geçici, commit'lenmeyen bir betikle doğrulandı.
+
+## MD-21 — Push (M5) uygulama kararları
+
+**Bağlam.** MD-10 mimarisi uygulandı; uygulama sırasında aşağıdaki noktalar netleşti veya MD-10'dan ayrıldı.
+
+**Karar.**
+- **Varsayılan kapalı:**
+  - `NotificationPreference.pushEnabled` varsayılanı **false**. MD-10 true öneriyordu; kullanıcı izni ve açık seçim gerekir.
+  - Sunucu çalışma modu `PUSH_DELIVERY_MODE` varsayılanı **DISABLED**. Bilinmeyen değer de DISABLED sayılır. DRY_RUN Expo'yu çağırmaz.
+- **Kapsam:** Yalnız STUDENT / PARENT. Personel push'u M7'ye kadar yok. Ödeme / finans bildirimi push'a hiç sınıflanmaz.
+- **Gizlilik:**
+  - Push başlık / gövdesi bildirimin kendi metni değil, kategoriye göre sabit genel metindir.
+  - Yük yalnız `notificationId` taşır. İçerik `GET /api/panel/notifications/[id]` ile sahiplik kontrollü okunur.
+- **Gönderim anında yeniden uygunluk:** Kullanıcı, oturum, cihaz, tercih, kategori, okunma, kaynak geçerliliği ve sessiz saat gönderimde yeniden değerlendirilir. Fan-out anındaki durum yetki sayılmaz.
+- **Birikim yok:** Cihazın `activatedAt`'inden önce oluşmuş ve 24 saatten eski bildirimler gönderilmez.
+- **Kanal ilişkisi:** Push, uygulama içi bildirimin bir kanalıdır; `inAppEnabled = false` push'u da kapatır. Bu bir başlangıç sınırlamasıdır.
+- **Teslim garantisi:** En az bir kez. Zaman aşımı sonrası yeniden deneme yinelenebilir; mantıksal tekilleştirme bildirim × cihaz düzeyindedir.
+- **Deneme Ligi olayları:**
+  - REMINDER / OPEN / RESULT / ANSWER_KEY, gerçek yayın kurallarıyla ve kararlı sürüm anahtarıyla üretilir.
+  - Yeni tercih anahtarı `examUpdates`.
+  - Ayrı bayrak `ODK_STUDENT_NOTIFICATIONS`, varsayılan kapalı.
+- **Tercih ucu geriye uyumu:**
+  - Web PATCH tam gövde ister (değişmedi).
+  - Mobil (`x-od-client: mobile`) kısmi gövde gönderebilir; sunucu mevcut kayıtla birleştirip aynı şemayla doğrular.
+- **Test politikası (M5):** Kullanıcı talimatıyla yeni otomatik test yazılmadı. Davranış geçici, commit'lenmeyen probe'larla doğrulandı. Kalıcı testler M5 sonrası öneri olarak listelendi (m6-handoff §3).
+
+## MD-22 — Veli (M6) kapsam ve sunum kararları
+
+**Karar.**
+- **Çocuk kimliği:** `studentId` daima `StudentProfile.id`. Sunucu çocuğu `listParentVisibleChildren(parentId, "academic")` içinde arar; bulunamazsa 404 `CHILD_NOT_FOUND` döner. Başka aile, var olmayan kimlik, bitmiş bağlantı, akademik izni kapalı bağlantı ve yalnız KPSS çocuğu ayırt edilmez. Öğrenci `User.id` yalnız sunucuda çözülür (ODK raporu).
+- **İki amaç:** Akademik uçlar `academic`; yalnız hesap ucu `account`. Hesap ucu akademik yetki vermez.
+- **Seçim:** Mobil seçim yalnız bellekte. İlk çocuk yalnız açık seçim yokken varsayılır. Erişim düşünce sessiz geçiş olmaz: veri durur, önbellek silinir, açık seçim istenir.
+- **Önbellek:** Anahtarlar çocuk kapsamlıdır (`['user', veliId, 'parent', 'PARENT', 'child', studentId, kaynak]`). Çocuk değişince önceki çocuğun sorguları silinir; önceki veri gösterilmez.
+- **Salt okunur:** Veli mobilde çocuğun işine yazmaz (ödev, plan, görüşme). Tek yazma, velinin kendi haftalık özet geri bildirimidir (mevcut uç, yetki genişletilmedi).
+- **Ortak yükleyiciler:** Web Dersler / Ödevler / Koçluk / Haftalık sayfaları ve mobil uçlar aynı `lib/panel/parent-*-server.ts` fonksiyonlarını kullanır. Koçluk planına `productRef = OK` süzgeci eklendi (KPSS planı veliye düşmez).
+- **Deneme ayrımı:** Deneme Ligi raporu (`/api/odk/parent/report`) ile okul / kurum dış denemeleri (`/api/panel/parent/external-exams`) ayrı uç ve ayrı ekrandır.
+- **Ticaret:** Mobilde fiyat, sipariş, ödeme ve satın alma yok (MD-09). Paket görüşmesi web devam yolu.
+- **Test politikası (M6):** Yeni otomatik test yazılmadı. M6'nın bilinçli değiştirdiği davranışa dayanan 3 eski mobil beklenti güncellendi (veli yer tutucusu → veli ekranları). Sınırlar geçici, commit'lenmeyen probe ile doğrulandı.
+
+## MD-23 — Öğretmen ve koç (M7) yetki ve yazma kararları
+
+**Karar.**
+- **Yetki sırası:** oturum + MFA kapıları → TEACHER rolü → ürün erişimi → personel izni (`hasStaffPermission`, `STAFF_PRODUCT_ASSIGNMENTS` moduna uyar) → kaynak ilişkisi. Bootstrap yetenekleri ve menü yalnız görünürlüktür.
+- **Mod:** `STAFF_PRODUCT_ASSIGNMENTS` değiştirilmedi. Varsayılan shadow; üretime enforce sessizce geçirilmez. Üretim modu BLOCKED (operasyon).
+- **ADMIN:** mobil personel uçları ADMIN'e 403 döner. ADMIN mobilde yalnız bilgi ekranı + web devamıdır.
+- **Okuma uçları:** `/api/panel/staff/teacher/*`, `/api/panel/staff/coach/*`, `/api/odk/staff/related-reports`; `private, no-store`. Web öğretmen ders / yardım / ödevler sayfaları ve koç çalışma alanı aynı `lib/` yükleyicilerini kullanır.
+- **Yazma:** yalnız mevcut uçlar, yalnız çevrimiçi, iyimser tamamlama yok. Sürüm (`expectedVersion` / `expectedPlanVersion`) ve sabit tekrar anahtarı (`idempotencyKey`) mevcut sözleşmeye göre gönderilir. 409 → yeniden yükleme + bilinçli tekrar. 428 → web devamı (atlatma yok).
+- **Koç kapsamı:** yalnız aktif `CoachAssignment`. OD grup öğretmenliği Yön koçluk verisi açmaz.
+- **Gizlilik:**
+  - Görüşme özel notu ve INTERNAL koç notu yalnız `ok:note:read_private` ile ve yalnız detayda döner; Bugün / liste yanıtlarında yoktur.
+  - Not görünürlüğü mobilde açıkça seçilir; varsayılan INTERNAL.
+  - Bağlantılar yalnız HTTPS açılır ve loglanmaz.
+- **Kimlik:** öğrenci kimliği `StudentProfile.id`. ODK `User.id` dönüşümü yalnız sunucuda ve yalnız ilişkili öğrenciler içinde yapılır.
+- **Kapsam dışı:** ODK yönetim izinleri, ödev oluşturma, ders ödev taslağı, personel push'u.
+- **Test politikası (M7):** Yeni otomatik test yazılmadı. M7'nin bilinçli değiştirdiği davranışa dayanan 1 eski mobil beklenti güncellendi (öğretmen yer tutucusu → öğretmen Bugün). Sınırlar geçici, commit'lenmeyen probe ile doğrulandı.

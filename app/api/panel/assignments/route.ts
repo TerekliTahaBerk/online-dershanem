@@ -28,9 +28,21 @@ const schema = z.object({
  * WeeklyPlanTask) ve AYNI Bugün/Bu hafta/Sonraki/Tamamlananlar gruplama
  * mantığı. Web sayfası bu route'a geçirilmedi (riskten kaçınmak için).
  */
-export async function GET() {
+const listQuerySchema = z.object({ scope: z.literal("OD").optional() });
+
+/**
+ * `?scope=OD` (M2 mobil): yanıt yalnız Dershanem ödevlerini taşır — Yön
+ * Koçluk plan görevleri sorgulanmaz ve `planTasks: []` döner (plan görevleri
+ * Yön çalışma alanına aittir). Parametresiz istek eski davranıştır.
+ * Ödev / teslim satırlarındaki `teacherName`, `submittedAt`, `reviewedAt`
+ * eklemelidir; eski istemciler yok sayar.
+ */
+export async function GET(request: Request) {
   const auth = await requireApiOdRole("STUDENT");
   if (!auth.ok) return auth.response;
+  const query = listQuerySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
+  if (!query.success) return NextResponse.json({ error: "Geçersiz çalışma alanı kapsamı." }, { status: 400 });
+  const odOnly = query.data.scope === "OD";
 
   const evidenceEnabled = getPanelFeatureFlags().assignmentEvidence;
   const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId } });
@@ -51,17 +63,19 @@ export async function GET() {
           orderBy: { dueAt: "asc" },
           include: {
             progress: { where: { studentId: profile.id }, take: 1 },
-            group: { select: { name: true, subject: true } },
+            group: { select: { name: true, subject: true, teacher: { select: { fullName: true } } } },
             rubricCriteria: { orderBy: { position: "asc" } },
             submissions: { where: { studentId: profile.id }, orderBy: { attemptNumber: "desc" }, include: { scores: true } },
           },
         })
       : Promise.resolve([]),
-    prisma.weeklyPlan.findFirst({
-      where: { studentId: profile.id },
-      orderBy: { weekStart: "desc" },
-      include: { tasks: { orderBy: [{ scheduledFor: "asc" }, { position: "asc" }] } },
-    }),
+    odOnly
+      ? Promise.resolve(null)
+      : prisma.weeklyPlan.findFirst({
+          where: { studentId: profile.id },
+          orderBy: { weekStart: "desc" },
+          include: { tasks: { orderBy: [{ scheduledFor: "asc" }, { position: "asc" }] } },
+        }),
   ]);
 
   return NextResponse.json({
@@ -74,6 +88,7 @@ export async function GET() {
       dueAt: item.dueAt,
       groupName: item.group.name,
       subject: item.group.subject,
+      teacherName: item.group.teacher.fullName,
       status: item.progress[0]?.status || "TODO",
       version: item.progress[0]?.version || 0,
       evidenceRequired: item.evidenceRequired,
@@ -85,6 +100,8 @@ export async function GET() {
         textEvidence: submission.textEvidence,
         feedback: submission.feedback,
         scores: submission.scores.map((score) => ({ criterionId: score.criterionId, level: score.level })),
+        submittedAt: submission.submittedAt,
+        reviewedAt: submission.reviewedAt,
       })),
     })),
     planTasks: (plan?.tasks ?? []).map((t) => ({

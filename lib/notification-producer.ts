@@ -38,6 +38,15 @@ async function currentSource(tx: Prisma.TransactionClient, source: Source, now =
   }
   return null;
 }
+/**
+ * M5 push dağıtıcısı için: merkezi üreticinin kaynak kontrolü (ders hâlâ
+ * planlı, koçluk ataması / görüşme / plan geçerli). Kaynağı olmayan satır için
+ * bu fonksiyon çağrılmaz.
+ */
+export async function isNotificationSourceCurrent(source: Source, now = new Date()): Promise<boolean> {
+  return Boolean(await prisma.$transaction((tx) => currentSource(tx, source, now)));
+}
+
 function timing(preference: { quietStartMinute: number | null; quietEndMinute: number | null; dailyDigest: boolean; dailyDigestMinute: number | null } | null) {
   return preference ?? { quietStartMinute: null, quietEndMinute: null, dailyDigest: false, dailyDigestMinute: null };
 }

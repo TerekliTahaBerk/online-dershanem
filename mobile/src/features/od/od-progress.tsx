@@ -1,266 +1,183 @@
-import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { SymbolView } from 'expo-symbols';
+import { WEEKLY_GOAL_MAX, WEEKLY_GOAL_MIN, type MobileInsightsReady } from '@contracts/student';
+import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
-import { Card, CardTitle, ListEmpty, LineChart, PanelHeading, ProgressBar } from '@/components/panel-ui';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { BrandColors, Spacing } from '@/constants/theme';
+import { Banner, Button, EmptyState, PageHeader, Row, Screen, Section, StatusBadge, Text, TextField } from '@/design/primitives';
+import { color, radius, space } from '@/design/tokens';
+import { fetchInsights, saveWeeklyGoal } from '@/lib/api/student';
 import { ApiError } from '@/lib/api/errors';
-import { useLegacySession } from '@/lib/legacy-session';
+import { useSession } from '@/lib/auth/session-provider';
+import { expoHrefFor, targetForNavId } from '@/navigation/route-map';
 
-const DAY = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long' });
+import { QueryView, useInvalidateOd, useOdNavigation, useOdQuery, usePullToRefresh } from './shared';
 
-type Series = { name: string; color: string; nets: number[] };
-type ProgressData = {
-  profile: { id: string } | null;
-  weeklyGoal: string | null;
-  series: Series[];
-  labels: string[];
-  trendCaption: string | null;
-  attendance: { attended: number; total: number; missedLessonAt: string | null } | null;
-  completion: { done: number; total: number; pct: number } | null;
+/**
+ * OD · GİDİŞATIM — web `app/panel/ogrenci/analiz` ile AYNI servis
+ * (`GET /api/panel/student/insights` → `loadStudentProgressInsight`).
+ * Metrik ve anlatı sunucudan; burada yeniden hesaplanmaz. Eski
+ * `/api/panel/student/progress` bu ekranda KULLANILMAZ.
+ */
+
+const DIRECTION: Record<'up' | 'down' | 'steady' | 'limited', { label: string; tone: 'success' | 'warning' | 'neutral' }> = {
+  up: { label: 'Yükseliyor', tone: 'success' },
+  down: { label: 'Düşüyor', tone: 'warning' },
+  steady: { label: 'Dengeli', tone: 'neutral' },
+  limited: { label: 'Az veri', tone: 'neutral' },
 };
 
-function WeeklyGoalCard({ goal, onSaved }: { goal: string; onSaved: (goal: string) => void }) {
-  const { apiFetch } = useLegacySession();
+const formatNet = (value: number) => value.toLocaleString('tr-TR', { maximumFractionDigits: 2 });
+
+export default function OdProgressScreen() {
+  const query = useOdQuery('insights', (api, signal) => fetchInsights(api, signal));
+  const refresh = usePullToRefresh(() => query.refetch());
+  return (
+    <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="od-progress">
+      <QueryView query={query} disabledTitle="Gidişat analizi şu anda açık değil.">
+        {(data) =>
+          data.state === 'NO_PROFILE' ? (
+            <>
+              <PageHeader title="Gidişatın" />
+              <EmptyState title="Profilin hazırlanıyor." body="Öğrenci profilin tamamlandığında analiz özetin burada açılır." />
+            </>
+          ) : (
+            <InsightsBody data={data} />
+          )
+        }
+      </QueryView>
+    </Screen>
+  );
+}
+
+function InsightsBody({ data }: { data: MobileInsightsReady }) {
+  const nav = useOdNavigation();
+  return (
+    <>
+      <PageHeader title="Gidişatın" context={<Text tone="muted" variant="meta">{data.periodRange}</Text>} />
+      <View style={styles.summary} accessibilityRole="summary">
+        {data.narrative.map((sentence, index) => (
+          <Text key={index} tone="secondary">
+            {sentence}
+          </Text>
+        ))}
+      </View>
+      <WeeklyGoal goal={data.weeklyGoal} />
+      {data.isEmpty ? (
+        <EmptyState title="Henüz gösterilecek veri yok." body="Derslerin işlendikçe, çalışmaların tamamlandıkça ve denemelerin girildikçe gidişatın burada birikir." />
+      ) : (
+        <>
+          <Section title="Akademik">
+            {data.academic.examCount < 2 ? (
+              <Text tone="secondary">Deneme eğilimi için en az iki sonuç gerekiyor. İkinci deneme girildiğinde net değişimin burada görünür.</Text>
+            ) : (
+              <>
+                <Row
+                  title="Toplam net değişimi"
+                  meta={data.academic.netDelta === null ? '—' : `${data.academic.netDelta >= 0 ? '+' : ''}${formatNet(data.academic.netDelta)}`}
+                  subtitle={data.academic.netTrend.map((point) => `${point.label} ${formatNet(point.net)}`).join(' · ')}
+                />
+                {data.academic.subjects.map((subject) => (
+                  <Row key={subject.name} title={subject.name} trailing={<StatusBadge label={DIRECTION[subject.direction].label} tone={DIRECTION[subject.direction].tone} />} />
+                ))}
+              </>
+            )}
+            {data.academic.strengths.map((item) => (
+              <Text key={`s-${item.subject}`} tone="secondary">{`Güçlü: ${item.sentence}`}</Text>
+            ))}
+            {data.academic.supportAreas.map((item) => (
+              <Text key={`d-${item.subject}`} tone="secondary">{`Destek: ${item.sentence}`}</Text>
+            ))}
+            {data.academic.subjectCaption ? <Text tone="muted" variant="meta">{data.academic.subjectCaption}</Text> : null}
+          </Section>
+          <Section title="Çalışma davranışı">
+            <RateRow title="Derslere katılım" rate={data.behavioral.attendance} unit="ders" />
+            <RateRow title="Çalışma tamamlama" rate={data.behavioral.assignments} unit="çalışma" />
+          </Section>
+        </>
+      )}
+      {data.mockExamAnalysis && nav.has('mock-exams') && nav.navigation ? (
+        <Section title="Dış denemelerim">
+          <Text tone="secondary">Okulda, kursta veya başka bir platformda çözdüğün deneme sonuçları. Deneme Ligi sonuçların ayrı çalışma alanındadır.</Text>
+          <Button label="Dış denemelerimi gör" variant="secondary" onPress={() => nav.push(expoHrefFor(targetForNavId(nav.navigation!, 'mock-exams')))} />
+        </Section>
+      ) : null}
+    </>
+  );
+}
+
+function RateRow({ title, rate, unit }: { title: string; rate: { percent: number | null; numerator: number; denominator: number }; unit: string }) {
+  if (rate.percent === null || rate.denominator === 0) return <Row title={title} meta="Henüz veri yok" />;
+  return <Row title={title} meta={`%${Math.round(rate.percent)}`} subtitle={`${rate.numerator} / ${rate.denominator} ${unit}`} />;
+}
+
+/**
+ * Haftalık hedef — mevcut `PATCH /api/panel/student/weekly-goal` akışı
+ * (3–180 karakter). Kayıt yalnız sunucu onayından sonra gösterilir.
+ */
+function WeeklyGoal({ goal }: { goal: string | null }) {
+  const { api } = useSession();
+  const invalidate = useInvalidateOd();
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(goal);
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
+  const [draft, setDraft] = useState(goal ?? '');
+  const [message, setMessage] = useState<{ tone: 'success' | 'critical'; text: string } | null>(null);
+  const mutation = useMutation({ mutationFn: (value: string) => saveWeeklyGoal(api, value) });
+  const length = draft.trim().length;
+  const invalid = length < WEEKLY_GOAL_MIN || length > WEEKLY_GOAL_MAX;
 
   async function save() {
-    setBusy(true);
-    setMessage('');
+    setMessage(null);
     try {
-      const result = await apiFetch<{ goal: string }>('/api/panel/student/weekly-goal', { method: 'PATCH', body: { goal: draft } });
-      onSaved(result.goal);
+      await mutation.mutateAsync(draft.trim());
       setEditing(false);
-      setMessage('Hedefin kaydedildi.');
-    } catch (err) {
-      setMessage(err instanceof ApiError ? err.message : 'Hedef kaydedilemedi.');
-    } finally {
-      setBusy(false);
+      setMessage({ tone: 'success', text: 'Hedefin kaydedildi.' });
+      await invalidate();
+    } catch (error) {
+      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Hedef kaydedilemedi.' });
     }
   }
 
   return (
-    <View style={styles.goalCard}>
-      <View style={styles.goalHeader}>
-        <View style={styles.goalHeaderLabel}>
-          <SymbolView name="target" size={14} tintColor="#92400E" fallback={null} />
-          <ThemedText type="smallBold" style={styles.goalHeaderText}>
-            Bu haftaki kişisel hedefim
-          </ThemedText>
-        </View>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Haftalık hedefi düzenle"
-          onPress={() => {
-            setDraft(goal);
-            setEditing((v) => !v);
-            setMessage('');
-          }}
-          style={styles.goalEditButton}>
-          <SymbolView name="pencil" size={14} tintColor="#92400E" fallback={null} />
-        </Pressable>
-      </View>
-
+    <View style={styles.goal} testID="weekly-goal">
+      <Text variant="caption" tone="muted">Bu haftaki kişisel hedefim</Text>
+      {message ? <Banner tone={message.tone}>{message.text}</Banner> : null}
       {editing ? (
-        <View style={styles.goalForm}>
-          <TextInput
+        <>
+          <TextField
+            testID="weekly-goal-input"
+            label="Haftalık hedef"
             value={draft}
-            onChangeText={(text) => setDraft(text.slice(0, 180))}
+            onChangeText={setDraft}
             multiline
-            style={styles.goalInput}
-            accessibilityLabel="Haftalık hedef"
+            maxLength={WEEKLY_GOAL_MAX}
+            hint={`${length}/${WEEKLY_GOAL_MAX}`}
+            editable={!mutation.isPending}
           />
-          <View style={styles.goalFormFooter}>
-            <ThemedText type="small" style={styles.goalCharCount}>
-              {draft.length}/180
-            </ThemedText>
-            <Pressable
-              accessibilityRole="button"
-              disabled={busy || draft.trim().length < 3}
-              onPress={save}
-              style={({ pressed }) => [styles.goalSaveButton, (busy || draft.trim().length < 3) && styles.goalSaveButtonDisabled, pressed && styles.goalSaveButtonPressed]}>
-              {busy ? <ActivityIndicator color="#ffffff" /> : <ThemedText type="smallBold" style={styles.goalSaveLabel}>Hedefi kaydet</ThemedText>}
-            </Pressable>
+          <View style={styles.row}>
+            <Button testID="weekly-goal-save" label="Hedefi kaydet" loading={mutation.isPending} disabled={invalid} onPress={() => void save()} />
+            <Button label="Vazgeç" variant="quiet" disabled={mutation.isPending} onPress={() => setEditing(false)} />
           </View>
-        </View>
+        </>
       ) : (
-        <ThemedText style={styles.goalText}>{goal}</ThemedText>
+        <>
+          <Text variant="bodyStrong">{goal ?? 'Henüz bu hafta için bir hedef yazmadın.'}</Text>
+          <Button
+            testID="weekly-goal-edit"
+            label={goal ? 'Hedefi düzenle' : 'Hedef yaz'}
+            variant="secondary"
+            onPress={() => {
+              setDraft(goal ?? '');
+              setMessage(null);
+              setEditing(true);
+            }}
+          />
+        </>
       )}
-      {message ? (
-        <ThemedText type="small" style={styles.goalMessage}>
-          {message}
-        </ThemedText>
-      ) : null}
     </View>
   );
 }
 
-export default function GelisimScreen() {
-  const { token, signOut, apiFetch } = useLegacySession();
-  const [data, setData] = useState<ProgressData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const load = useCallback(
-    async (isRefresh = false) => {
-      if (!token) return;
-      if (isRefresh) setRefreshing(true);
-      else setLoading(true);
-      setError(null);
-      try {
-        const result = await apiFetch<ProgressData>('/api/panel/student/progress');
-        setData(result);
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 401) {
-          await signOut();
-          return;
-        }
-        setError(err instanceof ApiError ? err.message : 'Gelişim yüklenemedi. Bağlantınızı kontrol edin.');
-      } finally {
-        if (isRefresh) setRefreshing(false);
-        else setLoading(false);
-      }
-    },
-    [token, signOut, apiFetch],
-  );
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  if (loading) {
-    return (
-      <ThemedView style={styles.centerFlex}>
-        <ActivityIndicator color={BrandColors.brandStrong} size="large" />
-      </ThemedView>
-    );
-  }
-
-  const nothingYet = !!data && data.series.length === 0 && !data.attendance && !data.completion;
-
-  return (
-    <ThemedView style={styles.flex}>
-      <SafeAreaView style={styles.flex} edges={['left', 'right', 'bottom']}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={BrandColors.brandStrong} colors={[BrandColors.brandStrong]} />
-          }>
-          <PanelHeading title="Gelişimin" description="Ders katılımı, çalışma tamamlama ve deneme netleri bir arada." />
-
-          {error ? (
-            <ThemedText type="small" style={styles.errorBanner}>
-              {error}
-            </ThemedText>
-          ) : null}
-
-          {!data?.profile ? (
-            <ListEmpty title="Profilin hazırlanıyor." body="Öğrenci profilin tamamlandığında gelişim özetin burada açılır." />
-          ) : (
-            <>
-              <WeeklyGoalCard
-                goal={data.weeklyGoal || 'Bu hafta en az üç odaklı çalışma tamamlayacağım.'}
-                onSaved={(goal) => setData((d) => (d ? { ...d, weeklyGoal: goal } : d))}
-              />
-
-              {nothingYet ? (
-                <ListEmpty
-                  title="Henüz gösterilecek veri yok."
-                  body="Derslerin işlendikçe, çalışmaların tamamlandıkça ve denemelerin girildikçe gelişimin burada birikir."
-                />
-              ) : (
-                <>
-                  {data.series.length && data.labels.length >= 2 ? (
-                    <Card>
-                      <CardTitle>Ders bazında deneme neti · son {data.labels.length} deneme</CardTitle>
-                      <LineChart series={data.series.map((s) => ({ color: s.color, points: s.nets }))} height={180} />
-                      <View style={styles.legendRow}>
-                        {data.series.map((s) => (
-                          <View key={s.name} style={styles.legendItem}>
-                            <View style={[styles.legendSwatch, { backgroundColor: s.color }]} />
-                            <ThemedText type="small" themeColor="textSecondary">
-                              {s.name}
-                            </ThemedText>
-                          </View>
-                        ))}
-                      </View>
-                      {data.trendCaption ? (
-                        <ThemedText type="small" themeColor="textSecondary" style={styles.captionText}>
-                          {data.trendCaption}
-                        </ThemedText>
-                      ) : null}
-                    </Card>
-                  ) : null}
-
-                  <View style={styles.statRow}>
-                    {data.attendance ? (
-                      <Card style={styles.statCard}>
-                        <CardTitle>Ders katılımı</CardTitle>
-                        <ThemedText style={styles.statValue}>
-                          {data.attendance.attended} / {data.attendance.total}
-                        </ThemedText>
-                        <ThemedText type="small" themeColor="textSecondary">
-                          {data.attendance.missedLessonAt
-                            ? `Son ${data.attendance.total} ders · ${DAY.format(new Date(data.attendance.missedLessonAt))} dersine katılmadın`
-                            : `Son ${data.attendance.total} ders`}
-                        </ThemedText>
-                      </Card>
-                    ) : null}
-
-                    {data.completion ? (
-                      <Card style={styles.statCard}>
-                        <CardTitle>Çalışma tamamlama</CardTitle>
-                        <ThemedText style={styles.statValue}>%{data.completion.pct}</ThemedText>
-                        <ProgressBar percent={data.completion.pct} />
-                        <ThemedText type="small" themeColor="textSecondary">
-                          {data.completion.done} / {data.completion.total} çalışma tamamlandı.
-                        </ThemedText>
-                      </Card>
-                    ) : null}
-                  </View>
-                </>
-              )}
-            </>
-          )}
-        </ScrollView>
-      </SafeAreaView>
-    </ThemedView>
-  );
-}
-
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  centerFlex: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  scrollContent: { padding: Spacing.four, gap: Spacing.three, paddingBottom: Spacing.six },
-  errorBanner: { color: '#B3261E' },
-  goalCard: { borderRadius: 14, borderWidth: 1, borderColor: '#EADF9E', backgroundColor: '#FFF9DC', padding: Spacing.three, gap: Spacing.two },
-  goalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  goalHeaderLabel: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  goalHeaderText: { color: '#92400E', letterSpacing: 0.6 },
-  goalEditButton: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center' },
-  goalText: { fontSize: 16, fontWeight: '600', color: '#451A03', lineHeight: 24 },
-  goalForm: { gap: Spacing.two },
-  goalInput: { minHeight: 80, borderRadius: 10, borderWidth: 1, borderColor: '#EADF9E', backgroundColor: '#ffffff', padding: Spacing.two, fontSize: 14, textAlignVertical: 'top' },
-  goalFormFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  goalCharCount: { color: '#92400E99' },
-  goalSaveButton: { flexDirection: 'row', height: 40, paddingHorizontal: Spacing.three, borderRadius: 10, backgroundColor: BrandColors.brandStrong, alignItems: 'center', justifyContent: 'center' },
-  goalSaveButtonPressed: { backgroundColor: BrandColors.brandHover },
-  goalSaveButtonDisabled: { opacity: 0.5 },
-  goalSaveLabel: { color: '#ffffff' },
-  goalMessage: { color: '#047857' },
-  legendRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.three },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  legendSwatch: { width: 10, height: 3, borderRadius: 2 },
-  captionText: { lineHeight: 20 },
-  statRow: { flexDirection: 'row', gap: Spacing.three },
-  statCard: { flex: 1, gap: 6 },
-  statValue: { fontSize: 26, fontWeight: '800' },
+  summary: { gap: space[1] },
+  goal: { gap: space[2], borderWidth: 1, borderColor: color.border, borderRadius: radius.card, padding: space[4] },
+  row: { flexDirection: 'row', gap: space[2] },
 });

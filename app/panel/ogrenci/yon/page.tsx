@@ -1,18 +1,9 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { requireProductRole } from "@/lib/auth/guards";
-import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
-import { getStudentCoaching } from "@/lib/panel/coaching";
-import { getStudentGoals } from "@/lib/panel/goals";
-import { buildYonToday, isHighPriority, yonTargetLabel, type YonTask } from "@/lib/kocum/yon-today";
+import { isHighPriority, yonTargetLabel, type YonTask } from "@/lib/kocum/yon-today";
+import { loadYonToday } from "@/lib/kocum/yon-today-server";
 import { formatMinutesAsHours } from "@/lib/kocum/metrics";
-import {
-  addIstanbulCalendarDays,
-  formatIstanbulDateInput,
-  istanbulWeekStart,
-  ISTANBUL_TIME_ZONE,
-} from "@/lib/istanbul-time";
-import { studentCheckInWeekEnd, studentCheckInWeekStart } from "@/lib/student-check-in";
+import { ISTANBUL_TIME_ZONE } from "@/lib/istanbul-time";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { YonTaskCheck } from "@/components/panel/yon/yon-task-check";
 import {
@@ -49,11 +40,8 @@ const NUM = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 2 });
 
 export default async function StudentYonTodayPage() {
   const session = await requireProductRole("OK", "STUDENT");
-  const flags = getPanelFeatureFlags();
-  const profile = await prisma.studentProfile.findUnique({
-    where: { userId: session.userId },
-    select: { id: true },
-  });
+  const data = await loadYonToday({ userId: session.userId });
+  const flags = data.flags;
 
   const shell = (body: React.ReactNode) => (
     <PanelShell role={session.role} fullName={session.fullName} email={session.email} pageTitle="Bugün">
@@ -61,7 +49,7 @@ export default async function StudentYonTodayPage() {
     </PanelShell>
   );
 
-  if (!profile) {
+  if (data.state === "NO_PROFILE") {
     return shell(
       <>
         <PageHeader title="Bugün" />
@@ -74,77 +62,9 @@ export default async function StudentYonTodayPage() {
     );
   }
 
-  const now = new Date();
-  const weekStart = istanbulWeekStart(now);
-  const weekDays = Array.from({ length: 7 }, (_, index) => addIstanbulCalendarDays(weekStart, index));
-  const weekDayKeys = weekDays.map((day) => formatIstanbulDateInput(day));
-  const todayKey = formatIstanbulDateInput(now);
-
-  const [coaching, goals, plan, nextSession, visibleNote, weeklyCheckIns, lastCheckIn] = await Promise.all([
-    getStudentCoaching(profile.id),
-    getStudentGoals(profile.id),
-    prisma.weeklyPlan.findFirst({
-      where: { studentId: profile.id, status: "APPROVED", weekStart: { gte: weekStart, lt: addIstanbulCalendarDays(weekStart, 7) } },
-      orderBy: { weekStart: "desc" },
-      select: {
-        id: true,
-        tasks: {
-          orderBy: [{ scheduledFor: "asc" }, { position: "asc" }],
-          select: {
-            id: true,
-            title: true,
-            subject: true,
-            topic: true,
-            status: true,
-            scheduledFor: true,
-            scheduleMode: true,
-            durationMinutes: true,
-            actualMinutes: true,
-            targetType: true,
-            targetValue: true,
-            priority: true,
-          },
-        },
-      },
-    }),
-    prisma.coachingSession.findFirst({
-      where: { status: "PLANNED", scheduledAt: { gte: addIstanbulCalendarDays(now, 0) }, assignment: { studentId: profile.id, endedAt: null } },
-      orderBy: { scheduledAt: "asc" },
-      select: { scheduledAt: true, meetingUrl: true, focus: true, rescheduleRequestedAt: true },
-    }),
-    prisma.coachNote.findFirst({
-      // Öğrenci yalnız STUDENT_VISIBLE ve PARENT_VISIBLE notları görür (`canViewerSeeCoachNote`).
-      where: { studentId: profile.id, visibility: { in: ["STUDENT_VISIBLE", "PARENT_VISIBLE"] } },
-      orderBy: { createdAt: "desc" },
-      select: { body: true, createdAt: true },
-    }),
-    flags.studentCheckIn
-      ? prisma.studentCheckIn.count({
-          where: { studentId: profile.id, createdAt: { gte: studentCheckInWeekStart(now), lt: studentCheckInWeekEnd(now) } },
-        })
-      : Promise.resolve(0),
-    flags.studentCheckIn
-      ? prisma.studentCheckIn.findFirst({
-          where: { studentId: profile.id },
-          orderBy: { createdAt: "desc" },
-          select: { createdAt: true },
-        })
-      : Promise.resolve(null),
-  ]);
-
-  const tasks: YonTask[] = (plan?.tasks ?? []) as YonTask[];
-  const view = buildYonToday(tasks, todayKey, formatIstanbulDateInput, weekDayKeys);
-  const canComplete = flags.adaptivePlan;
-
-  // Koçun en yeni paylaşılan sözü: görünür not veya son görüşmenin paylaşılan notu.
-  const latestNote =
-    visibleNote && (!coaching?.lastCompletedAt || visibleNote.createdAt >= coaching.lastCompletedAt)
-      ? { body: visibleNote.body, at: visibleNote.createdAt }
-      : coaching?.sharedNote
-        ? { body: coaching.sharedNote, at: coaching.lastCompletedAt }
-        : visibleNote
-          ? { body: visibleNote.body, at: visibleNote.createdAt }
-          : null;
+  // Okuma `lib/kocum/yon-today-server.ts`'te; mobil uç (`/api/panel/student/yon`) aynı yükleyiciyi kullanır.
+  const { coaching, goals, nextSession, latestNote, weeklyCheckIns, lastCheckIn, view, weekDays, canComplete } = data;
+  const plan = data.hasPlan;
 
   const description = [
     plan ? `${view.openToday} görev` : null,

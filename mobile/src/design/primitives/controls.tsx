@@ -133,6 +133,37 @@ export function ProductMark({ label }: { label: string }) {
   );
 }
 
+/**
+ * Sekme / bölümlü seçim (web `ViewTabs`). Ekran okuyucuda sekme listesi
+ * olarak okunur; seçili sekme ürün vurgusuyla işaretlenir. Sayı varsa
+ * etiketin parçası olarak okunur.
+ */
+export function SegmentedTabs<T extends string>({ value, options, onChange, label }: { value: T; options: { value: T; label: string; count?: number }[]; onChange: (value: T) => void; label: string }) {
+  const { product } = useDesign();
+  return (
+    <View accessibilityRole="tablist" accessibilityLabel={label} style={styles.tabs}>
+      {options.map((option) => {
+        const selected = option.value === value;
+        const text = option.count === undefined ? option.label : `${option.label} (${option.count})`;
+        return (
+          <Pressable
+            key={option.value}
+            testID={`tab-${option.value}`}
+            accessibilityRole="tab"
+            accessibilityState={{ selected }}
+            accessibilityLabel={text}
+            onPress={() => onChange(option.value)}
+            style={({ pressed }) => [styles.tab, selected && { backgroundColor: color.canvas, borderColor: color.border }, pressed && !selected && { backgroundColor: color.pressed }]}>
+            <Text variant={selected ? 'bodyStrong' : 'secondary'} style={selected ? { color: product.accent } : undefined} numberOfLines={1}>
+              {text}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
 const buttonStyle = StyleSheet.create({
   primary: { backgroundColor: color.primary },
   secondary: { backgroundColor: color.canvas, borderWidth: 1, borderColor: color.borderStrong },
@@ -158,4 +189,6 @@ const styles = StyleSheet.create({
   badge: { alignSelf: 'flex-start', borderRadius: radius.control, paddingHorizontal: 8, paddingVertical: 3 },
   productMark: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   dot: { width: 6, height: 6, borderRadius: 3 },
+  tabs: { flexDirection: 'row', gap: 2, padding: 2, borderRadius: radius.card, backgroundColor: color.surfaceSubtle, borderWidth: 1, borderColor: color.border },
+  tab: { flex: 1, minHeight: touchTarget, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space[2], borderRadius: radius.control, borderWidth: 1, borderColor: 'transparent' },
 });

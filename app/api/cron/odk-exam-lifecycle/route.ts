@@ -50,8 +50,16 @@ export async function GET(request: Request) {
       },
     });
 
-    const result = { live: liveExams.length, ended: endedExams.length, autoSubmitted: expiredAttempts.length, autoScored, purgedIntegrityEvents: purgedEvents.count };
+    // M5: öğrenci olay bildirimleri (kanonik satır; varsayılan kapalı, ODK_STUDENT_NOTIFICATIONS).
+    // Hata yaşam döngüsünü durdurmaz: bildirim üretimi yan iştir.
+    const { syncOdkStudentNotifications } = await import("@/lib/odk/student-notifications");
+    const studentNotifications = await syncOdkStudentNotifications(now).catch((error) => {
+      log.error("odk.student_notifications.failed", error);
+      return { enabled: true, candidates: 0, created: 0 };
+    });
+
+    const result = { live: liveExams.length, ended: endedExams.length, autoSubmitted: expiredAttempts.length, autoScored, purgedIntegrityEvents: purgedEvents.count, studentNotifications: studentNotifications.created };
     log.info("odk.lifecycle.completed", result);
     return result;
-  }, { metrics: (result) => ({ processedCount: result.live + result.ended + result.autoSubmitted + result.autoScored + result.purgedIntegrityEvents }) });
+  }, { metrics: (result) => ({ processedCount: result.live + result.ended + result.autoSubmitted + result.autoScored + result.purgedIntegrityEvents, details: { odkStudentNotifications: result.studentNotifications } }) });
 }

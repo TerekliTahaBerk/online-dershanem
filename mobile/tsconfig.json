@@ -25,6 +25,7 @@
     "../lib/mobile-contracts/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "../lib/mobile-contracts/**/*.test.ts"
   ]
 }

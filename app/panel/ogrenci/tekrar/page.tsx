@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import { RotateCcw } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { dailyReviewLimit } from "@/lib/review-scheduler";
+import { loadStudentReviewQueue } from "@/lib/panel/student-review-recovery-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelEmptyState } from "@/components/panel/empty-state";
 import { StudentReviewQueue } from "@/components/panel/student-review-queue";
@@ -18,12 +18,9 @@ export const dynamic = "force-dynamic";
 export default async function StudentReviewPage() {
   const session = await requireRole("STUDENT");
   if (!getPanelFeatureFlags().reviewQueue) notFound();
-  const now = new Date();
-  const profile = await prisma.studentProfile.findUnique({
-    where: { userId: session.userId },
-    select: { id: true },
-  });
-  if (!profile)
+  // Sorgu mobil `GET /api/panel/student/review-queue` ile ortak yükleyicide.
+  const queue = await loadStudentReviewQueue({ studentUserId: session.userId });
+  if (!queue)
     return (
       <PanelShell
         role={session.role}
@@ -36,28 +33,7 @@ export default async function StudentReviewPage() {
         />
       </PanelShell>
     );
-  const [items, activeCount, masteredCount] = await Promise.all([
-    prisma.reviewItem.findMany({
-      where: { studentId: profile.id, status: "ACTIVE", dueAt: { lte: now } },
-      orderBy: [{ dueAt: "asc" }, { createdAt: "asc" }],
-      take: dailyReviewLimit,
-      select: {
-        id: true,
-        title: true,
-        sourceReference: true,
-        solutionNote: true,
-        stage: true,
-        dueAt: true,
-        sourceType: true,
-      },
-    }),
-    prisma.reviewItem.count({
-      where: { studentId: profile.id, status: "ACTIVE" },
-    }),
-    prisma.reviewItem.count({
-      where: { studentId: profile.id, status: "MASTERED" },
-    }),
-  ]);
+  const { items, activeCount, masteredCount } = queue;
   return (
     <PanelShell
       role={session.role}

@@ -24,6 +24,9 @@ export function Screen({ scroll = true, refreshing = false, onRefresh, edges = [
     <ScrollView
       contentContainerStyle={[styles.content, contentStyle]}
       keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="interactive"
+      // iOS: klavye açılınca içerik otomatik kayar (odaklı alan görünür kalır).
+      automaticallyAdjustKeyboardInsets
       refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={product.accent} colors={[product.accent]} /> : undefined}>
       {children}
     </ScrollView>

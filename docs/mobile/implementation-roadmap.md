@@ -37,7 +37,7 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
    - `SessionProvider` → `AppStateProvider`: token + bootstrap + çalışma alanı.
    - Kök navigatör: giriş → (güncelleme gerekli) → (parola değişikliği) → (MFA: TOTP / kurtarma kodu) → (çalışma alanı seçici) → rol navigatörü.
    - Çalışma alanı seçici ve değiştirici (`POST /api/panel/active-product`); kilitli/pilot kapalı/hazırlanıyor kartları; satın alma bağlantısı yok (MD-09).
-   - Öğrenci/veli: bootstrap `navigation.primary` → alt sekmeler + Menü; personel ve ADMIN: bilgi ekranı (M7'ye kadar).
+   - Öğrenci/veli: bootstrap `navigation.primary` → alt sekmeler + Menü; personel ve ADMIN: bilgi ekranı (M7'ye kadar; M7'den beri öğretmen çalışma alanının native Bugün'ü, ADMIN yalnız web).
    - Global bildirim zili + mevcut bildirim listesinin taşınması; `notification-links` tablosunun yeniden yazımı ve testleri.
    - Ayarlar merkezi (salt okuma profil, oturumlar + iptal, parola değiştir, çıkış).
    - Sign-in: `redirect` işleme, 423/403 mesajları, "Parolamı unuttum".
@@ -55,6 +55,8 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
 ---
 
 ## M2 — OD öğrenci deneyimi
+
+> **Durum: uygulandı.** [m2-implementation-report.md](./m2-implementation-report.md), [m2-screen-migration.md](./m2-screen-migration.md), [m2-test-results.md](./m2-test-results.md). M3 girdisi: [m3-handoff.md](./m3-handoff.md).
 
 **Bağımlılıklar.** M1 (bootstrap, kabuk, primitives).
 
@@ -80,6 +82,8 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
 
 ## M3 — Yön Koçluk deneyimi (öğrenci)
 
+> **Durum: uygulandı.** [m3-implementation-report.md](./m3-implementation-report.md), [m3-api-contracts.md](./m3-api-contracts.md), [m3-screen-migration.md](./m3-screen-migration.md), [m3-security-review.md](./m3-security-review.md), [m3-test-results.md](./m3-test-results.md). M4 girdisi: [m4-handoff.md](./m4-handoff.md).
+
 **Bağımlılıklar.** M1; M2'deki liste/satır primitives. Ön koşul doğrulama: Yön Bugün görev işaretlemesinin `adaptivePlan` kapalıyken web'deki davranışı (audit §2.4 notu).
 
 **Teslimatlar.**
@@ -104,6 +108,8 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
 
 ## M4 — Deneme Ligi deneyimi (öğrenci)
 
+> **Durum: uygulandı (kalıcı M4 testleri kullanıcı talimatıyla yazılmadı).** [m4-implementation-report.md](./m4-implementation-report.md), [m4-api-contracts.md](./m4-api-contracts.md), [m4-screen-migration.md](./m4-screen-migration.md), [m4-security-review.md](./m4-security-review.md), [m4-test-results.md](./m4-test-results.md). M5 girdisi: [m5-handoff.md](./m5-handoff.md).
+
 **Bağımlılıklar.** M1; MD-08 kararı (en azından seçenek 1 onayı).
 
 **Teslimatlar.**
@@ -124,6 +130,10 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
 ---
 
 ## M5 — Push bildirimleri ve senkronizasyon
+
+> **Durum: uygulandı ve yerel olarak doğrulandı; staging / üretim doğrulaması YOK (üretim NO-GO).** Kalıcı M5 testleri kullanıcı talimatıyla yazılmadı; gerçek cihaz testi yapılmadı. [m5-implementation-report.md](./m5-implementation-report.md), [m5-api-contracts.md](./m5-api-contracts.md), [m5-device-lifecycle.md](./m5-device-lifecycle.md), [m5-delivery-architecture.md](./m5-delivery-architecture.md), [m5-security-review.md](./m5-security-review.md), [m5-validation-results.md](./m5-validation-results.md), [m5-rollout-runbook.md](./m5-rollout-runbook.md). M6 girdisi: [m6-handoff.md](./m6-handoff.md).
+>
+> Plandan sapmalar: `pushEnabled` varsayılanı **false** (MD-10'daki true yerine; MD-21); `examUpdates` tercih alanı eklendi; Deneme Ligi öğrenci olay bildirimleri (`ODK_STUDENT_NOTIFICATIONS`) eklendi; çalışma modu `PUSH_DELIVERY_MODE` (DISABLED / DRY_RUN / ENABLED).
 
 **Bağımlılıklar.** M1 (bildirim zili, bağlantı eşlemesi, ayarlar). Sunucu kısmı M2 ile paralel başlayabilir. EAS proje kurulumu (M9'un bir kısmı öne çekilir: iOS APNs anahtarı, Android FCM kimliği EAS'e).
 
@@ -147,6 +157,10 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
 
 ## M6 — Veli deneyimi
 
+> **Durum: uygulandı ve yerel olarak doğrulandı; gerçek cihaz / staging doğrulaması YOK.** Kalıcı M6 testleri kullanıcı talimatıyla yazılmadı (yalnız M6'nın bilinçli değiştirdiği 3 eski mobil beklenti güncellendi). [m6-implementation-report.md](./m6-implementation-report.md), [m6-api-contracts.md](./m6-api-contracts.md), [m6-screen-migration.md](./m6-screen-migration.md), [m6-parent-scope-security.md](./m6-parent-scope-security.md), [m6-privacy-review.md](./m6-privacy-review.md), [m6-validation-results.md](./m6-validation-results.md), [m6-iphone-smoke-checklist.md](./m6-iphone-smoke-checklist.md). M7 girdisi: [m7-handoff.md](./m7-handoff.md).
+>
+> Plandan sapmalar: dış denemeler ayrı uç (`/api/panel/parent/external-exams`); `GET /api/panel/parent/account` (hesap amacı); veli koçluk görüşmeleri salt okunur; haftalık özet geri bildirimi mevcut uçla ve onun OD kapısıyla (P-1 BLOCKED).
+
 **Bağımlılıklar.** M1–M4 (ekran primitives ve öğrenci okuma modelleri), M5 (veliler için en değerli kanal).
 
 **Teslimatlar.**
@@ -165,6 +179,15 @@ M1 ──► M2 ──► M3 ──► M4 ──► M6 ──► M7 ──► M8
 ---
 
 ## M7 — Öğretmen ve koç deneyimi
+
+> **Durum: uygulandı ve yerel olarak doğrulandı; gerçek cihaz / staging doğrulaması YOK.** Kalıcı M7 testleri kullanıcı talimatıyla yazılmadı (yalnız M7'nin bilinçli değiştirdiği 1 eski mobil beklenti güncellendi). [m7-implementation-report.md](./m7-implementation-report.md), [m7-api-contracts.md](./m7-api-contracts.md), [m7-screen-migration.md](./m7-screen-migration.md), [m7-staff-permission-review.md](./m7-staff-permission-review.md), [m7-security-review.md](./m7-security-review.md), [m7-mutation-safety.md](./m7-mutation-safety.md), [m7-validation-results.md](./m7-validation-results.md), [m7-iphone-smoke-checklist.md](./m7-iphone-smoke-checklist.md). M8 girdisi: [m8-handoff.md](./m8-handoff.md).
+>
+> Plandan sapmalar:
+> - Yazmalar yalnız mevcut uçlarla yapılır; personel okuma uçları `requireStaffApi` (ürün rolü + personel izni) kullanır.
+> - `STAFF_PRODUCT_ASSIGNMENTS` modu değiştirilmedi (üretim modu BLOCKED).
+> - Ödev oluşturma ve ders ödev taslağı web'de kaldı.
+> - Yardım kutusu Yön menüsünde; yanıt OD rolü ister (S-3).
+> - İkinci değerlendirme / öneri incelemesi mevcut uçta 404 döner; mobil bunu yeniden yükleme ile ele alır.
 
 **Bağımlılıklar.** M1, M5; `STAFF_PRODUCT_ASSIGNMENTS` modunun (shadow/enforce) üretimdeki durumunun netleşmesi; MD-07 onayı.
 

@@ -74,10 +74,10 @@ describe('M1 uygulama akışları', () => {
     expect(server.called('GET', '/api/panel/me')[0].authorization).toMatch(/^Bearer token-/);
   });
 
-  it('Yön-only öğrenci OD ekranına düşmez: Bugün yer tutucu, OD ana sayfa ucu çağrılmaz', async () => {
+  it('Yön-only öğrenci OD ekranına düşmez: Yön Bugün açılır, OD ana sayfa ucu çağrılmaz', async () => {
     const server = await boot([account('yon@example.com', makeBootstrap({ products: { OK: 'ACTIVE' } }))]);
     await signIn('yon@example.com');
-    expect(await screen.findByTestId('placeholder-today', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByTestId('yon-today', {}, WAIT)).toBeTruthy();
     expect(server.called('GET', '/api/panel/student/home')).toHaveLength(0);
     expect(server.called('GET', '/api/panel/assignments')).toHaveLength(0);
   });
@@ -85,7 +85,7 @@ describe('M1 uygulama akışları', () => {
   it('Deneme Ligi-only öğrenci OD ekranına düşmez', async () => {
     const server = await boot([account('dl@example.com', makeBootstrap({ products: { ODK: 'ACTIVE' } }))]);
     await signIn('dl@example.com');
-    expect(await screen.findByTestId('placeholder-today', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByTestId('odk-home', {}, WAIT)).toBeTruthy();
     expect(server.called('GET', '/api/panel/student/home')).toHaveLength(0);
   });
 
@@ -101,7 +101,7 @@ describe('M1 uygulama akışları', () => {
     await act(async () => {
       fireEvent.press(screen.getByTestId('change-password-submit'));
     });
-    expect(await screen.findByTestId('placeholder-today', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByTestId('yon-today', {}, WAIT)).toBeTruthy();
   });
 
   it('MFA: yanlış kod kapıyı açmaz; doğru kod sonrası sunucu READY deyince personel ekranı açılır', async () => {
@@ -142,7 +142,7 @@ describe('M1 uygulama akışları', () => {
     await act(async () => {
       fireEvent.press(screen.getByTestId('select-OK'));
     });
-    expect(await screen.findByTestId('placeholder-today', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByTestId('yon-today', {}, WAIT)).toBeTruthy();
     expect(server.called('POST', '/api/panel/active-product')[0].body).toEqual({ product: 'OK' });
   });
 
@@ -160,14 +160,14 @@ describe('M1 uygulama akışları', () => {
     expect(await screen.findByText('Aktif çalışma alanın yok', {}, WAIT)).toBeTruthy();
   });
 
-  it('veli, öğretmen ve yönetim kendi bilinçli yer tutucularını görür (öğrenci sekmesi değil)', async () => {
+  it('veli kendi native ekranını (M6), öğretmen ve yönetim kendi bilinçli yer tutucularını görür (öğrenci sekmesi değil)', async () => {
     const server = await boot([
       account('veli@example.com', makeBootstrap({ role: 'PARENT', products: { OD: 'ACTIVE' } })),
       account('ogretmen@example.com', makeBootstrap({ role: 'TEACHER', products: { OD: 'ACTIVE' }, activeProduct: null })),
       account('yonetim@example.com', makeBootstrap({ role: 'ADMIN', products: { OD: 'ACTIVE', OK: 'ACTIVE', ODK: 'ACTIVE' }, activeProduct: null })),
     ]);
     await signIn('veli@example.com');
-    expect(await screen.findByTestId('placeholder-today', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByTestId('parent-home', {}, WAIT)).toBeTruthy();
     expect(server.called('GET', '/api/panel/student/home')).toHaveLength(0);
     await signOutViaAccount();
     await signIn('ogretmen@example.com');
@@ -181,7 +181,7 @@ describe('M1 uygulama akışları', () => {
   it('Menü sunucu menüsünü çalışma alanına göre listeler (Yön menüsünde OD öğesi yok)', async () => {
     await boot([account('yon@example.com', makeBootstrap({ products: { OK: 'ACTIVE' } }))]);
     await signIn('yon@example.com');
-    await screen.findByTestId('placeholder-today', {}, WAIT);
+    await screen.findByTestId('yon-today', {}, WAIT);
     await go('/menu');
     expect(await screen.findByTestId('menu-notifications', {}, WAIT)).toBeTruthy();
     expect(screen.queryByTestId('menu-materials')).toBeNull();
@@ -190,7 +190,7 @@ describe('M1 uygulama akışları', () => {
   it('çıkış: sunucu oturumu iptal edilir, SecureStore temizlenir, giriş ekranına dönülür', async () => {
     const server = await boot([account('ada@example.com', makeBootstrap({ products: { OK: 'ACTIVE' } }))]);
     await signIn('ada@example.com');
-    await screen.findByTestId('placeholder-today', {}, WAIT);
+    await screen.findByTestId('yon-today', {}, WAIT);
     await signOutViaAccount();
     expect(await screen.findByTestId('sign-in-email', {}, WAIT)).toBeTruthy();
     expect(server.called('POST', '/api/auth/logout')[0].authorization).toMatch(/^Bearer /);
@@ -204,12 +204,12 @@ describe('M1 uygulama akışları', () => {
       account('b@example.com', makeBootstrap({ userId: 'user-b', products: { OK: 'ACTIVE' } }), { notifications: [{ id: 'nb', title: 'B kullanıcısının bildirimi', href: null }] }),
     ]);
     await signIn('a@example.com');
-    await screen.findByTestId('placeholder-today', {}, WAIT);
+    await screen.findByTestId('yon-today', {}, WAIT);
     await go('/notifications');
     expect(await screen.findByText('A kullanıcısının bildirimi', {}, WAIT)).toBeTruthy();
     await signOutViaAccount();
     await signIn('b@example.com');
-    await screen.findByTestId('placeholder-today', {}, WAIT);
+    await screen.findByTestId('yon-today', {}, WAIT);
     await go('/notifications');
     expect(await screen.findByText('B kullanıcısının bildirimi', {}, WAIT)).toBeTruthy();
     expect(screen.queryByText('A kullanıcısının bildirimi')).toBeNull();
@@ -228,7 +228,7 @@ describe('M1 uygulama akışları', () => {
     server.override('GET /api/panel/me', () => Promise.reject(new TypeError('Network request failed')));
     await signIn('ada@example.com');
     expect(await screen.findByText('Hesap bilgileri yüklenemedi', {}, { timeout: 15000 })).toBeTruthy();
-    expect(screen.queryByTestId('placeholder-today')).toBeNull();
+    expect(screen.queryByTestId('yon-today')).toBeNull();
     server.override('GET /api/panel/me', () => new Response('{"contractVersion":1,"user":{}}', { status: 200 }));
     await act(async () => {
       fireEvent.press(screen.getByText('Tekrar dene'));
@@ -238,7 +238,7 @@ describe('M1 uygulama akışları', () => {
     await act(async () => {
       fireEvent.press(screen.getByText('Tekrar dene'));
     });
-    expect(await screen.findByTestId('placeholder-today', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByTestId('yon-today', {}, WAIT)).toBeTruthy();
   }, 30000);
 
   it('desteklenmeyen sürüm (426) güncelleme ekranı gösterir', async () => {

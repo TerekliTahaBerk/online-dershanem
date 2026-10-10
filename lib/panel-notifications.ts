@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { sendPanelNotificationEmail } from "@/lib/email";
 
 export type NotificationRow = { userId: string; type: NotificationType; title: string; body: string; href?: string | null };
-export type NotificationPreferenceKey = "lessonSummary" | "weeklyDigest" | "absence" | "assignment" | "payment";
+export type NotificationPreferenceKey = "lessonSummary" | "weeklyDigest" | "absence" | "assignment" | "payment" | "examUpdates";
 
 /** Aynı kullanıcıya aynı içerik: tek satır. */
 function dedupeNotificationRows(rows: NotificationRow[]): NotificationRow[] {

@@ -114,6 +114,7 @@ model User {
   createdAssignments                 Assignment[]                   @relation("AssignmentCreator")
   notifications                      Notification[]
   notificationPrefs                  NotificationPreference?
+  pushDevices                        PushDevice[]
   createdMaterials                   LearningMaterial[]             @relation("MaterialCreator")
   noteTemplates                      TeacherNoteTemplate[]          @relation("TeacherNoteTemplateOwner")
   createdCurriculums                 CurriculumVersion[]            @relation("CurriculumCreator")
@@ -215,6 +216,7 @@ model Session {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pushDevices PushDevice[]
 
   @@index([userId])
   @@index([expiresAt])

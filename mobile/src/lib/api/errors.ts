@@ -22,6 +22,7 @@ export type ApiErrorKind =
   | 'locked'
   | 'rate_limited'
   | 'upgrade_required'
+  | 'feature_disabled'
   | 'unavailable'
   | 'server'
   | 'invalid_response';
@@ -40,6 +41,8 @@ const CODE_KIND: Partial<Record<MobileApiErrorCode, ApiErrorKind>> = {
   RATE_LIMIT: 'rate_limited',
   ORIGIN: 'forbidden',
   ADMIN_PREVIEW_READONLY: 'forbidden',
+  FEATURE_DISABLED: 'feature_disabled',
+  CHILD_NOT_FOUND: 'not_found',
 };
 
 export function isKnownErrorCode(code: unknown): code is MobileApiErrorCode {
@@ -78,6 +81,7 @@ const FALLBACK_MESSAGE: Record<ApiErrorKind, string> = {
   locked: 'Hesap geçici olarak kilitlendi.',
   rate_limited: 'Çok fazla deneme yapıldı. Biraz bekleyip tekrar deneyin.',
   upgrade_required: 'Uygulamanın bu sürümü artık desteklenmiyor. Lütfen güncelleyin.',
+  feature_disabled: 'Bu bölüm şu anda kullanıma açık değil.',
   unavailable: 'Hizmet şu anda kullanılamıyor. Daha sonra tekrar deneyin.',
   server: 'Beklenmeyen bir sunucu hatası oluştu. Tekrar deneyin.',
   invalid_response: 'Sunucudan beklenmeyen bir yanıt alındı.',

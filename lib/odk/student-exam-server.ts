@@ -17,7 +17,11 @@ export const studentExamInclude = {
   },
 } as const;
 
-export async function listStudentExams(studentUserId: string) {
+/**
+ * Öğrencinin yetkili denemeleri, en yeni başlangıç önce. `limit` varsayılanı
+ * web ile aynı 50; mobil liste kesildiğini bilmek için bir fazlasını ister.
+ */
+export async function listStudentExams(studentUserId: string, options: { limit?: number } = {}) {
   const now = new Date();
   const contracts = await listActiveOdkContracts(studentUserId, now);
   const examIds = [...new Set(contracts.flatMap(({ contract }) => contract.exams.map((exam) => exam.id)))];
@@ -28,7 +32,7 @@ export async function listStudentExams(studentUserId: string) {
   return prisma.odkExam.findMany({
     where: { id: { in: examIds }, status: { in: ["SCHEDULED", "LIVE", "ENDED", "SCORED", "RELEASED"] }, publishedAt: { not: null } },
     orderBy: [{ startsAt: "desc" }],
-    take: 50,
+    take: options.limit ?? 50,
     select: {
       id: true, title: true, family: true, examFamilyRef: { select: { code: true } }, status: true, startsAt: true, endsAt: true, lateEntryMinutes: true, meetRequired: true, resultsReleasedAt: true,
       currentVersion: { select: { durationMinutes: true } },
@@ -57,7 +61,12 @@ export async function listStudentExams(studentUserId: string) {
   }));
 }
 
-export async function getStudentExam(examId: string, studentUserId: string) {
+/**
+ * `finalizeExpired` (varsayılan true, web davranışı): süresi dolmuş açık
+ * denemeyi okurken otomatik teslim eder. Mobil ayrıntı ekranı salt okunurdur
+ * ve `false` geçer: yazma yapılmaz, yalnız `attemptExpired` bildirilir.
+ */
+export async function getStudentExam(examId: string, studentUserId: string, options: { finalizeExpired?: boolean } = {}) {
   const grant = await getActiveOdkExamGrant(studentUserId, examId);
   if (!grant) return null;
   const exam = await prisma.odkExam.findFirst({
@@ -72,12 +81,22 @@ export async function getStudentExam(examId: string, studentUserId: string) {
   exam.attemptLimit = schedule.attemptLimit;
   exam.meetRequired = grant.exam.liveServiceRequired && grant.contract.policy.rights.liveService;
   const attempt = exam.attempts[0] || null;
-  if (attempt?.status === "IN_PROGRESS" && attemptHasExpired(attempt.deadlineAt)) {
+  const attemptExpired = Boolean(attempt?.status === "IN_PROGRESS" && attemptHasExpired(attempt.deadlineAt));
+  if (attemptExpired && attempt && options.finalizeExpired !== false) {
     const finalized = await prisma.odkExamAttempt.update({ where: { id: attempt.id }, data: { status: "AUTO_SUBMITTED", submittedAt: new Date() }, include: { answers: true } });
     exam.attempts[0] = finalized;
   }
   const decision = exam.currentVersion ? decideAttemptStart({ status: exam.status, ...contractExamSchedule(grant.exam), durationMinutes: exam.currentVersion.durationMinutes }) : { ok: false as const, code: "NOT_SCHEDULED" as const };
-  return { exam, attempt: exam.attempts[0] || null, startDecision: decision, resultAvailable: contractResultAvailable(grant.exam, exam), serverNow: new Date() };
+  const current = exam.attempts[0] || null;
+  return {
+    exam,
+    attempt: current,
+    // Yalnız `finalizeExpired: false` iken true kalabilir (deneme hâlâ IN_PROGRESS kayıtlı).
+    attemptExpired: Boolean(current?.status === "IN_PROGRESS" && attemptHasExpired(current.deadlineAt)),
+    startDecision: decision,
+    resultAvailable: contractResultAvailable(grant.exam, exam),
+    serverNow: new Date(),
+  };
 }
 
 export async function getReleasedStudentResult(examId: string, studentUserId: string) {

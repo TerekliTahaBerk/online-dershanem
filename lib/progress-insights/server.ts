@@ -15,7 +15,6 @@ import type {
   ProgressInsightPeriod,
   TeacherGidisatOverview,
 } from "@/lib/progress-insights/types";
-import { teacherGroupIds } from "@/lib/panel/teacher-scope";
 
 const ATTENDANCE_TAKE = 12;
 const EXAM_TAKE = 8;
@@ -141,6 +140,9 @@ export async function loadTeacherGidisatOverview(input: {
   includeExams?: boolean;
   now?: Date;
 }): Promise<TeacherGidisatOverview> {
+  // Öğretmen kapsamı yalnız burada gerekir; modül `next/navigation` yüklediği
+  // için öğrenci yükleyicisini (web Analiz + mobil JSON) ona bağlamıyoruz.
+  const { teacherGroupIds } = await import("@/lib/panel/teacher-scope");
   const groupIds = await teacherGroupIds(input.teacherUserId);
   const period = defaultPeriod(input.now);
 

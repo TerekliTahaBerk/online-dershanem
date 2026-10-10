@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/auth/guards";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
+import { loadParentLessons } from "@/lib/panel/parent-lessons-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildContext } from "@/components/panel/parent/child-context";
 import {
@@ -76,30 +76,10 @@ export default async function ParentLessonsPage({
     );
   }
 
-  const enrollments = await prisma.enrollment.findMany({
-    where: { studentId: selected.id, endedAt: null },
-    select: { groupId: true },
-  });
-  const groupIds = enrollments.map((e) => e.groupId);
+  // Ortak yükleyici (mobil `GET /api/panel/parent/lessons` ile aynı): yalnız
+  // ortak ders notunun konusu seçilir; öğrenciye özel not sorguya girmez.
+  const { lessons, lastSummary } = await loadParentLessons(selected);
 
-  const lessons = groupIds.length
-    ? await prisma.lesson.findMany({
-        where: { groupId: { in: groupIds } },
-        orderBy: { startsAt: "desc" },
-        take: 30,
-        include: {
-          teacher: { select: { fullName: true } },
-          // Yalnız ortak not — öğrenciye özel not okunmaz.
-          notes: { where: { studentId: null }, take: 1 },
-          attendances: {
-            where: { studentId: selected.id },
-            select: { status: true },
-          },
-        },
-      })
-    : [];
-
-  const lastWithSummary = lessons.find((l) => l.notes[0]?.topic);
 
   return shell(
     <>
@@ -116,49 +96,27 @@ export default async function ParentLessonsPage({
             caption={`${selected.name} ders listesi`}
             columns={["Tarih", "Ders ve konu", "Öğretmen", "Katılım"]}
           >
-            {lessons.map((lesson) => {
-              const status = lesson.attendances[0]?.status;
-              const upcoming = lesson.startsAt.getTime() > Date.now();
-              const label =
-                lesson.status === "CANCELLED"
-                  ? "İptal edildi"
-                  : status === "ABSENT"
-                    ? "Katılmadı"
-                    : status === "LATE"
-                      ? "Geç katıldı"
-                      : status === "PRESENT"
-                        ? "Katıldı"
-                        : status === "EXCUSED"
-                          ? "Mazeretli"
-                          : upcoming
-                            ? "Planlandı"
-                            : "Henüz işlenmedi";
-              return (
+            {lessons.map((lesson) => (
                 <PanelTableRow key={lesson.id}>
                   <PanelTableCell>{DAY.format(lesson.startsAt)}</PanelTableCell>
                   <PanelTableCell>
                     {lesson.title}
-                    {lesson.notes[0]?.topic
-                      ? ` · ${lesson.notes[0].topic}`
-                      : ""}
+                    {lesson.topic ? ` · ${lesson.topic}` : ""}
                   </PanelTableCell>
-                  <PanelTableCell>
-                    {lesson.teacher.fullName || "—"}
-                  </PanelTableCell>
+                  <PanelTableCell>{lesson.teacherName || "—"}</PanelTableCell>
                   <PanelTableCell
                     tone={
-                      status === "ABSENT"
+                      lesson.attendance.key === "ABSENT"
                         ? "warn"
-                        : status === "PRESENT" || status === "EXCUSED"
+                        : lesson.attendance.key === "PRESENT" || lesson.attendance.key === "EXCUSED"
                           ? "ok"
                           : "default"
                     }
                   >
-                    {label}
+                    {lesson.attendance.label}
                   </PanelTableCell>
                 </PanelTableRow>
-              );
-            })}
+            ))}
           </PanelTable>
 
           <PanelCard className="mt-5 max-w-[760px]">
@@ -166,7 +124,7 @@ export default async function ParentLessonsPage({
               Son dersin özeti
             </h2>
             <p className="mt-2 text-[14.5px] leading-[1.65] text-(--pd-ink-3)">
-              {lastWithSummary?.notes[0]?.topic ||
+              {lastSummary ||
                 "Öğretmen henüz ders özeti eklemedi. Eklendiğinde burada görünecek."}
             </p>
             <p className="mt-2.5 text-[12.5px] text-dc-ink-faint">

@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { CoachingSessions } from "@/components/panel/coaching-sessions";
-import { prisma } from "@/lib/prisma";
 import { requireProductRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
-import { getStudentCoaching } from "@/lib/panel/coaching";
-import { addIstanbulCalendarDays, istanbulWeekStart, ISTANBUL_TIME_ZONE } from "@/lib/istanbul-time";
+import { loadStudentCoachingHub } from "@/lib/kocum/student-coaching-server";
+import { ISTANBUL_TIME_ZONE } from "@/lib/istanbul-time";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   EmptyState,
@@ -43,10 +42,9 @@ export default async function StudentCoachingHubPage() {
   const session = await requireProductRole("OK", "STUDENT");
   const adaptivePlanEnabled = getPanelFeatureFlags().adaptivePlan;
 
-  const profile = await prisma.studentProfile.findUnique({
-    where: { userId: session.userId },
-    select: { id: true },
-  });
+  // Okuma `lib/kocum/student-coaching-server.ts`'te; mobil uç (`/api/panel/student/coaching`) aynı yükleyiciyi kullanır.
+  const hub = await loadStudentCoachingHub({ userId: session.userId, adaptivePlanEnabled });
+  const profile = hub?.profile ?? null;
 
   const shell = (body: React.ReactNode) => (
     <PanelShell role={session.role} fullName={session.fullName} email={session.email} pageTitle="Koçum">
@@ -67,45 +65,7 @@ export default async function StudentCoachingHubPage() {
     );
   }
 
-  const weekStart = istanbulWeekStart(new Date());
-  const [coaching, notes, pastSessions, coachTasks] = await Promise.all([
-    getStudentCoaching(profile.id),
-    prisma.coachNote.findMany({
-      where: { studentId: profile.id, visibility: { in: ["STUDENT_VISIBLE", "PARENT_VISIBLE"] } },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      select: { id: true, body: true, createdAt: true },
-    }),
-    prisma.coachingSession.findMany({
-      where: { status: { not: "PLANNED" }, assignment: { studentId: profile.id } },
-      orderBy: { scheduledAt: "desc" },
-      take: 8,
-      // privateNote BİLEREK seçilmiyor.
-      select: { id: true, scheduledAt: true, completedAt: true, status: true, focus: true, sharedNote: true },
-    }),
-    adaptivePlanEnabled
-      ? prisma.weeklyPlanTask.findMany({
-          where: {
-            sourceType: "MANUAL_COACH",
-            status: { not: "SKIPPED" },
-            scheduledFor: { gte: weekStart, lt: addIstanbulCalendarDays(weekStart, 7) },
-            plan: { studentId: profile.id, status: "APPROVED" },
-          },
-          orderBy: [{ scheduledFor: "asc" }, { position: "asc" }],
-          select: { id: true, title: true, scheduledFor: true, durationMinutes: true, status: true },
-        })
-      : Promise.resolve([]),
-  ]);
-
-  // Ortak notlar: görünür koç notları + görüşmelerin paylaşılan notu, en yeni önce.
-  const sharedNotes = [
-    ...notes.map((note) => ({ id: `note:${note.id}`, body: note.body, at: note.createdAt })),
-    ...pastSessions
-      .filter((item) => item.sharedNote)
-      .map((item) => ({ id: `session:${item.id}`, body: item.sharedNote!, at: item.completedAt ?? item.scheduledAt })),
-  ]
-    .sort((a, b) => b.at.getTime() - a.at.getTime())
-    .slice(0, 6);
+  const { coaching, sharedNotes, pastSessions, coachTasks } = hub!;
 
   return shell(
     <>

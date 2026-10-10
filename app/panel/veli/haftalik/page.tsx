@@ -1,9 +1,8 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { resolveParentScope } from "@/lib/panel/parent-scope";
-import { getStudentCoaching } from "@/lib/panel/coaching";
+import { loadParentDigest } from "@/lib/panel/parent-digest-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { ChildContext } from "@/components/panel/parent/child-context";
 import {
@@ -15,11 +14,7 @@ import {
 } from "@/components/panel/ui";
 import { CalmDigestCard } from "@/components/panel/calm-digest-card";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
-import {
-  ISTANBUL_TIME_ZONE,
-  addIstanbulCalendarDays,
-  istanbulWeekStart,
-} from "@/lib/istanbul-time";
+import { ISTANBUL_TIME_ZONE } from "@/lib/istanbul-time";
 
 export const dynamic = "force-dynamic";
 
@@ -77,43 +72,9 @@ export default async function ParentWeeklyDigestPage({
     );
   }
 
-  const now = new Date();
-  const weekStart = istanbulWeekStart(now);
-  const nextWeekEnd = addIstanbulCalendarDays(weekStart, 14);
-
-  const [digest, nextLessons, coaching] = await Promise.all([
-    prisma.weeklyDigest.findFirst({
-      where: { studentId: selected.id, status: "PUBLISHED" },
-      orderBy: { weekStart: "desc" },
-      include: { feedback: { where: { userId: session.userId }, take: 1 } },
-    }),
-    selected.products.includes("OD")
-      ? prisma.lesson.findMany({
-          where: {
-            status: "PLANNED",
-            startsAt: { gte: now, lt: nextWeekEnd },
-            attendances: { some: { studentId: selected.id } },
-          },
-          orderBy: { startsAt: "asc" },
-          take: 4,
-          select: { title: true, startsAt: true },
-        })
-      : Promise.resolve([]),
-    selected.products.includes("OK")
-      ? getStudentCoaching(selected.id)
-      : Promise.resolve(null),
-  ]);
-
-  const systemUpcoming = nextLessons.map((lesson) => ({
-    title: lesson.title,
-    meta: TR_DATE.format(lesson.startsAt),
-  }));
-  if (coaching?.nextScheduledAt) {
-    systemUpcoming.push({
-      title: "Koçluk görüşmesi",
-      meta: TR_DATE.format(coaching.nextScheduledAt),
-    });
-  }
+  // Ortak yükleyici (mobil `GET /api/panel/parent/digests` ile aynı).
+  const { digest, upcoming } = await loadParentDigest(session.userId, selected);
+  const systemUpcoming = upcoming.map((item) => ({ title: item.title, meta: TR_DATE.format(item.at) }));
   // Otomatik kayıtlar öğretmen/koç özetinden ayrı bir bölümde durur.
   const upcomingSection = (description: string) => (
     <Section title="Sistemden görünenler · önümüzdeki günler" description={description}>

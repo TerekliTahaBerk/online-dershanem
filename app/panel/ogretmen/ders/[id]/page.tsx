@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { loadTeacherLessonWorkspaceData } from "@/lib/panel/teacher-lesson-server";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { TeacherLessonWorkspace } from "@/components/panel/lesson/workspace";
@@ -49,87 +49,10 @@ export default async function TeacherLessonClosePage({
   const initialTab = parseLessonTab((await searchParams).sekme);
   const featureFlags = getPanelFeatureFlags();
 
-  const lesson = await prisma.lesson.findFirst({
-    where: { id, teacherId: session.userId },
-    include: {
-      group: {
-        include: {
-          enrollments: {
-            where: { endedAt: null },
-            include: {
-              student: {
-                include: {
-                  user: {
-                    select: {
-                      fullName: true,
-                      email: true,
-                      accessibilityPreference: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      notes: true,
-      attendances: true,
-      outcomeLinks: true,
-    },
-  });
-  if (!lesson) notFound();
-
-  const [previous, noteTemplates, outcomes] = await Promise.all([
-    prisma.lesson.findFirst({
-      where: {
-        groupId: lesson.groupId,
-        startsAt: { lt: lesson.startsAt },
-        status: "COMPLETED",
-      },
-      orderBy: { startsAt: "desc" },
-      include: { notes: { where: { studentId: null }, take: 1 } },
-    }),
-    prisma.teacherNoteTemplate.findMany({
-      where: { teacherId: session.userId },
-      orderBy: { updatedAt: "desc" },
-      take: 20,
-      select: {
-        id: true,
-        title: true,
-        note: true,
-        nextGoal: true,
-        homework: true,
-      },
-    }),
-    featureFlags.learningOutcomes
-      ? prisma.learningOutcome.findMany({
-          where: {
-            isActive: true,
-            unit: { subject: { version: { status: "ACTIVE" } } },
-          },
-          orderBy: [
-            { favorites: { _count: "desc" } },
-            { lessons: { _count: "desc" } },
-            { updatedAt: "desc" },
-            { code: "asc" },
-          ],
-          take: 15,
-          include: {
-            unit: { include: { subject: true } },
-            skills: { include: { skill: { select: { name: true } } } },
-            favorites: {
-              where: { userId: session.userId },
-              select: { userId: true },
-            },
-            lessons: {
-              where: { linkedById: session.userId },
-              take: 1,
-              select: { lessonId: true },
-            },
-          },
-        })
-      : Promise.resolve([]),
-  ]);
+  // Ortak yükleyici (mobil `GET /api/panel/staff/teacher/lessons/[id]` ile aynı sorgular).
+  const data = await loadTeacherLessonWorkspaceData(session.userId, id, featureFlags.learningOutcomes);
+  if (!data) notFound();
+  const { lesson, previous, noteTemplates, outcomes } = data;
 
   const previousNote = previous?.notes[0] ?? null;
   const previousContext = previousNote

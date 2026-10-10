@@ -85,6 +85,10 @@ export async function GET(request: Request) {
       statusTone,
       actionLabel,
       actionHref,
+      // Eklemeli (M2 mobil): ham durumlar; eski istemciler yok sayar.
+      endsAt: lesson.endsAt,
+      status: lesson.status,
+      attendance: attendance ?? null,
     };
   });
 

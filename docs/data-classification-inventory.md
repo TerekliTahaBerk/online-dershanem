@@ -12,10 +12,10 @@ Sütunlar:
 
 ## Özet
 
-- Taranan model: 153
-- Taranan scalar/enum alan: 1764
-- Olası kişisel veri alanı: 295
-- Çocuk verisi `evet`: 88; `olası`: 75
+- Taranan model: 156
+- Taranan scalar/enum alan: 1800
+- Olası kişisel veri alanı: 296
+- Çocuk verisi `evet`: 88; `olası`: 76
 
 | Kategori | Alan sayısı |
 |---|---:|
@@ -24,7 +24,7 @@ Sütunlar:
 | iletişim | 18 |
 | kimlik | 61 |
 | kimlik doğrulama sırrı | 10 |
-| serbest metin | 86 |
+| serbest metin | 87 |
 | yapılandırılmamış (Json) | 51 |
 
 ## Alanlar
@@ -263,6 +263,7 @@ Sütunlar:
 | PurchaseIntent | parentEmail | iletişim | yüksek | hayır | log/audit redaction anahtarı; DB'de düz |
 | PurchaseIntent | notes | serbest metin | orta | hayır | yok (DB'de düz) |
 | PurchaseIntent | adminNotes | serbest metin | orta | hayır | yok (DB'de düz) |
+| PushDevice | revokedReason | serbest metin | orta | olası (tüm roller) | yok (DB'de düz) |
 | ReconciliationRecord | expectedCents | finansal | orta | hayır | yok (DB'de düz) |
 | ReconciliationRecord | actualCents | finansal | orta | hayır | yok (DB'de düz) |
 | ReconciliationRecord | details | yapılandırılmamış (Json) | orta | hayır | yok (DB'de düz) |

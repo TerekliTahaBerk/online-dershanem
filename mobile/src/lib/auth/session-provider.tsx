@@ -9,6 +9,9 @@ import { ApiError } from '@/lib/api/errors';
 import { deriveAppState, type AppState } from '@/lib/auth/app-state';
 import { createGateRefreshPolicy } from '@/lib/auth/gate-refresh';
 import { tokenStore } from '@/lib/auth/token-store';
+import { clearMaterialFiles } from '@/lib/files/material-files';
+import { resetLocalPushState } from '@/lib/push/native-push';
+import { forgetPushRegistration, unregisterCurrentDevice } from '@/lib/push/registration';
 import { queryKeys, sessionKeyFor } from '@/lib/query/keys';
 import { createQueryClient, wireQueryEnvironment } from '@/lib/query/query-client';
 
@@ -100,6 +103,11 @@ export function SessionProvider({ children, queryClient: injectedClient }: Props
     gatePolicy.current.reset();
     await tokenStore.clear();
     queryClient.clear();
+    // Kimlikli indirilmiş materyaller önbellekten silinir (sonraki hesaba kalmaz).
+    clearMaterialFiles();
+    // M5: rozet, sistemdeki bildirimler ve bellekteki kayıt bilgisi sonraki hesaba kalmaz.
+    forgetPushRegistration();
+    void resetLocalPushState();
   }
 
   expireRef.current = () => {
@@ -115,6 +123,7 @@ export function SessionProvider({ children, queryClient: injectedClient }: Props
     try {
       // Önceki hesaptan kalabilecek her şey yeni kimlik açılmadan silinir.
       queryClient.clear();
+      clearMaterialFiles();
       const { token: newToken } = await endpoints.login(api, email, password);
       await tokenStore.write(newToken);
       tokenRef.current = newToken;
@@ -129,6 +138,13 @@ export function SessionProvider({ children, queryClient: injectedClient }: Props
     // Oturum zaten kapandıysa (ör. merkezi 401 işleyicisi önce çalıştı) tekrar
     // kapatma; aksi halde "oturum sona erdi" bildirimi ezilirdi.
     if (!tokenRef.current) return;
+    try {
+      // M5: push cihaz kaydı, Bearer hâlâ geçerliyken silinir (en iyi çaba).
+      // Çevrimdışıysa sunucu, oturum iptal / süre bitimiyle cihazı yine devre dışı bırakır.
+      await unregisterCurrentDevice(api);
+    } catch {
+      // Yok sayılır; aşağıdaki oturum iptali cihaz kaydını da geçersiz kılar.
+    }
     try {
       // Sunucu iptali önce: yerel token silinmeden önce Bearer gerekiyor.
       await endpoints.logout(api);

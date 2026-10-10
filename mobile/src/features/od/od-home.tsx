@@ -1,383 +1,233 @@
-import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import type { MobileProductCode } from '@contracts/bootstrap';
+import type { MobileOdAction, MobileOdHome, MobileOdTodayItem, MobileOdWeek } from '@contracts/student';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
-import { BarRow, Card, CardTitle, EmptyState, ProgressBar, SectionLabel } from '@/components/panel-ui';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { BrandColors, Spacing } from '@/constants/theme';
+import { Banner, Button, EmptyState, PageHeader, Row, Screen, Section, StatusBadge, Text } from '@/design/primitives';
+import { productTheme, PRODUCT_FALLBACK_LABEL } from '@/design/products';
+import { color, radius, space } from '@/design/tokens';
+import { openOnWeb, webUrlFor } from '@/features/shell/web-continuation';
+import { fetchOdHome } from '@/lib/api/student';
 import { ApiError } from '@/lib/api/errors';
-import { useLegacySession } from '@/lib/legacy-session';
-import { useNavTarget } from '@/navigation/use-nav-target';
+import { useReadyBootstrap, useSession } from '@/lib/auth/session-provider';
+import { formatLongDate, formatTime, greetingFor, isSameIstanbulDay, formatShortDateTime } from '@/lib/format/istanbul';
+import { hrefForOdTarget } from '@/navigation/od-targets';
+import { expoHrefFor, targetForNavId } from '@/navigation/route-map';
 
-const TR_TIME = new Intl.DateTimeFormat('tr-TR', { hour: '2-digit', minute: '2-digit' });
-const TR_SHORT = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long' });
-const TR_LONG = new Intl.DateTimeFormat('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' });
+import { QueryView, useOdNavigation, useOdQuery, usePullToRefresh } from './shared';
 
-type HomeData = {
-  products: string[];
-  profile: { id: string } | null;
-  fullName: string | null;
-  unifiedToday?: {
-    items: {
-      id: string;
-      kind: string;
-      productLabel: string;
-      title: string;
-      subtitle: string | null;
-      timeLabel: string | null;
-      href: string | null;
-    }[];
-    whatNext: { title: string; productLabel: string; href: string | null } | null;
-  } | null;
-  today: {
-    lessons: { id: string; startsAt: string; title: string; teacherName: string | null; groupName: string }[];
-    tasks: { id: string; title: string; durationMinutes: number; scheduledFor: string }[];
-    assignments?: { id: string; title: string; dueAt: string }[];
-    mockExams?: { id: string; title: string; startsAt: string }[];
-  };
-  weeklyPlan: { done: number; total: number; tasks: { id: string; title: string; durationMinutes: number; done: boolean }[] } | null;
-  latestExam: {
-    id: string;
-    title: string;
-    takenAt: string;
-    net: number;
-    delta: number | null;
-    sections: { name: string; correct: number; incorrect: number; net: number }[];
-  } | null;
-  trend: { takenAt: string; net: number }[];
-  hasODK: boolean;
+/**
+ * OD · BUGÜN — web `app/panel/ogrenci/page.tsx`'in OD kapsamlı native
+ * karşılığı. Veri `GET /api/panel/student/home?scope=OD`: öncelik ve akış
+ * sunucudan gelir; burada kural üretilmez. Yön planı ve Deneme Ligi verisi
+ * bu ekrana HİÇ gelmez; erişilen diğer çalışma alanları yalnız ayrı giriş
+ * satırı olarak gösterilir.
+ */
+
+const KIND_LABEL: Record<MobileOdTodayItem['kind'], string> = {
+  LESSON: 'Ders',
+  ASSIGNMENT_DUE: 'Ödev teslimi',
+  RECOVERY: 'Telafi',
+  REVIEW: 'Tekrar',
+  OTHER: 'Çalışma',
 };
 
-function greeting(): string {
-  const h = new Date().getHours();
-  if (h < 11) return 'Günaydın';
-  if (h < 18) return 'İyi günler';
-  return 'İyi akşamlar';
+function itemTime(item: MobileOdTodayItem, now: Date): string | null {
+  if (item.isFlexible) return null;
+  const value = item.startsAt ?? item.dueAt;
+  if (!value) return null;
+  return isSameIstanbulDay(value, now) ? formatTime(value) : formatShortDateTime(value);
 }
 
-/** Web'in "Toplam net / önceki denemeye göre" muted renkli metni — rozet/ok İCAT EDİLMEDİ. */
-function DeltaText({ delta }: { delta: number }) {
-  const positive = delta >= 0;
+function summaryLine(home: MobileOdHome): string | undefined {
+  const lessons = home.today.filter((item) => item.kind === 'LESSON').length + (home.now?.kind === 'OPEN_LESSON' ? 1 : 0);
+  const due = home.today.filter((item) => item.kind === 'ASSIGNMENT_DUE').length;
+  const parts = [lessons ? `${lessons} ders` : null, due ? `${due} ödev teslimi` : null, home.week?.dueReviews ? `${home.week.dueReviews} tekrar` : null].filter(Boolean);
+  if (parts.length) return `Bugün ${parts.join(' · ')}.`;
+  return home.now ? undefined : 'Bugün için planlanmış bir çalışma görünmüyor.';
+}
+
+export default function OdHomeScreen() {
+  const query = useOdQuery('od-home', (api, signal) => fetchOdHome(api, signal));
+  const refresh = usePullToRefresh(() => query.refetch());
+  const bootstrap = useReadyBootstrap();
+  const now = new Date();
+  const name = query.data?.firstName ?? bootstrap.user.fullName?.split(' ')[0] ?? null;
+
   return (
-    <ThemedText type="smallBold" style={{ color: positive ? BrandColors.brandStrong : '#B3261E' }}>
-      {positive ? '+' : ''}
-      {delta.toFixed(2)}
-    </ThemedText>
+    <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="od-home">
+      <PageHeader
+        title={`${greetingFor(now)}${name ? `, ${name}` : ''}.`}
+        context={<Text tone="muted" variant="meta">{formatLongDate(now)}</Text>}
+        description={query.data?.state === 'READY' ? summaryLine(query.data) : undefined}
+      />
+      <QueryView query={query}>{(home) => <OdHomeBody home={home} now={now} />}</QueryView>
+    </Screen>
   );
 }
 
-function TrendSparkline({ points }: { points: { takenAt: string; net: number }[] }) {
-  const nets = points.map((p) => p.net);
-  const min = Math.min(...nets);
-  const max = Math.max(...nets);
-  const range = max - min || 1;
+function OdHomeBody({ home, now }: { home: MobileOdHome; now: Date }) {
+  if (home.state === 'NO_PROFILE') {
+    return <EmptyState title="Profilin hazırlanıyor." body="Öğrenci profilin tamamlandığında derslerin ve çalışmaların burada görünecek." />;
+  }
   return (
-    <View style={styles.sparkline}>
-      {points.map((point, i) => {
-        const heightRatio = (point.net - min) / range;
-        const isLast = i === points.length - 1;
-        return (
-          <View key={point.takenAt + i} style={styles.sparklineBarWrap}>
-            <View
-              style={[
-                styles.sparklineBar,
-                { height: 8 + heightRatio * 44, backgroundColor: isLast ? BrandColors.brandStrong : BrandColors.brandSoftLine },
-              ]}
-            />
-          </View>
-        );
-      })}
+    <>
+      <NowBlock action={home.now} />
+      <TodaySection items={home.today} now={now} />
+      {home.week ? <WeekSection week={home.week} /> : null}
+      {home.insight ? <InsightSection sentence={home.insight.sentence} /> : null}
+      <OtherWorkspaces />
+    </>
+  );
+}
+
+function NowBlock({ action }: { action: MobileOdAction | null }) {
+  const nav = useOdNavigation();
+  if (!action) {
+    const insights = nav.has('analiz') ? 'analiz' : nav.has('progress') ? 'progress' : null;
+    return (
+      <View style={styles.now} testID="od-now-empty">
+        <Text variant="caption" tone="muted">Şimdi</Text>
+        <Text variant="sectionTitle" accessibilityRole="header">Bekleyen bir çalışma görünmüyor</Text>
+        <Text tone="secondary">Derslerine göz atabilir veya gidişatını inceleyebilirsin.</Text>
+        <View style={styles.actions}>
+          {nav.has('lessons') && nav.navigation ? <Button label="Derslerim" variant="secondary" onPress={() => nav.push(expoHrefFor(targetForNavId(nav.navigation!, 'lessons')))} /> : null}
+          {insights && nav.navigation ? <Button label="Gidişatıma Bak" variant="secondary" onPress={() => nav.push(expoHrefFor(targetForNavId(nav.navigation!, insights)))} /> : null}
+        </View>
+      </View>
+    );
+  }
+  const href = hrefForOdTarget(action.target, nav.navigation);
+  const webFallback = !href && webUrlFor(action.webPath);
+  return (
+    <View style={styles.now} testID="od-now">
+      <Text variant="caption" tone="muted">Şimdi</Text>
+      <Text variant="sectionTitle" accessibilityRole="header">{action.title}</Text>
+      <Text tone="secondary">{[action.description, action.reason].filter(Boolean).join(' · ')}</Text>
+      <View style={styles.actions}>
+        {href ? (
+          <Button label={action.ctaLabel} onPress={() => nav.push(href)} testID="od-now-cta" accessibilityHint={action.joinable ? 'Ders detayında katılım bağlantısı açılır.' : undefined} />
+        ) : webFallback ? (
+          <Button label="Web panelinde aç" variant="secondary" onPress={() => void openOnWeb(action.webPath)} />
+        ) : null}
+      </View>
     </View>
   );
 }
 
-export default function AnaSayfaScreen() {
-  const { token, signOut, apiFetch } = useLegacySession();
-  const { canOpen, openNavId } = useNavTarget();
-  // Web: `progressInsights` açıksa "Analiz", değilse "Gelişim"; menüde hangisi varsa.
-  const progressNavId = ['analiz', 'progress'].find((id) => canOpen(id)) ?? null;
-  const [data, setData] = useState<HomeData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const load = useCallback(
-    async (isRefresh = false) => {
-      if (!token) return;
-      if (isRefresh) setRefreshing(true);
-      else setLoading(true);
-      setError(null);
-      try {
-        const result = await apiFetch<HomeData>('/api/panel/student/home');
-        setData(result);
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 401) {
-          // Oturum sunucuda iptal/süresi dolmuş — yerel token da temizlenir,
-          // kök layout otomatik giriş ekranına döner.
-          await signOut();
-          return;
-        }
-        setError(err instanceof ApiError ? err.message : 'Veriler yüklenemedi. Bağlantınızı kontrol edin.');
-      } finally {
-        if (isRefresh) setRefreshing(false);
-        else setLoading(false);
-      }
-    },
-    [token, signOut, apiFetch],
+function TodaySection({ items, now }: { items: MobileOdTodayItem[]; now: Date }) {
+  const nav = useOdNavigation();
+  return (
+    <Section title="Bugün">
+      {items.length ? (
+        items.map((item) => {
+          const href = hrefForOdTarget(item.target, nav.navigation);
+          return (
+            <Row
+              key={item.id}
+              testID={`od-today-${item.id}`}
+              title={item.title}
+              subtitle={item.subtitle}
+              meta={itemTime(item, now)}
+              leading={<StatusBadge label={KIND_LABEL[item.kind]} tone={item.kind === 'LESSON' ? 'info' : item.kind === 'RECOVERY' ? 'warning' : 'neutral'} />}
+              onPress={href ? () => nav.push(href) : undefined}
+            />
+          );
+        })
+      ) : (
+        <Text tone="secondary">Bugün için planlanmış bir ders veya teslim yok. Yeni ders veya ödev geldiğinde burada görünecek.</Text>
+      )}
+    </Section>
   );
+}
 
-  useEffect(() => {
-    load();
-  }, [load]);
+function WeekSection({ week }: { week: MobileOdWeek }) {
+  const nav = useOdNavigation();
+  const assignments = nav.navigation ? expoHrefFor(targetForNavId(nav.navigation, 'assignments')) : null;
+  return (
+    <Section title="Bu hafta">
+      <Row title="Dersler" meta={week.lessonsPlanned ? `${week.lessonsPlanned} ders` : 'Ders yok'} subtitle={week.lessonsRemainingToday ? `Bugün ${week.lessonsRemainingToday} ders kaldı` : null} />
+      <Row
+        title="Bu hafta teslim edilecekler"
+        meta={week.assignmentsDue ? `${week.assignmentsCompleted}/${week.assignmentsDue} tamamlandı` : 'Teslim yok'}
+        onPress={assignments && week.assignmentsDue ? () => nav.push(assignments) : undefined}
+      />
+      {week.pendingAssignments ? (
+        <Row
+          title="Bekleyen çalışmalar"
+          meta={`${week.pendingAssignments}`}
+          subtitle={week.overdueAssignments ? `${week.overdueAssignments} çalışmanın süresi geçti` : null}
+          onPress={assignments ? () => nav.push(assignments) : undefined}
+        />
+      ) : null}
+      {week.dueReviews !== null && week.dueReviews > 0 ? (
+        <Row title="Bugünkü tekrarlar" meta={`${week.dueReviews}`} onPress={nav.has('review-recovery') ? () => nav.push(hrefForOdTarget({ type: 'review' }, nav.navigation)) : undefined} />
+      ) : null}
+    </Section>
+  );
+}
 
-  if (loading) {
-    return (
-      <ThemedView style={styles.centerFlex}>
-        <ActivityIndicator color={BrandColors.brandStrong} size="large" />
-      </ThemedView>
-    );
+function InsightSection({ sentence }: { sentence: string }) {
+  const nav = useOdNavigation();
+  const target = nav.has('analiz') ? 'analiz' : nav.has('progress') ? 'progress' : null;
+  return (
+    <Section title="Akademik gidişat">
+      <Text tone="secondary">{sentence}</Text>
+      {target && nav.navigation ? <Button label="Gidişatım" variant="quiet" onPress={() => nav.push(expoHrefFor(targetForNavId(nav.navigation!, target)))} /> : null}
+    </Section>
+  );
+}
+
+/**
+ * Erişilen diğer çalışma alanları: yalnız sunucunun ACTIVE dediği ürünler,
+ * ayrı ve açıkça etiketli giriş satırı olarak. İçerikleri (Yön görevleri,
+ * Deneme Ligi sonuçları) burada gösterilmez; seçim sunucuya yazılır.
+ */
+function OtherWorkspaces() {
+  const bootstrap = useReadyBootstrap();
+  const { selectWorkspace } = useSession();
+  const router = useRouter();
+  const [pending, setPending] = useState<MobileProductCode | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const others = (bootstrap.workspace?.products ?? []).filter((product) => product.state === 'ACTIVE' && product.code !== 'OD');
+  if (!others.length) return null;
+
+  async function open(code: MobileProductCode) {
+    setPending(code);
+    setError(null);
+    try {
+      await selectWorkspace(code);
+      router.replace('/');
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : 'Çalışma alanı değiştirilemedi.');
+    } finally {
+      setPending(null);
+    }
   }
-
-  if (error) {
-    return (
-      <ThemedView style={styles.centerFlex}>
-        <SafeAreaView style={styles.errorContainer}>
-          <ThemedText type="default" style={styles.errorText}>
-            {error}
-          </ThemedText>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => load()}
-            style={({ pressed }) => [styles.retryButton, pressed && styles.retryButtonPressed]}>
-            <ThemedText type="smallBold" style={styles.retryLabel}>
-              Tekrar dene
-            </ThemedText>
-          </Pressable>
-        </SafeAreaView>
-      </ThemedView>
-    );
-  }
-
-  if (!data || data.products.length === 0 || !data.profile) {
-    return (
-      <ThemedView style={styles.centerFlex}>
-        <SafeAreaView style={styles.container}>
-          <EmptyState
-            title={!data || data.products.length === 0 ? 'Aktif ürün yok' : 'Profil hazırlanıyor'}
-            body={
-              !data || data.products.length === 0
-                ? 'Henüz aktif bir ürününüz yok. Yönetim ekibiyle iletişime geçin.'
-                : 'Yönetim ekibi profilinizi tamamladığında dersleriniz burada görünecek.'
-            }
-          />
-        </SafeAreaView>
-      </ThemedView>
-    );
-  }
-
-  const { today, weeklyPlan, latestExam, trend, unifiedToday } = data;
-  const now = new Date();
-  const maxSectionNet = latestExam ? Math.max(0.01, ...latestExam.sections.map((s) => s.net)) : 1;
-  const todayItems = unifiedToday?.items?.length
-    ? unifiedToday.items
-    : [
-        ...today.lessons.map((lesson) => ({
-          id: lesson.id,
-          kind: 'LESSON',
-          productLabel: 'onlinedershanem.',
-          title: lesson.title,
-          subtitle: [lesson.teacherName, lesson.groupName].filter(Boolean).join(' · ') || 'Canlı ders',
-          timeLabel: TR_TIME.format(new Date(lesson.startsAt)),
-          href: null as string | null,
-        })),
-        ...today.tasks.map((task) => ({
-          id: task.id,
-          kind: 'COACHING_TASK',
-          productLabel: 'Yön Koçluk',
-          title: task.title,
-          subtitle: `${task.durationMinutes} dk · Plan görevi`,
-          timeLabel: TR_TIME.format(new Date(task.scheduledFor)),
-          href: null as string | null,
-        })),
-        ...(today.assignments ?? []).map((item) => ({
-          id: item.id,
-          kind: 'ASSIGNMENT_DUE',
-          productLabel: 'onlinedershanem.',
-          title: item.title,
-          subtitle: 'Ödev son tarihi',
-          timeLabel: TR_TIME.format(new Date(item.dueAt)),
-          href: null as string | null,
-        })),
-        ...(today.mockExams ?? []).map((item) => ({
-          id: item.id,
-          kind: 'MOCK_EXAM',
-          productLabel: 'Deneme Ligi',
-          title: item.title,
-          subtitle: 'Online deneme',
-          timeLabel: TR_TIME.format(new Date(item.startsAt)),
-          href: null as string | null,
-        })),
-      ];
-  const todayEmpty = todayItems.length === 0;
 
   return (
-    <ThemedView style={styles.flex}>
-      <SafeAreaView style={styles.flex} edges={['top', 'left', 'right']}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => load(true)}
-              tintColor={BrandColors.brandStrong}
-              colors={[BrandColors.brandStrong]}
-            />
-          }>
-          <View style={styles.header}>
-            <ThemedText style={styles.greeting}>
-              {greeting()}
-              {data.fullName ? `, ${data.fullName.split(' ')[0]}` : ''}.
-            </ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              {TR_LONG.format(now)}
-            </ThemedText>
-          </View>
-
-          <Card>
-            <SectionLabel>Bugün</SectionLabel>
-            {todayEmpty ? (
-              <ThemedText type="small" themeColor="textSecondary">
-                Bugün için planlanmış bir şey yok.
-              </ThemedText>
-            ) : (
-              <View style={styles.rowGroup}>
-                {todayItems.map((item, i) => (
-                  <View key={item.id} style={[styles.row, i > 0 && styles.rowDivider]}>
-                    <View style={styles.rowTime}>
-                      <ThemedText type="smallBold">{item.timeLabel ?? '—'}</ThemedText>
-                    </View>
-                    <View style={styles.rowBody}>
-                      <ThemedText type="default">{item.title}</ThemedText>
-                      <ThemedText type="small" themeColor="textSecondary">
-                        {item.productLabel}
-                        {item.subtitle ? ` · ${item.subtitle}` : ''}
-                      </ThemedText>
-                    </View>
-                  </View>
-                ))}
-              </View>
-            )}
-          </Card>
-
-          {weeklyPlan ? (
-            <Card>
-              <View style={styles.cardHeaderRow}>
-                <SectionLabel>Haftalık Plan</SectionLabel>
-                <ThemedText type="smallBold" themeColor="textSecondary">
-                  {weeklyPlan.done}/{weeklyPlan.total}
-                </ThemedText>
-              </View>
-              <ProgressBar percent={weeklyPlan.total ? (weeklyPlan.done / weeklyPlan.total) * 100 : 0} />
-              <View style={styles.rowGroup}>
-                {weeklyPlan.tasks.map((task, i) => (
-                  <View key={task.id} style={[styles.taskRow, i > 0 && styles.rowDivider]}>
-                    <View style={[styles.checkbox, task.done && styles.checkboxDone]}>
-                      {task.done ? <ThemedText style={styles.checkboxMark}>✓</ThemedText> : null}
-                    </View>
-                    <ThemedText type="small" themeColor={task.done ? 'textSecondary' : 'text'} style={styles.taskLabel}>
-                      {task.title} · {task.durationMinutes} dk
-                    </ThemedText>
-                  </View>
-                ))}
-              </View>
-              {progressNavId ? (
-                <View style={styles.cardLinkRow}>
-                  <Pressable accessibilityRole="link" hitSlop={8} onPress={() => openNavId(progressNavId)}>
-                    <ThemedText style={styles.cardLink}>Gidişatını gör →</ThemedText>
-                  </Pressable>
-                </View>
-              ) : null}
-            </Card>
-          ) : null}
-
-          {latestExam ? (
-            <Card>
-              <CardTitle>{latestExam.title}</CardTitle>
-              <View style={styles.examHeaderRow}>
-                <ThemedText style={styles.examNet}>{latestExam.net.toFixed(2)}</ThemedText>
-                {latestExam.delta !== null ? <DeltaText delta={latestExam.delta} /> : null}
-              </View>
-              <ThemedText type="small" themeColor="textSecondary">
-                {TR_SHORT.format(new Date(latestExam.takenAt))} · net
-              </ThemedText>
-
-              {trend.length >= 2 ? <TrendSparkline points={trend} /> : null}
-
-              <View style={styles.rowGroup}>
-                {latestExam.sections.map((section) => (
-                  <BarRow
-                    key={section.name}
-                    label={section.name}
-                    value={(Math.max(0, section.net) / maxSectionNet) * 100}
-                    meta={`${section.correct}D ${section.incorrect}Y · ${section.net.toFixed(2)}`}
-                  />
-                ))}
-              </View>
-              {/* Deneme Ligi sonucu ve analizi M4'te native olacak; eski bağlantı
-                  OD dış deneme ekranına gidiyordu (yanlış ürün) ve kaldırıldı. */}
-            </Card>
-          ) : null}
-        </ScrollView>
-      </SafeAreaView>
-    </ThemedView>
+    <Section title="Diğer çalışma alanların">
+      {error ? <Banner tone="critical">{error}</Banner> : null}
+      {others.map((product) => (
+        <Row
+          key={product.code}
+          testID={`od-other-${product.code}`}
+          title={product.label || PRODUCT_FALLBACK_LABEL[product.code]}
+          subtitle="Ayrı çalışma alanı · geçiş yapar"
+          leading={<View style={[styles.dot, { backgroundColor: productTheme(product.code).accentMarker }]} />}
+          trailing={pending === product.code ? <Text tone="muted">…</Text> : null}
+          disabled={pending !== null}
+          onPress={() => void open(product.code)}
+          accessibilityHint={`${product.label} çalışma alanına geçer`}
+        />
+      ))}
+    </Section>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  centerFlex: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  container: { alignItems: 'stretch', paddingHorizontal: Spacing.four, width: '100%' },
-  errorContainer: { alignItems: 'center', gap: Spacing.three, paddingHorizontal: Spacing.four },
-  scrollContent: { padding: Spacing.four, gap: Spacing.three, paddingBottom: Spacing.six },
-  header: { gap: Spacing.half, marginBottom: Spacing.one },
-  greeting: { fontSize: 24, lineHeight: 30, fontWeight: '800', letterSpacing: -0.3 },
-  cardHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  cardLink: { fontSize: 13, fontWeight: '600', color: BrandColors.brandStrong },
-  cardLinkRow: { flexDirection: 'row', gap: Spacing.three, marginTop: 2 },
-  rowGroup: { gap: 0 },
-  row: { flexDirection: 'row', gap: Spacing.three, paddingVertical: Spacing.two },
-  rowDivider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: BrandColors.line },
-  rowTime: { width: 52 },
-  rowBody: { flex: 1, gap: 2 },
-  taskRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, paddingVertical: Spacing.one + 2 },
-  taskLabel: { flex: 1 },
-  checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 5,
-    borderWidth: 1.5,
-    borderColor: BrandColors.line,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxDone: { backgroundColor: BrandColors.brandStrong, borderColor: BrandColors.brandStrong },
-  checkboxMark: { color: '#ffffff', fontSize: 12, fontWeight: '700', lineHeight: 14 },
-  examHeaderRow: { flexDirection: 'row', alignItems: 'baseline', gap: Spacing.two },
-  examNet: { fontSize: 30, lineHeight: 36, fontWeight: '800' },
-  sparkline: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.one, height: 52, marginVertical: Spacing.one },
-  sparklineBarWrap: { flex: 1, alignItems: 'center' },
-  sparklineBar: { width: '60%', borderRadius: 3 },
-  errorText: { textAlign: 'center', marginBottom: Spacing.three },
-  retryButton: {
-    height: 44,
-    paddingHorizontal: Spacing.four,
-    borderRadius: 10,
-    backgroundColor: BrandColors.brandStrong,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  retryButtonPressed: { backgroundColor: BrandColors.brandHover },
-  retryLabel: { color: '#ffffff' },
+  now: { borderWidth: 1, borderColor: color.border, borderRadius: radius.card, padding: space[4], gap: space[1] },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2], marginTop: space[2] },
+  dot: { width: 8, height: 8, borderRadius: 4 },
 });

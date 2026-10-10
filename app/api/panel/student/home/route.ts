@@ -1,13 +1,31 @@
 import { NextResponse } from "next/server";
-import { requireApiAccountRole } from "@/lib/auth/api-guards";
+import { z } from "zod";
+import { requireApiAccountRole, requireApiOdRole } from "@/lib/auth/api-guards";
+import { loadOdHome } from "@/lib/mobile/od-home-server";
 import { getStudentHomeData } from "@/lib/panel/student-home-server";
 import { legacyTodayFromUnified } from "@/lib/student-success/unified-today-serializer";
 
 /**
  * Mobil öğrenci ana sayfası. Ürün blokları ortak domain service'inden gelir;
  * unified today üç ürünü tek listede birleştirir.
+ *
+ * `?scope=OD` (M2, mobil OD çalışma alanı): OD erişimi ZORUNLU ve yanıt
+ * yalnız OD verisi taşır (`MobileOdHome`, `lib/mobile-contracts/student.ts`);
+ * Yön planı ve Deneme Ligi sorguları hiç çalışmaz. Parametresiz istek
+ * (eski mobil sürümler) birebir eski davranıştır.
  */
-export async function GET() {
+const querySchema = z.object({ scope: z.literal("OD").optional() });
+
+export async function GET(request: Request) {
+  const query = querySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
+  if (!query.success) return NextResponse.json({ error: "Geçersiz çalışma alanı kapsamı." }, { status: 400 });
+  if (query.data.scope === "OD") {
+    const odAuth = await requireApiOdRole("STUDENT");
+    if (!odAuth.ok) return odAuth.response;
+    const body = await loadOdHome({ userId: odAuth.session.userId, role: odAuth.session.role, fullName: odAuth.session.fullName });
+    return NextResponse.json(body, { headers: { "Cache-Control": "private, no-store" } });
+  }
+
   const auth = await requireApiAccountRole("STUDENT");
   if (!auth.ok) return auth.response;
 

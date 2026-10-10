@@ -1,9 +1,8 @@
 import { notFound } from "next/navigation";
 import { PackageCheck } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
-import { recordPanelProductEvent } from "@/lib/panel-product-events";
+import { loadStudentRecoveryPackages, recoveryItemWebHref } from "@/lib/panel/student-review-recovery-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { StudentRecoveryPackages } from "@/components/panel/student-recovery-packages";
 import {
@@ -22,96 +21,14 @@ export default async function StudentRecoveryPage({
   const session = await requireRole("STUDENT");
   if (!getPanelFeatureFlags().recoveryPackage) notFound();
   const requestedLessonId = (await searchParams).lessonId || null;
-  const packages = await prisma.recoveryPackage.findMany({
-    where: {
-      student: { userId: session.userId },
-      status: { in: ["PUBLISHED", "COMPLETED"] },
-    },
-    orderBy: { dueAt: "asc" },
-    include: {
-      lesson: {
-        select: {
-          title: true,
-          endsAt: true,
-          notes: {
-            where: { studentId: null },
-            orderBy: { updatedAt: "desc" },
-            take: 1,
-            select: { note: true },
-          },
-          outcomeLinks: {
-            take: 3,
-            orderBy: { createdAt: "asc" },
-            select: { outcome: { select: { title: true } } },
-          },
-        },
-      },
-      items: {
-        orderBy: { position: "asc" },
-        include: {
-          material: {
-            select: { id: true, url: true, blobPathname: true, isActive: true },
-          },
-          assignment: { select: { id: true, isActive: true } },
-        },
-      },
-    },
-  });
-  const firstViews = packages.filter(
-    (item) => item.status === "PUBLISHED" && !item.firstViewedAt,
-  );
-  if (firstViews.length) {
-    await prisma.recoveryPackage.updateMany({
-      where: {
-        id: { in: firstViews.map((item) => item.id) },
-        firstViewedAt: null,
-      },
-      data: { firstViewedAt: new Date() },
-    });
-    for (const item of firstViews)
-      await recordPanelProductEvent(
-        {
-          name: "recovery_package_viewed",
-          properties: {
-            ageMs: Math.min(
-              365 * 86400000,
-              Math.max(0, Date.now() - item.lesson.endsAt.getTime()),
-            ),
-            itemCount: item.items.length,
-          },
-        },
-        session.role,
-      );
-  }
+  // Sorgu + ilk görüntüleme kaydı mobil `GET /api/panel/student/recovery` ile
+  // ortak yükleyicide; davranış değişmedi.
+  const packages = await loadStudentRecoveryPackages({ studentUserId: session.userId, role: session.role });
   const rows = packages.map((item) => ({
-    id: item.id,
-    lessonId: item.lessonId,
-    status: item.status as "PUBLISHED" | "COMPLETED",
-    lessonTitle: item.lesson.title,
-    lessonDate: item.lesson.endsAt.toISOString(),
-    summaryTopic: item.summaryTopic,
-    sharedNote: item.lesson.notes[0]?.note || null,
-    summaryNextStep: item.summaryNextStep,
-    checkpointPrompt: item.checkpointPrompt,
-    checkpointResponse: item.checkpointResponse,
+    ...item,
+    lessonDate: item.lessonDate.toISOString(),
     dueAt: item.dueAt.toISOString(),
-    outcomeTitles: item.lesson.outcomeLinks.map((row) => row.outcome.title),
-    items: item.items.map((row) => ({
-      id: row.id,
-      kind: row.kind,
-      title: row.title,
-      completed: Boolean(row.completedAt),
-      href:
-        row.kind === "MATERIAL"
-          ? row.material?.isActive
-            ? row.material.blobPathname
-              ? `/api/panel/materials/${row.material.id}/file`
-              : row.material.url
-            : null
-          : row.assignment?.isActive
-            ? "/panel/ogrenci/odevler"
-            : null,
-    })),
+    items: item.items.map((row) => ({ id: row.id, kind: row.kind, title: row.title, completed: row.completed, href: recoveryItemWebHref(row) })),
   }));
   const orderedRows = requestedLessonId
     ? [...rows].sort((a, b) =>
