@@ -29,7 +29,7 @@ export default function TeacherOdkReportsScreen() {
                   <EmptyState title="Bu öğrenci için yayınlanmış sonuç yok" />
                 ) : (
                   <>
-                    {data.summary.map((line) => <Text key={line} tone="secondary">{line}</Text>)}
+                    {data.summary.map((line, index) => <Text key={`${index}-${line}`} tone="secondary">{line}</Text>)}
                     <Section title="Denemeler" first>
                       {data.exams.map((exam) => <Row key={exam.id} title={exam.title} subtitle={`${exam.family} · ${formatDayMonth(exam.takenAt)}`} meta={`${exam.correctCount} D · ${exam.wrongCount} Y · ${exam.blankCount} B · ${exam.totalNet.toFixed(2)} net`} />)}
                     </Section>

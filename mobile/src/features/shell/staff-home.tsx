@@ -1,6 +1,4 @@
 import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { View } from 'react-native';
 
 import { Banner, Button, PageHeader, Row, Screen, Section, Text } from '@/design/primitives';
 import { useReadyBootstrap } from '@/lib/auth/session-provider';
@@ -8,7 +6,6 @@ import { PHASE_COPY } from '@/navigation/native-screens';
 
 import { ROLE_LABEL } from './labels';
 import { openOnWeb } from './web-continuation';
-import { WorkspaceSwitcher } from './workspace-switcher';
 
 /**
  * Yönetim (ADMIN, yalnız web) ve çalışma alanı olmayan öğretmen için bilgi
@@ -19,25 +16,21 @@ import { WorkspaceSwitcher } from './workspace-switcher';
 export function StaffHomeScreen() {
   const bootstrap = useReadyBootstrap();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const role = bootstrap.user.role;
   const firstName = bootstrap.user.fullName?.split(' ')[0];
   const home = bootstrap.workspace?.navigation.primary[0]?.webPath ?? '/panel';
   const unread = bootstrap.workspace?.unreadNotifications ?? 0;
   return (
-    <View style={{ flex: 1, paddingTop: insets.top }}>
-      <Screen testID={`staff-home-${role}`}>
-        <PageHeader title={firstName ? `Merhaba ${firstName}` : 'Merhaba'} context={<Text tone="muted" variant="meta">{ROLE_LABEL[role]}</Text>} />
-        <WorkspaceSwitcher />
-        <Banner tone="info" title={role === 'ADMIN' ? 'Yönetim web panelinde' : 'Çalışma alanı bulunamadı'}>
-          {role === 'ADMIN' ? PHASE_COPY.WEB : 'Hesabına bağlı etkin bir öğretmen çalışma alanı yok. Web panelinden devam edebilirsin.'}
-        </Banner>
-        <Section title="Şimdilik">
-          <Row title="Bildirimler" meta={unread > 0 ? `${unread} okunmamış` : null} onPress={() => router.push('/notifications')} />
-          <Row title="Hesap ve ayarlar" onPress={() => router.push('/account')} />
-        </Section>
-        <Button label="Web panelini aç" variant="secondary" onPress={() => void openOnWeb(home)} accessibilityHint="Tarayıcıda açılır; web oturumuyla giriş yapmanız gerekebilir." />
-      </Screen>
-    </View>
+    <Screen testID={`staff-home-${role}`}>
+      <PageHeader title={firstName ? `Merhaba ${firstName}` : 'Merhaba'} context={<Text tone="muted" variant="meta">{ROLE_LABEL[role]}</Text>} />
+      <Banner tone="info" title={role === 'ADMIN' ? 'Yönetim web panelinde' : 'Çalışma alanı bulunamadı'}>
+        {role === 'ADMIN' ? PHASE_COPY.WEB : 'Hesabına bağlı etkin bir öğretmen çalışma alanı yok. Web panelinden devam edebilirsin.'}
+      </Banner>
+      <Section title="Şimdilik">
+        <Row title="Bildirimler" meta={unread > 0 ? `${unread} okunmamış` : null} onPress={() => router.push('/notifications')} />
+        <Row title="Hesap ve ayarlar" onPress={() => router.push('/account')} />
+      </Section>
+      <Button label="Web panelini aç" variant="secondary" onPress={() => void openOnWeb(home)} accessibilityHint="Tarayıcıda açılır; web oturumuyla giriş yapmanız gerekebilir." />
+    </Screen>
   );
 }

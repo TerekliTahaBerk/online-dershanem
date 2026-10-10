@@ -191,7 +191,7 @@ function HistoryItem({ item, product }: { item: MobileCheckInHistoryItem; produc
   return (
     <View style={styles.history} testID={`check-history-${item.id}`}>
       <View style={styles.head}>
-        <Text variant="bodyStrong" style={styles.flex}>{item.targetName}</Text>
+        <Text variant="bodyStrong" style={styles.historyTitle}>{item.targetName}</Text>
         <Text tone="muted" variant="meta">{`${formatDayMonth(item.createdAt)} · ${item.shared ? 'Paylaşıldı' : 'Yalnız bende'}`}</Text>
       </View>
       <Text tone="secondary" variant="secondary">{`${ENERGY[item.energy]} · ${CONFIDENCE[item.confidence]} · ${BARRIER[item.barrier]}`}</Text>
@@ -218,7 +218,8 @@ const styles = StyleSheet.create({
   help: { backgroundColor: tone.warning.soft, borderColor: tone.warning.soft },
   flex: { flex: 1 },
   history: { gap: space[1], paddingVertical: space[3], borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: color.border },
-  head: { flexDirection: 'row', alignItems: 'center', gap: space[2] },
+  head: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space[2] },
+  historyTitle: { flexGrow: 1, flexShrink: 1, flexBasis: 160 },
   request: { gap: space[1], marginTop: space[2], padding: space[3], borderRadius: radius.card, backgroundColor: color.surfaceSubtle },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2], marginTop: space[1] },
 });

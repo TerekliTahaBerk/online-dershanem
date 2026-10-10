@@ -28,7 +28,12 @@ const exportDirs = process.argv.slice(2);
 const leakPatterns = [/-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/, /postgres(?:ql)?:\/\//i, /vercel_blob_rw_[A-Za-z0-9]+/, /sk-proj-[A-Za-z0-9_-]{12,}/, /Bearer [A-Za-z0-9_.-]{24,}/, /(?:NEXTAUTH_SECRET|CRON_SECRET|DATABASE_URL)\s*[=:]\s*["'][^"']{8,}/];
 for (const dir of exportDirs) {
   for (const path of walk(resolve(dir))) {
-    const bytes = readFileSync(path).toString('utf8');
+    // Hermes stores literals back-to-back without separators. Scanning raw
+    // bytecode can join "Bearer " to an unrelated identifier and invent a token.
+    // Decode first; compiler failures remain fatal rather than skipping the file.
+    const bytes = path.endsWith('.hbc')
+      ? execFileSync(join(mobile, 'node_modules/hermes-compiler/hermesc', process.platform === 'darwin' ? 'osx-bin' : process.platform === 'win32' ? 'win64-bin' : 'linux64-bin', process.platform === 'win32' ? 'hermesc.exe' : 'hermesc'), ['-dump-bytecode', path], { encoding: 'utf8', maxBuffer: 128 * 1024 * 1024 })
+      : readFileSync(path).toString('utf8');
     if (leakPatterns.some((pattern) => pattern.test(bytes))) violations.push(`Potential secret in export: ${relative(resolve(dir), path)}`);
   }
 }

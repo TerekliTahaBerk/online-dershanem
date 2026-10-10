@@ -29,13 +29,15 @@ export function OdkExamRow({ exam }: { exam: MobileOdkExamRow }) {
       testID={`odk-exam-${exam.id}`}
       title={exam.title}
       subtitle={meta}
-      leading={<FamilyTag family={exam.family} />}
       meta={exam.net !== null ? `${formatNet(exam.net)} net` : null}
-      trailing={<StatusBadge label={exam.state.label} tone={exam.state.tone} />}
+      trailing={<View style={styles.badges}><FamilyTag family={exam.family} /><StatusBadge label={exam.state.label} tone={exam.state.tone} /></View>}
       onPress={href ? () => router.push(href as Href) : undefined}
       accessibilityHint={exam.state.key === 'RESULT_RELEASED' ? 'Açıklanan sonucu açar.' : 'Deneme ayrıntısını açar.'}
     />
   );
 }
 
-const styles = StyleSheet.create({ tag: { paddingHorizontal: space[1] + 2, paddingVertical: 2, borderRadius: radius.control } });
+const styles = StyleSheet.create({
+  tag: { alignSelf: 'flex-start', maxWidth: '100%', flexShrink: 1, paddingHorizontal: space[1] + 2, paddingVertical: 2, borderRadius: radius.control },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', gap: space[1] },
+});

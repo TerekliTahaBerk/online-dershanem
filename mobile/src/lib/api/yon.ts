@@ -101,12 +101,19 @@ export async function savePlanPreference(api: ApiClient, preference: MobileYonPr
   return validated(parsePreferenceResult(body));
 }
 
-/* Koçluk görüşmesi — öğrenciye yalnız REQUEST açıktır */
+/* Koçluk görüşmesi — paneldeki öğrenci REQUEST / ACCEPT eylemleri */
 
 export async function requestSessionReschedule(api: ApiClient, sessionId: string, input: { reason: YonRescheduleReason; expectedVersion: number; idempotencyKey: string }) {
   const body = await api.request<unknown>(`/api/panel/coaching-sessions/${id(sessionId)}`, {
     method: 'POST',
     body: { action: 'REQUEST', reason: input.reason, expectedVersion: input.expectedVersion, idempotencyKey: input.idempotencyKey },
+  });
+  return validated(parseCoachingMutationResult(body));
+}
+
+export async function acceptSessionProposal(api: ApiClient, sessionId: string, input: { expectedVersion: number; idempotencyKey: string }) {
+  const body = await api.request<unknown>(`/api/panel/coaching-sessions/${id(sessionId)}`, {
+    method: 'POST', body: { action: 'ACCEPT', ...input },
   });
   return validated(parseCoachingMutationResult(body));
 }

@@ -6,7 +6,6 @@ import { fetchTeacherHome } from '@/lib/api/staff';
 import { useReadyBootstrap } from '@/lib/auth/session-provider';
 import { formatLongDate, formatShortDateTime, formatTime } from '@/lib/format/istanbul';
 
-import { WorkspaceSwitcher } from '../../shell/workspace-switcher';
 import { openOnWeb } from '../../shell/web-continuation';
 import { QueryView, usePullToRefresh, useStaffQuery } from '../shared';
 import { staffHref, staffWebPath } from '../targets';
@@ -24,7 +23,6 @@ export default function TeacherHomeScreen() {
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="teacher-home">
       <PageHeader title="Bugün" context={<Text tone="muted" variant="meta">{formatLongDate(new Date())}</Text>} />
-      <WorkspaceSwitcher />
       <QueryView query={query}>{(home) => <HomeBody home={home} />}</QueryView>
     </Screen>
   );

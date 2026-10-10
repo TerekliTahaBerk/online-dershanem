@@ -20,8 +20,8 @@ M1 kodlarına ek: **`FEATURE_DISABLED`** (404) — özellik bayrağı kapalı. M
 | `GET /api/panel/student/lessons/[id]` | OD + STUDENT | (`recoveryPackage` → `recovery`) | `MobileLessonDetail` | YENİ; kayıt dışı / yok / profil yok → 404 |
 | `GET /api/panel/materials` | OD + STUDENT | — | `MobileMaterialList` | DEĞİŞMEDİ |
 | `GET /api/panel/materials/[id]/file` | OD | — | ikili | DEĞİŞMEDİ; Bearer başlığıyla |
-| `GET /api/panel/student/insights` | OD + STUDENT | `progressInsights` | `MobileInsights` (`READY` \| `NO_PROFILE`) | YENİ; `loadStudentProgressInsight` (web Analiz) |
-| `PATCH /api/panel/student/weekly-goal` | OD + STUDENT | — | `{ goal }` | DEĞİŞMEDİ (3–180) |
+| `GET /api/panel/student/insights` | OD / OK / ODK aktif ürün + STUDENT | `progressInsights` | `MobileInsights` (`READY` \| `NO_PROFILE`) | YENİ; `loadStudentProgressInsight` (web Analiz) |
+| `PATCH /api/panel/student/weekly-goal` | OD / OK / ODK aktif ürün + STUDENT | — | `{ goal }` | DEĞİŞMEDİ (3–180) |
 | `GET /api/panel/mock-exams[?deneme=]` | OD veya OK + STUDENT | `mockExamAnalysis` | `MobileMockExams` | DEĞİŞMEDİ; Deneme Ligi DEĞİL |
 | `GET /api/panel/student/review-queue` | OD + STUDENT | `reviewQueue` | `MobileReviewQueue` | YENİ; web `tekrar` ile ortak yükleyici |
 | `POST /api/panel/review-queue/[id]/respond` | OD + STUDENT | `reviewQueue` | `{ nextDueAt, stage, status, replayed }` | DEĞİŞMEDİ; `idempotencyKey` |

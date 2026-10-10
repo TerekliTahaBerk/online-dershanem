@@ -23,7 +23,7 @@ export function YonTaskRow({ task, canOpen, showDate = false, testID }: { task: 
       title={task.title}
       subtitle={taskMeta(task, { date: showDate ? formatDayMonth(task.scheduledFor) : null, time: task.isFlexible ? 'Esnek' : formatTime(task.scheduledFor) })}
       meta={`${task.durationMinutes} dk`}
-      leading={
+      trailing={
         <View style={styles.badges}>
           <StatusBadge label={TASK_STATUS_LABEL[task.status]} tone={taskTone(task.status)} />
           {priority ? <StatusBadge label={priority} tone="warning" /> : null}
@@ -35,4 +35,4 @@ export function YonTaskRow({ task, canOpen, showDate = false, testID }: { task: 
   );
 }
 
-const styles = StyleSheet.create({ badges: { gap: space[1], alignItems: 'flex-start' } });
+const styles = StyleSheet.create({ badges: { flexDirection: 'row', flexWrap: 'wrap', gap: space[1], alignItems: 'flex-start' } });

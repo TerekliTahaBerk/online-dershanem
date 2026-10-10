@@ -123,8 +123,8 @@ const styles = StyleSheet.create({
   list: { flex: 1, backgroundColor: color.canvas },
   content: { paddingHorizontal: space[4], paddingBottom: space[8] },
   header: { gap: space[3], paddingTop: space[3], paddingBottom: space[2] },
-  filters: { flexDirection: 'row', gap: space[2] },
-  filter: { minHeight: 36, paddingHorizontal: space[3], borderRadius: 6, justifyContent: 'center', borderWidth: 1, borderColor: color.border },
+  filters: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
+  filter: { minHeight: 44, paddingVertical: space[2], paddingHorizontal: space[3], borderRadius: 6, justifyContent: 'center', borderWidth: 1, borderColor: color.border },
   row: { flexDirection: 'row', gap: space[3], paddingVertical: space[3], borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: color.border },
   dot: { width: 8, height: 8, borderRadius: 4, marginTop: 7 },
 });

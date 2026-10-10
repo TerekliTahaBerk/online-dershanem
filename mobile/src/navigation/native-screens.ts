@@ -95,6 +95,7 @@ const OK_STUDENT: Record<string, NativeScreenKey> = {
   coaching: 'yon-coaching',
   plan: 'yon-plan',
   goals: 'yon-goals',
+  analiz: 'od-progress',
   'check-in': 'check-in',
   'weekly-digest': 'yon-weekly',
   // Dış deneme ucu OD veya Yön üyeliğini kabul eder (`requireApiAnyProductRole(["OD","OK"])`).
@@ -105,20 +106,21 @@ const OK_STUDENT: Record<string, NativeScreenKey> = {
 /**
  * Deneme Ligi (ODK) öğrencisi — M4. `odk-exams` ODK denemeleridir (OD
  * `mock-exams` dış denemeleri değil). Bu çalışma alanında görünen OD / Yön
- * kaynaklı ortak öğeler (Çalışmalar, Analiz, check-in, özet…) açık web devam
- * yoluna gider: Deneme Ligi ekranlarında başka ürün verisi okunmaz.
+ * kaynaklı ortak öğeler (Çalışmalar, check-in, özet…) açık web devam
+ * yoluna gider. Analiz bütün ürünlerde ortak öğrenci gidişatını gösterir;
+ * deneme listesi ve sonuçları yalnız Deneme Ligi verisini okur.
  */
 const ODK_STUDENT: Record<string, NativeScreenKey> = {
   today: 'odk-home',
   'odk-exams': 'odk-exams',
+  analiz: 'od-progress',
 };
 
 /**
  * Yön menüsünde olup native olmayan öğeler (açık web devam yolu):
- * `analiz` / `progress` (akademik gidişat OD verisine dayanır — OD
- * çalışma alanında native), `dino` (ayrı karar).
+ * `progress` (eski gelişim ekranı), `dino` (ayrı karar).
  */
-const OK_WEB_ONLY: ReadonlySet<string> = new Set(['analiz', 'progress', 'dino']);
+const OK_WEB_ONLY: ReadonlySet<string> = new Set(['progress', 'dino']);
 
 /**
  * VELİ — M6. Veli ekranları çalışma alanından bağımsızdır (veri seçili
@@ -159,6 +161,7 @@ const TEACHER_OD: Record<string, NativeScreenKey> = {
   today: 'teacher-home',
   lessons: 'teacher-lessons',
   assignments: 'teacher-assignments',
+  help: 'teacher-help',
 };
 const TEACHER_OK: Record<string, NativeScreenKey> = {
   today: 'coach-home',

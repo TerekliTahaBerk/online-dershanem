@@ -5,7 +5,8 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Banner, Button, EmptyState, PageHeader, Row, Screen, Section, StatusBadge, Text } from '@/design/primitives';
-import { productTheme, PRODUCT_FALLBACK_LABEL } from '@/design/products';
+import { PRODUCT_FALLBACK_LABEL } from '@/design/products';
+import { ProductLogo } from '@/design/brand';
 import { color, radius, space } from '@/design/tokens';
 import { openOnWeb, webUrlFor } from '@/features/shell/web-continuation';
 import { fetchOdHome } from '@/lib/api/student';
@@ -130,7 +131,7 @@ function TodaySection({ items, now }: { items: MobileOdTodayItem[]; now: Date })
               title={item.title}
               subtitle={item.subtitle}
               meta={itemTime(item, now)}
-              leading={<StatusBadge label={KIND_LABEL[item.kind]} tone={item.kind === 'LESSON' ? 'info' : item.kind === 'RECOVERY' ? 'warning' : 'neutral'} />}
+              trailing={<StatusBadge label={KIND_LABEL[item.kind]} tone={item.kind === 'LESSON' ? 'info' : item.kind === 'RECOVERY' ? 'warning' : 'neutral'} />}
               onPress={href ? () => nav.push(href) : undefined}
             />
           );
@@ -215,7 +216,7 @@ function OtherWorkspaces() {
           testID={`od-other-${product.code}`}
           title={product.label || PRODUCT_FALLBACK_LABEL[product.code]}
           subtitle="Ayrı çalışma alanı · geçiş yapar"
-          leading={<View style={[styles.dot, { backgroundColor: productTheme(product.code).accentMarker }]} />}
+          leading={<ProductLogo product={product.code} size={32} />}
           trailing={pending === product.code ? <Text tone="muted">…</Text> : null}
           disabled={pending !== null}
           onPress={() => void open(product.code)}
@@ -229,5 +230,4 @@ function OtherWorkspaces() {
 const styles = StyleSheet.create({
   now: { borderWidth: 1, borderColor: color.border, borderRadius: radius.card, padding: space[4], gap: space[1] },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2], marginTop: space[2] },
-  dot: { width: 8, height: 8, borderRadius: 4 },
 });

@@ -236,3 +236,15 @@ Biçim: her karar için bağlam, karar, reddedilen alternatifler ve sonuçlar. D
 ## MD-24 — V1.0 yayın sınırı (M9)
 
 M8 = DEFERRED / NOT REQUIRED FOR V1.0. M1–M7 korunur. Mobilde satış/PAYTR/IAP/abonelik checkout/dış satın alma CTA yok. Mevcut web ticareti ayrı kalır. Commerce policy sınıflandırması satış yokluğundan otomatik geçmez. EAS remote build numbers, fingerprint runtime ve ayrı development/preview/production kanalları; hiçbir push/OTA/build submit otomatik yayımlanmaz. Privacy/legal/account deletion ve gerçek cihaz kanıtı olmadan store GO verilmez. Yeni otomatik test yok; yalnız bilinçli HTTPS kuralı için eski bir assertion güncellendi.
+
+
+## 2026-10-10 — Panel ile işlev eşliği düzeltmeleri
+
+Kullanıcının panel ile mobil işlevlerini eşitleme talebi önceki faz sınırlarını şu akışlarda günceller:
+
+- Öğrenci Analiz artık OD, OK ve ODK çalışma alanlarında native açılır. Ortak `student/insights` ve `weekly-goal` uçları aktif öğrenci ürün erişimi ve pilot kapılarını korur. Veri web Analiz yükleyicisinden gelir; ürün değiştirmek veri üretmez. Analiz bildirimleri etkin alanı OD'ye zorlamaz.
+- Öğretmen birincil menüsünün dört sekmesi de sunucunun rol/ürün menüsüne göre açılır. OD yardım kutusu native eşlenir; sunucu izinleri korunur.
+- Yön öğrencisi önerilen görüşme saatini uygulamada onaylayabilir (`ACCEPT`). Onay adımı, `expectedVersion`, tekrar denemede korunan `idempotencyKey`, sunucu yanıt doğrulaması ve 409'da güncel veriyi okuma kullanılır. Öğrenciye `SAVE` veya `COMPLETE` açılmaz.
+- Satış, PAYTR ve checkout kapsam dışıdır; bunlara mobil devam bağlantısı da eklenmez.
+
+Bunlar bütün panelin native dönüşümünün tamamlandığı anlamına gelmez. Dino, yönetim ekranları, sınav çözme ve hâlen web devamı gösteren diğer işlemler önceki açık kapsam olarak kalır.

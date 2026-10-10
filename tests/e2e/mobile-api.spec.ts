@@ -287,11 +287,20 @@ test.describe.serial("M2 mobil OD öğrenci API sözleşmesi", () => {
 
   test("Deneme Ligi-only öğrenci OD uçlarına erişemez: 404 PRODUCT_ACCESS_REQUIRED", async () => {
     const { context, headers } = await bearer(odkStudent());
-    for (const path of ["/api/panel/student/home?scope=OD", "/api/panel/assignments?scope=OD", "/api/panel/student/insights", "/api/panel/student/lessons/e2e-lesson", "/api/panel/student/review-queue", "/api/panel/student/recovery", "/api/panel/student/weekly-digest"]) {
+    for (const path of ["/api/panel/student/home?scope=OD", "/api/panel/assignments?scope=OD", "/api/panel/student/lessons/e2e-lesson", "/api/panel/student/review-queue", "/api/panel/student/recovery", "/api/panel/student/weekly-digest"]) {
       const response = await context.get(path, { headers });
       expect(response.status(), path).toBe(404);
       expect((await response.json()).code, path).toBe("PRODUCT_ACCESS_REQUIRED");
     }
+  });
+
+  test("Deneme Ligi-only öğrenci ortak Analiz servisini kullanabilir", async () => {
+    const { context, headers } = await bearer(odkStudent());
+    const response = await context.get("/api/panel/student/insights", { headers });
+    expect(response.status(), await response.text()).toBe(200);
+    const parsed = parseInsights(await response.json());
+    if (!parsed.ok) throw new Error(parsed.error);
+    expect(response.headers()["cache-control"]).toContain("no-store");
   });
 
   test("ders detayı: kendi dersi sözleşmeye uyar; yabancı ders 404; kimliksiz 401", async () => {

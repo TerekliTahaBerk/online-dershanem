@@ -9,8 +9,8 @@ import { formatPeriodRangeLabel, loadStudentProgressInsight } from "@/lib/progre
 
 /**
  * Mobil öğrenci okuma modelleri (M2) — web sayfalarının kullandığı servisleri
- * çağırır; sorgu / metrik kopyalanmaz. Çağıran OD erişimini
- * (`requireApiOdRole("STUDENT")`) önceden doğrulamış olmalıdır.
+ * çağırır; sorgu / metrik kopyalanmaz. Çağıran aktif öğrenci ürün
+ * erişimini (`requireApiAnyProductRole`) önceden doğrulamış olmalıdır.
  */
 
 /** `null` → özellik kapalı (`progressInsights`). */

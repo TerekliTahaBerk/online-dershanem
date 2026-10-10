@@ -15,7 +15,6 @@ export function SlotScreen({ slot }: { slot: 0 | 1 | 2 | 3 }) {
   const bootstrap = useReadyBootstrap();
   const role = bootstrap.user.role;
   if (role === 'ADMIN') return slot === 0 ? <StaffHomeScreen /> : null;
-  if (role === 'TEACHER' && slot !== 0) return null;
   const item = bootstrap.workspace?.navigation.primary[slot];
   if (role === 'TEACHER' && !item) return <StaffHomeScreen />;
   if (!item) return null;

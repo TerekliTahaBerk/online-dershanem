@@ -35,7 +35,7 @@ function ReportBody({ data }: { data: MobileParentOdkReport }) {
   return (
     <>
       <Section title="Özet" first>
-        {data.summary.map((line) => <Text key={line}>{line}</Text>)}
+        {data.summary.map((line, index) => <Text key={`${index}-${line}`}>{line}</Text>)}
         <Text tone="muted" variant="meta">Karşılaştırma yalnız öğrencinin kendi önceki denemeleriyle yapılır.</Text>
       </Section>
       <Section title="Yayınlanmış denemeler">

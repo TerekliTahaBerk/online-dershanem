@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   card: { gap: space[2], borderWidth: 1, borderColor: color.border, borderRadius: radius.card, padding: space[4] },
   highlight: { borderColor: color.borderStrong, backgroundColor: color.surfaceSubtle },
-  headerRow: { flexDirection: 'row', alignItems: 'center', gap: space[2] },
+  headerRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space[2] },
   choices: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
   choice: { flexGrow: 1 },
   step: { gap: space[1] },

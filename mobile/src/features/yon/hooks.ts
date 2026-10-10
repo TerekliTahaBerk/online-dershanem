@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 
 import { ApiError } from '@/lib/api/errors';
-import { completePlanTask, requestPlanChange, requestSessionReschedule, savePlanPreference, type TaskCompletionPayload } from '@/lib/api/yon';
+import { acceptSessionProposal, completePlanTask, requestPlanChange, requestSessionReschedule, savePlanPreference, type TaskCompletionPayload } from '@/lib/api/yon';
 import { useSession } from '@/lib/auth/session-provider';
 import { newUuid } from '@/lib/ids';
 
@@ -161,5 +161,34 @@ export function useRescheduleRequest(session: MobileCoachingSession) {
     }
   }
 
+  return { submit, submitting: mutation.isPending, feedback };
+}
+
+/** Önerilen saati paneldeki sürüm ve tekrar korumasıyla kabul eder. */
+export function useAcceptSessionProposal(session: MobileCoachingSession) {
+  const { api } = useSession();
+  const invalidate = useInvalidateYon();
+  const pending = useRef<PendingWrite<{ version: number; proposedAt: string | null }>>(null);
+  const [feedback, setFeedback] = useState<WriteFeedback>(null);
+  const mutation = useMutation({ mutationFn: (key: string) => acceptSessionProposal(api, session.id, { expectedVersion: session.version, idempotencyKey: key }) });
+  async function submit() {
+    if (mutation.isPending || !session.proposedAt) return false;
+    setFeedback(null);
+    const write = keyForWrite(pending.current, { version: session.version, proposedAt: session.proposedAt }, (a, b) => a.version === b.version && a.proposedAt === b.proposedAt, newUuid);
+    pending.current = write.pending;
+    try {
+      await mutation.mutateAsync(write.key);
+      pending.current = null;
+      setFeedback({ tone: 'success', message: 'Yeni görüşme saatin onaylandı.' });
+      await invalidate();
+      return true;
+    } catch (error) {
+      const transient = error instanceof ApiError && (error.transient || error.kind === 'invalid_response');
+      if (!transient) pending.current = null;
+      if (error instanceof ApiError && error.kind === 'conflict') await invalidate();
+      setFeedback({ tone: error instanceof ApiError && error.kind === 'conflict' ? 'warning' : 'critical', message: messageOf(error, 'Saat onaylanamadı. Tekrar dene.') });
+      return false;
+    }
+  }
   return { submit, submitting: mutation.isPending, feedback };
 }

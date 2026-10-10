@@ -42,7 +42,7 @@ export function ChildBar() {
         onPress={() => setOpen(true)}
         style={({ pressed }) => [styles.bar, pressed && many && { backgroundColor: color.pressed }]}>
         <Text tone="muted" variant="meta">Öğrenci</Text>
-        <Text variant="bodyStrong" style={styles.flex} numberOfLines={1}>{selected.name}</Text>
+        <Text variant="bodyStrong" style={styles.flex}>{selected.name}</Text>
         {many ? <Text tone="muted" variant="meta">Değiştir</Text> : null}
       </Pressable>
       <ChildPicker visible={open} onClose={() => setOpen(false)} />
@@ -177,7 +177,7 @@ export function NavButton({ navId, label, testID }: { navId: ParentNavId; label:
 }
 
 export const parentStyles = StyleSheet.create({
-  card: { gap: space[2], backgroundColor: color.surfaceSubtle, borderRadius: radius.card, padding: space[3] },
+  card: { gap: space[2], backgroundColor: color.canvas, borderWidth: 1, borderColor: color.border, borderRadius: radius.card, padding: space[4] },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
   gap: { gap: space[2] },
 });

@@ -98,7 +98,7 @@ function GoalRow({ goal }: { goal: MobileGoal }) {
 
 const styles = StyleSheet.create({
   goal: { gap: space[1], paddingVertical: space[3], borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: color.border },
-  head: { flexDirection: 'row', alignItems: 'center', gap: space[2] },
+  head: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space[2] },
   flex: { flex: 1 },
   track: { height: 6, borderRadius: radius.pill, backgroundColor: color.surfaceSubtle, overflow: 'hidden', marginTop: space[1] },
   fill: { height: '100%', borderRadius: radius.pill },
