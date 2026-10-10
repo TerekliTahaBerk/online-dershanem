@@ -1,7 +1,6 @@
-import { teacherHelpScope } from "@/lib/student-help-target";
+import { loadTeacherHelpInbox } from "@/lib/panel/teacher-help-server";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/auth/guards";
-import { prisma } from "@/lib/prisma";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { PanelShell } from "@/components/panel/panel-shell";
@@ -19,45 +18,11 @@ export default async function TeacherHelpPage() {
   if (!getPanelFeatureFlags().studentCheckIn) notFound();
 
   const now = new Date();
-  const requests = await prisma.studentHelpRequest.findMany({
-    where: {
-      status: { in: ["OPEN", "RESPONDED"] },
-      ...teacherHelpScope(session.userId),
-    },
-    orderBy: [{ status: "asc" }, { dueAt: "asc" }, { id: "asc" }],
-    include: {
-      group: { select: { name: true } },
-      student: {
-        include: { user: { select: { fullName: true, email: true } } },
-      },
-      checkIn: true,
-      responses: {
-        orderBy: { createdAt: "desc" },
-        take: 1,
-        select: { action: true },
-      },
-    },
-  });
+  // Ortak yükleyici (mobil `GET /api/panel/staff/teacher/help` ile aynı sorgu ve kapsam).
+  const visibleItems = await loadTeacherHelpInbox(session.userId);
 
-  const visible = await Promise.all(
-    requests.map(async (item) => ({
-      item,
-      active: !item.groupId || Boolean(
-        await prisma.enrollment.findFirst({
-          where: {
-            studentId: item.studentId,
-            groupId: item.groupId!,
-            endedAt: null,
-          },
-          select: { id: true },
-        }),
-      ),
-    })),
-  );
-
-  const rows = visible
-    .filter((entry) => entry.active)
-    .map(({ item }) => ({
+  const rows = visibleItems
+    .map((item) => ({
       id: item.id,
       studentName: item.student.user.fullName || item.student.user.email,
       groupName: item.group?.name ?? "Yön Koçluk",

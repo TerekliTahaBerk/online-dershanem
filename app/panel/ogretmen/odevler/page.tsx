@@ -5,6 +5,7 @@ import { PanelShell } from "@/components/panel/panel-shell";
 import { TeacherAssignmentManager } from "@/components/panel/teacher-assignment-manager";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { summarizeGroupAssignment } from "@/lib/panel/assignment-display";
+import { loadTeacherAssignmentRows } from "@/lib/panel/teacher-assignments-server";
 import { PAGE_DESCRIPTION_CLASS, PAGE_EYEBROW_CLASS, PAGE_TITLE_CLASS } from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
@@ -28,26 +29,7 @@ export default async function TeacherAssignmentsPage() {
       take: 40,
       select: { id: true, groupId: true, title: true, startsAt: true },
     }),
-    prisma.assignment.findMany({
-      where: { group: { teacherId: session.userId } },
-      orderBy: [{ isActive: "desc" }, { dueAt: "asc" }],
-      take: 60,
-      include: {
-        group: { select: { name: true } },
-        progress: { select: { status: true, studentId: true } },
-        outcomeLinks: { include: { outcome: { select: { code: true } } } },
-        rubricCriteria: { orderBy: { position: "asc" } },
-        submissions: {
-          orderBy: { submittedAt: "asc" },
-          include: {
-            student: {
-              include: { user: { select: { fullName: true, email: true } } },
-            },
-            scores: true,
-          },
-        },
-      },
-    }),
+    loadTeacherAssignmentRows(session.userId),
     featureFlags.learningOutcomes
       ? prisma.learningOutcome.findMany({
           where: {
