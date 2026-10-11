@@ -3,19 +3,14 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
+import { INTERVENTION_MANUAL_REASON_OPTIONS } from "@/lib/panel/intervention-vocabulary";
 
 export type InterventionCreateStudentOption = {
   id: string;
   name: string;
 };
 
-const REASON_OPTIONS = [
-  { value: "TEACHER_OBSERVED", label: "Gözlem / diğer" },
-  { value: "ATTENDANCE_PATTERN", label: "Katılım" },
-  { value: "OVERDUE_WORK", label: "Gecikmiş çalışma" },
-  { value: "REPEATED_REVIEW_DIFFICULTY", label: "Tekrar güçlüğü" },
-  { value: "PLAN_STALLED", label: "Plan geride" },
-] as const;
+const REASON_OPTIONS = INTERVENTION_MANUAL_REASON_OPTIONS;
 
 function defaultFollowUpDate() {
   const date = new Date();

@@ -64,3 +64,22 @@ test("global arama ve step-up sözleşmeleri", () => {
   assert.deepEqual(legacy.ok && legacy.value, { verified: true, stepUpExpiresAt: null });
   assert.equal(parseStepUpResult({ verified: false }).ok, false);
 });
+
+test("müdahale kutusu: satırlar ve tek sözlük sözleşmeye uyar; bilinmeyen durum reddedilir", async () => {
+  const { toMobileInterventionInbox } = await import("./admin-views");
+  const { parseInterventionInbox } = await import("@/lib/mobile-contracts/admin");
+  const row = {
+    id: "c1", studentName: "Ece", reasonCode: "OVERDUE_WORK", explanation: "3 çalışma gecikti", suggestedAction: "Kısa görüşme", evidenceCount: 3,
+    dueAt: "2026-10-12T20:59:59.999Z", status: "OPEN" as const, ownerName: null, canAct: true, firstActionAt: null, snoozedUntil: null, outcomeCode: null, version: 1,
+    activities: [{ id: "a1", type: "GENERATED", note: null, outcomeCode: null, falsePositiveReason: null, actorName: "Sistem", createdAt: "2026-10-11T08:00:00.000Z" }],
+  };
+  const view = toMobileInterventionInbox([row], [{ id: "s1", name: "Ece" }]);
+  const parsed = parseInterventionInbox(JSON.parse(JSON.stringify(view)));
+  assert.ok(parsed.ok, parsed.ok ? "" : parsed.error);
+  assert.deepEqual(view.vocabulary.snoozeDays, [1, 3, 7]);
+  assert.ok(view.vocabulary.outcomes.some((entry) => entry.value === "SUPPORT_PLANNED"));
+  assert.equal(view.vocabulary.manualReasons[0].value, "TEACHER_OBSERVED");
+  const broken = JSON.parse(JSON.stringify(view));
+  broken.rows[0].status = "ARCHIVED";
+  assert.equal(parseInterventionInbox(broken).ok, false);
+});

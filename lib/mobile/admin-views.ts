@@ -1,4 +1,13 @@
-import { MOBILE_ADMIN_CONTRACT_VERSION, type MobileOperationsCenter, type MobileOpsGroupFilter } from "@/lib/mobile-contracts/admin";
+import { MOBILE_ADMIN_CONTRACT_VERSION, type MobileInterventionInbox, type MobileOperationsCenter, type MobileOpsGroupFilter } from "@/lib/mobile-contracts/admin";
+import {
+  INTERVENTION_ACTIVITY_LABELS,
+  INTERVENTION_FALSE_POSITIVE_LABELS,
+  INTERVENTION_MANUAL_REASON_OPTIONS,
+  INTERVENTION_OUTCOME_LABELS,
+  INTERVENTION_REASON_LABELS,
+  INTERVENTION_SNOOZE_DAYS,
+  INTERVENTION_STATUS_LABELS,
+} from "@/lib/panel/intervention-vocabulary";
 import { OPS_GROUP_FILTERS, type AdminOperationsCenterSnapshot } from "@/lib/panel/admin-operations-center";
 
 /**
@@ -59,5 +68,25 @@ export function toMobileOperationsCenter(snapshot: AdminOperationsCenterSnapshot
       occurredAt: activity.occurredAt.toISOString(),
       webPath: toPanelPath(activity.href),
     })),
+  };
+}
+
+const asOptions = (labels: Record<string, string>) => Object.entries(labels).map(([value, label]) => ({ value, label }));
+
+/** Müdahale kutusu: satırlar `getInterventionInbox` çıktısıdır (zaten ISO); etiketler tek sözlükten. */
+export function toMobileInterventionInbox(rows: MobileInterventionInbox["rows"], students: { id: string; name: string }[]): MobileInterventionInbox {
+  return {
+    contractVersion: MOBILE_ADMIN_CONTRACT_VERSION,
+    rows,
+    students,
+    vocabulary: {
+      reasons: asOptions(INTERVENTION_REASON_LABELS),
+      statuses: asOptions(INTERVENTION_STATUS_LABELS),
+      outcomes: asOptions(INTERVENTION_OUTCOME_LABELS),
+      falsePositiveReasons: asOptions(INTERVENTION_FALSE_POSITIVE_LABELS),
+      activities: asOptions(INTERVENTION_ACTIVITY_LABELS),
+      manualReasons: INTERVENTION_MANUAL_REASON_OPTIONS.map((entry) => ({ value: entry.value, label: entry.label })),
+      snoozeDays: [...INTERVENTION_SNOOZE_DAYS],
+    },
   };
 }

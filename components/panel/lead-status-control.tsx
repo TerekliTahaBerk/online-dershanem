@@ -2,14 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { LEAD_INTAKE_STATUS_LABELS } from "@/lib/panel/status-vocabulary";
 
-const labels = {
-  NEW: "Yeni",
-  REVIEWING: "İnceleniyor",
-  CONTACTED: "Arandı",
-  ENROLLED: "Kayıt oldu",
-  ARCHIVED: "Arşiv",
-} as const;
+const labels = LEAD_INTAKE_STATUS_LABELS;
 type Status = keyof typeof labels;
 
 export function LeadStatusControl({

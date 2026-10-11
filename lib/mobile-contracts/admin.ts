@@ -119,3 +119,237 @@ export type MobileStepUpResult = Infer<typeof stepUpResult>;
 export function parseStepUpResult(input: unknown): ContractResult<MobileStepUpResult> {
   return check(stepUpResult, input);
 }
+
+/* ================================================================== *
+ * MÜDAHALE KUTUSU — `GET /api/panel/admin/interventions` (Faz 2.1)
+ * Web `app/panel/yonetim/mudahale` ile AYNI `getInterventionInbox`.
+ * Yazmalar MEVCUT uçlarla: `POST /api/panel/interventions` (elle kayıt),
+ * `PATCH /api/panel/interventions/:id` (`expectedVersion` → 409),
+ * `POST /api/panel/interventions/generate`. Bayrak kapalıysa 404
+ * `FEATURE_DISABLED`. Etiketler sunucudan gelir (tek sözlük).
+ * ================================================================== */
+
+export const INTERVENTION_STATUSES = ["OPEN", "IN_PROGRESS", "SNOOZED", "RESOLVED", "FALSE_POSITIVE"] as const;
+export type MobileInterventionStatus = (typeof INTERVENTION_STATUSES)[number];
+export const INTERVENTION_ACTIONS = ["ASSIGN_SELF", "START", "LOG_ACTION", "SNOOZE", "RESOLVE", "FALSE_POSITIVE", "REOPEN"] as const;
+export type MobileInterventionAction = (typeof INTERVENTION_ACTIONS)[number];
+
+const option = v.object({ value: v.nonEmpty(), label: v.string() });
+
+const interventionInbox = v.object({
+  contractVersion: version,
+  rows: v.array(
+    v.object({
+      id: v.nonEmpty(),
+      studentName: v.string(),
+      reasonCode: v.nonEmpty(),
+      explanation: v.string(),
+      suggestedAction: v.string(),
+      evidenceCount: v.int(0),
+      dueAt: v.iso(),
+      status: v.oneOf(INTERVENTION_STATUSES),
+      ownerName: v.nullable(v.string()),
+      canAct: v.boolean(),
+      firstActionAt: v.nullable(v.iso()),
+      snoozedUntil: v.nullable(v.iso()),
+      outcomeCode: v.nullable(v.string()),
+      version: v.int(1),
+      activities: v.array(
+        v.object({
+          id: v.nonEmpty(),
+          type: v.nonEmpty(),
+          note: v.nullable(v.string()),
+          outcomeCode: v.nullable(v.string()),
+          falsePositiveReason: v.nullable(v.string()),
+          actorName: v.string(),
+          createdAt: v.iso(),
+        }),
+      ),
+    }),
+  ),
+  students: v.array(v.object({ id: v.nonEmpty(), name: v.string() })),
+  vocabulary: v.object({
+    reasons: v.array(option),
+    statuses: v.array(option),
+    outcomes: v.array(option),
+    falsePositiveReasons: v.array(option),
+    activities: v.array(option),
+    manualReasons: v.array(option),
+    snoozeDays: v.array(v.int(1)),
+  }),
+});
+export type MobileInterventionInbox = Infer<typeof interventionInbox>;
+export type MobileInterventionRow = MobileInterventionInbox["rows"][number];
+export function parseInterventionInbox(input: unknown): ContractResult<MobileInterventionInbox> {
+  return check(interventionInbox, input);
+}
+
+const interventionUpdate = v.object({ updated: v.literal(true) });
+export function parseInterventionUpdate(input: unknown): ContractResult<Infer<typeof interventionUpdate>> {
+  return check(interventionUpdate, input);
+}
+const interventionCreate = v.object({ id: v.nonEmpty() });
+export function parseInterventionCreate(input: unknown): ContractResult<Infer<typeof interventionCreate>> {
+  return check(interventionCreate, input);
+}
+const interventionGenerate = v.object({ createdCount: v.int(0), reactivatedCount: v.int(0), evaluatedStudentCount: v.int(0) });
+export function parseInterventionGenerate(input: unknown): ContractResult<Infer<typeof interventionGenerate>> {
+  return check(interventionGenerate, input);
+}
+
+/* ================================================================== *
+ * RAPORLAR — `GET /api/panel/admin/reports` (Faz 2.1). Son 30 gün.
+ * Web `app/panel/yonetim/raporlar` ile AYNI `loadAdminReports`. CSV dışa
+ * aktarımı mobilde yok (E5); biçimlenmiş SLO değerleri sunucudan gelir.
+ * ================================================================== */
+
+const SLO_STATUSES = ["healthy", "breached", "observing", "insufficient_data"] as const;
+const rate = v.nullable(v.int(0));
+
+const reports = v.object({
+  contractVersion: version,
+  rangeDays: v.int(1),
+  lessonCount: v.int(0),
+  noteRate: v.int(0),
+  attendanceRate: v.int(0),
+  activeAssignments: v.int(0),
+  overdueAssignments: v.int(0),
+  emptyGroups: v.int(0),
+  pendingPayments: v.int(0),
+  review: v.nullable(v.object({ sevenDayRate: rate, eligible: v.int(0), retentionRate: rate, retentionAttempts: v.int(0) })),
+  plan: v.nullable(v.object({ completionRate: rate, completed: v.int(0), generated: v.int(0) })),
+  ai: v.nullable(v.object({ approvalRate: rate, reviewed: v.int(0), fallbackRate: rate, drafts: v.int(0), flagRate: rate, knownCostUsd: v.nullable(v.number()) })),
+  slo: v.array(
+    v.object({
+      key: v.nonEmpty(),
+      label: v.string(),
+      status: v.oneOf(SLO_STATUSES),
+      statusLabel: v.string(),
+      display: v.string(),
+      sampleSize: v.int(0),
+      targetDisplay: v.nullable(v.string()),
+      comparison: v.oneOf(["gte", "lte"] as const),
+    }),
+  ),
+  teachers: v.array(v.object({ name: v.string(), total: v.int(0), completed: v.int(0), percent: v.int(0) })),
+  groups: v.array(v.object({ id: v.nonEmpty(), name: v.string(), students: v.int(0), percent: v.int(0) })),
+});
+export type MobileAdminReports = Infer<typeof reports>;
+export function parseAdminReports(input: unknown): ContractResult<MobileAdminReports> {
+  return check(reports, input);
+}
+
+/* ================================================================== *
+ * AKTİVASYON MASASI — `GET /api/panel/admin/activation-desk` (Faz 2.1)
+ * Web `app/panel/yonetim/isler` ile AYNI `loadActivationDesk`.
+ * Yazmalar MEVCUT uçlarla:
+ *  - `POST /api/panel/orders/:id/onboarding` (taze step-up; 409/422),
+ *  - `POST /api/panel/orders/:id/user` (taze step-up; bağlı siparişte 409),
+ *  - `PATCH /api/panel/leads/:id`, `PATCH /api/panel/email-outbox/:id/retry`.
+ * İzinli geçişler sunucuda hesaplanır (`allowedTransitions`); istemci
+ * durum makinesi kurmaz.
+ * ================================================================== */
+
+const nullableRate = v.nullable(v.number());
+
+const activationDesk = v.object({
+  contractVersion: version,
+  counts: v.object({ activations: v.int(0), openExceptions: v.int(0), emailQueue: v.int(0) }),
+  firstLesson: v.object({
+    medianHours: nullableRate,
+    durationSample: v.int(0),
+    participationRate: nullableRate,
+    participationSample: v.int(0),
+    waitingCount: v.int(0),
+    missingAttendanceCount: v.int(0),
+    paidCount: v.int(0),
+    linkedLeadCount: v.int(0),
+  }),
+  placement: v.object({
+    firstContactHours: nullableRate,
+    firstContactSample: v.int(0),
+    placementHours: nullableRate,
+    placementSample: v.int(0),
+    noSlotRate: nullableRate,
+    onboardingCount: v.int(0),
+    outcomes: v.object({ assigned: v.int(0), alternate: v.int(0), waitlist: v.int(0), refund: v.int(0) }),
+  }),
+  onboardings: v.array(
+    v.object({
+      id: v.nonEmpty(),
+      orderId: v.nonEmpty(),
+      state: v.nonEmpty(),
+      stateLabel: v.string(),
+      critical: v.boolean(),
+      flowLabel: v.string(),
+      nextAction: v.string(),
+      packageName: v.string(),
+      customer: v.string(),
+      linkedToAccount: v.boolean(),
+      totalLabel: v.string(),
+      ownerId: v.nullable(v.string()),
+      ownerName: v.nullable(v.string()),
+      dueAt: v.nullable(v.iso()),
+      overdue: v.boolean(),
+      stateEnteredAt: v.iso(),
+      preferences: v.nullable(v.string()),
+      checklist: v.array(v.object({ key: v.nonEmpty(), label: v.string(), done: v.boolean() })),
+      blockerReason: v.nullable(v.string()),
+      allowedTransitions: v.array(option),
+      transitions: v.array(v.object({ id: v.nonEmpty(), occurredAt: v.iso(), text: v.string() })),
+    }),
+  ),
+  exceptions: v.array(
+    v.object({
+      id: v.nonEmpty(),
+      title: v.string(),
+      detail: v.string(),
+      severity: v.oneOf(OPS_SEVERITIES),
+      resolved: v.boolean(),
+      owner: v.string(),
+      nextAction: v.string(),
+      dueAt: v.nullable(v.iso()),
+      overdue: v.boolean(),
+      createdAt: v.iso(),
+      ctaLabel: v.string(),
+      webPath: v.nullable(webPath),
+    }),
+  ),
+  readiness: v.object({
+    status: v.oneOf(["GO", "GAP"] as const),
+    statusLabel: v.string(),
+    rows: v.array(v.object({ task: v.string(), coverage: v.string(), status: v.oneOf(["GO", "GAP"] as const), statusLabel: v.string(), note: v.string() })),
+  }),
+  orders: v.array(v.object({ id: v.nonEmpty(), packageName: v.string(), customer: v.string(), linkedToAccount: v.boolean(), status: v.nonEmpty(), statusLabel: v.string(), paid: v.boolean(), totalLabel: v.string() })),
+  leads: v.array(v.object({ id: v.nonEmpty(), fullName: v.string(), detail: v.string(), status: v.nonEmpty() })),
+  leadStatuses: v.array(option),
+  cron: v.object({
+    ok: v.boolean(),
+    jobs: v.array(
+      v.object({
+        name: v.nonEmpty(),
+        label: v.string(),
+        status: v.oneOf(["healthy", "stale", "failed", "missing"] as const),
+        statusLabel: v.string(),
+        lastSucceededAt: v.nullable(v.iso()),
+        lastDurationMs: v.nullable(v.int(0)),
+        processedCount: v.int(0),
+        failedCount: v.int(0),
+        errorCode: v.nullable(v.string()),
+      }),
+    ),
+  }),
+  emails: v.array(v.object({ id: v.nonEmpty(), subject: v.string(), status: v.nonEmpty(), statusLabel: v.string(), attempts: v.int(0), createdAt: v.iso(), retryable: v.boolean() })),
+  students: v.array(v.object({ id: v.nonEmpty(), name: v.string() })),
+  staff: v.array(v.object({ id: v.nonEmpty(), name: v.string() })),
+});
+export type MobileActivationDesk = Infer<typeof activationDesk>;
+export type MobileOnboarding = MobileActivationDesk["onboardings"][number];
+export function parseActivationDesk(input: unknown): ContractResult<MobileActivationDesk> {
+  return check(activationDesk, input);
+}
+
+const okResult = v.object({ ok: v.literal(true) });
+export function parseOkResult(input: unknown): ContractResult<Infer<typeof okResult>> {
+  return check(okResult, input);
+}

@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { hashPassword } from "../../lib/auth/password";
 import { parseMobileBootstrap, type MobileBootstrap } from "../../lib/mobile-contracts/bootstrap";
 import { parseSessionList } from "../../lib/mobile-contracts/api";
-import { parseOperationsCenter } from "../../lib/mobile-contracts/admin";
+import { parseActivationDesk, parseAdminReports, parseInterventionInbox, parseOperationsCenter } from "../../lib/mobile-contracts/admin";
 import { parseAssignmentList, parseInsights, parseLessonDetail, parseLessonList, parseOdHome, parseRecovery, parseReviewQueue, parseWeeklyDigest } from "../../lib/mobile-contracts/student";
 import { hasE2EEnv } from "./env-requirements";
 import { uniqueTestClientIp } from "./helpers/client-ip";
@@ -413,6 +413,27 @@ test.describe.serial("Faz 1 mobil yönetim kapısı", () => {
     const response = await context.get(`/api/panel/users/${admin.user.id}/archive-impact`, { headers: { ...MOBILE, authorization: `Bearer ${body.token}` } });
     expect(response.status()).toBe(428);
     expect((await response.json()).code).toBe("STEP_UP_REQUIRED");
+  });
+
+  test("Faz 2.1 yönetim okuma uçları: ADMIN Bearer ile sözleşmeye uyar, öğrenci 403", async () => {
+    const admin = await temporaryUser("ADMIN");
+    const { context, body } = await mobileLogin(admin.user.email, admin.password);
+    const auth = { ...MOBILE, authorization: `Bearer ${body.token}` };
+    const reports = await context.get("/api/panel/admin/reports", { headers: auth });
+    expect(reports.status(), await reports.text()).toBe(200);
+    expect(parseAdminReports(await reports.json()).ok).toBe(true);
+    const desk = await context.get("/api/panel/admin/activation-desk", { headers: auth });
+    expect(desk.status(), await desk.text()).toBe(200);
+    expect(parseActivationDesk(await desk.json()).ok).toBe(true);
+    const inbox = await context.get("/api/panel/admin/interventions", { headers: auth });
+    // Bayrak kapalı ortamda açıkça 404 FEATURE_DISABLED; açıksa sözleşmeye uyar.
+    if (inbox.status() === 404) expect((await inbox.json()).code).toBe("FEATURE_DISABLED");
+    else expect(parseInterventionInbox(await inbox.json()).ok).toBe(true);
+
+    const learner = await mobileLogin(student().email, student().password);
+    for (const path of ["/api/panel/admin/reports", "/api/panel/admin/activation-desk", "/api/panel/admin/interventions"]) {
+      expect((await learner.context.get(path, { headers: { ...MOBILE, authorization: `Bearer ${learner.body.token}` } })).status()).toBe(403);
+    }
   });
 
   test("yönetim ucu: öğrenci ve öğretmen 403, kimliksiz 401", async () => {
