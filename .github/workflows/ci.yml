@@ -52,6 +52,8 @@ jobs:
         run: npm run lint:hygiene
       - name: API input validation
         run: npm run lint:api-validation
+      - name: Mobile parity matrix covers every panel page
+        run: npm run lint:mobile-parity
 
   typecheck:
     name: TypeScript

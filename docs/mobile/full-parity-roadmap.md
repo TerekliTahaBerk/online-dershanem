@@ -48,7 +48,7 @@ Değerlendirme raporunda olmayan ek kapsam: **İşletme modülü** (`/panel/yone
 
 P1 tamamlanmadan hiçbir yönetim yazma işlemi açılmaz. P2–P5 P1'den sonra paralel yürüyebilir; P4'ün ODK API'si büyük ölçüde hazır olduğundan erken başlatılması önerilir.
 
-**Giriş kapısı (P0, kısa):** 106 sayfa × alt eylem envanteri `docs/mobile/parity-matrix.md` olarak çıkarılır (rol, ürün, izin, web rotası, mevcut API, okuma/yazma, mobil karşılık, durum). P1 bu matrisin ilk sürümü olmadan başlamaz; sonraki fazlar matrisin satırlarını kapatır.
+**Giriş kapısı (P0):** ✅ v1 hazır — [parity-matrix.md](./parity-matrix.md) (106 rota: 34 Tam · 14 Kısmi · 51 Eksik · 1 İstisna · 6 Yönlendirme; `npm run lint:mobile-parity` ile CI'da denetlenir). 106 sayfa × alt eylem envanteri (rol, ürün, izin, web rotası, mevcut API, okuma/yazma, mobil karşılık, durum). P1 bu matrisin ilk sürümü olmadan başlamaz; sonraki fazlar matrisin satırlarını kapatır.
 
 ---
 
