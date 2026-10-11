@@ -182,6 +182,9 @@ export function sanitizeIncomingPath(path: string): string {
 export function mapAdminWebPath(href: string | null | undefined, navigation: Navigation | null): NativeTarget {
   const path = normalizeWebPath(href);
   if (!path || !navigation) return { kind: 'none' };
+  // Faz 2.2: kişi detayı native (yalnız "Kişiler" yetkili menüdeyken).
+  const person = /^\/panel\/yonetim\/kullanicilar\/([\w-]{1,64})$/.exec(path);
+  if (person) return navHas(navigation, 'people') ? { kind: 'detail', href: `/admin/person/${person[1]}` } : { kind: 'none' };
   const items = [...navigation.primary, ...navigation.sections.flatMap((section) => section.items)];
   let best: { id: string; length: number } | null = null;
   for (const item of items) {

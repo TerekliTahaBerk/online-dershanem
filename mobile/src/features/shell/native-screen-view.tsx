@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import ActivationDeskScreen from '@/features/admin/activation-desk';
 import InterventionsScreen from '@/features/admin/interventions';
 import OperationsCenterScreen from '@/features/admin/operations-center';
+import PeopleScreen from '@/features/admin/people';
 import AdminReportsScreen from '@/features/admin/reports';
 import OdkExamsScreen from '@/features/odk/odk-exams';
 import OdkHomeScreen from '@/features/odk/odk-home';
@@ -92,6 +93,7 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'admin-interventions': () => <InterventionsScreen />,
   'admin-reports': () => <AdminReportsScreen />,
   'admin-activation-desk': () => <ActivationDeskScreen />,
+  'admin-people': () => <PeopleScreen />,
 };
 
 /** Üst güvenli alanı sekmelerde PanelHeader, detaylarda Stack header bırakır. */

@@ -84,7 +84,7 @@ describe('Faz 2.1 müdahale kutusu', () => {
     });
     await press(h, await h.screen.findByTestId('admin-intervention-c1', {}, WAIT));
     await press(h, await h.screen.findByTestId('intervention-assign', {}, WAIT));
-    expect(await h.screen.findByText(/Kayıt başka bir yerde değişti/, {}, WAIT)).toBeTruthy();
+    expect(await h.screen.findByText(/Kayıt başka bir sekmede değişti\. Görünüm yenilendi/, {}, WAIT)).toBeTruthy();
     await waitFor(() => expect(h.server.called('GET', '/api/panel/admin/interventions').length).toBeGreaterThanOrEqual(2), WAIT);
   });
 

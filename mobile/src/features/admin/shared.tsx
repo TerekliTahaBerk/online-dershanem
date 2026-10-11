@@ -64,10 +64,14 @@ export function AdminRouteGate({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-/** Yönetim yazma hatasının kullanıcı metni: 409 için açık "yenilendi" mesajı, vazgeçilen step-up için açıklama. */
+/**
+ * Yönetim yazma hatasının kullanıcı metni. Sunucunun açıklaması (ör. "devir
+ * tamamlanmalı") olduğu gibi gösterilir; 409'da görünümlerin yenilendiği
+ * ayrıca söylenir. Vazgeçilen step-up açıkça belirtilir.
+ */
 export function adminErrorText(error: unknown): string | null {
   if (!error) return null;
   if (error instanceof StepUpCancelledError) return error.message;
-  if (error instanceof ApiError) return error.kind === 'conflict' ? 'Kayıt başka bir yerde değişti. Liste yenilendi; kontrol edip tekrar dene.' : error.message;
+  if (error instanceof ApiError) return error.kind === 'conflict' ? `${error.message} Görünüm yenilendi; kontrol edip tekrar dene.` : error.message;
   return 'İşlem kaydedilemedi.';
 }

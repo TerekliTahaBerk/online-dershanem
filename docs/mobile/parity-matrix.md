@@ -37,7 +37,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 
 | Alan | Rota | Tam | Kısmi | Eksik | İstisna | Yönl. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1. Yönetim (`/panel/yonetim`) | 28 | 4 | 0 | 23 | 0 | 1 |
+| 1. Yönetim (`/panel/yonetim`) | 28 | 6 | 1 | 20 | 0 | 1 |
 | 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 0 | 0 | 8 | 0 | 0 |
 | 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 7 | 3 | 10 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
@@ -46,7 +46,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | 7. Veli (`/panel/veli`) | 12 | 5 | 4 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 4 | 3 | 2 | 0 | 2 |
-| **Toplam** | **106** | **38** | **15** | **46** | **1** | **6** |
+| **Toplam** | **106** | **40** | **16** | **43** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
@@ -71,9 +71,9 @@ Mobil karşılık: **yok** (`slot-screen.tsx` ADMIN → yalnız `StaffHomeScreen
 | Y03 | `/panel/yonetim/isler` | `provisioning` | O: ilk ders göstergeleri, yerleştirme ölçüleri, aktivasyon kuyruğu (checklist, tercih, geçmiş), birleşik iş kutusu, hazırlık kontrolü, siparişler, talepler, cron, e-posta kuyruğu · Y: onboarding geçişi (sorumlu, bloker, not), siparişi hesaba bağla, talep durumu, e-posta tekrarı | `loadActivationDesk` (`lib/panel/activation-desk-server.ts`, sayfadan taşındı); yazma: `orders/[id]/onboarding` POST + `orders/[id]/user` POST (taze step-up), `leads/[id]` PATCH, `email-outbox/[id]/retry` PATCH | Hazır (`GET /api/panel/admin/activation-desk`) | `admin-activation-desk` | Tam | P2.1 | İzinli geçişler sunucudan (`allowedTransitions`); 428 → native step-up → aynı gövdeyle tek tekrar |
 | Y04 | `/panel/yonetim/raporlar` | `reports` (+ `operations` bayrak kapalıyken) | O: son 30 gün özet, tekrar / plan / AI (bayrağa bağlı), SLO'lar, öğretmen ve grup ilerlemesi | `loadAdminReports` + saf `buildAdminReports` (sayfadan taşındı) | Hazır (`GET /api/panel/admin/reports`) | `admin-reports` | Tam | P2.1 | CSV dışa aktarımı E5 ile kapsam dışı |
 | Y05 | `/panel/yonetim/basvurular` | `signups` | O: yeni kayıtlar · Y: iletişim güncelle, çocuk hesabı oluştur | `signups/[userId]/contact` PATCH, `signups/children/[id]/account` POST | Y var, O yok | — | Eksik | P2.2 | Çocuk verisi kapsamı |
-| Y06 | `/panel/yonetim/kisiler` | `people` | O: birleşik kişi dizini · Y: kullanıcı oluştur, toplu işlem, MFA sıfırlama talebi/onayı | `users` POST, `users/bulk` POST, `users/[id]/mfa-reset` POST, `mfa-resets/[id]/approve` POST; `people-views.ts` | Y var, O yok | — | Eksik | P2.2 | MFA/bulk → step-up |
-| Y07 | `/panel/yonetim/kullanicilar` | (Kişiler alt) | O: kullanıcı listesi · Y: oluştur, durum, parola sıfırla, MFA sıfırla, toplu | `users*` | Y var, O yok | — | Eksik | P2.2 | |
-| Y08 | `/panel/yonetim/kullanicilar/[id]` | — | O: kullanıcı detayı, arşiv etkisi, işten çıkarma önizleme, personel rolleri · Y: profil PATCH/DELETE, durum, ürün erişimi, personel rolü ekle/kaldır, erişilebilirlik, koç profili, parola/MFA sıfırla, offboarding, öğretmen-öğrenci ilişkisi | `users/[id]` GET/PATCH/DELETE, `users/[id]/{status,products,staff-roles,accessibility,coach-profile,reset-password,mfa-reset,offboarding,archive-impact}`, `student-teachers`; `teacher-lifecycle-server.ts`, `staff-assignment-server.ts` | Hazır (GET `users/[id]` var; yaşam döngüsü özeti RSC) | — | Eksik | P2.2 | En hassas ekran: rol/ürün/arşiv/MFA → step-up |
+| Y06 | `/panel/yonetim/kisiler` | `people` | O: birleşik kişi dizini (6 görünüm), arama, rol / ürün / durum süzgeci, sayfalama, sorumluluk rozetleri, bekleyen MFA sıfırlama kuyruğu · Y: kişi oluştur (davet bağlantısı), MFA sıfırlamayı onayla | `loadPeopleDirectory` (`lib/panel/people-directory-server.ts`, sayfadan taşındı), `listPendingMfaResets`; yazma: `users` POST, `mfa-resets/[id]/approve` POST (taze step-up) | Hazır (`GET /api/panel/admin/people`) | `admin-people` | Tam | P2.2 | Toplu işlem E4 ile kapsam dışı |
+| Y07 | `/panel/yonetim/kullanicilar` | (Kişiler alt) | O: kullanıcı listesi · Y: oluştur, durum, parola/davet yenile, MFA sıfırla | `users*` | Hazır (Kişiler dizini + kişi detayı) | `admin-people`, `admin/person/[id]` | Tam | P2.2 | Web'de `kisiler`'e yönlendirilen eski liste; tüm satır işlemleri kişi detayında. Toplu işlem E4 |
+| Y08 | `/panel/yonetim/kullanicilar/[id]` | — | O: profil, ürün erişim nesneleri + siparişler, sorumluluk geçmişi, ilişkiler, öğretmen özeti, MFA durumu + bekleyen sıfırlamalar, işlem geçmişi · Y: profil düzenle, manuel ürün erişimi, sorumluluk ver / iptal et (gerekçeli), koç kapasitesi, durum (aktif / askı / arşiv), daveti yenile, MFA sıfırlama iste / onayla | `loadPersonDetail` (`lib/panel/person-detail-server.ts`, sayfadan taşındı); yazma: mevcut `users/[id]/*` (taze step-up) | Hazır (`GET /api/panel/admin/people/[id]`) | `admin/person/[id]` | Kısmi | P2.2 | Kalan: öğretmen offboarding + arşiv etkisi önizlemesi, kalıcı silme, erişilebilirlik uyarlaması, öğretmen–öğrenci branş bağlantısı, kayıt profili kartı; önizleme başlatma P2.9 |
 | Y09 | `/panel/yonetim/ogrenciler` | — | O: öğrenci listesi · Y: durum, parola sıfırla | `users/[id]`, `users/[id]/{status,reset-password}` | Y var, O yok | — | Eksik | P2.2 | |
 | Y10 | `/panel/yonetim/ogrenciler/[id]` | — | O: öğrenci 360 · Y: veli/öğretmen ilişkisi, koç ata (SA), sipariş provizyon tekrarı (SA), Dino bağlamı | `relationships*`, `student-teachers`, SA `assignCoach`, SA `retryOrderProvisioning`; `lib/panel/student-360*` | SA + O yok | — | Eksik | P2.2 | Özel öğrenci verisi kapsam kontrolü |
 | Y11 | `/panel/yonetim/veliler` | — | O: veli listesi · Y: ilişki ekle/sil, durum, parola sıfırla | `relationships*`, `users/[id]/{status,reset-password}` | Y var, O yok | — | Eksik | P2.2 | |
