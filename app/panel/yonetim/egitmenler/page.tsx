@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { loadEducators } from "@/lib/panel/educators-server";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
@@ -30,25 +30,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminEducatorsPage() {
   const session = await requireRole("ADMIN");
 
-  const teachers = await prisma.user.findMany({
-    where: { role: "TEACHER" },
-    orderBy: [{ status: "asc" }, { fullName: "asc" }],
-    select: {
-      id: true,
-      fullName: true,
-      email: true,
-      status: true,
-      teacherProfile: { select: { subjects: true } },
-      taughtGroups: {
-        where: { isActive: true },
-        select: {
-          level: true,
-          capacity: true,
-          _count: { select: { enrollments: true } },
-        },
-      },
-    },
-  });
+  const teachers = await loadEducators();
 
   const overCapacity = teachers.filter((t) =>
     t.taughtGroups.some((g) => g._count.enrollments > g.capacity),

@@ -13,6 +13,8 @@ import {
 } from "@/components/panel/ui";
 import { UserRowActions } from "@/components/panel/user-row-actions";
 
+import { countStudentsAwaitingAccess } from "@/lib/panel/people-directory-server";
+
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 25;
@@ -168,14 +170,7 @@ export default async function StudentsPage({
         },
       },
     }),
-    prisma.user.count({
-      where: {
-        role: "STUDENT",
-        odOrders: {
-          some: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } },
-        },
-      },
-    }),
+    countStudentsAwaitingAccess(),
   ]);
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));

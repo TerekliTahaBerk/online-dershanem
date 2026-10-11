@@ -4,11 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/guards";
 import { enforceMutation } from "@/lib/security/mutation-guard";
-import { logAudit } from "@/lib/audit";
-import { prisma } from "@/lib/prisma";
-import { OdProvisioningError, provisionOdOrder } from "@/lib/od/provisioning";
-import { OdkProvisioningError, provisionOdkOrder } from "@/lib/odk/provisioning";
-import { provisioningErrorGuidance } from "@/lib/lifecycle/states";
+import { retryOrderProvisioningService } from "@/lib/panel/order-provisioning-service";
 
 /**
  * ADMIN · ERİŞİM AÇMAYI YENİDEN DENE (Panel.dc.html → aOrder).
@@ -33,52 +29,11 @@ export async function retryOrderProvisioning(formData: FormData) {
     .object({ orderId: z.string().min(1) })
     .parse(Object.fromEntries(formData));
 
-  const [odOrder, odkOrder] = await Promise.all([
-    prisma.odOrder.findUnique({ where: { id: orderId }, select: { id: true, status: true, userId: true } }),
-    prisma.odkOrder.findUnique({ where: { id: orderId }, select: { id: true, status: true, studentUserId: true } }),
-  ]);
-  if (!odOrder && !odkOrder) return;
-
-  let outcome: string;
-  let entityType: "OdOrder" | "OdkOrder" = "OdOrder";
-  try {
-    if (odOrder) {
-      const result = await provisionOdOrder(orderId);
-      outcome = result.alreadyProvisioned
-        ? "already_provisioned"
-        : result.status === "SUCCEEDED"
-          ? "succeeded"
-          : `manual_review:${result.reason ?? "sebep belirtilmedi"}`;
-    } else {
-      entityType = "OdkOrder";
-      const result = await provisionOdkOrder(orderId);
-      outcome = result.alreadyProvisioned
-        ? "already_provisioned"
-        : result.awaitingStudentAccount
-          ? "manual_review:öğrenci hesabı yönetim tarafından açılmayı bekliyor"
-          : "succeeded";
-    }
-  } catch (error) {
-    const code =
-      error instanceof OdProvisioningError || error instanceof OdkProvisioningError
-        ? error.code
-        : error instanceof Error
-          ? error.message
-          : "bilinmeyen";
-    outcome = `error:${code}:${provisioningErrorGuidance(code)}`;
-  }
-
-  await logAudit({
-    actorUserId: session.userId,
-    entityType,
-    entityId: orderId,
-    action: "order.provisioning.retry",
-    summary: `Admin erişim açmayı yeniden denedi · sonuç: ${outcome}`,
-  });
+  const result = await retryOrderProvisioningService({ actorUserId: session.userId, orderId });
+  if (!result.found) return;
 
   revalidatePath(`/panel/yonetim/siparisler/${orderId}`);
   revalidatePath("/panel/yonetim/ogrenciler");
   revalidatePath("/panel/yonetim");
-  const userId = odOrder?.userId ?? odkOrder?.studentUserId;
-  if (userId) revalidatePath(`/panel/yonetim/kullanicilar/${userId}`);
+  if (result.userId) revalidatePath(`/panel/yonetim/kullanicilar/${result.userId}`);
 }

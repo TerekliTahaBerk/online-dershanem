@@ -1,4 +1,6 @@
 /** Student 360 alt panellerinin ortak, sunuma özel yardımcıları. */
+import { STUDENT_360_ATTENDANCE_LABELS } from "@/lib/panel/student-360";
+
 export const DATE = new Intl.DateTimeFormat("tr-TR", {
   day: "numeric",
   month: "short",
@@ -12,12 +14,7 @@ export const DAY = new Intl.DateTimeFormat("tr-TR", {
   month: "long",
   timeZone: "Europe/Istanbul",
 });
-export const ATTENDANCE_LABEL: Record<string, string> = {
-  PRESENT: "Katıldı",
-  ABSENT: "Katılmadı",
-  LATE: "Geç",
-  EXCUSED: "İzinli",
-};
+export const ATTENDANCE_LABEL = STUDENT_360_ATTENDANCE_LABELS;
 export function EmptyLine({ text }: { text: string }) {
   return <p className="text-[13.5px] leading-6 text-dc-ink-muted">{text}</p>;
 }

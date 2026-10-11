@@ -384,6 +384,8 @@ const personSummary = v.object({
   lastLoginAt: v.nullable(v.iso()),
   detail: v.string(),
   badges: v.array(v.string()),
+  /** Öğrencide Öğrenci 360 profil kimliği (web satırı da oraya açılır). */
+  studentProfileId: v.optional(v.nullable(v.string()), null),
 });
 
 const pendingReset = v.object({
@@ -409,6 +411,8 @@ const peopleDirectory = v.object({
   total: v.int(0),
   people: v.array(personSummary),
   pendingMfaResets: v.array(pendingReset),
+  /** Ödemesi alınmış, erişimi açılmamış öğrenci sayısı (web Öğrenciler sayfası başlığı). */
+  studentsAwaitingAccess: v.optional(v.int(0), 0),
 });
 export type MobilePeopleDirectory = Infer<typeof peopleDirectory>;
 export type MobilePersonSummary = Infer<typeof personSummary>;
@@ -505,6 +509,22 @@ const personDetail = v.object({
     canRequestReset: v.boolean(),
   }),
   history: v.array(v.object({ id: v.nonEmpty(), action: v.string(), summary: v.string(), createdAt: v.iso(), actorName: v.string() })),
+  /** Öğrenci + `accessibilityProfile` bayrağı açıkken; `expectedVersion` ile kaydedilir. */
+  accessibility: v.optional(v.nullable(v.object({ version: v.int(0), assessmentExtraPercent: v.int(0), breaksAllowed: v.boolean(), options: v.array(v.int(0)) })), null),
+  /** Kayıt ve iletişim özeti (öğrenci / veli; kayıt yoksa null). */
+  signup: v.optional(
+    v.nullable(
+      v.object({
+        rows: v.array(v.object({ label: v.string(), value: v.string() })),
+        note: v.nullable(v.string()),
+        pendingChildren: v.array(v.object({ id: v.nonEmpty(), text: v.string() })),
+        formFields: v.array(v.object({ label: v.string(), value: v.string() })),
+      }),
+    ),
+    null,
+  ),
+  /** Öğretmen: branş bağlantısı kurulabilecek öğrenciler (web ile aynı ilk 80). */
+  linkableStudents: v.optional(v.array(v.object({ id: v.nonEmpty(), name: v.string() })), []),
 });
 export type MobilePersonDetail = Infer<typeof personDetail>;
 export function parsePersonDetail(input: unknown): ContractResult<MobilePersonDetail> {
@@ -515,4 +535,223 @@ const inviteResult = v.object({ invite: v.object({ url: v.nonEmpty(), message: v
 export type MobileInviteResult = Infer<typeof inviteResult>;
 export function parseInviteResult(input: unknown): ContractResult<MobileInviteResult> {
   return check(inviteResult, input);
+}
+
+/* ------------------------------------------------------------------ *
+ * Kişi detayı ön izlemeleri (mevcut uçlar; hepsi taze step-up):
+ *  - `GET /api/panel/users/:id` → silme ön koşulları,
+ *  - `GET /api/panel/users/:id/archive-impact` → arşiv etkisi,
+ *  - `GET /api/panel/users/:id/offboarding` → öğretmen devir ön izlemesi.
+ * ------------------------------------------------------------------ */
+
+const blocker = v.object({ code: v.nonEmpty(), label: v.string(), count: v.int(0) });
+
+const deletePreview = v.object({ canDelete: v.boolean(), blockers: v.array(blocker), suggestedAction: v.oneOf(["DELETE", "ARCHIVE", "SUSPEND"] as const) });
+export type MobileDeletePreview = Infer<typeof deletePreview>;
+export function parseDeletePreview(input: unknown): ContractResult<MobileDeletePreview> {
+  return check(deletePreview, input);
+}
+
+const archiveImpact = v.object({
+  canHardDelete: v.boolean(),
+  recommendArchive: v.boolean(),
+  buckets: v.array(v.object({ key: v.nonEmpty(), label: v.string(), count: v.int(0), severity: v.oneOf(["info", "warning", "blocking"] as const) })),
+  message: v.string(),
+});
+export type MobileArchiveImpact = Infer<typeof archiveImpact>;
+export function parseArchiveImpact(input: unknown): ContractResult<MobileArchiveImpact> {
+  return check(archiveImpact, input);
+}
+
+const person = v.object({ id: v.nonEmpty(), name: v.string(), email: v.string() });
+const offboardingPreview = v.object({
+  teacher: v.object({ id: v.nonEmpty(), name: v.string(), email: v.string(), status: v.oneOf(USER_STATUSES), subjects: v.array(v.string()), isCoach: v.boolean(), coachCapacity: v.nullable(v.int(0)) }),
+  counts: v.object({ activeGroups: v.int(0), upcomingLessons: v.int(0), pendingLessonClosures: v.int(0), openHelpRequests: v.int(0), coachAssignments: v.int(0), openInterventions: v.int(0) }),
+  blockers: v.array(blocker),
+  options: v.object({
+    teacherTransfers: v.array(v.object({ id: v.nonEmpty(), name: v.string(), email: v.string(), isCoach: v.boolean() })),
+    coachTransfers: v.array(person),
+    interventionOwners: v.array(v.object({ id: v.nonEmpty(), role: v.string(), name: v.string(), email: v.string() })),
+  }),
+});
+export type MobileOffboardingPreview = Infer<typeof offboardingPreview>;
+export function parseOffboardingPreview(input: unknown): ContractResult<MobileOffboardingPreview> {
+  return check(offboardingPreview, input);
+}
+
+/* ================================================================== *
+ * VELİLER — `GET /api/panel/admin/parents?q&durum&sayfa` (Faz 2.2).
+ * Web `app/panel/yonetim/veliler` ile AYNI `loadParentsPage`. Yazmalar:
+ * `POST /api/panel/relationships`, `PATCH|DELETE /api/panel/relationships/:id`
+ * (taze step-up).
+ * ================================================================== */
+
+const parentsPage = v.object({
+  contractVersion: version,
+  query: v.object({ q: v.string(), durum: v.string() }),
+  statuses: v.array(v.object({ value: v.string(), label: v.string() })),
+  page: v.int(1),
+  pages: v.int(1),
+  total: v.int(0),
+  withoutRelationshipCount: v.int(0),
+  parents: v.array(v.object({ id: v.nonEmpty(), name: v.string(), email: v.string(), statusLabel: v.string(), attention: v.boolean(), studentCount: v.int(0), students: v.string() })),
+  relationships: v.array(v.object({ id: v.nonEmpty(), parentId: v.nonEmpty(), parentName: v.string(), studentName: v.string(), relationship: v.nullable(v.string()) })),
+  history: v.array(v.object({ id: v.nonEmpty(), title: v.string(), actionLabel: v.string(), detail: v.string() })),
+  parentOptions: v.array(v.object({ id: v.nonEmpty(), name: v.string() })),
+  studentOptions: v.array(v.object({ id: v.nonEmpty(), name: v.string() })),
+});
+export type MobileParentsPage = Infer<typeof parentsPage>;
+export function parseParentsPage(input: unknown): ContractResult<MobileParentsPage> {
+  return check(parentsPage, input);
+}
+
+/* ================================================================== *
+ * ÖĞRETMENLER VE DOLULUK — `GET /api/panel/admin/educators` (Faz 2.2).
+ * Web `app/panel/yonetim/egitmenler` ile AYNI `loadEducators`.
+ * ================================================================== */
+
+const educators = v.object({
+  contractVersion: version,
+  overCapacity: v.int(0),
+  teachers: v.array(v.object({ id: v.nonEmpty(), name: v.string(), active: v.boolean(), statusLabel: v.string(), subjects: v.string(), levels: v.string(), fill: v.string(), over: v.boolean() })),
+});
+export type MobileEducators = Infer<typeof educators>;
+export function parseEducators(input: unknown): ContractResult<MobileEducators> {
+  return check(educators, input);
+}
+
+/* ================================================================== *
+ * YENİ KAYITLAR — `GET /api/panel/admin/signups?sekme&filtre&sayfa` (Faz 2.2).
+ * Web `app/panel/yonetim/basvurular` ile AYNI yükleyiciler. Yazmalar:
+ * `PATCH /api/panel/signups/:userId/contact` (iletişim durumu + not),
+ * `POST /api/panel/signups/children/:id/account` (çocuk hesabı; taze step-up).
+ * ================================================================== */
+
+const signups = v.object({
+  contractVersion: version,
+  tab: v.oneOf(["kayitlar", "cocuklar"] as const),
+  counts: v.object({ newCount: v.int(0), pendingCount: v.int(0) }),
+  filters: v.array(v.object({ value: v.string(), label: v.string() })),
+  filter: v.string(),
+  contactStatuses: v.array(v.object({ value: v.string(), label: v.string() })),
+  page: v.int(1),
+  pages: v.int(1),
+  total: v.int(0),
+  signups: v.array(
+    v.object({
+      id: v.nonEmpty(),
+      name: v.string(),
+      roleLabel: v.string(),
+      email: v.string(),
+      phone: v.nullable(v.string()),
+      whatsAppUrl: v.nullable(v.string()),
+      createdAt: v.iso(),
+      interested: v.string(),
+      purchase: v.object({ label: v.string(), tone: tone }),
+      formDone: v.boolean(),
+      contactStatus: v.string(),
+      contactStatusLabel: v.string(),
+      contactNote: v.nullable(v.string()),
+      contactedAt: v.nullable(v.iso()),
+      details: v.array(v.object({ label: v.string(), value: v.string() })),
+    }),
+  ),
+  children: v.array(
+    v.object({
+      id: v.nonEmpty(),
+      name: v.string(),
+      detail: v.string(),
+      paid: v.boolean(),
+      packages: v.string(),
+      parentId: v.nonEmpty(),
+      parentName: v.string(),
+      parentContact: v.string(),
+      parentPhone: v.nullable(v.string()),
+      childContact: v.nullable(v.string()),
+      defaultEmail: v.nullable(v.string()),
+    }),
+  ),
+});
+export type MobileSignups = Infer<typeof signups>;
+export function parseSignups(input: unknown): ContractResult<MobileSignups> {
+  return check(signups, input);
+}
+
+const childAccountResult = v.object({
+  student: v.object({ id: v.nonEmpty(), email: v.string(), fullName: v.string(), linkedExisting: v.boolean() }),
+  invite: v.nullable(v.object({ url: v.nonEmpty(), message: v.string(), expiresAt: v.iso() })),
+  /** Ödenmiş siparişlerin erişim açma sonuçları (web formuyla aynı özet). */
+  provisioning: v.optional(v.array(v.object({ orderId: v.nonEmpty(), product: v.string(), outcome: v.string() })), []),
+});
+export type MobileChildAccountResult = Infer<typeof childAccountResult>;
+export function parseChildAccountResult(input: unknown): ContractResult<MobileChildAccountResult> {
+  return check(childAccountResult, input);
+}
+
+/* ================================================================== *
+ * ÖĞRENCİ 360 — `GET /api/panel/admin/students/:profileId?sekme&gorunum`
+ * (Faz 2.2). Web `app/panel/yonetim/ogrenciler/[id]` ile AYNI
+ * `loadStudent360Bundle` ve AYNI üst sekme / alt görünüm kuralları. Bölümler
+ * sunucuda karta çevrilir (etiket, sayı, ton); istemci hesap yapmaz.
+ * Yazmalar: `POST /api/panel/admin/coach-assignments`,
+ * `POST /api/panel/admin/orders/:id/provisioning-retry`.
+ * ================================================================== */
+
+const card = v.object({
+  id: v.nonEmpty(),
+  title: v.string(),
+  metrics: v.array(v.object({ label: v.string(), value: v.string(), hint: v.nullable(v.string()), tone: tone })),
+  rows: v.array(v.object({ title: v.string(), subtitle: v.nullable(v.string()), meta: v.nullable(v.string()), badge: v.nullable(v.object({ label: v.string(), tone: tone })) })),
+  empty: v.nullable(v.string()),
+});
+export type MobileStudentCard = Infer<typeof card>;
+
+const student360 = v.object({
+  contractVersion: version,
+  studentProfileId: v.nonEmpty(),
+  studentUserId: v.nonEmpty(),
+  summary: v.object({
+    name: v.string(),
+    email: v.string(),
+    detail: v.string(),
+    products: v.string(),
+    groups: v.string(),
+    coach: v.nullable(v.string()),
+    packageStatus: v.object({ label: v.string(), tone: tone }),
+    risk: v.object({ label: v.string(), tone: tone, reasons: v.array(v.string()) }),
+    lastActivityAt: v.nullable(v.iso()),
+  }),
+  group: v.nonEmpty(),
+  groups: v.array(v.object({ id: v.nonEmpty(), label: v.string() })),
+  view: v.nullable(v.string()),
+  views: v.array(v.object({ id: v.nonEmpty(), label: v.string() })),
+  cards: v.array(card),
+  coach: v.object({ currentCoachId: v.nullable(v.string()), cadenceDays: v.nullable(v.int(0)), options: v.array(v.object({ id: v.nonEmpty(), label: v.string() })) }),
+  blockedOrders: v.array(v.object({ id: v.nonEmpty(), packageName: v.string() })),
+  /**
+   * Yalnız ADMIN: web Veli / Branş öğretmenleri panellerindeki bağlantı
+   * yönetimi. Listeler ilgili sekme yüklendiğinde dolu, yoksa null. Yazmalar
+   * `relationships*` ve `student-teachers` uçları (web ile aynı).
+   */
+  manage: v.optional(
+    v.nullable(
+      v.object({
+        parents: v.nullable(v.array(v.object({ id: v.nonEmpty(), name: v.string(), detail: v.string() }))),
+        teachers: v.nullable(v.array(v.object({ id: v.nonEmpty(), name: v.string(), subject: v.string() }))),
+        parentOptions: v.array(v.object({ id: v.nonEmpty(), name: v.string() })),
+        teacherOptions: v.array(v.object({ id: v.nonEmpty(), name: v.string() })),
+      }),
+    ),
+    null,
+  ),
+});
+export type MobileStudent360 = Infer<typeof student360>;
+export function parseStudent360(input: unknown): ContractResult<MobileStudent360> {
+  return check(student360, input);
+}
+
+const provisioningRetry = v.object({ ok: v.literal(true), outcome: v.string(), succeeded: v.boolean(), message: v.string() });
+export type MobileProvisioningRetry = Infer<typeof provisioningRetry>;
+export function parseProvisioningRetry(input: unknown): ContractResult<MobileProvisioningRetry> {
+  return check(provisioningRetry, input);
 }

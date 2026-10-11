@@ -77,3 +77,15 @@ export async function loadPeopleDirectory(sp: { q?: string; sekme?: string; sayf
 
 export type PeopleDirectory = Awaited<ReturnType<typeof loadPeopleDirectory>>;
 export type PeopleDirectoryUser = PeopleDirectory["users"][number];
+
+/** Ödemesi alınmış ama erişimi açılmamış öğrenci sayısı (web Öğrenciler sayfası ve mobil dizin). */
+export function countStudentsAwaitingAccess() {
+  return prisma.user.count({
+    where: {
+      role: "STUDENT",
+      odOrders: {
+        some: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } },
+      },
+    },
+  });
+}

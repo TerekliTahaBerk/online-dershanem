@@ -5,6 +5,7 @@ import { ACCESS_SOURCE_LABEL, accessState, sortAccessObjects } from "@/lib/panel
 import { PEOPLE_VIEWS, responsibilityBadges, viewAllowsRoleFilter } from "@/lib/panel/people-views";
 import type { PeopleDirectory, PeopleDirectoryUser } from "@/lib/panel/people-directory-server";
 import type { PersonDetail } from "@/lib/panel/person-detail-server";
+import type { SignupProfileSummary } from "@/lib/panel/signup-profile-server";
 import { STAFF_PRODUCT_LABEL, STAFF_ROLE_LABEL, STAFF_ROLE_OPTIONS } from "@/lib/panel/staff-role-vocabulary";
 import { USER_STATUS_PRESENTATION } from "@/lib/panel/status-vocabulary";
 import { ROLE_FILTERS, STATUS_FILTERS } from "@/lib/panel/user-filters";
@@ -64,7 +65,7 @@ function personDetailLine(view: PeopleDirectory["view"], user: PeopleDirectoryUs
   return [roleLabel(user.role), products].filter(Boolean).join(" · ");
 }
 
-export function toMobilePeopleDirectory(directory: PeopleDirectory, pendingResets: PendingReset[], viewerId: string): MobilePeopleDirectory {
+export function toMobilePeopleDirectory(directory: PeopleDirectory, pendingResets: PendingReset[], viewerId: string, studentsAwaitingAccess = 0): MobilePeopleDirectory {
   return {
     contractVersion: MOBILE_ADMIN_CONTRACT_VERSION,
     view: directory.view,
@@ -92,14 +93,19 @@ export function toMobilePeopleDirectory(directory: PeopleDirectory, pendingReset
       lastLoginAt: user.lastLoginAt ? user.lastLoginAt.toISOString() : null,
       detail: personDetailLine(directory.view, user),
       badges: responsibilityBadges(user.productStaffAssignments.map((row) => row.role)),
+      studentProfileId: user.role === "STUDENT" ? (user.studentProfile?.id ?? null) : null,
     })),
     pendingMfaResets: toMobilePendingResets(pendingResets, viewerId),
+    studentsAwaitingAccess,
   };
 }
 
 const DATE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Istanbul" });
 
-export function toMobilePersonDetail(detail: PersonDetail, viewerId: string): MobilePersonDetail {
+/** Sunucu şeması (`/api/panel/users/[id]/accessibility`): ek süre yüzdesi seçenekleri. */
+const ACCESSIBILITY_EXTRA_OPTIONS = [0, 25, 50, 100];
+
+export function toMobilePersonDetail(detail: PersonDetail, viewerId: string, extra: { signup: SignupProfileSummary | null; accessibilityEnabled: boolean }): MobilePersonDetail {
   const { user, student, now, teacherLifecycle: lifecycle } = detail;
   const status = USER_STATUS_PRESENTATION[user.status];
   return {
@@ -217,5 +223,16 @@ export function toMobilePersonDetail(detail: PersonDetail, viewerId: string): Mo
       createdAt: row.createdAt.toISOString(),
       actorName: row.actorUserId ? detail.auditActors.get(row.actorUserId) ?? "Bilinmeyen" : "Sistem",
     })),
+    accessibility:
+      user.role === "STUDENT" && extra.accessibilityEnabled
+        ? {
+            version: user.accessibilityPreference?.version || 0,
+            assessmentExtraPercent: user.accessibilityPreference?.assessmentExtraPercent || 0,
+            breaksAllowed: user.accessibilityPreference?.breaksAllowed || false,
+            options: ACCESSIBILITY_EXTRA_OPTIONS,
+          }
+        : null,
+    signup: extra.signup,
+    linkableStudents: detail.linkableStudents,
   };
 }

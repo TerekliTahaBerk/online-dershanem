@@ -23,6 +23,10 @@ after(async () => {
   await db.odOnboardingTransition.deleteMany({ where: { onboarding: { orderId: { in: createdOrderIds } } } });
   await db.odOnboarding.deleteMany({ where: { orderId: { in: createdOrderIds } } });
   await db.odOrder.deleteMany({ where: { id: { in: createdOrderIds } } });
+  await db.coachAssignment.deleteMany({ where: { OR: [{ student: { userId: { in: ids } } }, { coach: { userId: { in: ids } } }] } });
+  await db.pendingChild.deleteMany({ where: { parentUserId: { in: ids } } });
+  await db.signupProfile.deleteMany({ where: { userId: { in: ids } } });
+  await db.parentStudentHistory.deleteMany({ where: { OR: [{ parentId: { in: ids } }, { student: { userId: { in: ids } } }] } });
   await db.mfaResetRequest.deleteMany({ where: { OR: [{ targetUserId: { in: ids } }, { requestedById: { in: ids } }] } });
   await db.parentStudent.deleteMany({ where: { OR: [{ parentId: { in: ids } }, { student: { userId: { in: ids } } }] } });
   await db.productMembership.deleteMany({ where: { userId: { in: ids } } });
@@ -151,7 +155,7 @@ integration("Faz 2.2 kişiler: dizin görünümleri + bekleyen MFA sıfırlama +
   for (const target of [studentUser, parent, teacher, otherAdmin]) {
     const detail = await loadPersonDetail(target.id, { security: true, history: true });
     assert.ok(detail);
-    const parsed = parsePersonDetail(JSON.parse(JSON.stringify(toMobilePersonDetail(detail, viewer.id))));
+    const parsed = parsePersonDetail(JSON.parse(JSON.stringify(toMobilePersonDetail(detail, viewer.id, { signup: null, accessibilityEnabled: true }))));
     assert.ok(parsed.ok, `${target.role}: ${parsed.ok ? "" : parsed.error}`);
     if (target.id === studentUser.id) {
       assert.deepEqual(parsed.value.productAccess, { editable: true, active: ["OD"], options: parsed.value.productAccess.options });
@@ -165,4 +169,76 @@ integration("Faz 2.2 kişiler: dizin görünümleri + bekleyen MFA sıfırlama +
     }
   }
   assert.equal(await loadPersonDetail("yok-boyle-biri", { security: true, history: true }), null);
+});
+
+integration("Faz 2.2 kalanlar: veliler, öğretmen doluluğu ve yeni kayıtlar gerçek veriyle sözleşmeye uyar", async () => {
+  const { loadParentsPage } = await import("@/lib/panel/parents-server");
+  const { loadEducators } = await import("@/lib/panel/educators-server");
+  const { loadPendingChildren, loadSignupCounts, loadSignupList } = await import("@/lib/panel/signups-server");
+  const { toMobileEducators, toMobileParentsPage, toMobileSignups } = await import("@/lib/mobile/admin-people-extra-views");
+  const { loadSignupProfileSummary } = await import("@/lib/panel/signup-profile-server");
+  const contracts = await import("@/lib/mobile-contracts/admin");
+  const json = <T,>(value: T) => JSON.parse(JSON.stringify(value));
+
+  const parent = await user("PARENT", "rest-parent");
+  await db.user.update({ where: { id: parent.id }, data: { registrationSource: "SELF_SIGNUP", phone: "05551112233" } });
+  await db.signupProfile.create({ data: { userId: parent.id, city: "İzmir" } });
+  await db.pendingChild.create({ data: { parentUserId: parent.id, fullName: "P2 Bekleyen Çocuk", classLevel: "8" } });
+  const studentUser = await user("STUDENT", "rest-student");
+  const profile = await db.studentProfile.create({ data: { userId: studentUser.id } });
+  await db.parentStudent.create({ data: { parentId: parent.id, studentId: profile.id, relationship: "Baba" } });
+
+  const parents = contracts.parseParentsPage(json(toMobileParentsPage(await loadParentsPage({ q: "P2 rest" }))));
+  assert.ok(parents.ok, parents.ok ? "" : parents.error);
+  assert.ok(parents.value.parents.some((row) => row.id === parent.id && row.students.includes("(Baba)")));
+  assert.ok(contracts.parseParentsPage(json(toMobileParentsPage(await loadParentsPage({ durum: "baglantisiz" })))).ok);
+
+  const educators = contracts.parseEducators(json(toMobileEducators(await loadEducators())));
+  assert.ok(educators.ok, educators.ok ? "" : educators.error);
+
+  const [counts, list, children] = await Promise.all([loadSignupCounts(), loadSignupList("veli", 1), loadPendingChildren()]);
+  const signups = contracts.parseSignups(json(toMobileSignups({ tab: "kayitlar", filter: "veli", page: 1, counts, list, children: null })));
+  assert.ok(signups.ok, signups.ok ? "" : signups.error);
+  const mine = signups.value.signups.find((row) => row.id === parent.id);
+  assert.ok(mine, "kendi kaydını açan veli listede");
+  assert.ok(mine.whatsAppUrl?.startsWith("https://wa.me/"));
+  const childTab = contracts.parseSignups(json(toMobileSignups({ tab: "cocuklar", filter: "tumu", page: 1, counts, list: null, children })));
+  assert.ok(childTab.ok, childTab.ok ? "" : childTab.error);
+  assert.ok(childTab.value.children.some((child) => child.name === "P2 Bekleyen Çocuk" && child.parentId === parent.id));
+  const summary = await loadSignupProfileSummary(parent.id);
+  assert.ok(summary?.rows.some((row) => row.label === "Konum" && row.value === "İzmir"));
+
+  // Öğrenci 360 yükleyicisi `next/navigation` (notFound) içerir; Node test
+  // koşucusunda yüklenemez. Projeksiyon `lib/mobile/student-360-views.test.ts`,
+  // gerçek uç `tests/e2e/mobile-api.spec.ts` ile doğrulanır.
+});
+
+integration("Faz 2.2 koç atama servisi: Yön üyeliği yoksa reddeder, varsa atar; erişim yeniden deneme bilinmeyen siparişte bulunamadı", async () => {
+  const { assignCoachService } = await import("@/lib/panel/coach-assignment-service");
+  const { describeProvisioningOutcome, retryOrderProvisioningService } = await import("@/lib/panel/order-provisioning-service");
+  const admin = await user("ADMIN", "coach-admin");
+  const coachUser = await user("TEACHER", "coach-teacher");
+  const coachProfile = await db.teacherProfile.create({ data: { userId: coachUser.id, isCoach: true, coachCapacity: 1 } });
+  const studentUser = await user("STUDENT", "coach-student");
+  const profile = await db.studentProfile.create({ data: { userId: studentUser.id } });
+
+  assert.deepEqual(await assignCoachService({ actorUserId: admin.id, studentId: profile.id, coachId: coachProfile.id }), { ok: false, code: "membership" });
+  await db.productMembership.create({ data: { userId: studentUser.id, product: "OK", startsAt: new Date(0) } });
+  assert.deepEqual(await assignCoachService({ actorUserId: admin.id, studentId: profile.id, coachId: "yok" }), { ok: false, code: "coach" });
+  assert.deepEqual(await assignCoachService({ actorUserId: admin.id, studentId: profile.id, coachId: coachProfile.id, cadenceDays: "7" }), { ok: true });
+  const active = await db.coachAssignment.findFirst({ where: { studentId: profile.id, endedAt: null } });
+  assert.equal(active?.cadenceDays, 7);
+
+  const other = await user("STUDENT", "coach-student2");
+  const otherProfile = await db.studentProfile.create({ data: { userId: other.id } });
+  await db.productMembership.create({ data: { userId: other.id, product: "OK", startsAt: new Date(0) } });
+  assert.deepEqual(await assignCoachService({ actorUserId: admin.id, studentId: otherProfile.id, coachId: coachProfile.id }), { ok: false, code: "capacity" }, "kapasite 1 dolu");
+  assert.deepEqual(await assignCoachService({ actorUserId: admin.id, studentId: otherProfile.id, coachId: coachProfile.id, overrideReason: "Geçici yoğunluk" }), { ok: true });
+
+  assert.deepEqual(await retryOrderProvisioningService({ actorUserId: admin.id, orderId: "olmayan-siparis" }), { found: false });
+  // Mobil yanıt metni denetim kaydındaki sonuç dizgisinden türetilir.
+  assert.deepEqual(describeProvisioningOutcome("succeeded"), { succeeded: true, message: "Erişim açıldı." });
+  assert.deepEqual(describeProvisioningOutcome("already_provisioned"), { succeeded: true, message: "Erişim zaten açıktı." });
+  assert.deepEqual(describeProvisioningOutcome("manual_review:Veli eksik"), { succeeded: false, message: "Elle inceleme gerekiyor: Veli eksik" });
+  assert.deepEqual(describeProvisioningOutcome("error:PACKAGE_MISSING:Paketi kontrol edin: fiyat"), { succeeded: false, message: "Erişim açılamadı: Paketi kontrol edin: fiyat" });
 });

@@ -1,7 +1,5 @@
 import Link from "next/link";
-import type { Prisma } from "@prisma/client";
 import { MessageCircle, Phone } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { productLabel } from "@/lib/auth/roles";
 import { whatsAppLink } from "@/lib/phone";
@@ -31,41 +29,13 @@ import {
 } from "@/components/panel/ui";
 import { SignupContactControl } from "@/components/panel/signups/signup-contact-control";
 import { ChildAccountForm } from "@/components/panel/signups/child-account-form";
+import { loadPendingChildren, loadSignupCounts, loadSignupList, SIGNUP_FILTERS as FILTERS, SIGNUP_PAGE_SIZE as PAGE_SIZE, type SignupFilter as Filter } from "@/lib/panel/signups-server";
 
 export const dynamic = "force-dynamic";
 
-const DATE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" });
-const PAGE_SIZE = 40;
-
 type Tab = "kayitlar" | "cocuklar";
-type Filter = "tumu" | "yeni" | "satin-aldi" | "form-yok" | "veli" | "ogrenci";
 
-const FILTERS: Array<{ value: Filter; label: string }> = [
-  { value: "tumu", label: "Tümü" },
-  { value: "yeni", label: "Aranmadı" },
-  { value: "satin-aldi", label: "Satın aldığını belirtti" },
-  { value: "form-yok", label: "Form doldurulmadı" },
-  { value: "ogrenci", label: "Öğrenciler" },
-  { value: "veli", label: "Veliler" },
-];
-
-function filterWhere(filter: Filter): Prisma.UserWhereInput {
-  switch (filter) {
-    case "yeni":
-      return { OR: [{ signupProfile: { contactStatus: "NEW" } }, { signupProfile: null }] };
-    case "satin-aldi":
-      return { signupProfile: { purchaseStatus: "ALREADY_PURCHASED" } };
-    case "form-yok":
-      return { contactFormSubmittedAt: null };
-    case "ogrenci":
-      return { role: "STUDENT" };
-    case "veli":
-      return { role: "PARENT" };
-    default:
-      return {};
-  }
-}
-
+const DATE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" });
 function telHref(phone: string | null) {
   return phone ? `tel:${phone.replace(/[^\d+]/g, "")}` : null;
 }
@@ -89,10 +59,7 @@ export default async function SignupsPage({
   const filter = (FILTERS.find((item) => item.value === params.filtre)?.value ?? "tumu") as Filter;
   const page = Math.max(1, Number.parseInt(params.sayfa ?? "1", 10) || 1);
 
-  const [pendingCount, newCount] = await Promise.all([
-    prisma.pendingChild.count({ where: { status: "PENDING" } }),
-    prisma.user.count({ where: { registrationSource: "SELF_SIGNUP", OR: [{ signupProfile: { contactStatus: "NEW" } }, { signupProfile: null }] } }),
-  ]);
+  const { pendingCount, newCount } = await loadSignupCounts();
 
   return (
     <PanelShell role={session.role} fullName={session.fullName} email={session.email} pageTitle="Yeni kayıtlar">
@@ -130,45 +97,7 @@ function signupHref(filter: Filter, page: number, preview?: string) {
  * (`?onizle=kayit:<id>`). Ara / WhatsApp satırda ve panelde.
  */
 async function SignupList({ filter, page, preview }: { filter: Filter; page: number; preview?: string }) {
-  const where: Prisma.UserWhereInput = { registrationSource: "SELF_SIGNUP", ...filterWhere(filter) };
-  const [total, users] = await Promise.all([
-    prisma.user.count({ where }),
-    prisma.user.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-      select: {
-        id: true,
-        fullName: true,
-        email: true,
-        phone: true,
-        role: true,
-        createdAt: true,
-        contactFormSubmittedAt: true,
-        marketingConsentAt: true,
-        signupProfile: true,
-        studentProfile: { select: { classLevel: true, examType: true, schoolName: true } },
-        pendingChildren: { where: { status: "PENDING" }, select: { id: true, fullName: true } },
-        productMemberships: { where: { revokedAt: null, product: { in: ["OD", "OK", "ODK"] } }, select: { product: true } },
-        _count: { select: { paidOdOrders: { where: { status: "PAID" } }, paidOdkOrders: { where: { status: "PAID" } }, contactFormSubmissions: true } },
-      },
-    }),
-  ]);
-
-  // "Zaten satın aldım" diyen ya da e-postası ödenmiş bir siparişle eşleşen
-  // kayıtları işaretle: ekip önce bunları arar.
-  const emails = users.map((user) => user.email);
-  const matchedOrders = emails.length
-    ? await prisma.odOrder.findMany({
-        where: { status: "PAID", OR: emails.map((email) => ({ buyerInfo: { path: ["email"], equals: email } })) },
-        select: { id: true, buyerInfo: true },
-      })
-    : [];
-  const matchedEmails = new Set(
-    matchedOrders.map((order) => String((order.buyerInfo as Record<string, unknown> | null)?.email ?? "").toLowerCase()),
-  );
-
+  const { total, users, matchedEmails } = await loadSignupList(filter, page);
   const previewId = preview?.startsWith("kayit:") ? preview.slice("kayit:".length) : null;
   const selected = previewId ? users.find((user) => user.id === previewId) ?? null : null;
   const callLinks = (user: (typeof users)[number], size: "sm" | "md" = "sm") => {
@@ -329,27 +258,7 @@ async function SignupList({ filter, page, preview }: { filter: Filter; page: num
 }
 
 async function PendingChildren() {
-  const children = await prisma.pendingChild.findMany({
-    where: { status: "PENDING" },
-    orderBy: { createdAt: "asc" },
-    take: 200,
-    select: {
-      id: true,
-      fullName: true,
-      classLevel: true,
-      schoolName: true,
-      examType: true,
-      email: true,
-      phone: true,
-      relationship: true,
-      createdAt: true,
-      parent: { select: { id: true, fullName: true, email: true, phone: true } },
-      odOrders: { where: { status: "PAID" }, select: { id: true, packageName: true } },
-      odkOrders: { where: { status: "PAID" }, select: { id: true, package: { select: { title: true } } } },
-    },
-  });
-  // Ödemesi alınmış çocuklar önce: hem velinin hem öğrencinin beklediği iş.
-  const sorted = [...children].sort((a, b) => Number(b.odOrders.length + b.odkOrders.length > 0) - Number(a.odOrders.length + a.odkOrders.length > 0));
+  const sorted = await loadPendingChildren();
 
   if (!sorted.length) {
     return (
