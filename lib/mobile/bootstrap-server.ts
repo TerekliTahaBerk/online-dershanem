@@ -1,5 +1,9 @@
 import "server-only";
 
+import { headers } from "next/headers";
+import { readAdminOverlayTransport } from "@/lib/auth/admin-overlay";
+import { toEffectivePreviewSession } from "@/lib/auth/admin-preview-core";
+import { toAdminTeacherModeSession } from "@/lib/auth/admin-teacher-mode-core";
 import type { ProductCode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { SessionUser } from "@/lib/auth/session";
@@ -51,13 +55,31 @@ export async function buildMobileBootstrap(
     mfaMethods,
     previewActive,
   });
-  const workspace = gates.status === "READY" ? await loadWorkspace(session) : null;
-  return projectBootstrap({
+  let effective = session;
+  let adminOverlay: MobileBootstrap["adminOverlay"] = null;
+  const transport = session.role === "ADMIN" && !options.resolveAdminOverlay
+    ? await readAdminOverlayTransport(session) : { kind: "none" as const };
+  if (gates.status === "READY" && transport.kind === "preview") {
+    const preview = await getResolvedAdminPreview(session);
+    if (!preview) throw new Error("Preview subject no longer available");
+    effective = { ...session, ...toEffectivePreviewSession(session, preview.subject) };
+    adminOverlay = { mode: "PREVIEW", actorUserId: session.userId, expiresAt: preview.context.expiresAt };
+  } else if (gates.status === "READY" && transport.kind === "teacher") {
+    effective = toAdminTeacherModeSession(session);
+    adminOverlay = { mode: "TEACHER", actorUserId: session.userId, expiresAt: new Date(transport.payload.exp).toISOString() };
+  }
+  // Preview workspace selection lives in memory; never writes the subject/session.
+  if (adminOverlay) {
+    const selected = (await headers()).get("x-od-workspace");
+    effective = { ...effective, activeProduct: selected === "OD" || selected === "OK" || selected === "ODK" ? selected : null };
+  }
+  const workspace = gates.status === "READY" ? await loadWorkspace(effective) : null;
+  const result = projectBootstrap({
     identity: {
-      userId: session.userId,
-      email: session.email,
-      fullName: session.fullName,
-      role: session.role,
+      userId: effective.userId,
+      email: effective.email,
+      fullName: effective.fullName,
+      role: effective.role,
       mustChangePassword: session.mustChangePassword,
       mfaVerifiedAt: session.mfaVerifiedAt,
     },
@@ -66,6 +88,7 @@ export async function buildMobileBootstrap(
     now,
     workspace,
   });
+  return { ...result, adminOverlay };
 }
 
 /** `/api/auth/mfa/status` ile aynı kaynak; yalnız var/yok bilgisi döner. */

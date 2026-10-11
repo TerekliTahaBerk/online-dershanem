@@ -146,14 +146,14 @@ function ChangeRequest({ plan }: { plan: Plan }) {
     <Section title="Plan sana uymuyor mu?">
       {request.feedback ? <Banner tone={request.feedback.tone}>{request.feedback.message}</Banner> : null}
       <Text tone="secondary">Yoğunluğu veya günleri koçuna bildirebilirsin. Talep sonrası plan koçunun onayına döner.</Text>
-      <Button label="Değişiklik iste" variant="secondary" onPress={() => setOpen(true)} testID="yon-plan-change" />
+      <Button mutation label="Değişiklik iste" variant="secondary" onPress={() => setOpen(true)} testID="yon-plan-change" />
       <BottomSheet visible={open} title="Değişiklik iste" onClose={() => setOpen(false)}>
         <View accessibilityRole="radiogroup" accessibilityLabel="Değişiklik seçeneği" style={styles.options}>
           {YON_OVERLOAD_OPTIONS.map((value) => (
             <Row key={value} title={OVERLOAD_LABEL[value]} selected={option === value} onPress={() => setOption(value)} testID={`yon-change-${value}`} />
           ))}
         </View>
-        <Button
+        <Button mutation
           label="Koçuma ilet"
           loading={request.submitting}
           testID="yon-change-submit"
@@ -218,7 +218,7 @@ function Preferences({ initial }: { initial: MobileYonPreference }) {
           );
         })}
       </View>
-      <Button
+      <Button mutation
         label="Tercihleri kaydet"
         variant="secondary"
         disabled={!changed || draft.availableDays.length === 0}

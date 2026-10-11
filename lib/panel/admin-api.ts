@@ -10,9 +10,9 @@ import { PRIVATE_NO_STORE } from "@/lib/panel/parent-api";
  * Sıra:
  *  1. Oturum + parola / MFA kapıları + platform rolü ADMIN
  *     (`requireApiAccountRole("ADMIN")`). Dönen oturum GERÇEK yöneticidir:
- *     ADMIN rolü listede olduğu için önizleme / öğretmen modu overlay'i
- *     uygulanmaz, yani overlay yönetim yetkisi doğurmaz ve yönetim verisi
- *     önizlenen kullanıcı adına okunmaz.
+ *     Mobil önizleme / öğretmen modu açıkken yönetim uçları 403 döner;
+ *     yönetim yetkisi yalnız moddan çıktıktan sonra kullanılabilir.
+ *     Web çerez akışının mevcut rol davranışı korunur.
  *  2. `stepUp: true` → son 10 dakikada ikinci faktör (`requireApiRecentAdminStepUp`,
  *     428 `STEP_UP_REQUIRED`). Rol / erişim / MFA / parola / arşiv gibi hassas
  *     yazmalar bunu kullanır.

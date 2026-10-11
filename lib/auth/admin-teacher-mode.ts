@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
+import { readAdminOverlayTransport } from "@/lib/auth/admin-overlay";
 import { cookies } from "next/headers";
 import { rolePath } from "@/lib/auth/roles";
 import type { SessionUser } from "@/lib/auth/session";
@@ -64,7 +65,9 @@ export const readAdminTeacherModeCookie = cache(async (): Promise<AdminTeacherMo
 
 export const getResolvedAdminTeacherMode = cache(async (actor: SessionUser): Promise<AdminTeacherModeContext> => {
   if (!canUseAdminTeacherMode(actor)) return { enabled: false };
-  const context = await readAdminTeacherModeCookie();
+  const transport = await readAdminOverlayTransport(actor);
+  const context = transport.kind === "web" ? await readAdminTeacherModeCookie()
+    : toAdminTeacherModeContext(transport.kind === "teacher" ? transport.payload : null);
   if (!context.enabled) return { enabled: false };
   if (context.adminUserId !== actor.userId) return { enabled: false };
   return context;
@@ -78,10 +81,10 @@ export async function resolvePanelShellRole(session: SessionUser) {
 }
 
 export type StartAdminTeacherModeResult =
-  | { ok: true; homePath: string }
+  | { ok: true; homePath: string; token?: string; expiresAt?: string }
   | { ok: false; error: "NOT_ADMIN" | "PROFILE_FAILED" };
 
-export async function startAdminTeacherMode(actor: SessionUser): Promise<StartAdminTeacherModeResult> {
+export async function startAdminTeacherMode(actor: SessionUser, bearer = false): Promise<StartAdminTeacherModeResult> {
   if (!canUseAdminTeacherMode(actor)) return { ok: false, error: "NOT_ADMIN" };
 
   try {
@@ -94,21 +97,24 @@ export async function startAdminTeacherMode(actor: SessionUser): Promise<StartAd
   const exp = startedAt.getTime() + ADMIN_TEACHER_MODE_TTL_MS;
   const payload: AdminTeacherModePayload = {
     v: 1,
+    ...(bearer ? { sessionId: actor.sessionId } : {}),
     adminUserId: actor.userId,
     startedAt: startedAt.toISOString(),
     exp,
   };
 
-  const store = await cookies();
-  // View As ile çakışmasın — öğretmen çalışma modu yazılabilir.
-  store.delete(ADMIN_PREVIEW_COOKIE);
-  store.set(ADMIN_TEACHER_MODE_COOKIE, encodeAdminTeacherModeCookie(payload), {
-    httpOnly: true,
-    secure: SECURE_COOKIE,
-    sameSite: "lax",
-    path: "/",
-    expires: new Date(exp),
-  });
+  if (!bearer) {
+    const store = await cookies();
+    // View As ile çakışmasın — öğretmen çalışma modu yazılabilir.
+    store.delete(ADMIN_PREVIEW_COOKIE);
+    store.set(ADMIN_TEACHER_MODE_COOKIE, encodeAdminTeacherModeCookie(payload), {
+      httpOnly: true,
+      secure: SECURE_COOKIE,
+      sameSite: "lax",
+      path: "/",
+      expires: new Date(exp),
+    });
+  }
 
   await logAudit({
     actorUserId: actor.userId,
@@ -119,13 +125,14 @@ export async function startAdminTeacherMode(actor: SessionUser): Promise<StartAd
     payload: { mode: "TEACHER_WORKSPACE" },
   });
 
-  return { ok: true, homePath: rolePath("TEACHER") };
+  return { ok: true, homePath: rolePath("TEACHER"), ...(bearer ? { token: encodeAdminTeacherModeCookie(payload), expiresAt: new Date(exp).toISOString() } : {}) };
 }
 
 export async function endAdminTeacherMode(actor: SessionUser): Promise<{ ok: true; returnPath: string }> {
-  const current = await readAdminTeacherModeCookie();
-  const store = await cookies();
-  store.delete(ADMIN_TEACHER_MODE_COOKIE);
+  const transport = await readAdminOverlayTransport(actor);
+  const current = transport.kind === "web" ? await readAdminTeacherModeCookie()
+    : toAdminTeacherModeContext(transport.kind === "teacher" ? transport.payload : null);
+  if (transport.kind === "web") (await cookies()).delete(ADMIN_TEACHER_MODE_COOKIE);
 
   if (current.enabled && current.adminUserId === actor.userId) {
     await logAudit({

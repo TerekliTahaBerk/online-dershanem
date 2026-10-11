@@ -138,3 +138,14 @@ test("güvenlik yeteneği: eksik alan null kabul edilir (eklemeli sözleşme), b
   withSecurity.workspace.capabilities.security = { mfa: methods, stepUpExpiresAt: "yarın" };
   assert.equal(parseMobileBootstrap(withSecurity).ok, false);
 });
+
+test("P2.9 overlay sözleşmesi eklemeli, süre ve mod alanları doğrulanır", () => {
+  const base = projectBootstrap({ identity, gates: bootstrapGates({ mustChangePassword: false, mfaVerifiedAt: null, loginMfaRequired: false, mfaMethods: null, previewActive: true }), minSupportedVersion: null, now, workspace });
+  assert.equal(parseMobileBootstrap(base).ok, true);
+  const adminOverlay = { mode: "PREVIEW", actorUserId: "admin", expiresAt: "2026-10-08T11:00:00.000Z" };
+  const parsed = parseMobileBootstrap({ ...base, adminOverlay });
+  assert.ok(parsed.ok);
+  assert.deepEqual(parsed.value.adminOverlay, adminOverlay);
+  assert.equal(parseMobileBootstrap({ ...base, adminOverlay: { ...adminOverlay, mode: "ADMIN" } }).ok, false);
+  assert.equal(parseMobileBootstrap({ ...base, adminOverlay: { ...adminOverlay, expiresAt: "yarın" } }).ok, false);
+});

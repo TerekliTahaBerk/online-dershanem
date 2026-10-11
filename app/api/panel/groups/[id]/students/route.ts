@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiAccountRole } from "@/lib/auth/api-guards";
+import { requireAdminApi, PRIVATE_NO_STORE } from "@/lib/panel/admin-api";
 import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 const querySchema = z.object({ q: z.string().trim().max(120).default("") });
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
-  const auth = await requireApiAccountRole("ADMIN");
+  const auth = await requireAdminApi();
   if (!auth.ok) return auth.response;
 
   const routeParams = idParamsSchema.safeParse(await context.params);
@@ -23,7 +23,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     where: { id },
     select: { id: true, capacity: true, isActive: true, enrollments: { where: { endedAt: null }, select: { studentId: true } } },
   });
-  if (!group) return NextResponse.json({ error: "Grup bulunamadı." }, { status: 404 });
+  if (!group) return NextResponse.json({ error: "Grup bulunamadı." }, { status: 404, headers: PRIVATE_NO_STORE });
 
   const activeStudentIds = new Set(group.enrollments.map((item) => item.studentId));
   const candidates = await prisma.studentProfile.findMany({
@@ -61,5 +61,5 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
       email: student.user.email,
       activeGroups: student.enrollments.map((item) => ({ id: item.group.id, name: item.group.name })),
     })),
-  });
+  }, { headers: PRIVATE_NO_STORE });
 }

@@ -95,13 +95,13 @@ function DigestFeedback({ digest, product }: { digest: Extract<MobileWeeklyDiges
     <Section title="Bu özet sana nasıl hissettirdi?">
       {message ? <Banner tone={message.tone}>{message.text}</Banner> : null}
       <View style={styles.row}>
-        <Button testID="digest-helpful" label="Yararlıydı" variant={helpful === true ? 'primary' : 'secondary'} disabled={mutation.isPending} onPress={() => void save(true, pulse)} />
-        <Button testID="digest-not-helpful" label="Yararlı değildi" variant={helpful === false ? 'primary' : 'secondary'} disabled={mutation.isPending} onPress={() => void save(false, pulse)} />
+        <Button mutation testID="digest-helpful" label="Yararlıydı" variant={helpful === true ? 'primary' : 'secondary'} disabled={mutation.isPending} onPress={() => void save(true, pulse)} />
+        <Button mutation testID="digest-not-helpful" label="Yararlı değildi" variant={helpful === false ? 'primary' : 'secondary'} disabled={mutation.isPending} onPress={() => void save(false, pulse)} />
       </View>
       <Text variant="label" tone="secondary">Kaygı düzeyi (isteğe bağlı)</Text>
       <View style={styles.row} accessibilityRole="radiogroup" accessibilityLabel="Özet kaygı düzeyi">
         {PULSE.map((option) => (
-          <Button key={option.value} testID={`digest-pulse-${option.value}`} label={option.label} variant={pulse === option.value ? 'primary' : 'quiet'} disabled={mutation.isPending} onPress={() => void save(helpful, option.value)} />
+          <Button mutation key={option.value} testID={`digest-pulse-${option.value}`} label={option.label} variant={pulse === option.value ? 'primary' : 'quiet'} disabled={mutation.isPending} onPress={() => void save(helpful, option.value)} />
         ))}
       </View>
     </Section>

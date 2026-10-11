@@ -23,6 +23,7 @@ import {
   type ScheduleConflictSignal,
 } from "@/lib/panel/group-360";
 import { findOpenGroupScheduleConflicts } from "@/lib/panel/lesson-lifecycle";
+import { groupRevision } from "./group-mutation-core";
 
 export type Group360Summary = {
   id: string;
@@ -116,6 +117,7 @@ export type Group360OpsTab = {
 };
 
 export type Group360Bundle = {
+  revision: string;
   basePath: string;
   tab: Group360Tab;
   tabs: readonly Group360Tab[];
@@ -139,10 +141,13 @@ function displayName(user: { fullName: string | null; email: string }) {
   return user.fullName || user.email;
 }
 
+export async function loadGroup360Bundle(input: { groupId: string; tabRaw: string | string[] | undefined; missing: "null" }): Promise<Group360Bundle | null>;
+export async function loadGroup360Bundle(input: { groupId: string; tabRaw: string | string[] | undefined }): Promise<Group360Bundle>;
 export async function loadGroup360Bundle(input: {
   groupId: string;
   tabRaw: string | string[] | undefined;
-}): Promise<Group360Bundle> {
+  missing?: "null";
+}): Promise<Group360Bundle | null> {
   const tab = parseGroup360Tab(input.tabRaw, GROUP_360_TABS);
   const now = new Date();
   const basePath = `/panel/yonetim/gruplar/${input.groupId}`;
@@ -157,6 +162,7 @@ export async function loadGroup360Bundle(input: {
       capacity: true,
       isActive: true,
       teacherId: true,
+      updatedAt: true,
       teacher: {
         select: { id: true, fullName: true, email: true, status: true },
       },
@@ -196,7 +202,10 @@ export async function loadGroup360Bundle(input: {
       },
     },
   });
-  if (!group) notFound();
+  if (!group) {
+    if (input.missing === "null") return null;
+    notFound();
+  }
 
   const [upcomingLessons, lastCompleted, plannedWindow, targetGroupsRaw, conflicts] =
     await Promise.all([
@@ -441,6 +450,7 @@ export async function loadGroup360Bundle(input: {
   }
 
   return {
+    revision: groupRevision(group),
     basePath,
     tab,
     tabs: GROUP_360_TABS,

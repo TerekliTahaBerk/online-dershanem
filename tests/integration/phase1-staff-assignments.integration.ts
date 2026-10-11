@@ -204,6 +204,7 @@ integration("shadow eski kararı döndürür; enforce atamaları uygular; ADMIN 
   assert.equal(await hasStaffPermission(publisher.id, "odk:result:release"), false);
   assert.equal(await hasStaffPermission(admin.id, "odk:result:release"), true, "ADMIN her zaman yayınlar");
   assert.deepEqual(await staffAccessibleProducts(admin.id, "ADMIN"), ["OD", "OK", "ODK"]);
+  assert.deepEqual(await staffAccessibleProducts(admin.id, "TEACHER"), ["OD", "OK", "ODK"], "P2.9: teacher workspace retains real ADMIN access in enforce mode");
   assert.equal(await userRequiresMfa(admin.id, "ADMIN"), true, "ADMIN hassas işlemlerde MFA kullanmayı sürdürür");
   assert.equal(await userRequiresLoginMfa(admin.id, "ADMIN"), false, "ADMIN girişinde MFA zorunlu değildir");
 });

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
+import { readAdminOverlayTransport } from "@/lib/auth/admin-overlay";
 import { cookies } from "next/headers";
 import { rolePath } from "@/lib/auth/roles";
 import type { SessionUser } from "@/lib/auth/session";
@@ -48,7 +49,9 @@ export type ResolvedAdminPreview = {
  */
 export const getResolvedAdminPreview = cache(async (actor: SessionUser): Promise<ResolvedAdminPreview | null> => {
   if (!canUseAdminPanelPreview(actor)) return null;
-  const context = await readAdminPreviewCookie();
+  const transport = await readAdminOverlayTransport(actor);
+  const context = transport.kind === "web" ? await readAdminPreviewCookie()
+    : toPreviewContext(transport.kind === "preview" ? transport.payload : null);
   if (!context.enabled) return null;
   if (context.startedByAdminId !== actor.userId) return null;
 
@@ -62,7 +65,7 @@ export const getResolvedAdminPreview = cache(async (actor: SessionUser): Promise
 });
 
 export type StartAdminPreviewResult =
-  | { ok: true; homePath: string; context: Extract<PanelPreviewContext, { enabled: true }> }
+  | { ok: true; homePath: string; context: Extract<PanelPreviewContext, { enabled: true }>; token?: string }
   | { ok: false; error: PreviewResolutionError | "FORBIDDEN" | "NOT_ADMIN" };
 
 export async function startAdminPreview(input: {
@@ -70,6 +73,7 @@ export async function startAdminPreview(input: {
   previewRole: PreviewableRole;
   previewUserId: string;
   returnPath?: string | null;
+  bearer?: boolean;
 }): Promise<StartAdminPreviewResult> {
   if (!canUseAdminPanelPreview(input.actor)) {
     return { ok: false, error: "NOT_ADMIN" };
@@ -86,6 +90,7 @@ export async function startAdminPreview(input: {
   const returnPath = sanitizePreviewReturnPath(input.returnPath);
   const payload: PreviewCookiePayload = {
     v: 1,
+    ...(input.bearer ? { sessionId: input.actor.sessionId } : {}),
     previewRole: input.previewRole,
     previewUserId: resolved.subject.userId,
     startedByAdminId: input.actor.userId,
@@ -94,16 +99,18 @@ export async function startAdminPreview(input: {
     exp,
   };
 
-  const store = await cookies();
-  // Öğretmen çalışma modu ile View As çakışmasın.
-  store.delete(ADMIN_TEACHER_MODE_COOKIE);
-  store.set(ADMIN_PREVIEW_COOKIE, encodeAdminPreviewCookie(payload), {
-    httpOnly: true,
-    secure: SECURE_COOKIE,
-    sameSite: "lax",
-    path: "/",
-    expires: new Date(exp),
-  });
+  if (!input.bearer) {
+    const store = await cookies();
+    // Öğretmen çalışma modu ile View As çakışmasın.
+    store.delete(ADMIN_TEACHER_MODE_COOKIE);
+    store.set(ADMIN_PREVIEW_COOKIE, encodeAdminPreviewCookie(payload), {
+      httpOnly: true,
+      secure: SECURE_COOKIE,
+      sameSite: "lax",
+      path: "/",
+      expires: new Date(exp),
+    });
+  }
 
   await logAudit({
     actorUserId: input.actor.userId,
@@ -120,7 +127,7 @@ export async function startAdminPreview(input: {
   });
 
   const context = toPreviewContext(payload) as Extract<PanelPreviewContext, { enabled: true }>;
-  return { ok: true, homePath: rolePath(input.previewRole), context };
+  return { ok: true, homePath: rolePath(input.previewRole), context, ...(input.bearer ? { token: encodeAdminPreviewCookie(payload) } : {}) };
 }
 
 export type EndAdminPreviewResult = {
@@ -129,9 +136,10 @@ export type EndAdminPreviewResult = {
 };
 
 export async function endAdminPreview(actor: SessionUser): Promise<EndAdminPreviewResult> {
-  const current = await readAdminPreviewCookie();
-  const store = await cookies();
-  store.delete(ADMIN_PREVIEW_COOKIE);
+  const transport = await readAdminOverlayTransport(actor);
+  const current = transport.kind === "web" ? await readAdminPreviewCookie()
+    : toPreviewContext(transport.kind === "preview" ? transport.payload : null);
+  if (transport.kind === "web") (await cookies()).delete(ADMIN_PREVIEW_COOKIE);
 
   if (current.enabled && current.startedByAdminId === actor.userId) {
     await logAudit({

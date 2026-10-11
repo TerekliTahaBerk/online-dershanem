@@ -122,3 +122,25 @@ describe('API istemcisi', () => {
     await expect(api.request('/api/x')).rejects.toMatchObject({ kind: 'unavailable' });
   });
 });
+
+
+describe('Admin overlay transport', () => {
+  it('sends tokens only on authenticated reads; preview writes never reach fetch', async () => {
+    const fetchImpl = jest.fn(async (_url: string | URL | Request, _init?: RequestInit) => response(200, '{}'));
+    const api = createApiClient({ baseUrl: 'https://panel.example.test', appVersion: null, userAgent: 'test', getToken: () => 'actor', getOverlayHeaders: () => ({ 'X-Od-Preview': 'preview', 'X-Od-Workspace': 'OD' }), fetchImpl });
+    await api.request('/api/panel/me');
+    expect(fetchImpl.mock.calls[0][1]!.headers).toMatchObject({ Authorization: 'Bearer actor', 'X-Od-Preview': 'preview' });
+    await expect(api.request('/api/panel/users', { method: 'POST', body: {} })).rejects.toMatchObject({ code: 'ADMIN_PREVIEW_READONLY' });
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    await api.request('/api/auth/login', { authenticated: false, method: 'POST', body: {} });
+    expect((fetchImpl.mock.calls[1][1]!.headers as Record<string, string>)['X-Od-Preview']).toBeUndefined();
+    await api.request('/api/panel/admin-preview', { method: 'DELETE' });
+    expect(api.authHeaders()).toMatchObject({ 'X-Od-Preview': 'preview' });
+  });
+  it('teacher workspace permits writes with the administrator Bearer', async () => {
+    const fetchImpl = jest.fn(async (_url: string | URL | Request, _init?: RequestInit) => response(200, '{}'));
+    const api = createApiClient({ baseUrl: 'https://panel.example.test', appVersion: null, userAgent: 'test', getToken: () => 'admin', getOverlayHeaders: () => ({ 'X-Od-Teacher-Mode': 'teacher' }), fetchImpl });
+    await api.request('/api/panel/lessons/id/notes', { method: 'PUT', body: {} });
+    expect(fetchImpl.mock.calls[0][1]!.headers).toMatchObject({ Authorization: 'Bearer admin', 'X-Od-Teacher-Mode': 'teacher' });
+  });
+});

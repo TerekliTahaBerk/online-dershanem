@@ -21,6 +21,7 @@ import {
 import { isPreviewableRole } from "@/lib/panel/preview-context";
 import { hasStaffPermission, userRequiresLoginMfa, userRequiresMfa } from "@/lib/products/staff-permissions";
 import { staffPermissionProduct } from "@/lib/products/staff-mode";
+import { readAdminOverlayTransport } from "@/lib/auth/admin-overlay";
 import type { StaffPermission } from "@/lib/products/staff-permission-matrix";
 
 /**
@@ -42,7 +43,7 @@ export type ApiAuth =
   | { ok: true; session: SessionUser }
   | { ok: false; response: NextResponse };
 
-async function requireApiAuthorizedRole(roles: UserRole[], requireMfa = true): Promise<ApiAuth> {
+async function requireApiAuthorizedRole(roles: UserRole[], requireMfa = true, actorOnly = false): Promise<ApiAuth> {
   if (!PANEL_ENABLED) {
     return {
       ok: false,
@@ -63,6 +64,9 @@ async function requireApiAuthorizedRole(roles: UserRole[], requireMfa = true): P
     };
   }
 
+  const overlay = await readAdminOverlayTransport(session);
+  if (overlay.kind === "invalid") return invalidOverlay();
+
   // Geçici parolasını değiştirmemiş kullanıcı hiçbir iş yapamaz.
   if (session.mustChangePassword) {
     return {
@@ -78,6 +82,21 @@ async function requireApiAuthorizedRole(roles: UserRole[], requireMfa = true): P
   // Hassas yönetici mutasyonları requireApiRecentAdminStepUp ile ayrıca korunur.
   if (requireMfa && !session.mfaVerifiedAt && (await userRequiresLoginMfa(session.userId, session.role))) {
     return { ok: false, response: NextResponse.json({ error: "Bu hesap için ikinci faktörü doğrulayın.", code: "MFA_REQUIRED", redirect: "/giris/mfa" }, { status: 403 }) };
+  }
+
+  // Mobile overlays take precedence over broad [ADMIN, TEACHER, ...] guards.
+  // Explicit actor guards are reserved for real-actor actions (mode controls).
+  if (!actorOnly && overlay.kind === "preview") {
+    const preview = await getResolvedAdminPreview(session);
+    if (!preview) return invalidOverlay();
+    if (roles.includes(preview.subject.role)) {
+      return { ok: true, session: { ...session, ...toEffectivePreviewSession(session, preview.subject) } };
+    }
+    return { ok: false, response: NextResponse.json({ error: "Yönetici önizlemesinde bu bölüme erişilemez.", code: "ADMIN_PREVIEW_READONLY" }, { status: 403, headers: { "Cache-Control": "no-store, private" } }) };
+  }
+  if (!actorOnly && overlay.kind === "teacher") {
+    if (roles.includes("TEACHER")) return { ok: true, session: toAdminTeacherModeSession(session) };
+    return { ok: false, response: NextResponse.json({ error: "Bu bölüm öğretmen çalışma modunda açık değil.", code: "FORBIDDEN" }, { status: 403 }) };
   }
 
   if (roles.includes(session.role)) {
@@ -105,9 +124,16 @@ async function requireApiAuthorizedRole(roles: UserRole[], requireMfa = true): P
   };
 }
 
+function invalidOverlay(): ApiAuth {
+  return { ok: false, response: NextResponse.json(
+    { error: "Panel modu sona erdi veya geçersiz. Yönetim paneline dönün.", code: "ADMIN_OVERLAY_INVALID" },
+    { status: 403, headers: { "Cache-Control": "no-store, private" } },
+  ) };
+}
+
 /** Mutation API'lerinde gerçek ADMIN oturumunu (preview overlay'siz) almak için. */
 export async function requireApiActorSession(...roles: UserRole[]): Promise<ApiAuth> {
-  const auth = await requireApiAuthorizedRole(roles);
+  const auth = await requireApiAuthorizedRole(roles, true, true);
   if (!auth.ok) return auth;
   const actor = await getSession();
   if (!actor) {
@@ -163,6 +189,8 @@ export async function requireApiSessionBeforeGates(): Promise<ApiAuth> {
       ),
     };
   }
+  const overlay = await readAdminOverlayTransport(session);
+  if (overlay.kind === "invalid" || (overlay.kind === "preview" && !(await getResolvedAdminPreview(session)))) return invalidOverlay();
   return { ok: true, session };
 }
 

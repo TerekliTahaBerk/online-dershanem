@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireApiAccountRole } from "@/lib/auth/api-guards";
+import { requireApiActorSession } from "@/lib/auth/api-guards";
 import {
   canUseAdminTeacherMode,
   endAdminTeacherMode,
@@ -10,7 +10,7 @@ import { guardMutation, mutationGuardResponse } from "@/lib/security/mutation-gu
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const auth = await requireApiAccountRole("ADMIN");
+  const auth = await requireApiActorSession("ADMIN");
   if (!auth.ok) return auth.response;
   if (!canUseAdminTeacherMode(auth.session)) {
     return NextResponse.json({ error: "Yalnız yöneticiler öğretmen çalışma moduna geçebilir." }, { status: 403 });
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   });
   if (!guard.ok) return mutationGuardResponse(guard);
 
-  const result = await startAdminTeacherMode(auth.session);
+  const result = await startAdminTeacherMode(auth.session, /^Bearer\s+/i.test(request.headers.get("authorization") ?? ""));
   if (!result.ok) {
     return NextResponse.json(
       {
@@ -40,13 +40,13 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json(
-    { ok: true, homePath: result.homePath },
+    { ok: true, homePath: result.homePath, ...(result.token ? { token: result.token, expiresAt: result.expiresAt } : {}) },
     { headers: { "Cache-Control": "no-store" } },
   );
 }
 
 export async function DELETE(request: Request) {
-  const auth = await requireApiAccountRole("ADMIN");
+  const auth = await requireApiActorSession("ADMIN");
   if (!auth.ok) return auth.response;
 
   const guard = await guardMutation({

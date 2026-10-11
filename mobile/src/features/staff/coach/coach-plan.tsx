@@ -79,7 +79,7 @@ function Body({ data, refetch }: { data: MobileCoachPlanDetail; refetch: () => P
       <PageHeader title={data.studentName} description={`${formatDayMonth(data.weekStart)} haftası`} context={<StatusBadge label={data.statusLabel} tone={data.status === 'APPROVED' ? 'success' : 'warning'} />} />
       <OfflineWriteNotice online={online} />
       <WriteBanner state={state} webPath="/panel/ogretmen/plan" />
-      {data.canApprove ? <Button label="Planı onayla" disabled={busy || !online} loading={approve.isPending} onPress={() => void confirmApprove()} testID="coach-plan-approve" /> : null}
+      {data.canApprove ? <Button mutation label="Planı onayla" disabled={busy || !online} loading={approve.isPending} onPress={() => void confirmApprove()} testID="coach-plan-approve" /> : null}
       <Section title="Görevler" first>
         {data.tasks.length ? (
           data.tasks.map((task) => (
@@ -101,7 +101,7 @@ function Body({ data, refetch }: { data: MobileCoachPlanDetail; refetch: () => P
           <View style={staffStyles.gap}>
             <DateTimeField label="Yeni gün" mode="date" value={moving.at} minimumDate={weekStart} maximumDate={weekEnd} onChange={(at) => setMoving({ ...moving, at })} />
             <Text tone="muted" variant="meta">Yalnız plan haftası içindeki günler seçilebilir.</Text>
-            <Button label="Taşı" disabled={busy || !online} loading={move.isPending} onPress={() => void confirmMove()} />
+            <Button mutation label="Taşı" disabled={busy || !online} loading={move.isPending} onPress={() => void confirmMove()} />
           </View>
         ) : null}
       </BottomSheet>

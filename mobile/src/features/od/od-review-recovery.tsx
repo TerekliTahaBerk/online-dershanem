@@ -141,11 +141,11 @@ function ReviewItem({ item }: { item: Extract<MobileReviewQueue, { state: 'READY
       <View style={styles.choices}>
         {REVIEW_CHOICES.map((choice) => (
           <View key={choice.value} style={styles.choice}>
-            <Button testID={`review-${item.id}-${choice.value}`} label={choice.label} variant="secondary" disabled={busy} loading={respond.isPending && respond.variables?.response === choice.value} onPress={() => void answer(choice.value)} />
+            <Button mutation testID={`review-${item.id}-${choice.value}`} label={choice.label} variant="secondary" disabled={busy} loading={respond.isPending && respond.variables?.response === choice.value} onPress={() => void answer(choice.value)} />
           </View>
         ))}
       </View>
-      <Button testID={`review-${item.id}-defer`} label="Yarına ertele" variant="quiet" disabled={busy} onPress={() => void postpone()} />
+      <Button mutation testID={`review-${item.id}-defer`} label="Yarına ertele" variant="quiet" disabled={busy} onPress={() => void postpone()} />
     </View>
   );
 }
@@ -236,7 +236,7 @@ function RecoveryPackage({ item, highlighted }: { item: RecoveryPackageRow; high
                 ) : null}
                 {assignmentsHref ? <Button label="Çalışmalara git" variant="secondary" onPress={() => nav.push(assignmentsHref)} /> : null}
                 {!step.completed && !done ? (
-                  <Button testID={`recovery-step-${step.id}`} label="Tamamladım" disabled={busy} loading={completeItem.isPending && completeItem.variables === step.id} onPress={() => void run(() => completeItem.mutateAsync(step.id), (result) => (result.completed ? 'Telafi tamamlandı.' : 'Adım tamamlandı olarak kaydedildi.'))} />
+                  <Button mutation testID={`recovery-step-${step.id}`} label="Tamamladım" disabled={busy} loading={completeItem.isPending && completeItem.variables === step.id} onPress={() => void run(() => completeItem.mutateAsync(step.id), (result) => (result.completed ? 'Telafi tamamlandı.' : 'Adım tamamlandı olarak kaydedildi.'))} />
                 ) : null}
               </View>
             </View>
@@ -249,7 +249,7 @@ function RecoveryPackage({ item, highlighted }: { item: RecoveryPackageRow; high
         {!done ? (
           <View style={styles.choices}>
             {RECOVERY_CHECKPOINT_RESPONSES.map((response) => (
-              <Button
+              <Button mutation
                 key={response}
                 testID={`recovery-${item.id}-${response}`}
                 label={CHECKPOINT_LABEL[response]}

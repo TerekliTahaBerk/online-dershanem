@@ -5,6 +5,7 @@ import { ActivityIndicator, Pressable, StyleSheet, TextInput, View, useWindowDim
 import { useDesign } from '../theme';
 import { auth, color, font, radius, space, tone as toneColor, touchTarget, type Tone } from '../tokens';
 import { Text } from './text';
+import { usePreviewReadOnly } from '@/lib/auth/preview-context';
 
 type ButtonVariant = 'primary' | 'auth' | 'secondary' | 'quiet' | 'destructive';
 
@@ -17,10 +18,14 @@ type ButtonProps = {
   accessibilityHint?: string;
   testID?: string;
   leading?: ReactNode;
+  /** Writes disappear during admin View As; navigation stays available. */
+  mutation?: boolean;
 };
 
 /** 44pt minimum dokunma hedefi; birincil dolgu ürün bağımsız web paneliyle aynı koyu nötr renktir. */
-export function Button({ label, onPress, variant = 'primary', loading = false, disabled = false, accessibilityHint, testID, leading }: ButtonProps) {
+export function Button({ label, onPress, variant = 'primary', loading = false, disabled = false, accessibilityHint, testID, leading, mutation = false }: ButtonProps) {
+  const readOnly = usePreviewReadOnly();
+  if (readOnly && mutation) return null;
   const inactive = disabled || loading;
   return (
     <Pressable

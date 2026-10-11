@@ -39,6 +39,7 @@ import {
 } from "@/lib/security/rate-limit";
 import { getSession } from "@/lib/auth/session";
 import { getResolvedAdminPreview } from "@/lib/auth/admin-preview";
+import { readAdminOverlayTransport } from "@/lib/auth/admin-overlay";
 import { logAudit } from "@/lib/audit";
 
 export type MutationGuardOpts = {
@@ -86,6 +87,11 @@ export async function guardMutation(
   if (!opts.allowAdminPreviewWrite) {
     const actor = await getSession();
     if (actor?.role === "ADMIN") {
+      // Even a stale/invalid header cannot silently turn into an ADMIN write.
+      const transport = await readAdminOverlayTransport(actor);
+      if (transport.kind === "invalid") {
+        return { ok: false, code: "ADMIN_PREVIEW_READONLY", message: "Yönetici önizlemesinde işlem yapılamaz." };
+      }
       const preview = await getResolvedAdminPreview(actor);
       if (preview) {
         await logAudit({

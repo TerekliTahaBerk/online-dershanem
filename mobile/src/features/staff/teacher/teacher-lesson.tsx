@@ -171,7 +171,7 @@ function LessonWorkspace({ lesson, refetch }: { lesson: MobileTeacherLessonDetai
           ) : (
             <EmptyState title="Bu grupta aktif kayıtlı öğrenci yok" />
           )}
-          <Button label="Yoklamayı taslak olarak kaydet" variant="secondary" disabled={mutation.isPending || !online} loading={mutation.isPending} onPress={() => void submit(false)} testID="lesson-save-draft" />
+          <Button mutation label="Yoklamayı taslak olarak kaydet" variant="secondary" disabled={mutation.isPending || !online} loading={mutation.isPending} onPress={() => void submit(false)} testID="lesson-save-draft" />
         </Section>
       ) : null}
 
@@ -230,8 +230,8 @@ function LessonWorkspace({ lesson, refetch }: { lesson: MobileTeacherLessonDetai
           ) : null}
           <Banner tone="info">Derse bağlı ödev taslağı oluşturma web panelinde kalır.</Banner>
           <View style={staffStyles.gap}>
-            <Button label={lesson.status === 'COMPLETED' ? 'Kapanışı güncelle' : 'Dersi kapat'} disabled={mutation.isPending || !online} loading={mutation.isPending} onPress={() => void submit(true)} testID="lesson-close" />
-            <Button label="Taslak olarak kaydet" variant="secondary" disabled={mutation.isPending || !online} onPress={() => void submit(false)} />
+            <Button mutation label={lesson.status === 'COMPLETED' ? 'Kapanışı güncelle' : 'Dersi kapat'} disabled={mutation.isPending || !online} loading={mutation.isPending} onPress={() => void submit(true)} testID="lesson-close" />
+            <Button mutation label="Taslak olarak kaydet" variant="secondary" disabled={mutation.isPending || !online} onPress={() => void submit(false)} />
           </View>
         </>
       ) : null}

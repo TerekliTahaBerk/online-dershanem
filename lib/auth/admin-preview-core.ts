@@ -27,6 +27,8 @@ export const ADMIN_PREVIEW_TTL_MS = 2 * 60 * 60_000;
 
 export type PreviewCookiePayload = {
   v: 1;
+  /** Yalnız Bearer taşıması: belirteç tek oturuma bağlıdır. */
+  sessionId?: string;
   previewRole: PreviewableRole;
   previewUserId: string;
   startedByAdminId: string;

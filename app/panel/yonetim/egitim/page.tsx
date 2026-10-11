@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { loadEducationManagement } from "@/lib/panel/education-management-server";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { AdminLearningForms } from "@/components/panel/admin-learning-forms";
@@ -9,7 +9,6 @@ import { EducationManagement } from "@/components/panel/education-management";
 import { TeacherAssignmentManager } from "@/components/panel/teacher-assignment-manager";
 import { AdminSetupWizard } from "@/components/panel/admin-setup-wizard";
 import { TeacherMaterialManager } from "@/components/panel/teacher-material-manager";
-import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { summarizeGroupAssignment } from "@/lib/panel/assignment-display";
 import {
   PanelTable,
@@ -45,93 +44,8 @@ export default async function EducationAdminPage({
   const tab: EducationTab = EDUCATION_TABS.some((item) => item.id === requestedTab)
     ? (requestedTab as EducationTab)
     : "gruplar";
-  const featureFlags = getPanelFeatureFlags();
-  const [
-    teachersRaw,
-    studentsRaw,
-    parentsRaw,
-    groupsRaw,
-    lessons,
-    assignments,
-    materials,
-    outcomes,
-  ] = await Promise.all([
-    prisma.user.findMany({
-      where: { role: "TEACHER", status: "ACTIVE" },
-      orderBy: { fullName: "asc" },
-      select: { id: true, fullName: true, email: true },
-    }),
-    prisma.studentProfile.findMany({
-      where: { user: { status: "ACTIVE" } },
-      orderBy: { user: { fullName: "asc" } },
-      include: { user: { select: { fullName: true, email: true } } },
-    }),
-    prisma.user.findMany({
-      where: { role: "PARENT", status: "ACTIVE" },
-      orderBy: { fullName: "asc" },
-      select: { id: true, fullName: true, email: true },
-    }),
-    prisma.group.findMany({
-      orderBy: [{ isActive: "desc" }, { name: "asc" }],
-      include: {
-        teacher: { select: { id: true, fullName: true, email: true } },
-        enrollments: {
-          where: { endedAt: null },
-          include: {
-            student: {
-              include: { user: { select: { fullName: true, email: true } } },
-            },
-          },
-        },
-      },
-    }),
-    prisma.lesson.findMany({
-      where: { startsAt: { gte: new Date(Date.now() - 7 * 86400000) } },
-      orderBy: { startsAt: "asc" },
-      take: 24,
-      include: {
-        group: { select: { name: true } },
-        teacher: { select: { fullName: true, email: true } },
-      },
-    }),
-    prisma.assignment.findMany({
-      orderBy: { dueAt: "desc" },
-      take: 40,
-      include: {
-        group: { select: { name: true } },
-        progress: true,
-        outcomeLinks: { include: { outcome: { select: { code: true } } } },
-      },
-    }),
-    prisma.learningMaterial.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 60,
-      include: { group: { select: { name: true } } },
-    }),
-    featureFlags.learningOutcomes
-      ? prisma.learningOutcome.findMany({
-          where: {
-            isActive: true,
-            unit: { subject: { version: { status: "ACTIVE" } } },
-          },
-          orderBy: [
-            { favorites: { _count: "desc" } },
-            { assignments: { _count: "desc" } },
-            { updatedAt: "desc" },
-            { code: "asc" },
-          ],
-          take: 15,
-          include: {
-            unit: { include: { subject: true } },
-            skills: { include: { skill: true } },
-            favorites: { where: { userId: session.userId } },
-            assignments: { where: { linkedById: session.userId }, take: 1 },
-          },
-        })
-      : Promise.resolve([]),
-  ]);
-  const name = (item: { fullName: string | null; email: string }) =>
-    item.fullName || item.email;
+  const { featureFlags, teachersRaw, studentsRaw, parentsRaw, groupsRaw, lessons, assignments, materials, outcomes } = await loadEducationManagement(session.userId);
+  const name = (item: { fullName: string | null; email: string }) => item.fullName || item.email;
 
   /*
    * GRUP GENEL BAKIŞI — onaylı tasarım (Panel.dc.html → agroups).

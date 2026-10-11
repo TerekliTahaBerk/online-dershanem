@@ -187,6 +187,8 @@ const ADMIN_PEOPLE_SCREENS: Record<string, string> = {
 export function mapAdminWebPath(href: string | null | undefined, navigation: Navigation | null): NativeTarget {
   const path = normalizeWebPath(href);
   if (!path || !navigation) return { kind: 'none' };
+  const group = /^\/panel\/yonetim\/gruplar\/([\w-]{1,64})$/.exec(path);
+  if (group) return navHas(navigation, 'groups') ? { kind: 'detail', href: `/admin/group/${group[1]}` } : { kind: 'none' };
   // Faz 2.2: kişi detayı native (yalnız "Kişiler" yetkili menüdeyken).
   const person = /^\/panel\/yonetim\/kullanicilar\/([\w-]{1,64})$/.exec(path);
   if (person) return navHas(navigation, 'people') ? { kind: 'detail', href: `/admin/person/${person[1]}` } : { kind: 'none' };

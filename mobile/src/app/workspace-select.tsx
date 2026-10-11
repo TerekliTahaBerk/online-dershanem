@@ -15,7 +15,7 @@ import { useSession } from '@/lib/auth/session-provider';
  * varsa kullanıcıya sorulmadan o ürün seçilir — yine sunucu üzerinden.
  */
 export default function WorkspaceSelectScreen() {
-  const { state, selectWorkspace, signOut } = useSession();
+  const { state, selectWorkspace, signOut, exitAdminOverlay } = useSession();
   const [pending, setPending] = useState<MobileProductCode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const autoTried = useRef<MobileProductCode | null>(null);
@@ -76,6 +76,7 @@ export default function WorkspaceSelectScreen() {
           );
         })}
       </Section>
+      {bootstrap?.adminOverlay ? <><Text>{bootstrap.adminOverlay.mode === 'PREVIEW' ? 'Önizleme · Salt okunur' : 'Öğretmen çalışma modu'}</Text><Button label="Yönetim paneline dön" onPress={() => void exitAdminOverlay().catch(() => undefined)} /></> : null}
       <Button label="Çıkış yap" variant="quiet" onPress={() => void signOut()} />
     </Screen>
   );
