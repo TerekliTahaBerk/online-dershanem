@@ -105,7 +105,7 @@ P1 tamamlanmadan hiçbir yönetim yazma işlemi açılmaz. P2–P5 P1'den sonra 
 
 **Amaç.** `/panel/yonetim/**` (28 rota) ve İşletme bölümlerinin tüm okuma ve yazma işlemlerini native yapmak. Her alan önce salt-okuma, sonra yazma olarak iki PR'da açılır.
 
-> **Durum (11 Ekim 2026):** **2.1 Operasyon tamamlandı.** **2.2 Kişiler ve erişim: çekirdek tamamlandı** (dizin, kişi oluşturma, MFA sıfırlama kuyruğu, kişi detayı 6 sekme ve hesap / erişim / sorumluluk / güvenlik yazmaları). 2.2'de kalan: Yeni kayıtlar (`basvurular`), öğrenci detayı (`ogrenciler/[id]`), veli ilişki düzenleme (`veliler`), eğitmen listesi, öğretmen offboarding + arşiv etkisi, kalıcı silme, erişilebilirlik uyarlaması, branş bağlantısı.
+> **Durum (11 Ekim 2026):** **2.1 Operasyon tamamlandı.** **2.2 Kişiler ve erişim tamamlandı:** dizin (Öğrenciler görünümü + erişim bekleyen sayısı), kişi oluşturma, MFA sıfırlama kuyruğu, kişi detayı (6 sekme; kayıt profili kartı, akademik düzenleme, arşiv etkisi önizlemesi, öğretmen güvenli devri, kalıcı silme, branş bağlantısı), Yeni kayıtlar (iletişim takibi, çocuk hesabı), Veliler (bağlantı kur / düzenle / kaldır, geçmiş), Öğretmen doluluğu ve Öğrenci 360 (tüm sekmeler, veli / branş bağlantısı, koç ata / devret, erişim açmayı yeniden dene). `assignCoach` ve `retryOrderProvisioning` Server Action'ları `lib/panel/*-service.ts` servislerine çıkarıldı; web eylemi ve mobil uç aynı servisi çağırır. Matris: Tam 46 · Kısmi 15 · Eksik 38.
 >
 > | Alan | Web | Sunucu | Mobil | Not |
 > | --- | --- | --- | --- | --- |
