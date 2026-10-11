@@ -1,6 +1,4 @@
 import Link from "next/link";
-import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
@@ -17,9 +15,11 @@ import { StudentParentLinkForm } from "@/components/panel/student-parent-link-fo
 import { RelationshipRemoveButton } from "@/components/panel/relationship-remove-button";
 import { RelationshipUpdateForm } from "@/components/panel/relationship-update-form";
 
+import { loadParentsPage, PARENT_STATUS_FILTERS, PARENTS_PAGE_SIZE } from "@/lib/panel/parents-server";
+
 export const dynamic = "force-dynamic";
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = PARENTS_PAGE_SIZE;
 const DATE_TIME = new Intl.DateTimeFormat("tr-TR", {
   day: "numeric",
   month: "short",
@@ -29,14 +29,7 @@ const DATE_TIME = new Intl.DateTimeFormat("tr-TR", {
   timeZone: "Europe/Istanbul",
 });
 
-const STATUS_FILTERS: { value: string; label: string }[] = [
-  { value: "", label: "Tümü" },
-  { value: "baglantisiz", label: "Öğrenci bağlantısı yok" },
-  { value: "davet", label: "Davet bekliyor" },
-  { value: "askida", label: "Askıda" },
-  { value: "arsiv", label: "Arşivde" },
-  { value: "parola", label: "Parola bekliyor" },
-];
+const STATUS_FILTERS = PARENT_STATUS_FILTERS;
 
 function chipHref(
   base: Record<string, string>,
@@ -81,111 +74,8 @@ export default async function ParentsPage({
 }) {
   const session = await requireRole("ADMIN");
   const sp = await searchParams;
-
-  const q = (sp.q ?? "").trim();
-  const durum = STATUS_FILTERS.some((s) => s.value === sp.durum)
-    ? (sp.durum ?? "")
-    : "";
-  const page = Math.max(1, Number.parseInt(sp.sayfa ?? "1", 10) || 1);
+  const { q, durum, page, total, parents, withoutRelationshipCount, activeRelationships, relationshipHistory, studentOptions, parentOptions } = await loadParentsPage(sp);
   const base = { q, durum };
-
-  const where: Prisma.UserWhereInput = {
-    role: "PARENT",
-    ...(q
-      ? {
-          OR: [
-            { fullName: { contains: q, mode: "insensitive" as const } },
-            { email: { contains: q, mode: "insensitive" as const } },
-            { phone: { contains: q } },
-          ],
-        }
-      : {}),
-    ...(durum === "askida" ? { status: "SUSPENDED" as const } : {}),
-    ...(durum === "arsiv" ? { status: "ARCHIVED" as const } : {}),
-    ...(durum === "davet" ? { inviteAcceptedAt: null } : {}),
-    ...(durum === "parola"
-      ? { mustChangePassword: true, NOT: { inviteAcceptedAt: null } }
-      : {}),
-    ...(durum === "baglantisiz" ? { parentStudents: { none: {} } } : {}),
-  };
-
-  const [
-    total,
-    parents,
-    withoutRelationshipCount,
-    activeRelationships,
-    relationshipHistory,
-    studentOptions,
-    parentOptions,
-  ] = await Promise.all([
-    prisma.user.count({ where }),
-    prisma.user.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-      select: {
-        id: true,
-        email: true,
-        fullName: true,
-        phone: true,
-        status: true,
-        inviteAcceptedAt: true,
-        mustChangePassword: true,
-        parentStudents: {
-          select: {
-            relationship: true,
-            student: {
-              select: { user: { select: { fullName: true, email: true } } },
-            },
-          },
-          take: 3,
-        },
-      },
-    }),
-    prisma.user.count({
-      where: {
-        role: "PARENT",
-        parentStudents: { none: {} },
-      },
-    }),
-    prisma.parentStudent.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 80,
-      include: {
-        parent: { select: { fullName: true, email: true } },
-        student: {
-          include: { user: { select: { fullName: true, email: true } } },
-        },
-      },
-    }),
-    prisma.parentStudentHistory.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 60,
-      include: {
-        parent: { select: { fullName: true, email: true } },
-        student: {
-          include: { user: { select: { fullName: true, email: true } } },
-        },
-        actor: { select: { fullName: true, email: true } },
-      },
-    }),
-    prisma.studentProfile.findMany({
-      orderBy: { user: { fullName: "asc" } },
-      take: 300,
-      select: {
-        id: true,
-        user: { select: { fullName: true, email: true } },
-      },
-    }),
-    prisma.user.findMany({
-      where: { role: "PARENT", status: { in: ["ACTIVE", "SUSPENDED"] } },
-      orderBy: { fullName: "asc" },
-      take: 300,
-      select: { id: true, fullName: true, email: true },
-    }),
-  ]);
-
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (

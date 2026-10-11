@@ -1,9 +1,8 @@
 import { notFound } from "next/navigation";
 import { Inbox } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
-import { getInterventionInbox } from "@/lib/intervention-inbox-server";
+import { getInterventionInbox, listInterventionStudentOptions } from "@/lib/intervention-inbox-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
 import { InterventionInbox } from "@/components/panel/intervention-inbox";
@@ -23,23 +22,10 @@ export default async function AdminInterventionPage({
   const initialStudentId =
     typeof query.ogrenci === "string" ? query.ogrenci : "";
 
-  const [rows, studentsRaw] = await Promise.all([
+  const [rows, students] = await Promise.all([
     getInterventionInbox({ role: "ADMIN", userId: session.userId }),
-    prisma.studentProfile.findMany({
-      where: { user: { status: "ACTIVE" } },
-      orderBy: { user: { fullName: "asc" } },
-      take: 400,
-      select: {
-        id: true,
-        user: { select: { fullName: true, email: true } },
-      },
-    }),
+    listInterventionStudentOptions(),
   ]);
-
-  const students = studentsRaw.map((student) => ({
-    id: student.id,
-    name: student.user.fullName || student.user.email,
-  }));
   const scopedInitial = students.some(
     (student) => student.id === initialStudentId,
   )

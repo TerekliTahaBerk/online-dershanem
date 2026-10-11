@@ -68,13 +68,28 @@ export function selectActiveWorkspace(input: {
   return { activeProduct: selected, selectionRequired: selected === null && active.length > 1 };
 }
 
-/** Web navigasyon modelini mobil sözleşmeye çevirir; `href` yalnız `webPath` olur. */
-export function toMobileNavItems(items: readonly { id: string; label: string; href: string }[]): MobileNavItem[] {
-  return items.filter((item) => !/(?:^|\/)(?:checkout|paytr|odeme|odemeler|siparis|siparisler|paketler|satin-al|billing|payments?|orders?|subscriptions?)(?:\/|$)/i.test(item.href)).map((item) => ({ id: item.id, label: item.id === "account" ? "Hesap" : item.label, webPath: item.href }));
+/**
+ * Mobilde satış yok (m9-commerce-policy-review): ticaret yolları menüye
+ * girmez. İstisna yalnız YÖNETİM arka ofisidir (`backOffice`, ADMIN):
+ * sipariş / paket YÖNETİMİ satın alma değildir ve satış CTA'sı taşımaz.
+ */
+const COMMERCE_PATH = /(?:^|\/)(?:checkout|paytr|odeme|odemeler|siparis|siparisler|paketler|satin-al|billing|payments?|orders?|subscriptions?)(?:\/|$)/i;
+const BACK_OFFICE_PATH = /^\/panel\/(?:yonetim|odk\/yonetim)\/(?:siparisler|paketler)(?:\/|$)/;
+
+type NavProjectionOptions = { backOffice?: boolean };
+
+function allowedOnMobile(href: string, options: NavProjectionOptions): boolean {
+  if (!COMMERCE_PATH.test(href)) return true;
+  return Boolean(options.backOffice) && BACK_OFFICE_PATH.test(href);
 }
 
-export function toMobileNavSections(sections: readonly { id: string; title: string; items: readonly { id: string; label: string; href: string }[] }[]): MobileNavSection[] {
-  return sections.map((section) => ({ id: section.id, title: section.title, items: toMobileNavItems(section.items) }));
+/** Web navigasyon modelini mobil sözleşmeye çevirir; `href` yalnız `webPath` olur. */
+export function toMobileNavItems(items: readonly { id: string; label: string; href: string }[], options: NavProjectionOptions = {}): MobileNavItem[] {
+  return items.filter((item) => allowedOnMobile(item.href, options)).map((item) => ({ id: item.id, label: item.id === "account" ? "Hesap" : item.label, webPath: item.href }));
+}
+
+export function toMobileNavSections(sections: readonly { id: string; title: string; items: readonly { id: string; label: string; href: string }[] }[], options: NavProjectionOptions = {}): MobileNavSection[] {
+  return sections.map((section) => ({ id: section.id, title: section.title, items: toMobileNavItems(section.items, options) }));
 }
 
 export function projectBootstrap(input: {

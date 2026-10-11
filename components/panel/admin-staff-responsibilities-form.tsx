@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BadgeCheck, ShieldAlert } from "lucide-react";
+import { STAFF_PRODUCT_LABEL, STAFF_ROLE_LABEL, STAFF_ROLE_OPTIONS } from "@/lib/panel/staff-role-vocabulary";
 
 type HistoryRow = {
   id: string;
@@ -19,34 +20,9 @@ type HistoryRow = {
   lastHolder: boolean;
 };
 
-const PRODUCT_LABEL: Record<string, string> = {
-  OD: "onlinedershanem.",
-  OK: "Yön Koçluk",
-  ODK: "Deneme Ligi",
-};
-
-const ROLE_LABEL: Record<string, string> = {
-  TEACHER: "Ders öğretmeni",
-  COACH: "Yön koçu",
-  EXAM_EDITOR: "Deneme editörü",
-  EXAM_OPERATOR: "Deneme operatörü",
-  RESULT_PUBLISHER: "Sonuç yayıncısı",
-  REPORT_VIEWER: "Rapor okuyucu",
-  PRODUCT_MANAGER: "Ürün yöneticisi",
-};
-
-/** Geçerli (ürün, rol) çiftleri — sunucudaki matrisle aynı; sunucu ayrıca doğrular. */
-const OPTIONS: Array<{ product: string; role: string }> = [
-  { product: "OD", role: "TEACHER" },
-  { product: "OD", role: "PRODUCT_MANAGER" },
-  { product: "OK", role: "COACH" },
-  { product: "OK", role: "PRODUCT_MANAGER" },
-  { product: "ODK", role: "REPORT_VIEWER" },
-  { product: "ODK", role: "EXAM_EDITOR" },
-  { product: "ODK", role: "EXAM_OPERATOR" },
-  { product: "ODK", role: "RESULT_PUBLISHER" },
-  { product: "ODK", role: "PRODUCT_MANAGER" },
-];
+const PRODUCT_LABEL = STAFF_PRODUCT_LABEL;
+const ROLE_LABEL = STAFF_ROLE_LABEL;
+const OPTIONS = STAFF_ROLE_OPTIONS;
 
 const DATE = new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Istanbul" });
 

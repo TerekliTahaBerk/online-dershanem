@@ -52,3 +52,14 @@ export async function getInterventionInbox(input: { role: Extract<UserRole, "ADM
     };
   });
 }
+
+/** Elle müdahale kaydı için öğrenci seçenekleri (web formu ve mobil yönetim ucu aynı listeyi kullanır). */
+export async function listInterventionStudentOptions(): Promise<{ id: string; name: string }[]> {
+  const students = await prisma.studentProfile.findMany({
+    where: { user: { status: "ACTIVE" } },
+    orderBy: { user: { fullName: "asc" } },
+    take: 400,
+    select: { id: true, user: { select: { fullName: true, email: true } } },
+  });
+  return students.map((student) => ({ id: student.id, name: student.user.fullName || student.user.email }));
+}

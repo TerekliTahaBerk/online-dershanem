@@ -9,7 +9,8 @@
  *    OD `od:lesson:teach`, Yön `ok:coaching:write`, ODK
  *    `odk:report:read_related`) → kaynak ilişkisi (dersin `teacherId`'si,
  *    grubun öğretmeni + aktif kayıt, aktif `CoachAssignment`).
- *  - ADMIN mobil personel uçlarına GİRMEZ (web-only).
+ *  - ADMIN mobil personel uçlarına doğrudan GİRMEZ; yönetim uçları ayrıdır
+ *    (`admin.ts`, `requireAdminApi`).
  *  - Öğrenci kimlikleri `StudentProfile.id`'dir. ODK raporu için öğrenci
  *    `User.id` yalnız sunucuda çözülür.
  *  - Yazmalar MEVCUT uçlarla yapılır (ders kapanışı, rubric değerlendirme,

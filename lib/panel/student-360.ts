@@ -221,6 +221,14 @@ export type Student360RiskSummary = {
   items: Student360RiskItem[];
 };
 
+/** Yoklama etiketleri (web panelleri ve mobil öğrenci 360 aynı sözlük). */
+export const STUDENT_360_ATTENDANCE_LABELS: Record<string, string> = {
+  PRESENT: "Katıldı",
+  ABSENT: "Katılmadı",
+  LATE: "Geç",
+  EXCUSED: "İzinli",
+};
+
 export const STUDENT_360_RISK_LEVEL_LABELS: Record<Student360RiskLevel, string> = {
   none: "Risk yok",
   low: "Düşük risk",

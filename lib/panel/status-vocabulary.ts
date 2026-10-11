@@ -51,3 +51,19 @@ export const READINESS_STATUS_PRESENTATION: Record<"GO" | "GAP", StatusPresentat
 export function odkExamStatusLabel(status: OdkExamStatus): string {
   return examStatusPresentation[status].label;
 }
+
+/** Web talep formu (`LeadSubmission.intakeStatus`) durumları — web seçici ve mobil yönetim aynı etiketleri kullanır. */
+export const LEAD_INTAKE_STATUS_LABELS = {
+  NEW: "Yeni",
+  REVIEWING: "İnceleniyor",
+  CONTACTED: "Arandı",
+  ENROLLED: "Kayıt oldu",
+  ARCHIVED: "Arşiv",
+} as const;
+
+/** E-posta kuyruğu durumu (gönderilmemiş kayıtlar). */
+export const EMAIL_OUTBOX_STATUS_LABELS: Record<string, string> = { PENDING: "Bekliyor", FAILED: "Başarısız" };
+export const EMAIL_OUTBOX_DROPPED_LABEL = "Bırakıldı";
+
+/** Kritik cron durumu. */
+export const CRON_STATUS_LABELS = { healthy: "Sağlıklı", stale: "Gecikmiş", failed: "Başarısız", missing: "Kanıt yok" } as const;

@@ -1,4 +1,4 @@
-import type { MobileBootstrap, MobileProductCode, MobileProductState, MobileRole } from '@contracts/bootstrap';
+import type { MobileBootstrap, MobileProductCode, MobileProductState, MobileRole, MobileSecurityCapabilities } from '@contracts/bootstrap';
 
 type ProductStates = Partial<Record<MobileProductCode, MobileProductState>>;
 
@@ -34,6 +34,21 @@ const STUDENT_NAV: Record<MobileProductCode, { primary: [string, string, string]
   },
 };
 
+/** Sunucu `adminSections` / `mobilePrimaryNav("ADMIN")` çıktısının küçük bir kopyası. */
+const ADMIN_NAV: { primary: [string, string, string][]; sections: [string, string, string][] } = {
+  primary: [
+    ['today', 'Operasyon merkezi', '/panel/yonetim'],
+    ['operations', 'Operasyon', '/panel/yonetim/mudahale'],
+    ['provisioning', 'İşler', '/panel/yonetim/isler'],
+    ['signups', 'Yeni kayıtlar', '/panel/yonetim/basvurular'],
+  ],
+  sections: [
+    ['people', 'Kişiler', '/panel/yonetim/kisiler'],
+    ['orders', 'Siparişler', '/panel/yonetim/siparisler'],
+    ['odk-exams', 'Deneme yönetimi', '/panel/odk/yonetim/sinavlar'],
+  ],
+};
+
 const toItems = (rows: [string, string, string][]) => rows.map(([id, label, webPath]) => ({ id, label, webPath }));
 
 export function makeBootstrap(options: {
@@ -49,6 +64,10 @@ export function makeBootstrap(options: {
   flags?: Record<string, boolean>;
   /** Menüye eklenecek öğeler (sunucunun bayrakla eklediği gibi): [id, etiket, webPath]. */
   extraNav?: [string, string, string][];
+  /** ADMIN / MFA zorunlu personel güvenlik yeteneği; verilmezse ADMIN için TOTP kayıtlı varsayılır. */
+  security?: MobileSecurityCapabilities | null;
+  /** ADMIN menüsü (sunucu `adminSections` biçiminde): birincil + bölüm öğeleri. */
+  adminNav?: { primary: [string, string, string][]; sections: [string, string, string][] };
 } = {}): MobileBootstrap {
   const role = options.role ?? 'STUDENT';
   const gate = options.gate ?? 'READY';
@@ -56,7 +75,8 @@ export function makeBootstrap(options: {
   const products = (['OD', 'OK', 'ODK'] as const).map((code) => ({ code, label: LABELS[code], state: states[code] ?? 'LOCKED' }));
   const activeProduct = options.activeProduct === undefined ? (products.find((product) => product.state === 'ACTIVE')?.code ?? null) : options.activeProduct;
   const nav = activeProduct && (role === 'STUDENT' || role === 'PARENT') ? STUDENT_NAV[activeProduct] : { primary: [], sections: [] };
-  const primary = toItems(role === 'PARENT' && activeProduct ? [['today', 'Bugün', '/panel/veli'], ['lessons', 'Dersler', '/panel/veli/takvim']] : nav.primary);
+  const adminNav = role === 'ADMIN' && activeProduct ? (options.adminNav ?? ADMIN_NAV) : null;
+  const primary = toItems(adminNav ? adminNav.primary : role === 'PARENT' && activeProduct ? [['today', 'Bugün', '/panel/veli'], ['lessons', 'Dersler', '/panel/veli/takvim']] : nav.primary);
   return {
     contractVersion: 1,
     serverTime: '2026-10-08T09:00:00.000Z',
@@ -75,9 +95,12 @@ export function makeBootstrap(options: {
             products,
             activeProduct,
             selectionRequired: activeProduct === null && products.filter((product) => product.state === 'ACTIVE').length > 1,
-            navigation: { primary, sections: [{ id: 'more', title: 'DAHA FAZLA', items: toItems([...nav.sections, ...(options.extraNav ?? [])]) }] },
+            navigation: { primary, sections: [{ id: 'more', title: 'DAHA FAZLA', items: toItems([...(adminNav ? adminNav.sections : nav.sections), ...(options.extraNav ?? [])]) }] },
             flags: { assignmentEvidence: false, ...options.flags },
-            capabilities: { staffPermissions: role === 'TEACHER' ? ['od:lesson:teach'] : [] },
+            capabilities: {
+              staffPermissions: role === 'TEACHER' ? ['od:lesson:teach'] : [],
+              security: options.security !== undefined ? options.security : role === 'ADMIN' ? { mfa: { enrolled: true, totp: true, recoveryCodes: true, passkey: false }, stepUpExpiresAt: null } : null,
+            },
             parent: role === 'PARENT' ? { children: [{ studentId: 'sp-1', name: 'Can' }] } : null,
             unreadNotifications: options.unread ?? 0,
           }

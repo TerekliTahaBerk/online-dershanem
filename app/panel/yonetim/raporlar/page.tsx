@@ -12,178 +12,17 @@ import {
   UsersRound,
   WalletCards,
 } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
-import { calculatePanelSloReport } from "@/lib/panel-slo";
-import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
+import { loadAdminReports } from "@/lib/panel/admin-reports-server";
 
 export const dynamic = "force-dynamic";
 
-function formatSloValue(value: number | null, unit: "ms" | "percent" | "count") {
-  if (unit === "count" && value !== null) return value.toLocaleString("tr-TR");
-  if (value === null) return "—";
-  if (unit === "percent")
-    return `%${value.toLocaleString("tr-TR", { maximumFractionDigits: 2 })}`;
-  if (value >= 60_000)
-    return `${(value / 60_000).toLocaleString("tr-TR", { maximumFractionDigits: 1 })} dk`;
-  return `${(value / 1000).toLocaleString("tr-TR", { maximumFractionDigits: 1 })} sn`;
-}
-
 export default async function AdminReportsPage() {
   const session = await requireRole("ADMIN");
-  const since = new Date(Date.now() - 30 * 86400000);
-  const now = new Date();
-  const featureFlags = getPanelFeatureFlags();
-  const [
-    lessons,
-    groups,
-    attendance,
-    overdueAssignments,
-    pendingPayments,
-    productEvents,
-    reviewItems,
-    aiDrafts,
-  ] = await Promise.all([
-    prisma.lesson.findMany({
-      where: { startsAt: { gte: since }, status: { not: "CANCELLED" } },
-      include: {
-        teacher: { select: { id: true, fullName: true, email: true } },
-      },
-    }),
-    prisma.group.findMany({
-      where: { isActive: true },
-      orderBy: { name: "asc" },
-      include: {
-        enrollments: { where: { endedAt: null } },
-        assignments: { where: { isActive: true }, include: { progress: true } },
-      },
-    }),
-    prisma.attendance.findMany({
-      where: { createdAt: { gte: since } },
-      select: { status: true },
-    }),
-    prisma.assignment.count({
-      where: {
-        isActive: true,
-        dueAt: { lt: now },
-        progress: { some: { status: { not: "DONE" } } },
-      },
-    }),
-    prisma.odOrder.count({ where: { status: "PENDING" } }),
-    prisma.productEvent.findMany({
-      where: { occurredAt: { gte: since } },
-      select: { name: true, properties: true, occurredAt: true },
-    }),
-    featureFlags.reviewQueue
-      ? prisma.reviewItem.findMany({
-          where: { createdAt: { gte: since } },
-          select: {
-            createdAt: true,
-            attempts: {
-              select: { reviewedAt: true, response: true, stageBefore: true },
-            },
-          },
-        })
-      : Promise.resolve([]),
-    featureFlags.teacherAiDrafts
-      ? prisma.teacherAiDraft.findMany({
-          where: { createdAt: { gte: since } },
-          select: { status: true, provider: true, estimatedCostMicrousd: true },
-        })
-      : Promise.resolve([]),
-  ]);
-  const finished = lessons.filter((item) => item.status === "COMPLETED").length;
-  const present = attendance.filter(
-    (item) => item.status === "PRESENT" || item.status === "LATE",
-  ).length;
-  const noteRate = lessons.length
-    ? Math.round((finished / lessons.length) * 100)
-    : 0;
-  const attendanceRate = attendance.length
-    ? Math.round((present / attendance.length) * 100)
-    : 0;
-  const teachers = [
-    ...new Map(lessons.map((item) => [item.teacher.id, item.teacher])).values(),
-  ]
-    .map((teacher) => {
-      const rows = lessons.filter((item) => item.teacherId === teacher.id);
-      return {
-        name: teacher.fullName || teacher.email,
-        total: rows.length,
-        completed: rows.filter((item) => item.status === "COMPLETED").length,
-      };
-    })
-    .sort((a, b) => b.total - a.total);
-  const sloMetrics = calculatePanelSloReport(productEvents);
-  const sevenDayEligible = reviewItems.filter(
-    (item) => item.createdAt <= new Date(now.getTime() - 7 * 86400000),
-  );
-  const sevenDayResolved = sevenDayEligible.filter((item) =>
-    item.attempts.some(
-      (attempt) =>
-        attempt.reviewedAt <= new Date(item.createdAt.getTime() + 7 * 86400000),
-    ),
-  ).length;
-  const sevenDayRate = sevenDayEligible.length
-    ? Math.round((sevenDayResolved / sevenDayEligible.length) * 100)
-    : null;
-  const retentionAttempts = reviewItems
-    .flatMap((item) => item.attempts)
-    .filter((attempt) => attempt.stageBefore === 4);
-  const retentionCorrect = retentionAttempts.filter(
-    (attempt) => attempt.response === "CORRECT",
-  ).length;
-  const retentionRate = retentionAttempts.length
-    ? Math.round((retentionCorrect / retentionAttempts.length) * 100)
-    : null;
-  const generatedPlanTaskCount = productEvents
-    .filter((event) => event.name === "plan_generated")
-    .reduce((sum, event) => {
-      const value = event.properties as { taskCount?: unknown };
-      return sum + (typeof value.taskCount === "number" ? value.taskCount : 0);
-    }, 0);
-  const completedPlanTaskCount = productEvents.filter(
-    (event) => event.name === "plan_task_completed",
-  ).length;
-  const planCompletionRate = generatedPlanTaskCount
-    ? Math.min(
-        100,
-        Math.round((completedPlanTaskCount / generatedPlanTaskCount) * 100),
-      )
-    : null;
-  const aiReviewed = aiDrafts.filter((item) => item.status !== "DRAFT");
-  const aiApproved = aiDrafts.filter(
-    (item) => item.status === "APPROVED",
-  ).length;
-  const aiApprovalRate =
-    aiReviewed.length >= 5
-      ? Math.round((aiApproved / aiReviewed.length) * 100)
-      : null;
-  const aiFallbackRate =
-    aiDrafts.length >= 5
-      ? Math.round(
-          (aiDrafts.filter((item) => item.provider !== "OPENAI").length /
-            aiDrafts.length) *
-            100,
-        )
-      : null;
-  const aiFlagRate =
-    aiReviewed.length >= 5
-      ? Math.round(
-          (aiDrafts.filter((item) => item.status === "FLAGGED").length /
-            aiReviewed.length) *
-            100,
-        )
-      : null;
-  const aiKnownCostMicrousd = aiDrafts.reduce(
-    (sum, item) => sum + (item.estimatedCostMicrousd || 0),
-    0,
-  );
-  const aiUnknownCost = aiDrafts.some(
-    (item) => item.provider === "OPENAI" && item.estimatedCostMicrousd === null,
-  );
+  const reports = await loadAdminReports();
+  const { noteRate, attendanceRate, overdueAssignments, pendingPayments, review, plan, ai, teachers } = reports;
   return (
     <PanelShell
       role={session.role}
@@ -195,7 +34,7 @@ export default async function AdminReportsPage() {
         title="Eğitimin nabzı, sayılarla."
         description="Not yazma düzenini, katılımı ve ödev tamamlanmasını sorun büyümeden görün."
         icon={BarChart3}
-        meta={`${lessons.length} ders`}
+        meta={`${reports.lessonCount} ders`}
       />
       <div className="mt-4 flex justify-end">
         <a
@@ -226,7 +65,7 @@ export default async function AdminReportsPage() {
         <article className="panel-metric-card">
           <ClipboardCheck size={18} className="text-dc-brand-strong" />
           <p className="mt-4 text-3xl font-extrabold text-(--site-ink)">
-            {groups.reduce((sum, group) => sum + group.assignments.length, 0)}
+            {reports.activeAssignments}
           </p>
           <p className="mt-1 text-xs text-(--site-muted)">Aktif ödev</p>
         </article>
@@ -242,7 +81,7 @@ export default async function AdminReportsPage() {
         <article className="panel-metric-card">
           <UserRoundX size={18} className="text-[#8A5F37]" />
           <p className="mt-4 text-3xl font-extrabold text-(--site-ink)">
-            {groups.filter((group) => !group.enrollments.length).length}
+            {reports.emptyGroups}
           </p>
           <p className="mt-1 text-xs text-(--site-muted)">Boş grup</p>
         </article>
@@ -256,67 +95,67 @@ export default async function AdminReportsPage() {
           </p>
         </article>
       </section>
-      {featureFlags.reviewQueue ? (
+      {review ? (
         <section className="mt-5 grid gap-3 sm:grid-cols-2">
           <article className="panel-metric-card">
             <RotateCcw size={18} className="text-(--brand-olive)" />
             <p className="mt-4 text-3xl font-extrabold">
-              {sevenDayRate === null ? "—" : `%${sevenDayRate}`}
+              {review.sevenDayRate === null ? "—" : `%${review.sevenDayRate}`}
             </p>
             <p className="mt-1 text-xs text-(--site-muted)">
-              7 günde yeniden çözüm · {sevenDayEligible.length} uygun öğe ·
+              7 günde yeniden çözüm · {review.eligible} uygun öğe ·
               hedef ≥%60
             </p>
           </article>
           <article className="panel-metric-card">
             <CheckCircle2 size={18} className="text-emerald-700" />
             <p className="mt-4 text-3xl font-extrabold">
-              {retentionRate === null ? "—" : `%${retentionRate}`}
+              {review.retentionRate === null ? "—" : `%${review.retentionRate}`}
             </p>
             <p className="mt-1 text-xs text-(--site-muted)">
-              30 günlük doğru geri çağırma · {retentionAttempts.length} deneme
+              30 günlük doğru geri çağırma · {review.retentionAttempts} deneme
             </p>
           </article>
         </section>
       ) : null}
-      {featureFlags.adaptivePlan ? (
+      {plan ? (
         <section className="mt-5">
           <article className="panel-metric-card">
             <ListChecks size={18} className="text-dc-brand-strong" />
             <p className="mt-4 text-3xl font-extrabold">
-              {planCompletionRate === null ? "—" : `%${planCompletionRate}`}
+              {plan.completionRate === null ? "—" : `%${plan.completionRate}`}
             </p>
             <p className="mt-1 text-xs text-(--site-muted)">
-              Haftalık plan görevi tamamlama · {completedPlanTaskCount}/
-              {generatedPlanTaskCount} · pilot baz çizgisi
+              Haftalık plan görevi tamamlama · {plan.completed}/
+              {plan.generated} · pilot baz çizgisi
             </p>
           </article>
         </section>
       ) : null}
-      {featureFlags.teacherAiDrafts ? (
+      {ai ? (
         <section className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <article className="panel-metric-card">
             <Bot size={18} className="text-dc-brand-strong" />
             <p className="mt-4 text-3xl font-extrabold">
-              {aiApprovalRate === null ? "—" : `%${aiApprovalRate}`}
+              {ai.approvalRate === null ? "—" : `%${ai.approvalRate}`}
             </p>
             <p className="mt-1 text-xs text-(--site-muted)">
-              AI taslak onayı · {aiReviewed.length} inceleme · en az 5 örnek
+              AI taslak onayı · {ai.reviewed} inceleme · en az 5 örnek
             </p>
           </article>
           <article className="panel-metric-card">
             <Activity size={18} className="text-amber-700" />
             <p className="mt-4 text-3xl font-extrabold">
-              {aiFallbackRate === null ? "—" : `%${aiFallbackRate}`}
+              {ai.fallbackRate === null ? "—" : `%${ai.fallbackRate}`}
             </p>
             <p className="mt-1 text-xs text-(--site-muted)">
-              Güvenli fallback · {aiDrafts.length} üretim
+              Güvenli fallback · {ai.drafts} üretim
             </p>
           </article>
           <article className="panel-metric-card">
             <AlertTriangle size={18} className="text-rose-700" />
             <p className="mt-4 text-3xl font-extrabold">
-              {aiFlagRate === null ? "—" : `%${aiFlagRate}`}
+              {ai.flagRate === null ? "—" : `%${ai.flagRate}`}
             </p>
             <p className="mt-1 text-xs text-(--site-muted)">
               Doğrulanmış hata işareti · küçük örnek gizlenir
@@ -325,9 +164,9 @@ export default async function AdminReportsPage() {
           <article className="panel-metric-card">
             <WalletCards size={18} className="text-dc-ink-muted" />
             <p className="mt-4 text-3xl font-extrabold">
-              {aiUnknownCost
+              {ai.knownCostUsd === null
                 ? "Eksik"
-                : `$${(aiKnownCostMicrousd / 1_000_000).toLocaleString("tr-TR", { maximumFractionDigits: 4 })}`}
+                : `$${ai.knownCostUsd.toLocaleString("tr-TR", { maximumFractionDigits: 4 })}`}
             </p>
             <p className="mt-1 text-xs text-(--site-muted)">
               Bilinen model maliyeti · fiyat env'i yoksa rollout durur
@@ -351,7 +190,7 @@ export default async function AdminReportsPage() {
           </div>
         </div>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          {sloMetrics.map((metric) => (
+          {reports.slo.map((metric) => (
             <article
               key={metric.key}
               className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4"
@@ -359,20 +198,16 @@ export default async function AdminReportsPage() {
               <div
                 className={`inline-flex rounded-full px-2 py-1 text-[10px] font-extrabold uppercase tracking-[.06em] ${metric.status === "healthy" ? "bg-emerald-100 text-emerald-800" : metric.status === "breached" ? "bg-rose-100 text-rose-800" : "bg-slate-100 text-slate-600"}`}
               >
-                {metric.status === "healthy"
-                  ? "Hedefte"
-                  : metric.status === "breached"
-                    ? "Hedef dışı"
-                    : metric.status === "observing" ? "Baz çizgisi" : "Veri bekleniyor"}
+                {metric.statusLabel}
               </div>
               <p className="mt-4 text-2xl font-extrabold tracking-[-.04em] text-(--site-ink)">
-                {formatSloValue(metric.value, metric.unit)}
+                {metric.display}
               </p>
               <p className="mt-1 text-xs font-bold text-(--site-body)">
                 {metric.label}
               </p>
               <p className="mt-2 text-[11px] text-(--site-muted)">
-                {metric.sampleSize} örnek · {metric.target === null ? "Hedef iş kararı bekliyor" : <>{metric.comparison === "gte" ? "≥" : "≤"}{formatSloValue(metric.target, metric.unit)}</>}
+                {metric.sampleSize} örnek · {metric.targetDisplay === null ? "Hedef iş kararı bekliyor" : <>{metric.comparison === "gte" ? "≥" : "≤"}{metric.targetDisplay}</>}
               </p>
             </article>
           ))}
@@ -387,9 +222,7 @@ export default async function AdminReportsPage() {
           </div>
           <div className="divide-y divide-(--site-line)">
             {teachers.map((teacher) => {
-              const percent = teacher.total
-                ? Math.round((teacher.completed / teacher.total) * 100)
-                : 0;
+              const percent = teacher.percent;
               return (
                 <article key={teacher.name} className="p-5">
                   <div className="flex justify-between text-xs font-bold">
@@ -423,18 +256,14 @@ export default async function AdminReportsPage() {
             </h2>
           </div>
           <div className="divide-y divide-(--site-line)">
-            {groups.map((group) => {
-              const rows = group.assignments.flatMap((item) => item.progress);
-              const done = rows.filter((item) => item.status === "DONE").length;
-              const percent = rows.length
-                ? Math.round((done / rows.length) * 100)
-                : 0;
+            {reports.groups.map((group) => {
+              const percent = group.percent;
               return (
                 <article key={group.id} className="p-5">
                   <div className="flex justify-between text-xs font-bold">
                     <span>{group.name}</span>
                     <span>
-                      {group.enrollments.length} öğrenci · %{percent}
+                      {group.students} öğrenci · %{percent}
                     </span>
                   </div>
                   <div

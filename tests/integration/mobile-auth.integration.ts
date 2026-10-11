@@ -302,3 +302,43 @@ integration("M1 bootstrap: okunmamış bildirim sayısı yalnız kullanıcının
   const body = await bootstrap(await mobileToken(row.id, "STUDENT"));
   assert.equal(body.workspace?.unreadNotifications, 1);
 });
+
+/* ------------------------------------------------------------------ *
+ * Faz 1 — yönetim: güvenlik yeteneği ve yönetim menüsü
+ * ------------------------------------------------------------------ */
+
+integration("Faz 1 bootstrap: ADMIN güvenlik yeteneği (MFA yöntemleri + step-up penceresi), öğrenci null", async () => {
+  const admin = await user("ADMIN", "p1-admin");
+  const token = await mobileToken(admin.id, "ADMIN");
+  const before = await bootstrap(token, async () => false);
+  assert.equal(before.gates.status, "READY", "yönetici girişinde MFA aranmaz");
+  assert.deepEqual(before.workspace?.capabilities.security, { mfa: { enrolled: false, totp: false, recoveryCodes: false, passkey: false }, stepUpExpiresAt: null });
+
+  const session = await sessionFor(token);
+  const stepUpAt = new Date();
+  await db.session.update({ where: { id: session.sessionId }, data: { stepUpAt } });
+  const after = await bootstrap(token, async () => false);
+  const expiresAt = after.workspace?.capabilities.security?.stepUpExpiresAt;
+  assert.ok(expiresAt, "taze step-up penceresi bildirilir");
+  assert.equal(Date.parse(expiresAt) - stepUpAt.getTime(), 10 * 60 * 1000);
+
+  await db.session.update({ where: { id: session.sessionId }, data: { stepUpAt: new Date(Date.now() - 11 * 60 * 1000) } });
+  assert.equal((await bootstrap(token, async () => false)).workspace?.capabilities.security?.stepUpExpiresAt, null, "dolmuş pencere null");
+
+  const learner = await student(["OD"], "p1-student");
+  assert.equal((await bootstrap(await mobileToken(learner.user.id, "STUDENT"))).workspace?.capabilities.security, null);
+});
+
+integration("Faz 1 bootstrap: ADMIN yönetim menüsü sipariş arka ofisini içerir; öğrenci menüsünde ticaret yolu yok", async () => {
+  const admin = await user("ADMIN", "p1-admin-nav");
+  const token = await mobileToken(admin.id, "ADMIN");
+  const first = await bootstrap(token, async () => false);
+  const product = first.workspace?.products.find((entry) => entry.state === "ACTIVE")?.code;
+  assert.ok(product, "yöneticinin en az bir etkin paneli olmalı");
+  await db.session.update({ where: { id: (await sessionFor(token)).sessionId }, data: { activeProduct: product } });
+  const body = await bootstrap(token, async () => false);
+  const items = body.workspace!.navigation.sections.flatMap((section) => section.items);
+  assert.ok(items.some((item) => item.id === "today" && item.webPath === "/panel/yonetim"));
+  assert.ok(items.some((item) => item.id === "orders" && item.webPath === "/panel/yonetim/siparisler"), "sipariş yönetimi arka ofistir, satış değil");
+  assert.ok(items.every((item) => !/odeme|checkout|paytr|satin-al/.test(item.webPath)));
+});

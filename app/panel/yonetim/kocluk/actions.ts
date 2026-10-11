@@ -3,10 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { enforceMutation } from "@/lib/security/mutation-guard";
-import { logAudit } from "@/lib/audit";
+import { assignCoachService, type AssignCoachError } from "@/lib/panel/coach-assignment-service";
 import { COACHING_QUEUES, type CoachingQueue } from "./queues";
 
 /**
@@ -25,7 +24,7 @@ import { COACHING_QUEUES, type CoachingQueue } from "./queues";
  * Reddedilen istek sayfaya `?hata=<kod>` ile döner.
  */
 
-export type AssignCoachError = "student" | "coach" | "membership" | "capacity";
+export type { AssignCoachError };
 
 function fail(code: AssignCoachError): never {
   redirect(`/panel/yonetim/kocluk?hata=${code}`);
@@ -49,80 +48,8 @@ export async function assignCoach(formData: FormData) {
     })
     .parse(Object.fromEntries(formData));
 
-  const cadence = parsed.cadenceDays?.trim() ? Number(parsed.cadenceDays) : null;
-  const cadenceDays = cadence !== null && Number.isFinite(cadence) && cadence > 0 ? Math.floor(cadence) : null;
-
-  // Koçun gerçekten koç olarak işaretli ve aktif olduğunu doğrula.
-  const coach = await prisma.teacherProfile.findFirst({
-    where: { id: parsed.coachId, isCoach: true, user: { status: "ACTIVE", role: "TEACHER" } },
-    select: {
-      id: true,
-      coachCapacity: true,
-      user: { select: { fullName: true, email: true } },
-    },
-  });
-  if (!coach) fail("coach");
-  const student = await prisma.studentProfile.findUnique({
-    where: { id: parsed.studentId },
-    select: {
-      id: true,
-      user: {
-        select: {
-          fullName: true,
-          email: true,
-          productMemberships: {
-            where: {
-              product: "OK",
-              revokedAt: null,
-              OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-            },
-            select: { id: true },
-            take: 1,
-          },
-        },
-      },
-    },
-  });
-  if (!student) fail("student");
-  if (student.user.productMemberships.length === 0) fail("membership");
-
-  const overrideReason = parsed.overrideReason?.trim() || null;
-  let capacityOverride = false;
-  if (coach.coachCapacity !== null) {
-    const load = await prisma.coachAssignment.count({
-      where: { coachId: coach.id, endedAt: null, studentId: { not: student.id } },
-    });
-    if (load >= coach.coachCapacity) {
-      if (!overrideReason || overrideReason.length < 3) fail("capacity");
-      capacityOverride = true;
-    }
-  }
-
-  await prisma.$transaction(async (tx) => {
-    await tx.coachAssignment.updateMany({
-      where: { studentId: student.id, endedAt: null },
-      data: { endedAt: new Date() },
-    });
-    await tx.coachAssignment.create({
-      data: {
-        studentId: student.id,
-        coachId: coach.id,
-        cadenceDays,
-        assignedById: session.userId,
-      },
-    });
-  });
-
-  await logAudit({
-    actorUserId: session.userId,
-    entityType: "CoachAssignment",
-    entityId: student.id,
-    action: "coaching.assign",
-    summary: `${student.user.fullName || student.user.email} → koç ${coach.user.fullName || coach.user.email}`,
-    payload: capacityOverride
-      ? { coachId: coach.id, capacityOverride: true, coachCapacity: coach.coachCapacity, overrideReason }
-      : { coachId: coach.id },
-  });
+  const result = await assignCoachService({ actorUserId: session.userId, studentId: parsed.studentId, coachId: parsed.coachId, cadenceDays: parsed.cadenceDays, overrideReason: parsed.overrideReason });
+  if (!result.ok) fail(result.code);
 
   revalidatePath("/panel/yonetim/kocluk");
   revalidatePath("/panel/yonetim/ogrenciler");

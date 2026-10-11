@@ -3,7 +3,7 @@ import "server-only";
 import type { ProductCode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { SessionUser } from "@/lib/auth/session";
-import { userRequiresLoginMfa, effectiveStaffPermissions } from "@/lib/products/staff-permissions";
+import { userRequiresLoginMfa, userRequiresMfa, effectiveStaffPermissions } from "@/lib/products/staff-permissions";
 import { STAFF_PERMISSIONS, type StaffPermission } from "@/lib/products/staff-permission-matrix";
 import { staffAssignmentMode } from "@/lib/products/staff-mode";
 import { getAccessibleProducts } from "@/lib/auth/products";
@@ -14,7 +14,8 @@ import { mobilePrimaryNav, panelNavSections } from "@/lib/panel/navigation";
 import { listParentVisibleChildren } from "@/lib/panel/parent-product-policy";
 import { getResolvedAdminPreview } from "@/lib/auth/admin-preview";
 import { getResolvedAdminTeacherMode } from "@/lib/auth/admin-teacher-mode";
-import type { MobileBootstrap, MobileMfaMethods, MobileWorkspace } from "@/lib/mobile-contracts/bootstrap";
+import type { MobileBootstrap, MobileMfaMethods, MobileSecurityCapabilities, MobileWorkspace } from "@/lib/mobile-contracts/bootstrap";
+import { STEP_UP_MAX_AGE_MS, hasFreshStepUp } from "@/lib/auth/mfa-policy";
 import { bootstrapGates, projectBootstrap, selectActiveWorkspace, toMobileNavItems, toMobileNavSections } from "@/lib/mobile/bootstrap";
 
 /**
@@ -78,6 +79,17 @@ async function loadMfaMethods(userId: string): Promise<MobileMfaMethods> {
   return { enrolled: totp || passkeyCount > 0, totp, recoveryCodes: totp && recoveryCodeCount > 0, passkey: passkeyCount > 0 };
 }
 
+/**
+ * ADMIN ve MFA zorunlu personel: native step-up için kayıtlı yöntemler +
+ * mevcut step-up penceresi. Politika `userRequiresMfa`; burada icat edilmez.
+ */
+async function loadSecurityCapabilities(session: SessionUser): Promise<MobileSecurityCapabilities | null> {
+  if (session.role !== "ADMIN" && !(await userRequiresMfa(session.userId, session.role))) return null;
+  const mfa = await loadMfaMethods(session.userId);
+  const stepUpExpiresAt = session.stepUpAt && hasFreshStepUp(session.stepUpAt) ? new Date(session.stepUpAt.getTime() + STEP_UP_MAX_AGE_MS).toISOString() : null;
+  return { mfa, stepUpExpiresAt };
+}
+
 async function isAdminOverlayActive(session: SessionUser): Promise<boolean> {
   const [preview, teacherMode] = await Promise.all([getResolvedAdminPreview(session), getResolvedAdminTeacherMode(session)]);
   return Boolean(preview) || teacherMode.enabled;
@@ -94,7 +106,10 @@ async function loadWorkspace(session: SessionUser): Promise<MobileWorkspace> {
   const { activeProduct, selectionRequired } = selectActiveWorkspace({ products, sessionActiveProduct: session.activeProduct });
 
   const isStaff = session.role === "TEACHER" || session.role === "ADMIN";
-  const staffAccess = isStaff ? await effectiveStaffPermissions(session.userId) : null;
+  const [staffAccess, security] = await Promise.all([
+    isStaff ? effectiveStaffPermissions(session.userId) : Promise.resolve(null),
+    isStaff ? loadSecurityCapabilities(session) : Promise.resolve(null),
+  ]);
   const staffPermissions: StaffPermission[] = staffAccess ? (staffAccess.isAdmin ? [...STAFF_PERMISSIONS] : [...staffAccess.permissions]) : [];
   // Web kabuğu ile aynı kural (`PanelShell`): enforce modunda öğretmenin
   // Deneme Ligi menüsü personel izinlerinden kurulur.
@@ -104,10 +119,12 @@ async function loadWorkspace(session: SessionUser): Promise<MobileWorkspace> {
 
   const scope: ProductCode | null = activeProduct;
   const root = rolePath(session.role);
+  // Yönetim arka ofisi (sipariş / paket yönetimi) yalnız ADMIN menüsünde.
+  const navOptions = { backOffice: session.role === "ADMIN" };
   const navigation = scope
     ? {
-        primary: toMobileNavItems(mobilePrimaryNav(session.role, accessible, flags, root, scope, staffOdkPermissions)),
-        sections: toMobileNavSections(panelNavSections(session.role, accessible, flags, root, scope, staffOdkPermissions)),
+        primary: toMobileNavItems(mobilePrimaryNav(session.role, accessible, flags, root, scope, staffOdkPermissions), navOptions),
+        sections: toMobileNavSections(panelNavSections(session.role, accessible, flags, root, scope, staffOdkPermissions), navOptions),
       }
     : { primary: [], sections: [] };
 
@@ -121,7 +138,7 @@ async function loadWorkspace(session: SessionUser): Promise<MobileWorkspace> {
     selectionRequired,
     navigation,
     flags: { ...flags },
-    capabilities: { staffPermissions },
+    capabilities: { staffPermissions, security },
     parent,
     unreadNotifications,
   };

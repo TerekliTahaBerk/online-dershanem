@@ -13,8 +13,8 @@ import { PRIVATE_NO_STORE } from "@/lib/panel/parent-api";
  * Sıra:
  *  1. Oturum + parola / MFA kapıları + platform rolü TEACHER + ürün erişimi ve
  *     pilot (`requireApiProductRole(product, "TEACHER")`). ADMIN mobil
- *     personel uçlarına GİRMEZ (yönetim web-only; önizleme overlay'leri
- *     mobilde yazma yetkisi doğurmaz).
+ *     personel uçlarına doğrudan GİRMEZ: yönetim kendi kapısını kullanır
+ *     (`lib/panel/admin-api.ts`); önizleme overlay'i yazma yetkisi doğurmaz.
  *  2. Personel izni (`hasStaffPermission`): `STAFF_PRODUCT_ASSIGNMENTS`
  *     moduna uyar — shadow / legacy'de eski kural (her TEACHER, ilişki
  *     kontrolleri ayrıca), enforce'ta `ProductStaffAssignment`. Mod burada

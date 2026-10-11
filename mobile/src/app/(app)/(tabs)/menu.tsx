@@ -1,5 +1,5 @@
 import { useRouter, type Href } from 'expo-router';
-import { Bell, LogOut, Settings } from 'lucide-react-native';
+import { Bell, LogOut, Search, Settings } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 
 import { Row, Screen, Section, Text } from '@/design/primitives';
@@ -22,8 +22,8 @@ export default function MenuScreen() {
   const router = useRouter();
   const navigation = bootstrap.workspace?.navigation;
   const unread = bootstrap.workspace?.unreadNotifications ?? 0;
-  // M7: öğretmen de sunucu menüsünün bölümlerini görür (ADMIN yalnız web).
-  const learner = bootstrap.user.role !== 'ADMIN';
+  // M7 öğretmen, Faz 1 yönetim: herkes sunucu menüsünün bölümlerini görür.
+  const admin = bootstrap.user.role === 'ADMIN';
 
   function open(navId: string) {
     if (!navigation) return;
@@ -38,7 +38,8 @@ export default function MenuScreen() {
           <View style={styles.flex}><Text variant="bodyStrong">{bootstrap.user.fullName ?? bootstrap.user.email}</Text><Text variant="meta" tone="muted">{ROLE_LABEL[bootstrap.user.role]}</Text></View>
         </View>
         <WorkspaceSwitcher />
-        {learner && navigation
+        {admin ? <Row leading={<Search size={19} color={color.textSecondary} />} title="Ara" subtitle="Kişi, grup, ders, sipariş, deneme" onPress={() => router.push('/admin/search')} testID="menu-admin-search" /> : null}
+        {navigation
           ? navigation.sections.map((section) => (
               <Section key={section.id} title={section.title.toLocaleLowerCase('tr-TR').replace(/^\p{L}/u, (letter) => letter.toLocaleUpperCase('tr-TR'))}>
                 {section.items.map((item) => (

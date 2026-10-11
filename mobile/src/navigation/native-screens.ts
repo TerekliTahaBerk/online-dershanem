@@ -50,9 +50,16 @@ export type NativeScreenKey =
   | 'coach-sessions'
   | 'coach-plans'
   | 'teacher-odk-reports'
+  | 'admin-operations-center'
+  | 'admin-interventions'
+  | 'admin-reports'
+  | 'admin-activation-desk'
+  | 'admin-people'
+  | 'admin-signups'
   | 'placeholder';
 
-export type PlannedPhase = 'M2' | 'M6' | 'M7' | 'WEB' | 'LATER';
+/** `P2` / `P4`: tam işlev eşliği yol haritasındaki yönetim fazları (docs/mobile/full-parity-roadmap.md). */
+export type PlannedPhase = 'M2' | 'M6' | 'M7' | 'P2' | 'P4' | 'LATER';
 
 export type NativeScreen = {
   key: NativeScreenKey;
@@ -155,7 +162,6 @@ const PARENT_WEB_ONLY: ReadonlySet<string> = new Set(['dino']);
  * her personel ucu sunucuda ürün rolü + personel izni + kaynak ilişkisini
  * doğrular. Eşlenmeyen öğretmen öğeleri (öğrenciler, materyaller, tekrar,
  * telafi, AI yardımcı, müdahale, özetler, analiz…) açık web devam yoludur.
- * ADMIN için native eşleme YOK (yönetim yalnız web).
  */
 const TEACHER_OD: Record<string, NativeScreenKey> = {
   today: 'teacher-home',
@@ -177,8 +183,38 @@ const TEACHER_ODK: Record<string, NativeScreenKey> = {
   'odk-teacher-reports': 'teacher-odk-reports',
 };
 
-function placeholderPhase(role: MobileRole, workspace: MobileProductCode | null): PlannedPhase {
-  if (role === 'ADMIN') return 'WEB';
+/**
+ * YÖNETİM (ADMIN) — Faz 1. Yönetim ekranları çalışma alanından bağımsızdır
+ * (Operasyon Merkezi tüm ürünleri okur); sunucu menüsü yine yetkili kapsamı
+ * belirler. Her yönetim ucu sunucuda gerçek ADMIN oturumu ister; hassas
+ * yazmalar taze step-up ister. Henüz native olmayan yönetim öğeleri
+ * yer tutucudur ve geleceği faz etiketlenir (Deneme Ligi yönetimi P4,
+ * diğerleri P2).
+ */
+const ADMIN: Record<string, NativeScreenKey> = {
+  today: 'admin-operations-center',
+  reports: 'admin-reports',
+  provisioning: 'admin-activation-desk',
+  people: 'admin-people',
+  signups: 'admin-signups',
+};
+
+/**
+ * Yönetim `operations` öğesi bayrağa göre iki farklı web sayfasıdır
+ * (`interventionInbox` açıksa Müdahale, kapalıysa Raporlar); eşleme web
+ * yoluna bakar ki bayrak kapalıyken müdahale ekranı açılmasın.
+ */
+function adminScreen(item: MobileNavItem): NativeScreenKey | undefined {
+  if (item.id === 'operations') return item.webPath.endsWith('/mudahale') ? 'admin-interventions' : 'admin-reports';
+  return ADMIN[item.id];
+}
+
+function adminPhase(navId: string): PlannedPhase {
+  return navId.startsWith('odk-') ? 'P4' : 'P2';
+}
+
+function placeholderPhase(role: MobileRole, workspace: MobileProductCode | null, navId: string): PlannedPhase {
+  if (role === 'ADMIN') return adminPhase(navId);
   // Yön'de bilinmeyen öğe: güvenli taraf, açık web devam yolu.
   if (workspace === 'OK') return 'LATER';
   if (workspace === 'ODK') return 'LATER';
@@ -195,6 +231,7 @@ export function resolveNativeScreen(input: { role: MobileRole; workspace: Mobile
   else if (role === 'TEACHER' && workspace === 'OD') key = TEACHER_OD[item.id];
   else if (role === 'TEACHER' && workspace === 'OK') key = TEACHER_OK[item.id];
   else if (role === 'TEACHER' && workspace === 'ODK') key = TEACHER_ODK[item.id];
+  else if (role === 'ADMIN') key = adminScreen(item);
   if (key) return { key, navId: item.id, title: item.label, webPath: item.webPath };
   // Deneme Ligi öğrencisinde eşlenmemiş her öğe bilinçli web devam yoludur.
   const webOnly =
@@ -203,7 +240,7 @@ export function resolveNativeScreen(input: { role: MobileRole; workspace: Mobile
     (role === 'PARENT' && (PARENT_WEB_ONLY.has(item.id) || !PARENT[item.id])) ||
     // Öğretmende eşlenmemiş her öğe bilinçli web devam yoludur (M7).
     role === 'TEACHER';
-  const phase = webOnly ? 'LATER' : placeholderPhase(role, workspace);
+  const phase = webOnly ? 'LATER' : placeholderPhase(role, workspace, item.id);
   return { key: 'placeholder', navId: item.id, title: item.label, webPath: item.webPath, phase };
 }
 
@@ -216,6 +253,7 @@ export const PHASE_COPY: Record<PlannedPhase, string> = {
   M2: 'Bu bölüm onlinedershanem. mobil deneyiminin bir sonraki adımında uygulamaya gelecek.',
   M6: 'Bu veli bölümü mobil uygulamada henüz yok. Web panelinden kullanmaya devam edebilirsiniz.',
   M7: 'Bu öğretmen bölümü mobil uygulamada yok. Web panelinden kullanmaya devam edebilirsiniz.',
-  WEB: 'Yönetim işlemleri güvenlik gereği web panelinden yapılır.',
+  P2: 'Bu yönetim bölümü mobil uygulamaya geliyor. O zamana kadar web panelinden devam edebilirsin.',
+  P4: 'Deneme Ligi yönetimi mobil uygulamaya geliyor. O zamana kadar web panelinden devam edebilirsin.',
   LATER: 'Bu bölüm mobil uygulamada henüz yok. Web panelinden kullanmaya devam edebilirsin.',
 };
