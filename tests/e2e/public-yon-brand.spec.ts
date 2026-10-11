@@ -5,14 +5,8 @@ import { formatCents, resolvePackageQuote, singleProductPriceLabel, type Builder
 import { accessibilityScan } from "./helpers/axe";
 
 for (const width of [320, 375, 390, 768, 1024, 1440]) {
-  test(`Yön landing uses the correct single asset and reflows at ${width}px`, async ({ page }) => {
+  test(`Yön editorial landing presents coaching facts and reflows at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
-    const assets: string[] = [];
-    page.on("request", (request) => {
-      const url = new URL(request.url());
-      const source = url.searchParams.get("url");
-      if (request.resourceType() === "image" && source?.startsWith("/yon/")) assets.push(source);
-    });
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
@@ -20,20 +14,17 @@ for (const width of [320, 375, 390, 768, 1024, 1440]) {
     expect(response?.ok()).toBe(true);
     await expect(page).toHaveTitle(/onlinekoçum\. × Yön Koçluk/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Yönünü belirle.Planını uygula.");
-    // Streamed HTML can briefly contain a hidden replacement tree before React
-    // commits it. Check the rendered page, including its single visible asset.
-    const heroImage = page.locator("main:visible picture img");
-    await expect(heroImage).toBeVisible();
-    await expect.poll(() => heroImage.evaluate((node: HTMLImageElement) => node.complete && node.naturalWidth > 0)).toBe(true);
-    const expectedAsset = width < 768 ? yonBrand.mascot : yonBrand.logo;
-    expect(new URL(await heroImage.evaluate((node: HTMLImageElement) => node.currentSrc)).searchParams.get("url")).toBe(expectedAsset);
-    expect([...new Set(assets)]).toEqual([expectedAsset]);
+    const hero = page.locator("section").filter({ has: page.getByRole("heading", { level: 1 }) });
+    await expect(hero.getByRole("term")).toHaveText([
+      "Seni tanıyan bir koç", "Hayatına uyan bir plan", "Düzenli takip, güncel plan",
+    ]);
+    await expect(hero.getByRole("link", { name: "Ücretsiz Ön Görüşme", exact: true })).toHaveAttribute("href", yonBrand.meetingHref);
+    await expect(hero.getByRole("link", { name: /Koçluk nasıl çalışır/ })).toHaveAttribute("href", "#nasil-calisir");
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
     await expect(page.getByRole("main")).toContainText(yonBrand.registrationNote);
     await expect(page.getByText("Örnek görünüm", { exact: true })).toHaveCount(2);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /\/urunler\/online-kocum$/);
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /\/yon\/og.png$/);
-    expect(await page.getByRole("main").getByText("LGS", { exact: true }).evaluate((node) => getComputedStyle(node).backgroundColor)).toBe("rgb(239, 246, 255)");
     expect(errors).toEqual([]);
     if (width === 390 || width === 1440) await page.screenshot({ path: `/tmp/yon-landing-${width}.png`, fullPage: false });
   });

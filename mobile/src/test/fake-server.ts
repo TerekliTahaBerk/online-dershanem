@@ -23,10 +23,10 @@ export type FakeAccount = {
    * Hesaba özel uç yanıtları: anahtar `METHOD /yol` (sorgu dizesi hariç).
    * M2 OD ekran testleri sunucu yanıtlarını buradan verir.
    */
-  routes?: Record<string, (request: { body: unknown; path: string; query: URLSearchParams; account: FakeAccount }) => Response | Promise<Response>>;
+  routes?: Record<string, (request: { body: unknown; path: string; query: URLSearchParams; headers: Record<string, string>; account: FakeAccount }) => Response | Promise<Response>>;
 };
 
-type Call = { method: string; path: string; authorization: string | null; body: unknown };
+type Call = { method: string; path: string; authorization: string | null; body: unknown; headers: Record<string, string> };
 
 export const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 
@@ -43,7 +43,7 @@ export function createFakeServer(accounts: FakeAccount[]) {
     const headers = (init.headers ?? {}) as Record<string, string>;
     const authorization = headers.Authorization ?? null;
     const body = init.body ? JSON.parse(String(init.body)) : undefined;
-    calls.push({ method, path, authorization, body });
+    calls.push({ method, path, authorization, body, headers });
 
     const override = overrides.get(`${method} ${path.split('?')[0]}`);
     if (override) return override();
@@ -63,7 +63,7 @@ export function createFakeServer(accounts: FakeAccount[]) {
 
     const [pathname, search = ''] = path.split('?');
     const route = account.routes?.[`${method} ${pathname}`];
-    if (route) return route({ body, path, query: new URLSearchParams(search), account });
+    if (route) return route({ body, path, query: new URLSearchParams(search), headers, account });
 
     if (method === 'GET' && path === '/api/panel/me') return json(200, account.bootstrap);
     if (method === 'POST' && path === '/api/auth/logout') {

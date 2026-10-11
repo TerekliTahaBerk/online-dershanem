@@ -32,6 +32,7 @@ export type ApiClientConfig = {
   appVersion: string | null;
   userAgent: string;
   getToken: () => string | null;
+  getOverlayHeaders?: () => Record<string, string>;
   /** 401 / UNAUTHENTICATED geldiğinde bir kez çağrılır (yerel oturumu kapatır). */
   onUnauthenticated?: (error: ApiError) => void;
   fetchImpl?: typeof fetch;
@@ -88,7 +89,7 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
 
   function authHeaders(): Record<string, string> {
     const token = config.getToken();
-    return { ...clientHeaders(), ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+    return { ...clientHeaders(), ...(token ? { Authorization: `Bearer ${token}`, ...config.getOverlayHeaders?.() } : {}) };
   }
 
   async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
@@ -103,7 +104,11 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
       throw new ApiError({ kind: 'unauthenticated', status: 401 });
     }
 
-    const headers: Record<string, string> = { Accept: 'application/json', ...clientHeaders(), ...options.headers };
+    const overlayHeaders = token ? config.getOverlayHeaders?.() ?? {} : {};
+    if (overlayHeaders['X-Od-Preview'] && (options.method ?? 'GET') !== 'GET' && path !== '/api/panel/admin-preview') {
+      throw new ApiError({ kind: 'forbidden', status: 403, code: 'ADMIN_PREVIEW_READONLY', message: 'Yönetici önizlemesinde işlem yapılamaz.' });
+    }
+    const headers: Record<string, string> = { Accept: 'application/json', ...clientHeaders(), ...options.headers, ...overlayHeaders };
     if (options.body !== undefined) headers['Content-Type'] = 'application/json';
     if (token) headers.Authorization = `Bearer ${token}`;
 

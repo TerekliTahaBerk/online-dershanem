@@ -24,7 +24,7 @@
 .product > a { display: flex; align-items: center; justify-content: space-between; min-height: 44px; margin-top: auto; color: var(--accent); font-size: 14px; font-weight: 750; }
 .principles { display: grid; grid-template-columns: 1fr 1fr; column-gap: 60px; margin-top: 40px; }
 .principle { display: flex; align-items: baseline; gap: 22px; border-top: 1px solid #dfe5d9; padding-block: 28px; }
-.number { font-size: 12px; font-weight: 700; color: #83937a; font-variant-numeric: tabular-nums; }
+.number { font-size: 12px; font-weight: 700; color: #557044; font-variant-numeric: tabular-nums; }
 .principle h3 { font-size: 20px; line-height: 1.4; font-weight: 750; }
 .principle p { margin-top: 11px; font-size: 15px; line-height: 1.8; color: #56665b; }
 .dino { background: #183d30; color: #fcfaf4; }

@@ -116,6 +116,52 @@ P1 tamamlanmadan hiçbir yönetim yazma işlemi açılmaz. P2–P5 P1'den sonra 
 >
 > Tekrarlanan desen (sonraki alanlar için): sayfanın RSC veri yükleyicisi `lib/panel/*-server.ts`'e **olduğu gibi** taşınır, web sayfası onu çağırır (davranış değişmez), mobil uç aynı yükleyiciyi projeksiyonla sunar; durum etiketleri tek sözlükten gelir.
 
+### P2.9 devam kaydı (11 Ekim 2026)
+
+**Kod teslimatı uygulandı; gerçek HTTP/iPhone kabulü bekliyor.** Yönetici menüsünden ve kişi detayından native önizleme seçicisi açılır. Öğrenci/veli/öğretmen adayları mevcut aday arama ucundan gelir; bootstrap hedef kişinin kimliğini ve mevcut native navigasyonunu döndürür. Kalıcı banttan yönetim paneline dönülür. Öğretmen modu aynı ADMIN kimliğiyle TEACHER çalışma alanını açar.
+
+- `X-Od-Preview` / `X-Od-Teacher-Mode`: mevcut imza çekirdekleriyle üretilir; ADMIN kullanıcı + oturum kimliğine bağlıdır. TTL web ile aynı: önizleme 2 saat, öğretmen modu 12 saat. Bearer istekleri tarayıcı çerezini tüketmez/yazmaz. Bozuk, süresi dolmuş, başka oturuma ait veya birlikte gönderilen belirteçler 403 döner.
+- Bootstrap eklemeli `adminOverlay: { mode, actorUserId, expiresAt }` alanını taşır. Kapı kontrolleri gerçek aktöre, çalışma alanı verisi etkili kimliğe uygulanır. Mobil mod açıkken yönetim uçlarına erişim kapanır; açık aktör kapısı yalnız mod kontrol uçlarında kullanılır.
+- Önizlemede mobil yazma düğmeleri gizlenir ve API istemcisi yazma isteğini durdurur; sunucudaki `guardMutation` ayrıca salt okumayı uygular. Öğretmen modu yazmayı korur; kullanıcı kimliği değişmediği için audit aktörü yöneticidir. Mod sırasında push çalışma zamanı ve hesap güvenliği rotaları kapalıdır.
+- Mod değişiminde devam eden sorgular iptal edilir, sorgu ve materyal önbelleği temizlenir. Belirteç ve ürün seçimi yalnız bellektedir; ürün seçimi hedefin veya yöneticinin oturumuna yazılmaz. Süre sonunda bootstrap yeniden doğrulanır; hata/ürünsüz durumdan da yönetim paneline dönüş vardır.
+
+**Doğrulama:** mobil tip kontrolü/lint ve tam Jest paketi geçti (24 paket / 190 test); sunucu tip kontrolü, overlay/önizleme/öğretmen modu/bootstrap birim testleri ve sözleşme sınırı kontrolü geçti. `tests/e2e/mobile-api.spec.ts` içindeki iki P2.9 gerçek HTTP senaryosu eklendi; bu ortamda E2E hesapları/veritabanı yapılandırması olmadığı için **atlandı**. Gerçek iPhone ve web çerez regresyonu henüz yürütülmedi. Bu nedenle P2 çıkış kriterleri tamamlandı sayılmaz; matris rota toplamları değişmez.
+
+**Kalan geliştirme sırası (koddan kontrol edildi):**
+
+| Sıra | Kalan iş | Hazır olan / sonraki somut teslimat |
+| --- | --- | --- |
+| 1 | P2.9 kabul | Gerçek HTTP senaryolarını E2E ortamında çalıştır; üç rol önizlemesi, yazma reddi, öğretmen yazması/audit, süre dolumu, çıkış ve web çerez regresyonunu gerçek iPhone ile doğrula |
+| 2 | P2.3 Eğitim | Grup listesi/360 ve grup/üye yazmaları tamamlandı. Sıradaki teslimat ders oluşturma/düzenleme + seri önizleme; ardından ödev/materyal yazma, yükleme, kurulum, takvim ve kazanımlar |
+| 3 | P2.4 Koçluk | Koç atama servisi/uçları 2.2 ile hazır; kapasite, takip ve görüşmeler için yönetim projeksiyonu + native koçluk ekranı eksik |
+| 4 | P2.6 Siparişler | Provizyon tekrar servisi/uçları 2.2 ile hazır; sipariş listesi/detayı GET ve native ticari operasyon ekranları eksik |
+| 5 | P2.8 Analitik/sistem | Metrik/audit/kalite projeksiyonları, native ekranlar, özellik bayraklarının yazma kararı (ADR-0015) ve kohort yönetimi |
+| 6 | P2.7 İşletme | Ortak servis çıkarımı + BusinessPermission API'leri + 16 bölümün native karşılıkları; E3–E5 kapsam dışı kalır |
+| 7 | P3–P5 ve P6 | Rol bazlı eksikler aşağıdaki faz tabloları ve `parity-matrix.md` üzerinden kapanır; gerçek cihaz kabulü/TestFlight tüm fazları bekler |
+
+Production personel izin modu/kanıtı P1'in açık operasyon maddesi olarak kalır; bu çalışmada production ayarı veya yayın yapılmadı.
+
+### P2.3 ilk okuma teslimatı — 11 Ekim 2026
+
+- Eğitim sayfasının sorguları `lib/panel/education-management-server.ts` içine taşındı; web ve `GET /api/panel/admin/education` aynı yükleyiciyi kullanır. Mobil yanıt kişi seçeneklerini veya dosya erişim URL'lerini taşımaz; yalnız yönetim özetidir.
+- `GET /api/panel/admin/groups/[id]?sekme=` mevcut `loadGroup360Bundle` ile beş sekmeyi üretir. Eksik grup JSON 404, geçersiz sekme 400; gerçek ADMIN kapısı ve `private, no-store` uygulanır. Web'in `notFound()` davranışı korunur.
+- Eğitim menüsü native listeye eşlendi: aktif/arşiv/tümü, grup/ders/seviye/öğretmen araması, ders/ödev/materyal okuma bölümleri. Grup 360'da kontenjan, haftalık ders, üyeler/risk/katılım, program/seriler/çakışmalar, geçmiş ve operasyon sinyalleri görünür. Üyeden mevcut Öğrenci 360'a gidilir.
+- Y13 ve Y14 **Kısmi** oldu. P2.3 bitmedi. Sonraki iş: grup/üye yazmalarına sunucuda idempotency ve sürüm kontrolü ekleyip native oluşturma/düzenleme/öğrenci ekleme/çıkarma/transfer/onay akışlarını açmak. Ardından seri ders önizleme, ödev/materyal CRUD + dosya işlemleri, kurulum, takvim ve kazanımlar; bunlar bitmeden P2.4'e geçilmez.
+- Mevcut grup/üye yazmaları taze step-up, audit ve yaşam döngüsü kontrolleri içeriyor; idempotency ve sürüm önkoşulları eksik. Bu teslimatta yazma düğmesi açılmadı ve bu eksik tamamlandı sayılmadı.
+
+**Doğrulama:** tam mobil Jest paketi geçti (25 paket / 196 test), eğitim projeksiyonunun 4 sunucu birim testi geçti; sunucu/mobil tip kontrolü, değişen kaynakların lint kontrolü, sözleşme sınırı ve eşlik matrisi kontrolü temiz. P2.3 gerçek HTTP senaryosu eklendi; E2E hesapları tanımlı olmadığı için bu ortamda atlandı. Gerçek HTTP ve cihaz kabulü açık kalır.
+
+### P2.3 grup ve üye yazmaları — 11 Ekim 2026
+
+- Mevcut `groups` POST, `groups/[id]` PATCH ve `groups/[id]/members` POST ortak `group-management-service.ts` servisine bağlandı. İş kuralları web/mobil arasında kopyalanmaz; kapasite, aktif hesap/grup, transfer ve ders çakışması kontrolleri mevcut yaşam döngüsü servislerini kullanır.
+- Bearer yazmalarında UUID `idempotencyKey` zorunlu; güncellemede `expectedRevision`, transferde ayrıca `expectedTargetRevision` zorunlu. Sürüm grup alanlarını ve aktif üyelikleri kapsar. Eksik önkoşul 400, eski sürüm/aynı anahtarın farklı istek için kullanılması 409. Anahtar aktöre bağlıdır; aynı içerikte tekrar saklanan sonucu döndürür.
+- Makbuz mevcut `AuditLog.idempotencyKey` tekilliğinde saklanır; yeni şema/migration gerekmez. Grup/üyelik değişikliği, audit/makbuz, in-app bildirim ve e-posta outbox'ı aynı Serializable transaction içindedir. Kaynak/hedef satırları kimlik sırasıyla kilitlenir. E-posta dış ağ çağrısı transaction'a girmez; cron outbox'ı dağıtır. Bildirimler yalnız aktif ve akademik veri izni olan veli ilişkilerine gider; kanal tercihleri korunur.
+- Eski web formları gövde uyumluluğu için anahtar/sürüm göndermeden aynı servisi kullanabilir. **Zorunlu idempotency/sürüm önkoşulu Bearer yazmalarına uygulanır**; legacy web form sürüm koruması tamamlandı sayılmaz.
+- Native grup oluşturma, bilgi düzenleme, öğretmen değiştirme (onay ve takvim kontrolü), kapat/tekrar aç, öğrenci arama/ekleme ve en fazla 20 üyede transfer/çıkarma/bildirim açıldı. Toplu işlemler sunucu önizlemesinden ve kullanıcı onayından sonra uygulanır; seçim/metin/hedef değişince önizleme silinir. 428'de native step-up aynı anahtarla tekrarlar; 409'da veri yenilenir ve sessiz tekrar yapılmaz.
+- **Sıradaki iş:** ders oluşturma/düzenleme ve seri ders önizlemesi. Ardından ödev/materyal CRUD, teslim değerlendirme, dosya yükleme/açma, kurulum, kurum takvimi ve kazanımlar. P2.3 ve Y13/Y14 tam kabulü bunları bekler; P2.4'e henüz geçilmez.
+
+**Doğrulama:** geçici, yalnız yerel PostgreSQL üzerinde reponun 120 migration'ı uygulandı. Yeni grup yönetimi (7), mevcut grup/ders yaşam döngüsü (4) ve bildirim dağıtımı (1) olmak üzere **12 entegrasyon testi geçti**; gerçek eşzamanlı oluşturma/son kontenjan transferi, tekrar, rollback, outbox ve veli izinleri kapsandı. Sürüm/anahtar/önkoşul ve mevcut projeksiyon/domain birim testleri geçti. Tam mobil Jest paketi **26 paket / 205 test** ile geçti; 20 ilgili sunucu birim testi, tip/lint, sözleşme sınırı, API giriş doğrulaması ve matris kontrolleri temiz. Native testler step-up tekrarını, sürüm çakışmasını, oluşturma/düzenleme, öğretmen/durum, üye ekleme, transfer/çıkarma/bildirim önizlemesi/onayını kapsar. İki P2.3 gerçek HTTP senaryosu yapılandırılmış E2E hesapları olmadığı için atlandı; gerçek iPhone/web HTTP kabulü açık kalır. Test PostgreSQL sunucusu çalışma sonunda kapatıldı.
+
 **Sıra ve kapsam.**
 
 | # | Alan | Web rotaları | Mevcut API | Eklenecek sunucu işi | Native ekranlar / işlemler |

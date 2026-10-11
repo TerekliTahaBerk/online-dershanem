@@ -157,14 +157,14 @@ function WeeklyGoal({ goal }: { goal: string | null }) {
             editable={!mutation.isPending}
           />
           <View style={styles.row}>
-            <Button testID="weekly-goal-save" label="Hedefi kaydet" loading={mutation.isPending} disabled={invalid} onPress={() => void save()} />
+            <Button mutation testID="weekly-goal-save" label="Hedefi kaydet" loading={mutation.isPending} disabled={invalid} onPress={() => void save()} />
             <Button label="Vazgeç" variant="quiet" disabled={mutation.isPending} onPress={() => setEditing(false)} />
           </View>
         </>
       ) : (
         <>
           <Text variant="bodyStrong">{goal ?? 'Henüz bu hafta için bir hedef yazmadın.'}</Text>
-          <Button
+          <Button mutation
             testID="weekly-goal-edit"
             label={goal ? 'Hedefi düzenle' : 'Hedef yaz'}
             variant="secondary"

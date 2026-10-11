@@ -49,7 +49,7 @@ describe('native ekran eşlemesi (rol + çalışma alanı + menü kimliği)', ()
   });
 
   it('yönetim: henüz native olmayan öğe faz etiketli yer tutucudur (Deneme Ligi yönetimi P4, diğerleri P2)', () => {
-    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('groups') })).toMatchObject({ key: 'placeholder', phase: 'P2' });
+    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('groups') })).toMatchObject({ key: 'admin-education' });
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('people') }).key).toBe('admin-people');
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('signups') }).key).toBe('admin-signups');
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'ODK', item: item('odk-exams') })).toMatchObject({ key: 'placeholder', phase: 'P4' });
@@ -175,6 +175,11 @@ describe('M2 OD menü denetimi ve hedefler', () => {
 
 describe('yönetim web yolu eşlemesi (Faz 1)', () => {
   const navigation = makeBootstrap({ role: 'ADMIN', products: { OD: 'ACTIVE' }, activeProduct: 'OD' }).workspace!.navigation;
+
+  it('Grup 360 yalnız eğitim menüsü varken native detaya açılır', () => {
+    expect(mapAdminWebPath('/panel/yonetim/gruplar/g1', navigation)).toEqual({ kind: 'detail', href: '/admin/group/g1' });
+    expect(mapAdminWebPath('/panel/yonetim/gruplar/g1', { ...navigation, primary: [], sections: [] })).toEqual({ kind: 'none' });
+  });
 
   it('birebir eşleşme sekmeye / iç ekrana, detay yolu en uzun öneke gider', () => {
     expect(mapAdminWebPath('/panel/yonetim', navigation)).toEqual({ kind: 'tab', slot: 0, navId: 'today' });

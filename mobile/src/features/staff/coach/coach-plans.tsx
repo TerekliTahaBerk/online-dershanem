@@ -67,8 +67,8 @@ function Body({ data, refetch }: { data: MobileCoachPlans; refetch: () => Promis
               <Text variant="bodyStrong">{`${item.studentName} · ${item.title}`}</Text>
               <Text tone="secondary" variant="meta">{`${item.kindLabel} — ${item.rationale}`}</Text>
               <View style={staffStyles.row}>
-                <Button label="Kabul et" disabled={mutation.isPending || !online} onPress={() => void review(item.id, item.title, 'ACCEPTED')} testID={`suggestion-accept-${item.id}`} />
-                <Button label="Reddet" variant="secondary" disabled={mutation.isPending || !online} onPress={() => void review(item.id, item.title, 'REJECTED')} />
+                <Button mutation label="Kabul et" disabled={mutation.isPending || !online} onPress={() => void review(item.id, item.title, 'ACCEPTED')} testID={`suggestion-accept-${item.id}`} />
+                <Button mutation label="Reddet" variant="secondary" disabled={mutation.isPending || !online} onPress={() => void review(item.id, item.title, 'REJECTED')} />
               </View>
             </View>
           ))}

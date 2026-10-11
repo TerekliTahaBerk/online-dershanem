@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Linking, View } from 'react-native';
 
+import { usePreviewReadOnly } from '@/lib/auth/preview-context';
 import { Banner, Button, PageHeader, Row, Screen, SegmentedTabs, Section, StatusBadge, Text, TextField } from '@/design/primitives';
 import { mutateCoachingSession, fetchCoachSession, type SessionMutation } from '@/lib/api/staff';
 import { useSession } from '@/lib/auth/session-provider';
@@ -34,6 +35,7 @@ export function CoachSessionScreen({ sessionId }: { sessionId: string }) {
 
 function Body({ data, refetch }: { data: MobileCoachSessionDetail; refetch: () => Promise<unknown> }) {
   const { api } = useSession();
+  const readOnly = usePreviewReadOnly();
   const online = useOnline();
   const invalidate = useInvalidateStaff('OK');
   const [mode, setMode] = useState<'view' | 'save' | 'complete'>('view');
@@ -73,7 +75,7 @@ function Body({ data, refetch }: { data: MobileCoachSessionDetail; refetch: () =
       {isHttps(data.meetingUrl) ? (
         <Button label="Görüşme bağlantısını aç" variant="secondary" onPress={() => void Linking.openURL(data.meetingUrl!)} />
       ) : null}
-      {planned ? (
+      {planned && !readOnly ? (
         <SegmentedTabs label="İşlem" value={mode} onChange={setMode} options={[{ value: 'view', label: 'Özet' }, { value: 'save', label: pendingRequest ? 'Saat öner' : 'Saati düzenle' }, { value: 'complete', label: 'Tamamla' }]} />
       ) : null}
       {mode === 'save' && planned ? (
@@ -110,7 +112,7 @@ function SaveForm({ data, pending, online, onSubmit }: { data: MobileCoachSessio
       <DateTimeField label="Tarih ve saat" value={at} minimumDate={new Date()} onChange={setAt} />
       <TextField label="Görüşme bağlantısı (isteğe bağlı)" value={url} onChangeText={setUrl} autoCapitalize="none" keyboardType="url" error={urlValue === null || isHttps(urlValue) ? undefined : 'Yalnız https:// bağlantısı.'} />
       {data.rescheduleRequestedAt ? <Text tone="muted" variant="meta">Öğrencinin bekleyen talebi olduğu için bu saat öneri olarak gider; öğrenci onaylayınca kesinleşir.</Text> : null}
-      <Button label="Kaydet" disabled={!valid || pending || !online} loading={pending} onPress={() => onSubmit(at.toISOString(), urlValue)} testID="coach-session-save" />
+      <Button mutation label="Kaydet" disabled={!valid || pending || !online} loading={pending} onPress={() => onSubmit(at.toISOString(), urlValue)} testID="coach-session-save" />
     </View>
   );
 }
@@ -138,13 +140,13 @@ function CompleteForm({ data, pending, online, onSubmit }: { data: MobileCoachSe
               <TextField label={`Karar ${index + 1}`} value={item.title} onChangeText={(title) => update(index, { title })} maxLength={160} />
               <DateTimeField label="Gün" mode="date" value={item.scheduledFor} minimumDate={weekStart} maximumDate={weekEnd} onChange={(scheduledFor) => update(index, { scheduledFor })} />
               <TextField label="Süre (dakika, 5–480)" value={item.durationMinutes} keyboardType="number-pad" onChangeText={(durationMinutes) => update(index, { durationMinutes })} />
-              <Button label="Kararı kaldır" variant="secondary" onPress={() => setDecisions((current) => current.filter((_, i) => i !== index))} />
+              <Button mutation label="Kararı kaldır" variant="secondary" onPress={() => setDecisions((current) => current.filter((_, i) => i !== index))} />
             </View>
           ))}
-          {decisions.length < 3 ? <Button label="Karar ekle" variant="secondary" onPress={() => setDecisions((current) => [...current, { title: '', scheduledFor: clampDay(), durationMinutes: '30' }])} /> : null}
+          {decisions.length < 3 ? <Button mutation label="Karar ekle" variant="secondary" onPress={() => setDecisions((current) => [...current, { title: '', scheduledFor: clampDay(), durationMinutes: '30' }])} /> : null}
         </Section>
       ) : null}
-      <Button label="Görüşmeyi tamamla" disabled={!decisionsValid || pending || !online} loading={pending} onPress={() => void onSubmit({ focus: focus.trim(), sharedNote: sharedNote.trim(), privateNote: data.canReadPrivate ? privateNote.trim() : '', decisions: parsed })} testID="coach-session-complete" />
+      <Button mutation label="Görüşmeyi tamamla" disabled={!decisionsValid || pending || !online} loading={pending} onPress={() => void onSubmit({ focus: focus.trim(), sharedNote: sharedNote.trim(), privateNote: data.canReadPrivate ? privateNote.trim() : '', decisions: parsed })} testID="coach-session-complete" />
     </View>
   );
 }

@@ -155,7 +155,7 @@ function CheckInForm({ data, product }: { data: Extract<MobileCheckInState, { st
       <Banner tone="critical" title="Acil durum alanı değildir.">
         Kendine veya başkasına zarar verme riski varsa 112’yi ara ve güvendiğin bir yetişkine hemen söyle.
       </Banner>
-      <Button label="Check-in'i kaydet" loading={mutation.isPending} disabled={data.remaining < 1 || !selected} onPress={() => void submit()} testID="check-submit" />
+      <Button mutation label="Check-in'i kaydet" loading={mutation.isPending} disabled={data.remaining < 1 || !selected} onPress={() => void submit()} testID="check-submit" />
       {data.remaining < 1 ? <Text tone="muted" variant="meta">Bu hafta iki check-in tamamladın. Yeni hafta başladığında tekrar uğrayabilirsin.</Text> : null}
     </Section>
   );
@@ -202,8 +202,8 @@ function HistoryItem({ item, product }: { item: MobileCheckInHistoryItem; produc
           {message ? <Banner tone="critical">{message}</Banner> : null}
           {request.status === 'RESPONDED' && request.helpful === null ? (
             <View style={styles.actions}>
-              <Button label="İşime yaradı" disabled={mutation.isPending} onPress={() => void feedback(true)} testID={`help-yes-${request.id}`} />
-              <Button label="Henüz değil" variant="secondary" disabled={mutation.isPending} onPress={() => void feedback(false)} testID={`help-no-${request.id}`} />
+              <Button mutation label="İşime yaradı" disabled={mutation.isPending} onPress={() => void feedback(true)} testID={`help-yes-${request.id}`} />
+              <Button mutation label="Henüz değil" variant="secondary" disabled={mutation.isPending} onPress={() => void feedback(false)} testID={`help-no-${request.id}`} />
             </View>
           ) : null}
         </View>

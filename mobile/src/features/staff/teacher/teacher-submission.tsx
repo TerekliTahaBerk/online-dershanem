@@ -96,8 +96,8 @@ function Review({ data, refetch }: { data: MobileSubmissionDetail; refetch: () =
           </Section>
           {!complete ? <Text tone="muted" variant="meta">Her ölçütü bir kez değerlendirin.</Text> : null}
           <View style={staffStyles.row}>
-            <Button label="Onayla" disabled={!ready || mutation.isPending || !online} loading={mutation.isPending && mutation.variables === 'APPROVE'} onPress={() => void decide('APPROVE')} testID="review-approve" />
-            <Button label="Yeniden deneme iste" variant="secondary" disabled={!ready || mutation.isPending || !online} onPress={() => void decide('REQUEST_CHANGES')} testID="review-changes" />
+            <Button mutation label="Onayla" disabled={!ready || mutation.isPending || !online} loading={mutation.isPending && mutation.variables === 'APPROVE'} onPress={() => void decide('APPROVE')} testID="review-approve" />
+            <Button mutation label="Yeniden deneme iste" variant="secondary" disabled={!ready || mutation.isPending || !online} onPress={() => void decide('REQUEST_CHANGES')} testID="review-changes" />
           </View>
         </>
       )}

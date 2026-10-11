@@ -56,6 +56,7 @@ export type NativeScreenKey =
   | 'admin-activation-desk'
   | 'admin-people'
   | 'admin-signups'
+  | 'admin-education'
   | 'placeholder';
 
 /** `P2` / `P4`: tam işlev eşliği yol haritasındaki yönetim fazları (docs/mobile/full-parity-roadmap.md). */
@@ -197,6 +198,7 @@ const ADMIN: Record<string, NativeScreenKey> = {
   provisioning: 'admin-activation-desk',
   people: 'admin-people',
   signups: 'admin-signups',
+  groups: 'admin-education',
 };
 
 /**

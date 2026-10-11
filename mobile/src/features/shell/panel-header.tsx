@@ -14,16 +14,16 @@ export function PanelHeader() {
   const router = useRouter();
   const bootstrap = useReadyBootstrap();
   const unread = bootstrap.workspace?.unreadNotifications ?? 0;
-  return <SafeAreaView edges={['top', 'left', 'right']} style={styles.surface}>
+  return <SafeAreaView edges={bootstrap.adminOverlay ? ['left', 'right'] : ['top', 'left', 'right']} style={styles.surface}>
     <View style={styles.bar}>
       <View style={styles.workspace}><WorkspaceSwitcher compact /></View>
-      <Pressable accessibilityRole="button" accessibilityLabel={`Bildirimler${unread ? `, ${unread} okunmamış` : ''}`} onPress={() => router.push('/notifications')} style={({ pressed }) => [styles.action, pressed && styles.pressed]}>
+      {!bootstrap.adminOverlay ? <><Pressable accessibilityRole="button" accessibilityLabel={`Bildirimler${unread ? `, ${unread} okunmamış` : ''}`} onPress={() => router.push('/notifications')} style={({ pressed }) => [styles.action, pressed && styles.pressed]}>
         <Bell size={20} color={color.textSecondary} strokeWidth={1.7} />
         {unread > 0 ? <View style={styles.badge}><Text variant="caption" tone="inverse" maxFontSizeMultiplier={1.2}>{unread > 99 ? '99+' : unread}</Text></View> : null}
       </Pressable>
       <Pressable accessibilityRole="button" accessibilityLabel="Hesap ve ayarlar" onPress={() => router.push('/account')} style={({ pressed }) => [styles.action, pressed && styles.pressed]}>
         <Settings size={20} color={color.textSecondary} strokeWidth={1.7} />
-      </Pressable>
+      </Pressable></> : null}
     </View>
   </SafeAreaView>;
 }

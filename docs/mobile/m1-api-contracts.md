@@ -23,7 +23,7 @@ Tip uyumu tek başına kanıt değildir; gerçek JSON şu testlerle doğrulayıc
 
 Route: `app/api/panel/me/route.ts` · Veri: `lib/mobile/bootstrap-server.ts` (mevcut alan servislerini çağırır) · Saf karar katmanı: `lib/mobile/bootstrap.ts`.
 
-**Yetki:** `requireApiSessionBeforeGates()` — geçerli oturum şart; parola ve MFA kapıları **uygulanmaz** ki uç kapı durumunu raporlayabilsin. Bu nedenle yanıt projeksiyonu kapıya bağlıdır (aşağıda). Admin önizleme / öğretmen modu bindirilmez; daima gerçek aktör.
+**Yetki:** `requireApiSessionBeforeGates()` — geçerli oturum şart; parola ve MFA kapıları **uygulanmaz** ki uç kapı durumunu raporlayabilsin. Bu nedenle yanıt projeksiyonu kapıya bağlıdır (aşağıda). Guard gerçek aktörü döndürür. P2.9 ile geçerli Bearer overlay varsa, kapılar açıldıktan sonra bootstrap `user` ve `workspace` alanlarını etkili öğrenci/veli/öğretmen kimliğiyle oluşturur; `adminOverlay: { mode: "PREVIEW" | "TEACHER", actorUserId, expiresAt }` eklemeli alanı gerçek aktörü belirtir. Web çerezleri Bearer istemcide uygulanmaz. Mod ürünü yalnız bellekte seçilir; `X-Od-Workspace` başlığı bootstrap tarafından hedefin ACTIVE ürünleriyle doğrulanır.
 
 **Sürüm kapısı:** önce `evaluateClientVersion` (bkz. §5).
 
@@ -130,3 +130,15 @@ Flag kapalı ve "kaynak bulunamadı" 404'leri route'lara dağınık olduğu içi
 | Okundu | `POST /api/panel/notifications/read` | `ok === true` şart |
 | Oturumlar | `GET /api/auth/sessions`, `DELETE /api/auth/sessions/[id]`, `POST /api/auth/sessions/others` | `parseSessionList` |
 | Korunan eski ekranlar | `student/home`, `student/lessons`, `assignments*`, `materials*`, `student/progress`, `student/weekly-goal`, `student/goals`, `mock-exams` | M2–M4'te sözleşmeye alınacak (`m2-handoff.md`) |
+
+
+## P2.3 eğitim okuma sözleşmesi
+
+`lib/mobile-contracts/admin-education.ts` bağımlılıksız çalışma zamanı doğrulayıcılarını içerir (`contractVersion: 1`). `GET /api/panel/admin/education` web ile ortak eğitim yükleyicisinden grup listesi ve ders/ödev/materyal özetlerini; `GET /api/panel/admin/groups/[id]?sekme=genel|ogrenciler|program|gecmis|operasyon` Grup 360 yükleyicisinden seçili bölümün okuma projeksiyonunu döndürür. İki uç da gerçek ADMIN kapısı ve `private, no-store` kullanır. Tarihler ISO, öğrenci bağlantısı `StudentProfile.id` ile taşınır. Dosya URL'si veya keyfi web yolu aktarılmaz. Eksik grup 404, geçersiz kimlik/sekme 400; mobilde tüm yanıtlar doğrulanır. Grup/üye yazmaları aşağıdaki eklemeli sözleşmeyle açılmıştır; ders/ödev/materyal yazmaları sonraki teslimattır.
+
+
+### P2.3 grup/üye yazma sözleşmesi
+
+Eğitim yanıtı aktif `teachers` seçeneklerini; Grup 360 yanıtı `revision`, `teacherId`, operasyon sekmesinde `teachers` ve transfer için `targetGroups` eklerini taşır. Eski sunucuda bu ekler yoksa grup yazma formları açılmaz. `POST /api/panel/groups`, `PATCH /api/panel/groups/[id]` ve `POST /api/panel/groups/[id]/members` mevcut web uçlarıdır; aynı ortak servis kullanılır. Bearer execute/create yazması UUID `idempotencyKey` ister. Güncelleme/üye yazması `expectedRevision`, transfer ayrıca `expectedTargetRevision` ister. Anahtar aktöre bağlıdır; aynı anahtar ve içerikte makbuz tekrar döner; farklı içerik `409 IDEMPOTENCY_REUSE`, eski kaynak/hedef `409 GROUP_CONFLICT`, eksik güvenlik bilgisi `400 PRECONDITION_REQUIRED` olur. Hassas yazmada `428 STEP_UP_REQUIRED` aynı anahtarla bir kez tekrar edilir.
+
+Üye `mode: PREVIEW` salt okur ve taze step-up istemez; `mode: EXECUTE` taze step-up ister. Önizleme kaynak/hedef sürümlerini, engelleri, transferde etkilenen dersleri ve bildirimde alıcı özetini döndürür. Mobil seçim/hedef/metin değişince önizlemeyi siler. Başarılı yazma `{ ok: true, id, revision, replayed }` alanlarıyla doğrulanır. Kimlik/sürüm/makbuz istemci depolamasına yazılmaz; 409 sorguları yeniler. Eski web gövdeleri aynı serviste uyumlu kalır, Bearer önkoşullarını gevşetmez.

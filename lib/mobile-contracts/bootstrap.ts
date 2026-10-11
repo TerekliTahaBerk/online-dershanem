@@ -61,7 +61,7 @@ export type MobileBootstrapGates = {
   mfaRequired: boolean;
   /** Yalnız `MFA_REQUIRED` iken dolu; aksi halde null. */
   mfa: MobileMfaMethods | null;
-  /** Admin önizleme veya öğretmen modu açık — mobil desteklemez. */
+  /** Admin önizleme veya öğretmen çalışma modu açık. */
   previewActive: boolean;
 };
 
@@ -85,7 +85,15 @@ export type MobileWorkspace = {
   unreadNotifications: number;
 };
 
+export type MobileAdminOverlay = {
+  mode: "PREVIEW" | "TEACHER";
+  actorUserId: string;
+  expiresAt: string;
+};
+
 export type MobileBootstrap = {
+  /** Eklemeli P2.9 alanı; user/workspace etkili kimliğe aittir. */
+  adminOverlay?: MobileAdminOverlay | null;
   contractVersion: typeof MOBILE_BOOTSTRAP_CONTRACT_VERSION;
   serverTime: string;
   user: { id: string; fullName: string | null; email: string; role: MobileRole };
@@ -248,6 +256,10 @@ export function parseMobileBootstrap(input: unknown): ContractResult<MobileBoots
     return {
       ok: true,
       value: {
+        adminOverlay: o.adminOverlay == null ? null : (() => {
+          const overlay = obj(o.adminOverlay, "$.adminOverlay");
+          return { mode: oneOf(overlay.mode, ["PREVIEW", "TEACHER"] as const, "$.adminOverlay.mode"), actorUserId: str(overlay.actorUserId, "$.adminOverlay.actorUserId"), expiresAt: isoDate(overlay.expiresAt, "$.adminOverlay.expiresAt") };
+        })(),
         contractVersion: MOBILE_BOOTSTRAP_CONTRACT_VERSION,
         serverTime: isoDate(o.serverTime, "$.serverTime"),
         user: {

@@ -110,6 +110,9 @@ export async function staffAccessibleProducts(userId: string, platformRole: User
   if (mode === "legacy") return [...LEGACY_STAFF_PRODUCTS];
 
   const access = await loadStaffAccess(userId);
+  // Admin teacher workspace keeps the real account's break-glass access.
+  // Resolve the database identity; an effective TEACHER role alone grants nothing.
+  if (access?.isActiveUser && access.platformRole === "ADMIN") return [...LEGACY_STAFF_PRODUCTS];
   const next = access && access.isActiveUser ? staffProductsFor(access.assignments) : [];
   if (mode === "enforce") return next;
 

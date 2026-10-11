@@ -2,6 +2,7 @@ import { ASSIGNMENT_EVIDENCE_MAX, type AssignmentProgressStatus, type MobileAssi
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { usePreviewReadOnly } from '@/lib/auth/preview-context';
 import { Banner, Button, EmptyState, PageHeader, Row, Screen, Section, StatusBadge, Text, TextField } from '@/design/primitives';
 import { color, radius, space, touchTarget } from '@/design/tokens';
 import { useDesign } from '@/design/theme';
@@ -92,7 +93,8 @@ function CriterionScore({ assignment, criterionId }: { assignment: MobileAssignm
 function ProgressSection({ assignment, evidenceEnabled }: { assignment: MobileAssignment; evidenceEnabled: boolean }) {
   const { product } = useDesign();
   const write = useProgressWrite(assignment);
-  const options = allowedProgress(assignment, evidenceEnabled);
+  const readOnly = usePreviewReadOnly();
+  const options = readOnly ? [] : allowedProgress(assignment, evidenceEnabled);
   if (!options.length && !write.feedback) return null;
   return (
     <Section title="Durumun">
@@ -131,7 +133,8 @@ function EvidenceSection({ assignment, evidenceEnabled }: { assignment: MobileAs
   const [draft, setDraft] = useState('');
   const [touched, setTouched] = useState(false);
   const latest = latestSubmission(assignment);
-  const open = canSubmitEvidence(assignment, evidenceEnabled);
+  const readOnly = usePreviewReadOnly();
+  const open = !readOnly && canSubmitEvidence(assignment, evidenceEnabled);
   const lengthError = evidenceLengthError(draft);
   return (
     <Section title="Kanıt">
@@ -151,7 +154,7 @@ function EvidenceSection({ assignment, evidenceEnabled }: { assignment: MobileAs
             hint={`${draft.trim().length}/${ASSIGNMENT_EVIDENCE_MAX} karakter (en az 20)`}
             error={touched && draft.length > 0 ? lengthError : null}
           />
-          <Button
+          <Button mutation
             testID="evidence-submit"
             label={latest ? 'Yeni deneme gönder' : 'Kanıt gönder'}
             loading={evidence.submitting}

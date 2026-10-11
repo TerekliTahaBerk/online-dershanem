@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { createRequire } from "node:module";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { ProductTrioView } from "@/components/home/product-trio-view";
 import {
   FALLBACK_PUBLIC_PRODUCT_CODES,
   isPublicProductVisible,
@@ -30,7 +30,18 @@ test("KPSS aktif edildiğinde public yüzeylerde tanım sırasıyla görünür",
   assert.equal(isPublicProductVisible("KPSS", [...legacyCodes, "KPSS"]), true);
 });
 
-test("ana sayfa ürün DOM'u KPSS kilidini false/true durumlarında izler", () => {
+test("ana sayfa ürün DOM'u KPSS kilidini false/true durumlarında izler", async () => {
+  // The Node runner has no Next.js CSS transformer; this test checks product visibility.
+  const require = createRequire(`${process.cwd()}/package.json`);
+  const previousCssLoader = require.extensions[".css"];
+  require.extensions[".css"] = (module) => { module.exports = {}; };
+  let ProductTrioView: typeof import("@/components/home/product-trio-view").ProductTrioView;
+  try {
+    ({ ProductTrioView } = await import("@/components/home/product-trio-view"));
+  } finally {
+    if (previousCssLoader) require.extensions[".css"] = previousCssLoader;
+    else delete require.extensions[".css"];
+  }
   const inactiveHtml = renderToStaticMarkup(
     createElement(ProductTrioView, {
       products: visiblePublicProducts(legacyCodes),

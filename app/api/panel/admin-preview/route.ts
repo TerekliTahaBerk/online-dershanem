@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requireApiAccountRole } from "@/lib/auth/api-guards";
+import { requireApiActorSession } from "@/lib/auth/api-guards";
 import { endAdminPreview, hasAdminPreviewPermission, startAdminPreview } from "@/lib/auth/admin-preview";
 import { isPreviewableRole } from "@/lib/panel/preview-context";
 import { previewErrorMessage } from "@/lib/panel/preview-resolution";
@@ -15,7 +15,7 @@ const startSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const auth = await requireApiAccountRole("ADMIN");
+  const auth = await requireApiActorSession("ADMIN");
   if (!auth.ok) return auth.response;
   if (!hasAdminPreviewPermission(auth.session)) {
     return NextResponse.json({ error: previewErrorMessage("FORBIDDEN") }, { status: 403 });
@@ -38,6 +38,7 @@ export async function POST(request: Request) {
 
   const result = await startAdminPreview({
     actor: auth.session,
+    bearer: /^Bearer\s+/i.test(request.headers.get("authorization") ?? ""),
     previewRole: parsed.data.previewRole,
     previewUserId: parsed.data.previewUserId,
     returnPath: parsed.data.returnPath,
@@ -47,13 +48,13 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json(
-    { ok: true, homePath: result.homePath, context: result.context },
+    { ok: true, homePath: result.homePath, context: result.context, ...(result.token ? { token: result.token } : {}) },
     { headers: { "Cache-Control": "no-store" } },
   );
 }
 
 export async function DELETE(request: Request) {
-  const auth = await requireApiAccountRole("ADMIN");
+  const auth = await requireApiActorSession("ADMIN");
   if (!auth.ok) return auth.response;
 
   const guard = await guardMutation({

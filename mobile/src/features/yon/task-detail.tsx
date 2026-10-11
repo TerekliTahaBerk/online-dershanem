@@ -103,17 +103,17 @@ function TaskBody({ task, canComplete }: { task: MobileYonTask; canComplete: boo
               ))}
               {formError ? <Banner tone="critical">{formError}</Banner> : null}
               <View style={styles.actions}>
-                <Button label="Kaydet" loading={completion.pending === mode} testID="yon-complete-submit" onPress={() => void submit()} />
+                <Button mutation label="Kaydet" loading={completion.pending === mode} testID="yon-complete-submit" onPress={() => void submit()} />
                 <Button label="Vazgeç" variant="quiet" disabled={completion.pending !== null} onPress={() => setMode(null)} />
               </View>
             </View>
           ) : (
             <View style={styles.actions}>
               {task.status === 'PLANNED' ? (
-                <Button label="Başladım" variant="secondary" loading={completion.pending === 'IN_PROGRESS'} disabled={completion.pending !== null} testID="yon-start" onPress={() => void completion.submit({ status: 'IN_PROGRESS' })} />
+                <Button mutation label="Başladım" variant="secondary" loading={completion.pending === 'IN_PROGRESS'} disabled={completion.pending !== null} testID="yon-start" onPress={() => void completion.submit({ status: 'IN_PROGRESS' })} />
               ) : null}
               {(Object.keys(COMPLETE_LABEL) as (keyof typeof COMPLETE_LABEL)[]).map((status) => (
-                <Button key={status} label={COMPLETE_LABEL[status]} variant={status === 'DONE' ? 'primary' : 'secondary'} disabled={completion.pending !== null} testID={`yon-open-${status}`} onPress={() => startForm(status)} />
+                <Button mutation key={status} label={COMPLETE_LABEL[status]} variant={status === 'DONE' ? 'primary' : 'secondary'} disabled={completion.pending !== null} testID={`yon-open-${status}`} onPress={() => startForm(status)} />
               ))}
             </View>
           )}

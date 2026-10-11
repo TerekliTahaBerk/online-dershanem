@@ -15,6 +15,8 @@ export const ADMIN_TEACHER_MODE_TTL_MS = 12 * 60 * 60_000;
 
 export type AdminTeacherModePayload = {
   v: 1;
+  /** Yalnız Bearer taşıması: belirteç tek oturuma bağlıdır. */
+  sessionId?: string;
   adminUserId: string;
   startedAt: string;
   exp: number;

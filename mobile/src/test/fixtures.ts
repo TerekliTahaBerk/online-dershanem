@@ -44,6 +44,7 @@ const ADMIN_NAV: { primary: [string, string, string][]; sections: [string, strin
   ],
   sections: [
     ['people', 'Kişiler', '/panel/yonetim/kisiler'],
+    ['groups', 'Eğitim', '/panel/yonetim/egitim'],
     ['orders', 'Siparişler', '/panel/yonetim/siparisler'],
     ['odk-exams', 'Deneme yönetimi', '/panel/odk/yonetim/sinavlar'],
   ],

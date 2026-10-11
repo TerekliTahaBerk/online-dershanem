@@ -37,7 +37,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 
 | Alan | Rota | Tam | Kısmi | Eksik | İstisna | Yönl. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1. Yönetim (`/panel/yonetim`) | 28 | 12 | 0 | 15 | 0 | 1 |
+| 1. Yönetim (`/panel/yonetim`) | 28 | 12 | 2 | 13 | 0 | 1 |
 | 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 0 | 0 | 8 | 0 | 0 |
 | 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 7 | 3 | 10 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
@@ -46,7 +46,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | 7. Veli (`/panel/veli`) | 12 | 5 | 4 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 4 | 3 | 2 | 0 | 2 |
-| **Toplam** | **106** | **46** | **15** | **38** | **1** | **6** |
+| **Toplam** | **106** | **46** | **17** | **36** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
@@ -78,8 +78,8 @@ Mobil karşılık: `native-screens.ts` ADMIN eşlemesi + `(app)/admin/*` yığı
 | Y10 | `/panel/yonetim/ogrenciler/[id]` | — | O: öğrenci 360 (üst sekmeler + Öğrenme alt görünümleri, tüm bölümler) · Y: veli bağla / kaldır, branş öğretmeni bağla / kaldır, koç ata / devret (kapasite gerekçesi), sipariş erişim açmayı yeniden dene | `loadStudent360Bundle` (`lib/panel/student-360*`); yazma: `relationships*`, `student-teachers`, `assignCoachService` (`lib/panel/coach-assignment-service.ts`, SA'dan çıkarıldı), `retryOrderProvisioningService` (`lib/panel/order-provisioning-service.ts`, SA'dan çıkarıldı) | Hazır (`GET /api/panel/admin/students/[id]`, `POST /api/panel/admin/coach-assignments`, `POST /api/panel/admin/orders/[id]/provisioning-retry`) | `admin/student/[id]` | Tam | P2.2 | Bölümler sunucuda karta çevrilir (`lib/mobile/student-360-views.ts`). Dino özeti web'de yalnız öğretmen görünümünde; önizleme girişi E2/P2.9 |
 | Y11 | `/panel/yonetim/veliler` | — | O: veli listesi (süzgeç, sayfa), bağlantısız veli sayısı, aktif bağlantılar, bağlantı geçmişi · Y: bağlantı kur (izinlerle), yakınlık düzenle, bağlantı kaldır; durum / parola kişi detayında | `loadParentsPage` (`lib/panel/parents-server.ts`, sayfadan taşındı); yazma: `relationships` POST, `relationships/[id]` PATCH / DELETE (taze step-up) | Hazır (`GET /api/panel/admin/parents`) | `admin/parents` | Tam | P2.2 | Kişiler ekranından açılır |
 | Y12 | `/panel/yonetim/egitmenler` | — | O: öğretmen listesi, branş / seviye, grup doluluğu, kapasite aşımı | `loadEducators` (`lib/panel/educators-server.ts`, sayfadan taşındı) | Hazır (`GET /api/panel/admin/educators`) | `admin/educators` | Tam | P2.2 | Salt okuma; satır kişi detayına açılır |
-| Y13 | `/panel/yonetim/egitim` | `groups` | O: ders/grup/ödev/materyal yönetim görünümü · Y: grup oluştur/düzenle, ders oluştur + seri önizleme, ders düzenle, ödev oluştur/düzenle, teslim değerlendir, materyal yükle/düzenle, ilk kurulum (`setup`), kullanıcı oluştur, ilişki | `groups` POST, `groups/[id]` PATCH, `lessons` POST, `lessons/preview-series` POST, `lessons/[id]` PATCH, `assignments*`, `assignment-submissions/[id]/review`, `materials*`, `materials/upload`, `setup`, `users`, `relationships`, `curriculum/outcomes/search`, `teacher/outcome-favorites` | Y var, O yok | — | Eksik | P2.3 | En geniş yazma yüzeyi; dosya yükleme |
-| Y14 | `/panel/yonetim/gruplar/[id]` | — | O: grup 360 · Y: grup güncelle, üye ekle, öğrenci listesi | `groups/[id]` PATCH, `groups/[id]/members` POST, `groups/[id]/students` GET; `group-360-server.ts` | Y var, O kısmi | — | Eksik | P2.3 | |
+| Y13 | `/panel/yonetim/egitim` | `groups` | O: ders/grup/ödev/materyal yönetim görünümü · Y: grup oluştur/düzenle, ders oluştur + seri önizleme, ders düzenle, ödev oluştur/düzenle, teslim değerlendir, materyal yükle/düzenle, ilk kurulum (`setup`), kullanıcı oluştur, ilişki | `groups` POST, `groups/[id]` PATCH, `lessons` POST, `lessons/preview-series` POST, `lessons/[id]` PATCH, `assignments*`, `assignment-submissions/[id]/review`, `materials*`, `materials/upload`, `setup`, `users`, `relationships`, `curriculum/outcomes/search`, `teacher/outcome-favorites` | Hazır (okuma: `GET /api/panel/admin/education`; mevcut yazma uçları) | `admin-education` | Kısmi | P2.3 | Grup listesi ve oluşturma/düzenleme, ders/ödev/materyal okuma özetleri native. Grup yazmaları ortak serviste taze step-up, Bearer idempotency/sürüm kontrolü ve atomik audit/outbox ile korunur. Ders/seri, ödev/materyal/teslim, dosya ve kurulum yazmaları kalan iş. |
+| Y14 | `/panel/yonetim/gruplar/[id]` | — | O: grup 360 · Y: grup güncelle, üye ekle, öğrenci listesi | `groups/[id]` PATCH, `groups/[id]/members` POST, `groups/[id]/students` GET; `group-360-server.ts` | Hazır (`GET /api/panel/admin/groups/[id]?sekme=` aynı yükleyici) | `admin/group/[id]` | Kısmi | P2.3 | Beş sekme, üye arama/ekle/çıkar/transfer/bildirim, grup bilgisi/öğretmen/durum yazmaları native. Toplu işlemler sunucu önizlemesi ve onayla, kaynak/hedef sürümüyle uygulanır; ortak servis audit/bildirim/outbox ile atomiktir. Programdan ders/seri planlama ve gerçek web/iPhone kabulü P2.3'ün sonraki işidir. |
 | Y15 | `/panel/yonetim/takvim` | `calendar` | O: kurum takvimi · Y: .ics dışa aktar | `calendar/export` GET; Prisma | O yok | — | Eksik | P2.3 | |
 | Y16 | `/panel/yonetim/kazanimlar` | `outcomes` (flag `learningOutcomes`) | O: kazanım sürümleri · Y: kazanım oluştur, sürüm oluştur/güncelle | `curriculum/outcomes` POST, `curriculum/versions` POST, `curriculum/versions/[id]` PATCH | Y var, O yok | — | Eksik | P2.3 | |
 | Y17 | `/panel/yonetim/kocluk` | `coaching` | O: koç kapasitesi, atamalar · Y: koç ata | `assignCoachService` (SA'dan çıkarıldı, P2.2); `kocum/server.ts` | Y var, O yok | — | Eksik | P2.4 | Yazma ucu hazır: `POST /api/panel/admin/coach-assignments`; kuyruk okuması GET gerekir |
@@ -215,6 +215,8 @@ Mobil karşılık: **yok** (öğretmen ODK alanında yalnız `teacher-odk-report
 | C10 | `/panel/erisilebilirlik` | Y: erişilebilirlik tercihleri | Hazır (PATCH; O → `me`) | — | Eksik | P5 | |
 | C11 | `/panel/veri-kullanimi` | Y: düşük veri tercihleri | Hazır (PATCH) | — | Eksik | P5 | `offline-low-data-operations` |
 
+**P2.9 kod teslimatı (11 Ekim 2026):** native seçici, kişi detayından giriş, kalıcı çıkış bandı, oturuma bağlı Bearer overlay ve öğretmen modu uygulandı. `full-parity-roadmap.md` P2.9 devam kaydında kalan kabul işleri ve test kanıtı bulunur. Gerçek HTTP/iPhone kabulü beklediğinden rota durumları/toplamları değiştirilmedi.
+
 **Ortak kabuk (rota değil, sayıma girmez):** çıkış ve ürün değiştirme mobilde var. ADMIN kabuğu `admin-search` (global arama, P1), `admin-preview*` (önizleme — E2, native, salt okuma, P2.9) ve `admin-teacher-mode` (öğretmen modu — E6, native, P2.9) kullanır.
 
 ---
@@ -226,11 +228,11 @@ Karar tarihi: 11 Ekim 2026 (ürün sahibi).
 | Kimlik | Konu | Karar | Gerekçe / uygulama | Etkilenen satırlar |
 | --- | --- | --- | --- | --- |
 | E1 | Deneme/sınav çözme | **İstisna (onaylı)** | Ürün kararı; bütünlük izleme web'de | S23, S21 "Başlat" |
-| E2 | Yönetici önizlemesi (View As) | **Kapsamda — native** | ADMIN, öğrenci/veli/öğretmen panelini mobilde görüntüler. Önizleme salt okumadır: sunucu önizleme açıkken mutasyonu reddeder (`docs/admin-panel-preview.md`), mobil yazma düğmelerini gizler. Çerez yerine Bearer oturumuna bağlı imzalı önizleme belirteci gerekir (P2.9) | Ortak kabuk; Y08, Y10 giriş noktaları |
+| E2 | Yönetici önizlemesi (View As) | **Kapsamda — native** | ADMIN, öğrenci/veli/öğretmen panelini mobilde görüntüler. Önizleme salt okumadır: sunucu önizleme açıkken mutasyonu reddeder (`docs/admin-panel-preview.md`), mobil yazma düğmelerini gizler. Çerez yerine Bearer oturumuna bağlı imzalı önizleme belirteci uygulandı; native menü + kişi detayı girişleri var. Gerçek HTTP/iPhone kabulü bekliyor (P2.9) | Ortak kabuk; Y08, Y10 giriş noktaları |
 | E3 | Meta/Instagram hesap bağlantısının kurulumu | **İstisna (onaylı)** — mobilde yok | Bağlantı kurulumu webde kalır; mobilde entegrasyon **durumu** (salt okuma) ve Instagram mesaj gönderme kapsamda | Y27 (entegrasyonlar bölümü) |
 | E4 | Toplu kullanıcı içe aktarma | **İstisna (onaylı)** — mobilde yok | `users/bulk` webde kalır; tekil kullanıcı oluşturma/düzenleme kapsamda | Y06, Y07 |
 | E5 | Büyük finans raporları ve CSV dışa aktarımları | **İstisna (onaylı)** — mobilde yok | `admin/business/reports.csv`, `reports/export`, `analytics/export` mobilde sunulmaz; ekrandaki özet/metrik görünümleri kapsamda | Y04, Y21, Y27 (raporlar bölümü) |
-| E6 | Yönetici öğretmen çalışma modu (`admin-teacher-mode`) | **Kapsamda — native** | Yönetici aynı hesapla öğretmen paneline geçer; yazma açıktır ve denetim kaydı yöneticinin kimliğiyle tutulur (`docs/admin-teacher-mode.md`). Önizlemeyle birbirini dışlar. Çerezsiz taşıma P2.9 ile aynı belirteç modeliyle yapılır | Ortak kabuk |
+| E6 | Yönetici öğretmen çalışma modu (`admin-teacher-mode`) | **Kapsamda — native** | Yönetici aynı hesapla öğretmen paneline geçer; yazma açıktır ve denetim kaydı yöneticinin kimliğiyle tutulur (`docs/admin-teacher-mode.md`). Önizlemeyle birbirini dışlar. Çerezsiz taşıma P2.9 ile aynı belirteç modeliyle uygulandı; gerçek HTTP/iPhone kabulü bekliyor | Ortak kabuk |
 
 Onaylı istisnalar **alt işlem** düzeyindedir; etkilenen satırlar kalan alt işlemleri tamamlandığında `Tam` olur. Bu istisnalar için mobil "web'de aç" bağlantısı göstermez — işlem mobil kapsamında değildir.
 

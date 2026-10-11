@@ -79,6 +79,7 @@ function Body({ person }: { person: MobilePersonDetail }) {
           </View>
         }
       />
+      {person.role === 'STUDENT' || person.role === 'PARENT' || person.role === 'TEACHER' ? <Button label="Panelini önizle" variant="secondary" testID="person-preview" onPress={() => router.push({ pathname: '/admin/preview', params: { role: person.role, q: person.email } })} /> : null}
       {person.blockedOrder ? (
         <Banner tone="critical" title="Ödeme alındı, ürün erişimi açılmadı">
           {`${person.blockedOrder.packageName} · ${date(person.blockedOrder.createdAt)}${person.blockedOrder.error ? ` · ${person.blockedOrder.error}` : ''}`}

@@ -5,6 +5,7 @@ import { hashPassword } from "../../lib/auth/password";
 import { parseMobileBootstrap, type MobileBootstrap } from "../../lib/mobile-contracts/bootstrap";
 import { parseSessionList } from "../../lib/mobile-contracts/api";
 import { parseActivationDesk, parseAdminReports, parseEducators, parseInterventionInbox, parseOperationsCenter, parseParentsPage, parsePeopleDirectory, parsePersonDetail, parseSignups, parseStudent360 } from "../../lib/mobile-contracts/admin";
+import { GROUP_TABS, parseEducation, parseGroup360, parseGroupMutationResult } from "../../lib/mobile-contracts/admin-education";
 import { parseAssignmentList, parseInsights, parseLessonDetail, parseLessonList, parseOdHome, parseRecovery, parseReviewQueue, parseWeeklyDigest } from "../../lib/mobile-contracts/student";
 import { hasE2EEnv } from "./env-requirements";
 import { uniqueTestClientIp } from "./helpers/client-ip";
@@ -407,6 +408,73 @@ test.describe.serial("Faz 1 mobil yönetim kapısı", () => {
     expect(parsed.value.actions.every((action) => action.group === "OD")).toBe(true);
   });
 
+  test("P2.3: eğitim ve beş Grup 360 sekmesi Bearer sözleşmesine uyar; yetki ve JSON hata kapıları korunur", async () => {
+    const admin = await temporaryUser("ADMIN");
+    const teacher = await temporaryUser("TEACHER");
+    const group = await db.group.create({ data: { name: "P2.3 E2E", subject: "Matematik", teacherId: teacher.user.id, capacity: 10 } });
+    try {
+      const { context, body } = await mobileLogin(admin.user.email, admin.password);
+      const auth = { ...MOBILE, authorization: `Bearer ${body.token}` };
+      const list = await context.get("/api/panel/admin/education", { headers: auth });
+      expect(list.status(), await list.text()).toBe(200);
+      expect(list.headers()["cache-control"]).toContain("no-store");
+      const education = parseEducation(await list.json());
+      if (!education.ok) throw new Error(education.error);
+      expect(education.value.groups.some((item) => item.id === group.id)).toBe(true);
+      for (const tab of GROUP_TABS) {
+        const response = await context.get(`/api/panel/admin/groups/${group.id}?sekme=${tab}`, { headers: auth });
+        expect(response.status(), await response.text()).toBe(200);
+        expect(response.headers()["cache-control"]).toContain("no-store");
+        const parsed = parseGroup360(await response.json());
+        if (!parsed.ok) throw new Error(parsed.error);
+        expect(parsed.value.tab).toBe(tab);
+        expect(parsed.value.id).toBe(group.id);
+      }
+      expect((await context.get(`/api/panel/admin/groups/${group.id}?sekme=bogus`, { headers: auth })).status()).toBe(400);
+      const missing = await context.get("/api/panel/admin/groups/no-such-group", { headers: auth });
+      expect(missing.status()).toBe(404);
+      expect((await missing.json()).code).toBe("NOT_FOUND");
+      const learner = await mobileLogin(student().email, student().password);
+      for (const path of ["/api/panel/admin/education", `/api/panel/admin/groups/${group.id}`]) {
+        expect((await learner.context.get(path, { headers: { ...MOBILE, authorization: `Bearer ${learner.body.token}` } })).status()).toBe(403);
+        expect((await context.get(path, { headers: MOBILE })).status()).toBe(401);
+      }
+    } finally {
+      await db.group.delete({ where: { id: group.id } });
+    }
+  });
+
+  test("P2.3: grup yazması Bearer step-up, zorunlu önkoşul, aynı anahtar tekrarı ve eski sürüm 409 uygular", async () => {
+    const admin = await temporaryUser("ADMIN");
+    const teacher = await temporaryUser("TEACHER");
+    const { context, body } = await mobileLogin(admin.user.email, admin.password);
+    const auth = { ...MOBILE, authorization: `Bearer ${body.token}` };
+    const create = { name: "P2.3 group write", subject: "Fen", teacherId: teacher.user.id, studentIds: [], idempotencyKey: randomUUID() };
+    let groupId: string | null = null;
+    try {
+      expect((await context.post("/api/panel/groups", { headers: auth, data: create })).status()).toBe(428);
+      await db.session.updateMany({ where: { userId: admin.user.id }, data: { stepUpAt: new Date() } });
+      const missing = await context.post("/api/panel/groups", { headers: auth, data: { name: create.name, subject: create.subject, teacherId: teacher.user.id } });
+      expect(missing.status(), await missing.text()).toBe(400);
+      expect((await missing.json()).code).toBe("PRECONDITION_REQUIRED");
+      const response = await context.post("/api/panel/groups", { headers: auth, data: create });
+      expect(response.status(), await response.text()).toBe(200);
+      const created = parseGroupMutationResult(await response.json());
+      if (!created.ok) throw new Error(created.error);
+      groupId = created.value.id;
+      const replay = await context.post("/api/panel/groups", { headers: auth, data: create });
+      expect(await replay.json()).toMatchObject({ id: groupId, replayed: true });
+      const get = parseGroup360(await (await context.get(`/api/panel/admin/groups/${groupId}`, { headers: auth })).json());
+      if (!get.ok) throw new Error(get.error);
+      expect(get.value.revision).toBe(created.value.revision);
+      const edit = { action: "UPDATE_META", name: "Updated", subject: "Fen", expectedRevision: get.value.revision, idempotencyKey: randomUUID() };
+      expect((await context.patch(`/api/panel/groups/${groupId}`, { headers: auth, data: edit })).status()).toBe(200);
+      const stale = await context.patch(`/api/panel/groups/${groupId}`, { headers: auth, data: { ...edit, name: "Stale", idempotencyKey: randomUUID() } });
+      expect(stale.status()).toBe(409);
+      expect((await stale.json()).code).toBe("GROUP_CONFLICT");
+    } finally { if (groupId) await db.group.delete({ where: { id: groupId } }); }
+  });
+
   test("hassas yönetim uçları Bearer ile taze step-up ister: 428 STEP_UP_REQUIRED", async () => {
     const admin = await temporaryUser("ADMIN");
     const { context, body } = await mobileLogin(admin.user.email, admin.password);
@@ -514,4 +582,54 @@ test.describe.serial("Faz 1 mobil yönetim kapısı", () => {
     const anonymous = await context.get("/api/panel/admin/operations-center", { headers: MOBILE });
     expect(anonymous.status()).toBe(401);
   });
+  test("P2.9: Bearer önizleme çerezsiz, konu kimlikli, yazmalar kapalı ve tek oturuma bağlı", async () => {
+    const admin = await temporaryUser("ADMIN");
+    const login = await mobileLogin(admin.user.email, admin.password);
+    const learner = await mobileLogin(student().email, student().password);
+    const learnerBootstrap = await bootstrapOf(await me(learner.context, learner.body.token!));
+    const auth = { ...MOBILE, authorization: `Bearer ${login.body.token}` };
+    const started = await login.context.post("/api/panel/admin-preview", { headers: auth, data: { previewRole: "STUDENT", previewUserId: learnerBootstrap.user.id } });
+    expect(started.status(), await started.text()).toBe(200);
+    expect(setCookies(started)).toEqual([]);
+    const { token } = await started.json();
+    expect(typeof token).toBe("string");
+    const overlay = { ...auth, "x-od-preview": token, "x-od-workspace": "OD" };
+    const preview = await bootstrapOf(await login.context.get("/api/panel/me", { headers: overlay }));
+    expect(preview.user.id).toBe(learnerBootstrap.user.id);
+    expect(preview.user.role).toBe("STUDENT");
+    expect(preview.adminOverlay).toMatchObject({ mode: "PREVIEW", actorUserId: admin.user.id });
+    if (learnerBootstrap.workspace?.activeProduct === "OD") expect(preview.workspace?.navigation).toEqual(learnerBootstrap.workspace?.navigation);
+    expect(preview.workspace?.navigation.sections.flatMap((section) => section.items).some((item) => item.webPath.startsWith("/panel/yonetim"))).toBe(false);
+    for (const path of ["/api/panel/users", "/api/panel/relationships", "/api/panel/notifications/read"]) {
+      const write = await login.context.post(path, { headers: overlay, data: {} });
+      expect(write.status(), `${path}: ${await write.text()}`).toBe(403);
+    }
+    const otherSession = await mobileLogin(admin.user.email, admin.password);
+    expect((await otherSession.context.get("/api/panel/me", { headers: { ...overlay, authorization: `Bearer ${otherSession.body.token}` } })).status()).toBe(403);
+    const ended = await login.context.delete("/api/panel/admin-preview", { headers: overlay });
+    expect(ended.status()).toBe(200);
+    expect(setCookies(ended)).toEqual([]);
+    expect((await bootstrapOf(await me(login.context, login.body.token!))).user.id).toBe(admin.user.id);
+  });
+
+  test("P2.9: öğretmen modu aynı ADMIN kimliğiyle çerezsiz açılır, iki belirteç birlikte reddedilir", async () => {
+    const admin = await temporaryUser("ADMIN");
+    const login = await mobileLogin(admin.user.email, admin.password);
+    const auth = { ...MOBILE, authorization: `Bearer ${login.body.token}` };
+    const started = await login.context.post("/api/panel/admin-teacher-mode", { headers: auth, data: {} });
+    expect(started.status(), await started.text()).toBe(200);
+    expect(setCookies(started)).toEqual([]);
+    const { token } = await started.json();
+    const overlay = { ...auth, "x-od-teacher-mode": token, "x-od-workspace": "OD" };
+    const teacher = await bootstrapOf(await login.context.get("/api/panel/me", { headers: overlay }));
+    expect(teacher.user).toMatchObject({ id: admin.user.id, role: "TEACHER" });
+    expect(teacher.adminOverlay?.mode).toBe("TEACHER");
+    expect((await login.context.get("/api/panel/me", { headers: { ...overlay, "x-od-preview": token } })).status()).toBe(403);
+    const ended = await login.context.delete("/api/panel/admin-teacher-mode", { headers: overlay });
+    expect(ended.status()).toBe(200);
+    expect(setCookies(ended)).toEqual([]);
+    const audit = await db.auditLog.findFirst({ where: { actorUserId: admin.user.id, action: "ADMIN_TEACHER_MODE_STARTED" } });
+    expect(audit).not.toBeNull();
+  });
+
 });

@@ -38,6 +38,7 @@ export default function MenuScreen() {
           <View style={styles.flex}><Text variant="bodyStrong">{bootstrap.user.fullName ?? bootstrap.user.email}</Text><Text variant="meta" tone="muted">{ROLE_LABEL[bootstrap.user.role]}</Text></View>
         </View>
         <WorkspaceSwitcher />
+        {admin ? <Row title="Panel önizlemesi ve öğretmen modu" onPress={() => router.push('/admin/preview')} testID="menu-admin-preview" /> : null}
         {admin ? <Row leading={<Search size={19} color={color.textSecondary} />} title="Ara" subtitle="Kişi, grup, ders, sipariş, deneme" onPress={() => router.push('/admin/search')} testID="menu-admin-search" /> : null}
         {navigation
           ? navigation.sections.map((section) => (
@@ -48,10 +49,10 @@ export default function MenuScreen() {
               </Section>
             ))
           : null}
-        <Section title="Hesap">
+        {!bootstrap.adminOverlay ? <Section title="Hesap">
           <Row leading={<Bell size={19} color={color.textSecondary} />} title="Bildirimler" meta={unread > 0 ? `${unread} okunmamış` : null} onPress={() => router.push('/notifications')} testID="menu-notifications" />
           <Row leading={<Settings size={19} color={color.textSecondary} />} title="Hesap ve ayarlar" onPress={() => router.push('/account')} testID="menu-account" />
-        </Section>
+        </Section> : null}
         <Row leading={<LogOut size={19} color={color.textSecondary} />} title="Çıkış yap" onPress={() => void signOut()} testID="menu-sign-out" />
       </Screen>
   );

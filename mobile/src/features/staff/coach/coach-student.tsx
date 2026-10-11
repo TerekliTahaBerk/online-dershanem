@@ -73,7 +73,7 @@ function NewSession({ studentId, online }: { studentId: string; online: boolean 
   const urlValid = urlValue === null || isHttps(urlValue);
   const future = at.getTime() > Date.now();
 
-  if (!open) return <><WriteBanner state={state} /><Button label="Görüşme planla" variant="secondary" disabled={!online} onPress={() => setOpen(true)} testID="coach-new-session" /></>;
+  if (!open) return <><WriteBanner state={state} /><Button mutation label="Görüşme planla" variant="secondary" disabled={!online} onPress={() => setOpen(true)} testID="coach-new-session" /></>;
   async function save() {
     if (!future || !urlValid || mutation.isPending || !online) return;
     const scheduledAt = at.toISOString();
@@ -97,7 +97,7 @@ function NewSession({ studentId, online }: { studentId: string; online: boolean 
       {!future ? <Text tone="secondary" variant="meta">Gelecekteki bir saat seçin.</Text> : null}
       <TextField label="Görüşme bağlantısı (isteğe bağlı)" value={url} onChangeText={setUrl} autoCapitalize="none" keyboardType="url" error={urlValid ? undefined : 'Yalnız https:// bağlantısı.'} />
       <View style={staffStyles.row}>
-        <Button label="Planla" disabled={!future || !urlValid || !online} loading={mutation.isPending} onPress={() => void save()} />
+        <Button mutation label="Planla" disabled={!future || !urlValid || !online} loading={mutation.isPending} onPress={() => void save()} />
         <Button label="Vazgeç" variant="secondary" onPress={() => setOpen(false)} />
       </View>
     </View>
@@ -138,7 +138,7 @@ function Notes({ data, online }: { data: MobileCoachStudentDetail; online: boole
         <TextField label="Yeni not" value={body} onChangeText={setBody} maxLength={2000} multiline />
         <SegmentedTabs label="Görünürlük" value={visibility} onChange={setVisibility} options={NOTE_VISIBILITY.map((value) => ({ value, label: VISIBILITY_LABEL[value] }))} />
         <Text tone="muted" variant="meta">{VISIBILITY_HINT[visibility]}</Text>
-        <Button label="Notu kaydet" disabled={!ready} loading={mutation.isPending} onPress={() => void save()} testID="coach-note-save" />
+        <Button mutation label="Notu kaydet" disabled={!ready} loading={mutation.isPending} onPress={() => void save()} testID="coach-note-save" />
       </View>
       {data.notes.length ? (
         data.notes.map((note) => <Row key={note.id} title={note.body} subtitle={`${note.own ? 'Sen' : note.authorName} · ${formatShortDateTime(note.createdAt)}`} trailing={<StatusBadge label={VISIBILITY_LABEL[note.visibility]} tone={note.visibility === 'INTERNAL' ? 'neutral' : 'info'} />} />)

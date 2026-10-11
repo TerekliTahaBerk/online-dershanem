@@ -113,13 +113,13 @@ function DigestFeedback({ digestId, studentId, initial }: { digestId: string; st
     <Section title="Bu özet size nasıl hissettirdi?">
       {message ? <Banner tone={message.tone}>{message.text}</Banner> : null}
       <View style={parentStyles.row}>
-        <Button testID="parent-digest-helpful" label="Yararlıydı" variant={helpful === true ? 'primary' : 'secondary'} disabled={mutation.isPending} onPress={() => void save(true, pulse)} />
-        <Button testID="parent-digest-not-helpful" label="Yararlı değildi" variant={helpful === false ? 'primary' : 'secondary'} disabled={mutation.isPending} onPress={() => void save(false, pulse)} />
+        <Button mutation testID="parent-digest-helpful" label="Yararlıydı" variant={helpful === true ? 'primary' : 'secondary'} disabled={mutation.isPending} onPress={() => void save(true, pulse)} />
+        <Button mutation testID="parent-digest-not-helpful" label="Yararlı değildi" variant={helpful === false ? 'primary' : 'secondary'} disabled={mutation.isPending} onPress={() => void save(false, pulse)} />
       </View>
       <Text variant="label" tone="secondary">Kaygı düzeyi (isteğe bağlı)</Text>
       <View style={parentStyles.row} accessibilityRole="radiogroup" accessibilityLabel="Özet kaygı düzeyi">
         {PULSE.map((option) => (
-          <Button key={option.value} testID={`parent-digest-pulse-${option.value}`} label={option.label} variant={pulse === option.value ? 'primary' : 'quiet'} disabled={mutation.isPending} onPress={() => void save(helpful, option.value)} />
+          <Button mutation key={option.value} testID={`parent-digest-pulse-${option.value}`} label={option.label} variant={pulse === option.value ? 'primary' : 'quiet'} disabled={mutation.isPending} onPress={() => void save(helpful, option.value)} />
         ))}
       </View>
     </Section>

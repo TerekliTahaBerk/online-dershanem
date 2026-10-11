@@ -1,3 +1,7 @@
+import { View } from 'react-native';
+import { useReadyBootstrap } from '@/lib/auth/session-provider';
+import { PreviewReadOnlyContext } from '@/lib/auth/preview-context';
+import { AdminOverlayBanner } from '@/features/admin/overlay-banner';
 import { Stack } from 'expo-router';
 
 import { useDesign } from '@/design/theme';
@@ -9,13 +13,17 @@ import { color, font } from '@/design/tokens';
 /** Hazır çalışma alanı: sekmeler + üzerine itilen ekranlar (başlıklı). */
 export default function AppLayout() {
   const { product } = useDesign();
+  const bootstrap = useReadyBootstrap();
   return (
     // M6: veli çocuk bağlamı (yalnız PARENT rolünde etkin; diğer rollerde geçirgen).
     // Faz 1: hassas yönetim işlemleri için native step-up (428 → kod → tek tekrar).
+    <PreviewReadOnlyContext.Provider value={bootstrap.adminOverlay?.mode === 'PREVIEW'}>
+    <View style={{ flex: 1 }}>
+    <AdminOverlayBanner />
     <StepUpProvider>
     <ParentContextProvider>
       {/* M5: bildirim dokunuşu / soğuk başlangıç / rozet — yalnız hazır çalışma alanında. */}
-      <PushRuntime />
+      {!bootstrap.adminOverlay ? <PushRuntime /> : null}
       <Stack
       screenOptions={{
         headerTintColor: product.accent,
@@ -26,6 +34,7 @@ export default function AppLayout() {
       }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="screen/[id]" options={{ title: '' }} />
+      <Stack.Protected guard={!bootstrap.adminOverlay}>
       <Stack.Screen name="notifications" options={{ title: 'Bildirimler' }} />
       <Stack.Screen name="account/index" options={{ title: 'Hesap ve ayarlar' }} />
       <Stack.Screen name="account/sessions" options={{ title: 'Oturumlar' }} />
@@ -33,6 +42,7 @@ export default function AppLayout() {
       <Stack.Screen name="account/privacy" options={{ title: 'Gizlilik' }} />
       <Stack.Screen name="account/password" options={{ title: 'Parola' }} />
       <Stack.Screen name="account/notifications" options={{ title: 'Bildirim ayarları' }} />
+      </Stack.Protected>
       <Stack.Screen name="od/assignment/[id]" options={{ title: 'Çalışma' }} />
       <Stack.Screen name="od/lesson/[id]" options={{ title: 'Ders' }} />
       <Stack.Screen name="od/review-recovery" options={{ title: 'Tekrar ve telafi' }} />
@@ -46,13 +56,18 @@ export default function AppLayout() {
       <Stack.Screen name="coach/session/[id]" options={{ title: 'Görüşme' }} />
       <Stack.Screen name="coach/plan/[id]" options={{ title: 'Plan' }} />
       {/* Faz 1 yönetim (AdminRouteGate + sunucu yetkisi). */}
+      <Stack.Screen name="admin/preview" options={{ title: 'Panel önizlemesi' }} />
       <Stack.Screen name="admin/search" options={{ title: 'Ara' }} />
       <Stack.Screen name="admin/person/[id]" options={{ title: 'Kişi' }} />
       <Stack.Screen name="admin/student/[id]" options={{ title: 'Öğrenci 360' }} />
       <Stack.Screen name="admin/parents" options={{ title: 'Veliler' }} />
       <Stack.Screen name="admin/educators" options={{ title: 'Öğretmenler' }} />
+      <Stack.Screen name="admin/group/[id]" options={{ title: 'Grup 360' }} />
+      <Stack.Screen name="admin/group-create" options={{ title: 'Grup oluştur' }} />
     </Stack>
     </ParentContextProvider>
     </StepUpProvider>
+    </View>
+    </PreviewReadOnlyContext.Provider>
   );
 }
