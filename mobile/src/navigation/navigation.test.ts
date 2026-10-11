@@ -42,6 +42,12 @@ describe('native ekran eşlemesi (rol + çalışma alanı + menü kimliği)', ()
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('today') })).toMatchObject({ key: 'admin-operations-center' });
   });
 
+  it('yönetim "operations" öğesi web yoluna göre: bayrak açıkken Müdahale, kapalıyken Raporlar', () => {
+    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('operations', '/panel/yonetim/mudahale') }).key).toBe('admin-interventions');
+    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('operations', '/panel/yonetim/raporlar') }).key).toBe('admin-reports');
+    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('reports', '/panel/yonetim/raporlar') }).key).toBe('admin-reports');
+  });
+
   it('yönetim: henüz native olmayan öğe faz etiketli yer tutucudur (Deneme Ligi yönetimi P4, diğerleri P2)', () => {
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('people') })).toMatchObject({ key: 'placeholder', phase: 'P2' });
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'ODK', item: item('odk-exams') })).toMatchObject({ key: 'placeholder', phase: 'P4' });

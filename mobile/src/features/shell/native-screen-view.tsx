@@ -1,5 +1,8 @@
 import type { ReactElement } from 'react';
+import ActivationDeskScreen from '@/features/admin/activation-desk';
+import InterventionsScreen from '@/features/admin/interventions';
 import OperationsCenterScreen from '@/features/admin/operations-center';
+import AdminReportsScreen from '@/features/admin/reports';
 import OdkExamsScreen from '@/features/odk/odk-exams';
 import OdkHomeScreen from '@/features/odk/odk-home';
 import OdkSwitchScreen from '@/features/odk/odk-switch';
@@ -86,6 +89,9 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'coach-plans': () => <CoachPlansScreen />,
   'teacher-odk-reports': () => <TeacherOdkReportsScreen />,
   'admin-operations-center': () => <OperationsCenterScreen />,
+  'admin-interventions': () => <InterventionsScreen />,
+  'admin-reports': () => <AdminReportsScreen />,
+  'admin-activation-desk': () => <ActivationDeskScreen />,
 };
 
 /** Üst güvenli alanı sekmelerde PanelHeader, detaylarda Stack header bırakır. */

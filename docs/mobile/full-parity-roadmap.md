@@ -105,6 +105,16 @@ P1 tamamlanmadan hiçbir yönetim yazma işlemi açılmaz. P2–P5 P1'den sonra 
 
 **Amaç.** `/panel/yonetim/**` (28 rota) ve İşletme bölümlerinin tüm okuma ve yazma işlemlerini native yapmak. Her alan önce salt-okuma, sonra yazma olarak iki PR'da açılır.
 
+> **Durum (11 Ekim 2026):** **2.1 Operasyon tamamlandı** (okuma + yazma). Sıradaki: 2.2 Kişiler ve erişim (okuma).
+>
+> | Alan | Web | Sunucu | Mobil | Not |
+> | --- | --- | --- | --- | --- |
+> | Müdahale | `mudahale` | `GET /api/panel/admin/interventions`; yazma mevcut `interventions/*` | `features/admin/interventions.tsx` | Etiketler `lib/panel/intervention-vocabulary.ts` (web bileşenleri de buradan okur) |
+> | Aktivasyon masası | `isler` | Yükleyici sayfadan `lib/panel/activation-desk-server.ts`'e taşındı; `GET /api/panel/admin/activation-desk` | `features/admin/activation-desk.tsx` | Geçiş + sipariş bağlama taze step-up; native step-up ile uçtan uca test |
+> | Raporlar | `raporlar` | `lib/panel/admin-reports.ts` (saf) + `-server.ts`; `GET /api/panel/admin/reports` | `features/admin/reports.tsx` | CSV E5 ile kapsam dışı |
+>
+> Tekrarlanan desen (sonraki alanlar için): sayfanın RSC veri yükleyicisi `lib/panel/*-server.ts`'e **olduğu gibi** taşınır, web sayfası onu çağırır (davranış değişmez), mobil uç aynı yükleyiciyi projeksiyonla sunar; durum etiketleri tek sözlükten gelir.
+
 **Sıra ve kapsam.**
 
 | # | Alan | Web rotaları | Mevcut API | Eklenecek sunucu işi | Native ekranlar / işlemler |

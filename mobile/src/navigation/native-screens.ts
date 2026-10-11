@@ -51,6 +51,9 @@ export type NativeScreenKey =
   | 'coach-plans'
   | 'teacher-odk-reports'
   | 'admin-operations-center'
+  | 'admin-interventions'
+  | 'admin-reports'
+  | 'admin-activation-desk'
   | 'placeholder';
 
 /** `P2` / `P4`: tam işlev eşliği yol haritasındaki yönetim fazları (docs/mobile/full-parity-roadmap.md). */
@@ -188,7 +191,19 @@ const TEACHER_ODK: Record<string, NativeScreenKey> = {
  */
 const ADMIN: Record<string, NativeScreenKey> = {
   today: 'admin-operations-center',
+  reports: 'admin-reports',
+  provisioning: 'admin-activation-desk',
 };
+
+/**
+ * Yönetim `operations` öğesi bayrağa göre iki farklı web sayfasıdır
+ * (`interventionInbox` açıksa Müdahale, kapalıysa Raporlar); eşleme web
+ * yoluna bakar ki bayrak kapalıyken müdahale ekranı açılmasın.
+ */
+function adminScreen(item: MobileNavItem): NativeScreenKey | undefined {
+  if (item.id === 'operations') return item.webPath.endsWith('/mudahale') ? 'admin-interventions' : 'admin-reports';
+  return ADMIN[item.id];
+}
 
 function adminPhase(navId: string): PlannedPhase {
   return navId.startsWith('odk-') ? 'P4' : 'P2';
@@ -212,7 +227,7 @@ export function resolveNativeScreen(input: { role: MobileRole; workspace: Mobile
   else if (role === 'TEACHER' && workspace === 'OD') key = TEACHER_OD[item.id];
   else if (role === 'TEACHER' && workspace === 'OK') key = TEACHER_OK[item.id];
   else if (role === 'TEACHER' && workspace === 'ODK') key = TEACHER_ODK[item.id];
-  else if (role === 'ADMIN') key = ADMIN[item.id];
+  else if (role === 'ADMIN') key = adminScreen(item);
   if (key) return { key, navId: item.id, title: item.label, webPath: item.webPath };
   // Deneme Ligi öğrencisinde eşlenmemiş her öğe bilinçli web devam yoludur.
   const webOnly =

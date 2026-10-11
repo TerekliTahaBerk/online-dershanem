@@ -37,7 +37,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 
 | Alan | Rota | Tam | Kısmi | Eksik | İstisna | Yönl. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1. Yönetim (`/panel/yonetim`) | 28 | 1 | 0 | 26 | 0 | 1 |
+| 1. Yönetim (`/panel/yonetim`) | 28 | 4 | 0 | 23 | 0 | 1 |
 | 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 0 | 0 | 8 | 0 | 0 |
 | 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 7 | 3 | 10 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
@@ -46,7 +46,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | 7. Veli (`/panel/veli`) | 12 | 5 | 4 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 4 | 3 | 2 | 0 | 2 |
-| **Toplam** | **106** | **35** | **15** | **49** | **1** | **6** |
+| **Toplam** | **106** | **38** | **15** | **46** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
@@ -67,9 +67,9 @@ Mobil karşılık: **yok** (`slot-screen.tsx` ADMIN → yalnız `StaffHomeScreen
 | # | Web rotası | Nav id | Alt işlemler (O / Y) | Web kaynağı | API | Mobil | Durum | Faz | Not |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Y01 | `/panel/yonetim` | `today` | O: operasyon merkezi göstergeleri, iş listeleri, alan süzgeci | `lib/panel/admin-operations-center-server.ts` | Hazır (`GET /api/panel/admin/operations-center`) | `admin-operations-center` | Tam | P1 | Faz 1. Satırlar yetkili menüdeki bölüme açılır; önizleme girişi E2/P2.9 |
-| Y02 | `/panel/yonetim/mudahale` | `operations` (flag `interventionInbox`) | O: müdahale kutusu · Y: oluştur, güncelle/çöz, toplu üret | `interventions` POST, `interventions/[id]` PATCH, `interventions/generate` POST; `intervention-inbox-server.ts` | Y var, O yok | — | Eksik | P2.1 | Bayrak kapalıyken `operations` → `raporlar` |
-| Y03 | `/panel/yonetim/isler` | `provisioning` | O: provizyon/ilk ders işleri · Y: e-posta yeniden gönder, sipariş onboarding, siparişten kullanıcı, aday güncelle | `email-outbox/[id]/retry` PATCH, `orders/[id]/onboarding` POST, `orders/[id]/user` POST, `leads/[id]` PATCH; `business/first-lesson-metrics-server.ts` | Y var, O yok | — | Eksik | P2.1 | Hassas: kullanıcı oluşturma → step-up |
-| Y04 | `/panel/yonetim/raporlar` | `reports` | O: operasyon/denetim raporları · Y: dışa aktarma | `reports/export` GET | O yok (sayfa), export var | — | Eksik | P2.1 | Export → indir + paylaş sayfası |
+| Y02 | `/panel/yonetim/mudahale` | `operations` (flag `interventionInbox`) | O: müdahale kutusu, durum süzgeci, geçmiş · Y: elle kayıt, üstlen, başlat, not, beklet (1/3/7 gün), çöz (sonuç), yanlış işaret (neden), yeniden aç, kuralları çalıştır | `getInterventionInbox`, `listInterventionStudentOptions`; yazma: `interventions` POST, `interventions/[id]` PATCH (`expectedVersion`), `interventions/generate` POST | Hazır (`GET /api/panel/admin/interventions`) | `admin-interventions` | Tam | P2.1 | 409 → yenile + açık mesaj; bayrak kapalı → 404 `FEATURE_DISABLED`. Etiketler tek sözlük (`lib/panel/intervention-vocabulary.ts`) |
+| Y03 | `/panel/yonetim/isler` | `provisioning` | O: ilk ders göstergeleri, yerleştirme ölçüleri, aktivasyon kuyruğu (checklist, tercih, geçmiş), birleşik iş kutusu, hazırlık kontrolü, siparişler, talepler, cron, e-posta kuyruğu · Y: onboarding geçişi (sorumlu, bloker, not), siparişi hesaba bağla, talep durumu, e-posta tekrarı | `loadActivationDesk` (`lib/panel/activation-desk-server.ts`, sayfadan taşındı); yazma: `orders/[id]/onboarding` POST + `orders/[id]/user` POST (taze step-up), `leads/[id]` PATCH, `email-outbox/[id]/retry` PATCH | Hazır (`GET /api/panel/admin/activation-desk`) | `admin-activation-desk` | Tam | P2.1 | İzinli geçişler sunucudan (`allowedTransitions`); 428 → native step-up → aynı gövdeyle tek tekrar |
+| Y04 | `/panel/yonetim/raporlar` | `reports` (+ `operations` bayrak kapalıyken) | O: son 30 gün özet, tekrar / plan / AI (bayrağa bağlı), SLO'lar, öğretmen ve grup ilerlemesi | `loadAdminReports` + saf `buildAdminReports` (sayfadan taşındı) | Hazır (`GET /api/panel/admin/reports`) | `admin-reports` | Tam | P2.1 | CSV dışa aktarımı E5 ile kapsam dışı |
 | Y05 | `/panel/yonetim/basvurular` | `signups` | O: yeni kayıtlar · Y: iletişim güncelle, çocuk hesabı oluştur | `signups/[userId]/contact` PATCH, `signups/children/[id]/account` POST | Y var, O yok | — | Eksik | P2.2 | Çocuk verisi kapsamı |
 | Y06 | `/panel/yonetim/kisiler` | `people` | O: birleşik kişi dizini · Y: kullanıcı oluştur, toplu işlem, MFA sıfırlama talebi/onayı | `users` POST, `users/bulk` POST, `users/[id]/mfa-reset` POST, `mfa-resets/[id]/approve` POST; `people-views.ts` | Y var, O yok | — | Eksik | P2.2 | MFA/bulk → step-up |
 | Y07 | `/panel/yonetim/kullanicilar` | (Kişiler alt) | O: kullanıcı listesi · Y: oluştur, durum, parola sıfırla, MFA sıfırla, toplu | `users*` | Y var, O yok | — | Eksik | P2.2 | |

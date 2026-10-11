@@ -9,10 +9,10 @@ import { newUuid } from '@/lib/ids';
 import { queryKeys } from '@/lib/query/keys';
 
 import { useStepUp } from '../auth/step-up';
-import { runWithStepUp } from './step-up-retry';
+import { runWithStepUp, StepUpCancelledError } from './step-up-retry';
 
 export { QueryView, usePullToRefresh } from '../shared/workspace-data';
-export { StepUpCancelledError } from './step-up-retry';
+export { StepUpCancelledError };
 
 /**
  * YÖNETİM (Faz 1) ortak katmanı.
@@ -62,4 +62,12 @@ export function AdminRouteGate({ children }: { children: ReactNode }) {
   const bootstrap = useReadyBootstrap();
   if (bootstrap.user.role !== 'ADMIN') return <EmptyState title="Bu bölüm hesabında yok" body="Bu ekran yalnız yönetim hesaplarında açılır." />;
   return <>{children}</>;
+}
+
+/** Yönetim yazma hatasının kullanıcı metni: 409 için açık "yenilendi" mesajı, vazgeçilen step-up için açıklama. */
+export function adminErrorText(error: unknown): string | null {
+  if (!error) return null;
+  if (error instanceof StepUpCancelledError) return error.message;
+  if (error instanceof ApiError) return error.kind === 'conflict' ? 'Kayıt başka bir yerde değişti. Liste yenilendi; kontrol edip tekrar dene.' : error.message;
+  return 'İşlem kaydedilemedi.';
 }

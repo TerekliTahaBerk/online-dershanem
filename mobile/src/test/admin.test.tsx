@@ -96,3 +96,36 @@ describe('Faz 1 yönetim kabuğu', () => {
     expect(h.server.called('GET', '/api/panel/admin-search')).toHaveLength(0);
   });
 });
+
+describe('Faz 2.1 raporlar', () => {
+  it('sistem menüsündeki Raporlar native açılır; bayrağa bağlı bölümler yalnız sunucu verince görünür', async () => {
+    const reports = {
+      contractVersion: 1,
+      rangeDays: 30,
+      lessonCount: 12,
+      noteRate: 67,
+      attendanceRate: 91,
+      activeAssignments: 5,
+      overdueAssignments: 2,
+      emptyGroups: 1,
+      pendingPayments: 0,
+      review: null,
+      plan: { completionRate: 20, completed: 2, generated: 10 },
+      ai: null,
+      slo: [{ key: 'teacher_close_time_p50', label: 'Ders kapanışı p50', status: 'healthy', statusLabel: 'Hedefte', display: '1,5 dk', sampleSize: 6, targetDisplay: '2 dk', comparison: 'lte' }],
+      teachers: [{ name: 'Ada', total: 2, completed: 1, percent: 50 }],
+      groups: [{ id: 'g1', name: '8-A', students: 3, percent: 50 }],
+    };
+    const bootstrap = makeBootstrap({ role: 'ADMIN', products: { OD: 'ACTIVE' }, activeProduct: 'OD', extraNav: [['reports', 'Operasyon ve denetim raporları', '/panel/yonetim/raporlar']] });
+    const h = await boot([account('admin@example.com', bootstrap, { routes: { 'GET /api/panel/admin/operations-center': () => jsonResponse(200, center), 'GET /api/panel/admin/reports': () => jsonResponse(200, reports) } })]);
+    await signIn(h, 'admin@example.com');
+    await press(h, await h.screen.findByTestId('nav-menu', {}, WAIT));
+    await press(h, await h.screen.findByTestId('menu-reports', {}, WAIT));
+    expect(await h.screen.findByTestId('admin-reports', {}, WAIT)).toBeTruthy();
+    expect(await h.screen.findByText('%67', {}, WAIT)).toBeTruthy();
+    expect(h.screen.getByText('Haftalık plan')).toBeTruthy();
+    expect(h.screen.queryByText('Tekrar')).toBeNull();
+    expect(h.screen.getByText('1,5 dk · 6 örnek · ≤2 dk')).toBeTruthy();
+    expect(h.screen.queryByText(/CSV/)).toBeNull();
+  });
+});
