@@ -1,4 +1,5 @@
 import { application } from "../../lib/application";
+import { denemeLigiBrand } from "../../lib/deneme-ligi-brand";
 import { expect, test, type Page } from "@playwright/test";
 
 /**
@@ -128,8 +129,8 @@ test.describe("ürün sayfaları ve footer", () => {
     await page.setViewportSize({ width: 375, height: 844 });
     await gotoHydrated(page, "/urunler/online-deneme-kulubum");
     const main = page.getByRole("main");
-    await expect(main.getByRole("heading", { level: 1 })).toHaveText("Denemeye katıl. Gelişimini gör.");
-    await expect(main.getByText("onlinedenemekulübüm. × Deneme Ligi", { exact: true })).toBeVisible();
+    await expect(main.getByRole("heading", { level: 1 })).toHaveText(/Denemeye katıl\.\s*Gelişimini gör\./);
+    await expect(main.locator("section").filter({ has: page.getByRole("heading", { level: 1 }) }).getByText(denemeLigiBrand.participationNote, { exact: true })).toBeVisible();
 
     await main.getByRole("link", { name: "Nasıl İşler?", exact: true }).click();
     await expect(page).toHaveURL(/#nasil-isler$/);
@@ -167,12 +168,12 @@ test.describe("ürün sayfaları ve footer", () => {
 
   test("Dino AI yayında olmayan bir yeteneği çalışıyormuş gibi anlatmaz", async ({ page }) => {
     await page.goto("/dino-ai", { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Dino AI");
-    await expect(page.getByRole("main").getByText("Dino AI ayrı satılan bir ürün değildir.", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Aralarındaki bağ: Dino.");
+    await expect(page.getByRole("main")).toContainText(/Ayrı satılan bir ürün değildir\./i);
     const navLink = page.getByRole("navigation", { name: "Ana menü" }).getByRole("link", { name: /^Dino AI ·/ });
     if ((await navLink.textContent())?.includes("Yakında")) {
       await expect(page.getByRole("main")).toContainText("henüz yayında değil");
-      await expect(page.getByRole("heading", { level: 1 })).toContainText("hazırlanıyor");
+      await expect(page.getByRole("main")).toContainText("pilot hazırlıkları sürüyor");
     } else {
       await expect(page.getByRole("main")).toContainText("Sınırlı pilot");
     }

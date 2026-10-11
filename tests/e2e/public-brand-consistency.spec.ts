@@ -29,7 +29,10 @@ for (const width of [320, 390, 768, 1440]) {
       await expect(card).toContainText(`× ${brand.shortName}`);
       await expect(card.locator("img")).toHaveCount(1);
       expect(await card.locator("img").getAttribute("src")).toContain(encodeURIComponent(brand.logo));
-      expect(await card.locator("img").evaluate(img => img.getBoundingClientRect().height)).toBe(171);
+      const cover = card.locator("img").locator("..");
+      await expect(cover).toHaveCSS("aspect-ratio", "5 / 4");
+      await expect(card.locator("img")).toHaveCSS("object-fit", "cover");
+      expect(await cover.evaluate(node => Math.abs(node.clientWidth / node.clientHeight - 1.25))).toBeLessThan(0.01);
       await expect(page.locator("footer").getByRole("link", { name: brand.name, exact: true }).first()).toHaveText(brand.shortName);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
