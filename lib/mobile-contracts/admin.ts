@@ -353,3 +353,166 @@ const okResult = v.object({ ok: v.literal(true) });
 export function parseOkResult(input: unknown): ContractResult<Infer<typeof okResult>> {
   return check(okResult, input);
 }
+
+/* ================================================================== *
+ * KİŞİLER & ERİŞİM — Faz 2.2
+ *  - `GET /api/panel/admin/people?sekme&q&rol&urun&durum&sayfa` — web
+ *    `app/panel/yonetim/kisiler` ile AYNI `loadPeopleDirectory`.
+ *  - `GET /api/panel/admin/people/:userId` — web
+ *    `app/panel/yonetim/kullanicilar/[id]` ile AYNI `loadPersonDetail`.
+ * Yazmalar MEVCUT uçlarla (hepsi taze step-up): `POST /api/panel/users`,
+ * `PATCH /api/panel/users/:id`, `POST …/status`, `POST …/reset-password`,
+ * `PUT …/products`, `POST|DELETE …/staff-roles`, `PATCH …/coach-profile`,
+ * `POST …/mfa-reset`, `POST /api/panel/mfa-resets/:id/approve`.
+ * Toplu işlem mobil kapsamı dışında (E4).
+ * ================================================================== */
+
+export const USER_STATUSES = ["ACTIVE", "SUSPENDED", "ARCHIVED"] as const;
+export const MOBILE_ROLES_ALL = ["ADMIN", "TEACHER", "STUDENT", "PARENT"] as const;
+const tone = v.oneOf(["neutral", "info", "success", "warning", "critical"] as const);
+
+const personSummary = v.object({
+  id: v.nonEmpty(),
+  name: v.string(),
+  email: v.string(),
+  role: v.oneOf(MOBILE_ROLES_ALL),
+  roleLabel: v.string(),
+  status: v.oneOf(USER_STATUSES),
+  statusLabel: v.string(),
+  statusTone: tone,
+  invitePending: v.boolean(),
+  lastLoginAt: v.nullable(v.iso()),
+  detail: v.string(),
+  badges: v.array(v.string()),
+});
+
+const pendingReset = v.object({
+  id: v.nonEmpty(),
+  targetId: v.nonEmpty(),
+  targetName: v.string(),
+  requestedByName: v.string(),
+  reason: v.string(),
+  createdAt: v.iso(),
+  expiresAt: v.iso(),
+  canApprove: v.boolean(),
+});
+
+const peopleDirectory = v.object({
+  contractVersion: version,
+  view: v.nonEmpty(),
+  views: v.array(v.object({ id: v.nonEmpty(), label: v.string() })),
+  roleFilterAllowed: v.boolean(),
+  filters: v.object({ roles: v.array(v.object({ value: v.string(), label: v.string() })), products: v.array(v.object({ value: v.string(), label: v.string() })), statuses: v.array(v.object({ value: v.string(), label: v.string() })) }),
+  query: v.object({ q: v.string(), rol: v.string(), urun: v.string(), durum: v.string() }),
+  page: v.int(1),
+  pages: v.int(1),
+  total: v.int(0),
+  people: v.array(personSummary),
+  pendingMfaResets: v.array(pendingReset),
+});
+export type MobilePeopleDirectory = Infer<typeof peopleDirectory>;
+export type MobilePersonSummary = Infer<typeof personSummary>;
+export function parsePeopleDirectory(input: unknown): ContractResult<MobilePeopleDirectory> {
+  return check(peopleDirectory, input);
+}
+
+const personDetail = v.object({
+  contractVersion: version,
+  id: v.nonEmpty(),
+  name: v.string(),
+  email: v.string(),
+  phone: v.nullable(v.string()),
+  role: v.oneOf(MOBILE_ROLES_ALL),
+  roleLabel: v.string(),
+  status: v.oneOf(USER_STATUSES),
+  statusLabel: v.string(),
+  statusTone: tone,
+  invitePending: v.boolean(),
+  isSelf: v.boolean(),
+  createdAt: v.iso(),
+  lastLoginAt: v.nullable(v.iso()),
+  blockedOrder: v.nullable(v.object({ id: v.nonEmpty(), packageName: v.string(), createdAt: v.iso(), error: v.nullable(v.string()) })),
+  profile: v.object({
+    fullName: v.string(),
+    phone: v.string(),
+    classLevel: v.string(),
+    schoolName: v.string(),
+    targetGoal: v.string(),
+    subjects: v.array(v.string()),
+    bio: v.string(),
+  }),
+  memberships: v.array(
+    v.object({
+      id: v.nonEmpty(),
+      productLabel: v.string(),
+      sourceLabel: v.string(),
+      startsAt: v.iso(),
+      expiresAt: v.nullable(v.iso()),
+      revokedAt: v.nullable(v.iso()),
+      grantedBy: v.nullable(v.string()),
+      orderPackage: v.nullable(v.string()),
+      stateLabel: v.string(),
+      stateTone: tone,
+    }),
+  ),
+  productAccess: v.object({ editable: v.boolean(), active: v.array(v.oneOf(["OD", "OK", "ODK"] as const)), options: v.array(v.object({ value: v.oneOf(["OD", "OK", "ODK"] as const), label: v.string() })) }),
+  orders: v.array(v.object({ id: v.nonEmpty(), packageName: v.string(), createdAt: v.iso(), statusText: v.string() })),
+  staff: v.nullable(
+    v.object({
+      history: v.array(
+        v.object({
+          id: v.nonEmpty(),
+          productLabel: v.string(),
+          roleLabel: v.string(),
+          grantedAt: v.iso(),
+          grantedBy: v.nullable(v.string()),
+          grantReason: v.nullable(v.string()),
+          revokedAt: v.nullable(v.iso()),
+          revokedBy: v.nullable(v.string()),
+          revokeReason: v.nullable(v.string()),
+          lastHolder: v.boolean(),
+        }),
+      ),
+      options: v.array(v.object({ product: v.nonEmpty(), role: v.nonEmpty(), label: v.string() })),
+      coachCapacity: v.nullable(v.int(0)),
+      mfaPending: v.boolean(),
+    }),
+  ),
+  relations: v.object({
+    groups: v.array(v.object({ id: v.nonEmpty(), label: v.string(), detail: v.string() })),
+    parents: v.array(v.object({ id: v.nonEmpty(), name: v.string(), relationship: v.string() })),
+    children: v.array(v.object({ id: v.nonEmpty(), name: v.string(), relationship: v.string() })),
+    coach: v.nullable(v.string()),
+    attendance: v.nullable(v.string()),
+    notes: v.array(v.object({ id: v.nonEmpty(), title: v.string(), body: v.string() })),
+    teacher: v.nullable(
+      v.object({
+        subjects: v.string(),
+        coach: v.string(),
+        groupsAndStudents: v.string(),
+        upcomingLessons: v.int(0),
+        pendingClosures: v.int(0),
+        openHelp: v.int(0),
+        openInterventionsAndCoaching: v.int(0),
+      }),
+    ),
+    branchStudents: v.array(v.object({ id: v.nonEmpty(), studentId: v.nonEmpty(), name: v.string(), subject: v.string() })),
+    recentLessons: v.array(v.object({ id: v.nonEmpty(), title: v.string(), detail: v.string() })),
+  }),
+  security: v.object({
+    mfaLabel: v.string(),
+    pendingResets: v.array(pendingReset),
+    canRequestReset: v.boolean(),
+  }),
+  history: v.array(v.object({ id: v.nonEmpty(), action: v.string(), summary: v.string(), createdAt: v.iso(), actorName: v.string() })),
+});
+export type MobilePersonDetail = Infer<typeof personDetail>;
+export function parsePersonDetail(input: unknown): ContractResult<MobilePersonDetail> {
+  return check(personDetail, input);
+}
+
+const inviteResult = v.object({ invite: v.object({ url: v.nonEmpty(), message: v.string(), expiresAt: v.iso() }) });
+export type MobileInviteResult = Infer<typeof inviteResult>;
+export function parseInviteResult(input: unknown): ContractResult<MobileInviteResult> {
+  return check(inviteResult, input);
+}

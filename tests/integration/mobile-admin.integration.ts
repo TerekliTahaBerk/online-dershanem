@@ -23,13 +23,17 @@ after(async () => {
   await db.odOnboardingTransition.deleteMany({ where: { onboarding: { orderId: { in: createdOrderIds } } } });
   await db.odOnboarding.deleteMany({ where: { orderId: { in: createdOrderIds } } });
   await db.odOrder.deleteMany({ where: { id: { in: createdOrderIds } } });
+  await db.mfaResetRequest.deleteMany({ where: { OR: [{ targetUserId: { in: ids } }, { requestedById: { in: ids } }] } });
+  await db.parentStudent.deleteMany({ where: { OR: [{ parentId: { in: ids } }, { student: { userId: { in: ids } } }] } });
+  await db.productMembership.deleteMany({ where: { userId: { in: ids } } });
+  await db.teacherProfile.deleteMany({ where: { userId: { in: ids } } });
   await db.interventionCaseActivity.deleteMany({ where: { case: { student: { userId: { in: ids } } } } });
   await db.interventionCase.deleteMany({ where: { student: { userId: { in: ids } } } });
   await db.studentProfile.deleteMany({ where: { userId: { in: ids } } });
   await db.user.deleteMany({ where: { id: { in: ids } } });
 });
 
-async function user(role: "ADMIN" | "STUDENT", label: string) {
+async function user(role: "ADMIN" | "STUDENT" | "PARENT" | "TEACHER", label: string) {
   const row = await db.user.create({
     data: { email: `p2-${label}-${randomUUID().slice(0, 8)}@example.com`, passwordHash: PASSWORD_HASH, inviteAcceptedAt: new Date(), role, status: "ACTIVE", fullName: `P2 ${label}` },
   });
@@ -108,4 +112,57 @@ integration("Faz 2.1 aktivasyon masası: ödenmiş sipariş + onboarding sözle�
   assert.match(row.preferences ?? "", /Müsaitlik: Hafta içi 17.00–21.00/);
   assert.deepEqual(row.checklist.map((entry) => entry.done), [false, false, false, false]);
   assert.ok(parsed.value.staff.some((person) => person.id === owner.id));
+});
+
+integration("Faz 2.2 kişiler: dizin görünümleri + bekleyen MFA sıfırlama + kişi detayı gerçek veriyle sözleşmeye uyar", async () => {
+  const { loadPeopleDirectory } = await import("@/lib/panel/people-directory-server");
+  const { listPendingMfaResets } = await import("@/lib/panel/mfa-reset-queue-server");
+  const { loadPersonDetail } = await import("@/lib/panel/person-detail-server");
+  const { toMobilePeopleDirectory, toMobilePersonDetail } = await import("@/lib/mobile/admin-people-views");
+  const { parsePeopleDirectory, parsePersonDetail } = await import("@/lib/mobile-contracts/admin");
+  const viewer = await user("ADMIN", "people-viewer");
+  const otherAdmin = await user("ADMIN", "people-other");
+  const requester = await user("ADMIN", "people-requester");
+  const studentUser = await user("STUDENT", "people-student");
+  const parent = await user("PARENT", "people-parent");
+  const teacher = await user("TEACHER", "people-teacher");
+  await db.teacherProfile.create({ data: { userId: teacher.id, subjects: ["Matematik"] } });
+  const profile = await db.studentProfile.create({ data: { userId: studentUser.id, classLevel: "8" } });
+  await db.parentStudent.create({ data: { parentId: parent.id, studentId: profile.id, relationship: "Anne" } });
+  await db.productMembership.create({ data: { userId: studentUser.id, product: "OD", startsAt: new Date(0) } });
+  await db.mfaResetRequest.create({ data: { targetUserId: otherAdmin.id, requestedById: requester.id, reason: "Telefon kayboldu, yeniden kurulum", expiresAt: new Date(Date.now() + 3_600_000) } });
+
+  const pending = await listPendingMfaResets();
+  for (const view of ["tumu", "ogrenciler", "veliler", "ogretmenler", "koclar", "personel"]) {
+    const directory = await loadPeopleDirectory({ sekme: view, q: "P2 people" });
+    const parsed = parsePeopleDirectory(JSON.parse(JSON.stringify(toMobilePeopleDirectory(directory, pending, viewer.id))));
+    assert.ok(parsed.ok, `${view}: ${parsed.ok ? "" : parsed.error}`);
+  }
+  const students = parsePeopleDirectory(JSON.parse(JSON.stringify(toMobilePeopleDirectory(await loadPeopleDirectory({ sekme: "ogrenciler", q: "P2 people-student" }), pending, viewer.id))));
+  assert.ok(students.ok);
+  const row = students.value.people.find((person) => person.id === studentUser.id);
+  assert.ok(row);
+  assert.match(row.detail, /Veli: P2 people-parent/);
+  const reset = students.value.pendingMfaResets.find((entry) => entry.targetId === otherAdmin.id);
+  assert.equal(reset?.canApprove, true, "isteyen ve hedef dışındaki yönetici onaylayabilir");
+  const asRequester = toMobilePeopleDirectory(await loadPeopleDirectory({}), pending, requester.id).pendingMfaResets.find((entry) => entry.targetId === otherAdmin.id);
+  assert.equal(asRequester?.canApprove, false, "isteği açan onaylayamaz");
+
+  for (const target of [studentUser, parent, teacher, otherAdmin]) {
+    const detail = await loadPersonDetail(target.id, { security: true, history: true });
+    assert.ok(detail);
+    const parsed = parsePersonDetail(JSON.parse(JSON.stringify(toMobilePersonDetail(detail, viewer.id))));
+    assert.ok(parsed.ok, `${target.role}: ${parsed.ok ? "" : parsed.error}`);
+    if (target.id === studentUser.id) {
+      assert.deepEqual(parsed.value.productAccess, { editable: true, active: ["OD"], options: parsed.value.productAccess.options });
+      assert.deepEqual(parsed.value.relations.parents.map((link) => link.relationship), ["Anne"]);
+    }
+    if (target.id === teacher.id) assert.ok(parsed.value.staff, "öğretmende sorumluluk bölümü");
+    if (target.id === otherAdmin.id) {
+      assert.equal(parsed.value.security.canRequestReset, true);
+      assert.equal(parsed.value.security.pendingResets.length, 1);
+      assert.equal(parsed.value.productAccess.editable, false);
+    }
+  }
+  assert.equal(await loadPersonDetail("yok-boyle-biri", { security: true, history: true }), null);
 });

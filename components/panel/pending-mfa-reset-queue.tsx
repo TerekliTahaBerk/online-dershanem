@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { listPendingMfaResets } from "@/lib/panel/mfa-reset-queue-server";
 import { ISTANBUL_TIME_ZONE } from "@/lib/istanbul-time";
 import { ApproveMfaResetButton } from "@/components/panel/mfa-reset-controls";
 
@@ -30,14 +30,7 @@ export async function PendingMfaResetQueue({
   viewerUserId: string;
   className?: string;
 }) {
-  const pending = await prisma.mfaResetRequest.findMany({
-    where: { status: "PENDING", expiresAt: { gt: new Date() } },
-    orderBy: { createdAt: "desc" },
-    include: {
-      target: { select: { id: true, fullName: true, email: true } },
-      requestedBy: { select: { id: true, fullName: true, email: true } },
-    },
-  });
+  const pending = await listPendingMfaResets();
   if (!pending.length) return null;
 
   return (

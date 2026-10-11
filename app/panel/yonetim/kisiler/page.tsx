@@ -1,18 +1,14 @@
 import Link from "next/link";
-import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { productLabel, roleLabel } from "@/lib/auth/roles";
-import { ROLE_FILTERS, STATUS_FILTERS, buildUserWhere, parseUserListFilters } from "@/lib/panel/user-filters";
+import { ROLE_FILTERS, STATUS_FILTERS } from "@/lib/panel/user-filters";
 import {
   PEOPLE_VIEWS,
   pageWindow,
-  parsePeopleView,
   peopleHref,
-  peopleViewWhere,
   responsibilityBadges,
   viewAllowsRoleFilter,
-  type PeopleQuery,
 } from "@/lib/panel/people-views";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
@@ -30,13 +26,12 @@ import { CreateUserForm } from "@/components/panel/create-user-form";
 import { UserBulkOperations } from "@/components/panel/user-bulk-operations";
 import { PendingMfaResetQueue } from "@/components/panel/pending-mfa-reset-queue";
 import { PANEL_DOMAIN } from "@/lib/panel/domain-vocabulary";
+import { loadPeopleDirectory } from "@/lib/panel/people-directory-server";
 import { USER_STATUS_PRESENTATION } from "@/lib/panel/status-vocabulary";
 
 export const dynamic = "force-dynamic";
 
 const DATE = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" });
-const PAGE_SIZE = 30;
-const VIEW_ROLE = { ogrenciler: "STUDENT", veliler: "PARENT", ogretmenler: "TEACHER" } as const;
 const SELECT_CLASS = "min-h-9 rounded-md border border-pn-border-strong bg-white px-2 text-[14px] text-pn-text";
 
 /**
@@ -54,60 +49,8 @@ export default async function PeopleHubPage({
 }) {
   const session = await requireRole("ADMIN");
   const sp = await searchParams;
-  const view = parsePeopleView(sp.sekme, sp.rol);
-  const filters = parseUserListFilters(sp);
-  const rol = viewAllowsRoleFilter(view) ? filters.rol : view in VIEW_ROLE ? VIEW_ROLE[view as keyof typeof VIEW_ROLE] : "";
-  const query: PeopleQuery = { view, q: filters.q, rol: viewAllowsRoleFilter(view) ? filters.rol : "", urun: filters.urun, durum: filters.durum };
-  const page = Math.max(1, Number.parseInt(sp.sayfa ?? "1", 10) || 1);
-  const where: Prisma.UserWhereInput = { AND: [buildUserWhere({ ...filters, rol }), peopleViewWhere(view)] };
-  const bulkApplies = view === "tumu" || view in VIEW_ROLE;
-  const today = new Date();
-  const dayStart = new Date(today);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60_000);
-
-  const [total, users, activeGroups, activeTeachers, interventionOwners] = await Promise.all([
-    prisma.user.count({ where }),
-    prisma.user.findMany({
-      where,
-      orderBy: [{ fullName: "asc" }, { createdAt: "desc" }],
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-      select: {
-        id: true,
-        email: true,
-        fullName: true,
-        phone: true,
-        role: true,
-        status: true,
-        lastLoginAt: true,
-        inviteAcceptedAt: true,
-        productMemberships: { where: { revokedAt: null }, select: { product: true, source: true } },
-        productStaffAssignments: { where: { revokedAt: null }, select: { role: true } },
-        studentProfile: {
-          select: {
-            id: true,
-            classLevel: true,
-            examType: true,
-            parents: { where: { active: true }, select: { parent: { select: { fullName: true, email: true } } }, take: 2 },
-            enrollments: {
-              where: { endedAt: null },
-              select: { group: { select: { name: true, teacher: { select: { fullName: true, email: true } } } } },
-              take: 2,
-            },
-            teacherAssignments: { where: { active: true }, select: { subject: true, teacher: { select: { fullName: true, email: true } } }, take: 3 },
-            coachAssignments: { where: { endedAt: null }, select: { coach: { select: { user: { select: { fullName: true, email: true } } } } }, take: 1 },
-          },
-        },
-        teacherProfile: {
-          select: { subjects: true, isCoach: true, coachCapacity: true, _count: { select: { coachAssignments: { where: { endedAt: null } } } } },
-        },
-        taughtGroups: { where: { isActive: true }, select: { id: true, _count: { select: { enrollments: { where: { endedAt: null } } } } } },
-        studentTeacherAssignments: { where: { active: true }, select: { id: true } },
-        taughtLessons: { where: { status: "PLANNED", startsAt: { gte: dayStart, lt: dayEnd } }, select: { id: true } },
-        parentStudents: { where: { active: true }, select: { student: { select: { user: { select: { fullName: true, email: true } } } } }, take: 3 },
-      },
-    }),
+  const { view, filters, rol, query, page, pages, total, users, bulkApplies } = await loadPeopleDirectory(sp);
+  const [activeGroups, activeTeachers, interventionOwners] = await Promise.all([
     bulkApplies
       ? prisma.group.findMany({
           where: { isActive: true },
@@ -134,7 +77,6 @@ export default async function PeopleHubPage({
       : Promise.resolve([]),
   ]);
 
-  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const name = (user: { fullName: string | null; email: string }) => user.fullName || user.email;
   const products = (user: (typeof users)[number]) =>
     user.productMemberships.flatMap((m) => (m.product ? [productLabel(m.product)] : [])).join(", ") || "—";

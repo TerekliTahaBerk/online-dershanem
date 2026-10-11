@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { hashPassword } from "../../lib/auth/password";
 import { parseMobileBootstrap, type MobileBootstrap } from "../../lib/mobile-contracts/bootstrap";
 import { parseSessionList } from "../../lib/mobile-contracts/api";
-import { parseActivationDesk, parseAdminReports, parseInterventionInbox, parseOperationsCenter } from "../../lib/mobile-contracts/admin";
+import { parseActivationDesk, parseAdminReports, parseInterventionInbox, parseOperationsCenter, parsePeopleDirectory, parsePersonDetail } from "../../lib/mobile-contracts/admin";
 import { parseAssignmentList, parseInsights, parseLessonDetail, parseLessonList, parseOdHome, parseRecovery, parseReviewQueue, parseWeeklyDigest } from "../../lib/mobile-contracts/student";
 import { hasE2EEnv } from "./env-requirements";
 import { uniqueTestClientIp } from "./helpers/client-ip";
@@ -434,6 +434,25 @@ test.describe.serial("Faz 1 mobil yönetim kapısı", () => {
     for (const path of ["/api/panel/admin/reports", "/api/panel/admin/activation-desk", "/api/panel/admin/interventions"]) {
       expect((await learner.context.get(path, { headers: { ...MOBILE, authorization: `Bearer ${learner.body.token}` } })).status()).toBe(403);
     }
+  });
+
+  test("Faz 2.2 kişiler: dizin ve kişi detayı Bearer ile sözleşmeye uyar; hesap yazmaları taze step-up ister", async () => {
+    const admin = await temporaryUser("ADMIN");
+    const target = await temporaryUser("STUDENT");
+    const { context, body } = await mobileLogin(admin.user.email, admin.password);
+    const auth = { ...MOBILE, authorization: `Bearer ${body.token}` };
+    const directory = await context.get(`/api/panel/admin/people?sekme=ogrenciler&q=${encodeURIComponent(target.user.email)}`, { headers: auth });
+    expect(directory.status(), await directory.text()).toBe(200);
+    const parsed = parsePeopleDirectory(await directory.json());
+    if (!parsed.ok) throw new Error(parsed.error);
+    expect(parsed.value.people.some((person) => person.id === target.user.id)).toBe(true);
+    const detail = await context.get(`/api/panel/admin/people/${target.user.id}`, { headers: auth });
+    expect(detail.status(), await detail.text()).toBe(200);
+    expect(parsePersonDetail(await detail.json()).ok).toBe(true);
+    expect((await context.get("/api/panel/admin/people/yok-boyle-biri", { headers: auth })).status()).toBe(404);
+    const suspend = await context.post(`/api/panel/users/${target.user.id}/status`, { headers: auth, data: { status: "SUSPENDED" } });
+    expect(suspend.status()).toBe(428);
+    expect((await suspend.json()).code).toBe("STEP_UP_REQUIRED");
   });
 
   test("yönetim ucu: öğrenci ve öğretmen 403, kimliksiz 401", async () => {
