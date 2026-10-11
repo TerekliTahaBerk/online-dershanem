@@ -73,6 +73,7 @@ describe('Faz 1 yönetim kabuğu', () => {
               results: (query.get('q') ?? '').length < 2 ? [] : [
                 { kind: 'ORDER', id: 'o1', label: 'Sipariş #o1', detail: 'Paket A', href: '/panel/yonetim/siparisler/o1' },
                 { kind: 'STUDENT', id: 's1', label: 'Ece Kaya', detail: 'OD', href: '/panel/yonetim/ogrenciler/s1' },
+                { kind: 'GROUP', id: 'g1', label: '8-A', detail: 'Matematik', href: '/panel/yonetim/egitim/g1' },
               ],
             }),
         },
@@ -84,7 +85,8 @@ describe('Faz 1 yönetim kabuğu', () => {
     fireEvent.changeText(h.screen.getByTestId('admin-search-input'), 'ece');
     expect(await h.screen.findByText('Ece Kaya', {}, WAIT)).toBeTruthy();
     expect(h.screen.getByText('Siparişler')).toBeTruthy();
-    expect(h.screen.getByText('Mobilde yakında')).toBeTruthy();
+    // Öğrenci Öğrenci 360'a açılır (Faz 2.2); menüde karşılığı olmayan grup "Mobilde yakında".
+    expect(h.screen.getAllByText('Mobilde yakında')).toHaveLength(1);
     expect(h.server.called('GET', '/api/panel/admin-search').some((call) => call.path === '/api/panel/admin-search?q=ece')).toBe(true);
   });
 

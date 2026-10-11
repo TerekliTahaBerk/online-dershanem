@@ -49,8 +49,9 @@ describe('native ekran eşlemesi (rol + çalışma alanı + menü kimliği)', ()
   });
 
   it('yönetim: henüz native olmayan öğe faz etiketli yer tutucudur (Deneme Ligi yönetimi P4, diğerleri P2)', () => {
-    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('signups') })).toMatchObject({ key: 'placeholder', phase: 'P2' });
+    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('groups') })).toMatchObject({ key: 'placeholder', phase: 'P2' });
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('people') }).key).toBe('admin-people');
+    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('signups') }).key).toBe('admin-signups');
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'ODK', item: item('odk-exams') })).toMatchObject({ key: 'placeholder', phase: 'P4' });
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('orders') })).toMatchObject({ key: 'placeholder', phase: 'P2' });
   });
@@ -182,13 +183,18 @@ describe('yönetim web yolu eşlemesi (Faz 1)', () => {
     expect(mapAdminWebPath('/panel/odk/yonetim/sinavlar/e1', navigation)).toEqual({ kind: 'screen', navId: 'odk-exams' });
   });
 
-  it('kişi detayı (Faz 2.2) native detaya, öğrenci profili (henüz değil) hiçbir yere', () => {
+  it('kişi detayı, Öğrenci 360, Veliler ve Öğretmenler (Faz 2.2) yalnız "Kişiler" yetkisiyle native ekrana', () => {
     expect(mapAdminWebPath('/panel/yonetim/kullanicilar/u-1', navigation)).toEqual({ kind: 'detail', href: '/admin/person/u-1' });
-    expect(mapAdminWebPath('/panel/yonetim/kullanicilar/u-1', { primary: [], sections: [] })).toEqual({ kind: 'none' });
+    expect(mapAdminWebPath('/panel/yonetim/ogrenciler/s1?sekme=risk', navigation)).toEqual({ kind: 'detail', href: '/admin/student/s1' });
+    expect(mapAdminWebPath('/panel/yonetim/veliler', navigation)).toEqual({ kind: 'detail', href: '/admin/parents' });
+    expect(mapAdminWebPath('/panel/yonetim/egitmenler', navigation)).toEqual({ kind: 'detail', href: '/admin/educators' });
+    expect(mapAdminWebPath('/panel/yonetim/ogrenciler', navigation)).toEqual({ kind: 'screen', navId: 'people' });
+    const empty = { primary: [], sections: [] };
+    for (const path of ['/panel/yonetim/kullanicilar/u-1', '/panel/yonetim/ogrenciler/s1', '/panel/yonetim/veliler', '/panel/yonetim/egitmenler']) expect(mapAdminWebPath(path, empty)).toEqual({ kind: 'none' });
   });
 
   it('yönetim kökü önek olarak kullanılmaz; menüde olmayan veya panel dışı yol açılmaz', () => {
-    expect(mapAdminWebPath('/panel/yonetim/ogrenciler/s1', navigation)).toEqual({ kind: 'none' });
+    expect(mapAdminWebPath('/panel/yonetim/bilinmeyen/s1', navigation)).toEqual({ kind: 'none' });
     expect(mapAdminWebPath('https://example.com/panel/yonetim', navigation)).toEqual({ kind: 'none' });
     expect(mapAdminWebPath('/panel/yonetim/../ogrenci', navigation)).toEqual({ kind: 'none' });
     expect(mapAdminWebPath('/panel/yonetim', null)).toEqual({ kind: 'none' });

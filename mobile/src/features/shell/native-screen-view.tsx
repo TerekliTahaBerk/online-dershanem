@@ -4,6 +4,7 @@ import InterventionsScreen from '@/features/admin/interventions';
 import OperationsCenterScreen from '@/features/admin/operations-center';
 import PeopleScreen from '@/features/admin/people';
 import AdminReportsScreen from '@/features/admin/reports';
+import SignupsScreen from '@/features/admin/signups';
 import OdkExamsScreen from '@/features/odk/odk-exams';
 import OdkHomeScreen from '@/features/odk/odk-home';
 import OdkSwitchScreen from '@/features/odk/odk-switch';
@@ -94,6 +95,7 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'admin-reports': () => <AdminReportsScreen />,
   'admin-activation-desk': () => <ActivationDeskScreen />,
   'admin-people': () => <PeopleScreen />,
+  'admin-signups': () => <SignupsScreen />,
 };
 
 /** Üst güvenli alanı sekmelerde PanelHeader, detaylarda Stack header bırakır. */

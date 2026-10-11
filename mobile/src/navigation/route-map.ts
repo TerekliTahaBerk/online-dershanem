@@ -179,12 +179,24 @@ export function sanitizeIncomingPath(path: string): string {
  * yol `none` olur; yönetim kökü (`/panel/yonetim`) yalnız birebir eşleşir ki
  * her yol Operasyon Merkezi'ne düşmesin.
  */
+const ADMIN_PEOPLE_SCREENS: Record<string, string> = {
+  '/panel/yonetim/veliler': '/admin/parents',
+  '/panel/yonetim/egitmenler': '/admin/educators',
+};
+
 export function mapAdminWebPath(href: string | null | undefined, navigation: Navigation | null): NativeTarget {
   const path = normalizeWebPath(href);
   if (!path || !navigation) return { kind: 'none' };
   // Faz 2.2: kişi detayı native (yalnız "Kişiler" yetkili menüdeyken).
   const person = /^\/panel\/yonetim\/kullanicilar\/([\w-]{1,64})$/.exec(path);
   if (person) return navHas(navigation, 'people') ? { kind: 'detail', href: `/admin/person/${person[1]}` } : { kind: 'none' };
+  // Öğrenci 360, Veliler ve Öğretmenler web'de "Kişiler" altındadır; native ekranlar da yalnız o yetkiyle açılır.
+  const student = /^\/panel\/yonetim\/ogrenciler\/([\w-]{1,64})$/.exec(path);
+  if (student) return navHas(navigation, 'people') ? { kind: 'detail', href: `/admin/student/${student[1]}` } : { kind: 'none' };
+  const peopleScreen = ADMIN_PEOPLE_SCREENS[path];
+  if (peopleScreen) return navHas(navigation, 'people') ? { kind: 'detail', href: peopleScreen } : { kind: 'none' };
+  // Öğrenci listesi: Kişiler'in "Öğrenciler" görünümü (aynı veri; satırlar Öğrenci 360'a açılır).
+  if (path === '/panel/yonetim/ogrenciler') return targetForNavId(navigation, 'people');
   const items = [...navigation.primary, ...navigation.sections.flatMap((section) => section.items)];
   let best: { id: string; length: number } | null = null;
   for (const item of items) {

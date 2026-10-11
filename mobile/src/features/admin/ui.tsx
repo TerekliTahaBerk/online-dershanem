@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { StatusBadge, Text } from '@/design/primitives';
+import { Row, StatusBadge, Text, TextField } from '@/design/primitives';
 import { useDesign } from '@/design/theme';
 import { color, radius, space, touchTarget, type Tone } from '@/design/tokens';
 
@@ -50,6 +50,28 @@ export function MetricTile({ label, value, hint, tone = 'neutral', onPress, test
 
 export function MetricGrid({ children }: { children: ReactNode }) {
   return <View style={styles.grid}>{children}</View>;
+}
+
+/**
+ * Aranabilir seçim: sunucunun verdiği seçenek listesinde (yüzlerce kayıt
+ * olabilir) ada göre süzer, ilk eşleşmeleri satır olarak gösterir. Seçim
+ * yalnız sunucudan gelen kimliklerden yapılır.
+ */
+export function SearchPicker({ label, options, value, onChange, testID }: { label: string; options: { id: string; name: string }[]; value: string | null; onChange: (id: string | null) => void; testID: string }) {
+  const [text, setText] = useState('');
+  const chosen = options.find((option) => option.id === value) ?? null;
+  const needle = text.trim().toLocaleLowerCase('tr-TR');
+  const matches = needle ? options.filter((option) => option.name.toLocaleLowerCase('tr-TR').includes(needle)).slice(0, 12) : [];
+  if (chosen) return <Row title={chosen.name} subtitle={label} selected onPress={() => onChange(null)} accessibilityHint="Seçimi kaldırır" testID={`${testID}-chosen`} />;
+  return (
+    <>
+      <TextField label={label} value={text} onChangeText={setText} autoCorrect={false} placeholder="Ada göre ara" testID={`${testID}-search`} />
+      {matches.map((option) => (
+        <Row key={option.id} title={option.name} onPress={() => { onChange(option.id); setText(''); }} testID={`${testID}-${option.id}`} />
+      ))}
+      {needle && !matches.length ? <Text tone="muted" variant="meta">Eşleşme yok.</Text> : null}
+    </>
+  );
 }
 
 export const SEVERITY: Record<'BLOCKING' | 'ACTION_REQUIRED' | 'WATCH', { label: string; tone: Tone }> = {

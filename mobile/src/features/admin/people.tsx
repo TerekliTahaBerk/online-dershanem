@@ -56,6 +56,13 @@ function Body({ data, query, onQuery }: { data: MobilePeopleDirectory; query: Pe
   return (
     <>
       {message ? <Banner tone="info">{message}</Banner> : null}
+      <View style={styles.links}>
+        <Button label="Veliler ve bağlantılar" variant="quiet" onPress={() => router.push('/admin/parents' as Href)} testID="admin-people-open-parents" />
+        <Button label="Öğretmen doluluğu" variant="quiet" onPress={() => router.push('/admin/educators' as Href)} testID="admin-people-open-educators" />
+      </View>
+      {data.view === 'ogrenciler' && data.studentsAwaitingAccess ? (
+        <Banner tone="warning" title={`${data.studentsAwaitingAccess} öğrenci erişim bekliyor`}>Ödemesi alınmış ama erişimi açılmamış kayıtlar Aktivasyon masasında.</Banner>
+      ) : null}
       {data.pendingMfaResets.length ? (
         <Section title={`Bekleyen MFA sıfırlama onayı (${data.pendingMfaResets.length})`} first>
           <Text tone="muted" variant="meta">Onayı, isteği açan ve hedef yöneticiden farklı bir yönetici vermelidir.</Text>
@@ -85,7 +92,7 @@ function Body({ data, query, onQuery }: { data: MobilePeopleDirectory; query: Pe
               subtitle={[person.email, person.detail].filter(Boolean).join(' · ')}
               meta={[person.badges.join(' · '), person.invitePending ? 'davet bekliyor' : person.lastLoginAt ? `son giriş ${formatShortDateTime(person.lastLoginAt)}` : ''].filter(Boolean).join(' · ') || null}
               trailing={<StatusBadge label={person.statusLabel} tone={person.statusTone} />}
-              onPress={() => router.push(`/admin/person/${encodeURIComponent(person.id)}` as Href)}
+              onPress={() => router.push((person.studentProfileId ? `/admin/student/${encodeURIComponent(person.studentProfileId)}` : `/admin/person/${encodeURIComponent(person.id)}`) as Href)}
             />
           ))
         ) : (
@@ -207,4 +214,7 @@ export function InviteSheet({ invite, title, onClose }: { invite: MobileInviteRe
   );
 }
 
-const styles = StyleSheet.create({ pager: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[2] } });
+const styles = StyleSheet.create({
+  pager: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space[2] },
+  links: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
+});

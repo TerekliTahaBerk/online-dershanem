@@ -48,6 +48,9 @@ export default function AppLayout() {
       {/* Faz 1 yönetim (AdminRouteGate + sunucu yetkisi). */}
       <Stack.Screen name="admin/search" options={{ title: 'Ara' }} />
       <Stack.Screen name="admin/person/[id]" options={{ title: 'Kişi' }} />
+      <Stack.Screen name="admin/student/[id]" options={{ title: 'Öğrenci 360' }} />
+      <Stack.Screen name="admin/parents" options={{ title: 'Veliler' }} />
+      <Stack.Screen name="admin/educators" options={{ title: 'Öğretmenler' }} />
     </Stack>
     </ParentContextProvider>
     </StepUpProvider>

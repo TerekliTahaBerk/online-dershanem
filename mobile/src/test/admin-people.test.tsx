@@ -144,4 +144,36 @@ describe('Faz 2.2 kişiler', () => {
     await waitFor(() => expect(h.server.called('POST', '/api/panel/users/u-t/staff-roles')[0]?.body).toEqual({ product: 'OK', role: 'COACH', reason: 'Yön koçluğu başlıyor' }), WAIT);
     expect(await h.screen.findByText(/Bu sorumluluk zaten aktif\. Görünüm yenilendi/, {}, WAIT)).toBeTruthy();
   });
+
+  it('kişi detayı ekleri: kayıt bilgisi, akademik düzenleme (sürümle), arşiv etkisi ön izlemesi ve kalıcı silme', async () => {
+    const h = await openPeople({
+      'GET /api/panel/admin/people': () => jsonResponse(200, directory()),
+      'GET /api/panel/admin/people/u-ece': () =>
+        jsonResponse(200, person({ accessibility: { version: 3, assessmentExtraPercent: 0, breaksAllowed: false, options: [0, 25, 50, 100] }, signup: { rows: [{ label: 'Nereden duydu', value: 'Instagram' }], note: 'Hafta sonu aransın', pendingChildren: [], formFields: [] } })),
+      'GET /api/panel/admin/people/u-arc': () => jsonResponse(200, person({ id: 'u-arc', name: 'Arşiv Kişi', status: 'ARCHIVED', statusLabel: 'Arşivde', statusTone: 'neutral' })),
+      'PATCH /api/panel/users/u-ece/accessibility': () => jsonResponse(200, { ok: true }),
+      'GET /api/panel/users/u-ece/archive-impact': () => jsonResponse(200, { canHardDelete: false, recommendArchive: true, buckets: [{ key: 'attempts', label: 'Deneme girişi', count: 4, severity: 'warning' }], message: 'Geçmiş korunur.' }),
+      'POST /api/panel/users/u-ece/status': () => jsonResponse(200, { status: 'ARCHIVED' }),
+      'GET /api/panel/users/u-arc': () => jsonResponse(200, { canDelete: true, blockers: [], suggestedAction: 'DELETE' }),
+      'DELETE /api/panel/users/u-arc': () => jsonResponse(200, { ok: true }),
+    });
+    await press(h, await h.screen.findByTestId('admin-person-u-ece', {}, WAIT));
+    expect(await h.screen.findByText('Instagram', { exact: false }, WAIT)).toBeTruthy();
+    await press(h, await h.screen.findByTestId('chip-25', {}, WAIT));
+    await press(h, h.screen.getByTestId('person-accessibility-save'));
+    await waitFor(() => expect(h.server.called('PATCH', '/api/panel/users/u-ece/accessibility')[0]?.body).toEqual({ expectedVersion: 3, assessmentExtraPercent: 25, breaksAllowed: false }), WAIT);
+
+    await press(h, h.screen.getByTestId('chip-guvenlik'));
+    await press(h, await h.screen.findByTestId('person-archive-preview', {}, WAIT));
+    expect(await h.screen.findByText(/Deneme girişi/, {}, WAIT)).toBeTruthy();
+    expect(h.server.called('POST', '/api/panel/users/u-ece/status')).toHaveLength(0);
+    await press(h, h.screen.getByTestId('person-archive-confirm'));
+    await waitFor(() => expect(h.server.called('POST', '/api/panel/users/u-ece/status')[0]?.body).toEqual({ status: 'ARCHIVED' }), WAIT);
+
+    await go('/admin/person/u-arc');
+    await press(h, await h.screen.findByTestId('chip-guvenlik', {}, WAIT));
+    await press(h, await h.screen.findByTestId('person-delete-preview', {}, WAIT));
+    await press(h, await h.screen.findByTestId('person-delete-confirm', {}, WAIT));
+    await waitFor(() => expect(h.server.called('DELETE', '/api/panel/users/u-arc')).toHaveLength(1), WAIT);
+  });
 });

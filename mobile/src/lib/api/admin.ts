@@ -1,5 +1,14 @@
 import {
   parseActivationDesk,
+  parseArchiveImpact,
+  parseDeletePreview,
+  parseOffboardingPreview,
+  parseChildAccountResult,
+  parseEducators,
+  parseParentsPage,
+  parseProvisioningRetry,
+  parseSignups,
+  parseStudent360,
   parseInviteResult,
   parsePeopleDirectory,
   parsePersonDetail,
@@ -13,6 +22,14 @@ import {
   parseOperationsCenter,
   parseStepUpResult,
   type MobileActivationDesk,
+  type MobileArchiveImpact,
+  type MobileDeletePreview,
+  type MobileOffboardingPreview,
+  type MobileChildAccountResult,
+  type MobileEducators,
+  type MobileParentsPage,
+  type MobileSignups,
+  type MobileStudent360,
   type MobileInviteResult,
   type MobilePeopleDirectory,
   type MobilePersonDetail,
@@ -187,4 +204,117 @@ export async function requestMfaReset(api: ApiClient, userId: string, reason: st
 /** Çift kontrol: isteği açan ve hedef dışındaki yönetici onaylar (kural sunucuda). */
 export async function approveMfaReset(api: ApiClient, requestId: string): Promise<void> {
   await api.request(`/api/panel/mfa-resets/${encodeURIComponent(requestId)}/approve`, { method: 'POST', body: {} });
+}
+
+/* ------------------------------------------------------------------ *
+ * Kişi detayı: arşiv / silme / devir ön izlemeleri ve ek işlemler
+ * (mevcut uçlar; ön izlemeler de taze step-up ister).
+ * ------------------------------------------------------------------ */
+
+export async function fetchArchiveImpact(api: ApiClient, userId: string): Promise<MobileArchiveImpact> {
+  return validated(parseArchiveImpact(await api.request<unknown>(`/api/panel/users/${encodeURIComponent(userId)}/archive-impact`)));
+}
+
+export async function fetchDeletePreview(api: ApiClient, userId: string): Promise<MobileDeletePreview> {
+  return validated(parseDeletePreview(await api.request<unknown>(`/api/panel/users/${encodeURIComponent(userId)}`)));
+}
+
+/** Kalıcı silme: yalnız arşivlenmiş ve korunacak geçmişi olmayan hesapta (kural sunucuda). */
+export async function deleteUser(api: ApiClient, userId: string): Promise<void> {
+  await api.request(`/api/panel/users/${encodeURIComponent(userId)}`, { method: 'DELETE' });
+}
+
+export async function fetchOffboardingPreview(api: ApiClient, teacherId: string): Promise<MobileOffboardingPreview> {
+  return validated(parseOffboardingPreview(await api.request<unknown>(`/api/panel/users/${encodeURIComponent(teacherId)}/offboarding`)));
+}
+
+/** Güvenli devir: gruplar / dersler / koçluk / müdahaleler devredilir, öğretmen askıya alınır. */
+export async function executeOffboarding(api: ApiClient, teacherId: string, input: { transferTeacherId: string; transferCoachTeacherId?: string; transferInterventionOwnerId?: string }): Promise<void> {
+  await api.request(`/api/panel/users/${encodeURIComponent(teacherId)}/offboarding`, { method: 'POST', body: input });
+}
+
+/** Akademik düzenleme (ek süre / mola); `expectedVersion` ile, başka yerde değişirse 409. */
+export async function saveAccessibility(api: ApiClient, userId: string, input: { expectedVersion: number; assessmentExtraPercent: number; breaksAllowed: boolean }): Promise<void> {
+  await api.request(`/api/panel/users/${encodeURIComponent(userId)}/accessibility`, { method: 'PATCH', body: input });
+}
+
+export async function linkStudentTeacher(api: ApiClient, input: { studentId: string; teacherId: string; subject: string }): Promise<void> {
+  await api.request('/api/panel/student-teachers', { method: 'POST', body: input });
+}
+
+export async function unlinkStudentTeacher(api: ApiClient, linkId: string): Promise<void> {
+  await api.request('/api/panel/student-teachers', { method: 'DELETE', body: { id: linkId } });
+}
+
+function withQuery(path: string, query: Record<string, string | number | undefined>): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) if (value !== undefined && value !== '') params.set(key, String(value));
+  const suffix = params.toString();
+  return suffix ? `${path}?${suffix}` : path;
+}
+
+/* ------------------------------------------------------------------ *
+ * Veliler ve veli–öğrenci bağlantıları (web `yonetim/veliler`). Yazmalar
+ * web ile AYNI `/api/panel/relationships` uçlarından (taze step-up).
+ * ------------------------------------------------------------------ */
+
+export type ParentsQuery = { q?: string; durum?: string; sayfa?: number };
+
+export async function fetchParentsPage(api: ApiClient, query: ParentsQuery, signal?: AbortSignal): Promise<MobileParentsPage> {
+  return validated(parseParentsPage(await api.request<unknown>(withQuery('/api/panel/admin/parents', query), { signal })));
+}
+
+export async function createRelationship(api: ApiClient, input: { parentId: string; studentId: string; relationship?: string; primaryContact: boolean; canViewAcademic: boolean; canViewPayments: boolean }): Promise<void> {
+  await api.request('/api/panel/relationships', { method: 'POST', body: input });
+}
+
+export async function updateRelationship(api: ApiClient, id: string, relationship: string): Promise<void> {
+  await api.request(`/api/panel/relationships/${encodeURIComponent(id)}`, { method: 'PATCH', body: { relationship } });
+}
+
+/** Bağlantıyı kaldırır; veli bu öğrencinin verisini bir sonraki istekte göremez. */
+export async function removeRelationship(api: ApiClient, id: string): Promise<void> {
+  await api.request(`/api/panel/relationships/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+/* ------------------------------------------------------------------ *
+ * Öğretmen doluluğu ve yeni kayıtlar.
+ * ------------------------------------------------------------------ */
+
+export async function fetchEducators(api: ApiClient, signal?: AbortSignal): Promise<MobileEducators> {
+  return validated(parseEducators(await api.request<unknown>('/api/panel/admin/educators', { signal })));
+}
+
+export type SignupsQuery = { sekme?: 'kayitlar' | 'cocuklar'; filtre?: string; sayfa?: number };
+
+export async function fetchSignups(api: ApiClient, query: SignupsQuery, signal?: AbortSignal): Promise<MobileSignups> {
+  return validated(parseSignups(await api.request<unknown>(withQuery('/api/panel/admin/signups', query), { signal })));
+}
+
+/** Yalnız iletişim takibi; hiçbir ürün erişimini açmaz ya da kapatmaz. */
+export async function updateSignupContact(api: ApiClient, userId: string, input: { contactStatus: string; contactNote: string }): Promise<void> {
+  await api.request(`/api/panel/signups/${encodeURIComponent(userId)}/contact`, { method: 'PATCH', body: input });
+}
+
+/** Velinin eklediği çocuk için öğrenci hesabı; yeni hesapta tek kullanımlık davet döner. */
+export async function createChildAccount(api: ApiClient, childId: string, input: { email: string; fullName?: string; phone?: string }): Promise<MobileChildAccountResult> {
+  return validated(parseChildAccountResult(await api.request<unknown>(`/api/panel/signups/children/${encodeURIComponent(childId)}/account`, { method: 'POST', body: input })));
+}
+
+/* ------------------------------------------------------------------ *
+ * Öğrenci 360 (web `yonetim/ogrenciler/[id]`), koç atama ve erişim açmayı
+ * yeniden deneme (web Server Action'larıyla AYNI servisler).
+ * ------------------------------------------------------------------ */
+
+export async function fetchStudent360(api: ApiClient, studentProfileId: string, query: { sekme?: string; gorunum?: string }, signal?: AbortSignal): Promise<MobileStudent360> {
+  return validated(parseStudent360(await api.request<unknown>(withQuery(`/api/panel/admin/students/${encodeURIComponent(studentProfileId)}`, query), { signal })));
+}
+
+export async function assignCoach(api: ApiClient, input: { studentId: string; coachId: string; cadenceDays?: string; overrideReason?: string }): Promise<void> {
+  await api.request('/api/panel/admin/coach-assignments', { method: 'POST', body: input });
+}
+
+export async function retryProvisioning(api: ApiClient, orderId: string): Promise<{ succeeded: boolean; message: string }> {
+  const result = validated(parseProvisioningRetry(await api.request<unknown>(`/api/panel/admin/orders/${encodeURIComponent(orderId)}/provisioning-retry`, { method: 'POST', body: {} })));
+  return { succeeded: result.succeeded, message: result.message };
 }
