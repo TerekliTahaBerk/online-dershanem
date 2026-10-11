@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { hashPassword } from "../../lib/auth/password";
 import { parseMobileBootstrap, type MobileBootstrap } from "../../lib/mobile-contracts/bootstrap";
 import { parseSessionList } from "../../lib/mobile-contracts/api";
+import { parseOperationsCenter } from "../../lib/mobile-contracts/admin";
 import { parseAssignmentList, parseInsights, parseLessonDetail, parseLessonList, parseOdHome, parseRecovery, parseReviewQueue, parseWeeklyDigest } from "../../lib/mobile-contracts/student";
 import { hasE2EEnv } from "./env-requirements";
 import { uniqueTestClientIp } from "./helpers/client-ip";
@@ -49,7 +50,7 @@ async function bootstrapOf(response: APIResponse): Promise<MobileBootstrap> {
   return parsed.value;
 }
 
-async function temporaryUser(role: "STUDENT" | "TEACHER", extra: { mustChangePassword?: boolean } = {}) {
+async function temporaryUser(role: "STUDENT" | "TEACHER" | "ADMIN", extra: { mustChangePassword?: boolean } = {}) {
   const password = `M1-${randomUUID()}`;
   const user = await db.user.create({
     data: {
@@ -365,6 +366,67 @@ test.describe.serial("M2 mobil OD öğrenci API sözleşmesi", () => {
     const foreign = await context.get("/api/panel/materials/e2e-material-private-foreign/file", { headers });
     expect(foreign.status()).toBe(404);
     const anonymous = await context.get("/api/panel/materials/e2e-material-private-foreign/file", { headers: MOBILE });
+    expect(anonymous.status()).toBe(401);
+  });
+});
+
+test.describe.serial("Faz 1 mobil yönetim kapısı", () => {
+  test.skip(!hasE2EEnv("studentAccount"), "E2E hesapları tanımlı değil");
+
+  test.afterAll(async () => {
+    await Promise.all(contexts.map((context) => context.dispose()));
+    await db.session.deleteMany({ where: { userId: { in: createdUserIds } } });
+    await db.auditLog.deleteMany({ where: { OR: [{ actorUserId: { in: createdUserIds } }, { entityId: { in: createdUserIds } }] } });
+    await db.user.deleteMany({ where: { id: { in: createdUserIds } } });
+  });
+
+  test("ADMIN Bearer: bootstrap güvenlik yeteneği + yönetim menüsü (sipariş arka ofisi dahil), operasyon merkezi sözleşmeye uyar", async () => {
+    const admin = await temporaryUser("ADMIN");
+    const { context, body } = await mobileLogin(admin.user.email, admin.password);
+    expect(typeof body.token).toBe("string");
+    const auth = { ...MOBILE, authorization: `Bearer ${body.token}` };
+    const before = await bootstrapOf(await me(context, body.token!));
+    expect(before.user.role).toBe("ADMIN");
+    expect(before.workspace?.capabilities.security).not.toBeNull();
+    expect(before.workspace?.capabilities.security?.stepUpExpiresAt ?? null).toBeNull();
+
+    const product = before.workspace!.products.find((entry) => entry.state === "ACTIVE")!.code;
+    expect((await context.post("/api/panel/active-product", { headers: auth, data: { product } })).status()).toBe(200);
+    const ready = await bootstrapOf(await me(context, body.token!));
+    const ids = ready.workspace!.navigation.sections.flatMap((section) => section.items.map((item) => item.id));
+    expect(ids).toContain("today");
+    expect(ids).toContain("orders");
+    expect(ready.workspace!.navigation.sections.flatMap((section) => section.items).every((item) => !/odeme|checkout|paytr/i.test(item.webPath))).toBe(true);
+
+    const ops = await context.get("/api/panel/admin/operations-center?grup=OD", { headers: auth });
+    expect(ops.status(), await ops.text()).toBe(200);
+    expect(ops.headers()["cache-control"]).toContain("no-store");
+    const parsed = parseOperationsCenter(await ops.json());
+    if (!parsed.ok) throw new Error(parsed.error);
+    expect(parsed.value.group).toBe("OD");
+    expect(parsed.value.actions.every((action) => action.group === "OD")).toBe(true);
+  });
+
+  test("hassas yönetim uçları Bearer ile taze step-up ister: 428 STEP_UP_REQUIRED", async () => {
+    const admin = await temporaryUser("ADMIN");
+    const { context, body } = await mobileLogin(admin.user.email, admin.password);
+    const response = await context.get(`/api/panel/users/${admin.user.id}/archive-impact`, { headers: { ...MOBILE, authorization: `Bearer ${body.token}` } });
+    expect(response.status()).toBe(428);
+    expect((await response.json()).code).toBe("STEP_UP_REQUIRED");
+  });
+
+  test("yönetim ucu: öğrenci ve öğretmen 403, kimliksiz 401", async () => {
+    const { context, body } = await mobileLogin(student().email, student().password);
+    const asStudent = await context.get("/api/panel/admin/operations-center", { headers: { ...MOBILE, authorization: `Bearer ${body.token}` } });
+    expect(asStudent.status()).toBe(403);
+    expect(asStudent.headers()["cache-control"]).toContain("no-store");
+
+    const teacher = await temporaryUser("TEACHER");
+    const teacherLogin = await mobileLogin(teacher.user.email, teacher.password);
+    const asTeacher = await teacherLogin.context.get("/api/panel/admin/operations-center", { headers: { ...MOBILE, authorization: `Bearer ${teacherLogin.body.token}` } });
+    expect(asTeacher.status()).toBe(403);
+
+    const anonymous = await context.get("/api/panel/admin/operations-center", { headers: MOBILE });
     expect(anonymous.status()).toBe(401);
   });
 });

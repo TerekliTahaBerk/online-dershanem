@@ -44,6 +44,17 @@ export type MobileMfaMethods = {
   passkey: boolean;
 };
 
+/**
+ * Personel güvenlik yeteneği (Faz 1): hassas işlemlerden önce native step-up
+ * için hangi ikinci faktörlerin kayıtlı olduğu ve mevcut step-up penceresinin
+ * bitişi. Yalnız bilgidir — step-up kararı her istekte sunucuda verilir.
+ */
+export type MobileSecurityCapabilities = {
+  mfa: MobileMfaMethods;
+  /** Son ikinci faktör doğrulamasının geçerlilik sonu; yoksa / dolmuşsa null. */
+  stepUpExpiresAt: string | null;
+};
+
 export type MobileBootstrapGates = {
   status: MobileGateStatus;
   passwordChangeRequired: boolean;
@@ -65,7 +76,11 @@ export type MobileWorkspace = {
   navigation: { primary: MobileNavItem[]; sections: MobileNavSection[] };
   /** `PanelFeatureFlags` — anahtar adları sunucuyla aynı. */
   flags: Record<string, boolean>;
-  capabilities: { staffPermissions: string[] };
+  /**
+   * `security`: ADMIN ve MFA zorunlu personelde dolu, diğer rollerde null.
+   * Eklemeli alan — eski sunucu yanıtında yoksa null kabul edilir.
+   */
+  capabilities: { staffPermissions: string[]; security: MobileSecurityCapabilities | null };
   parent: { children: { studentId: string; name: string }[] } | null;
   unreadNotifications: number;
 };
@@ -144,20 +159,31 @@ function navSection(value: unknown, path: Path): MobileNavSection {
   return { id: str(o.id, `${path}.id`), title: str(o.title, `${path}.title`), items: arr(o.items, `${path}.items`, navItem) };
 }
 
+function mfaMethods(value: unknown, path: Path): MobileMfaMethods {
+  const m = obj(value, path);
+  return {
+    enrolled: bool(m.enrolled, `${path}.enrolled`),
+    totp: bool(m.totp, `${path}.totp`),
+    recoveryCodes: bool(m.recoveryCodes, `${path}.recoveryCodes`),
+    passkey: bool(m.passkey, `${path}.passkey`),
+  };
+}
+
+function security(value: unknown, path: Path): MobileSecurityCapabilities | null {
+  if (value === undefined || value === null) return null;
+  const o = obj(value, path);
+  return {
+    mfa: mfaMethods(o.mfa, `${path}.mfa`),
+    stepUpExpiresAt: o.stepUpExpiresAt === null ? null : isoDate(o.stepUpExpiresAt, `${path}.stepUpExpiresAt`),
+  };
+}
+
 function gates(value: unknown, path: Path): MobileBootstrapGates {
   const o = obj(value, path);
   const status = oneOf(o.status, MOBILE_GATE_STATUSES, `${path}.status`);
   const passwordChangeRequired = bool(o.passwordChangeRequired, `${path}.passwordChangeRequired`);
   const mfaRequired = bool(o.mfaRequired, `${path}.mfaRequired`);
-  const mfa = o.mfa === null ? null : (() => {
-    const m = obj(o.mfa, `${path}.mfa`);
-    return {
-      enrolled: bool(m.enrolled, `${path}.mfa.enrolled`),
-      totp: bool(m.totp, `${path}.mfa.totp`),
-      recoveryCodes: bool(m.recoveryCodes, `${path}.mfa.recoveryCodes`),
-      passkey: bool(m.passkey, `${path}.mfa.passkey`),
-    };
-  })();
+  const mfa = o.mfa === null ? null : mfaMethods(o.mfa, `${path}.mfa`);
   // İç tutarlılık: durum, bayraklarla çelişemez. Çelişen yanıt "açık kapı"
   // gibi yorumlanmasın diye reddedilir.
   const expected: MobileGateStatus = passwordChangeRequired ? "PASSWORD_CHANGE_REQUIRED" : mfaRequired ? "MFA_REQUIRED" : "READY";
@@ -199,7 +225,10 @@ function workspace(value: unknown, path: Path): MobileWorkspace {
       sections: arr(navigation.sections, `${path}.navigation.sections`, navSection),
     },
     flags,
-    capabilities: { staffPermissions: arr(capabilities.staffPermissions, `${path}.capabilities.staffPermissions`, str) },
+    capabilities: {
+      staffPermissions: arr(capabilities.staffPermissions, `${path}.capabilities.staffPermissions`, str),
+      security: security(capabilities.security, `${path}.capabilities.security`),
+    },
     parent,
     unreadNotifications: int(o.unreadNotifications, `${path}.unreadNotifications`),
   };

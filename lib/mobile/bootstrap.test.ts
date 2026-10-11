@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { parseMobileBootstrap, type MobileWorkspace } from "@/lib/mobile-contracts/bootstrap";
-import { bootstrapGates, projectBootstrap, selectActiveWorkspace, toMobileNavSections } from "./bootstrap";
+import { bootstrapGates, projectBootstrap, selectActiveWorkspace, toMobileNavItems, toMobileNavSections } from "./bootstrap";
 
 const identity = { userId: "u1", email: "ogrenci@example.com", fullName: "Ada Yılmaz", role: "STUDENT" as const, mustChangePassword: false, mfaVerifiedAt: null };
 const now = new Date("2026-10-08T09:00:00.000Z");
@@ -11,7 +11,7 @@ const workspace: MobileWorkspace = {
   selectionRequired: false,
   navigation: { primary: [{ id: "today", label: "Bugün", webPath: "/panel/ogrenci" }], sections: [] },
   flags: { adaptivePlan: false },
-  capabilities: { staffPermissions: ["od:student:read"] },
+  capabilities: { staffPermissions: ["od:student:read"], security: null },
   parent: null,
   unreadNotifications: 2,
 };
@@ -107,4 +107,34 @@ test("navigasyon çevirisi web href'ini yalnız webPath olarak taşır", () => {
   assert.deepEqual(toMobileNavSections([{ id: "bugun", title: "BUGÜN", items: [{ id: "today", label: "Bugün", href: "/panel/ogrenci" }] }]), [
     { id: "bugun", title: "BUGÜN", items: [{ id: "today", label: "Bugün", webPath: "/panel/ogrenci" }] },
   ]);
+});
+
+test("navigasyon: ticaret yolları mobil menüye girmez; yalnız ADMIN arka ofisi istisnadır", () => {
+  const items = [
+    { id: "today", label: "Operasyon merkezi", href: "/panel/yonetim" },
+    { id: "orders", label: "Siparişler", href: "/panel/yonetim/siparisler" },
+    { id: "odk-packages", label: "Deneme Ligi paketleri", href: "/panel/odk/yonetim/paketler" },
+    { id: "checkout", label: "Satın al", href: "/panel/veli/odeme" },
+    { id: "veli-paket", label: "Paketler", href: "/panel/veli/paketler" },
+  ];
+  assert.deepEqual(toMobileNavItems(items).map((item) => item.id), ["today"], "varsayılan: hiçbir ticaret yolu yok");
+  assert.deepEqual(toMobileNavItems(items, { backOffice: true }).map((item) => item.id), ["today", "orders", "odk-packages"], "arka ofis: yalnız yönetim sipariş / paket yönetimi");
+});
+
+test("güvenlik yeteneği: eksik alan null kabul edilir (eklemeli sözleşme), bozuk alan reddedilir", () => {
+  const base = projectBootstrap({ identity, gates: bootstrapGates({ mustChangePassword: false, mfaVerifiedAt: now, loginMfaRequired: false, mfaMethods: null, previewActive: false }), minSupportedVersion: null, now, workspace });
+  const legacy = JSON.parse(JSON.stringify(base));
+  delete legacy.workspace.capabilities.security;
+  const parsedLegacy = parseMobileBootstrap(legacy);
+  assert.ok(parsedLegacy.ok);
+  assert.equal(parsedLegacy.ok && parsedLegacy.value.workspace?.capabilities.security, null);
+
+  const withSecurity = JSON.parse(JSON.stringify(base));
+  withSecurity.workspace.capabilities.security = { mfa: methods, stepUpExpiresAt: "2026-10-08T09:10:00.000Z" };
+  const parsed = parseMobileBootstrap(withSecurity);
+  assert.ok(parsed.ok);
+  assert.deepEqual(parsed.ok && parsed.value.workspace?.capabilities.security, { mfa: methods, stepUpExpiresAt: "2026-10-08T09:10:00.000Z" });
+
+  withSecurity.workspace.capabilities.security = { mfa: methods, stepUpExpiresAt: "yarın" };
+  assert.equal(parseMobileBootstrap(withSecurity).ok, false);
 });
