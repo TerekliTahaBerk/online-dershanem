@@ -1,0 +1,23 @@
+name: iOS OTA Update
+
+on:
+  push:
+    branches: ['main']
+    paths:
+      - 'mobile/**'
+      - 'lib/mobile-contracts/**'
+
+jobs:
+  approve_production:
+    name: Approve production update
+    type: require-approval
+
+  publish_ios:
+    name: Publish iOS OTA
+    needs: [approve_production]
+    type: update
+    environment: production
+    params:
+      channel: production
+      platform: ios
+      message: "Approved mobile update"
