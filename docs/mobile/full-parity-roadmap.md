@@ -58,6 +58,22 @@ P1 tamamlanmadan hiçbir yönetim yazma işlemi açılmaz. P2–P5 P1'den sonra 
 
 **Bağımlılıklar.** P0 matrisi; personel izin modu kararı (aşağıda).
 
+> **Durum (11 Ekim 2026): kod teslimatları uygulandı**, operasyonel kanıt bekleniyor.
+>
+> | Teslimat | Durum | Yer |
+> | --- | --- | --- |
+> | Yönetim API kapısı | ✅ | `lib/panel/admin-api.ts` (`requireAdminApi`, `adminJson`) |
+> | Step-up mobil uyumu | ✅ | `/api/auth/mfa/code/verify` → `stepUpExpiresAt`; Bearer ile 428 kanıtı `tests/e2e/mobile-api.spec.ts` |
+> | Bootstrap `capabilities.security` | ✅ | `lib/mobile/bootstrap-server.ts`, sözleşme eklemeli |
+> | ADMIN menüsü (sipariş / paket arka ofisi dahil) | ✅ | `lib/mobile/bootstrap.ts` `backOffice` |
+> | Operasyon Merkezi (okuma) | ✅ | `GET /api/panel/admin/operations-center`, `features/admin/operations-center.tsx` |
+> | Global arama | ✅ | `features/admin/global-search.tsx` (mevcut `/api/panel/admin-search`) |
+> | ADMIN sekme / menü / faz etiketli yer tutucular | ✅ | `slot-screen.tsx`, `menu.tsx`, `native-screens.ts` (P2 / P4) |
+> | Native step-up + `useAdminMutation` | ✅ | `features/auth/step-up.tsx`, `features/admin/shared.tsx` (`runWithStepUp`) |
+> | Yönetim UI kiti (ilk parçalar) | ✅ | `features/admin/ui.tsx` (süzgeç çipleri, metrik kutuları, rozetler) |
+> | Personel izin modu production kararı | ⏳ Operasyon | Production'daki `STAFF_PRODUCT_ASSIGNMENTS` değeri ve shadow uyuşmazlık raporu koddan okunamaz; sahibi operasyon |
+> | Ortak yetki kararı servisi (S-5/S-6/S-7/P-4) | ⏳ P2 ile | İlk yönetim yazma uçlarıyla birlikte, uç başına regresyon testiyle |
+
 ### Sunucu
 
 1. **Personel izin modu kararı ve kanıtı.** `STAFF_PRODUCT_ASSIGNMENTS` için production modu (`legacy`/`shadow`/`enforce`) belgelenir; shadow log'larındaki uyuşmazlıklar kapatılıp **enforce**'a geçiş planlanır (`docs/business-rbac-migration-runbook.md`). Yönetim yazma uçları enforce varsayımıyla test edilir.
@@ -101,9 +117,9 @@ P1 tamamlanmadan hiçbir yönetim yazma işlemi açılmaz. P2–P5 P1'den sonra 
 | 2.6 | Ticari operasyon | `siparisler[/id]` | `orders/[id]/onboarding`, `orders/[id]/user`, `purchases` | **Server Action → API:** `retryOrderProvisioning` → `POST /api/panel/orders/[id]/provisioning/retry`; GET sipariş listesi/detay | Sipariş listesi, detay, ürün erişimi hazırlama, provizyon tekrarı. **Müşteri satın alma akışı eklenmez** (App Store ücretli içerik politikası). |
 | 2.7 | İşletme | `isletme/[section]` (16 bölüm) | yalnız `admin/business/reports.csv`, `admin/integrations/instagram` | **36 Server Action** `lib/business/**` servislerine çıkarılır; `app/api/panel/business/<bölüm>/**` uçları `BusinessPermission` ile | Mesaj kutusu (atama/etiket/okundu), adaylar + satış hunisi (aşama, not, görev, takip, sahip, öncelik, birleştirme), kampanya/reklam, gelir/gider/vergi/mutabakat (dönem kilidi **step-up**), AI bilgi merkezi, otomasyon kuralları (dry-run), entegrasyon durumu (salt okuma; Meta bağlantı kurulumu E3 ile kapsam dışı), sistem kayıtları, ayarlar. Finans raporlarının CSV dışa aktarımı E5 ile kapsam dışı |
 | 2.8 | Analitik ve sistem | `analitik[/metric]`, `ozellikler`, `kayitlar`, `pilot`, `kalite`, `denemeler` | `analytics/export`, `pilot-cohorts/*`, `events` | GET: analitik metrikleri (`management-analytics-definitions`), özellik bayrakları okuma/yazma (`flags.ts` + ADR-0015), audit listesi, kalite | Metrik kartları + grafik (sparkline/bar), metrik detay, özellik bayrağı değiştirme (**step-up**), işlem geçmişi filtreli liste, kontrollü yayın kohortları |
-| 2.9 | Yönetici önizlemesi (View As) | kabuk `admin-preview*` | `admin-preview` POST/DELETE, `admin-preview/candidates` | Önizleme durumu bugün imzalı **çerezde** (`od_panel_preview`, 2 sa); mobil Bearer kullandığı için çerezsiz taşıma gerekir: `POST /api/panel/admin-preview` mobil istemciye imzalı önizleme belirteci döner, istekler `X-Od-Preview` başlığıyla gelir; belirteç ADMIN `userId` + oturum kimliğine bağlı, aynı TTL ve aynı doğrulama (`admin-preview-core.ts`). Bootstrap önizlemede **konu** kullanıcının navigasyonunu ve `preview: { role, userId, expiresAt }` döner. Önizleme açıkken tüm mutasyonlar sunucuda reddedilir (mevcut kural) — test: her yazma ucu önizleme başlığıyla 403 | Aday arama → rol seç → öğrenci/veli/öğretmen native ekranları konu adına salt okuma; kalıcı "Önizleme: Ad Soyad · Çık" bandı; yazma düğmeleri gizli; çıkışta ADMIN kabuğuna dönüş |
+| 2.9 | Yönetici önizlemesi (View As) + öğretmen çalışma modu | kabuk `admin-preview*` | `admin-preview` POST/DELETE, `admin-preview/candidates` | Önizleme durumu bugün imzalı **çerezde** (`od_panel_preview`, 2 sa); mobil Bearer kullandığı için çerezsiz taşıma gerekir: `POST /api/panel/admin-preview` mobil istemciye imzalı önizleme belirteci döner, istekler `X-Od-Preview` başlığıyla gelir; belirteç ADMIN `userId` + oturum kimliğine bağlı, aynı TTL ve aynı doğrulama (`admin-preview-core.ts`). Bootstrap önizlemede **konu** kullanıcının navigasyonunu ve `preview: { role, userId, expiresAt }` döner. Önizleme açıkken tüm mutasyonlar sunucuda reddedilir (mevcut kural) — test: her yazma ucu önizleme başlığıyla 403. **Öğretmen modu (E6)** aynı belirteç modeliyle (`X-Od-Teacher-Mode`) taşınır; önizlemeyle birbirini dışlar, yazma açıktır ve denetim kaydı yöneticinin kimliğiyle tutulur (`docs/admin-teacher-mode.md`) | Aday arama → rol seç → öğrenci/veli/öğretmen native ekranları konu adına salt okuma; kalıcı "Önizleme: Ad Soyad · Çık" bandı; yazma düğmeleri gizli; çıkışta ADMIN kabuğuna dönüş |
 
-**Kapsam kararları (11 Ekim 2026).** Yönetici önizlemesi native yapılır (2.9). Mobilde **olmayacaklar:** Meta/Instagram hesap bağlantısının kurulumu, toplu kullanıcı içe aktarma (`users/bulk`), büyük finans raporları ve CSV dışa aktarımları. Bunlar matriste onaylı istisna (E3–E5) olarak kayıtlıdır; mobil bunlar için web bağlantısı da göstermez. Yönetici öğretmen çalışma modu (E6) için karar açıktır.
+**Kapsam kararları (11 Ekim 2026).** Yönetici önizlemesi native yapılır (2.9). Mobilde **olmayacaklar:** Meta/Instagram hesap bağlantısının kurulumu, toplu kullanıcı içe aktarma (`users/bulk`), büyük finans raporları ve CSV dışa aktarımları. Bunlar matriste onaylı istisna (E3–E5) olarak kayıtlıdır; mobil bunlar için web bağlantısı da göstermez. Yönetici öğretmen çalışma modu da native yapılır (E6, 2.9).
 
 **Uygulama sırası.** 2.1 → 2.2 (okuma) → 2.9 (önizleme; salt okuma ekranları zaten var, erken değer) → 2.2 (yazma) → 2.3 → 2.4 → 2.6 → 2.8 → 2.7. İşletme en sona alınır çünkü en büyük Server Action → API çıkarımı oradadır ve web CRM'ini kırma riski en yüksektir.
 

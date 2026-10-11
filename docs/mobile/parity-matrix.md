@@ -37,7 +37,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 
 | Alan | Rota | Tam | Kısmi | Eksik | İstisna | Yönl. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1. Yönetim (`/panel/yonetim`) | 28 | 0 | 0 | 27 | 0 | 1 |
+| 1. Yönetim (`/panel/yonetim`) | 28 | 1 | 0 | 26 | 0 | 1 |
 | 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 0 | 0 | 8 | 0 | 0 |
 | 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 7 | 3 | 10 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
@@ -45,8 +45,8 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | 6. Deneme Ligi öğrenci (`/panel/odk/ogrenci`) | 5 | 3 | 1 | 0 | 1 | 0 |
 | 7. Veli (`/panel/veli`) | 12 | 5 | 4 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
-| 9. Ortak / hesap / yönlendirme | 11 | 4 | 2 | 3 | 0 | 2 |
-| **Toplam** | **106** | **34** | **14** | **51** | **1** | **6** |
+| 9. Ortak / hesap / yönlendirme | 11 | 4 | 3 | 2 | 0 | 2 |
+| **Toplam** | **106** | **35** | **15** | **49** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
@@ -66,7 +66,7 @@ Mobil karşılık: **yok** (`slot-screen.tsx` ADMIN → yalnız `StaffHomeScreen
 
 | # | Web rotası | Nav id | Alt işlemler (O / Y) | Web kaynağı | API | Mobil | Durum | Faz | Not |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Y01 | `/panel/yonetim` | `today` | O: operasyon merkezi göstergeleri, iş listeleri | `lib/panel/admin-operations-center-server.ts` | O yok | — | Eksik | P1 | Faz 1 ilk salt-okuma ekranı |
+| Y01 | `/panel/yonetim` | `today` | O: operasyon merkezi göstergeleri, iş listeleri, alan süzgeci | `lib/panel/admin-operations-center-server.ts` | Hazır (`GET /api/panel/admin/operations-center`) | `admin-operations-center` | Tam | P1 | Faz 1. Satırlar yetkili menüdeki bölüme açılır; önizleme girişi E2/P2.9 |
 | Y02 | `/panel/yonetim/mudahale` | `operations` (flag `interventionInbox`) | O: müdahale kutusu · Y: oluştur, güncelle/çöz, toplu üret | `interventions` POST, `interventions/[id]` PATCH, `interventions/generate` POST; `intervention-inbox-server.ts` | Y var, O yok | — | Eksik | P2.1 | Bayrak kapalıyken `operations` → `raporlar` |
 | Y03 | `/panel/yonetim/isler` | `provisioning` | O: provizyon/ilk ders işleri · Y: e-posta yeniden gönder, sipariş onboarding, siparişten kullanıcı, aday güncelle | `email-outbox/[id]/retry` PATCH, `orders/[id]/onboarding` POST, `orders/[id]/user` POST, `leads/[id]` PATCH; `business/first-lesson-metrics-server.ts` | Y var, O yok | — | Eksik | P2.1 | Hassas: kullanıcı oluşturma → step-up |
 | Y04 | `/panel/yonetim/raporlar` | `reports` | O: operasyon/denetim raporları · Y: dışa aktarma | `reports/export` GET | O yok (sayfa), export var | — | Eksik | P2.1 | Export → indir + paylaş sayfası |
@@ -211,11 +211,11 @@ Mobil karşılık: **yok** (öğretmen ODK alanında yalnız `teacher-odk-report
 | C06 | `/panel/parola` | Y: parola değiştir | Hazır | `account/password`, `change-password` | Tam | — | |
 | C07 | `/panel/ayarlar` | O: ayar bölümleri | SA | `account/index` | Kısmi | P5 | Bölüm listesi; düzenleme C08'de |
 | C08 | `/panel/ayarlar/[section]` | Y: profil, iletişim, eğitim, fatura, onaylar, bekleyen çocuk ekle/iptal (7 SA) | SA | `account/privacy` | Kısmi | P5 | 7 Server Action → route |
-| C09 | `/panel/guvenlik` | O: MFA durumu · Y: TOTP kaydı, passkey, kod doğrulama (step-up) | Hazır | `mfa` (yalnız giriş kapısı) | Eksik | P1 | Native step-up (P1); MFA kaydı/passkey yönetimi (P5) |
+| C09 | `/panel/guvenlik` | O: MFA durumu · Y: TOTP kaydı, passkey, kod doğrulama (step-up) | Hazır | `mfa` (giriş kapısı), `StepUpProvider` (step-up) | Kısmi | P5 | Faz 1: native TOTP step-up + bootstrap `capabilities.security`. Kalan: MFA kaydı ve passkey yönetimi (P5) |
 | C10 | `/panel/erisilebilirlik` | Y: erişilebilirlik tercihleri | Hazır (PATCH; O → `me`) | — | Eksik | P5 | |
 | C11 | `/panel/veri-kullanimi` | Y: düşük veri tercihleri | Hazır (PATCH) | — | Eksik | P5 | `offline-low-data-operations` |
 
-**Ortak kabuk (rota değil, sayıma girmez):** çıkış ve ürün değiştirme mobilde var. ADMIN kabuğu `admin-search` (global arama, P1), `admin-preview*` (önizleme — E2, native, salt okuma, P2.9) ve `admin-teacher-mode` (E6, karar açık) kullanır.
+**Ortak kabuk (rota değil, sayıma girmez):** çıkış ve ürün değiştirme mobilde var. ADMIN kabuğu `admin-search` (global arama, P1), `admin-preview*` (önizleme — E2, native, salt okuma, P2.9) ve `admin-teacher-mode` (öğretmen modu — E6, native, P2.9) kullanır.
 
 ---
 
@@ -230,7 +230,7 @@ Karar tarihi: 11 Ekim 2026 (ürün sahibi).
 | E3 | Meta/Instagram hesap bağlantısının kurulumu | **İstisna (onaylı)** — mobilde yok | Bağlantı kurulumu webde kalır; mobilde entegrasyon **durumu** (salt okuma) ve Instagram mesaj gönderme kapsamda | Y27 (entegrasyonlar bölümü) |
 | E4 | Toplu kullanıcı içe aktarma | **İstisna (onaylı)** — mobilde yok | `users/bulk` webde kalır; tekil kullanıcı oluşturma/düzenleme kapsamda | Y06, Y07 |
 | E5 | Büyük finans raporları ve CSV dışa aktarımları | **İstisna (onaylı)** — mobilde yok | `admin/business/reports.csv`, `reports/export`, `analytics/export` mobilde sunulmaz; ekrandaki özet/metrik görünümleri kapsamda | Y04, Y21, Y27 (raporlar bölümü) |
-| E6 | Yönetici öğretmen çalışma modu (`admin-teacher-mode`) | **Açık** | Önizlemeden farklı olarak yazma açıktır (`docs/admin-teacher-mode.md`); mobilde olup olmayacağı ayrıca karara bağlanacak. Karar gelene kadar Eksik sayılır | Ortak kabuk |
+| E6 | Yönetici öğretmen çalışma modu (`admin-teacher-mode`) | **Kapsamda — native** | Yönetici aynı hesapla öğretmen paneline geçer; yazma açıktır ve denetim kaydı yöneticinin kimliğiyle tutulur (`docs/admin-teacher-mode.md`). Önizlemeyle birbirini dışlar. Çerezsiz taşıma P2.9 ile aynı belirteç modeliyle yapılır | Ortak kabuk |
 
 Onaylı istisnalar **alt işlem** düzeyindedir; etkilenen satırlar kalan alt işlemleri tamamlandığında `Tam` olur. Bu istisnalar için mobil "web'de aç" bağlantısı göstermez — işlem mobil kapsamında değildir.
 
