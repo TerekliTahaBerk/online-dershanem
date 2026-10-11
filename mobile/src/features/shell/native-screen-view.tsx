@@ -1,4 +1,5 @@
 import type { ReactElement } from 'react';
+import OperationsCenterScreen from '@/features/admin/operations-center';
 import OdkExamsScreen from '@/features/odk/odk-exams';
 import OdkHomeScreen from '@/features/odk/odk-home';
 import OdkSwitchScreen from '@/features/odk/odk-switch';
@@ -44,7 +45,7 @@ import { PlaceholderScreen } from './placeholder-screen';
  * Native ekranlar yalnız ait oldukları çalışma alanında, sunucu menüsü onları
  * içerdiğinde açılır. OD ekranları M2'de, Yön ekranları ve ortak check-in
  * M3'te, Deneme Ligi M4'te, veli ekranları M6'da, öğretmen / koç ekranları
- * M7'de yeni mimariye taşındı.
+ * M7'de, yönetim Operasyon Merkezi Faz 1'de yeni mimariye taşındı.
  */
 const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElement> = {
   'od-home': () => <OdHomeScreen />,
@@ -84,6 +85,7 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'coach-sessions': () => <CoachSessionsScreen />,
   'coach-plans': () => <CoachPlansScreen />,
   'teacher-odk-reports': () => <TeacherOdkReportsScreen />,
+  'admin-operations-center': () => <OperationsCenterScreen />,
 };
 
 /** Üst güvenli alanı sekmelerde PanelHeader, detaylarda Stack header bırakır. */

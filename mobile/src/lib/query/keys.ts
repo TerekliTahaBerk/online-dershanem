@@ -36,6 +36,13 @@ export const queryKeys = {
   staffResource: (userId: string, workspace: MobileProductCode, resource: string, params?: Record<string, string | number | null>) =>
     [...queryKeys.staff(userId, workspace), resource, params ?? {}] as const,
   parentResource: (userId: string, studentId: string, resource: string) => [...queryKeys.parentChild(userId, studentId), resource] as const,
+  /**
+   * Faz 1 yönetim: `['user', yöneticiId, 'admin', kaynak, parametreler]`.
+   * Yönetim verisi ürünler arasıdır (Operasyon Merkezi tüm ürünleri okur);
+   * çıkışta önbellek temizlenir.
+   */
+  admin: (userId: string) => ['user', userId, 'admin'] as const,
+  adminResource: (userId: string, resource: string, params?: Record<string, string | number | null>) => [...queryKeys.admin(userId), resource, params ?? {}] as const,
 };
 
 /** Token'dan geri döndürülemez kısa bir anahtar (FNV-1a). Token önbellek anahtarına girmez. */

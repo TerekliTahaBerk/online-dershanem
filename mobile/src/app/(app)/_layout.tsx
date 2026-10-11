@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 
 import { useDesign } from '@/design/theme';
+import { StepUpProvider } from '@/features/auth/step-up';
 import { ParentContextProvider } from '@/features/parent/parent-context';
 import { PushRuntime } from '@/features/push/push-runtime';
 import { color, font } from '@/design/tokens';
@@ -10,6 +11,8 @@ export default function AppLayout() {
   const { product } = useDesign();
   return (
     // M6: veli çocuk bağlamı (yalnız PARENT rolünde etkin; diğer rollerde geçirgen).
+    // Faz 1: hassas yönetim işlemleri için native step-up (428 → kod → tek tekrar).
+    <StepUpProvider>
     <ParentContextProvider>
       {/* M5: bildirim dokunuşu / soğuk başlangıç / rozet — yalnız hazır çalışma alanında. */}
       <PushRuntime />
@@ -42,7 +45,10 @@ export default function AppLayout() {
       <Stack.Screen name="coach/student/[id]" options={{ title: 'Öğrenci' }} />
       <Stack.Screen name="coach/session/[id]" options={{ title: 'Görüşme' }} />
       <Stack.Screen name="coach/plan/[id]" options={{ title: 'Plan' }} />
+      {/* Faz 1 yönetim (AdminRouteGate + sunucu yetkisi). */}
+      <Stack.Screen name="admin/search" options={{ title: 'Ara' }} />
     </Stack>
     </ParentContextProvider>
+    </StepUpProvider>
   );
 }

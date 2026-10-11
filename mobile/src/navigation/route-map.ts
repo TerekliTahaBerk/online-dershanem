@@ -171,3 +171,25 @@ export function sanitizeIncomingPath(path: string): string {
   const normalized = base.startsWith('/') ? base : `/${base}`;
   return ALLOWED_DEEP_LINK.test(normalized) ? normalized : '/';
 }
+
+/**
+ * YÖNETİM (Faz 1): sunucunun verdiği `/panel/...` yolu → yetkili menüdeki
+ * hedef. Önce birebir eşleşme, sonra EN UZUN önek (ör.
+ * `/panel/yonetim/siparisler/o1` → "Siparişler"). Menüde karşılığı olmayan
+ * yol `none` olur; yönetim kökü (`/panel/yonetim`) yalnız birebir eşleşir ki
+ * her yol Operasyon Merkezi'ne düşmesin.
+ */
+export function mapAdminWebPath(href: string | null | undefined, navigation: Navigation | null): NativeTarget {
+  const path = normalizeWebPath(href);
+  if (!path || !navigation) return { kind: 'none' };
+  const items = [...navigation.primary, ...navigation.sections.flatMap((section) => section.items)];
+  let best: { id: string; length: number } | null = null;
+  for (const item of items) {
+    const base = normalizeWebPath(item.webPath);
+    if (!base) continue;
+    const exact = base === path;
+    const prefix = base !== '/panel/yonetim' && base !== '/panel' && path.startsWith(`${base}/`);
+    if ((exact || prefix) && (!best || base.length > best.length)) best = { id: item.id, length: base.length };
+  }
+  return best ? targetForNavId(navigation, best.id) : { kind: 'none' };
+}

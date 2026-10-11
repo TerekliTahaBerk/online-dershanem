@@ -2,7 +2,7 @@ import { makeBootstrap } from '@/test/fixtures';
 
 import { findNavItem, resolveNativeScreen } from './native-screens';
 import { hrefForOdTarget } from './od-targets';
-import { expoHrefFor, mapNotificationHref, normalizeWebPath, sanitizeIncomingPath, targetForNavId, workspaceForWebPath } from './route-map';
+import { expoHrefFor, mapAdminWebPath, mapNotificationHref, normalizeWebPath, sanitizeIncomingPath, targetForNavId, workspaceForWebPath } from './route-map';
 
 const item = (id: string, webPath = `/panel/x/${id}`) => ({ id, label: id, webPath });
 
@@ -38,7 +38,14 @@ describe('native ekran eşlemesi (rol + çalışma alanı + menü kimliği)', ()
     expect(resolveNativeScreen({ role: 'PARENT', workspace: 'OD', item: item('today') })).toMatchObject({ key: 'parent-home' });
     // M7: öğretmen OD `today` öğrenci Bugün'üne değil, öğretmen Bugün'üne gider.
     expect(resolveNativeScreen({ role: 'TEACHER', workspace: 'OD', item: item('today') })).toMatchObject({ key: 'teacher-home' });
-    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('today') })).toMatchObject({ key: 'placeholder', phase: 'WEB' });
+    // Faz 1: yönetim `today` öğrenci / öğretmen Bugün'üne değil, Operasyon Merkezi'ne gider.
+    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('today') })).toMatchObject({ key: 'admin-operations-center' });
+  });
+
+  it('yönetim: henüz native olmayan öğe faz etiketli yer tutucudur (Deneme Ligi yönetimi P4, diğerleri P2)', () => {
+    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('people') })).toMatchObject({ key: 'placeholder', phase: 'P2' });
+    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'ODK', item: item('odk-exams') })).toMatchObject({ key: 'placeholder', phase: 'P4' });
+    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('orders') })).toMatchObject({ key: 'placeholder', phase: 'P2' });
   });
 
   it('bilinmeyen menü kimliği güvenli tarafta kalır', () => {
@@ -155,5 +162,23 @@ describe('M2 OD menü denetimi ve hedefler', () => {
     expect(sanitizeIncomingPath('onlinedershanem://od/review-recovery?tab=telafi')).toBe('/od/review-recovery');
     expect(sanitizeIncomingPath('onlinedershanem://od/lesson/../../account')).toBe('/');
     expect(sanitizeIncomingPath('onlinedershanem://od/mock-exam/x')).toBe('/');
+  });
+});
+
+describe('yönetim web yolu eşlemesi (Faz 1)', () => {
+  const navigation = makeBootstrap({ role: 'ADMIN', products: { OD: 'ACTIVE' }, activeProduct: 'OD' }).workspace!.navigation;
+
+  it('birebir eşleşme sekmeye / iç ekrana, detay yolu en uzun öneke gider', () => {
+    expect(mapAdminWebPath('/panel/yonetim', navigation)).toEqual({ kind: 'tab', slot: 0, navId: 'today' });
+    expect(mapAdminWebPath('/panel/yonetim/kisiler', navigation)).toEqual({ kind: 'screen', navId: 'people' });
+    expect(mapAdminWebPath('/panel/yonetim/siparisler/o1?sekme=log', navigation)).toEqual({ kind: 'screen', navId: 'orders' });
+    expect(mapAdminWebPath('/panel/odk/yonetim/sinavlar/e1', navigation)).toEqual({ kind: 'screen', navId: 'odk-exams' });
+  });
+
+  it('yönetim kökü önek olarak kullanılmaz; menüde olmayan veya panel dışı yol açılmaz', () => {
+    expect(mapAdminWebPath('/panel/yonetim/ogrenciler/s1', navigation)).toEqual({ kind: 'none' });
+    expect(mapAdminWebPath('https://example.com/panel/yonetim', navigation)).toEqual({ kind: 'none' });
+    expect(mapAdminWebPath('/panel/yonetim/../ogrenci', navigation)).toEqual({ kind: 'none' });
+    expect(mapAdminWebPath('/panel/yonetim', null)).toEqual({ kind: 'none' });
   });
 });

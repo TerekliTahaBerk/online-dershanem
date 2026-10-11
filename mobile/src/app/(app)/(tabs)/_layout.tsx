@@ -16,8 +16,8 @@ export default function TabsLayout() {
   const bootstrap = useReadyBootstrap();
   const { product } = useDesign();
   const insets = useSafeAreaInsets();
-  const hasNativeTabs = bootstrap.user.role !== 'ADMIN';
-  const primary = hasNativeTabs ? (bootstrap.workspace?.navigation.primary ?? []).slice(0, 4) : [];
+  // Faz 1: yönetim de sunucunun birincil menüsünü sekme olarak alır.
+  const primary = (bootstrap.workspace?.navigation.primary ?? []).slice(0, 4);
   const items = [
     ...SLOTS.flatMap((name, index) => index === 0 || primary[index] ? [{ name, label: primary[index]?.label ?? 'Bugün', id: primary[index]?.id ?? 'today' }] : []),
     { name: 'menu', label: 'Menü', id: 'menu' },
