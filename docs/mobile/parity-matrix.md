@@ -92,7 +92,7 @@ Mobil karşılık: **yok** (`slot-screen.tsx` ADMIN → yalnız `StaffHomeScreen
 | Y24 | `/panel/yonetim/kayitlar` | `audit` | O: işlem geçmişi | Prisma (RSC) | O yok | — | Eksik | P2.8 | |
 | Y25 | `/panel/yonetim/pilot` | `pilot` | O: kontrollü yayın hazırlığı · Y: kohort oluştur/güncelle | `pilot-cohorts` POST, `pilot-cohorts/[id]` PATCH; `pilot-readiness-server.ts` | Y var, O yok | — | Eksik | P2.8 | |
 | Y26 | `/panel/yonetim/kalite` | `quality` (flag `cohortQuality`) | O: öğrenme kalitesi | `lib/cohort-quality` (RSC) | O yok | — | Eksik | P2.8 | Salt okuma |
-| Y27 | `/panel/yonetim/isletme/[section]` | `business-*` (16 bölüm) | O: genel bakış, mesaj kutusu, adaylar, satış hunisi, reklamlar, kampanyalar, gelirler, giderler, vergiler, mutabakat, raporlar, AI bilgi merkezi, otomasyon, entegrasyonlar, sistem kayıtları, ayarlar · Y: **36 eylem** — konuşma ata/etiketle/okundu/kontrol; aday oluştur/aşama/not/görev/takip/sahip/öncelik/birleştir/sipariş bağla/yaşam döngüsü; kampanya/reklam oluştur; finans işlemi oluştur/ters kayıt; dönem kilidi; mutabakat çalıştır/çöz; Meta senkron; manuel atıf; bilgi kaydı oluştur/sürümle; prompt sürümü; AI öneri; otomasyon oluştur/aç-kapa/dry-run; saklama ayarı; işletme rolü ver/al; Instagram mesaj gönder | SA `app/panel/yonetim/isletme/actions.ts`; `admin/business/reports.csv`, `integrations/instagram/{health,send}`; `lifecycle/lead-detail-server.ts` | SA + O yok | — | Eksik | P2.7 | `BusinessPermission` (ADR-0011); dönem kilidi/rol/ters kayıt → step-up; Meta OAuth kurulumu istisna adayı |
+| Y27 | `/panel/yonetim/isletme/[section]` | `business-*` (16 bölüm) | O: genel bakış, mesaj kutusu, adaylar, satış hunisi, reklamlar, kampanyalar, gelirler, giderler, vergiler, mutabakat, raporlar, AI bilgi merkezi, otomasyon, entegrasyonlar, sistem kayıtları, ayarlar · Y: **36 eylem** — konuşma ata/etiketle/okundu/kontrol; aday oluştur/aşama/not/görev/takip/sahip/öncelik/birleştir/sipariş bağla/yaşam döngüsü; kampanya/reklam oluştur; finans işlemi oluştur/ters kayıt; dönem kilidi; mutabakat çalıştır/çöz; Meta senkron; manuel atıf; bilgi kaydı oluştur/sürümle; prompt sürümü; AI öneri; otomasyon oluştur/aç-kapa/dry-run; saklama ayarı; işletme rolü ver/al; Instagram mesaj gönder | SA `app/panel/yonetim/isletme/actions.ts`; `admin/business/reports.csv`, `integrations/instagram/{health,send}`; `lifecycle/lead-detail-server.ts` | SA + O yok | — | Eksik | P2.7 | `BusinessPermission` (ADR-0011); dönem kilidi/rol/ters kayıt → step-up; E3 (bağlantı kurulumu) ve E5 (rapor CSV) kapsam dışı |
 | Y28 | `/panel/yonetim/isletme` | — | — | `redirect → genel-bakis` | — | — | Yönl. | — | |
 
 ## 2. Deneme Ligi yönetimi — `/panel/odk/yonetim` (ADMIN + izinli Deneme Ligi personeli)
@@ -215,21 +215,24 @@ Mobil karşılık: **yok** (öğretmen ODK alanında yalnız `teacher-odk-report
 | C10 | `/panel/erisilebilirlik` | Y: erişilebilirlik tercihleri | Hazır (PATCH; O → `me`) | — | Eksik | P5 | |
 | C11 | `/panel/veri-kullanimi` | Y: düşük veri tercihleri | Hazır (PATCH) | — | Eksik | P5 | `offline-low-data-operations` |
 
-**Ortak kabuk (rota değil, sayıma girmez):** çıkış ve ürün değiştirme mobilde var. ADMIN kabuğu `admin-search` (global arama, P1), `admin-preview*` ve `admin-teacher-mode` kullanır; önizleme/öğretmen modu mobilde yazma yetkisi doğurmamalı (E2).
+**Ortak kabuk (rota değil, sayıma girmez):** çıkış ve ürün değiştirme mobilde var. ADMIN kabuğu `admin-search` (global arama, P1), `admin-preview*` (önizleme — E2, native, salt okuma, P2.9) ve `admin-teacher-mode` (E6, karar açık) kullanır.
 
 ---
 
-## Bilinçli istisnalar ve istisna adayları
+## Bilinçli istisnalar ve kapsam kararları
 
-| Kimlik | Konu | Durum | Gerekçe | Karar sahibi |
+Karar tarihi: 11 Ekim 2026 (ürün sahibi).
+
+| Kimlik | Konu | Karar | Gerekçe / uygulama | Etkilenen satırlar |
 | --- | --- | --- | --- | --- |
-| E1 | Deneme/sınav çözme (S23 ve S21 "Başlat") | **Onaylı** | Ürün kararı; bütünlük izleme web'de | Ürün |
-| E2 | ADMIN önizleme + öğretmen modu (C10) | Aday | Overlay rol mobilde yazma yetkisi doğurmamalı (`staff-api.ts` kuralı) | Güvenlik |
-| E3 | Meta/Instagram OAuth bağlantı kurulumu (Y27 entegrasyonlar) | Aday | Tarayıcı oturumu; `openAuthSessionAsync` ile native yapılabilir | Ürün + Güvenlik |
-| E4 | Toplu kullanıcı içe aktarma (Y06 `users/bulk`) | Aday | Dosya seçiciyle native mümkün; hata önizlemesi büyük tablo | Ürün |
-| E5 | Büyük finans/CSV raporları (Y04, Y21, Y27) | Aday | Görüntüleme yerine indir + paylaş | Ürün |
+| E1 | Deneme/sınav çözme | **İstisna (onaylı)** | Ürün kararı; bütünlük izleme web'de | S23, S21 "Başlat" |
+| E2 | Yönetici önizlemesi (View As) | **Kapsamda — native** | ADMIN, öğrenci/veli/öğretmen panelini mobilde görüntüler. Önizleme salt okumadır: sunucu önizleme açıkken mutasyonu reddeder (`docs/admin-panel-preview.md`), mobil yazma düğmelerini gizler. Çerez yerine Bearer oturumuna bağlı imzalı önizleme belirteci gerekir (P2.9) | Ortak kabuk; Y08, Y10 giriş noktaları |
+| E3 | Meta/Instagram hesap bağlantısının kurulumu | **İstisna (onaylı)** — mobilde yok | Bağlantı kurulumu webde kalır; mobilde entegrasyon **durumu** (salt okuma) ve Instagram mesaj gönderme kapsamda | Y27 (entegrasyonlar bölümü) |
+| E4 | Toplu kullanıcı içe aktarma | **İstisna (onaylı)** — mobilde yok | `users/bulk` webde kalır; tekil kullanıcı oluşturma/düzenleme kapsamda | Y06, Y07 |
+| E5 | Büyük finans raporları ve CSV dışa aktarımları | **İstisna (onaylı)** — mobilde yok | `admin/business/reports.csv`, `reports/export`, `analytics/export` mobilde sunulmaz; ekrandaki özet/metrik görünümleri kapsamda | Y04, Y21, Y27 (raporlar bölümü) |
+| E6 | Yönetici öğretmen çalışma modu (`admin-teacher-mode`) | **Açık** | Önizlemeden farklı olarak yazma açıktır (`docs/admin-teacher-mode.md`); mobilde olup olmayacağı ayrıca karara bağlanacak. Karar gelene kadar Eksik sayılır | Ortak kabuk |
 
-Aday satırlar onaylanana kadar **Eksik** sayılır.
+Onaylı istisnalar **alt işlem** düzeyindedir; etkilenen satırlar kalan alt işlemleri tamamlandığında `Tam` olur. Bu istisnalar için mobil "web'de aç" bağlantısı göstermez — işlem mobil kapsamında değildir.
 
 ## Sunucu iş listesi (matristen türetilen)
 
