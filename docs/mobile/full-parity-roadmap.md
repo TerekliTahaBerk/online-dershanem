@@ -323,3 +323,19 @@ Dört GET ucu gerçek ADMIN hesabını doğrular, `private, no-store` döner ve 
 **P2.8 henüz bütünüyle tamamlanmadı:** Y25 pilot kohort oluşturma/geçişleri ve Y18 dış deneme ekleme/hata nedeni/sonraki adım revizyonu sıradaki geliştirmedir; bunların yazmalarında web ve mobil için ortak step-up, idempotency, sürüm/409 ve atomik audit uygulanmalıdır. Özellik ekranı mevcut web eşliği kapsamında salt okunur; [ADR-0015](../adr/0015-runtime-panel-feature-snapshot.md) onaylanmadan runtime okuma/yazma politikası eklenmez. Üretim ayarı, pilot aktivasyonu veya yayın yapılmadı.
 
 Matris: 58 Tam / 15 Kısmi / 26 Eksik / 1 İstisna / 6 Yönl.; yönetimde 24 Tam, 3 Eksik (Y18, Y25, Y27), 1 Yönl.
+
+### P2.8 tamamlandı: kontrollü yayın ve dış denemeler — 12 Ekim 2026
+
+Y25 ve Y18 native. **Kontrollü yayın:** hazırlık kapıları, gruptan dört rollü kohort oluşturma ve sunucunun izin verdiği geçişler (aktive et / duraklat / sürdür / tamamla / geri al, durdurma nedeniyle). **Dış denemeler:** öğrenci seçimi, elle veya toplu yapıştırmayla giriş, kişisel hata eğilimi, tek sonraki adım onayı ve neden revizyonu.
+
+Web sayfalarının yükleyicileri `lib/panel/pilot-server.ts` ve `lib/panel/admin-mock-exams-server.ts`'e taşındı; iki yeni GET ucu (`/api/panel/admin/pilot`, `/api/panel/admin/mock-exams`) aynı yükleyiciyi projeksiyonla sunar. Yazmalar web ile AYNI `pilot-cohorts*` ve `mock-exams*` uçlarında kalır; rota mantığı `pilot-cohort-service.ts` ve `mock-exam-service.ts` servislerine taşındı:
+
+- **Step-up:** pilot oluşturma/geçiş her yönetici için; dış deneme yazmaları yalnız yönetici aktörde taze step-up ister (öğretmen / öğrenci akışı değişmedi). Web formları 428'de güvenlik sayfasını gösterir.
+- **İşlem anahtarı:** aktöre bağlı makbuz `AuditLog.idempotencyKey`; aynı anahtar aynı gövdeyle ilk sonucu döndürür, başka gövde veya başka yönetici 409 `IDEMPOTENCY_REUSE`. Bearer yazmalarında anahtar (ve deneme revizyonunda `expectedRevision`) zorunlu.
+- **Sürüm / 409:** pilot `expectedVersion`; deneme revizyonu nedenler + onaylı adım özeti (`mockExamRevision`).
+- **Atomik audit:** kayıt ve audit tek Serializable transaction'da; ürün olayları commit sonrası.
+
+**Doğrulama:** sunucu/mobil tip ve lint; 977 sunucu birim testi (kapsam eşikleri karşılanıyor); yerel PostgreSQL'de tam entegrasyon paketi 134/134 (yeni: eşzamanlı aynı anahtar, yeniden kullanım, eski sürüm/revizyon, atomik audit); mobil 31 paket / 234 test; API girdi, sözleşme sınırı ve matris kontrolleri; `next build`. Yeni gerçek HTTP senaryosu `tests/e2e/mobile-api.spec.ts` içinde; web pilot e2e'si step-up'a uyarlandı. Bu ortamda E2E hesapları olmadığından e2e koşulmadı; gerçek iPhone kabulü P6'da.
+
+Matris: 60 Tam / 15 Kısmi / 24 Eksik / 1 İstisna / 6 Yönl.; yönetimde yalnız Y27 (İşletme, P2.7) eksik.
+
