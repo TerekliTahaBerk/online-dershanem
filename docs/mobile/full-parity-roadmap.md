@@ -347,8 +347,8 @@ Matris: 60 Tam / 15 Kısmi / 24 Eksik / 1 İstisna / 6 Yönl.; yönetimde yalnı
 | --- | --- | --- |
 | **P2.7a** | Kapı, bootstrap, 16 bölümün okuması, konuşma / aday detayı | **Tamamlandı** |
 | P2.7b | CRM yazmaları: konuşma (durum/AI modu, okundu, atama, etiket, AI önerisi, yanıt), aday (oluştur, aşama, not, görev, takip, sahip, öncelik, birleştir, kopya, sipariş / yaşam döngüsü bağı) | **Tamamlandı** |
-| P2.7c | Pazarlama + finans: kampanya, reklam, manuel atıf, Meta senkronu; işlem, ters kayıt, dönem kilidi (step-up), mutabakat | Sırada |
-| P2.7d | AI bilgi merkezi, prompt sürümü, otomasyon (oluştur / aç-kapa / dry-run), saklama süresi, işletme rolleri (step-up) | Planlı |
+| P2.7c | Pazarlama + finans: kampanya, reklam, manuel atıf, Meta senkronu; işlem, ters kayıt, dönem kilidi (step-up), mutabakat | **Tamamlandı** |
+| P2.7d | AI bilgi merkezi, prompt sürümü, otomasyon (oluştur / aç-kapa / dry-run), saklama süresi, işletme rolleri (step-up) | Sırada |
 
 **P2.7a teslimatı.**
 
@@ -372,4 +372,16 @@ Matris: 60 Tam / 16 Kısmi / 23 Eksik / 1 İstisna / 6 Yönl.; yönetimde Y27 K�
 - **Mobil:** konuşma ekranında yanıt (AI önerisini kullan), okundu, durum + AI modu, AI önerisi üret, sorumlu, etiket, aday notu / görevi; aday ekranında aşama (kayıp nedeni zorunlu), sorumlu, öncelik, takip planı (İstanbul saati), not, görev, görev tamamlama, kopya birleştirme (onaylı) / öneriyi kapatma, sipariş ve öğrenci hesabı bağı (manuel onay ayrıca onaylatılır); Adaylar'da "Aday ekle". Yazma alanları yalnız ilgili izin varken görünür.
 
 **Doğrulama:** 977+ sunucu birim testi (kapsam eşikleri karşılanıyor); yerel PostgreSQL'de tam entegrasyon paketi 136/136 (yeni: eşzamanlı aynı anahtar, yeniden kullanım, kayıp nedeni, eski revizyon, not / görev / takip / sorumlu / birleştirme / sipariş, konuşma komutları, iş birimi kapsamı); mobil 32 paket / 242 test; API girdi, sözleşme sınırı, matris kontrolleri ve `next build`. Gerçek HTTP senaryosuna CRM (anahtarsız 400, tekrar, eski revizyon 409) eklendi; bu ortamda koşulmadı.
+
+### P2.7c pazarlama + finans yazmaları — 12 Ekim 2026
+
+9 Server Action'ın (kampanya, manuel reklam, manuel atıf, Meta Ads senkronu, gelir / gider kaydı, ters kayıt, dönem kilidi, mutabakat çalıştır / çöz) iş kuralları `lib/business/ops-service.ts`'e (`runOpsCommand`) olduğu gibi taşındı; şema `lib/business/ops-commands.ts` (Server Action zod sınırlarıyla aynı; form dizgileri sayıya çevrilir). Web eylemleri servisi çağırır (yönlendirmeler aynı); mobil `POST /api/panel/business/ops` aynı servis, izin (`opsPermission`) ve iş birimi kapsamıyla çalışır.
+
+- **Ortak makbuz çalıştırıcısı:** `lib/business/command-receipt.ts` (`runWithReceipt`) CRM ve pazarlama / finans komutlarında ortak: aktöre bağlı işlem anahtarı, tek Serializable transaction'da kayıt + audit, dış servis / tarama komutlarında (Meta senkronu, mutabakat taraması, yaşam döngüsü bağı) makbuz iş bittikten sonra. CRM servisi bu çalıştırıcıya geçirildi (davranış aynı).
+- **Step-up:** finans kaydı, ters kayıt ve dönem kilidi web'de olduğu gibi taze step-up ister (mobilde 428 → native doğrulama → aynı anahtarla tekrar). Finans bayrağı kapalıyken finans komutları 404.
+- **Dönem kilidi:** ters kayıt artık çağıranın transaction'ında çalışabilir (`reverseLedgerTransaction(…, client)`); kilit kontrolü, ters kayıt ve audit aynı transaction'da. Kilitli tarihe kayıt / ters kayıt 409 `ACCOUNTING_PERIOD_LOCKED`.
+- **Güvenlik yeteneği:** finans veya işletme rolü yetkisi olan yönetici dışı personel (ör. muhasebe atamalı öğretmen hesabı) bootstrap'ta güvenlik yeteneği alır; böylece mobilde step-up yapabilir.
+- **Mobil:** Kampanyalar'da "Kampanya ekle", Reklamlar'da "Manuel reklam ekle" (tam sayı alanları doğrulanır), aday detayında manuel atıf, Entegrasyonlar'da Meta Ads senkronu, Gelirler / Giderler'de kayıt ekleme ve satırda onaylı ters kayıt, Vergiler'de onaylı dönem kilidi, Mutabakat'ta tarama (özetli) ve satırda çözüm. Yazma alanları yalnız izin varken.
+
+**Doğrulama:** sunucu birim testleri (kapsam eşikleri karşılanıyor); yerel PostgreSQL'de tam entegrasyon paketi 137/137 (yeni: eşzamanlı aynı anahtar, KDV ayrıştırma, kilitli dönem, ters kayıt, mutabakat çözümü, atomik audit, iş birimi kapsamı); mobil 32 paket / 244 test; API girdi, sözleşme sınırı, matris kontrolleri ve `next build`. Gerçek HTTP senaryosuna finans step-up ve işlem anahtarı kontrolleri eklendi; bu ortamda koşulmadı.
 
