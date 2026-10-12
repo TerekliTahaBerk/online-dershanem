@@ -106,7 +106,8 @@ const minutesFromNow = (now: Date, minutes: number) => new Date(now.getTime() + 
  * ------------------------------------------------------------------ */
 
 integration("M2 OD Bugün: OD-only öğrenci — yaklaşan ders 'Şimdi' (katılım penceresi), ödev Bugün listesinde, hafta gerçek sayılar", async () => {
-  const now = new Date();
+  // Keep the lesson inside the same Istanbul day even when CI runs near midnight.
+  const now = new Date("2026-10-12T09:00:00Z");
   const { teacher, group } = await classroom("home-od");
   const s = await student(["OD"], "home-od");
   await enroll(group.id, s.profile.id);
@@ -122,9 +123,8 @@ integration("M2 OD Bugün: OD-only öğrenci — yaklaşan ders 'Şimdi' (katıl
   assert.deepEqual(home.now?.target, { type: "lesson", lessonId: soon.id });
   assert.equal(home.now?.joinable, true);
   assert.ok(!home.today.some((item) => item.id === `lesson:${soon.id}`), "Şimdi dersi Bugün listesinde tekrar edilmez");
-  // Ödev bugün içinde teslim ediliyorsa listede; İstanbul günü dönümüne denk gelirse olmayabilir.
   const dueItem = home.today.find((item) => item.id === `assignment:${due.id}`);
-  if (dueItem) assert.deepEqual(dueItem.target, { type: "assignment", assignmentId: due.id });
+  assert.deepEqual(dueItem?.target, { type: "assignment", assignmentId: due.id });
   assert.ok(home.week);
   assert.ok(home.week.lessonsPlanned >= 1);
   assert.equal(home.week.pendingAssignments, 1);

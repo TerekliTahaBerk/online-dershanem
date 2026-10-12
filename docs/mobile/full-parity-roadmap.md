@@ -420,3 +420,10 @@ Bu dilimin son kontrolleri: **984 sunucu birim testi**, **33 paket / 250 mobil t
 - **T09:** Web ve mobil aynı tekrar gözetimi yükleyicisini kullanır. Kaynak referansıyla oluşturma native; Bearer işleminde öğrenci sürümü ve atomik receipt/audit, belirsiz ağ hatasında aynı anahtar.
 - **Kanıt:** 984 sunucu birim testi; 40 mobil paket/257 test; 8 PostgreSQL eğitim/dış deneme entegrasyonu; sentetik hesaplarla gerçek HTTP senaryosu: yabancı kaynaklar, eski sürümler, tekrar/anahtar çakışması, şablon sınırı yarışı, materyal düzenleme, 413, kayıt sona ermesi. iOS/Android/web Expo export başarılı. Sunucu/mobil tip, değişen kaynak lint, API doğrulama, sözleşme sınırı ve matris kontrolü geçti. Mobil lintte önceden var olan `admin-activation-desk.test.tsx` import sırası uyarısı bulunur.
 - **Durum:** 74 Tam / 9 Kısmi / 16 Eksik / 1 İstisna / 6 Yönl. P3.1 uygulama eşliği tamam; T07 Dino, T10–T12/T14, T20, P4 ve P5’in kalanları açık. Özel Blob gerçek yükleme ve fiziksel iPhone kabulü P6’da; bunlar çalıştırılmış sayılmaz. P2.9/P1 operasyon ve dış inceleme kabulü açık.
+
+
+### 12 Ekim 2026 — P3.3 T10 telafi paketleri
+
+- Web ve mobil ortak öğretmen yükleyicisini kullanır. Native taslak önizleme, üretme/yenileme ve insan onaylı yayın; öğretmen/aktif kayıt kapsamı, kaynak revizyonu ve atomik işlem receipt/audit/bildirim/outbox. İsteğe bağlı plan dengelemesi yayın transaction’ından sonra çalışır.
+- Kanıt: 985 birim testi, 41 mobil paket/259 test; güncel migration zinciriyle izole yerel PostgreSQL/HTTP üzerinde yabancı öğretmen, kaynak değişimi, tekrar, eşzamanlı yayın, tek bildirim/outbox ve kayıt sona ermesi geçti. Tip/lint/API/sözleşme/matris kontrolleri geçti.
+- Güncel durum: 75 Tam / 9 Kısmi / 15 Eksik / 1 İstisna / 6 Yönl. T07 Dino, T11–T12/T14, T20, P4 ve P5 kalanları açık; gerçek iPhone, P2.9/P1 ve dış inceleme kabulü açık.

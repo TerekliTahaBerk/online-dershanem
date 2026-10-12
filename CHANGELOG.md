@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Native teacher recovery-package preview, draft generation/refresh and confirmed publication with shared web reads, source revisions, atomic receipts and notification/email outbox; real HTTP scope/concurrent replay coverage.
+
 - Native teacher assignment/material editors with scoped choices, linked-lesson assignment creation, private file handling, atomic Bearer write receipts and revision checks.
 - Native lesson template create/apply/edit/delete, outcome search/favorites, class analysis, review queue monitoring/creation and scoped external-exam entry/reason revision/action approval; shared web loaders and real HTTP isolation coverage.
 
