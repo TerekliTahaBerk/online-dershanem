@@ -86,7 +86,7 @@ function Operations({ data, onOpenPerson }: { data: MobileStudent360; onOpenPers
   const [needsReason, setNeedsReason] = useState(false);
   const [notice, setNotice] = useState<{ tone: 'info' | 'critical'; text: string } | null>(null);
   const assign = useAdminMutation((api, input: { studentId: string; coachId: string; cadenceDays?: string; overrideReason?: string; expectedRevision: string }, { idempotencyKey }) => assignCoach(api, input, idempotencyKey));
-  const retry = useAdminMutation((api, orderId: string) => retryProvisioning(api, orderId));
+  const retry = useAdminMutation((api, input: { orderId: string; revision?: string }, { idempotencyKey }) => retryProvisioning(api, input.orderId, idempotencyKey, input.revision));
   const transferring = Boolean(coach.currentCoachId);
 
   async function onAssign() {
@@ -112,7 +112,7 @@ function Operations({ data, onOpenPerson }: { data: MobileStudent360; onOpenPers
   async function onRetry(order: MobileStudent360['blockedOrders'][number]) {
     setNotice(null);
     try {
-      const result = await retry.mutateAsync(order.id);
+      const result = await retry.mutateAsync({ orderId: order.id, revision: order.revision ?? undefined });
       setNotice({ tone: result.succeeded ? 'info' : 'critical', text: `${order.packageName}: ${result.message}` });
     } catch (cause) {
       setNotice({ tone: 'critical', text: adminErrorText(cause) ?? 'Yeniden deneme başarısız.' });

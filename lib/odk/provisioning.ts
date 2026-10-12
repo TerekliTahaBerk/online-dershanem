@@ -1,3 +1,5 @@
+import { claimAdminOrderRetry } from "@/lib/panel/order-retry-claim";
+import type { AdminRetryClaim } from "@/lib/panel/order-retry-core";
 import "server-only";
 
 import { Prisma } from "@prisma/client";
@@ -50,9 +52,9 @@ export type OdkProvisioningResult = {
 
 export async function provisionOdkOrder(
   orderId: string,
-  options: { failurePoint?: OdkProvisioningFailurePoint; studentUserId?: string } = {},
+  options: { failurePoint?: OdkProvisioningFailurePoint; studentUserId?: string; adminRetry?: AdminRetryClaim } = {},
 ): Promise<OdkProvisioningResult> {
-  const claim = await prisma.odkOrder.updateMany({
+  const claim = options.adminRetry ? await claimAdminOrderRetry("ODK", orderId, options.adminRetry) : await prisma.odkOrder.updateMany({
     where: {
       id: orderId,
       status: "PAID",

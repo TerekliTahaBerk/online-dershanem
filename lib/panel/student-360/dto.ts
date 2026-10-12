@@ -164,6 +164,7 @@ export type Student360CommerceTab = {
   orders: {
     id: string;
     packageName: string;
+    updatedAt?: Date;
     status: string;
     provisioningStatus: string;
     provisioningError: string | null;

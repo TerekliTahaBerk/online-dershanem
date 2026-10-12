@@ -46,7 +46,7 @@ test("öğrenci 360: tüm bölümler kart olarak sözleşmeye uyar; etiketler we
   assert.deepEqual(view.cards.map((item) => item.id), ["overview", "academic", "lessons", "assignments", "teachers", "coaching", "exams", "risk", "parent", "commerce", "timeline"]);
   assert.equal(view.summary.packageStatus.label, "Erişim açılışı bekliyor");
   assert.equal(view.summary.risk.tone, "warning");
-  assert.deepEqual(view.blockedOrders, [{ id: "o1", packageName: "LGS Paketi" }]);
+  assert.deepEqual(view.blockedOrders, [{ id: "o1", packageName: "LGS Paketi", revision: null }]);
   const lessons = view.cards.find((item) => item.id === "lessons")!;
   assert.match(lessons.rows.find((item) => item.title === "Oranlar")!.subtitle ?? "", /Geç$/);
   const assignments = view.cards.find((item) => item.id === "assignments")!;

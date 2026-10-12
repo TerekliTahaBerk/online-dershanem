@@ -135,6 +135,7 @@ export async function loadStudent360QueryData(input: {
                 select: {
                   id: true,
                   packageName: true,
+                  updatedAt: true,
                   status: true,
                   provisioningStatus: true,
                   provisioningError: true,

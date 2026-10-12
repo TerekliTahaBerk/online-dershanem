@@ -1,0 +1,12 @@
+import { check, v, type Infer } from "./validate";
+const status = v.oneOf(["PAID", "PENDING", "CANCELLED", "REFUNDED"] as const);
+const provisioning = v.oneOf(["PENDING", "RUNNING", "RETRY_PENDING", "MANUAL_REVIEW", "SUCCEEDED"] as const);
+const summary = { id: v.nonEmpty(), packageName: v.string(), status, provisioningStatus: provisioning, totalCents: v.int(0), createdAt: v.iso(), customer: v.string() };
+const list = v.object({ contractVersion: v.literal(1), page: v.int(1), pageCount: v.int(1), total: v.int(0), problemCount: v.int(0), orders: v.array(v.object({ ...summary, products: v.array(v.string()) })) });
+const detail = v.object({ contractVersion: v.literal(1), order: v.object({ ...summary, revision: v.nonEmpty(), canRetry: v.boolean(), userId: v.nullable(v.nonEmpty()), studentProfileId: v.nullable(v.nonEmpty()), provisioningAttempts: v.int(0), provisioningError: v.nullable(v.string()), provisionedAt: v.nullable(v.iso()), onboarding: v.nullable(v.object({ label: v.string(), nextAction: v.string(), owner: v.nullable(v.string()), dueAt: v.nullable(v.iso()) })), payments: v.array(v.object({ status: v.oneOf(["SUCCEEDED", "PENDING", "FAILED", "REFUNDED"] as const), provider: v.string(), amountCents: v.int(0), paidAt: v.nullable(v.iso()), failureReason: v.nullable(v.string()) })), lines: v.array(v.object({ id: v.nonEmpty(), productName: v.string(), status: v.oneOf(["PENDING", "RUNNING", "RETRY_PENDING", "MANUAL_REVIEW", "SUCCEEDED", "REVOKED"] as const), error: v.nullable(v.string()), attempts: v.int(0) })) }) });
+export type AdminOrders = Infer<typeof list>;
+export type AdminOrder = Infer<typeof detail>['order'];
+export const parseAdminOrders = (input: unknown) => check(list, input);
+export const parseAdminOrder = (input: unknown) => check(detail, input);
+const revision = v.object({ revision: v.nonEmpty() });
+export const parseOrderRetryRevision = (input: unknown) => check(revision, input);

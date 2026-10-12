@@ -5,7 +5,9 @@ import type {
   OrderLineFulfillmentStatus,
   OdkPaymentStatus,
 } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { randomUUID } from "node:crypto";
+import { loadAdminOrder } from "@/lib/panel/admin-orders-server";
+import { orderRetryRevision } from "@/lib/panel/order-retry-core";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelCard, PanelCardTitle, PanelHeading } from "@/components/panel/ui";
@@ -85,68 +87,23 @@ function Row({
 
 export default async function AdminOrderDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ hata?: string }>;
 }) {
   const session = await requireRole("ADMIN");
   const { id } = await params;
+  const { hata } = await searchParams;
 
-  const order = await prisma.odOrder.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      packageName: true,
-      status: true,
-      totalCents: true,
-      createdAt: true,
-      provisioningStatus: true,
-      provisioningAttempts: true,
-      provisioningError: true,
-      provisionedAt: true,
-      user: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          studentProfile: { select: { id: true } },
-        },
-      },
-      onboarding: {
-        select: {
-          state: true,
-          dueAt: true,
-          owner: { select: { fullName: true, email: true } },
-        },
-      },
-      payments: {
-        select: {
-          status: true,
-          provider: true,
-          amountCents: true,
-          paidAt: true,
-          failureReason: true,
-        },
-        orderBy: { createdAt: "desc" },
-      },
-      lines: {
-        select: {
-          id: true,
-          productName: true,
-          fulfillmentStatus: true,
-          fulfillmentError: true,
-          fulfillmentAttempts: true,
-        },
-        orderBy: { position: "asc" },
-      },
-    },
-  });
+  const order = await loadAdminOrder(id);
 
   if (!order) notFound();
 
   const payment = order.payments[0] ?? null;
   const canRetry =
     order.status === "PAID" && order.provisioningStatus !== "SUCCEEDED";
-  const canRetryNow = canRetry && Boolean(order.user);
+  const canRetryNow = canRetry && Boolean(order.user) && (order.provisioningStatus !== "RUNNING" || order.updatedAt.getTime() < Date.now() - 5 * 60_000);
   const failedLines = order.lines.filter(
     (l) =>
       l.fulfillmentStatus === "MANUAL_REVIEW" ||
@@ -182,6 +139,7 @@ export default async function AdminOrderDetailPage({
       pageTitle="Sipariş detayı"
     >
       <div className="max-w-[900px]">
+        {hata === "conflict" ? <p role="alert">Sipariş değişti veya işlem sürüyor. Güncel görünümü kontrol edip tekrar deneyin.</p> : null}
         <p className="text-[13px] text-dc-ink-faint">
           <Link
             href="/panel/yonetim/siparisler"
@@ -307,6 +265,8 @@ export default async function AdminOrderDetailPage({
               {canRetryNow ? (
                 <form action={retryOrderProvisioning} className="pt-1">
                   <input type="hidden" name="orderId" value={order.id} />
+                  <input type="hidden" name="idempotencyKey" value={randomUUID()} />
+                  <input type="hidden" name="expectedRevision" value={orderRetryRevision(order)} />
                   <button
                     type="submit"
                     className="rounded-od bg-dc-brand-strong px-[14px] py-[9px] text-[13px] font-bold text-white transition-colors hover:bg-dc-brand-hover"

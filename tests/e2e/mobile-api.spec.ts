@@ -558,7 +558,7 @@ test.describe.serial("Faz 1 mobil yönetim kapısı", () => {
     const assign = await context.post("/api/panel/admin/coach-assignments", { headers: auth, data: assignmentInput });
     expect(assign.status()).toBe(428);
     expect((await assign.json()).code).toBe("STEP_UP_REQUIRED");
-    expect((await context.post("/api/panel/admin/orders/yok-boyle-siparis/provisioning-retry", { headers: auth, data: {} })).status()).toBe(404);
+    expect((await context.post("/api/panel/admin/orders/yok-boyle-siparis/provisioning-retry", { headers: auth, data: {} })).status()).toBe(428);
     // Veli bağlantısı web ile aynı uçta ve taze step-up ister.
     const link = await context.post("/api/panel/relationships", { headers: auth, data: { parentId: admin.user.id, studentId: profileId } });
     expect(link.status()).toBe(428);

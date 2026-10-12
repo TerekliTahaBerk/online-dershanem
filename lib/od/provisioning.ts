@@ -1,3 +1,5 @@
+import { claimAdminOrderRetry } from "@/lib/panel/order-retry-claim";
+import type { AdminRetryClaim } from "@/lib/panel/order-retry-core";
 import "server-only";
 
 import { randomBytes } from "node:crypto";
@@ -261,9 +263,9 @@ async function waitForConcurrentProvisioning(orderId: string): Promise<OdProvisi
 
 export async function provisionOdOrder(
   orderId: string,
-  options: { failurePoint?: OdProvisioningFailurePoint; studentUserId?: string } = {},
+  options: { failurePoint?: OdProvisioningFailurePoint; studentUserId?: string; adminRetry?: AdminRetryClaim } = {},
 ): Promise<OdProvisioningResult> {
-  const claim = await prisma.odOrder.updateMany({
+  const claim = options.adminRetry ? await claimAdminOrderRetry("OD", orderId, options.adminRetry) : await prisma.odOrder.updateMany({
     where: {
       id: orderId,
       status: "PAID",

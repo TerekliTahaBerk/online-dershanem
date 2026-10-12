@@ -54,7 +54,7 @@ describe('native ekran eşlemesi (rol + çalışma alanı + menü kimliği)', ()
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('people') }).key).toBe('admin-people');
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('signups') }).key).toBe('admin-signups');
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'ODK', item: item('odk-exams') })).toMatchObject({ key: 'placeholder', phase: 'P4' });
-    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('orders') })).toMatchObject({ key: 'placeholder', phase: 'P2' });
+    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('orders') })).toMatchObject({ key: 'admin-orders' });
   });
 
   it('bilinmeyen menü kimliği güvenli tarafta kalır', () => {
@@ -185,7 +185,7 @@ describe('yönetim web yolu eşlemesi (Faz 1)', () => {
   it('birebir eşleşme sekmeye / iç ekrana, detay yolu en uzun öneke gider', () => {
     expect(mapAdminWebPath('/panel/yonetim', navigation)).toEqual({ kind: 'tab', slot: 0, navId: 'today' });
     expect(mapAdminWebPath('/panel/yonetim/kisiler', navigation)).toEqual({ kind: 'screen', navId: 'people' });
-    expect(mapAdminWebPath('/panel/yonetim/siparisler/o1?sekme=log', navigation)).toEqual({ kind: 'screen', navId: 'orders' });
+    expect(mapAdminWebPath('/panel/yonetim/siparisler/o1?sekme=log', navigation)).toEqual({ kind: 'detail', href: '/admin/order/o1' });
     expect(mapAdminWebPath('/panel/odk/yonetim/sinavlar/e1', navigation)).toEqual({ kind: 'screen', navId: 'odk-exams' });
   });
 

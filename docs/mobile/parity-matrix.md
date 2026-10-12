@@ -37,7 +37,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 
 | Alan | Rota | Tam | Kısmi | Eksik | İstisna | Yönl. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1. Yönetim (`/panel/yonetim`) | 28 | 17 | 0 | 10 | 0 | 1 |
+| 1. Yönetim (`/panel/yonetim`) | 28 | 19 | 0 | 8 | 0 | 1 |
 | 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 0 | 0 | 8 | 0 | 0 |
 | 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 7 | 3 | 10 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
@@ -46,7 +46,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | 7. Veli (`/panel/veli`) | 12 | 5 | 4 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 4 | 3 | 2 | 0 | 2 |
-| **Toplam** | **106** | **51** | **15** | **33** | **1** | **6** |
+| **Toplam** | **106** | **53** | **15** | **31** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
@@ -84,8 +84,8 @@ Mobil karşılık: `native-screens.ts` ADMIN eşlemesi + `(app)/admin/*` yığı
 | Y16 | `/panel/yonetim/kazanimlar` | `outcomes` (flag `learningOutcomes`) | O: kazanım sürümleri · Y: kazanım oluştur, sürüm oluştur/güncelle | `curriculum/outcomes` POST, `curriculum/versions` POST, `curriculum/versions/[id]` PATCH | Hazır (`GET /api/panel/admin/education/editor?kind=version`) | `admin-curriculum` | Tam | P2.3 | Bayrağa bağlı native sürüm listesi/detayı/durum değişikliği, kazanım oluşturma/detayı ve son 30 gün ders/ödev etiket kapsaması. Sürüm çocuk kayıtlarını içeren revizyonla korunur; HTTP oluşturma/aktif etme/eski sürüm reddi geçti. |
 | Y17 | `/panel/yonetim/kocluk` | `coaching` | O: kapasite, atama/gecikme/plan/hedef/sinyal kuyrukları, öğrenci takip ve görüşme detayı · Y: koç ata/devret | `loadAdminCoaching` (web/mobil ortak); `assignCoachService` | Hazır | `admin-coaching`, `admin/coaching-session/[id]` | Tam | P2.4 | GET `/api/panel/admin/coaching`, görüşme detayı; POST atama taze step-up, UUID, atama sürümü, 409 ve atomik audit ile. Son kapasite yarışı/tekrar/rol sınırı testli; gerçek iPhone kabulü P6. |
 | Y18 | `/panel/yonetim/denemeler` | `mock-analysis` (flag `mockExamAnalysis`) | O: dış deneme sonuç analizi · Y: deneme kaydı ekle/düzenle | `mock-exams` GET/POST, `mock-exams/[id]` PATCH | Hazır (GET öğrenci kapsamlı → ADMIN projeksiyonu kontrol) | — | Eksik | P2.8 | |
-| Y19 | `/panel/yonetim/siparisler` | `orders` | O: sipariş listesi + filtre | Prisma (RSC) | O yok | — | Eksik | P2.6 | Müşteri satın alma akışı DEĞİL |
-| Y20 | `/panel/yonetim/siparisler/[id]` | — | O: sipariş detayı · Y: provizyon tekrarı | `retryOrderProvisioningService` (SA'dan çıkarıldı, P2.2) | Y var, O yok | — | Eksik | P2.6 | Yazma ucu hazır: `POST /api/panel/admin/orders/[id]/provisioning-retry`; detay okuması GET gerekir |
+| Y19 | `/panel/yonetim/siparisler` | `orders` | O: sipariş listesi, sorun/bu ay filtresi, arama ve sayfalama | `loadAdminOrders` (web/mobil ortak) | Hazır (`GET /api/panel/admin/orders`) | `admin-orders` | Tam | P2.6 | Native liste; ödeme ve erişim ayrı gösterilir. `admin-orders.test.tsx`, `admin-orders.integration.ts`, gerçek HTTP `admin-orders.spec.ts`. Müşteri satın alma akışı eklenmez. |
+| Y20 | `/panel/yonetim/siparisler/[id]` | — | O: vaka/ödeme/ürün erişimi/onboarding/teknik detay · Y: provizyon tekrarı; mevcut aktivasyon formlarına geçiş | `loadAdminOrder`, `retryOrderProvisioningService` (web/mobil ortak) | Hazır (`GET /api/panel/admin/orders/[id]`, `POST .../provisioning-retry`) | `admin/order/[id]` | Tam | P2.6 | Web/mobil tekrar taze step-up, UUID, sipariş sürümü ve 409 ile korunur; sahiplenme ve kalıcı başlangıç kaydı atomiktir. Aynı isteğin sonucu tekrar okunur, süren istek yeniden yürütülmez. Başarı/hata/ODK/yarış/geri alma ve native onay/428/409 testli; gerçek iPhone P6. |
 | Y21 | `/panel/yonetim/analitik` | `analytics` | O: yönetim metrikleri · Y: dışa aktar | `analytics/export` GET; `lib/analytics/server.ts` | O yok | — | Eksik | P2.8 | Grafikler |
 | Y22 | `/panel/yonetim/analitik/[metric]` | — | O: metrik detayı | `lib/analytics/server.ts` | O yok | — | Eksik | P2.8 | |
 | Y23 | `/panel/yonetim/ozellikler` | `features` | O: özellik bayrakları kaydı/durumu | Prisma + `panel-feature-registry` | O yok | — | Eksik | P2.8 | Web'de de salt okuma; yazma eklenirse step-up |

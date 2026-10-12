@@ -1,3 +1,4 @@
+import { parseOrderRetryRevision } from '@contracts/admin-orders';
 import {
   parseActivationDesk,
   parseArchiveImpact,
@@ -314,7 +315,8 @@ export async function assignCoach(api: ApiClient, input: { studentId: string; co
   await api.request('/api/panel/admin/coach-assignments', { method: 'POST', body: { ...input, idempotencyKey } });
 }
 
-export async function retryProvisioning(api: ApiClient, orderId: string): Promise<{ succeeded: boolean; message: string }> {
-  const result = validated(parseProvisioningRetry(await api.request<unknown>(`/api/panel/admin/orders/${encodeURIComponent(orderId)}/provisioning-retry`, { method: 'POST', body: {} })));
+export async function retryProvisioning(api: ApiClient, orderId: string, idempotencyKey: string, expectedRevision?: string): Promise<{ succeeded: boolean; message: string }> {
+  const revision = expectedRevision ?? validated(parseOrderRetryRevision(await api.request<unknown>(`/api/panel/admin/orders/${encodeURIComponent(orderId)}/provisioning-retry`))).revision;
+  const result = validated(parseProvisioningRetry(await api.request<unknown>(`/api/panel/admin/orders/${encodeURIComponent(orderId)}/provisioning-retry`, { method: 'POST', body: { idempotencyKey, expectedRevision: revision } })));
   return { succeeded: result.succeeded, message: result.message };
 }
