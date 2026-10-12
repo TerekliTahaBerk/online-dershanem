@@ -28,7 +28,7 @@ it('işlem geçmişi tür filtresi sunucuda uygulanır ve boş görünümü gös
 it('kalite kapalıysa sunucu hatası; sözleşme bozuksa başarı ekranı gösterilmez', async () => {
  const h = await open({ 'GET /api/panel/admin/quality': () => jsonResponse(404, { error: 'Bu bölüm şu anda açık değil.' }), 'GET /api/panel/admin/features': () => jsonResponse(200, { contractVersion: 99, features: [], logs: [] }) });
  await go('/screen/quality'); expect(await h.screen.findByText(/Bu bölüm şu anda açık değil/, {}, WAIT)).toBeTruthy();
- await go('/screen/features'); await waitFor(() => expect(h.server.called('GET', '/api/panel/admin/features')).toHaveLength(1), WAIT); expect(h.screen.queryByText('0/0 açık')).toBeNull();
+ await go('/screen/features'); expect(await h.screen.findByText('Sunucudan beklenmeyen bir yanıt alındı.', {}, WAIT)).toBeTruthy(); expect(h.screen.queryByText('0/0 açık')).toBeNull();
 });
 it('metrik detayına öğrenci doğrudan giremez; API isteği yapılmaz', async () => {
  const h = await boot([account('ada@example.com', makeBootstrap())]); await signIn(h, 'ada@example.com'); await go('/admin/metric/lead_count');
@@ -40,5 +40,5 @@ it('özellik durumunu, drift ve geri alma bilgisini salt okunur gösterir', asyn
 });
 it('kalite dağılımı ve ortak eksik sinyalleri gösterilir; küçük kohort gizli kalır', async () => {
  const h = await open({ 'GET /api/panel/admin/quality': () => jsonResponse(200, { contractVersion: 1, ruleVersion: 'v1', minStudents: 10, minGapDays: 14, sections: [], commonErrors: [{ label: 'Dikkat', students: 10 }], gains: [{ exam: 'LGS', status: 'READY', pairedStudents: 12, observedStudents: 15, medianChange: 5, lowerQuartile: 2, upperQuartile: 8, positiveChangePercent: 75, medianGapDays: 20, coveragePercent: 80, dataThrough: null }, { exam: 'TYT', status: 'INSUFFICIENT_SAMPLE', pairedStudents: 1 }] }) });
- await go('/screen/quality'); expect(await h.screen.findByText(/Medyan değişim: \+5/, {}, WAIT)).toBeTruthy(); expect(h.screen.getByText('Dikkat')).toBeTruthy(); expect(h.screen.getByText(/örneklem sayısı, değişim ve veri tarihi gizlendi/)).toBeTruthy(); expect(h.screen.queryByText(/1 eşleşme/)).toBeNull();
+ await go('/screen/quality'); expect(await h.screen.findByText(/Medyan değişim: \+5/, {}, WAIT)).toBeTruthy(); expect(h.screen.getByRole('progressbar').props.accessibilityValue).toEqual({ min: 0, max: 100, now: 75 }); expect(h.screen.getByText('Dikkat')).toBeTruthy(); expect(h.screen.getByText(/örneklem sayısı, değişim ve veri tarihi gizlendi/)).toBeTruthy(); expect(h.screen.queryByText(/1 eşleşme/)).toBeNull();
 });

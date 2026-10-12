@@ -37,7 +37,7 @@ function Gains({ gains }: { gains: AdminGain[] }) {
   return <Section title="Sınav kohortları">{gains.map((g) => <View key={g.exam} style={{ gap: space[2] }}>
     <Text variant="bodyStrong">{g.exam}</Text>
     {g.status === 'READY' ? <><StatusBadge label="Yeterli örnek" tone="success" /><Text>Medyan değişim: {g.medianChange > 0 ? '+' : ''}{g.medianChange} puan · Orta %50: {g.lowerQuartile} – {g.upperQuartile}</Text>
-      <View accessibilityLabel={`${g.exam}: pozitif değişim yüzde ${g.positiveChangePercent}`} style={{ height: space[2], backgroundColor: color.border }}><View style={{ height: space[2], width: `${Math.max(0, Math.min(100, g.positiveChangePercent))}%`, backgroundColor: color.primary }} /></View>
+      <View accessible accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: 100, now: g.positiveChangePercent }} accessibilityLabel={`${g.exam}: pozitif değişim yüzde ${g.positiveChangePercent}`} style={{ height: space[2], backgroundColor: color.border }}><View style={{ height: space[2], width: `${Math.max(0, Math.min(100, g.positiveChangePercent))}%`, backgroundColor: color.primary }} /></View>
       <Text>Pozitif değişim %{g.positiveChangePercent} · Medyan aralık {g.medianGapDays} gün</Text><Text>Kapsama %{g.coveragePercent ?? '—'} · {g.observedStudents} gözlenen öğrenci · {g.pairedStudents} eşleşme{g.dataThrough ? ` · ${formatShortDateTime(g.dataThrough)}` : ''}</Text></> : <Banner tone="info">10 öğrenciden az uygun öğrenci; örneklem sayısı, değişim ve veri tarihi gizlendi.</Banner>}
   </View>)}</Section>;
 }
