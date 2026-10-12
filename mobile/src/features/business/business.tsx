@@ -12,6 +12,8 @@ import { fetchBusinessSection, type BusinessQuery } from '@/lib/api/business';
 import { useReadyBootstrap, useSession } from '@/lib/auth/session-provider';
 import { queryKeys } from '@/lib/query/keys';
 
+import { ConversationActions, CreateLeadSheet, LeadActions } from './crm';
+
 /**
  * İŞLETME (P2.7a — okuma). Web `isletme/[section]` ile AYNI yükleyici ve
  * süzgeçler; görünürlük bootstrap'ın `business` listesinden, yetki her
@@ -78,9 +80,13 @@ export function BusinessSectionScreen({ slug }: { slug: string }) {
 }
 
 function SectionBody({ data, onQuery }: { data: MobileBusinessSection; onQuery: (patch: BusinessQuery) => void }) {
+  const [creating, setCreating] = useState(false);
+  const [created, setCreated] = useState(false);
   return (
     <>
-      <PageHeader title={data.label} description={`${data.units} · Europe/Istanbul`} />
+      <PageHeader title={data.label} description={`${data.units} · Europe/Istanbul`} action={data.slug === 'adaylar' && data.can.leadWrite ? <Button label="Aday ekle" variant="secondary" onPress={() => setCreating(true)} testID="crm-new-open" /> : undefined} />
+      {created ? <Banner tone="info">Aday eklendi.</Banner> : null}
+      {creating ? <CreateLeadSheet data={data} onClose={() => setCreating(false)} onCreated={() => { setCreating(false); setCreated(true); }} /> : null}
       {data.range ? <RangeFilter range={data.range} onApply={(from, to) => onQuery({ from, to })} /> : null}
       {data.product ? <FilterChips label="Ürün" value={data.product.value} onChange={(product) => onQuery({ product })} options={data.product.options} /> : null}
       {data.filters.map((filter) => (
@@ -182,6 +188,7 @@ export function BusinessConversationScreen({ id }: { id: string }) {
               </Section>
               {c.aiSuggestion ? <Banner tone="info" title="AI cevap önerisi">{c.aiSuggestion}</Banner> : null}
               {c.leadId && leadsVisible ? <Button label="Aday detayını aç" variant="secondary" onPress={() => router.push(`/business/lead/${encodeURIComponent(c.leadId!)}` as Href)} testID="business-open-lead" /> : null}
+              <ConversationActions data={data} conversation={c} />
               <Cards cards={c.cards} />
             </>
           );
@@ -207,6 +214,7 @@ export function BusinessLeadScreen({ id }: { id: string }) {
               <Banner tone={lead.followUp.tone === 'critical' ? 'critical' : lead.followUp.tone === 'warning' ? 'warning' : 'info'}>{lead.followUp.label}</Banner>
               <Text tone="secondary">{lead.lifecycle.label} — {lead.lifecycle.nextAction}</Text>
               <Cards cards={lead.cards} />
+              {data.can.leadWrite ? <LeadActions data={data} lead={lead} /> : null}
             </>
           );
         }}

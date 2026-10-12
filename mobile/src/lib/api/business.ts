@@ -18,3 +18,37 @@ export async function fetchBusinessSection(api: ApiClient, slug: string, query: 
   if (!result.ok) throw new ApiError({ kind: 'invalid_response', details: { contract: result.error } });
   return result.value;
 }
+
+/* ------------------------------------------------------------------ *
+ * P2.7b CRM yazmaları — web Server Action'larıyla AYNI servis
+ * (`POST /api/panel/business/crm`). Kaydı değiştiren komutlar ekrandaki
+ * revizyonu taşır; eski görünüm 409 döner (üzerine yazılmaz).
+ * ------------------------------------------------------------------ */
+
+export type CrmCommandInput =
+  | { type: 'conversation.control'; conversationId: string; aiMode: string; status: string }
+  | { type: 'conversation.read'; conversationId: string }
+  | { type: 'conversation.assign'; conversationId: string; assignedUserId: string }
+  | { type: 'conversation.tag'; conversationId: string; tag: string }
+  | { type: 'conversation.ai_suggest'; conversationId: string }
+  | { type: 'lead.create'; businessUnitId?: string; firstName: string; phone?: string; email?: string; productInterest: string }
+  | { type: 'lead.stage'; leadId: string; stage: string; lostReasonCode?: string; lostReasonDetail?: string }
+  | { type: 'lead.note'; leadId: string; note: string }
+  | { type: 'lead.task'; leadId: string; title: string; dueAt?: string }
+  | { type: 'lead.task_complete'; taskId: string }
+  | { type: 'lead.follow_up'; leadId: string; nextFollowUpAt: string; note?: string; taskTitle?: string }
+  | { type: 'lead.owner'; leadId: string; assignedUserId: string }
+  | { type: 'lead.priority'; leadId: string; priority: string }
+  | { type: 'lead.duplicate_dismiss'; leadId: string }
+  | { type: 'lead.merge'; sourceId: string; targetId: string }
+  | { type: 'lead.link_order'; leadId: string; product: 'OD' | 'ODK'; orderId: string }
+  | { type: 'lead.link_lifecycle'; leadId: string; userId?: string; force?: boolean };
+
+export async function runCrm(api: ApiClient, command: CrmCommandInput, context: { idempotencyKey: string; expectedRevision?: string }): Promise<void> {
+  await api.request('/api/panel/business/crm', { method: 'POST', body: { command, idempotencyKey: context.idempotencyKey, ...(context.expectedRevision ? { expectedRevision: context.expectedRevision } : {}) } });
+}
+
+/** Instagram yanıtı: mevcut gönderim ucu (kuyruğa alınır; teslim durumu mesajda görünür). */
+export async function sendBusinessReply(api: ApiClient, conversationId: string, text: string, idempotencyKey: string): Promise<void> {
+  await api.request('/api/integrations/instagram/send', { method: 'POST', body: { conversationId, text, idempotencyKey: `human:${conversationId}:${idempotencyKey}` } });
+}
