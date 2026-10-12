@@ -37,7 +37,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 
 | Alan | Rota | Tam | Kısmi | Eksik | İstisna | Yönl. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1. Yönetim (`/panel/yonetim`) | 28 | 26 | 0 | 1 | 0 | 1 |
+| 1. Yönetim (`/panel/yonetim`) | 28 | 26 | 1 | 0 | 0 | 1 |
 | 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 0 | 0 | 8 | 0 | 0 |
 | 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 7 | 3 | 10 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
@@ -46,7 +46,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | 7. Veli (`/panel/veli`) | 12 | 5 | 4 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 4 | 3 | 2 | 0 | 2 |
-| **Toplam** | **106** | **60** | **15** | **24** | **1** | **6** |
+| **Toplam** | **106** | **60** | **16** | **23** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
@@ -92,7 +92,7 @@ Mobil karşılık: `native-screens.ts` ADMIN eşlemesi + `(app)/admin/*` yığı
 | Y24 | `/panel/yonetim/kayitlar` | `audit` | O: tür filtreli en yeni 100 işlem, aktör ve İstanbul zamanı | `loadAdminAudit` (web/mobil ortak) | Hazır (`GET /api/panel/admin/audit`) | `admin-audit` | Tam | P2.8 | Hassas audit payload taşınmaz; rol, özel önbellek, filtre ve boş görünüm testli. |
 | Y25 | `/panel/yonetim/pilot` | `pilot` | O: yayın hazırlık kapıları, aktif gruplar, son 20 kohort (rol kapsaması, sürüm) · Y: gruptan dört rollü kohort oluştur, aktive et / duraklat / sürdür / tamamla / geri al (durdurma nedeni) | `loadPilotPage` (`lib/panel/pilot-server.ts`, sayfadan taşındı); yazma: `pilot-cohorts` POST, `pilot-cohorts/[id]` PATCH → `lib/panel/pilot-cohort-service.ts` (taze step-up, aktöre bağlı işlem anahtarı, sürüm/409, atomik audit) | Hazır (`GET /api/panel/admin/pilot`) | `admin-pilot` | Tam | P2.8 | İzinli geçişler `pilotTransitionAllowed`'dan; aktivasyon kapıları sunucuda. Deneme Ligi pilotu (`odk-pilot`) P4 |
 | Y26 | `/panel/yonetim/kalite` | `quality` (flag `cohortQuality`) | O: kazanım etiketleme, geri bildirim medyanı, eşleşmiş kohort dağılımı ve ortak hata sinyalleri | `loadAdminQuality` (web/mobil ortak) | Hazır (`GET /api/panel/admin/quality`) | `admin-quality` | Tam | P2.8 | Bayrak kapalıysa 404; küçük kohortta sayı/kapsama/tazelik JSON yanıtından çıkarılır. Gerçek DB/HTTP ve native testli; gerçek iPhone P6. |
-| Y27 | `/panel/yonetim/isletme/[section]` | `business-*` (16 bölüm) | O: genel bakış, mesaj kutusu, adaylar, satış hunisi, reklamlar, kampanyalar, gelirler, giderler, vergiler, mutabakat, raporlar, AI bilgi merkezi, otomasyon, entegrasyonlar, sistem kayıtları, ayarlar · Y: **36 eylem** — konuşma ata/etiketle/okundu/kontrol; aday oluştur/aşama/not/görev/takip/sahip/öncelik/birleştir/sipariş bağla/yaşam döngüsü; kampanya/reklam oluştur; finans işlemi oluştur/ters kayıt; dönem kilidi; mutabakat çalıştır/çöz; Meta senkron; manuel atıf; bilgi kaydı oluştur/sürümle; prompt sürümü; AI öneri; otomasyon oluştur/aç-kapa/dry-run; saklama ayarı; işletme rolü ver/al; Instagram mesaj gönder | SA `app/panel/yonetim/isletme/actions.ts`; `admin/business/reports.csv`, `integrations/instagram/{health,send}`; `lifecycle/lead-detail-server.ts` | SA + O yok | — | Eksik | P2.7 | `BusinessPermission` (ADR-0011); dönem kilidi/rol/ters kayıt → step-up; E3 (bağlantı kurulumu) ve E5 (rapor CSV) kapsam dışı |
+| Y27 | `/panel/yonetim/isletme/[section]` | `business-*` (16 bölüm) | O: genel bakış, mesaj kutusu, adaylar, satış hunisi, reklamlar, kampanyalar, gelirler, giderler, vergiler, mutabakat, raporlar, AI bilgi merkezi, otomasyon, entegrasyonlar, sistem kayıtları, ayarlar · Y: **36 eylem** — konuşma ata/etiketle/okundu/kontrol; aday oluştur/aşama/not/görev/takip/sahip/öncelik/birleştir/sipariş bağla/yaşam döngüsü; kampanya/reklam oluştur; finans işlemi oluştur/ters kayıt; dönem kilidi; mutabakat çalıştır/çöz; Meta senkron; manuel atıf; bilgi kaydı oluştur/sürümle; prompt sürümü; AI öneri; otomasyon oluştur/aç-kapa/dry-run; saklama ayarı; işletme rolü ver/al; Instagram mesaj gönder | SA `app/panel/yonetim/isletme/actions.ts`; `admin/business/reports.csv`, `integrations/instagram/{health,send}`; `lifecycle/lead-detail-server.ts`; okuma `loadBusinessSectionData` (`lib/business/section-data-server.ts`, sayfadan taşındı) | O hazır (`GET /api/panel/business/sections/[section]`, kapı `requireBusinessApi`); Y: SA (P2.7b–d) | `business/*` (merkez, 16 bölüm, konuşma ve aday detayı) | Kısmi | P2.7 | P2.7a: 16 bölümün okuması native (süzgeçler, sayfalama, konuşma / aday detayı); görünürlük bootstrap `business`, yetki `BusinessRoleAssignment` (ADR-0011). Kalan: 36 yazma eylemi (P2.7b CRM, P2.7c pazarlama + finans, P2.7d AI / otomasyon / ayarlar). E3 ve E5 kapsam dışı |
 | Y28 | `/panel/yonetim/isletme` | — | — | `redirect → genel-bakis` | — | — | Yönl. | — | |
 
 ## 2. Deneme Ligi yönetimi — `/panel/odk/yonetim` (ADMIN + izinli Deneme Ligi personeli)

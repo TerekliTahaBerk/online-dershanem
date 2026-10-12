@@ -339,3 +339,25 @@ Web sayfalarının yükleyicileri `lib/panel/pilot-server.ts` ve `lib/panel/admi
 
 Matris: 60 Tam / 15 Kısmi / 24 Eksik / 1 İstisna / 6 Yönl.; yönetimde yalnız Y27 (İşletme, P2.7) eksik.
 
+### P2.7a İşletme okuma ve altyapı — 12 Ekim 2026
+
+İşletme (Y27) dört dilimde açılır; her dilim web Server Action'larını `lib/business/**` servislerine taşır ve web ile mobil aynı servisi çağırır:
+
+| Dilim | Kapsam | Durum |
+| --- | --- | --- |
+| **P2.7a** | Kapı, bootstrap, 16 bölümün okuması, konuşma / aday detayı | **Tamamlandı** |
+| P2.7b | CRM yazmaları: konuşma (durum/AI modu, okundu, atama, etiket, AI önerisi, yanıt), aday (oluştur, aşama, not, görev, takip, sahip, öncelik, birleştir, kopya, sipariş / yaşam döngüsü bağı) | Sırada |
+| P2.7c | Pazarlama + finans: kampanya, reklam, manuel atıf, Meta senkronu; işlem, ters kayıt, dönem kilidi (step-up), mutabakat | Planlı |
+| P2.7d | AI bilgi merkezi, prompt sürümü, otomasyon (oluştur / aç-kapa / dry-run), saklama süresi, işletme rolleri (step-up) | Planlı |
+
+**P2.7a teslimatı.**
+
+- **Kapı:** `requireBusinessApi` (`lib/business/api-guard.ts`) web `requireBusinessPage` kuralının çerez + Bearer karşılığıdır. Yetki yalnız `BusinessRoleAssignment` (ADR-0011); yetkisizde 404, önizleme / öğretmen modunda 403, `stepUp` seçeneği web'in `requireRecentBusinessPage` kuralına eşdeğer (428). Erişim çözümleme çekirdeği `lib/business/access.ts`'e ayrıldı (`next/navigation` içermez); `permissions.ts` sayfa guard'larını tutar ve çekirdeği yeniden dışa aktarır.
+- **Bootstrap:** eklemeli `business: { sections }` alanı kullanıcının görebildiği bölümleri (grup etiketiyle) taşır; platform rolünden bağımsızdır, mod açıkken null.
+- **Okuma:** sayfanın koşullu yükleyicisi olduğu gibi `loadBusinessSectionData`'ya taşındı (web davranışı değişmedi). `GET /api/panel/business/sections/[section]` aynı sorgu parametreleriyle (tarih, ürün, gelen kutusu ve aday süzgeçleri, imleçler, `conversation`, `lead`) kart projeksiyonu döner; hesaplar web'deki saf fonksiyonlardan (`calculateAdMetrics`, `leadDisplayName`, `deriveLeadLifecycleStatus`, etiket sözlükleri).
+- **Mobil:** menüde "İşletme" (iş birimi rolü olan her kullanıcı), grup bazlı bölüm listesi, bölüm ekranı (tarih aralığı, ürün ve süzgeç çipleri, arama, sayfalama), konuşma detayı (son 100 mesaj + eski sayfalar, AI önerisi) ve aday detayı (bilgiler, zaman çizelgesi, atıf, kopyalar, satıştan erişime). Web `isletme/*` bağlantıları görünür bölüme eşlenir.
+
+**Doğrulama:** 977 sunucu birim testi (kapsam eşikleri karşılanıyor); yerel PostgreSQL'de tam entegrasyon paketi 135/135 (yeni: 16 bölüm gerçek veriyle sözleşme, konuşma / aday detayı, iş birimi kapsamı dışı veri sızmaz); mobil 32 paket / 239 test; API girdi, sözleşme sınırı, matris kontrolleri ve `next build`. Gerçek HTTP senaryosu (`mobile-api.spec.ts`: atamasız 404, atamalı 16 bölüm) eklendi; bu ortamda E2E hesapları olmadığından koşulmadı.
+
+Matris: 60 Tam / 16 Kısmi / 23 Eksik / 1 İstisna / 6 Yönl.; yönetimde Y27 Kısmi.
+
