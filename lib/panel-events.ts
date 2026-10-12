@@ -314,7 +314,7 @@ export const panelEventSchema = z.discriminatedUnion("name", [
     name: z.literal("plan_preference_updated"),
     properties: z.object({ availableDayCount: z.number().int().min(1).max(7), minutesPerDay: z.number().int().min(15).max(180), planningEnabled: z.boolean(), overwhelmPulse: z.number().int().min(1).max(5).nullable() }).strict(),
   }),
-  z.object({ name: z.literal("weekly_digest_generated"), properties: z.object({ ruleVersion: z.literal("calm-digest-v1"), trendBand: z.enum(["IMPROVING", "STEADY", "BUILDING", "LIMITED_DATA"]), reused: z.boolean(), processedCount: z.number().int().min(0).max(1000).optional(), failedCount: z.number().int().min(0).max(1000).optional() }).strict() }),
+  z.object({ name: z.literal("weekly_digest_generated"), properties: z.object({ ruleVersion: z.enum(["calm-digest-v1", "calm-digest-v2"]), trendBand: z.enum(["IMPROVING", "STEADY", "BUILDING", "LIMITED_DATA"]), reused: z.boolean(), processedCount: z.number().int().min(0).max(1000).optional(), failedCount: z.number().int().min(0).max(1000).optional() }).strict() }),
   z.object({ name: z.literal("weekly_digest_batch_failed"), properties: z.object({ jobId: z.string().min(1), teacherId: z.string().min(1), processedCount: z.number().int().min(0).max(1000), failedCount: z.number().int().min(1).max(1000) }).strict() }),
   z.object({ name: z.literal("weekly_digest.batch_item_failed"), properties: z.object({ jobId: z.string().min(1), teacherId: z.string().min(1), studentId: z.string().min(1), errorCode: z.string().min(1) }).strict() }),
   z.object({ name: z.literal("weekly_digest_published"), properties: z.object({ trendBand: z.enum(["IMPROVING", "STEADY", "BUILDING", "LIMITED_DATA"]), recipientBand: z.enum(["1", "2-3", "4+"])}).strict() }),

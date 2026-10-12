@@ -1,12 +1,10 @@
 import { notFound } from "next/navigation";
 import { HeartHandshake } from "lucide-react";
-import { prisma } from "@/lib/prisma";
+import { loadTeacherDigests } from "@/lib/panel/teacher-digests-server";
 import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
-import { digestWeekStart } from "@/lib/calm-weekly-digest";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { TeacherDigestReview } from "@/components/panel/teacher-digest-review";
-import { addIstanbulCalendarDays } from "@/lib/istanbul-time";
 import {
   PAGE_EYEBROW_CLASS,
   PAGE_TITLE_CLASS,
@@ -17,31 +15,7 @@ export const dynamic = "force-dynamic";
 export default async function TeacherDigestsPage() {
   const session = await requireRole("TEACHER");
   if (!getPanelFeatureFlags().parentWeeklyDigest) notFound();
-  const weekStart = digestWeekStart();
-  const students = await prisma.studentProfile.findMany({
-    where: {
-      enrollments: {
-        some: {
-          endedAt: null,
-          group: { isActive: true, teacherId: session.userId },
-        },
-      },
-    },
-    orderBy: { user: { fullName: "asc" } },
-    include: {
-      user: { select: { fullName: true, email: true } },
-      weeklyDigests: {
-        where: {
-          weekStart: {
-            gte: weekStart,
-            lt: addIstanbulCalendarDays(weekStart, 7),
-          },
-        },
-        orderBy: { weekStart: "asc" },
-        take: 1,
-      },
-    },
-  });
+  const rows = await loadTeacherDigests(session.userId);
   return (
     <PanelShell
       role={session.role}
@@ -62,25 +36,7 @@ export default async function TeacherDigestsPage() {
       </header>
       <div className="mt-7">
         <TeacherDigestReview
-          initialRows={students.map((student) => {
-            const digest = student.weeklyDigests[0];
-            return {
-              studentId: student.id,
-              name: student.user.fullName || student.user.email,
-              digest: digest
-                ? {
-                    id: digest.id,
-                    status: digest.status,
-                    version: digest.version,
-                    goodThingOne: digest.goodThingOne,
-                    goodThingTwo: digest.goodThingTwo,
-                    supportArea: digest.supportArea,
-                    homeQuestion: digest.homeQuestion,
-                    dataThrough: digest.dataThrough.toISOString(),
-                  }
-                : null,
-            };
-          })}
+          initialRows={rows}
         />
       </div>
     </PanelShell>
