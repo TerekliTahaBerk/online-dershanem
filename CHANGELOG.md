@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Native teacher weekly digest previews, selected-student draft generation/refresh and confirmed publication with recipient revisions, atomic receipts/notifications/email outbox and shared web services; web generation no longer refreshes every student.
+
 - Native teacher intervention inbox with manual creation, rule generation and the full case lifecycle; shared web commands, scoped ownership, revision checks and atomic retry receipts verified over real HTTP.
 
 - Native teacher recovery-package preview, draft generation/refresh and confirmed publication with shared web reads, source revisions, atomic receipts and notification/email outbox; real HTTP scope/concurrent replay coverage.
@@ -115,6 +117,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - Parent academic access now requires an active, unended link with `canViewAcademic`, across parent pages, student-success APIs, Deneme Ligi parent reports, material access, weekly-digest feedback and lesson notifications; the account and package screen keeps working for links without academic access
 
 ### Fixed
+
+- Teacher intervention retries retain the original request, case version and revision across a background refresh after an uncertain network result.
 
 - Weekly feedback accepts OD or Yön students; parents are authorized through the target child's active academic relationship and membership. Parent calendar export uses the child's OD membership. Student profile responses are private and exclude inactive parent links and future memberships.
 

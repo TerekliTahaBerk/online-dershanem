@@ -1,5 +1,6 @@
-import { fireEvent, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, waitFor } from '@testing-library/react-native';
 
+import { RefreshControl } from 'react-native';
 import { makeBootstrap } from './fixtures';
 import { account, boot, go, jsonResponse, press, secureStore, signIn, WAIT } from './harness';
 
@@ -47,9 +48,9 @@ const revision = 'a'.repeat(64);
 const bootstrap = () => makeBootstrap({ role: 'TEACHER', products: { OD: 'ACTIVE' }, activeProduct: 'OD', extraNav: [['interventions', 'Müdahale', '/panel/ogretmen/mudahale']] });
 const path = '/api/panel/staff/teacher/interventions';
 it('teacher writes preserve retry key and case version; success refreshes the scoped inbox', async () => {
-  let attempts = 0; const keys: string[] = [];
+  let currentRevision = revision; let currentVersion = 4; let attempts = 0; const keys: string[] = [];
   const h = await boot([account('teacher@example.com', bootstrap(), { routes: {
-    [`GET ${path}`]: () => jsonResponse(200, { ...inbox(), revision }),
+    [`GET ${path}`]: () => jsonResponse(200, { ...inbox([row({ version: currentVersion })]), revision: currentRevision }),
     [`POST ${path}`]: ({ headers, body }) => {
       expect(body).toEqual({ operation: 'update', id: 'c1', input: { action: 'LOG_ACTION', expectedVersion: 4, note: 'Görüşme yapıldı' } });
       expect(headers['X-Od-Expected-Revision']).toBe(revision); keys.push(headers['X-Od-Idempotency-Key']);
@@ -62,6 +63,9 @@ it('teacher writes preserve retry key and case version; success refreshes the sc
   fireEvent.changeText(h.screen.getByTestId('intervention-note'), 'Görüşme yapıldı');
   await press(h, h.screen.getByTestId('intervention-log'));
   expect(await h.screen.findByText('Tekrar deneyin.', {}, WAIT)).toBeTruthy();
+  currentRevision = 'b'.repeat(64); currentVersion = 5;
+  await act(async () => { h.screen.UNSAFE_getAllByType(RefreshControl)[0].props.onRefresh(); });
+  await waitFor(() => expect(h.server.called('GET', path).length).toBeGreaterThan(1), WAIT);
   await press(h, h.screen.getByTestId('intervention-log'));
   await waitFor(() => expect(attempts).toBe(2), WAIT); expect(keys[0]).toBe(keys[1]);
   await waitFor(() => expect(h.server.called('GET', path).length).toBeGreaterThan(1), WAIT);

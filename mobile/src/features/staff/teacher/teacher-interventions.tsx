@@ -1,29 +1,37 @@
 import { parseTeacherInterventions, type TeacherInterventions } from '@contracts/teacher-interventions';
 import { parseInterventionCreate, parseInterventionGenerate, parseInterventionUpdate } from '@contracts/admin';
 import { useMutation } from '@tanstack/react-query';
-import { createContext, useContext } from 'react';
+import { useRef } from 'react';
 import { PageHeader, Screen } from '@/design/primitives';
 import { ApiError } from '@/lib/api/errors';
 import { useSession } from '@/lib/auth/session-provider';
+import { newUuid } from '@/lib/ids';
 import { InterventionAdapterContext, InterventionBody, type InterventionAdapter } from '../../admin/interventions';
 import type { useAdminMutation } from '../../admin/shared';
-import { OfflineWriteNotice, QueryView, useInvalidateStaff, useOnline, usePullToRefresh, useStableKey, useStaffQuery } from '../shared';
+import { OfflineWriteNotice, QueryView, useInvalidateStaff, useOnline, usePullToRefresh, useStaffQuery } from '../shared';
 
-const RevisionContext = createContext('');
 function useTeacherMutation<V, R>(mutate: Parameters<typeof useAdminMutation<V, R>>[0]) {
   const { api } = useSession();
-  const revision = useContext(RevisionContext);
   const online = useOnline();
   const invalidate = useInvalidateStaff('OD');
-  const stable = useStableKey<{ variables: V; revision: string }>((a, b) => JSON.stringify(a) === JSON.stringify(b));
+  // Preserve the whole request closure (revision, case version and key) while its outcome is uncertain.
+  // A background refetch may otherwise turn a manual-create retry into a second operation.
+  const pending = useRef<{ variables: V; run: () => Promise<R> } | null>(null);
   return useMutation({
     networkMode: 'always',
     mutationFn: async (variables: V) => {
       if (!online) throw new ApiError({ kind: 'network' });
-      return mutate(api, variables, { idempotencyKey: stable.keyFor({ variables, revision }) });
+      if (pending.current && JSON.stringify(pending.current.variables) === JSON.stringify(variables)) return pending.current.run();
+      const context = { idempotencyKey: newUuid() };
+      pending.current = { variables, run: () => mutate(api, variables, context) };
+      return pending.current.run();
     },
-    onSuccess: async () => { stable.settle(); await invalidate(); },
-    onError: async (error) => { stable.settle(error); if (error instanceof ApiError && error.kind === 'conflict') await invalidate(); },
+    onSuccess: async () => { pending.current = null; await invalidate(); },
+    onError: async (error) => {
+      const uncertain = error instanceof ApiError && (error.transient || error.kind === 'invalid_response');
+      if (!uncertain) pending.current = null;
+      if (error instanceof ApiError && error.kind === 'conflict') await invalidate();
+    },
   });
 }
 const path = '/api/panel/staff/teacher/interventions';
@@ -60,7 +68,7 @@ function TeacherBody({ data }: { data: TeacherInterventions }) {
       return parsed.value;
     },
   };
-  return <RevisionContext.Provider value={data.revision}><InterventionAdapterContext.Provider value={adapter}>
+  return <InterventionAdapterContext.Provider value={adapter}>
     <OfflineWriteNotice online={online} /><InterventionBody inbox={data} prefix="teacher" />
-  </InterventionAdapterContext.Provider></RevisionContext.Provider>;
+  </InterventionAdapterContext.Provider>;
 }
