@@ -6,10 +6,10 @@ function validated<T>(result: { ok: true; value: T } | { ok: false; error: strin
   if (!result.ok) throw new ApiError({ kind: 'invalid_response', details: { contract: result.error } });
   return result.value;
 }
-export async function fetchEducationEditor(api: ApiClient, input: { kind: EditorKind; id?: string; group?: string; q?: string; page?: number; week?: number; teacher?: string }, signal?: AbortSignal) {
+export async function fetchEducationEditor(api: ApiClient, input: { kind: EditorKind; id?: string; group?: string; q?: string; page?: number; week?: number; teacher?: string; lesson?: string }, signal?: AbortSignal, teacherMode = false) {
   const query = new URLSearchParams();
   Object.entries(input).forEach(([key, value]) => { if (value !== undefined && value !== '') query.set(key, String(value)); });
-  return validated(parseEducationEditor(await api.request(`/api/panel/admin/education/editor?${query}`, { signal })));
+  return validated(parseEducationEditor(await api.request(`${teacherMode ? '/api/panel/staff/teacher/education' : '/api/panel/admin/education/editor'}?${query}`, { signal })));
 }
 export async function previewEducationLessons(api: ApiClient, body: Record<string, unknown>) {
   return validated(parseEducationPreview(await api.request('/api/panel/lessons/preview-series', { method: 'POST', body })));

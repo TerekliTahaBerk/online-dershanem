@@ -410,3 +410,13 @@ Bu dilimin son kontrolleri: **984 sunucu birim testi**, **33 paket / 250 mobil t
 
 - S10: öğrenciye özgü, `private, no-store` workspace projeksiyonu; native giriş/toplu yapıştırma, en fazla üç neden, hata nedeni revizyonu ve kişisel ısı haritası. Mevcut analiz ve karşılaştırma ekranı korundu. Yönetim giriş/revizyon formu ortaklaştırıldı; öğrenciye onay yetkisi verilmedi.
 - Gerçek HTTP: yalnız OK üyeliğiyle oluşturma, aynı anahtarın tekrarı, neden güncelleme, eski revizyon 409, öğrenci nextAction onayı 403. Native öğrenci, yönetim formu ve analiz regresyonları geçti. Gerçek iPhone kabulü açık.
+
+
+### 12 Ekim 2026 — P3.1 ve P3.2/T09 devamı
+
+- **T03/T04/T08:** Öğretmen kapsamlı eğitim GET, ortak native ödev/materyal editörü, dersten ödev oluşturma. Bearer öğretmen yazmaları mevcut eğitim transaction/receipt/revizyon mekanizmasına katılır; cookie web yazmaları korunur. Dosya seçimi, 4 MB sınırı, özel dosya açma ve önbellek temizliği ortak akışla çalışır.
+- **Ders şablonları:** Web/mobil hazır şablonları tek bağımlılıksız kaynaktan alır. Kişisel oluştur/uygula/düzenle/sil native; teacher-scoped transaction, 20 şablon sınırı, audit, işlem anahtarı ve eski sürüm/409. Kazanım arama/favori OD personel izni ve bayrakla korunur; yabancı ders araması 404.
+- **T13/T15:** Web’in sınıf analizi ve dış deneme yükleyicileriyle native okumalar. Dış deneme ortak giriş/toplu yapıştırma/neden revizyonu ve sonraki eylem onayı; yazma sonrası öğretmenin kendi sorguları yenilenir. Aktif grup kaydı sona erince veri kapsamdan çıkar.
+- **T09:** Web ve mobil aynı tekrar gözetimi yükleyicisini kullanır. Kaynak referansıyla oluşturma native; Bearer işleminde öğrenci sürümü ve atomik receipt/audit, belirsiz ağ hatasında aynı anahtar.
+- **Kanıt:** 984 sunucu birim testi; 40 mobil paket/257 test; 8 PostgreSQL eğitim/dış deneme entegrasyonu; sentetik hesaplarla gerçek HTTP senaryosu: yabancı kaynaklar, eski sürümler, tekrar/anahtar çakışması, şablon sınırı yarışı, materyal düzenleme, 413, kayıt sona ermesi. iOS/Android/web Expo export başarılı. Sunucu/mobil tip, değişen kaynak lint, API doğrulama, sözleşme sınırı ve matris kontrolü geçti. Mobil lintte önceden var olan `admin-activation-desk.test.tsx` import sırası uyarısı bulunur.
+- **Durum:** 74 Tam / 9 Kısmi / 16 Eksik / 1 İstisna / 6 Yönl. P3.1 uygulama eşliği tamam; T07 Dino, T10–T12/T14, T20, P4 ve P5’in kalanları açık. Özel Blob gerçek yükleme ve fiziksel iPhone kabulü P6’da; bunlar çalıştırılmış sayılmaz. P2.9/P1 operasyon ve dış inceleme kabulü açık.

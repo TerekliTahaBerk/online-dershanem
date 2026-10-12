@@ -4,6 +4,7 @@ import type { Prisma, PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireApiAccountRole } from "@/lib/auth/api-guards";
+import { requireStaffApi } from "./staff-api";
 import { adminJson, requireAdminApi } from "./admin-api";
 import { operationDigest, GroupMutationError, readGroupReceipt } from "./group-mutation-core";
 import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
@@ -11,7 +12,7 @@ import { logAudit, type LogAuditInput } from "@/lib/audit";
 import { sanitizeAuditPayload } from "@/lib/audit-policy";
 import { LessonLifecycleError } from "./lesson-lifecycle";
 
-export type EducationKind = "lesson" | "assignment" | "material" | "setup" | "version" | "outcome" | "submission";
+export type EducationKind = "lesson" | "assignment" | "material" | "setup" | "version" | "outcome" | "submission" | "review";
 type Context = { params: Promise<{ id: string }> };
 const transactional = new WeakSet<object>();
 type Effect = () => unknown | Promise<unknown>;
@@ -117,12 +118,14 @@ export function educationWriteHandler(kind: EducationKind, execute: (request: Re
     const actor = await requireApiAccountRole("ADMIN", "TEACHER");
     if (!actor.ok) return actor.response;
     const params: Context = { params: Promise.resolve({ id: (await context?.params)?.id ?? "" }) };
-    if (actor.session.role !== "ADMIN") return execute(request, params);
-    const auth = await requireAdminApi({ stepUp: true });
+    const mobile = /^Bearer /i.test(request.headers.get("authorization") ?? "");
+    const teacherMobile = actor.session.role === "TEACHER" && mobile && ["assignment", "material", "review"].includes(kind);
+    if (kind === "review" && actor.session.role === "ADMIN") return execute(request, params);
+    if (actor.session.role !== "ADMIN" && !teacherMobile) return execute(request, params);
+    const auth = teacherMobile ? await requireStaffApi("OD", "od:lesson:teach") : await requireAdminApi({ stepUp: true });
     if (!auth.ok) return auth.response;
     const parsed = controls.safeParse({ key: request.headers.get("X-Od-Idempotency-Key") ?? undefined, revision: request.headers.get("X-Od-Expected-Revision") ?? undefined });
     if (!parsed.success) return adminJson({ error: "İşlem anahtarı veya sürüm geçersiz.", code: "INVALID_PRECONDITION" }, { status: 400 });
-    const mobile = /^Bearer /i.test(request.headers.get("authorization") ?? "");
     if (mobile && !parsed.data.key) return adminJson({ error: "İşlem anahtarı gerekli.", code: "PRECONDITION_REQUIRED" }, { status: 400 });
     const isUpload = request.headers.get("content-type")?.includes("multipart/form-data");
     let input: Record<string, unknown>;
@@ -133,9 +136,16 @@ export function educationWriteHandler(kind: EducationKind, execute: (request: Re
     if (file instanceof File && (!file.size || file.size > 4 * 1024 * 1024)) return adminJson({ error: "Dosya boyutu en fazla 4 MB olabilir." }, { status: 413 });
     const digestInput = file instanceof File ? { ...input, file: { name: file.name, type: file.type, size: file.size, digest: createHash("sha256").update(new Uint8Array(await file.arrayBuffer())).digest("hex") } } : input;
     const { id } = await params.params;
-    const targetKind = id ? kind : kind === "outcome" ? "version" : kind === "lesson" && input.targetType === "STUDENT" ? "student" : "group";
+    const targetKind = id ? kind : kind === "outcome" ? "version" : (kind === "review" || kind === "lesson" && input.targetType === "STUDENT") ? "student" : "group";
     const targetId = id || (kind === "outcome" ? input.versionId : targetKind === "student" ? input.studentId : input.groupId);
     if (mobile && typeof targetId === "string" && !parsed.data.revision) return adminJson({ error: "Güncel kayıt sürümü gerekli.", code: "PRECONDITION_REQUIRED" }, { status: 400 });
+    if (teacherMobile && typeof targetId === "string") {
+      const groupScope = { group: { teacherId: auth.session.userId } };
+      const allowed = id
+        ? kind === "assignment" ? await prisma.assignment.findFirst({ where: { id, ...groupScope }, select: { id: true } }) : await prisma.learningMaterial.findFirst({ where: { id, ...groupScope }, select: { id: true } })
+        : targetKind === "student" ? await prisma.studentProfile.findFirst({ where: { id: targetId, enrollments: { some: { endedAt: null, group: { teacherId: auth.session.userId, isActive: true } } } }, select: { id: true } }) : await prisma.group.findFirst({ where: { id: targetId, teacherId: auth.session.userId, isActive: true }, select: { id: true } });
+      if (!allowed) return adminJson({ error: "Kayıt bulunamadı.", code: "NOT_FOUND" }, { status: 404 });
+    }
     const key = parsed.data.key ? `education:${auth.session.userId}:${parsed.data.key}` : null;
     const digest = operationDigest({ path: new URL(request.url).pathname, method: request.method, input: digestInput, revision: parsed.data.revision });
     try {

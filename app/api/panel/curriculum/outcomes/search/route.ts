@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireApiOdRole } from "@/lib/auth/api-guards";
+import { requireStaffApi, staffJson, staffNotFound, staffFeatureDisabled } from "@/lib/panel/staff-api";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 
 const querySchema = z.object({
   lessonId: z.string().trim().min(1).max(191).optional(),
@@ -21,8 +22,9 @@ export async function GET(request: Request) {
   // `redirect(LOGIN_PATH)` atıyordu ve çağıran `fetch` JSON yerine 200 + giriş
   // HTML'i alıyordu. `requireApiOdRole` aynı rol + OD ürün kapısını uygular,
   // ama JSON 401/403 döner.
-  const auth = await requireApiOdRole("TEACHER");
+  const auth = await requireStaffApi("OD", "od:lesson:teach");
   if (!auth.ok) return auth.response;
+  if (!getPanelFeatureFlags().learningOutcomes) return staffFeatureDisabled("Kazanım kataloğu henüz açık değil.");
   const session = auth.session;
   const url = new URL(request.url);
   const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
@@ -36,6 +38,7 @@ export async function GET(request: Request) {
         select: { id: true, groupId: true, group: { select: { subject: true, level: true } } },
       })
     : null;
+  if (lessonId && !lesson) return staffNotFound("Ders bulunamadı.");
   if (groupId) {
     const group = await prisma.group.findFirst({ where: { id: groupId, teacherId: session.userId }, select: { subject: true, level: true } });
     if (!group && !lesson) return NextResponse.json({ outcomes: [] });
@@ -73,7 +76,7 @@ export async function GET(request: Request) {
     },
   });
 
-  return NextResponse.json({
+  return staffJson({
     outcomes: outcomes.map((outcome) => ({
       id: outcome.id,
       code: outcome.code,

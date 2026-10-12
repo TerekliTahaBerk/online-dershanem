@@ -72,7 +72,9 @@ Bunlar koddan elde edilemezse durum **kabul bekliyor** olarak kalır. TestFlight
 ## Bu çalışma dalının durumu
 
 - P2.7d: kod uygulandı; dokuz komut için gerçek PostgreSQL, yetki/428/revizyon/tekrar için gerçek HTTP ve native form testleri. Y27 uygulama eşliği Tam; P2.9 iPhone kabulü açık.
-- P3.2: T06 ortak roster ve native liste uygulandı; T07 öğretmen kapsamlı profil okumaları uygulandı, Dino bağlamı açık. Gerçek HTTP kaynak izolasyonu ve native gezinme doğrulandı. P3.1, P3.3, P3.4 ve P3.2’nin kalanları açık.
+- P3.1: T03/T04/T08 uygulandı: öğretmen kapsamlı ortak ödev/materyal editörü, dersten ödev, şablon CRUD/uygulama, kazanım arama/favori. HTTP ve native testler geçti; Blob/gerçek iPhone kabulü P6.
+- P3.2: T06/T13/T15 uygulandı: roster, sınıf analizi, dış deneme analizi ve ortak giriş/revizyon/onay. T07 profil okumaları uygulandı; Dino bağlamı açık. Aktif kaynak ilişkisi ve sona erme gerçek HTTP ile doğrulandı. T07 Dino açık.
+- P3.3: T09 tekrar gözetimi/oluşturma uygulandı; Bearer oluşturma atomik receipt ve öğrenci revizyonuyla korundu. T10–T12/T14 ve P3.4 açık.
 - P4.1–P4.3: geliştirme açık.
 - P5.1: S03, S10, S12, S17, V04, V09 uygulandı; S14, S20 ve V07 açık. S10 ortak native giriş/toplu yapıştırma/hata nedeni revizyonu ve kişisel analiz ekranı; OK üyeliği, tekrar, eski revizyon ve personel onayı reddi gerçek HTTP ile doğrulandı.
 - P5.2–P5.4: geliştirme ve belirtilen dış kararlar açık.

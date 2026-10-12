@@ -1,10 +1,13 @@
-import { OUTCOME_SKIP_REASONS, type MobileAttendance, type MobileTeacherLessonDetail } from '@contracts/staff';
+import { parseTeacherOutcomeSearch, OUTCOME_SKIP_REASONS, type MobileAttendance, type MobileTeacherLessonDetail } from '@contracts/staff';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useRouter, type Href } from 'expo-router';
 import { Linking, View } from 'react-native';
 
-import { Banner, Button, EmptyState, PageHeader, Row, Screen, SegmentedTabs, Section, StatusBadge, Text, TextField } from '@/design/primitives';
+import { Button, EmptyState, PageHeader, Row, Screen, SegmentedTabs, Section, StatusBadge, Text, TextField } from '@/design/primitives';
 import { fetchTeacherLesson, saveLessonNotes, type LessonNotesPayload } from '@/lib/api/staff';
+import { ApiError } from '@/lib/api/errors';
+import { LessonTemplates } from './lesson-templates';
 import { useSession } from '@/lib/auth/session-provider';
 import { formatLongDate, formatTime } from '@/lib/format/istanbul';
 
@@ -51,6 +54,7 @@ export function TeacherLessonScreen({ lessonId }: { lessonId: string }) {
 }
 
 function LessonWorkspace({ lesson, refetch }: { lesson: MobileTeacherLessonDetail; refetch: () => Promise<unknown> }) {
+  const router = useRouter();
   const { api } = useSession();
   const online = useOnline();
   const invalidate = useInvalidateStaff('OD');
@@ -60,6 +64,20 @@ function LessonWorkspace({ lesson, refetch }: { lesson: MobileTeacherLessonDetai
   const [conflict, setConflict] = useState(false);
   const stable = useStableKey<{ payload: string; version: number }>((a, b) => a.payload === b.payload && a.version === b.version);
   const mutation = useMutation({ mutationFn: (payload: LessonNotesPayload) => saveLessonNotes(api, lesson.id, payload) });
+  const [searchText, setSearchText] = useState('');
+  const [searchTerm, setSearchTerm] = useState<string | null>(null);
+  const searchQuery = useStaffQuery('OD', 'teacher-outcomes', async (client, signal) => {
+    const parsed = parseTeacherOutcomeSearch(await client.request<unknown>(`/api/panel/curriculum/outcomes/search?${new URLSearchParams({ lessonId: lesson.id, query: searchTerm ?? '', limit: '20' })}`, { signal }));
+    if (!parsed.ok) throw new ApiError({ kind: 'invalid_response' });
+    return parsed.value;
+  }, { params: { lessonId: lesson.id, searchTerm }, enabled: lesson.flags.learningOutcomes && searchTerm !== null });
+  const favoriteMutation = useMutation({ mutationFn: (input: { outcomeId: string; favorite: boolean }) => api.request('/api/panel/teacher/outcome-favorites', { method: 'POST', body: input }) });
+  async function favorite(outcomeId: string, value: boolean) {
+    if (!online || favoriteMutation.isPending) return;
+    try { await favoriteMutation.mutateAsync({ outcomeId, favorite: value }); setState({ tone: 'success', message: value ? 'Kazanım favorilere eklendi.' : 'Kazanım favorilerden çıkarıldı.' }); await invalidate(); }
+    catch (error) { setState(writeError(error, 'Favori kaydedilemedi. Tekrar deneyin.')); }
+  }
+  const catalog = searchTerm !== null ? searchQuery.data?.outcomes ?? [] : lesson.outcomes.catalog;
   const cancelled = lesson.status === 'CANCELLED';
   const outcomeCount = Object.keys(form.outcomes).length;
 
@@ -122,6 +140,7 @@ function LessonWorkspace({ lesson, refetch }: { lesson: MobileTeacherLessonDetai
   return (
     <>
       <PageHeader title={lesson.title} description={`${lesson.subject} · ${lesson.groupName}`} context={<Text tone="muted" variant="meta">{`${formatLongDate(lesson.startsAt)} · ${formatTime(lesson.startsAt)}–${formatTime(lesson.endsAt)}`}</Text>} />
+      <Button label="Bu dersten ödev oluştur" variant="secondary" onPress={() => router.push(`/teacher/education-editor?kind=assignment&lesson=${encodeURIComponent(lesson.id)}` as Href)} />
       <View style={staffStyles.row}>
         <StatusBadge label={lesson.status === 'COMPLETED' ? 'Tamamlandı' : cancelled ? 'İptal' : 'Planlandı'} tone={lesson.status === 'COMPLETED' ? 'success' : cancelled ? 'neutral' : 'info'} />
       </View>
@@ -183,6 +202,7 @@ function LessonWorkspace({ lesson, refetch }: { lesson: MobileTeacherLessonDetai
             <TextField label="Sonraki hedef" value={form.nextGoal} maxLength={500} onChangeText={(nextGoal) => setForm((current) => ({ ...current, nextGoal }))} />
             <TextField label="Çalışma / ödev notu" value={form.homework} maxLength={1000} multiline onChangeText={(homework) => setForm((current) => ({ ...current, homework }))} />
           </Section>
+          <LessonTemplates templates={lesson.noteTemplates} current={form} apply={(values) => setForm((current) => ({ ...current, ...values }))} refresh={invalidate} />
           <Section title="Öğrenciye özel notlar">
             <Text tone="muted" variant="meta">Yalnız öğretmen görür; öğrenci ve veli ekranlarına gitmez.</Text>
             {lesson.students.map((student) => (
@@ -191,7 +211,13 @@ function LessonWorkspace({ lesson, refetch }: { lesson: MobileTeacherLessonDetai
           </Section>
           {lesson.flags.learningOutcomes ? (
             <Section title={`Kazanımlar (${outcomeCount}/3)`}>
-              {[...lesson.outcomes.catalog].map((outcome) => {
+              <TextField label="Kazanım ara" value={searchText} onChangeText={setSearchText} maxLength={200} testID="outcome-search" />
+              <Button label="Kazanım ara" variant="secondary" onPress={() => { setSearchTerm(searchText.trim()); if (searchText.trim() === searchTerm) void searchQuery.refetch(); }} testID="outcome-search-submit" />
+              {searchTerm !== null ? <Button label="İlk kazanım listesine dön" variant="quiet" onPress={() => setSearchTerm(null)} /> : null}
+              {searchTerm !== null && searchQuery.isPending ? <Text>Kazanımlar yükleniyor…</Text> : null}
+              {searchTerm !== null && searchQuery.isError ? <Button label="Aramayı yeniden dene" onPress={() => void searchQuery.refetch()} /> : null}
+              {searchTerm !== null && searchQuery.isSuccess && !catalog.length ? <EmptyState title="Kazanım bulunamadı" /> : null}
+              {catalog.map((outcome) => {
                 const selected = form.outcomes[outcome.id];
                 return (
                   <View key={outcome.id} style={staffStyles.gap}>
@@ -207,6 +233,7 @@ function LessonWorkspace({ lesson, refetch }: { lesson: MobileTeacherLessonDetai
                         return { ...current, outcomes: next };
                       })}
                     />
+                    <Button mutation label={outcome.favorite ? `${outcome.code} favorilerden çıkar` : `${outcome.code} favorilere ekle`} variant="quiet" disabled={!online || favoriteMutation.isPending} onPress={() => void favorite(outcome.id, !outcome.favorite)} testID={`outcome-favorite-${outcome.id}`} />
                     {selected ? (
                       <SegmentedTabs label={`${outcome.code} kanıt türü`} value={selected} onChange={(value) => setForm((current) => ({ ...current, outcomes: { ...current.outcomes, [outcome.id]: value } }))} options={(Object.keys(EVIDENCE_LABEL) as Evidence[]).map((value) => ({ value, label: EVIDENCE_LABEL[value] }))} />
                     ) : null}
@@ -214,7 +241,7 @@ function LessonWorkspace({ lesson, refetch }: { lesson: MobileTeacherLessonDetai
                 );
               })}
               {lesson.outcomes.linked.some((link) => !lesson.outcomes.catalog.some((item) => item.id === link.outcomeId)) ? (
-                <Text tone="muted" variant="meta">Bu derse bağlı ve listede olmayan kazanımlar korunur; düzenlemek için web panelini kullanın.</Text>
+                <Text tone="muted" variant="meta">Bu derse bağlı ve listede olmayan kazanımlar korunur. Düzenlemek için koduyla arayın.</Text>
               ) : null}
               {!outcomeCount ? (
                 <>
@@ -228,7 +255,6 @@ function LessonWorkspace({ lesson, refetch }: { lesson: MobileTeacherLessonDetai
               ) : null}
             </Section>
           ) : null}
-          <Banner tone="info">Derse bağlı ödev taslağı oluşturma web panelinde kalır.</Banner>
           <View style={staffStyles.gap}>
             <Button mutation label={lesson.status === 'COMPLETED' ? 'Kapanışı güncelle' : 'Dersi kapat'} disabled={mutation.isPending || !online} loading={mutation.isPending} onPress={() => void submit(true)} testID="lesson-close" />
             <Button mutation label="Taslak olarak kaydet" variant="secondary" disabled={mutation.isPending || !online} onPress={() => void submit(false)} />

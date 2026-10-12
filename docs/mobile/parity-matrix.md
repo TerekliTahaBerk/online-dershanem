@@ -39,14 +39,14 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1. Yönetim (`/panel/yonetim`) | 28 | 27 | 0 | 0 | 0 | 1 |
 | 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 0 | 0 | 8 | 0 | 0 |
-| 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 8 | 4 | 8 | 0 | 0 |
+| 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 14 | 2 | 4 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 5. Öğrenci (`/panel/ogrenci`) | 18 | 15 | 1 | 1 | 0 | 1 |
 | 6. Deneme Ligi öğrenci (`/panel/odk/ogrenci`) | 5 | 3 | 1 | 0 | 1 | 0 |
 | 7. Veli (`/panel/veli`) | 12 | 7 | 2 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 4 | 3 | 2 | 0 | 2 |
-| **Toplam** | **106** | **68** | **11** | **20** | **1** | **6** |
+| **Toplam** | **106** | **74** | **9** | **16** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
@@ -116,19 +116,19 @@ Mobil karşılık: **yok** (öğretmen ODK alanında yalnız `teacher-odk-report
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | T01 | `/panel/ogretmen` | `today` (OD) | O: Bugün | `teacher-workspace-server.ts`; `staff/teacher/home` | Hazır | `teacher-home` | Tam | — | Dino kısa yolu P5'te (S18) |
 | T02 | `/panel/ogretmen/takvim` | `lessons` | O: ders takvimi | Prisma (RSC); mobil `staff/teacher/lessons` | Hazır | `teacher-lessons` | Tam | — | |
-| T03 | `/panel/ogretmen/ders/[id]` | — | O: ders detayı · Y: yoklama/kapanış, ders notları, dersten ödev oluştur, şablon oluştur/düzenle, kazanım arama/favori | `lessons/[id]/notes` PUT, `assignments` POST, `teacher/templates*`, `curriculum/outcomes/search`, `teacher/outcome-favorites`; `teacher-lesson-server.ts` | Hazır | `teacher/lesson/[id]` | Kısmi | P3 | Dersten ödev oluşturma, şablonlar, kazanım favorileri |
-| T04 | `/panel/ogretmen/odevler` | `assignments` | O: ödev listesi, teslim kuyruğu · Y: teslim değerlendir, ödev oluştur/düzenle, kazanım arama | `assignments` POST, `assignments/[id]` PATCH, `assignment-submissions/[id]/review`; `teacher-assignments-server.ts` | Hazır | `teacher-assignments`, `teacher/submission/[id]` | Kısmi | P3 | Oluşturma/düzenleme (ekranda "web panelinde" banner'ı) |
+| T03 | `/panel/ogretmen/ders/[id]` | — | O: ders detayı · Y: yoklama/kapanış, ders notları, dersten ödev oluştur, şablon oluştur/düzenle/sil/uygula, kazanım arama/favori | `lessons/[id]/notes` PUT, `assignments` POST, `teacher/templates*`, `curriculum/outcomes/search`, `teacher/outcome-favorites`; `teacher-lesson-server.ts` | Hazır | `teacher/lesson/[id]`, `teacher/education-editor` | Tam | P3.1 | Ortak hazır/kişisel şablonlar, native arama/favori. Şablon tekrar/409/IDOR gerçek HTTP; native belirsiz hata tekrarı ve favori testi. Cihaz kabulü P6 |
+| T04 | `/panel/ogretmen/odevler` | `assignments` | O: ödev listesi, teslim kuyruğu · Y: teslim değerlendir, ödev oluştur/düzenle, kazanım arama | `assignments` POST, `assignments/[id]` PATCH, `assignment-submissions/[id]/review`, `staff/teacher/education`; `teacher-assignments-server.ts` | Hazır | `teacher-assignments`, `teacher/submission/[id]`, `teacher/education-editor` | Tam | P3.1 | Öğretmen kapsamlı ortak eğitim editörü; Bearer yazmaları atomik receipt/sürüm kontrolü kullanır. Gerçek HTTP tekrar/409/IDOR; native ağ tekrarı |
 | T05 | `/panel/ogretmen/yardim` | `help` | O: yardım kutusu · Y: yanıtla | `student-help-requests/[id]/respond` | Hazır | `teacher-help` | Tam | — | |
 | T06 | `/panel/ogretmen/gruplar` | `students` | O: grup + öğrenci listesi | `teacher-roster-server.ts` | Hazır (`staff/teacher/students`) | `teacher-students` | Tam | P3.2 | Ortak roster, sunucu filtreleri ve native profil bağlantısı; yabancı öğretmen/öğrenci ve sona ermiş kayıt gerçek HTTP testleri geçti |
 | T07 | `/panel/ogretmen/ogrenci/[id]` | — | O: öğretmen kapsamlı öğrenci 360 · Y: bayraklı Dino bağlamı (veli/öğretmen ataması web’de de yalnız ADMIN) | `loadStudent360Bundle`, Dino açıklama | Hazır (okuma: `staff/teacher/students/[id]`) | `teacher/student/[id]` | Kısmi | P3.2 / P5.4 | Native profil sekmeleri, ticaret/yönetim alanları kapalı; HTTP IDOR ve ilişki sona erme testi geçti. Dino bağlamı açık |
-| T08 | `/panel/ogretmen/materyaller` | `materials` | O: materyaller · Y: yükle, oluştur, düzenle, dosya | `materials` GET/POST, `materials/[id]` PATCH, `materials/upload`, `materials/[id]/file` | Hazır | — | Eksik | P3 | Dosya seçici |
-| T09 | `/panel/ogretmen/tekrar` | `review` | O: tekrar gerekenler · Y: tekrar kaydı oluştur | `review-queue` POST | Y var, O yok | — | Eksik | P3 | |
+| T08 | `/panel/ogretmen/materyaller` | `materials` | O: materyaller · Y: yükle, oluştur, düzenle, dosya | `staff/teacher/education`, `materials` POST, `materials/[id]` PATCH, `materials/upload`, `materials/[id]/file` | Hazır | `teacher-materials`, `teacher/education-editor` | Tam | P3.1 | Ortak native dosya seçici/yükleme ve özel dosya açma; öğretmen kapsamlı seçenekler; HTTP yabancı materyal ve 413 testi. Gerçek Blob/iPhone kabulü P6 |
+| T09 | `/panel/ogretmen/tekrar` | `review` | O: kuyruk gözetimi · Y: kaynak referansından tekrar oluştur | `staff/teacher/review`, `review-queue` POST, ortak `teacher-review-server` | Hazır | `teacher-review` | Tam | P3.3 | Ortak web/mobil yükleyici; native öğrenci seçimi, kaynak formu ve gözetim. Bearer tekrar oluşturma atomik receipt/öğrenci sürümü; HTTP tekrar/IDOR/409, native belirsiz hata tekrarı |
 | T10 | `/panel/ogretmen/telafi` | `recovery` | O: telafi paketleri · Y: paket üret, yayınla | `recovery-packages/generate`, `recovery-packages/[id]/publish` | Y var, O yok | — | Eksik | P3 | |
 | T11 | `/panel/ogretmen/mudahale` | `interventions` | O: müdahale kutusu · Y: oluştur, güncelle, üret | `interventions*`; `intervention-inbox-server.ts` | Y var, O yok | — | Eksik | P3 | |
 | T12 | `/panel/ogretmen/ozetler` | `digests` | O: haftalık özetler · Y: üret, yayınla | `weekly-digests/generate`, `weekly-digests/[id]/publish` | Y var, O yok | — | Eksik | P3 | |
-| T13 | `/panel/ogretmen/analiz` | `analiz` | O: sınıf gidişatı | `progress-insights/server.ts` | O yok | — | Eksik | P3 | |
+| T13 | `/panel/ogretmen/analiz` | `analiz` | O: grup ortalamaları, düşen gidişat ve öğrenci listesi | `staff/teacher/analysis`, ortak `loadTeacherGidisatOverview` | Hazır | `teacher-analysis` | Tam | P3.2 | Bayrak + OD personel izni; yalnız aktif grup/kayıt; native ortalamalar ve profil bağlantıları. HTTP yabancı öğretmen/sona ermiş kayıt boş liste |
 | T14 | `/panel/ogretmen/ai-yardimci` | `ai-drafts` | O: taslaklar · Y: taslak oluştur, onayla/düzenle | `ai-drafts` POST, `ai-drafts/[id]` PATCH | Y var, O yok | — | Eksik | P3 | `safe-teacher-ai-operations` + bayrak |
-| T15 | `/panel/ogretmen/denemeler` | `mock-exams` | O: dış deneme analizi · Y: kayıt ekle/düzenle | `mock-exams` GET/POST, `mock-exams/[id]` PATCH | Yetki | — | Eksik | P3 | `mock-exams` GET yalnız STUDENT; öğretmen kapsamlı GET gerekli |
+| T15 | `/panel/ogretmen/denemeler` | `mock-exams` | O: dış deneme analizi · Y: kayıt ekle, hata nedenlerini düzenle, sonraki eylemi onayla | `staff/teacher/mock-exams`, `mock-exams` POST, `mock-exams/[id]` PATCH, ortak `teacher-mock-exams-server` | Hazır | `teacher-mock-exams` | Tam | P3.2 | Aktif öğretmen/grup/kayıt kapsamlı GET; ortak native giriş/yapıştırma/revizyon/onay. HTTP IDOR/ilişki sona erme; native öğretmen sorgusu yenileme |
 | T16 | `/panel/ogretmen/plan` | `plan` | O: haftalık plan / öneriler · Y: planı onayla, öneri incele | `adaptive-plan/[id]/approve`, `kocum/suggestions/[id]/review` | Hazır | `coach-plans`, `coach/plan/[id]` | Tam | — | Yön alanında |
 | T17 | `/panel/ogretmen/yon` | `today` (OK) | O: koç Bugün | `kocum/coach-workspace-server.ts`; `staff/coach/home` | Hazır | `coach-home` | Tam | — | |
 | T18 | `/panel/ogretmen/yon/ogrenciler` | `coach-students` | O: koçluk öğrencileri | `staff/coach/students` | Hazır | `coach-students` | Tam | — | |
@@ -240,10 +240,10 @@ Onaylı istisnalar **alt işlem** düzeyindedir; etkilenen satırlar kalan alt i
 
 | Tür | Satırlar | Adet |
 | --- | --- | ---: |
-| GET projeksiyonu (O yok / Y var, O yok) | K01–K08; T09–T14 | 14 |
+| GET projeksiyonu (O yok / Y var, O yok) | K01–K08; T10–T12, T14 | 12 |
 | Server Action → `lib/` servisi + route | T20 (2 eylem), V10 (1), C07–C08 (7); Y27 ortak servislere taşındı | 3 dosya / 10 eylem |
-| Yetki düzeltmesi / kabul | V07 (veli görüşme işlemleri), T15 (dış deneme öğretmen GET); S12/V09 düzeltildi ve HTTP ile doğrulandı | 2 |
-| Yalnız mobil sözleşme + ekran (API hazır) | K03 (+ detay GET), T03, T04, T08, S14, S18, S20, V11, C09–C11 | 11 |
+| Yetki düzeltmesi / kabul | V07 (veli görüşme işlemleri); S12/V09 ve T15 düzeltildi ve HTTP ile doğrulandı | 1 |
+| Yalnız mobil sözleşme + ekran (API hazır) | K03 (+ detay GET), S14, S18, S20, V11, C09–C11 | 8 |
 
 ## Bakım
 

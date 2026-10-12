@@ -43,6 +43,10 @@ export type NativeScreenKey =
   | 'parent-account'
   | 'teacher-home'
   | 'teacher-students'
+  | 'teacher-materials'
+  | 'teacher-mock-exams'
+  | 'teacher-analysis'
+  | 'teacher-review'
   | 'teacher-lessons'
   | 'teacher-assignments'
   | 'teacher-help'
@@ -177,7 +181,11 @@ const PARENT_WEB_ONLY: ReadonlySet<string> = new Set(['dino']);
  */
 const TEACHER_OD: Record<string, NativeScreenKey> = {
   today: 'teacher-home',
+  analiz: 'teacher-analysis',
+  review: 'teacher-review',
   students: 'teacher-students',
+  materials: 'teacher-materials',
+  'mock-exams': 'teacher-mock-exams',
   lessons: 'teacher-lessons',
   assignments: 'teacher-assignments',
   help: 'teacher-help',

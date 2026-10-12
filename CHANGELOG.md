@@ -6,6 +6,9 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Native teacher assignment/material editors with scoped choices, linked-lesson assignment creation, private file handling, atomic Bearer write receipts and revision checks.
+- Native lesson template create/apply/edit/delete, outcome search/favorites, class analysis, review queue monitoring/creation and scoped external-exam entry/reason revision/action approval; shared web loaders and real HTTP isolation coverage.
+
 - Native business knowledge/prompt versioning, automation creation/toggle/dry run, retention settings and role management (P2.7d), backed by shared web/mobile commands with step-up and atomic role/session revocation.
 - Native student profile and authenticated student/parent ICS export with temporary-file cleanup; a tracked P2–P5 implementation and acceptance plan.
 - Native student external-exam entry, bulk paste and versioned error-reason revisions with shared admin forms and learner-only workspace projection.

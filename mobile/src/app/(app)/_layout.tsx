@@ -53,6 +53,7 @@ export default function AppLayout() {
       <Stack.Screen name="odk/exam/[id]/result" options={{ title: 'Sonuç' }} />
       {/* M7 öğretmen / koç detayları (StaffRouteGate + sunucu yetkisi). */}
       <Stack.Screen name="teacher/lesson/[id]" options={{ title: 'Ders' }} />
+      <Stack.Screen name="teacher/education-editor" options={{ title: 'Eğitim editörü' }} />
       <Stack.Screen name="teacher/student/[id]" options={{ title: 'Öğrenci profili' }} />
       <Stack.Screen name="teacher/submission/[id]" options={{ title: 'Teslim' }} />
       <Stack.Screen name="coach/student/[id]" options={{ title: 'Öğrenci' }} />
