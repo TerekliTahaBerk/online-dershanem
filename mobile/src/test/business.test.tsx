@@ -47,7 +47,7 @@ describe('P2.7a İşletme (okuma)', () => {
     await waitFor(() => expect(h.server.called('GET', '/api/panel/business/sections/mesaj-kutusu').some((call) => call.path.includes('q=ay%C5%9Fe') && call.path.includes('unread=1'))).toBe(true), WAIT);
     await press(h, await h.screen.findByTestId('business-next', {}, WAIT));
     await waitFor(() => expect(h.server.called('GET', '/api/panel/business/sections/mesaj-kutusu').some((call) => call.path.includes('cursor=c1'))).toBe(true), WAIT);
-  });
+  }, 30000); // Cold Expo Router transforms can exceed Jest's 5s default on CI.
 
   it('konuşma detayı web parametresiyle yüklenir; daha eski mesajlar sayfalanır; aday detayına geçilir', async () => {
     const h = await open(['mesaj-kutusu', 'adaylar'], {
