@@ -1,3 +1,4 @@
+import { AdminAnalyticsScreen, AdminAuditScreen, AdminFeaturesScreen, AdminQualityScreen } from '@/features/admin/system';
 import AdminOrdersScreen from '@/features/admin/orders';
 import AdminCoachingScreen from '@/features/admin/coaching';
 import type { ReactElement } from 'react';
@@ -102,6 +103,10 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'admin-signups': () => <SignupsScreen />,
   'admin-education': () => <EducationScreen />,
   'admin-calendar': () => <EducationEditorScreen kind="calendar" />,
+  'admin-analytics': () => <AdminAnalyticsScreen />,
+  'admin-audit': () => <AdminAuditScreen />,
+  'admin-features': () => <AdminFeaturesScreen />,
+  'admin-quality': () => <AdminQualityScreen />,
   'admin-orders': () => <AdminOrdersScreen />,
   'admin-coaching': () => <AdminCoachingScreen />,
   'admin-curriculum': () => <EducationEditorScreen kind="version" />,

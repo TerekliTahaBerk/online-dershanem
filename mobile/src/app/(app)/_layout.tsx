@@ -64,6 +64,7 @@ export default function AppLayout() {
       <Stack.Screen name="admin/educators" options={{ title: 'Öğretmenler' }} />
       <Stack.Screen name="admin/group/[id]" options={{ title: 'Grup 360' }} />
       <Stack.Screen name="admin/group-create" options={{ title: 'Grup oluştur' }} />
+      <Stack.Screen name="admin/metric/[metric]" options={{ title: 'Metrik detayı' }} />
       <Stack.Screen name="admin/order/[id]" options={{ title: 'Sipariş detayı' }} />
       <Stack.Screen name="admin/coaching" options={{ title: 'Koçluk operasyonu' }} />
       <Stack.Screen name="admin/coaching-session/[id]" options={{ title: 'Görüşme detayı' }} />

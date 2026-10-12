@@ -206,3 +206,9 @@ describe('yönetim web yolu eşlemesi (Faz 1)', () => {
     expect(mapAdminWebPath('/panel/yonetim', null)).toEqual({ kind: 'none' });
   });
 });
+
+ it('P2.8 metrik detayı yalnız yetkili analitik menüsüyle açılır', () => {
+  const navigation = { primary: [], sections: [{ id: 'system', label: 'Sistem', items: [{ id: 'analytics', label: 'Analitik', webPath: '/panel/yonetim/analitik' }] }] };
+  expect(mapAdminWebPath('/panel/yonetim/analitik/lead_count', navigation)).toEqual({ kind: 'detail', href: '/admin/metric/lead_count' });
+  expect(mapAdminWebPath('/panel/yonetim/analitik/lead_count', { primary: [], sections: [] })).toEqual({ kind: 'none' });
+ });

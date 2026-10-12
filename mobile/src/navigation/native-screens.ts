@@ -58,6 +58,10 @@ export type NativeScreenKey =
   | 'admin-signups'
   | 'admin-education'
   | 'admin-calendar'
+  | 'admin-analytics'
+  | 'admin-audit'
+  | 'admin-features'
+  | 'admin-quality'
   | 'admin-orders'
   | 'admin-coaching'
   | 'admin-curriculum'
@@ -207,6 +211,10 @@ const ADMIN: Record<string, NativeScreenKey> = {
   outcomes: 'admin-curriculum',
   coaching: 'admin-coaching',
   orders: 'admin-orders',
+  analytics: 'admin-analytics',
+  audit: 'admin-audit',
+  features: 'admin-features',
+  quality: 'admin-quality',
 };
 
 /**
