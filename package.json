@@ -31,6 +31,8 @@
     "storybook:build": "storybook build",
     "storybook:a11y": "playwright test -c playwright.storybook.config.ts",
     "lint": "eslint .",
+    "brand:sync": "node scripts/sync-brand-assets.mjs",
+    "brand:check": "node scripts/sync-brand-assets.mjs --check",
     "lint:hygiene": "node scripts/check-repo-hygiene.mjs",
     "lint:api-validation": "node scripts/check-api-input-validation.mjs",
     "lint:mobile-parity": "node scripts/check-mobile-parity-matrix.mjs",

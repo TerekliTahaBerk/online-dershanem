@@ -20,8 +20,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#FBFCFA",
-        "foregroundImage": "./assets/images/icon.png"
+        "backgroundColor": "#007F70",
+        "foregroundImage": "./assets/images/adaptive-icon.png"
       },
       "predictiveBackGestureEnabled": false,
       "versionCode": 1,
@@ -74,6 +74,9 @@
         "projectId": "bd75d82a-7152-41c5-bab8-9cd14e670231"
       }
     },
-    "owner": "tahaberkterekli"
+    "owner": "tahaberkterekli",
+    "web": {
+      "favicon": "./assets/images/icon.png"
+    }
   }
 }
