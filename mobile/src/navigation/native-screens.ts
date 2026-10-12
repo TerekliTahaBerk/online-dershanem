@@ -48,6 +48,7 @@ export type NativeScreenKey =
   | 'teacher-analysis'
   | 'teacher-review'
   | 'teacher-recovery'
+  | 'teacher-interventions'
   | 'teacher-lessons'
   | 'teacher-assignments'
   | 'teacher-help'
@@ -185,6 +186,7 @@ const TEACHER_OD: Record<string, NativeScreenKey> = {
   analiz: 'teacher-analysis',
   review: 'teacher-review',
   recovery: 'teacher-recovery',
+  interventions: 'teacher-interventions',
   students: 'teacher-students',
   materials: 'teacher-materials',
   'mock-exams': 'teacher-mock-exams',

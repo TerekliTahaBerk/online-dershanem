@@ -1,4 +1,6 @@
 import "server-only";
+import type { PrismaClient } from "@prisma/client";
+import { afterEducationCommit } from "@/lib/panel/education-write";
 import { createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { detached } from "@/lib/after-response";
@@ -16,11 +18,11 @@ function fingerprint(studentId: string, episodeKey: string) {
   return createHash("sha256").update(`${INTERVENTION_RULE_VERSION}:${studentId}:${episodeKey}`).digest("hex");
 }
 
-export async function generateInterventionEpisodes(scope: { teacherId?: string }) {
+export async function generateInterventionEpisodes(scope: { teacherId?: string }, db: PrismaClient = prisma) {
   const now = new Date();
   const { windowStart, attendanceSince, evidenceSince } = interventionEvaluationWindow(now);
 
-  const students = await prisma.studentProfile.findMany({
+  const students = await db.studentProfile.findMany({
     where: {
       user: { status: "ACTIVE" },
       enrollments: { some: { endedAt: null, group: { isActive: true, ...(scope.teacherId ? { teacherId: scope.teacherId } : {}) } } },
@@ -53,12 +55,12 @@ export async function generateInterventionEpisodes(scope: { teacherId?: string }
     }];
   });
 
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await db.$transaction(async (tx) => {
     const expired = await tx.interventionCase.findMany({
       where: {
         status: "SNOOZED",
         snoozedUntil: { lte: now },
-        ...(scope.teacherId ? { student: { enrollments: { some: { endedAt: null, group: { isActive: true, teacherId: scope.teacherId } } } } } : {}),
+        ...(scope.teacherId ? { OR: [{ ownerId: null }, { ownerId: scope.teacherId }], student: { user: { status: "ACTIVE" }, enrollments: { some: { endedAt: null, group: { isActive: true, teacherId: scope.teacherId } } } } } : {}),
       },
       select: { id: true },
     });
@@ -70,9 +72,10 @@ export async function generateInterventionEpisodes(scope: { teacherId?: string }
     for (const episode of candidateEpisodes) {
       const existing = await tx.interventionCase.findFirst({
         where: { fingerprint: episode.fingerprint },
-        select: { id: true, status: true, version: true },
+        select: { id: true, status: true, version: true, ownerId: true },
       });
       if (existing) {
+        if (scope.teacherId && existing.ownerId && existing.ownerId !== scope.teacherId) continue;
         const activeSignal = episode.signals[0];
         await tx.interventionCase.update({
           where: { id: existing.id },
@@ -115,21 +118,22 @@ export async function generateInterventionEpisodes(scope: { teacherId?: string }
     return { created, reactivatedCount: expired.length, evaluatedStudentCount: students.length, episodesCreated: candidateEpisodes.length };
   });
 
-  if (result.created.length) {
-    const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
-    for (const row of result.created) {
-      detached(
-        "intervention.automation_emit_failed",
-        emitEducationAutomation("student_risk_created", {
-          entityType: "intervention",
-          entityId: row.id,
-          severity: "high",
-          href: "/panel/yonetim/mudahale",
-        }),
-        { interventionId: row.id },
-      );
+  await afterEducationCommit(db, async () => {
+    if (result.created.length) {
+      const { emitEducationAutomation } = await import("@/lib/automation/emit-helpers");
+      for (const row of result.created) {
+        detached(
+          "intervention.automation_emit_failed",
+          emitEducationAutomation("student_risk_created", {
+            entityType: "intervention",
+            entityId: row.id,
+            severity: "high",
+            href: "/panel/yonetim/mudahale",
+          }),
+          { interventionId: row.id },
+        );
+      }
     }
-  }
-
+  });
   return result;
 }

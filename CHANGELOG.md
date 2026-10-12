@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Native teacher intervention inbox with manual creation, rule generation and the full case lifecycle; shared web commands, scoped ownership, revision checks and atomic retry receipts verified over real HTTP.
+
 - Native teacher recovery-package preview, draft generation/refresh and confirmed publication with shared web reads, source revisions, atomic receipts and notification/email outbox; real HTTP scope/concurrent replay coverage.
 
 - Native teacher assignment/material editors with scoped choices, linked-lesson assignment creation, private file handling, atomic Bearer write receipts and revision checks.
