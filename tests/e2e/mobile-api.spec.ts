@@ -6,6 +6,7 @@ import { parseMobileBootstrap, type MobileBootstrap } from "../../lib/mobile-con
 import { parseSessionList } from "../../lib/mobile-contracts/api";
 import { parseActivationDesk, parseAdminReports, parseEducators, parseInterventionInbox, parseOperationsCenter, parseParentsPage, parsePeopleDirectory, parsePersonDetail, parseSignups, parseStudent360 } from "../../lib/mobile-contracts/admin";
 import { parseMockExamsAdmin, parsePilot } from "../../lib/mobile-contracts/admin-rollout";
+import { parseBusinessSection } from "../../lib/mobile-contracts/business";
 import { GROUP_TABS, parseEducation, parseGroup360, parseGroupMutationResult } from "../../lib/mobile-contracts/admin-education";
 import { parseAssignmentList, parseInsights, parseLessonDetail, parseLessonList, parseOdHome, parseRecovery, parseReviewQueue, parseWeeklyDigest } from "../../lib/mobile-contracts/student";
 import { hasE2EEnv } from "./env-requirements";
@@ -601,6 +602,37 @@ test.describe.serial("Faz 1 mobil yönetim kapısı", () => {
     for (const path of ["/api/panel/admin/pilot", "/api/panel/admin/mock-exams"]) {
       expect((await learner.context.get(path, { headers: { ...MOBILE, authorization: `Bearer ${learner.body.token}` } })).status()).toBe(403);
     }
+  });
+
+  test("P2.7a İşletme: yetki iş birimi atamasından; atamasız ADMIN 404, atamalı kullanıcı 16 bölümü sözleşmeyle okur", async () => {
+    const admin = await temporaryUser("ADMIN");
+    const unit = await db.businessUnit.findFirst({ where: { isActive: true } });
+    test.skip(!unit, "E2E veritabanında aktif iş birimi yok");
+    const { context, body } = await mobileLogin(admin.user.email, admin.password);
+    const auth = { ...MOBILE, authorization: `Bearer ${body.token}` };
+    const before = await bootstrapOf(await me(context, body.token!));
+    expect(before.business ?? null).toBeNull();
+    expect((await context.get("/api/panel/business/sections/adaylar", { headers: auth })).status()).toBe(404);
+
+    await db.businessRoleAssignment.create({ data: { userId: admin.user.id, businessUnitId: unit!.id, role: "SUPER_ADMIN" } });
+    try {
+      const after = await bootstrapOf(await me(context, body.token!));
+      const slugs = after.business?.sections.map((section) => section.slug) ?? [];
+      expect(slugs).toContain("adaylar");
+      for (const slug of slugs) {
+        const response = await context.get(`/api/panel/business/sections/${slug}`, { headers: auth });
+        expect(response.status(), `${slug}: ${await response.text()}`).toBe(200);
+        expect(response.headers()["cache-control"]).toContain("no-store");
+        const parsed = parseBusinessSection(await response.json());
+        if (!parsed.ok) throw new Error(`${slug}: ${parsed.error}`);
+      }
+      expect((await context.get("/api/panel/business/sections/yok-boyle", { headers: auth })).status()).toBe(404);
+      expect((await context.get("/api/panel/business/sections/adaylar?bilinmeyen=1", { headers: auth })).status()).toBe(400);
+    } finally {
+      await db.businessRoleAssignment.deleteMany({ where: { userId: admin.user.id } });
+    }
+    const learner = await mobileLogin(student().email, student().password);
+    expect((await learner.context.get("/api/panel/business/sections/adaylar", { headers: { ...MOBILE, authorization: `Bearer ${learner.body.token}` } })).status()).toBe(404);
   });
 
   test("yönetim ucu: öğrenci ve öğretmen 403, kimliksiz 401", async () => {

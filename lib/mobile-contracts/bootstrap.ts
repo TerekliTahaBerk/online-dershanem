@@ -91,9 +91,20 @@ export type MobileAdminOverlay = {
   expiresAt: string;
 };
 
+/**
+ * İşletme alanı (P2.7): kullanıcının `BusinessRoleAssignment` izinlerine göre
+ * GÖREBİLDİĞİ bölümler. Görünürlüktür, yetki değildir — her uç izni ayrıca
+ * doğrular. Önizleme / öğretmen modunda ve ataması olmayanda null.
+ */
+export type MobileBusinessWorkspace = {
+  sections: { slug: string; label: string; group: string; groupLabel: string }[];
+};
+
 export type MobileBootstrap = {
   /** Eklemeli P2.9 alanı; user/workspace etkili kimliğe aittir. */
   adminOverlay?: MobileAdminOverlay | null;
+  /** Eklemeli P2.7 alanı; eski sunucu yanıtında yoksa null kabul edilir. */
+  business?: MobileBusinessWorkspace | null;
   contractVersion: typeof MOBILE_BOOTSTRAP_CONTRACT_VERSION;
   serverTime: string;
   user: { id: string; fullName: string | null; email: string; role: MobileRole };
@@ -259,6 +270,15 @@ export function parseMobileBootstrap(input: unknown): ContractResult<MobileBoots
         adminOverlay: o.adminOverlay == null ? null : (() => {
           const overlay = obj(o.adminOverlay, "$.adminOverlay");
           return { mode: oneOf(overlay.mode, ["PREVIEW", "TEACHER"] as const, "$.adminOverlay.mode"), actorUserId: str(overlay.actorUserId, "$.adminOverlay.actorUserId"), expiresAt: isoDate(overlay.expiresAt, "$.adminOverlay.expiresAt") };
+        })(),
+        business: o.business == null ? null : (() => {
+          const business = obj(o.business, "$.business");
+          return {
+            sections: arr(business.sections, "$.business.sections", (item, path) => {
+              const section = obj(item, path);
+              return { slug: str(section.slug, `${path}.slug`), label: str(section.label, `${path}.label`), group: str(section.group, `${path}.group`), groupLabel: str(section.groupLabel, `${path}.groupLabel`) };
+            }),
+          };
         })(),
         contractVersion: MOBILE_BOOTSTRAP_CONTRACT_VERSION,
         serverTime: isoDate(o.serverTime, "$.serverTime"),

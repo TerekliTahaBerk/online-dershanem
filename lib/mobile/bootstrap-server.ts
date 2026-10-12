@@ -18,7 +18,10 @@ import { mobilePrimaryNav, panelNavSections } from "@/lib/panel/navigation";
 import { listParentVisibleChildren } from "@/lib/panel/parent-product-policy";
 import { getResolvedAdminPreview } from "@/lib/auth/admin-preview";
 import { getResolvedAdminTeacherMode } from "@/lib/auth/admin-teacher-mode";
-import type { MobileBootstrap, MobileMfaMethods, MobileSecurityCapabilities, MobileWorkspace } from "@/lib/mobile-contracts/bootstrap";
+import type { MobileBootstrap, MobileBusinessWorkspace, MobileMfaMethods, MobileSecurityCapabilities, MobileWorkspace } from "@/lib/mobile-contracts/bootstrap";
+import { businessFlags } from "@/lib/business/flags";
+import { getUserBusinessPermissions } from "@/lib/business/access";
+import { BUSINESS_SECTION_GROUPS, SECTION_LABELS, visibleSections } from "@/lib/business/sections";
 import { STEP_UP_MAX_AGE_MS, hasFreshStepUp } from "@/lib/auth/mfa-policy";
 import { bootstrapGates, projectBootstrap, selectActiveWorkspace, toMobileNavItems, toMobileNavSections } from "@/lib/mobile/bootstrap";
 
@@ -88,7 +91,17 @@ export async function buildMobileBootstrap(
     now,
     workspace,
   });
-  return { ...result, adminOverlay };
+  // İşletme alanı gerçek kullanıcının atamasından; mod açıkken gösterilmez.
+  const business = gates.status === "READY" && !adminOverlay ? await loadBusinessWorkspace(session) : null;
+  return { ...result, adminOverlay, business };
+}
+
+async function loadBusinessWorkspace(session: SessionUser): Promise<MobileBusinessWorkspace | null> {
+  if (!businessFlags.panel) return null;
+  const allowed = visibleSections(await getUserBusinessPermissions(session), { financeEnabled: businessFlags.finance });
+  if (!allowed.length) return null;
+  const groupOf = new Map(BUSINESS_SECTION_GROUPS.flatMap((group) => group.sections.map((slug) => [slug, group] as const)));
+  return { sections: allowed.map((slug) => ({ slug, label: SECTION_LABELS[slug], group: groupOf.get(slug)?.id ?? "genel", groupLabel: groupOf.get(slug)?.label ?? "Genel" })) };
 }
 
 /** `/api/auth/mfa/status` ile aynı kaynak; yalnız var/yok bilgisi döner. */
