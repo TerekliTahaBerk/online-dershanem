@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { MockExamErrorCategory } from "@prisma/client";
 import { buttonClass } from "@/components/panel/ui";
 import { mockExamErrorLabels } from "@/lib/mock-exams";
+import { mockExamErrorText } from "./helpers";
 import type { MockExamView } from "./types";
 
 export function ReasonEditor({
@@ -48,8 +49,10 @@ export function ReasonEditor({
     });
     if (!response.ok)
       return setMessage(
-        (await response.json().catch(() => ({}))).error ||
+        mockExamErrorText(
+          await response.json().catch(() => ({})),
           "Nedenler kaydedilemedi.",
+        ),
       );
     onSaved(
       exam.sections.map((section) => ({

@@ -7,7 +7,7 @@ import { sendPanelEvent } from "@/lib/panel-event-client";
 import { MockExamEntryForm } from "./entry-form";
 import { ExamAnalysis } from "./exam-analysis";
 import { ExamList } from "./exam-list";
-import { countBand } from "./helpers";
+import { countBand, mockExamErrorText } from "./helpers";
 import type { MockExamView } from "./types";
 
 export type { MockExamView } from "./types";
@@ -83,8 +83,10 @@ export function MockExamWorkspace({
     });
     if (!response.ok)
       return setStatus(
-        (await response.json().catch(() => ({}))).error ||
+        mockExamErrorText(
+          await response.json().catch(() => ({})),
           "Eylem onaylanamadı.",
+        ),
       );
     setExams((current) =>
       current.map((exam) =>

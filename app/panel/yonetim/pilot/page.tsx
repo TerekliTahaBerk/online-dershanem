@@ -1,7 +1,7 @@
 import { Rocket, ShieldCheck } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
-import { getPilotReadiness } from "@/lib/pilot-readiness-server";
+import { pilotGroupDetail } from "@/lib/panel/pilot-core";
+import { loadPilotPage } from "@/lib/panel/pilot-server";
 import { roleCoverage } from "@/lib/pilot-rollout";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
@@ -11,33 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function PilotRolloutPage() {
   const session = await requireRole("ADMIN");
-  const [groups, cohorts] = await Promise.all([
-    prisma.group.findMany({
-      where: { isActive: true },
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-        teacher: { select: { fullName: true, email: true } },
-        enrollments: {
-          where: { endedAt: null },
-          select: {
-            student: { select: { parents: { select: { parentId: true } } } },
-          },
-        },
-      },
-    }),
-    prisma.pilotCohort.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 20,
-      include: { members: { select: { role: true } } },
-    }),
-  ]);
-  const readinessRoles = cohorts
-    .find((cohort) => cohort.status === "ACTIVE")
-    ?.members.map((member) => member.role) ||
-    cohorts[0]?.members.map((member) => member.role) || ["ADMIN" as const];
-  const readiness = await getPilotReadiness(readinessRoles);
+  const { groups, cohorts, readiness } = await loadPilotPage();
   return (
     <PanelShell
       role={session.role}
@@ -98,7 +72,7 @@ export default async function PilotRolloutPage() {
           groups={groups.map((group) => ({
             id: group.id,
             name: group.name,
-            detail: `${group.teacher.fullName || group.teacher.email} · ${group.enrollments.length} öğrenci · ${new Set(group.enrollments.flatMap((item) => item.student.parents.map((link) => link.parentId))).size} veli`,
+            detail: pilotGroupDetail(group),
           }))}
           cohorts={cohorts.map((cohort) => ({
             id: cohort.id,

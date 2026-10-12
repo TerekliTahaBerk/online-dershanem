@@ -5,6 +5,7 @@ import { hashPassword } from "../../lib/auth/password";
 import { parseMobileBootstrap, type MobileBootstrap } from "../../lib/mobile-contracts/bootstrap";
 import { parseSessionList } from "../../lib/mobile-contracts/api";
 import { parseActivationDesk, parseAdminReports, parseEducators, parseInterventionInbox, parseOperationsCenter, parseParentsPage, parsePeopleDirectory, parsePersonDetail, parseSignups, parseStudent360 } from "../../lib/mobile-contracts/admin";
+import { parseMockExamsAdmin, parsePilot } from "../../lib/mobile-contracts/admin-rollout";
 import { GROUP_TABS, parseEducation, parseGroup360, parseGroupMutationResult } from "../../lib/mobile-contracts/admin-education";
 import { parseAssignmentList, parseInsights, parseLessonDetail, parseLessonList, parseOdHome, parseRecovery, parseReviewQueue, parseWeeklyDigest } from "../../lib/mobile-contracts/student";
 import { hasE2EEnv } from "./env-requirements";
@@ -569,6 +570,35 @@ test.describe.serial("Faz 1 mobil yönetim kapısı", () => {
 
     const learner = await mobileLogin(student().email, student().password);
     for (const path of ["/api/panel/admin/parents", "/api/panel/admin/educators", "/api/panel/admin/signups", `/api/panel/admin/students/${profileId}`]) {
+      expect((await learner.context.get(path, { headers: { ...MOBILE, authorization: `Bearer ${learner.body.token}` } })).status()).toBe(403);
+    }
+  });
+
+  test("P2.8 kontrollü yayın ve dış denemeler: okuma sözleşmesi; yazmalar taze step-up ve Bearer işlem anahtarı ister", async () => {
+    const admin = await temporaryUser("ADMIN");
+    const { context, body } = await mobileLogin(admin.user.email, admin.password);
+    const auth = { ...MOBILE, authorization: `Bearer ${body.token}` };
+    const pilotRead = await context.get("/api/panel/admin/pilot", { headers: auth });
+    expect(pilotRead.status(), await pilotRead.text()).toBe(200);
+    expect(pilotRead.headers()["cache-control"]).toContain("no-store");
+    const pilotView = parsePilot(await pilotRead.json());
+    if (!pilotView.ok) throw new Error(pilotView.error);
+    const exams = await context.get("/api/panel/admin/mock-exams", { headers: auth });
+    // Bayrak kapalı ortamda açıkça 404 FEATURE_DISABLED; açıksa sözleşmeye uyar.
+    if (exams.status() === 404) expect((await exams.json()).code).toBe("FEATURE_DISABLED");
+    else {
+      expect(exams.status(), await exams.text()).toBe(200);
+      const parsed = parseMockExamsAdmin(await exams.json());
+      if (!parsed.ok) throw new Error(parsed.error);
+    }
+    const create = await context.post("/api/panel/pilot-cohorts", { headers: auth, data: { groupId: "yok", requestKey: randomUUID() } });
+    expect(create.status()).toBe(428);
+    expect((await create.json()).code).toBe("STEP_UP_REQUIRED");
+    const transition = await context.patch("/api/panel/pilot-cohorts/yok", { headers: auth, data: { action: "PAUSE", expectedVersion: 1, stopReason: "OPERATIONAL" } });
+    expect(transition.status()).toBe(428);
+
+    const learner = await mobileLogin(student().email, student().password);
+    for (const path of ["/api/panel/admin/pilot", "/api/panel/admin/mock-exams"]) {
       expect((await learner.context.get(path, { headers: { ...MOBILE, authorization: `Bearer ${learner.body.token}` } })).status()).toBe(403);
     }
   });

@@ -1,29 +1,18 @@
 import { notFound } from "next/navigation";
 import { ChartNoAxesCombined } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth/guards";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { AdminPageHeader } from "@/components/panel/admin-page-header";
 import { MockExamWorkspace } from "@/components/panel/mock-exam-workspace";
-import { mockExamViewInclude, toMockExamView } from "@/lib/mock-exam-view";
+import { toMockExamView } from "@/lib/mock-exam-view";
+import { loadAdminMockExams } from "@/lib/panel/admin-mock-exams-server";
 
 export const dynamic = "force-dynamic";
 export default async function AdminMockExamsPage() {
   const session = await requireRole("ADMIN");
   if (!getPanelFeatureFlags().mockExamAnalysis) notFound();
-  const [students, exams] = await Promise.all([
-    prisma.studentProfile.findMany({
-      where: { user: { status: "ACTIVE" } },
-      orderBy: { user: { fullName: "asc" } },
-      include: { user: { select: { fullName: true, email: true } } },
-    }),
-    prisma.mockExam.findMany({
-      orderBy: { takenAt: "desc" },
-      take: 100,
-      include: mockExamViewInclude,
-    }),
-  ]);
+  const { students, exams } = await loadAdminMockExams();
   return (
     <PanelShell
       role={session.role}

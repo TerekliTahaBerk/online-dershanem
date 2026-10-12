@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   CirclePause,
@@ -32,11 +33,14 @@ export function PilotRolloutControl({
   const [groupId, setGroupId] = useState(groups[0]?.id || "");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  // Pilot yazmaları taze step-up ister (428 STEP_UP_REQUIRED).
+  const [stepUp, setStepUp] = useState(false);
   const [stopReason, setStopReason] = useState("OPERATIONAL");
   useEffect(() => setRows(cohorts), [cohorts]);
   async function create() {
     setBusy(true);
     setMessage("");
+    setStepUp(false);
     const response = await fetch("/api/panel/pilot-cohorts", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -44,8 +48,10 @@ export function PilotRolloutControl({
     });
     const body = await response.json().catch(() => ({}));
     setBusy(false);
-    if (!response.ok)
+    if (!response.ok) {
+      setStepUp(body.code === "STEP_UP_REQUIRED");
       return setMessage(body.error || "Pilot taslağı oluşturulamadı.");
+    }
     const created = body.cohort;
     const coverage = created.members.reduce(
       (
@@ -77,12 +83,14 @@ export function PilotRolloutControl({
   ) {
     setBusy(true);
     setMessage("");
+    setStepUp(false);
     const response = await fetch(`/api/panel/pilot-cohorts/${cohort.id}`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         action,
         expectedVersion: cohort.version,
+        idempotencyKey: crypto.randomUUID(),
         stopReason: ["PAUSE", "ROLLBACK"].includes(action)
           ? stopReason
           : undefined,
@@ -90,8 +98,10 @@ export function PilotRolloutControl({
     });
     const body = await response.json().catch(() => ({}));
     setBusy(false);
-    if (!response.ok)
+    if (!response.ok) {
+      setStepUp(body.code === "STEP_UP_REQUIRED");
       return setMessage(body.error || "Pilot durumu güncellenemedi.");
+    }
     setRows((current) =>
       current.map((item) =>
         item.id === cohort.id
@@ -180,6 +190,14 @@ export function PilotRolloutControl({
             className="mt-3 rounded-2xl bg-(--brand-olive-soft) p-3 text-xs font-bold text-(--brand-olive)"
           >
             {message}
+            {stepUp ? (
+              <>
+                {" "}
+                <Link href="/panel/guvenlik" className="panel-text-link">
+                  Kimliği doğrula
+                </Link>
+              </>
+            ) : null}
           </p>
         ) : null}
         <div className="mt-3 space-y-3">

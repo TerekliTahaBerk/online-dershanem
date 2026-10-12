@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { PrismaClient } from "@prisma/client";
 import { accessibilityScan } from "./helpers/axe";
 import { uniqueTestClientIp } from "./helpers/client-ip";
 import { enterProductPanel } from "./helpers/panel-login";
@@ -24,6 +25,20 @@ async function login(page: Page, account: { email?: string; password?: string },
   if (expectPanel) await expect(page.getByRole("main")).toBeVisible();
 }
 
+/**
+ * Pilot yazmaları (oluştur / geçiş) taze step-up ister. TOTP kurulumu bu
+ * senaryonun konusu değil; diğer yönetim e2e'leri gibi oturuma doğrudan
+ * yazılır. 428 davranışı `mobile-api.spec.ts` içinde ayrıca doğrulanır.
+ */
+async function freshStepUp(email: string) {
+  const db = new PrismaClient();
+  try {
+    await db.session.updateMany({ where: { user: { email } }, data: { stepUpAt: new Date() } });
+  } finally {
+    await db.$disconnect();
+  }
+}
+
 async function logout(page: Page) { const status = await page.evaluate(async () => (await fetch("/api/auth/logout", { method: "POST" })).status); expect(status).toBe(200); await page.goto("/giris"); }
 
 /** Seçici açıldıysa OD kartında "Panele gir" bağlantısı olmamalı. */
@@ -39,6 +54,7 @@ test.describe.serial("integrated pilot rollout", () => {
   test("admin dört rollü kohortu oluşturur ve readiness kapılarıyla aktive eder", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await login(page, accounts.admin);
+    await freshStepUp(accounts.admin.email!);
     await page.goto("/panel/yonetim/pilot");
     await expect(page.getByRole("heading", { name: "Önce küçük kohort, sonra kanıtlı genişleme." })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
@@ -71,7 +87,7 @@ test.describe.serial("integrated pilot rollout", () => {
   });
 
   test("admin pilotu duraklatınca mevcut üyenin sayfa ve API erişimi kesilir", async ({ page }) => {
-    await login(page, accounts.admin); await page.goto("/panel/yonetim/pilot");
+    await login(page, accounts.admin); await freshStepUp(accounts.admin.email!); await page.goto("/panel/yonetim/pilot");
     const cohort = page.getByRole("article").filter({ hasText: "E2E LGS Grubu" }).first();
     await page.getByRole("main").getByLabel("Pilot durdurma nedeni").selectOption("OPERATIONAL");
     await cohort.getByRole("button", { name: "Duraklat" }).click();
