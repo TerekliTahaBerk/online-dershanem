@@ -1,6 +1,5 @@
 import "server-only";
 
-import { randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { detached } from "@/lib/after-response";
@@ -8,7 +7,7 @@ import { generateAIReply } from "@/lib/business/jobs";
 import { validateStageTransition } from "@/lib/business/leads";
 import { normalizeEmail, normalizePhone } from "@/lib/business/normalization";
 import { resolveMutationUnit, scopedUnitIds, type BusinessAccess } from "@/lib/business/access";
-import { operationDigest } from "@/lib/panel/group-mutation-core";
+import { BusinessCommandError, runWithReceipt, type CommandExecution } from "./command-receipt";
 import { CRM_REVISIONED, type CrmCommand } from "./crm-commands";
 
 /**
@@ -29,15 +28,9 @@ import { CRM_REVISIONED, type CrmCommand } from "./crm-commands";
  *  - İş birimi kapsamı her sorguda `access.units` ile.
  */
 
-export class CrmError extends Error {
-  constructor(
-    public status: 400 | 404 | 409 | 422 | 502,
-    public code: string,
-    message: string,
-  ) {
-    super(message);
-  }
-}
+/** CRM hatası — ortak `BusinessCommandError` (kararlı `code` + HTTP durumu). */
+export { BusinessCommandError as CrmError };
+const CrmError = BusinessCommandError;
 
 export type CrmResult = { entityId: string; lead?: { id: string; stage: string; lostReasonCode: string | null; lostReason: string | null; wonAt: string | null; lostAt: string | null } };
 
@@ -49,7 +42,7 @@ const STAGE_ERRORS: Record<string, string> = {
 };
 
 type Tx = Prisma.TransactionClient;
-type Executed = { entityType: string; entityId: string; action: string; payload?: Prisma.InputJsonObject; result: CrmResult; after?: () => Promise<void> };
+type Executed = CommandExecution<CrmResult>;
 
 export const crmRevision = (row: { updatedAt: Date }) => row.updatedAt.toISOString();
 
@@ -260,16 +253,8 @@ async function execute(tx: Tx, access: BusinessAccess, command: CrmCommand, expe
   }
 }
 
-function readReceipt(payload: unknown, digest: string): CrmResult {
-  const saved = payload as { operationDigest?: string; result?: CrmResult } | null;
-  if (saved?.operationDigest !== digest || !saved.result) throw new CrmError(409, "IDEMPOTENCY_REUSE", "İşlem anahtarı farklı bir istek için kullanılamaz.");
-  return saved.result;
-}
-
-const isRetryable = (error: unknown) => error instanceof Prisma.PrismaClientKnownRequestError && ["P2034", "P2002"].includes(error.code);
-
-/** Yaşam döngüsü bağı: mevcut `linkLeadLifecycleEntities` (kendi transaction + audit). */
-async function linkLifecycle(access: BusinessAccess, command: Extract<CrmCommand, { type: "lead.link_lifecycle" }>, expected: string | undefined, key: string, digest: string): Promise<CrmResult> {
+/** Yaşam döngüsü bağı: mevcut `linkLeadLifecycleEntities` (kendi transaction + audit); makbuz bağdan sonra. */
+async function linkLifecycle(access: BusinessAccess, command: Extract<CrmCommand, { type: "lead.link_lifecycle" }>, expected: string | undefined): Promise<Executed> {
   const row = await prisma.businessLead.findFirst({ where: { id: command.leadId, businessUnitId: { in: scopedUnitIds(access) }, anonymizedAt: null } });
   if (!row) throw new CrmError(404, "LEAD_NOT_FOUND", NOT_FOUND.lead);
   checkRevision(command, row, expected);
@@ -282,48 +267,22 @@ async function linkLifecycle(access: BusinessAccess, command: Extract<CrmCommand
     if (error instanceof LifecycleLinkError) throw new CrmError(422, error.code, error.message);
     throw error;
   }
-  const result = { entityId: row.id };
-  await prisma.auditLog.create({ data: { actorUserId: access.session.userId, actorType: "USER", idempotencyKey: key, entityType: "BusinessLead", entityId: row.id, action: "LEAD_LIFECYCLE_LINK_REQUESTED", payload: { operationDigest: digest, result } } });
-  return result;
+  return { entityType: "BusinessLead", entityId: row.id, action: "LEAD_LIFECYCLE_LINK_REQUESTED", result: { entityId: row.id } };
 }
 
 export async function runCrmCommand(access: BusinessAccess, command: CrmCommand, options: { idempotencyKey?: string; expectedRevision?: string } = {}): Promise<{ result: CrmResult; replayed: boolean }> {
-  const key = `business-crm:${access.session.userId}:${options.idempotencyKey ?? randomUUID()}`;
-  const digest = operationDigest({ command, expectedRevision: options.expectedRevision ?? null });
-  const replay = async () => {
-    const receipt = await prisma.auditLog.findUnique({ where: { idempotencyKey: key }, select: { payload: true } });
-    return receipt ? { result: readReceipt(receipt.payload, digest), replayed: true } : null;
-  };
-  const prior = await replay();
-  if (prior) return prior;
-  if (command.type === "lead.link_lifecycle") return { result: await linkLifecycle(access, command, options.expectedRevision, key, digest), replayed: false };
-
-  let executed: Executed;
-  try {
-    executed = await prisma.$transaction(
-      async (tx) => {
-        const run = await execute(tx, access, command, options.expectedRevision);
-        await tx.auditLog.create({ data: { actorUserId: access.session.userId, actorType: "USER", idempotencyKey: key, entityType: run.entityType, entityId: run.entityId, action: run.action, payload: { operationDigest: digest, ...(run.payload ?? {}), result: run.result as unknown as Prisma.InputJsonObject } } });
-        return run;
-      },
-      { isolationLevel: "Serializable", timeout: 15_000 },
-    );
-  } catch (error) {
-    if (isRetryable(error)) {
-      const saved = await replay();
-      if (saved) return saved;
-      throw new CrmError(409, "CRM_CONFLICT", "Kayıt eşzamanlı değişti. Görünümü yenileyin.");
-    }
-    throw error;
-  }
-  if (executed.after) {
-    try {
-      await executed.after();
-    } catch (error) {
-      // Kayıt ve makbuz yazıldı; yalnız AI üretimi başarısız (web'de de hata olarak görünüyordu).
+  return runWithReceipt<CrmResult>({
+    actorUserId: access.session.userId,
+    namespace: "crm",
+    idempotencyKey: options.idempotencyKey,
+    digestOf: { command, expectedRevision: options.expectedRevision ?? null },
+    ...(command.type === "lead.link_lifecycle"
+      ? { outside: () => linkLifecycle(access, command, options.expectedRevision) }
+      : { transactional: (tx: Prisma.TransactionClient) => execute(tx, access, command, options.expectedRevision) }),
+    // Kayıt ve makbuz yazıldı; yalnız AI üretimi başarısız (web'de de hata olarak görünüyordu).
+    afterError: () => {
       if (command.type === "conversation.ai_suggest") throw new CrmError(502, "AI_UNAVAILABLE", "AI önerisi şu anda üretilemedi.");
-      throw error;
-    }
-  }
-  return { result: executed.result, replayed: false };
+      throw new CrmError(502, "SIDE_EFFECT_FAILED", "İşlem kaydedildi ancak ek adım tamamlanamadı.");
+    },
+  });
 }

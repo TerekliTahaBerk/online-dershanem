@@ -60,13 +60,19 @@ export async function assertAccountingPeriodOpen(businessUnitId: string, at: Dat
   if (locked) throw new Error("ACCOUNTING_PERIOD_LOCKED");
 }
 
-export async function reverseLedgerTransaction(transactionId: string, actorUserId?: string | null) {
-  return prisma.$transaction(async (tx) => {
+/**
+ * Ters kayıt. `client` verilirse çağıranın transaction'ında çalışır (P2.7c:
+ * ters kayıt ile audit makbuzu aynı transaction'da); verilmezse kendi
+ * transaction'ını açar (mevcut çağıranlar için davranış aynı).
+ */
+export async function reverseLedgerTransaction(transactionId: string, actorUserId?: string | null, client?: Prisma.TransactionClient) {
+  const run = async (tx: Prisma.TransactionClient) => {
     const original = await tx.financialTransaction.findUnique({ where: { id: transactionId } });
     if (!original || original.cancelledAt) throw new Error("TRANSACTION_NOT_FOUND");
     const at = new Date(); await assertAccountingPeriodOpen(original.businessUnitId, at, tx);
     const reversal = await tx.financialTransaction.upsert({ where: { idempotencyKey: `reversal:${original.id}` }, update: {}, create: { businessUnitId: original.businessUnitId, source: original.source, idempotencyKey: `reversal:${original.id}`, kind: "REVERSAL", status: "PAID", transactionAt: at, paidAt: at, description: `Ters kayıt: ${original.description}`, category: original.category, grossCents: -original.grossCents, discountCents: -original.discountCents, netCents: -original.netCents, vatRate: original.vatRate, vatCents: -original.vatCents, withholdingRate: original.withholdingRate, withholdingCents: -original.withholdingCents, otherTaxCents: -original.otherTaxCents, commissionCents: -original.commissionCents, reversalOfId: original.id, createdById: actorUserId } });
     await tx.financialTransaction.update({ where: { id: original.id }, data: { cancelledAt: at, status: "CANCELLED" } });
     return reversal;
-  });
+  };
+  return client ? run(client) : prisma.$transaction(run);
 }

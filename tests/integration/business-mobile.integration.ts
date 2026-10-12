@@ -9,6 +9,8 @@ import type { SessionUser } from "@/lib/auth/session";
 import { toMobileBusinessSection } from "@/lib/mobile/business-views";
 import { parseBusinessSection } from "@/lib/mobile-contracts/business";
 import { runCrmCommand, CrmError, crmRevision } from "@/lib/business/crm-service";
+import { runOpsCommand } from "@/lib/business/ops-service";
+import { BusinessCommandError } from "@/lib/business/command-receipt";
 import { integration } from "./integration-utils";
 
 /**
@@ -163,6 +165,79 @@ integration("P2.7b CRM komutları: web ile aynı kurallar; işlem anahtarı, rev
     await db.businessConversation.deleteMany({ where: { id: conversation.id } });
     await db.instagramAccount.deleteMany({ where: { id: account.id } });
     await db.integrationConnection.deleteMany({ where: { id: connection.id } });
+    if (!existing) await db.businessUnit.delete({ where: { id: unit.id } });
+    await db.user.delete({ where: { id: user.id } });
+  }
+});
+
+integration("P2.7c pazarlama + finans: web kurallarıyla kampanya, reklam, atıf, finans kaydı, dönem kilidi, ters kayıt, mutabakat çözümü", async () => {
+  const run = randomUUID().slice(0, 8);
+  const user = await db.user.create({ data: { email: `p27c-${run}@example.com`, role: "ADMIN", status: "ACTIVE", passwordHash: "unused", fullName: "P27c Muhasebe" } });
+  const existing = await db.businessUnit.findFirst({ where: { product: "OD" } });
+  const unit = existing ?? (await db.businessUnit.create({ data: { code: `p27c-${run}`, name: "P27c OD", product: "OD" } }));
+  const session = { userId: user.id, role: "ADMIN", email: user.email, fullName: user.fullName } as unknown as SessionUser;
+  const access: BusinessAccess = { session, units: [{ id: unit.id, code: unit.code, name: unit.name, product: unit.product, role: "SUPER_ADMIN" }] };
+  const lead = await db.businessLead.create({ data: { businessUnitId: unit.id, source: "MANUAL", firstName: `P27c${run}` } });
+  // Kilitlenecek dönem: geçmişte, başka verilerle çakışmayacak bir gün.
+  const day = `2001-0${1 + (parseInt(run.slice(0, 2), 16) % 9)}-1${parseInt(run.slice(2, 3), 16) % 9}`;
+  const created: { campaignId?: string; txIds: string[]; periodId?: string; recordId?: string } = { txIds: [] };
+  try {
+    const key = randomUUID();
+    const campaign = { type: "campaign.create" as const, name: `P27c Kampanya ${run}`, platform: "INSTAGRAM", budgetTl: 1500.5, productInterest: "ONLINE_DERSHANEM" as const };
+    const results = await Promise.all([runOpsCommand(access, campaign, { idempotencyKey: key }), runOpsCommand(access, campaign, { idempotencyKey: key })]);
+    assert.equal(results.filter((item) => item.replayed).length, 1);
+    created.campaignId = results[0].result.entityId;
+    assert.equal((await db.businessCampaign.findUniqueOrThrow({ where: { id: created.campaignId } })).budgetCents, 150050);
+    await assert.rejects(runOpsCommand(access, { ...campaign, name: "başka" }, { idempotencyKey: key }), (error) => error instanceof BusinessCommandError && error.code === "IDEMPOTENCY_REUSE");
+
+    const ad = await runOpsCommand(access, { type: "advertisement.create", campaignId: created.campaignId, adSetName: "Set A", name: "Reklam A", spentTl: 100, impressions: 1000, clicks: 50, messageStarts: 5, leadCount: 2, saleCount: 1, revenueTl: 300 });
+    await runOpsCommand(access, { type: "attribution.manual", leadId: lead.id, campaignId: created.campaignId, advertisementId: ad.result.entityId });
+    assert.equal(await db.attribution.count({ where: { leadId: lead.id, isManual: true } }), 1);
+    await assert.rejects(runOpsCommand(access, { type: "advertisement.create", campaignId: "cjld2cjxh0000qzrmn831i7rn", adSetName: "x1", name: "x1", spentTl: 0, impressions: 0, clicks: 0, messageStarts: 0, leadCount: 0, saleCount: 0, revenueTl: 0 }), (error) => error instanceof BusinessCommandError && error.code === "CAMPAIGN_NOT_FOUND");
+
+    // Finans: KDV dahil tutardan KDV ayrıştırılır (web formülü).
+    const income = await runOpsCommand(access, { type: "finance.create", kind: "MANUAL_INCOME", description: `P27c gelir ${run}`, category: "Satış", amountTl: 120, vatRate: 20, withholdingRate: 0, commissionTl: 0, transactionDate: day });
+    created.txIds.push(income.result.entityId);
+    assert.equal(income.result.section, "gelirler");
+    const row = await db.financialTransaction.findUniqueOrThrow({ where: { id: income.result.entityId } });
+    assert.equal(row.netCents, 12000);
+    assert.equal(row.vatCents, 2000);
+
+    // Dönem kilidi: kilitli tarihe yeni kayıt 409; ters kayıt bugünün açık döneminde yapılır.
+    const period = await runOpsCommand(access, { type: "period.lock", startsAt: day, endsAt: day });
+    created.periodId = period.result.entityId;
+    await assert.rejects(runOpsCommand(access, { type: "finance.create", kind: "EXPENSE", description: "kilitli", category: "Gider", amountTl: 10, vatRate: 0, withholdingRate: 0, commissionTl: 0, transactionDate: day }), (error) => error instanceof BusinessCommandError && error.code === "ACCOUNTING_PERIOD_LOCKED");
+    await assert.rejects(runOpsCommand(access, { type: "period.lock", startsAt: day, endsAt: "2000-01-01" }), (error) => error instanceof BusinessCommandError && error.code === "INVALID_PERIOD");
+    const reversed = await runOpsCommand(access, { type: "finance.reverse", transactionId: income.result.entityId });
+    assert.equal(reversed.result.section, "gelirler");
+    const reversal = await db.financialTransaction.findUniqueOrThrow({ where: { idempotencyKey: `reversal:${income.result.entityId}` } });
+    created.txIds.push(reversal.id);
+    assert.equal(reversal.netCents, -12000);
+    await assert.rejects(runOpsCommand(access, { type: "finance.reverse", transactionId: income.result.entityId }), (error) => error instanceof BusinessCommandError && error.code === "TRANSACTION_NOT_FOUND");
+
+    const record = await db.reconciliationRecord.create({ data: { businessUnitId: unit.id, provider: "PAYTR", externalId: `p27c-${run}`, expectedCents: 100, actualCents: 90, status: "UNMATCHED" } });
+    created.recordId = record.id;
+    await runOpsCommand(access, { type: "reconciliation.resolve", id: record.id, status: "MANUALLY_MATCHED" });
+    assert.equal((await db.reconciliationRecord.findUniqueOrThrow({ where: { id: record.id } })).status, "MANUALLY_MATCHED");
+    for (const action of ["CAMPAIGN_CREATED", "ADVERTISEMENT_CREATED", "ATTRIBUTION_MANUALLY_SET", "FINANCIAL_TRANSACTION_CREATED", "ACCOUNTING_PERIOD_LOCKED", "FINANCIAL_TRANSACTION_REVERSED", "RECONCILIATION_RESOLVED"]) {
+      assert.equal(await db.auditLog.count({ where: { actorUserId: user.id, action } }), 1, action);
+    }
+
+    // Kapsam: başka iş birimine erişen kullanıcı bu kayıtlara dokunamaz.
+    const other: BusinessAccess = { session, units: [{ id: "baska-birim", code: "x", name: "Başka", product: "ODK", role: "SUPER_ADMIN" }] };
+    await assert.rejects(runOpsCommand(other, { type: "reconciliation.resolve", id: record.id, status: "CORRECTED" }), (error) => error instanceof BusinessCommandError && error.status === 404);
+  } finally {
+    await db.auditLog.deleteMany({ where: { actorUserId: user.id } });
+    if (created.recordId) await db.reconciliationRecord.delete({ where: { id: created.recordId } });
+    await db.financialTransaction.deleteMany({ where: { id: { in: created.txIds } } });
+    if (created.periodId) await db.accountingPeriod.delete({ where: { id: created.periodId } });
+    await db.attribution.deleteMany({ where: { leadId: lead.id } });
+    if (created.campaignId) {
+      await db.businessAdvertisement.deleteMany({ where: { adSet: { campaignId: created.campaignId } } });
+      await db.businessAdSet.deleteMany({ where: { campaignId: created.campaignId } });
+      await db.businessCampaign.delete({ where: { id: created.campaignId } });
+    }
+    await db.businessLead.delete({ where: { id: lead.id } });
     if (!existing) await db.businessUnit.delete({ where: { id: unit.id } });
     await db.user.delete({ where: { id: user.id } });
   }

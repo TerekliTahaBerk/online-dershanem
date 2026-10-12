@@ -641,6 +641,11 @@ test.describe.serial("Faz 1 mobil yönetim kapısı", () => {
       expect(stale.status()).toBe(409);
       await db.leadActivity.deleteMany({ where: { leadId: lead.id } });
       await db.businessLead.delete({ where: { id: lead.id } });
+      // P2.7c: finans kaydı taze step-up ister (428); pazarlama komutu Bearer'da işlem anahtarı ister.
+      const finance = await context.post("/api/panel/business/ops", { headers: auth, data: { command: { type: "finance.create", kind: "EXPENSE", description: "E2E", category: "Test", amountTl: 1 }, idempotencyKey: randomUUID() } });
+      expect([428, 404]).toContain(finance.status());
+      if (finance.status() === 428) expect((await finance.json()).code).toBe("STEP_UP_REQUIRED");
+      expect((await context.post("/api/panel/business/ops", { headers: auth, data: { command: { type: "campaign.create", name: "E2E", platform: "INSTAGRAM", budgetTl: 0, productInterest: "UNKNOWN" } } })).status()).toBe(400);
       expect((await context.get("/api/panel/business/sections/adaylar?bilinmeyen=1", { headers: auth })).status()).toBe(400);
     } finally {
       await db.businessRoleAssignment.deleteMany({ where: { userId: admin.user.id } });

@@ -21,6 +21,8 @@ const row = v.object({
   meta: v.nullable(v.string()),
   badge: v.nullable(v.object({ label: v.string(), tone })),
   target: v.nullable(target),
+  /** P2.7c satır eylemleri (ters kayıt, mutabakat çözümü); yalnız izin varken. */
+  actions: v.optional(v.array(v.object({ kind: v.oneOf(["reverse", "match", "correct"] as const), label: v.string() })), []),
 });
 const card = v.object({
   id: v.nonEmpty(),
@@ -95,9 +97,9 @@ const section = v.object({
   conversation: v.nullable(conversation),
   lead: v.nullable(lead),
   /** Görünürlük (yetki değil — uç ayrıca doğrular): web `can(...)` ile aynı izinler. */
-  can: v.object({ conversationRead: v.boolean(), conversationReply: v.boolean(), leadWrite: v.boolean() }),
+  can: v.object({ conversationRead: v.boolean(), conversationReply: v.boolean(), leadWrite: v.boolean(), campaignWrite: v.boolean(), integrationWrite: v.boolean(), financeWrite: v.boolean(), financeReverse: v.boolean() }),
   /** Yazma seçenek sözlükleri (web formlarıyla aynı değerler ve etiketler). */
-  options: v.object({ stages: v.array(option), lostReasons: v.array(option), priorities: v.array(option), aiModes: v.array(option), statuses: v.array(option), productInterests: v.array(option), units: v.array(option) }),
+  options: v.object({ stages: v.array(option), lostReasons: v.array(option), priorities: v.array(option), aiModes: v.array(option), statuses: v.array(option), productInterests: v.array(option), units: v.array(option), campaigns: v.array(option), ads: v.array(option) }),
 });
 export type MobileBusinessSection = Infer<typeof section>;
 export type MobileBusinessConversation = Infer<typeof conversation>;

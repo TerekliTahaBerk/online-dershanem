@@ -32,7 +32,7 @@ const tl = new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }
 const dt = new Intl.DateTimeFormat("tr-TR", { timeZone: "Europe/Istanbul", dateStyle: "short", timeStyle: "short" });
 const money = (cents: number) => tl.format(cents / 100);
 const metric = (label: string, value: string | number, tone: Tone = "neutral") => ({ label, value: String(value), tone });
-const row = (title: string, parts: Partial<Omit<MobileBusinessRow, "title">> = {}): MobileBusinessRow => ({ id: parts.id ?? null, title, subtitle: parts.subtitle ?? null, meta: parts.meta ?? null, badge: parts.badge ?? null, target: parts.target ?? null });
+const row = (title: string, parts: Partial<Omit<MobileBusinessRow, "title">> = {}): MobileBusinessRow => ({ id: parts.id ?? null, title, subtitle: parts.subtitle ?? null, meta: parts.meta ?? null, badge: parts.badge ?? null, target: parts.target ?? null, actions: parts.actions ?? [] });
 const card = (id: string, title: string, parts: { note?: string | null; metrics?: MobileBusinessCard["metrics"]; rows?: MobileBusinessRow[]; empty?: string }): MobileBusinessCard => ({
   id,
   title,
@@ -270,7 +270,7 @@ function finance(ctx: Ctx): MobileBusinessCard[] {
   return [
     card("transactions", expense ? "Giderler" : "Gelirler", {
       note: `${rows.length} kayıt · toplam net ${money(rows.filter((x) => !x.cancelledAt).reduce((sum, x) => sum + x.netCents, 0))}`,
-      rows: rows.map((x) => row(x.description, { id: x.id, subtitle: `${dt.format(x.transactionAt)} · ${x.source} · ${x.category}`, meta: `Net ${money(x.netCents)} · Vergi ${money(x.vatCents)}`, badge: x.cancelledAt ? { label: "Ters kayıtlı", tone: "neutral" } : { label: x.status, tone: x.status === "PAID" ? "success" : "info" } })),
+      rows: rows.map((x) => row(x.description, { id: x.id, subtitle: `${dt.format(x.transactionAt)} · ${x.source} · ${x.category}`, meta: `Net ${money(x.netCents)} · Vergi ${money(x.vatCents)}`, badge: x.cancelledAt ? { label: "Ters kayıtlı", tone: "neutral" } : { label: x.status, tone: x.status === "PAID" ? "success" : "info" }, actions: !x.cancelledAt && ctx.granted.has("finance:reverse") ? [{ kind: "reverse", label: "Ters kayıt" }] : [] })),
       empty: "Bu aralıkta kayıt yok.",
     }),
   ];
@@ -314,7 +314,7 @@ function sectionBody(ctx: Ctx): Pick<MobileBusinessSection, "cards"> & Partial<M
     case "vergiler":
       return { cards: taxes(ctx), notice: "Bu ekran operasyonel takip ve tahmini raporlama amaçlıdır. Resmî beyan ve muhasebe işlemleri için mali müşavir kontrolü gerekir. Tutarlar KDV dahil hesaplanır." };
     case "mutabakat":
-      return { cards: [card("reconciliation", "Mutabakat kayıtları", { rows: data.reconciliations.map((x) => row(`${x.provider} · ${x.externalId || "—"}`, { id: x.id, meta: `Beklenen ${money(x.expectedCents || 0)} · Gerçek ${money(x.actualCents || 0)}`, badge: { label: x.status, tone: x.status === "MATCHED" ? "success" : "warning" } })), empty: "Mutabakat kaydı yok; taramayı çalıştırın." })] };
+      return { cards: [card("reconciliation", "Mutabakat kayıtları", { rows: data.reconciliations.map((x) => row(`${x.provider} · ${x.externalId || "—"}`, { id: x.id, meta: `Beklenen ${money(x.expectedCents || 0)} · Gerçek ${money(x.actualCents || 0)}`, badge: { label: x.status, tone: x.status === "MATCHED" ? "success" : "warning" }, actions: x.status !== "MATCHED" && granted.has("finance:write") ? [{ kind: "match", label: "Manuel eşleşti" }, { kind: "correct", label: "Düzeltildi" }] : [] })), empty: "Mutabakat kaydı yok; taramayı çalıştırın." })] };
     case "raporlar":
       return { cards: leadAnalyticsCards(data), notice: "CSV dışa aktarımı mobilde sunulmaz (E5); web panelinden indirilebilir." };
     case "ai-bilgi-merkezi":
@@ -396,7 +396,7 @@ export function toMobileBusinessSection(ctx: Ctx): MobileBusinessSection {
     nextCursor: body.nextCursor ?? null,
     conversation: body.conversation ?? null,
     lead: body.lead ?? null,
-    can: { conversationRead: ctx.granted.has("conversation:read"), conversationReply: ctx.granted.has("conversation:reply"), leadWrite: ctx.granted.has("lead:write") },
+    can: { conversationRead: ctx.granted.has("conversation:read"), conversationReply: ctx.granted.has("conversation:reply"), leadWrite: ctx.granted.has("lead:write"), campaignWrite: ctx.granted.has("campaign:write"), integrationWrite: ctx.granted.has("integration:write"), financeWrite: ctx.granted.has("finance:write"), financeReverse: ctx.granted.has("finance:reverse") },
     options: {
       stages: LEAD_STAGES.map((stage) => ({ value: stage, label: LEAD_STAGE_LABELS[stage] })),
       lostReasons: Object.entries(LEAD_LOST_REASON_LABELS).map(([value, label]) => ({ value, label })),
@@ -405,6 +405,8 @@ export function toMobileBusinessSection(ctx: Ctx): MobileBusinessSection {
       statuses: Object.values(ConversationStatus).map((value) => ({ value, label: value })),
       productInterests: Object.entries(PRODUCT_INTEREST_LABELS).map(([value, label]) => ({ value, label })),
       units: units.map((unit) => ({ value: unit.id, label: unit.name })),
+      campaigns: data.campaigns.map((campaign) => ({ value: campaign.id, label: campaign.name })),
+      ads: data.ads.map((ad) => ({ value: ad.id, label: `${ad.name} · ${ad.adSet.campaign.name}` })),
     },
   };
 }

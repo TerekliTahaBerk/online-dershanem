@@ -119,8 +119,18 @@ async function loadMfaMethods(userId: string): Promise<MobileMfaMethods> {
  * ADMIN ve MFA zorunlu personel: native step-up için kayıtlı yöntemler +
  * mevcut step-up penceresi. Politika `userRequiresMfa`; burada icat edilmez.
  */
+/** Taze step-up isteyen işletme izinleri (finans kaydı / ters kayıt / dönem kilidi, işletme rolleri). */
+const STEP_UP_BUSINESS_PERMISSIONS = ["finance:write", "finance:reverse", "role:write"] as const;
+
+async function needsBusinessStepUp(session: SessionUser): Promise<boolean> {
+  if (!businessFlags.panel) return false;
+  const granted = await getUserBusinessPermissions(session);
+  return STEP_UP_BUSINESS_PERMISSIONS.some((permission) => granted.has(permission));
+}
+
 async function loadSecurityCapabilities(session: SessionUser): Promise<MobileSecurityCapabilities | null> {
-  if (session.role !== "ADMIN" && !(await userRequiresMfa(session.userId, session.role))) return null;
+  // İşletme finans / rol yetkisi olan yönetici dışı kullanıcı da mobilde step-up yapabilmeli (P2.7c).
+  if (session.role !== "ADMIN" && !(await userRequiresMfa(session.userId, session.role)) && !(await needsBusinessStepUp(session))) return null;
   const mfa = await loadMfaMethods(session.userId);
   const stepUpExpiresAt = session.stepUpAt && hasFreshStepUp(session.stepUpAt) ? new Date(session.stepUpAt.getTime() + STEP_UP_MAX_AGE_MS).toISOString() : null;
   return { mfa, stepUpExpiresAt };

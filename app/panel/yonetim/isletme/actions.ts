@@ -4,14 +4,13 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireBusinessPage, requireRecentBusinessPage, resolveMutationUnit, scopedUnitIds } from "@/lib/business/permissions";
 import { revokeAllUserSessions } from "@/lib/auth/session";
-import { assertAccountingPeriodOpen, reverseLedgerTransaction } from "@/lib/business/finance";
 import { prisma } from "@/lib/prisma";
 import { queueAudit } from "@/lib/audit";
 import { enforceMutation } from "@/lib/security/mutation-guard";
-import { reconcileBusinessUnit } from "@/lib/business/reconciliation";
-import { getAdPlatformProvider } from "@/lib/business/providers";
 import { crmCommandSchema, crmPermission, type LEAD_STAGE_VALUES, type LOST_REASON_VALUES } from "@/lib/business/crm-commands";
 import { CrmError, runCrmCommand } from "@/lib/business/crm-service";
+import { OPS_STEP_UP, opsCommandSchema, opsPermission } from "@/lib/business/ops-commands";
+import { runOpsCommand } from "@/lib/business/ops-service";
 
 const basePath = "/panel/yonetim/isletme";
 
@@ -68,6 +67,21 @@ async function runCrm(guardName: string, input: unknown) {
   return outcome.result;
 }
 
+/**
+ * Pazarlama + finans komutunu ortak servisle çalıştırır (P2.7c). Finans
+ * kaydı, ters kayıt ve dönem kilidi web'de olduğu gibi taze step-up ister
+ * (`requireRecentBusinessPage`); diğerleri yalnız izin.
+ */
+async function runOps(guardName: string, input: unknown) {
+  const command = opsCommandSchema.parse(input);
+  const permission = opsPermission(command.type);
+  const access = OPS_STEP_UP.has(command.type) ? await requireRecentBusinessPage(permission) : await requireBusinessPage(permission);
+  await guard(guardName, access.session.userId);
+  const outcome = await runOpsCommand(access, command);
+  revalidateBusiness();
+  return outcome.result;
+}
+
 /** Form POST (PRG). Lost için lostReasonCode zorunlu. */
 export async function updateLeadStage(formData: FormData) {
   const id = field(formData, "id");
@@ -110,28 +124,13 @@ export async function createManualLead(formData: FormData) {
 }
 
 export async function createFinancialTransaction(formData: FormData) {
-  const access = await requireRecentBusinessPage("finance:write");
-  await guard("finance.create", access.session.userId);
-  const parsed = z.object({ kind: z.enum(["MANUAL_INCOME", "EXPENSE", "ADJUSTMENT"]), description: z.string().trim().min(2).max(300), category: z.string().trim().min(2).max(80), amountTl: z.coerce.number().positive().max(100_000_000), vatRate: z.coerce.number().min(0).max(100).default(0), withholdingRate: z.coerce.number().min(0).max(100).default(0), commissionTl: z.coerce.number().min(0).max(100_000_000).default(0), transactionDate: z.string().optional() }).parse(Object.fromEntries(formData));
-  const unit = resolveMutationUnit(access, formData.get("businessUnitId")); const at = new Date();
-  const transactionAt = parsed.transactionDate ? new Date(`${parsed.transactionDate}T00:00:00+03:00`) : at; await assertAccountingPeriodOpen(unit.id, transactionAt);
-  const netCents = Math.round(parsed.amountTl * 100); const vatCents = Math.round(netCents * parsed.vatRate / (100 + parsed.vatRate)); const withholdingCents = Math.round((netCents-vatCents)*parsed.withholdingRate/100);
-  const row = await prisma.financialTransaction.create({ data: { businessUnitId: unit.id, source: "MANUAL", idempotencyKey: `manual:${crypto.randomUUID()}`, kind: parsed.kind, status: "PAID", transactionAt, paidAt: transactionAt, description: parsed.description, category: parsed.category, grossCents: netCents, netCents, vatRate: parsed.vatRate, vatCents, withholdingRate: parsed.withholdingRate, withholdingCents, commissionCents: Math.round(parsed.commissionTl*100), createdById: access.session.userId } });
-  queueAudit({ actorUserId: access.session.userId, entityType: "FinancialTransaction", entityId: row.id, action: "FINANCIAL_TRANSACTION_CREATED", payload: { kind: row.kind, netCents: row.netCents } });
-  revalidateBusiness();
-  redirectToSection(row.kind === "EXPENSE" ? "giderler" : "gelirler");
+  const result = await runOps("finance.create", { type: "finance.create", businessUnitId: field(formData, "businessUnitId") || undefined, kind: field(formData, "kind"), description: field(formData, "description"), category: field(formData, "category"), amountTl: field(formData, "amountTl"), vatRate: field(formData, "vatRate") || undefined, withholdingRate: field(formData, "withholdingRate") || undefined, commissionTl: field(formData, "commissionTl") || undefined, transactionDate: field(formData, "transactionDate") || undefined });
+  redirectToSection(result.section);
 }
 
 export async function reverseFinancialTransaction(formData: FormData) {
-  const access = await requireRecentBusinessPage("finance:reverse");
-  await guard("finance.reverse", access.session.userId);
-  const id = z.string().cuid().parse(formData.get("id"));
-  const original = await prisma.financialTransaction.findFirst({ where: { id, businessUnitId: { in: scopedUnitIds(access) }, cancelledAt: null } });
-  if (!original) throw new Error("TRANSACTION_NOT_FOUND");
-  await reverseLedgerTransaction(original.id, access.session.userId);
-  queueAudit({ actorUserId: access.session.userId, entityType: "FinancialTransaction", entityId: original.id, action: "FINANCIAL_TRANSACTION_REVERSED" });
-  revalidateBusiness();
-  redirectToSection(original.kind === "EXPENSE" ? "giderler" : "gelirler");
+  const result = await runOps("finance.reverse", { type: "finance.reverse", transactionId: field(formData, "id") });
+  redirectToSection(result.section);
 }
 
 export async function setConversationControl(formData: FormData) {
@@ -159,23 +158,12 @@ export async function versionKnowledgeEntry(formData: FormData) {
 }
 
 export async function createCampaign(formData: FormData) {
-  const access = await requireBusinessPage("campaign:write");
-  await guard("campaign.create", access.session.userId);
-  const parsed = z.object({ name: z.string().trim().min(2).max(160), platform: z.string().trim().min(2).max(40), budgetTl: z.coerce.number().min(0).max(100_000_000), productInterest: z.enum(["ONLINE_DERSHANEM", "ONLINE_DENEME_KULUBU", "UNKNOWN"]) }).parse(Object.fromEntries(formData));
-  const unit = resolveMutationUnit(access, formData.get("businessUnitId"));
-  const row = await prisma.businessCampaign.create({ data: { businessUnitId: unit.id, name: parsed.name, platform: parsed.platform, budgetCents: Math.round(parsed.budgetTl * 100), productInterest: parsed.productInterest } });
-  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessCampaign", entityId: row.id, action: "CAMPAIGN_CREATED" });
-  revalidateBusiness();
+  await runOps("campaign.create", { type: "campaign.create", businessUnitId: field(formData, "businessUnitId") || undefined, name: field(formData, "name"), platform: field(formData, "platform"), budgetTl: field(formData, "budgetTl"), productInterest: field(formData, "productInterest") });
   redirectToSection("kampanyalar");
 }
 
 export async function createAdvertisement(formData: FormData) {
-  const access = await requireBusinessPage("campaign:write"); await guard("advertisement.create", access.session.userId);
-  const parsed = z.object({ campaignId: z.string().cuid(), adSetName: z.string().trim().min(2).max(160), name: z.string().trim().min(2).max(160), spentTl: z.coerce.number().min(0).max(100_000_000), impressions: z.coerce.number().int().min(0), clicks: z.coerce.number().int().min(0), messageStarts: z.coerce.number().int().min(0), leadCount: z.coerce.number().int().min(0), saleCount: z.coerce.number().int().min(0), revenueTl: z.coerce.number().min(0).max(100_000_000) }).parse(Object.fromEntries(formData));
-  const campaign = await prisma.businessCampaign.findFirst({ where: { id: parsed.campaignId, businessUnitId: { in: scopedUnitIds(access) } } }); if (!campaign) throw new Error("CAMPAIGN_NOT_FOUND");
-  const adSet = await prisma.businessAdSet.create({ data: { campaignId: campaign.id, name: parsed.adSetName } });
-  const ad = await prisma.businessAdvertisement.create({ data: { adSetId: adSet.id, name: parsed.name, spentCents: Math.round(parsed.spentTl * 100), impressions: parsed.impressions, clicks: parsed.clicks, messageStarts: parsed.messageStarts, leadCount: parsed.leadCount, saleCount: parsed.saleCount, revenueCents: Math.round(parsed.revenueTl * 100) } });
-  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessAdvertisement", entityId: ad.id, action: "ADVERTISEMENT_CREATED" }); revalidateBusiness();
+  await runOps("advertisement.create", { type: "advertisement.create", campaignId: field(formData, "campaignId"), adSetName: field(formData, "adSetName"), name: field(formData, "name"), spentTl: field(formData, "spentTl"), impressions: field(formData, "impressions"), clicks: field(formData, "clicks"), messageStarts: field(formData, "messageStarts"), leadCount: field(formData, "leadCount"), saleCount: field(formData, "saleCount"), revenueTl: field(formData, "revenueTl") });
   redirectToSection("reklamlar");
 }
 
@@ -379,43 +367,26 @@ export async function createPromptVersion(formData: FormData) {
 }
 
 export async function lockAccountingPeriod(formData: FormData) {
-  const access = await requireRecentBusinessPage("finance:reverse"); await guard("period.lock", access.session.userId);
-  const parsed = z.object({ startsAt: z.string().date(), endsAt: z.string().date() }).parse(Object.fromEntries(formData)); const unit = resolveMutationUnit(access, formData.get("businessUnitId"));
-  const startsAt = new Date(`${parsed.startsAt}T00:00:00+03:00`); const endsAt = new Date(`${parsed.endsAt}T23:59:59.999+03:00`); if (endsAt < startsAt) throw new Error("INVALID_PERIOD");
-  const overlap = await prisma.accountingPeriod.findFirst({ where: { businessUnitId: unit.id, NOT: { startsAt, endsAt }, startsAt: { lte: endsAt }, endsAt: { gte: startsAt } } }); if (overlap) throw new Error("ACCOUNTING_PERIOD_OVERLAP");
-  const period = await prisma.accountingPeriod.upsert({ where: { businessUnitId_startsAt_endsAt: { businessUnitId: unit.id, startsAt, endsAt } }, update: { status: "LOCKED", lockedAt: new Date(), lockedById: access.session.userId }, create: { businessUnitId: unit.id, startsAt, endsAt, status: "LOCKED", lockedAt: new Date(), lockedById: access.session.userId } });
-  queueAudit({ actorUserId: access.session.userId, entityType: "AccountingPeriod", entityId: period.id, action: "ACCOUNTING_PERIOD_LOCKED" }); revalidateBusiness();
+  await runOps("period.lock", { type: "period.lock", businessUnitId: field(formData, "businessUnitId") || undefined, startsAt: field(formData, "startsAt"), endsAt: field(formData, "endsAt") });
   redirectToSection("vergiler");
 }
 
 export async function runReconciliation() {
-  const access = await requireBusinessPage("finance:write"); await guard("reconciliation.run", access.session.userId);
-  for (const unit of access.units) await reconcileBusinessUnit(unit.id);
-  queueAudit({ actorUserId: access.session.userId, entityType: "ReconciliationRecord", entityId: "batch", action: "RECONCILIATION_RUN" }); revalidateBusiness();
+  await runOps("reconciliation.run", { type: "reconciliation.run" });
   redirectToSection("mutabakat");
 }
 
 export async function resolveReconciliation(formData: FormData) {
-  const access = await requireBusinessPage("finance:write"); await guard("reconciliation.resolve", access.session.userId);
-  const parsed = z.object({ id: z.string().cuid(), status: z.enum(["MANUALLY_MATCHED", "CORRECTED"]) }).parse(Object.fromEntries(formData));
-  await prisma.reconciliationRecord.updateMany({ where: { id: parsed.id, businessUnitId: { in: scopedUnitIds(access) } }, data: { status: parsed.status, resolvedAt: new Date(), resolvedById: access.session.userId } });
-  queueAudit({ actorUserId: access.session.userId, entityType: "ReconciliationRecord", entityId: parsed.id, action: "RECONCILIATION_RESOLVED", payload: { status: parsed.status } }); revalidateBusiness();
+  await runOps("reconciliation.resolve", { type: "reconciliation.resolve", id: field(formData, "id"), status: field(formData, "status") });
   redirectToSection("mutabakat");
 }
 
 export async function syncMetaAds() {
-  const access = await requireBusinessPage("integration:write"); await guard("meta-ads.sync", access.session.userId); const result = await getAdPlatformProvider().syncCampaigns();
-  queueAudit({ actorUserId: access.session.userId, entityType: "IntegrationConnection", entityId: "META_ADS", action: "META_ADS_SYNCED", payload: result }); revalidateBusiness();
+  await runOps("meta-ads.sync", { type: "meta_ads.sync" });
 }
 
 export async function setManualAttribution(formData: FormData) {
-  const access = await requireBusinessPage("campaign:write"); await guard("attribution.manual", access.session.userId);
-  const parsed = z.object({ leadId: z.string().cuid(), campaignId: z.string().cuid().or(z.literal("")), advertisementId: z.string().cuid().or(z.literal("")) }).parse(Object.fromEntries(formData));
-  const lead = await prisma.businessLead.findFirst({ where: { id: parsed.leadId, businessUnitId: { in: scopedUnitIds(access) } } }); if (!lead) throw new Error("LEAD_NOT_FOUND");
-  if (parsed.campaignId) { const valid = await prisma.businessCampaign.count({ where: { id: parsed.campaignId, businessUnitId: lead.businessUnitId } }); if (!valid) throw new Error("CAMPAIGN_NOT_FOUND"); }
-  if (parsed.advertisementId) { const valid = await prisma.businessAdvertisement.count({ where: { id: parsed.advertisementId, adSet: { campaign: { businessUnitId: lead.businessUnitId } } } }); if (!valid) throw new Error("ADVERTISEMENT_NOT_FOUND"); }
-  await prisma.attribution.create({ data: { leadId: lead.id, campaignId: parsed.campaignId || null, advertisementId: parsed.advertisementId || null, model: "MANUAL", confidence: 1, isManual: true } });
-  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessLead", entityId: lead.id, action: "ATTRIBUTION_MANUALLY_SET", payload: { campaignId: parsed.campaignId || null, advertisementId: parsed.advertisementId || null } }); revalidateBusiness();
+  await runOps("attribution.manual", { type: "attribution.manual", leadId: field(formData, "leadId"), campaignId: field(formData, "campaignId") ?? "", advertisementId: field(formData, "advertisementId") ?? "" });
 }
 
 export async function updateRetentionSettings(formData: FormData) {
