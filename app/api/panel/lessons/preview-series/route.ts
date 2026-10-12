@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { adminJson } from "@/lib/panel/admin-api";
 import { z } from "zod";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
 import {
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Seri bilgilerini kontrol edin." }, { status: 400 });
+    return adminJson({ error: "Seri bilgilerini kontrol edin." }, { status: 400 });
   }
 
   const resolved = await resolveLessonTargetGroup({
@@ -52,16 +52,16 @@ export async function POST(request: Request) {
     (auth.session.role === "TEACHER" ? auth.session.userId : null);
 
   if (!teacherId) {
-    return NextResponse.json({ error: resolved.error || "Öğretmen seçin." }, { status: 400 });
+    return adminJson({ error: resolved.error || "Öğretmen seçin." }, { status: 400 });
   }
   if (parsed.data.targetType === "GROUP" && (resolved.error || !group)) {
-    return NextResponse.json({ error: resolved.error || "Grup bulunamadı." }, { status: 404 });
+    return adminJson({ error: resolved.error || "Grup bulunamadı." }, { status: 404 });
   }
   if (parsed.data.targetType === "STUDENT" && !parsed.data.studentId) {
-    return NextResponse.json({ error: "Öğrenci seçin." }, { status: 400 });
+    return adminJson({ error: "Öğrenci seçin." }, { status: 400 });
   }
   if (parsed.data.targetType === "STUDENT" && resolved.error && resolved.error !== NO_GROUP_YET) {
-    return NextResponse.json({ error: resolved.error }, { status: 403 });
+    return adminJson({ error: resolved.error }, { status: 403 });
   }
 
   try {
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json({
+    return adminJson({
       count: preview.count,
       hasConflicts: conflicts.length > 0,
       conflicts,
@@ -124,7 +124,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof LessonSeriesScheduleError) {
-      return NextResponse.json({ error: error.message, code: error.code }, { status: 400 });
+      return adminJson({ error: error.message, code: error.code }, { status: 400 });
     }
     throw error;
   }

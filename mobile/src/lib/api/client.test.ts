@@ -144,3 +144,15 @@ describe('Admin overlay transport', () => {
     expect(fetchImpl.mock.calls[0][1]!.headers).toMatchObject({ Authorization: 'Bearer admin', 'X-Od-Teacher-Mode': 'teacher' });
   });
 });
+
+describe('multipart eğitim yüklemesi', () => {
+  it('FormData için boundary başlığını fetch belirler, Bearer ve işlem anahtarı korunur', async () => {
+    const { api, calls } = setup(() => response(200, '{"ok":true}'));
+    const body = new FormData(); body.append('title', 'PDF çalışma');
+    await api.request('/api/panel/materials/upload', { method: 'POST', body, headers: { 'X-Od-Idempotency-Key': 'upload-key' } });
+    expect(calls[0].init.body).toBe(body);
+    expect(calls[0].init.headers).toMatchObject({ Authorization: 'Bearer tok-123', 'X-Od-Idempotency-Key': 'upload-key' });
+    expect((calls[0].init.headers as Record<string, string>)['Content-Type']).toBeUndefined();
+    expect(calls[0].init.credentials).toBe('omit');
+  });
+});

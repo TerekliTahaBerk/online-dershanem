@@ -43,6 +43,7 @@ type Probe = {
 };
 
 const READ_PROBES: Probe[] = [
+  { name: "yönetim eğitim editörü", method: "GET", path: "/api/panel/admin/education/editor?kind=lesson", allow: ["admin"] },
   { name: "bildirimler", method: "GET", path: "/api/panel/notifications", allow: ["admin", "teacher", "student", "parent"] },
   { name: "öğrenci ana sayfa", method: "GET", path: "/api/panel/student/home", allow: ["student"] },
   { name: "öğrenci profili", method: "GET", path: "/api/panel/student/profile", allow: ["student"] },
@@ -72,7 +73,7 @@ const WRITE_PROBES: Probe[] = [
   { name: "ödev güncelleme", method: "PATCH", path: "/api/panel/assignments/e2e-assignment", body: {}, allow: ["admin", "teacher"] },
   { name: "ödev ilerlemesi", method: "PATCH", path: "/api/panel/assignments/e2e-assignment/progress", body: {}, allow: ["student"] },
   { name: "ödev teslimi", method: "POST", path: "/api/panel/assignments/e2e-assignment/submissions", body: {}, allow: ["student"] },
-  { name: "teslim değerlendirme", method: "POST", path: "/api/panel/assignment-submissions/e2e-assignment-submission-foreign/review", body: {}, allow: ["teacher"] },
+  { name: "teslim değerlendirme", method: "POST", path: "/api/panel/assignment-submissions/e2e-assignment-submission-foreign/review", body: {}, allow: ["admin", "teacher"] },
   { name: "materyal oluşturma", method: "POST", path: "/api/panel/materials", body: {}, allow: ["admin", "teacher"] },
   { name: "öğretmen AI taslağı", method: "POST", path: "/api/panel/ai-drafts", body: {}, allow: ["teacher"] },
   { name: "müfredat sürümü", method: "POST", path: "/api/panel/curriculum/versions", body: {}, allow: ["admin"] },

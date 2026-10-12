@@ -34,7 +34,13 @@ function methodBlocks(source) {
 }
 
 function inspectRoute(file) {
-  const source = readFileSync(file, "utf8");
+  let source = readFileSync(file, "utf8");
+  // Education routes share their validated business handler with web callers.
+  // Inspect the actual implementation instead of losing wrapped/re-exported methods.
+  const shared = source.match(/from "(@\/lib\/panel\/education-handlers\/[\w-]+)"/);
+  if (shared && /educationWriteHandler\(/.test(source)) {
+    source = readFileSync(shared[1].replace("@/", "") + ".ts", "utf8");
+  }
   const route = `/${relative(API_ROOT, file).replace(/\/route\.ts$/, "")}`;
   return methodBlocks(source).map(({ method, source: block }) => {
     const inputs = [

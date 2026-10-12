@@ -109,7 +109,8 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
       throw new ApiError({ kind: 'forbidden', status: 403, code: 'ADMIN_PREVIEW_READONLY', message: 'Yönetici önizlemesinde işlem yapılamaz.' });
     }
     const headers: Record<string, string> = { Accept: 'application/json', ...clientHeaders(), ...options.headers, ...overlayHeaders };
-    if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+    const multipart = typeof FormData !== 'undefined' && options.body instanceof FormData;
+    if (options.body !== undefined && !multipart) headers['Content-Type'] = 'application/json';
     if (token) headers.Authorization = `Bearer ${token}`;
 
     const { signal, cleanup, timedOut } = linkSignals(options.timeoutMs ?? config.defaultTimeoutMs ?? DEFAULT_TIMEOUT_MS, options.signal);
@@ -118,7 +119,7 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
       response = await fetchImpl(`${config.baseUrl}${path}`, {
         method: options.method ?? 'GET',
         headers,
-        body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+        body: multipart ? options.body as FormData : options.body !== undefined ? JSON.stringify(options.body) : undefined,
         credentials: 'omit',
         signal,
       });

@@ -1,6 +1,7 @@
 import "server-only";
 
-import { prisma } from "@/lib/prisma";
+import { prisma as defaultPrisma } from "@/lib/prisma";
+import type { PrismaClient } from "@prisma/client";
 
 /**
  * Ders hedefi: grup VEYA bireysel öğrenci.
@@ -30,7 +31,9 @@ export async function resolveLessonTargetGroup(input: {
   actorUserId: string;
   /** Önizleme gibi salt okunur yollarda bireysel grup yaratma. */
   createIfMissing?: boolean;
+  db?: PrismaClient;
 }) {
+  const prisma = input.db ?? defaultPrisma;
   const targetType = input.targetType ?? "GROUP";
   const createIfMissing = input.createIfMissing !== false;
 
@@ -56,6 +59,8 @@ export async function resolveLessonTargetGroup(input: {
     return { error: "Yalnız kendi öğrencileriniz için ders planlayabilirsiniz." as const, group: null };
   }
 
+  const teacher = await prisma.user.findFirst({ where: { id: teacherId, role: "TEACHER", status: "ACTIVE" }, select: { id: true } });
+  if (!teacher) return { error: "Aktif öğretmen bulunamadı." as const, group: null };
   const student = await prisma.studentProfile.findFirst({
     where: { id: input.studentId, user: { status: "ACTIVE", role: "STUDENT" } },
     select: {
