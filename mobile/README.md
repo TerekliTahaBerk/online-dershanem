@@ -44,3 +44,9 @@ Mobilde PAYTR, satış, fiyat, IAP, abonelik checkout veya satın alma CTA yok. 
 `npm ci`, `npm run typecheck`, `npm run lint`, `npm run test:ci`; repo kökünde `node scripts/check-mobile-release.mjs <ios-export-dir> <android-export-dir>`. Tipler yerelde eskiyse Expo dev server mevcut src/app ağacından `.expo/types` dosyasını yeniler; typed routes kapatılmaz. OTA fingerprint + üç kanal; manuel onay gerekir. Build/submit/publish adımları [iOS](../docs/mobile/m9-ios-build-guide.md), [TestFlight](../docs/mobile/m9-testflight-guide.md), [Android](../docs/mobile/m9-android-release-guide.md) rehberlerinde.
 
 Hesap silme giriş noktası destek talebidir; self-service tamamlama ve hukuk onayı BLOCKED. Signed build, fiziksel test ve store yayın yapılmadı. Güncel karar: [NO-GO](../docs/mobile/m9-go-no-go.md).
+
+## Logo ve uygulama ikonları
+
+Tek kaynak web sitesindeki `public/design/od-logo.png` dosyasıdır. Repo kökünde `npm run brand:sync` web favicon/PWA, mobil uygulama/açılış/adaptive ikonlarını üretir; `npm run brand:check` kopyaların kaynakla uyumunu doğrular. Android foreground görseli güvenli alana yerleştirilir; iOS uygulama ikonu 1024×1024 ve opaktır. Tarayıcı ikon adresleri kaynak dosyanın hash değeriyle sürümlenir.
+
+Uygulama ikonu ve native açılış ekranı değişikliği OTA ile dağıtılamaz; yeni native build kurmak gerekir. Web favicon değişikliği web deployment sonrasında görünür; önceden ana ekrana eklenmiş web kısayollarının yeniden eklenmesi gerekebilir.

@@ -1,3 +1,4 @@
+import { brandAssetUrl } from "@/lib/brand-assets";
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { GeistSans } from "geist/font/sans";
@@ -100,16 +101,16 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.ico?v=2", sizes: "any" },
-      { url: "/favicon.png?v=2", type: "image/png" },
-      { url: "/favicon-48x48.png?v=2", sizes: "48x48", type: "image/png" },
-      { url: "/favicon-96x96.png?v=2", sizes: "96x96", type: "image/png" },
+      { url: brandAssetUrl("/favicon.ico"), sizes: "any" },
+      { url: brandAssetUrl("/favicon.png"), type: "image/png" },
+      { url: brandAssetUrl("/favicon-48x48.png"), sizes: "48x48", type: "image/png" },
+      { url: brandAssetUrl("/favicon-96x96.png"), sizes: "96x96", type: "image/png" },
       // Google arama sonucu ikonu 48'in katlarını tercih eder; yüksek çözünürlük için.
-      { url: "/icon-192.png?v=2", sizes: "192x192", type: "image/png" },
+      { url: brandAssetUrl("/icon-192.png"), sizes: "192x192", type: "image/png" },
     ],
-    shortcut: ["/favicon.ico?v=2"],
+    shortcut: [brandAssetUrl("/favicon.ico")],
     apple: [
-      { url: "/apple-touch-icon.png?v=2", sizes: "180x180", type: "image/png" },
+      { url: brandAssetUrl("/apple-touch-icon.png"), sizes: "180x180", type: "image/png" },
     ],
   },
   robots: {
