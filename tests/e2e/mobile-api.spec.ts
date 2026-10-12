@@ -553,14 +553,19 @@ test.describe.serial("Faz 1 mobil yönetim kapısı", () => {
     expect(view.value.studentUserId).toBe(target.user.id);
     expect((await context.get("/api/panel/admin/students/yok-boyle-biri", { headers: auth })).status()).toBe(404);
 
-    // Kural hataları kararlı kodla: aktif koç yok → 422 COACH; bilinmeyen sipariş → 404.
-    const assign = await context.post("/api/panel/admin/coach-assignments", { headers: auth, data: { studentId: profileId, coachId: "yok-boyle-koc" } });
-    expect(assign.status()).toBe(422);
-    expect((await assign.json()).code).toBe("COACH");
+    // P2.4: koç atama artık iş kuralından ÖNCE taze step-up ister.
+    const assignmentInput = { studentId: profileId, coachId: "yok-boyle-koc", idempotencyKey: randomUUID(), expectedRevision: view.value.coach.revision };
+    const assign = await context.post("/api/panel/admin/coach-assignments", { headers: auth, data: assignmentInput });
+    expect(assign.status()).toBe(428);
+    expect((await assign.json()).code).toBe("STEP_UP_REQUIRED");
     expect((await context.post("/api/panel/admin/orders/yok-boyle-siparis/provisioning-retry", { headers: auth, data: {} })).status()).toBe(404);
     // Veli bağlantısı web ile aynı uçta ve taze step-up ister.
     const link = await context.post("/api/panel/relationships", { headers: auth, data: { parentId: admin.user.id, studentId: profileId } });
     expect(link.status()).toBe(428);
+    await db.session.updateMany({ where: { userId: admin.user.id }, data: { stepUpAt: new Date() } });
+    const verifiedAssign = await context.post("/api/panel/admin/coach-assignments", { headers: auth, data: assignmentInput });
+    expect(verifiedAssign.status()).toBe(422);
+    expect((await verifiedAssign.json()).code).toBe("COACH");
 
     const learner = await mobileLogin(student().email, student().password);
     for (const path of ["/api/panel/admin/parents", "/api/panel/admin/educators", "/api/panel/admin/signups", `/api/panel/admin/students/${profileId}`]) {
