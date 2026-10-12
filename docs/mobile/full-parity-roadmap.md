@@ -346,8 +346,8 @@ Matris: 60 Tam / 15 Kısmi / 24 Eksik / 1 İstisna / 6 Yönl.; yönetimde yalnı
 | Dilim | Kapsam | Durum |
 | --- | --- | --- |
 | **P2.7a** | Kapı, bootstrap, 16 bölümün okuması, konuşma / aday detayı | **Tamamlandı** |
-| P2.7b | CRM yazmaları: konuşma (durum/AI modu, okundu, atama, etiket, AI önerisi, yanıt), aday (oluştur, aşama, not, görev, takip, sahip, öncelik, birleştir, kopya, sipariş / yaşam döngüsü bağı) | Sırada |
-| P2.7c | Pazarlama + finans: kampanya, reklam, manuel atıf, Meta senkronu; işlem, ters kayıt, dönem kilidi (step-up), mutabakat | Planlı |
+| P2.7b | CRM yazmaları: konuşma (durum/AI modu, okundu, atama, etiket, AI önerisi, yanıt), aday (oluştur, aşama, not, görev, takip, sahip, öncelik, birleştir, kopya, sipariş / yaşam döngüsü bağı) | **Tamamlandı** |
+| P2.7c | Pazarlama + finans: kampanya, reklam, manuel atıf, Meta senkronu; işlem, ters kayıt, dönem kilidi (step-up), mutabakat | Sırada |
 | P2.7d | AI bilgi merkezi, prompt sürümü, otomasyon (oluştur / aç-kapa / dry-run), saklama süresi, işletme rolleri (step-up) | Planlı |
 
 **P2.7a teslimatı.**
@@ -360,4 +360,16 @@ Matris: 60 Tam / 15 Kısmi / 24 Eksik / 1 İstisna / 6 Yönl.; yönetimde yalnı
 **Doğrulama:** 977 sunucu birim testi (kapsam eşikleri karşılanıyor); yerel PostgreSQL'de tam entegrasyon paketi 135/135 (yeni: 16 bölüm gerçek veriyle sözleşme, konuşma / aday detayı, iş birimi kapsamı dışı veri sızmaz); mobil 32 paket / 239 test; API girdi, sözleşme sınırı, matris kontrolleri ve `next build`. Gerçek HTTP senaryosu (`mobile-api.spec.ts`: atamasız 404, atamalı 16 bölüm) eklendi; bu ortamda E2E hesapları olmadığından koşulmadı.
 
 Matris: 60 Tam / 16 Kısmi / 23 Eksik / 1 İstisna / 6 Yönl.; yönetimde Y27 Kısmi.
+
+### P2.7b CRM yazmaları — 12 Ekim 2026
+
+17 konuşma / aday Server Action'ının iş kuralları `lib/business/crm-service.ts`'e (`runCrmCommand`) olduğu gibi taşındı; komut şeması `lib/business/crm-commands.ts`'te (Server Action zod sınırlarıyla aynı). Web eylemleri artık bu servisi çağırır (imzaları, yönlendirmeleri ve Kanban'ın `transitionLeadStageAction` sonucu aynı); mobil `POST /api/panel/business/crm` aynı servisi, aynı izinle (`crmPermission`) ve iş birimi kapsamıyla çalıştırır. Instagram yanıtı mevcut `integrations/instagram/send` ucundan; ucun kapısı `requireBusinessApi`'ye alındı (Bearer, önizleme / öğretmen modunda kapalı).
+
+- **İşlem anahtarı:** aktöre bağlı `AuditLog.idempotencyKey` makbuzu; aynı anahtar aynı komutla ilk sonucu döndürür, farklı komutta 409 `IDEMPOTENCY_REUSE`. Bearer'da zorunlu.
+- **Revizyon / 409:** kaydın tamamını değiştiren komutlar (konuşma denetimi / atama; aday aşaması, takip, sorumlu, öncelik, birleştirme, sipariş / hesap bağı) `expectedRevision` (kaydın `updatedAt`) taşır; Bearer'da zorunlu.
+- **Atomik audit:** kayıt + etkinlik + audit tek Serializable transaction (önceden `queueAudit` ile ayrık yazılıyordu; artık okundu ve öncelik değişikliği de denetlenir). Otomasyon olayı ve AI önerisi commit sonrası; tekrarda çalışmaz. Hesap / sipariş bağı mevcut `linkLeadLifecycleEntities`'in kendi transaction'ını kullanır, makbuz bağdan sonra yazılır.
+- **Kapsam sıkılaştı:** web'de kapsam dışı kimlikle gelen konuşma / aday güncellemeleri önceden sessizce etkisiz kalıyordu (`updateMany`); artık açık 404 döner.
+- **Mobil:** konuşma ekranında yanıt (AI önerisini kullan), okundu, durum + AI modu, AI önerisi üret, sorumlu, etiket, aday notu / görevi; aday ekranında aşama (kayıp nedeni zorunlu), sorumlu, öncelik, takip planı (İstanbul saati), not, görev, görev tamamlama, kopya birleştirme (onaylı) / öneriyi kapatma, sipariş ve öğrenci hesabı bağı (manuel onay ayrıca onaylatılır); Adaylar'da "Aday ekle". Yazma alanları yalnız ilgili izin varken görünür.
+
+**Doğrulama:** 977+ sunucu birim testi (kapsam eşikleri karşılanıyor); yerel PostgreSQL'de tam entegrasyon paketi 136/136 (yeni: eşzamanlı aynı anahtar, yeniden kullanım, kayıp nedeni, eski revizyon, not / görev / takip / sorumlu / birleştirme / sipariş, konuşma komutları, iş birimi kapsamı); mobil 32 paket / 242 test; API girdi, sözleşme sınırı, matris kontrolleri ve `next build`. Gerçek HTTP senaryosuna CRM (anahtarsız 400, tekrar, eski revizyon 409) eklendi; bu ortamda koşulmadı.
 
