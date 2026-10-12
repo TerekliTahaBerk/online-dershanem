@@ -96,8 +96,16 @@ const section = v.object({
   nextCursor: v.nullable(v.string()),
   conversation: v.nullable(conversation),
   lead: v.nullable(lead),
+  governance: v.optional(v.object({
+    knowledge: v.array(v.object({ id: v.nonEmpty(), title: v.string(), content: v.string(), isActive: v.boolean(), revision: v.iso() })),
+    rules: v.array(v.object({ id: v.nonEmpty(), name: v.string(), triggerType: v.string(), isActive: v.boolean(), revision: v.iso() })),
+    users: v.array(option),
+    triggers: v.array(option),
+    actions: v.array(option),
+    roles: v.array(option),
+  }), { knowledge: [], rules: [], users: [], triggers: [], actions: [], roles: [] }),
   /** Görünürlük (yetki değil — uç ayrıca doğrular): web `can(...)` ile aynı izinler. */
-  can: v.object({ conversationRead: v.boolean(), conversationReply: v.boolean(), leadWrite: v.boolean(), campaignWrite: v.boolean(), integrationWrite: v.boolean(), financeWrite: v.boolean(), financeReverse: v.boolean() }),
+  can: v.object({ knowledgeWrite: v.optional(v.boolean(), false), automationWrite: v.optional(v.boolean(), false), settingsWrite: v.optional(v.boolean(), false), roleWrite: v.optional(v.boolean(), false), conversationRead: v.boolean(), conversationReply: v.boolean(), leadWrite: v.boolean(), campaignWrite: v.boolean(), integrationWrite: v.boolean(), financeWrite: v.boolean(), financeReverse: v.boolean() }),
   /** Yazma seçenek sözlükleri (web formlarıyla aynı değerler ve etiketler). */
   options: v.object({ stages: v.array(option), lostReasons: v.array(option), priorities: v.array(option), aiModes: v.array(option), statuses: v.array(option), productInterests: v.array(option), units: v.array(option), campaigns: v.array(option), ads: v.array(option) }),
 });
@@ -105,3 +113,13 @@ export type MobileBusinessSection = Infer<typeof section>;
 export type MobileBusinessConversation = Infer<typeof conversation>;
 export type MobileBusinessLead = Infer<typeof lead>;
 export const parseBusinessSection = (input: unknown) => check(section, input);
+
+
+const opsResult = v.object({
+  result: v.object({ entityId: v.nonEmpty(), section: v.nonEmpty(), dryRunResult: v.optional(v.nullable(v.string()), null), summary: v.optional(v.object({
+    scanned: v.optional(v.int(0), 0), issues: v.optional(v.int(0), 0), synced: v.optional(v.int(0), 0), matched: v.optional(v.int(0), 0), planned: v.optional(v.int(0), 0), failed: v.optional(v.int(0), 0),
+  }), { scanned: 0, issues: 0, synced: 0, matched: 0, planned: 0, failed: 0 }) }),
+  replayed: v.boolean(),
+});
+export type MobileBusinessOpsResult = Infer<typeof opsResult>;
+export const parseBusinessOpsResult = (input: unknown) => check(opsResult, input);

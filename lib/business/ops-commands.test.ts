@@ -10,7 +10,7 @@ test("pazarlama + finans komutları: izin ve step-up web Server Action'larıyla 
   assert.equal(opsPermission("finance.reverse"), "finance:reverse");
   assert.equal(opsPermission("period.lock"), "finance:reverse");
   assert.equal(opsPermission("reconciliation.run"), "finance:write");
-  assert.deepEqual([...OPS_STEP_UP].sort(), ["finance.create", "finance.reverse", "period.lock"]);
+  assert.deepEqual([...OPS_STEP_UP].sort(), ["finance.create", "finance.reverse", "period.lock", "role.assign", "role.revoke"]);
   assert.ok(OPS_FINANCE.has("reconciliation.resolve") && !OPS_FINANCE.has("campaign.create"));
 });
 

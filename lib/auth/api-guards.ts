@@ -160,7 +160,8 @@ export async function requireApiRecentAdminStepUp(): Promise<ApiAuth> {
   return auth;
 }
 
-async function requireApiProductPilot(auth: { ok: true; session: SessionUser }, product: ProductCode): Promise<ApiAuth> {
+/** Product pilot gate without a membership decision; parent membership is resolved from the target child. */
+export async function requireApiProductPilot(auth: { ok: true; session: SessionUser }, product: ProductCode): Promise<ApiAuth> {
   const program = pilotProgramForProduct(product);
   const pilot = program === "odk" ? await checkOdkPilotAccess(auth.session.userId, auth.session.role) : await checkPilotAccess(auth.session.userId, auth.session.role);
   if (pilot.allowed) return auth;

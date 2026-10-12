@@ -1,3 +1,5 @@
+import { parseStudent360 } from '@contracts/admin';
+import { parseTeacherRoster, type TeacherRosterFilter } from '@contracts/teacher-roster';
 import {
   parseApproveResult,
   parseCoachHome,
@@ -47,6 +49,13 @@ const get = (api: ApiClient, path: string, signal?: AbortSignal) => api.request<
 
 /* ---- Öğretmen okuma ---- */
 export const fetchTeacherHome = async (api: ApiClient, signal?: AbortSignal) => validated(parseTeacherHome(await get(api, '/api/panel/staff/teacher/home', signal)));
+export const fetchTeacherRoster = async (api: ApiClient, filter: TeacherRosterFilter, signal?: AbortSignal) => validated(parseTeacherRoster(await get(api, `/api/panel/staff/teacher/students?filtre=${filter}`, signal)));
+export const fetchTeacherStudent360 = async (api: ApiClient, studentId: string, query: { sekme?: string; gorunum?: string }, signal?: AbortSignal) => {
+  const search = new URLSearchParams();
+  if (query.sekme) search.set('sekme', query.sekme);
+  if (query.gorunum) search.set('gorunum', query.gorunum);
+  return validated(parseStudent360(await get(api, `/api/panel/staff/teacher/students/${id(studentId)}?${search}`, signal)));
+};
 export const fetchTeacherLessons = async (api: ApiClient, range: LessonRange, signal?: AbortSignal) => validated(parseTeacherLessons(await get(api, `/api/panel/staff/teacher/lessons?aralik=${range}`, signal)));
 export const fetchTeacherLesson = async (api: ApiClient, lessonId: string, signal?: AbortSignal) => validated(parseTeacherLessonDetail(await get(api, `/api/panel/staff/teacher/lessons/${id(lessonId)}`, signal)));
 export const fetchTeacherAssignments = async (api: ApiClient, signal?: AbortSignal) => validated(parseTeacherAssignments(await get(api, '/api/panel/staff/teacher/assignments', signal)));

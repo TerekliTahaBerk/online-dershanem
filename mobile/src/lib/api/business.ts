@@ -1,4 +1,5 @@
-import { parseBusinessSection, type MobileBusinessSection } from '@contracts/business';
+import type { GovernanceCommand } from '@contracts/business-governance';
+import { parseBusinessSection, parseBusinessOpsResult, type MobileBusinessOpsResult, type MobileBusinessSection } from '@contracts/business';
 
 import type { ApiClient } from './client';
 import { ApiError } from './errors';
@@ -59,7 +60,7 @@ export async function sendBusinessReply(api: ApiClient, conversationId: string, 
  * sunucuda taze step-up ister (428 → native doğrulama → aynı anahtarla tekrar).
  * ------------------------------------------------------------------ */
 
-export type OpsCommandInput =
+export type OpsCommandInput = GovernanceCommand
   | { type: 'campaign.create'; businessUnitId?: string; name: string; platform: string; budgetTl: number; productInterest: string }
   | { type: 'advertisement.create'; campaignId: string; adSetName: string; name: string; spentTl: number; impressions: number; clicks: number; messageStarts: number; leadCount: number; saleCount: number; revenueTl: number }
   | { type: 'attribution.manual'; leadId: string; campaignId: string; advertisementId: string }
@@ -70,8 +71,10 @@ export type OpsCommandInput =
   | { type: 'reconciliation.run' }
   | { type: 'reconciliation.resolve'; id: string; status: 'MANUALLY_MATCHED' | 'CORRECTED' };
 
-export type OpsOutcome = { result: { entityId: string; section: string; summary?: Record<string, number> }; replayed: boolean };
+export type OpsOutcome = MobileBusinessOpsResult;
 
 export async function runOps(api: ApiClient, command: OpsCommandInput, idempotencyKey: string): Promise<OpsOutcome> {
-  return api.request<OpsOutcome>('/api/panel/business/ops', { method: 'POST', body: { command, idempotencyKey } });
+  const parsed = parseBusinessOpsResult(await api.request('/api/panel/business/ops', { method: 'POST', body: { command, idempotencyKey } }));
+  if (!parsed.ok) throw new ApiError({ kind: 'invalid_response', details: { contract: parsed.error } });
+  return parsed.value;
 }

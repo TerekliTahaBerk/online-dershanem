@@ -211,6 +211,11 @@ const toNumber = (value: string) => (/^\d{1,3}$/.test(value.trim()) ? Number(val
 const draftFor = (template: MobileMockExams['templates'][number]): SectionDraft[] => template.sections.map((section) => ({ code: section.code, name: section.name, questions: section.questions, correct: '0', incorrect: '0', blank: String(section.questions), duration: '', reasons: [] }));
 
 function EntryForm({ data, studentId, onSaved }: { data: MobileMockExams; studentId: string; onSaved: (text: string) => void }) {
+  const save = useAdminMutation((api, input: MockExamEntry, { idempotencyKey }) => createMockExam(api, input, idempotencyKey));
+  return <MockExamEntryForm data={data} studentId={studentId} onSaved={onSaved} save={save} />;
+}
+
+export function MockExamEntryForm({ data, studentId, onSaved, save, staff = true }: { data: MobileMockExams; studentId: string; onSaved: (text: string) => void; save: { isPending: boolean; mutateAsync: (input: MockExamEntry) => Promise<unknown> }; staff?: boolean }) {
   const [exam, setExam] = useState<MockExamTypeCode>(data.templates[0]?.exam ?? 'LGS');
   const template = data.templates.find((item) => item.exam === exam) ?? data.templates[0];
   const [sections, setSections] = useState<SectionDraft[]>(() => draftFor(template));
@@ -222,7 +227,6 @@ function EntryForm({ data, studentId, onSaved }: { data: MobileMockExams; studen
   const [pasted, setPasted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const startedAt = useRef<number | null>(null);
-  const save = useAdminMutation((api, input: MockExamEntry, { idempotencyKey }) => createMockExam(api, input, idempotencyKey));
   const reasonCount = sections.reduce((sum, section) => sum + section.reasons.length, 0);
   const sectionValid = (section: SectionDraft) => [section.correct, section.incorrect, section.blank].every((value) => Number.isInteger(toNumber(value))) && toNumber(section.correct) + toNumber(section.incorrect) + toNumber(section.blank) === section.questions && (!section.duration.trim() || Number.isInteger(toNumber(section.duration)));
   const totalMinutes = toNumber(duration);
@@ -312,15 +316,19 @@ function EntryForm({ data, studentId, onSaved }: { data: MobileMockExams; studen
         );
       })}
       <Button label="Denemeyi kaydet" onPress={() => void submit()} disabled={!valid || save.isPending} loading={save.isPending} testID="mock-submit" />
-      <Text tone="muted" variant="meta">Yönetici kaydı hassastır; kimliğini yeniden doğrulaman istenebilir.</Text>
+      {staff ? <Text tone="muted" variant="meta">Yönetici kaydı hassastır; kimliğini yeniden doğrulaman istenebilir.</Text> : null}
     </Section>
   );
 }
 
 function ReasonSheet({ exam, categories, onClose, onSaved }: { exam: MobileMockExams['exams'][number]; categories: MobileMockExams['errorCategories']; onClose: () => void; onSaved: () => void }) {
+  const revise = useAdminMutation((api, body: Parameters<typeof reviseMockExam>[2], { idempotencyKey }) => reviseMockExam(api, exam.id, body, idempotencyKey));
+  return <MockExamReasonSheet exam={exam} categories={categories} onClose={onClose} onSaved={onSaved} revise={revise} />;
+}
+
+export function MockExamReasonSheet({ exam, categories, onClose, onSaved, revise }: { exam: MobileMockExams['exams'][number]; categories: MobileMockExams['errorCategories']; onClose: () => void; onSaved: () => void; revise: { isPending: boolean; mutateAsync: (input: Parameters<typeof reviseMockExam>[2]) => Promise<unknown> } }) {
   const [values, setValues] = useState<Record<string, MockExamErrorCode[]>>(() => Object.fromEntries(exam.sections.map((section) => [section.id, section.errors])));
   const [error, setError] = useState<string | null>(null);
-  const revise = useAdminMutation((api, body: Parameters<typeof reviseMockExam>[2], { idempotencyKey }) => reviseMockExam(api, exam.id, body, idempotencyKey));
   const count = Object.values(values).reduce((sum, list) => sum + list.length, 0);
   function toggle(sectionId: string, category: MockExamErrorCode) {
     const has = values[sectionId].includes(category);

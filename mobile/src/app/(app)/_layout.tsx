@@ -36,6 +36,7 @@ export default function AppLayout() {
       <Stack.Screen name="screen/[id]" options={{ title: '' }} />
       <Stack.Protected guard={!bootstrap.adminOverlay}>
       <Stack.Screen name="notifications" options={{ title: 'Bildirimler' }} />
+      <Stack.Screen name="account/profile" options={{ title: 'Öğrenci profilim' }} />
       <Stack.Screen name="account/index" options={{ title: 'Hesap ve ayarlar' }} />
       <Stack.Screen name="account/sessions" options={{ title: 'Oturumlar' }} />
       <Stack.Screen name="account/deletion" options={{ title: 'Hesap silme' }} />
@@ -46,11 +47,13 @@ export default function AppLayout() {
       <Stack.Screen name="od/assignment/[id]" options={{ title: 'Çalışma' }} />
       <Stack.Screen name="od/lesson/[id]" options={{ title: 'Ders' }} />
       <Stack.Screen name="od/review-recovery" options={{ title: 'Tekrar ve telafi' }} />
+      <Stack.Screen name="od/mock-exam-editor" options={{ title: 'Dış deneme girişi' }} />
       <Stack.Screen name="yon/task/[id]" options={{ title: 'Görev' }} />
       <Stack.Screen name="odk/exam/[id]/index" options={{ title: 'Deneme' }} />
       <Stack.Screen name="odk/exam/[id]/result" options={{ title: 'Sonuç' }} />
       {/* M7 öğretmen / koç detayları (StaffRouteGate + sunucu yetkisi). */}
       <Stack.Screen name="teacher/lesson/[id]" options={{ title: 'Ders' }} />
+      <Stack.Screen name="teacher/student/[id]" options={{ title: 'Öğrenci profili' }} />
       <Stack.Screen name="teacher/submission/[id]" options={{ title: 'Teslim' }} />
       <Stack.Screen name="coach/student/[id]" options={{ title: 'Öğrenci' }} />
       <Stack.Screen name="coach/session/[id]" options={{ title: 'Görüşme' }} />

@@ -1,3 +1,4 @@
+import { CalendarExport } from '@/features/shared/calendar-export';
 import type { MobileLessonRow } from '@contracts/student';
 import { useState } from 'react';
 
@@ -23,6 +24,7 @@ export default function OdLessonsScreen() {
   return (
     <Screen testID="od-lessons" refreshing={refresh.refreshing} onRefresh={refresh.onRefresh}>
       <PageHeader title="Derslerin" description={query.data?.groupNames || undefined} />
+      <CalendarExport />
       <SegmentedTabs
         label="Ders görünümü"
         value={filter}

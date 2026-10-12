@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireApiAccountRole } from "@/lib/auth/api-guards";
+import { PRIVATE_NO_STORE } from "@/lib/panel/parent-api";
 import { productLabel } from "@/lib/auth/roles";
 
 /**
@@ -22,11 +23,11 @@ export async function GET() {
       select: {
         classLevel: true,
         targetGoal: true,
-        parents: { select: { relationship: true, parent: { select: { fullName: true, email: true } } } },
+        parents: { where: { active: true, endedAt: null }, select: { relationship: true, parent: { select: { fullName: true, email: true } } } },
       },
     }),
     prisma.productMembership.findMany({
-      where: { userId: auth.session.userId, revokedAt: null },
+      where: { userId: auth.session.userId, revokedAt: null, startsAt: { lte: new Date() } },
       select: { product: true, expiresAt: true, startsAt: true },
       orderBy: { product: "asc" },
     }),
@@ -42,5 +43,5 @@ export async function GET() {
     classLevel: profile?.classLevel ?? null,
     parents: (profile?.parents ?? []).map((p) => p.parent.fullName || p.parent.email),
     activeProducts: active.flatMap((m) => (m.product ? [{ label: productLabel(m.product), expiresAt: m.expiresAt }] : [])),
-  });
+  }, { headers: PRIVATE_NO_STORE });
 }

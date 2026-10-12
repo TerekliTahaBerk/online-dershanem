@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireApiOdRole } from "@/lib/auth/api-guards";
+import { requireApiOdRole, requireApiAccountRole, requireApiProductPilot } from "@/lib/auth/api-guards";
 import { isStudentUserVisibleToParents } from "@/lib/panel/parent-product-policy";
+import { hasProductAccess } from "@/lib/auth/products";
 import { icalDocument } from "@/lib/ical";
 import { getStudentCalendar } from "@/lib/student-success/server/calendar-server";
 import { unifiedEventsToIcal, mergeIcalEvents } from "@/lib/student-success/ical-bridge";
@@ -11,7 +12,9 @@ import { unifiedEventsToIcal, mergeIcalEvents } from "@/lib/student-success/ical
 const querySchema = z.object({ studentId: z.string().trim().min(1).max(191).optional() });
 
 export async function GET(request: Request) {
-  const auth = await requireApiOdRole("ADMIN", "TEACHER", "STUDENT", "PARENT");
+  const account = await requireApiAccountRole("ADMIN", "TEACHER", "STUDENT", "PARENT");
+  if (!account.ok) return account.response;
+  const auth = account.session.role === "PARENT" ? await requireApiProductPilot(account, "OD") : await requireApiOdRole("ADMIN", "TEACHER", "STUDENT");
   if (!auth.ok) return auth.response;
   const url = new URL(request.url);
   const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
@@ -37,7 +40,7 @@ export async function GET(request: Request) {
     // sürdürüyordu. Kapsam `parent-scope` ile aynı koşulu kullanmalı.
     const linkRows = await prisma.parentStudent.findMany({ where: { parentId: auth.session.userId, active: true, endedAt: null, canViewAcademic: true }, orderBy: { createdAt: "asc" }, select: { studentId: true, student: { select: { userId: true } } } });
     // Veli-free ürün politikası: yalnızca KPSS üyeliği olan öğrenci takvim akışına girmez.
-    const visibility = await Promise.all(linkRows.map((item) => isStudentUserVisibleToParents(item.student.userId)));
+    const visibility = await Promise.all(linkRows.map(async (item) => (await isStudentUserVisibleToParents(item.student.userId)) && (await hasProductAccess(item.student.userId, "STUDENT", "OD"))));
     const links = linkRows.filter((_, index) => visibility[index]);
     const requested = parsed.data.studentId;
     const selected = requested ? links.find((item) => item.studentId === requested) : links[0];

@@ -25,6 +25,7 @@ export async function POST(request: Request) {
     return response;
   }
   if (/^Bearer\s+/i.test(request.headers.get("authorization") ?? "") && !idempotencyKey) return businessJson({ error: "Güvenli işlem bilgisi eksik. Görünümü yenileyin.", code: "PRECONDITION_REQUIRED" }, { status: 400 });
+  if (/^Bearer\s+/i.test(request.headers.get("authorization") ?? "") && (command.type === "knowledge.version" || command.type === "automation.toggle") && !command.expectedRevision) return businessJson({ error: "Kayıt sürümü eksik. Görünümü yenileyin.", code: "PRECONDITION_REQUIRED" }, { status: 400 });
   try {
     return businessJson(await runOpsCommand(auth.access, command, { idempotencyKey }));
   } catch (error) {

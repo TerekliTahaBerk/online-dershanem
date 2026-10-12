@@ -47,6 +47,7 @@ import TeacherOdkReportsScreen from '@/features/staff/odk/teacher-odk-reports';
 import TeacherAssignmentsScreen from '@/features/staff/teacher/teacher-assignments';
 import TeacherHelpScreen from '@/features/staff/teacher/teacher-help';
 import TeacherHomeScreen from '@/features/staff/teacher/teacher-home';
+import TeacherStudentsScreen from '@/features/staff/teacher/teacher-students';
 import TeacherLessonsScreen from '@/features/staff/teacher/teacher-lessons';
 import type { NativeScreen, NativeScreenKey } from '@/navigation/native-screens';
 
@@ -88,6 +89,7 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'parent-weekly': () => <ParentWeeklyScreen />,
   'parent-account': () => <ParentAccountScreen />,
   'teacher-home': () => <TeacherHomeScreen />,
+  'teacher-students': () => <TeacherStudentsScreen />,
   'teacher-lessons': () => <TeacherLessonsScreen />,
   'teacher-assignments': () => <TeacherAssignmentsScreen />,
   'teacher-help': () => <TeacherHelpScreen />,

@@ -42,6 +42,7 @@ export type NativeScreenKey =
   | 'parent-weekly'
   | 'parent-account'
   | 'teacher-home'
+  | 'teacher-students'
   | 'teacher-lessons'
   | 'teacher-assignments'
   | 'teacher-help'
@@ -171,11 +172,12 @@ const PARENT_WEB_ONLY: ReadonlySet<string> = new Set(['dino']);
  * yalnız OD alanında, koç ekranları yalnız Yön (OK) alanında, ilişkili deneme
  * raporları yalnız Deneme Ligi (ODK) alanında. Menüde görünmek YETKİ DEĞİL;
  * her personel ucu sunucuda ürün rolü + personel izni + kaynak ilişkisini
- * doğrular. Eşlenmeyen öğretmen öğeleri (öğrenciler, materyaller, tekrar,
+ * doğrular. Eşlenmeyen öğretmen öğeleri (materyaller, tekrar,
  * telafi, AI yardımcı, müdahale, özetler, analiz…) açık web devam yoludur.
  */
 const TEACHER_OD: Record<string, NativeScreenKey> = {
   today: 'teacher-home',
+  students: 'teacher-students',
   lessons: 'teacher-lessons',
   assignments: 'teacher-assignments',
   help: 'teacher-help',
