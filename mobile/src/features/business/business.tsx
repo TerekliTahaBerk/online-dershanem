@@ -13,6 +13,7 @@ import { useReadyBootstrap, useSession } from '@/lib/auth/session-provider';
 import { queryKeys } from '@/lib/query/keys';
 
 import { ConversationActions, CreateLeadSheet, LeadActions } from './crm';
+import { AttributionForm, SectionOps } from './ops';
 
 /**
  * İŞLETME (P2.7a — okuma). Web `isletme/[section]` ile AYNI yükleyici ve
@@ -93,7 +94,7 @@ function SectionBody({ data, onQuery }: { data: MobileBusinessSection; onQuery: 
         <FilterChips key={filter.key} label={filter.label} value={filter.value} onChange={(value) => onQuery({ [filter.key]: value, cursor: undefined })} options={filter.options} />
       ))}
       {data.notice ? <Banner tone="info">{data.notice}</Banner> : null}
-      <Cards cards={data.cards} />
+      <SectionOps data={data}>{(onAction) => <Cards cards={data.cards} onAction={onAction} />}</SectionOps>
       {data.nextCursor ? <Button label="Sonraki sayfa" variant="quiet" onPress={() => onQuery({ cursor: data.nextCursor ?? undefined })} testID="business-next" /> : null}
     </>
   );
@@ -121,7 +122,7 @@ function hrefFor(row: MobileBusinessRow, admin: { orders: boolean }): string | n
   return admin.orders ? `/admin/order/${encodeURIComponent(row.target.id)}` : null;
 }
 
-function Cards({ cards }: { cards: MobileBusinessCard[] }) {
+function Cards({ cards, onAction }: { cards: MobileBusinessCard[]; onAction?: (row: MobileBusinessRow, kind: 'reverse' | 'match' | 'correct') => void }) {
   const router = useRouter();
   const bootstrap = useReadyBootstrap();
   const orders = bootstrap.user.role === 'ADMIN' && Boolean(bootstrap.workspace?.navigation.sections.some((section) => section.items.some((item) => item.id === 'orders')));
@@ -146,7 +147,18 @@ function Cards({ cards }: { cards: MobileBusinessCard[] }) {
                   title={row.title}
                   subtitle={row.subtitle}
                   meta={row.meta}
-                  trailing={row.badge ? <StatusBadge label={row.badge.label} tone={row.badge.tone} /> : undefined}
+                  trailing={
+                    row.actions.length && onAction ? (
+                      <View style={styles.rowActions}>
+                        {row.badge ? <StatusBadge label={row.badge.label} tone={row.badge.tone} /> : null}
+                        {row.actions.map((action) => (
+                          <Button key={action.kind} label={action.label} variant={action.kind === 'reverse' ? 'destructive' : 'quiet'} onPress={() => onAction(row, action.kind)} testID={`business-action-${action.kind}-${row.id}`} />
+                        ))}
+                      </View>
+                    ) : row.badge ? (
+                      <StatusBadge label={row.badge.label} tone={row.badge.tone} />
+                    ) : undefined
+                  }
                   onPress={href ? () => router.push(href as Href) : undefined}
                   testID={row.id ? `business-row-${row.id}` : undefined}
                 />
@@ -215,6 +227,7 @@ export function BusinessLeadScreen({ id }: { id: string }) {
               <Text tone="secondary">{lead.lifecycle.label} — {lead.lifecycle.nextAction}</Text>
               <Cards cards={lead.cards} />
               {data.can.leadWrite ? <LeadActions data={data} lead={lead} /> : null}
+              <AttributionForm data={data} lead={lead} />
             </>
           );
         }}
@@ -229,6 +242,7 @@ const styles = StyleSheet.create({
   cell: { flexGrow: 1, flexBasis: '45%' },
   card: { gap: space[2] },
   badges: { flexDirection: 'row', flexWrap: 'wrap', gap: space[2] },
+  rowActions: { alignItems: 'flex-end', gap: space[1] },
   bubble: { maxWidth: '85%', padding: space[3], borderRadius: radius.card, gap: space[1] },
   inbound: { alignSelf: 'flex-start', backgroundColor: color.surfaceSubtle, borderWidth: 1, borderColor: color.border },
   outbound: { alignSelf: 'flex-end', backgroundColor: tone.success.soft },

@@ -52,3 +52,26 @@ export async function runCrm(api: ApiClient, command: CrmCommandInput, context: 
 export async function sendBusinessReply(api: ApiClient, conversationId: string, text: string, idempotencyKey: string): Promise<void> {
   await api.request('/api/integrations/instagram/send', { method: 'POST', body: { conversationId, text, idempotencyKey: `human:${conversationId}:${idempotencyKey}` } });
 }
+
+/* ------------------------------------------------------------------ *
+ * P2.7c pazarlama + finans — web Server Action'larıyla AYNI servis
+ * (`POST /api/panel/business/ops`). Finans kaydı, ters kayıt ve dönem kilidi
+ * sunucuda taze step-up ister (428 → native doğrulama → aynı anahtarla tekrar).
+ * ------------------------------------------------------------------ */
+
+export type OpsCommandInput =
+  | { type: 'campaign.create'; businessUnitId?: string; name: string; platform: string; budgetTl: number; productInterest: string }
+  | { type: 'advertisement.create'; campaignId: string; adSetName: string; name: string; spentTl: number; impressions: number; clicks: number; messageStarts: number; leadCount: number; saleCount: number; revenueTl: number }
+  | { type: 'attribution.manual'; leadId: string; campaignId: string; advertisementId: string }
+  | { type: 'meta_ads.sync' }
+  | { type: 'finance.create'; businessUnitId?: string; kind: 'MANUAL_INCOME' | 'EXPENSE'; description: string; category: string; amountTl: number; vatRate: number; withholdingRate: number; commissionTl: number; transactionDate?: string }
+  | { type: 'finance.reverse'; transactionId: string }
+  | { type: 'period.lock'; businessUnitId?: string; startsAt: string; endsAt: string }
+  | { type: 'reconciliation.run' }
+  | { type: 'reconciliation.resolve'; id: string; status: 'MANUALLY_MATCHED' | 'CORRECTED' };
+
+export type OpsOutcome = { result: { entityId: string; section: string; summary?: Record<string, number> }; replayed: boolean };
+
+export async function runOps(api: ApiClient, command: OpsCommandInput, idempotencyKey: string): Promise<OpsOutcome> {
+  return api.request<OpsOutcome>('/api/panel/business/ops', { method: 'POST', body: { command, idempotencyKey } });
+}

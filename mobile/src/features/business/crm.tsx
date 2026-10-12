@@ -26,7 +26,7 @@ import { queryKeys } from '@/lib/query/keys';
 
 type Notice = { tone: 'info' | 'critical'; text: string } | null;
 
-export function useBusinessMutation<V>(mutate: (variables: V, idempotencyKey: string) => Promise<void>) {
+export function useBusinessMutation<V, R = void>(mutate: (variables: V, idempotencyKey: string) => Promise<R>) {
   const { requestStepUp } = useStepUp();
   const client = useQueryClient();
   const bootstrap = useReadyBootstrap();
@@ -56,7 +56,7 @@ export function istanbulDateTime(value: string): string | null {
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
-function useRunner() {
+export function useRunner() {
   const crm = useCrm();
   const [notice, setNotice] = useState<Notice>(null);
   async function run(command: CrmCommandInput, success: string, revision?: string) {
