@@ -45,7 +45,7 @@ function NativeEducationForm({ form, onSaved, onFailed }: { form: EducationForm;
   const alive = useRef(true);
   const [fileName, setFileName] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
-  useEffect(() => () => { alive.current = false; if (fileRef.current) { try { new File(fileRef.current.uri).delete(); } catch {} } }, []);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; if (fileRef.current) { try { new File(fileRef.current.uri).delete(); } catch {} } }; }, []);
   const mutation = useAdminMutation(async (client, body: Record<string, unknown>, { idempotencyKey }) => {
     let payload: Record<string, unknown> | FormData = body;
     if (form.upload) {
@@ -70,12 +70,13 @@ function NativeEducationForm({ form, onSaved, onFailed }: { form: EducationForm;
   function update(key: string, value: string) { setValues((current) => ({ ...current, [key]: value })); setConfirmedPreview(null); setError(null); }
   async function pick() {
     setPicking(true); setError(null);
+    let source: File | null = null;
     try {
       const result = await DocumentPicker.getDocumentAsync({ type: ['application/pdf', 'video/mp4'], copyToCacheDirectory: true, multiple: false });
       if (result.canceled) return;
       const asset = result.assets[0];
       if (!alive.current) { try { new File(asset.uri).delete(); } catch {} return; }
-      const source = new File(asset.uri);
+      source = new File(asset.uri);
       if (!source.size || source.size > 4 * 1024 * 1024 || !['application/pdf', 'video/mp4'].includes(asset.mimeType ?? '')) { source.delete(); throw new Error('Yalnız en fazla 4 MB PDF veya MP4 seçebilirsin.'); }
       if (fileRef.current) { try { new File(fileRef.current.uri).delete(); } catch {} }
       const directory = new Directory(Paths.cache, 'od-materials', userDirectoryName(user.id), 'uploads');
@@ -84,8 +85,8 @@ function NativeEducationForm({ form, onSaved, onFailed }: { form: EducationForm;
       source.copy(destination); source.delete();
       fileRef.current = { uri: destination.uri, name: asset.name, type: asset.mimeType! };
       setFileName(asset.name);
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Dosya seçilemedi.'); }
-    finally { if (alive.current) setPicking(false); }
+    } catch (cause) { if (alive.current) setError(cause instanceof Error ? cause.message : 'Dosya seçilemedi.'); }
+    finally { if (source) { try { source.delete(); } catch {} } if (alive.current) setPicking(false); }
   }
   function submit() {
     setError(null);
@@ -127,7 +128,7 @@ export default function EducationEditorScreen({ kind: fixedKind }: { kind?: Edit
   const opener = useMaterialOpener();
   const [exporting, setExporting] = useState(false);
   const alive = useRef(true);
-  useEffect(() => () => { alive.current = false; }, []);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   const query = useAdminQuery('education-editor', (client, signal) => fetchEducationEditor(client, { kind, id: params.id, q: search, page, week, ...filters }, signal), { params: { kind, id: params.id ?? null, search, page, week, ...filters } });
   const refresh = usePullToRefresh(() => query.refetch());
   async function exportCalendar() {
