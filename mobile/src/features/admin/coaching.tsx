@@ -9,6 +9,9 @@ import { formatShortDateTime } from '@/lib/format/istanbul';
 import { adminErrorText, QueryView, useAdminMutation, useAdminQuery, usePullToRefresh } from './shared';
 import { FilterChips, MetricGrid, MetricTile, SearchPicker } from './ui';
 
+const statusLabels = { PLANNED: 'Planlandı', COMPLETED: 'Tamamlandı', MISSED: 'Katılmadı', CANCELLED: 'İptal' };
+const reasonLabels: Record<string, string> = { SCHOOL_SCHEDULE: 'Ders veya okul saati değişti', FAMILY_SCHEDULE: 'Aile programıyla çakışıyor', TECH_ACCESS: 'Teknik destek gerekiyor' };
+
 export default function AdminCoachingScreen() {
   const query = useAdminQuery('coaching', fetchAdminCoaching);
   const refresh = usePullToRefresh(() => query.refetch());
@@ -37,7 +40,7 @@ function Body({ data }: { data: AdminCoaching }) {
       <Button label="Öğrenci seçimini kapat" variant="secondary" onPress={() => setStudentId(null)} />
     </Section> : null}
     <Section title="Koç dizini">{data.coaches.map((coach) => <Row key={coach.id} title={coach.name} subtitle={`${coach.load} / ${coach.capacity ?? 'Sınırsız'} öğrenci${coach.assignable ? '' : ' · Aktif değil'}`} meta={`Bugün ${coach.today} · Geciken ${coach.overdue}`} />)}{!data.coaches.length ? <EmptyState title="Koç olarak işaretli personel yok" /> : null}</Section>
-    <Section title={selected ? `${selected.name} · Görüşmeler` : 'Görüşmeler'}>{sessions.map((session) => <Row key={session.id} title={`${session.studentName} · ${session.coachName}`} subtitle={`${formatShortDateTime(session.scheduledAt)} · ${{ PLANNED: 'Planlandı', COMPLETED: 'Tamamlandı', MISSED: 'Katılmadı', CANCELLED: 'İptal' }[session.status]}`} meta={session.focus ?? undefined} onPress={() => router.push(`/admin/coaching-session/${encodeURIComponent(session.id)}` as Href)} testID={`coaching-session-${session.id}`} />)}{!sessions.length ? <EmptyState title="Görüşme kaydı yok" /> : null}</Section>
+    <Section title={selected ? `${selected.name} · Görüşmeler` : 'Görüşmeler'}>{sessions.map((session) => <Row key={session.id} title={`${session.studentName} · ${session.coachName}`} subtitle={`${formatShortDateTime(session.scheduledAt)} · ${statusLabels[session.status]}`} meta={session.focus ?? undefined} onPress={() => router.push(`/admin/coaching-session/${encodeURIComponent(session.id)}` as Href)} testID={`coaching-session-${session.id}`} />)}{!sessions.length ? <EmptyState title="Görüşme kaydı yok" /> : null}</Section>
   </>;
 }
 function CoachForm({ student, coaches }: { student: AdminCoachingStudent; coaches: AdminCoaching['coaches'] }) {
@@ -70,12 +73,12 @@ export function AdminCoachingSessionScreen({ id }: { id: string }) {
   const refresh = usePullToRefresh(() => query.refetch());
   return <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh}><QueryView query={query}>{(data) => <>
     <PageHeader title="Görüşme detayı" description={`${data.session.studentName} · ${data.session.coachName}`} />
-    <Row title={formatShortDateTime(data.session.scheduledAt)} subtitle={data.session.status} />
+    <Row title={formatShortDateTime(data.session.scheduledAt)} subtitle={statusLabels[data.session.status]} />
     <Row title="Odak" subtitle={data.session.focus ?? 'Belirlenmedi'} />
     <Row title="Paylaşılan not" subtitle={data.sharedNote ?? 'Not yok'} />
     <Row title="Katılım bağlantısı" subtitle={data.meetingUrl ?? 'Bağlantı yok'} />
     {data.session.completedAt ? <Row title="Tamamlanma" subtitle={formatShortDateTime(data.session.completedAt)} /> : null}
-    {data.rescheduleRequestedAt ? <Row title="Saat değişikliği talebi" subtitle={`${formatShortDateTime(data.rescheduleRequestedAt)} · ${data.rescheduleReason ?? ''}`} /> : null}
+    {data.rescheduleRequestedAt ? <Row title="Saat değişikliği talebi" subtitle={`${formatShortDateTime(data.rescheduleRequestedAt)} · ${reasonLabels[data.rescheduleReason ?? ''] ?? 'Saat değişikliği istendi'}`} /> : null}
     {data.proposedAt ? <Row title="Önerilen saat" subtitle={formatShortDateTime(data.proposedAt)} /> : null}
     <Button label="Öğrenci 360'ı aç" onPress={() => router.push(`/admin/student/${encodeURIComponent(data.session.studentId)}` as Href)} />
   </>}</QueryView></Screen>;
