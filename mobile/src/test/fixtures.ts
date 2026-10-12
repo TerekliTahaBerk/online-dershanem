@@ -69,6 +69,8 @@ export function makeBootstrap(options: {
   security?: MobileSecurityCapabilities | null;
   /** ADMIN menüsü (sunucu `adminSections` biçiminde): birincil + bölüm öğeleri. */
   adminNav?: { primary: [string, string, string][]; sections: [string, string, string][] };
+  /** P2.7 İşletme alanı: görünür bölüm slug'ları (etiket/grup sabit tablodan). */
+  business?: string[];
 } = {}): MobileBootstrap {
   const role = options.role ?? 'STUDENT';
   const gate = options.gate ?? 'READY';
@@ -78,7 +80,15 @@ export function makeBootstrap(options: {
   const nav = activeProduct && (role === 'STUDENT' || role === 'PARENT') ? STUDENT_NAV[activeProduct] : { primary: [], sections: [] };
   const adminNav = role === 'ADMIN' && activeProduct ? (options.adminNav ?? ADMIN_NAV) : null;
   const primary = toItems(adminNav ? adminNav.primary : role === 'PARENT' && activeProduct ? [['today', 'Bugün', '/panel/veli'], ['lessons', 'Dersler', '/panel/veli/takvim']] : nav.primary);
+  const businessLabels: Record<string, [string, string, string]> = {
+    'genel-bakis': ['Genel Bakış', 'genel', 'Genel'],
+    'mesaj-kutusu': ['Mesaj Kutusu', 'crm', 'CRM'],
+    adaylar: ['Adaylar', 'crm', 'CRM'],
+    giderler: ['Giderler', 'finans', 'Finans'],
+  };
+  const business = options.business?.length ? { sections: options.business.map((slug) => ({ slug, label: businessLabels[slug]?.[0] ?? slug, group: businessLabels[slug]?.[1] ?? 'genel', groupLabel: businessLabels[slug]?.[2] ?? 'Genel' })) } : null;
   return {
+    business,
     contractVersion: 1,
     serverTime: '2026-10-08T09:00:00.000Z',
     user: { id: options.userId ?? 'user-1', fullName: 'Ada Yılmaz', email: 'ada@example.com', role },

@@ -53,7 +53,8 @@ export default function GlobalSearchScreen() {
 
 function Results({ items }: { items: MobileGlobalSearchResult[] }) {
   const router = useRouter();
-  const navigation = useReadyBootstrap().workspace?.navigation ?? null;
+  const bootstrap = useReadyBootstrap();
+  const navigation = bootstrap.workspace?.navigation ?? null;
   return (
     <>
       {KIND_ORDER.map((kind) => {
@@ -62,7 +63,7 @@ function Results({ items }: { items: MobileGlobalSearchResult[] }) {
         return (
           <Section key={kind} title={KIND_TITLE[kind]}>
             {group.map((item) => {
-              const href = expoHrefFor(mapAdminWebPath(item.href, navigation));
+              const href = expoHrefFor(mapAdminWebPath(item.href, navigation, bootstrap.business));
               return (
                 <Row
                   key={`${item.kind}-${item.id}`}

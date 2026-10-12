@@ -2,7 +2,7 @@ import { makeBootstrap } from '@/test/fixtures';
 
 import { findNavItem, resolveNativeScreen } from './native-screens';
 import { hrefForOdTarget } from './od-targets';
-import { expoHrefFor, mapAdminWebPath, mapNotificationHref, normalizeWebPath, sanitizeIncomingPath, targetForNavId, workspaceForWebPath } from './route-map';
+import { expoHrefFor, mapAdminWebPath, mapBusinessWebPath, mapNotificationHref, normalizeWebPath, sanitizeIncomingPath, targetForNavId, workspaceForWebPath } from './route-map';
 
 const item = (id: string, webPath = `/panel/x/${id}`) => ({ id, label: id, webPath });
 
@@ -200,6 +200,15 @@ describe('yönetim web yolu eşlemesi (Faz 1)', () => {
     expect(mapAdminWebPath('/panel/yonetim/ogrenciler', navigation)).toEqual({ kind: 'screen', navId: 'people' });
     const empty = { primary: [], sections: [] };
     for (const path of ['/panel/yonetim/kullanicilar/u-1', '/panel/yonetim/ogrenciler/s1', '/panel/yonetim/veliler', '/panel/yonetim/egitmenler']) expect(mapAdminWebPath(path, empty)).toEqual({ kind: 'none' });
+  });
+
+  it('İşletme yolları (P2.7) yalnız bootstrap’ta görünen bölüme açılır', () => {
+    const business = { sections: [{ slug: 'adaylar' }, { slug: 'genel-bakis' }] };
+    expect(mapAdminWebPath('/panel/yonetim/isletme/adaylar?lead=l1', navigation, business)).toEqual({ kind: 'detail', href: '/business/adaylar' });
+    expect(mapAdminWebPath('/panel/yonetim/isletme', navigation, business)).toEqual({ kind: 'detail', href: '/business' });
+    expect(mapAdminWebPath('/panel/yonetim/isletme/vergiler', navigation, business)).toEqual({ kind: 'none' });
+    expect(mapAdminWebPath('/panel/yonetim/isletme/adaylar', navigation, null)).toEqual({ kind: 'none' });
+    expect(mapBusinessWebPath('/panel/yonetim/kisiler', business)).toBeNull();
   });
 
   it('yönetim kökü önek olarak kullanılmaz; menüde olmayan veya panel dışı yol açılmaz', () => {

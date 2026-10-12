@@ -114,13 +114,14 @@ function ActivationTab({ desk, onOpen }: { desk: MobileActivationDesk; onOpen: (
 
 function ExceptionsTab({ desk }: { desk: MobileActivationDesk }) {
   const router = useRouter();
-  const navigation = useReadyBootstrap().workspace?.navigation ?? null;
+  const bootstrap = useReadyBootstrap();
+  const navigation = bootstrap.workspace?.navigation ?? null;
   return (
     <>
       <Section title="Birleşik iş kutusu" first>
         {desk.exceptions.length ? (
           desk.exceptions.map((item) => {
-            const href = expoHrefFor(mapAdminWebPath(item.webPath, navigation));
+            const href = expoHrefFor(mapAdminWebPath(item.webPath, navigation, bootstrap.business));
             return (
               <Row
                 key={item.id}

@@ -1,5 +1,5 @@
 import { useRouter, type Href } from 'expo-router';
-import { Bell, LogOut, Search, Settings } from 'lucide-react-native';
+import { Bell, Briefcase, LogOut, Search, Settings } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 
 import { Row, Screen, Section, Text } from '@/design/primitives';
@@ -38,6 +38,7 @@ export default function MenuScreen() {
           <View style={styles.flex}><Text variant="bodyStrong">{bootstrap.user.fullName ?? bootstrap.user.email}</Text><Text variant="meta" tone="muted">{ROLE_LABEL[bootstrap.user.role]}</Text></View>
         </View>
         <WorkspaceSwitcher />
+        {bootstrap.business?.sections.length ? <Row leading={<Briefcase size={19} color={color.textSecondary} />} title="İşletme" subtitle="Reklam, CRM ve finans" onPress={() => router.push('/business' as Href)} testID="menu-business" /> : null}
         {admin ? <Row title="Panel önizlemesi ve öğretmen modu" onPress={() => router.push('/admin/preview')} testID="menu-admin-preview" /> : null}
         {admin ? <Row leading={<Search size={19} color={color.textSecondary} />} title="Ara" subtitle="Kişi, grup, ders, sipariş, deneme" onPress={() => router.push('/admin/search')} testID="menu-admin-search" /> : null}
         {navigation
