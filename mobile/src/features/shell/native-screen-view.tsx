@@ -1,3 +1,4 @@
+import AdminCoachingScreen from '@/features/admin/coaching';
 import type { ReactElement } from 'react';
 import ActivationDeskScreen from '@/features/admin/activation-desk';
 import InterventionsScreen from '@/features/admin/interventions';
@@ -100,6 +101,7 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'admin-signups': () => <SignupsScreen />,
   'admin-education': () => <EducationScreen />,
   'admin-calendar': () => <EducationEditorScreen kind="calendar" />,
+  'admin-coaching': () => <AdminCoachingScreen />,
   'admin-curriculum': () => <EducationEditorScreen kind="version" />,
 };
 

@@ -726,7 +726,7 @@ const student360 = v.object({
   view: v.nullable(v.string()),
   views: v.array(v.object({ id: v.nonEmpty(), label: v.string() })),
   cards: v.array(card),
-  coach: v.object({ currentCoachId: v.nullable(v.string()), cadenceDays: v.nullable(v.int(0)), options: v.array(v.object({ id: v.nonEmpty(), label: v.string() })) }),
+  coach: v.object({ revision: v.optional(v.nullable(v.nonEmpty()), null), currentCoachId: v.nullable(v.string()), cadenceDays: v.nullable(v.int(0)), options: v.array(v.object({ id: v.nonEmpty(), label: v.string() })) }),
   blockedOrders: v.array(v.object({ id: v.nonEmpty(), packageName: v.string() })),
   /**
    * Yalnız ADMIN: web Veli / Branş öğretmenleri panellerindeki bağlantı

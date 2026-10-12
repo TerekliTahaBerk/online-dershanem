@@ -225,7 +225,7 @@ integration("Faz 2.2 koç atama servisi: Yön üyeliği yoksa reddeder, varsa at
   assert.deepEqual(await assignCoachService({ actorUserId: admin.id, studentId: profile.id, coachId: coachProfile.id }), { ok: false, code: "membership" });
   await db.productMembership.create({ data: { userId: studentUser.id, product: "OK", startsAt: new Date(0) } });
   assert.deepEqual(await assignCoachService({ actorUserId: admin.id, studentId: profile.id, coachId: "yok" }), { ok: false, code: "coach" });
-  assert.deepEqual(await assignCoachService({ actorUserId: admin.id, studentId: profile.id, coachId: coachProfile.id, cadenceDays: "7" }), { ok: true });
+  assert.deepEqual(await assignCoachService({ actorUserId: admin.id, studentId: profile.id, coachId: coachProfile.id, cadenceDays: "7" }), { ok: true, replayed: false });
   const active = await db.coachAssignment.findFirst({ where: { studentId: profile.id, endedAt: null } });
   assert.equal(active?.cadenceDays, 7);
 
@@ -233,7 +233,7 @@ integration("Faz 2.2 koç atama servisi: Yön üyeliği yoksa reddeder, varsa at
   const otherProfile = await db.studentProfile.create({ data: { userId: other.id } });
   await db.productMembership.create({ data: { userId: other.id, product: "OK", startsAt: new Date(0) } });
   assert.deepEqual(await assignCoachService({ actorUserId: admin.id, studentId: otherProfile.id, coachId: coachProfile.id }), { ok: false, code: "capacity" }, "kapasite 1 dolu");
-  assert.deepEqual(await assignCoachService({ actorUserId: admin.id, studentId: otherProfile.id, coachId: coachProfile.id, overrideReason: "Geçici yoğunluk" }), { ok: true });
+  assert.deepEqual(await assignCoachService({ actorUserId: admin.id, studentId: otherProfile.id, coachId: coachProfile.id, overrideReason: "Geçici yoğunluk" }), { ok: true, replayed: false });
 
   assert.deepEqual(await retryOrderProvisioningService({ actorUserId: admin.id, orderId: "olmayan-siparis" }), { found: false });
   // Mobil yanıt metni denetim kaydındaki sonuç dizgisinden türetilir.

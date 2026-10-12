@@ -3,9 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { requireRole } from "@/lib/auth/guards";
+import { requireRecentAdminStepUp } from "@/lib/auth/guards";
 import { enforceMutation } from "@/lib/security/mutation-guard";
-import { assignCoachService, type AssignCoachError } from "@/lib/panel/coach-assignment-service";
+import { assignCoachService, CoachAssignmentConflict, type AssignCoachError } from "@/lib/panel/coach-assignment-service";
 import { COACHING_QUEUES, type CoachingQueue } from "./queues";
 
 /**
@@ -26,11 +26,11 @@ import { COACHING_QUEUES, type CoachingQueue } from "./queues";
 
 export type { AssignCoachError };
 
-function fail(code: AssignCoachError): never {
+function fail(code: AssignCoachError | "conflict"): never {
   redirect(`/panel/yonetim/kocluk?hata=${code}`);
 }
 export async function assignCoach(formData: FormData) {
-  const session = await requireRole("ADMIN");
+  const session = await requireRecentAdminStepUp();
   await enforceMutation({
     action: "coaching.assign",
     userId: session.userId,
@@ -44,12 +44,19 @@ export async function assignCoach(formData: FormData) {
       coachId: z.string().min(1),
       cadenceDays: z.string().optional(),
       overrideReason: z.string().max(500).optional(),
+      idempotencyKey: z.string().uuid().optional(),
+      expectedRevision: z.string().regex(/^[a-f0-9]{64}$/).optional(),
       returnQueue: z.string().optional(),
     })
     .parse(Object.fromEntries(formData));
 
-  const result = await assignCoachService({ actorUserId: session.userId, studentId: parsed.studentId, coachId: parsed.coachId, cadenceDays: parsed.cadenceDays, overrideReason: parsed.overrideReason });
-  if (!result.ok) fail(result.code);
+  try {
+    const result = await assignCoachService({ actorUserId: session.userId, studentId: parsed.studentId, coachId: parsed.coachId, cadenceDays: parsed.cadenceDays, overrideReason: parsed.overrideReason, idempotencyKey: parsed.idempotencyKey, expectedRevision: parsed.expectedRevision });
+    if (!result.ok) fail(result.code);
+  } catch (error) {
+    if (error instanceof CoachAssignmentConflict) fail("conflict");
+    throw error;
+  }
 
   revalidatePath("/panel/yonetim/kocluk");
   revalidatePath("/panel/yonetim/ogrenciler");

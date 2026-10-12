@@ -43,6 +43,8 @@ type Probe = {
 };
 
 const READ_PROBES: Probe[] = [
+  { name: "yönetim koçluk", method: "GET", path: "/api/panel/admin/coaching", allow: ["admin"] },
+  { name: "yönetim görüşme detayı", method: "GET", path: "/api/panel/admin/coaching/sessions/missing-p24", allow: ["admin"] },
   { name: "yönetim eğitim editörü", method: "GET", path: "/api/panel/admin/education/editor?kind=lesson", allow: ["admin"] },
   { name: "bildirimler", method: "GET", path: "/api/panel/notifications", allow: ["admin", "teacher", "student", "parent"] },
   { name: "öğrenci ana sayfa", method: "GET", path: "/api/panel/student/home", allow: ["student"] },
@@ -65,6 +67,7 @@ const READ_PROBES: Probe[] = [
 ];
 
 const WRITE_PROBES: Probe[] = [
+  { name: "yönetim koç atama", method: "POST", path: "/api/panel/admin/coach-assignments", body: {}, allow: ["admin"] },
   { name: "ders oluşturma", method: "POST", path: "/api/panel/lessons", body: {}, allow: ["admin", "teacher"] },
   { name: "ders serisi önizleme", method: "POST", path: "/api/panel/lessons/preview-series", body: {}, allow: ["admin", "teacher"] },
   { name: "ders güncelleme", method: "PATCH", path: "/api/panel/lessons/e2e-lesson", body: {}, allow: ["admin"] },

@@ -43,7 +43,7 @@ const student360 = (overrides: Record<string, unknown> = {}) => ({
   view: null,
   views: [],
   cards: [card('overview', 'Genel bakış', [{ title: 'Kesirler' }])],
-  coach: { currentCoachId: null, cadenceDays: null, options: [{ id: 'cp1', label: 'Mert (10/10)' }] },
+  coach: { revision: 'a'.repeat(64), currentCoachId: null, cadenceDays: null, options: [{ id: 'cp1', label: 'Mert (10/10)' }] },
   blockedOrders: [{ id: 'o1', packageName: 'LGS Paketi' }],
   ...overrides,
 });
@@ -85,7 +85,7 @@ describe('Faz 2.2 kalan kişi ekranları', () => {
     expect(h.screen.getByTestId('student-coach-submit').props.accessibilityState?.disabled).toBe(true);
     fireEvent.changeText(h.screen.getByTestId('student-coach-reason'), 'Dönem sonu yoğunluğu');
     await press(h, h.screen.getByTestId('student-coach-submit'));
-    await waitFor(() => expect(h.server.called('POST', '/api/panel/admin/coach-assignments')[1]?.body).toEqual({ studentId: 'sp1', coachId: 'cp1', overrideReason: 'Dönem sonu yoğunluğu' }), WAIT);
+    await waitFor(() => expect(h.server.called('POST', '/api/panel/admin/coach-assignments')[1]?.body).toEqual(expect.objectContaining({ studentId: 'sp1', coachId: 'cp1', overrideReason: 'Dönem sonu yoğunluğu', expectedRevision: 'a'.repeat(64), idempotencyKey: expect.any(String) })), WAIT);
     expect(await h.screen.findByText('Koç atandı.', {}, WAIT)).toBeTruthy();
 
     await press(h, h.screen.getByTestId('student-retry-o1'));

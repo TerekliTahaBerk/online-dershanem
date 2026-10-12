@@ -310,8 +310,8 @@ export async function fetchStudent360(api: ApiClient, studentProfileId: string, 
   return validated(parseStudent360(await api.request<unknown>(withQuery(`/api/panel/admin/students/${encodeURIComponent(studentProfileId)}`, query), { signal })));
 }
 
-export async function assignCoach(api: ApiClient, input: { studentId: string; coachId: string; cadenceDays?: string; overrideReason?: string }): Promise<void> {
-  await api.request('/api/panel/admin/coach-assignments', { method: 'POST', body: input });
+export async function assignCoach(api: ApiClient, input: { studentId: string; coachId: string; cadenceDays?: string; overrideReason?: string; expectedRevision: string }, idempotencyKey: string): Promise<void> {
+  await api.request('/api/panel/admin/coach-assignments', { method: 'POST', body: { ...input, idempotencyKey } });
 }
 
 export async function retryProvisioning(api: ApiClient, orderId: string): Promise<{ succeeded: boolean; message: string }> {

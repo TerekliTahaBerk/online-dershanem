@@ -58,6 +58,7 @@ export type NativeScreenKey =
   | 'admin-signups'
   | 'admin-education'
   | 'admin-calendar'
+  | 'admin-coaching'
   | 'admin-curriculum'
   | 'placeholder';
 
@@ -203,6 +204,7 @@ const ADMIN: Record<string, NativeScreenKey> = {
   groups: 'admin-education',
   calendar: 'admin-calendar',
   outcomes: 'admin-curriculum',
+  coaching: 'admin-coaching',
 };
 
 /**
