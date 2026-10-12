@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Prisma } from "@prisma/client";
+import type { Prisma, PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getOkPlanProductId } from "./plan-product";
 import {
@@ -95,8 +95,9 @@ export async function appendTimelineEvent(input: {
   visibility?: "INTERNAL" | "STAFF" | "STUDENT" | "PARENT";
   metadata?: Record<string, unknown>;
   occurredAt?: Date;
+  tx?: Prisma.TransactionClient;
 }) {
-  return prisma.studentTimelineEvent.create({
+  return (input.tx ?? prisma).studentTimelineEvent.create({
     data: {
       studentId: input.studentId,
       kind: input.kind,
@@ -115,8 +116,8 @@ export async function applyTemplateToStudentWeek(input: {
   weekStart: Date;
   actorUserId: string;
   replaceExistingDraft?: boolean;
-}) {
-  const template = await prisma.weeklyPlanTemplate.findUnique({ where: { id: input.templateId } });
+}, db: PrismaClient = prisma) {
+  const template = await db.weeklyPlanTemplate.findUnique({ where: { id: input.templateId } });
   if (!template) return { ok: false as const, error: "Şablon bulunamadı." };
 
   const weekStart = istanbulWeekStart(input.weekStart);
@@ -129,7 +130,7 @@ export async function applyTemplateToStudentWeek(input: {
     addDays: addIstanbulCalendarDays,
   });
 
-  const existing = await prisma.weeklyPlan.findUnique({
+  const existing = await db.weeklyPlan.findUnique({
     where: { studentId_weekStart: { studentId: input.studentId, weekStart } },
   });
 
@@ -137,8 +138,9 @@ export async function applyTemplateToStudentWeek(input: {
     return { ok: false as const, error: "Yayınlanmış plan üzerine şablon uygulanamaz. Önce taslak oluşturun." };
   }
 
-  const okProductId = await getOkPlanProductId();
-  const plan = await prisma.$transaction(async (tx) => {
+  const okProductId = await getOkPlanProductId(db);
+  if (existing && existing.productRefId !== okProductId) return { ok: false as const, error: "Başka ürünün planına koçluk şablonu uygulanamaz." };
+  const plan = await db.$transaction(async (tx) => {
     const upserted = existing
       ? await tx.weeklyPlan.update({
           where: { id: existing.id },
@@ -190,6 +192,7 @@ export async function applyTemplateToStudentWeek(input: {
 
   await recordPlanRevision({
     planId: plan.id,
+    tx: db,
     version: plan.version,
     changedById: input.actorUserId,
     changeSummary: buildRevisionChangeSummary({

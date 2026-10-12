@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Native coach preparation commands for tasks, plan copies, templates, weekly summaries, completed sessions and student goals; shared web services, active assignment/membership checks, source revisions and atomic retry receipts. Initial plan capacity counts the first task once; parent timeline events no longer fall back to student-only summary text.
+
 - Native teacher weekly digest previews, selected-student draft generation/refresh and confirmed publication with recipient revisions, atomic receipts/notifications/email outbox and shared web services; web generation no longer refreshes every student.
 
 - Native teacher intervention inbox with manual creation, rule generation and the full case lifecycle; shared web commands, scoped ownership, revision checks and atomic retry receipts verified over real HTTP.

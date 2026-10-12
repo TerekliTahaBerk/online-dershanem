@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { PrismaClient } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { PlanApprovalPolicy } from "./plan-approval";
 
@@ -26,8 +27,8 @@ export type PlanProduct = PlanApprovalPolicy & {
  * Ürün satırını koda göre okur. Ürün yoksa `findUniqueOrThrow` gürültülü hata
  * verir — sessizce "onay gerekmiyor"a düşmek, onay akışını kazara kapatırdı.
  */
-export async function getPlanProductByCode(code: string): Promise<PlanProduct> {
-  const product = await prisma.product.findUniqueOrThrow({
+export async function getPlanProductByCode(code: string, db: PrismaClient = prisma): Promise<PlanProduct> {
+  const product = await db.product.findUniqueOrThrow({
     where: { code },
     select: { id: true, code: true, requiresPlanApproval: true },
   });
@@ -38,6 +39,6 @@ export async function getPlanProductByCode(code: string): Promise<PlanProduct> {
  * Online Koçum plan yazma yolları için kısayol. Koçluk akışları (şablon uygula,
  * plan kopyala, koç görevi ekle, öneri onayla) tanımı gereği OK planı üretir.
  */
-export async function getOkPlanProductId(): Promise<string> {
-  return (await getPlanProductByCode(OK_PRODUCT_CODE)).id;
+export async function getOkPlanProductId(db: PrismaClient = prisma): Promise<string> {
+  return (await getPlanProductByCode(OK_PRODUCT_CODE, db)).id;
 }
