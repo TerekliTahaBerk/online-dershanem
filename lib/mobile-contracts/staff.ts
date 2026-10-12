@@ -162,16 +162,20 @@ const lessonDetail = v.object({
       supportLabels: v.array(v.string()),
     }),
   ),
+  noteTemplates: v.optional(v.array(v.object({ id: v.nonEmpty(), title: v.string(), note: v.nullable(v.string()), nextGoal: v.nullable(v.string()), homework: v.nullable(v.string()), revision: v.string() })), []),
   outcomes: v.object({
     linked: v.array(v.object({ outcomeId: v.nonEmpty(), evidenceType: v.oneOf(OUTCOME_EVIDENCE) })),
     skipReason: v.nullable(v.oneOf(OUTCOME_SKIP_REASONS)),
-    catalog: v.array(v.object({ id: v.nonEmpty(), code: v.string(), title: v.string(), subject: v.string(), unit: v.string() })),
+    catalog: v.array(v.object({ id: v.nonEmpty(), code: v.string(), title: v.string(), subject: v.string(), unit: v.string(), favorite: v.optional(v.boolean(), false) })),
   }),
 });
 export type MobileTeacherLessonDetail = Infer<typeof lessonDetail>;
 export function parseTeacherLessonDetail(input: unknown): ContractResult<MobileTeacherLessonDetail> {
   return check(lessonDetail, input);
 }
+
+const outcomeSearch = v.object({ outcomes: v.array(v.object({ id: v.nonEmpty(), code: v.string(), title: v.string(), subject: v.string(), unit: v.string(), favorite: v.boolean() })) });
+export function parseTeacherOutcomeSearch(input: unknown) { return check(outcomeSearch, input); }
 
 /* PUT /api/panel/lessons/[id]/notes (MEVCUT uç) yanıtı */
 const lessonSaveResult = v.object({ savedAt: v.iso(), version: v.int(0), replayed: v.boolean(), assignmentCreated: v.optional(v.boolean(), false) });

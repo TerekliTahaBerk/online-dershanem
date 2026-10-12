@@ -1,7 +1,7 @@
 import { useRouter, type Href } from 'expo-router';
 import { useState } from 'react';
 
-import { EmptyState, PageHeader, Row, Screen, SegmentedTabs, Section, StatusBadge, Text } from '@/design/primitives';
+import { Button, EmptyState, PageHeader, Row, Screen, SegmentedTabs, Section, StatusBadge, Text } from '@/design/primitives';
 import { fetchSubmissionQueue, fetchTeacherAssignments } from '@/lib/api/staff';
 import { formatShortDateTime } from '@/lib/format/istanbul';
 
@@ -9,7 +9,7 @@ import { QueryView, usePullToRefresh, useStaffQuery } from '../shared';
 
 /**
  * ÖĞRETMEN · ÇALIŞMALAR — grup ödev özeti (salt okunur) + `assignmentEvidence`
- * açıksa değerlendirme kuyruğu. Ödev oluşturma / düzenleme web devam yolu.
+ * açıksa değerlendirme kuyruğu. Oluşturma ve düzenleme ortak native editörde.
  */
 export default function TeacherAssignmentsScreen() {
   const [tab, setTab] = useState<'queue' | 'list'>('queue');
@@ -21,7 +21,8 @@ export default function TeacherAssignmentsScreen() {
   const showQueue = evidence && tab === 'queue';
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="teacher-assignments">
-      <PageHeader title="Çalışmalar" description="Ödev oluşturma ve düzenleme web panelinden yapılır." />
+      <PageHeader title="Çalışmalar" />
+      <Button label="Ödev oluştur" onPress={() => router.push('/teacher/education-editor?kind=assignment' as Href)} />
       {evidence ? <SegmentedTabs label="Görünüm" value={tab} onChange={setTab} options={[{ value: 'queue', label: 'Değerlendirme', count: queue.data?.items.length }, { value: 'list', label: 'Ödevler' }]} /> : null}
       {showQueue ? (
         <QueryView query={queue} disabledTitle="Kanıtlı teslim şu anda açık değil.">
@@ -53,6 +54,7 @@ export default function TeacherAssignmentsScreen() {
                   <Row
                     key={item.id}
                     title={item.title}
+                    onPress={() => router.push(`/teacher/education-editor?kind=assignment&id=${encodeURIComponent(item.id)}` as Href)}
                     subtitle={`${item.groupName} · son ${formatShortDateTime(item.dueAt)}`}
                     meta={`${item.submitted}/${item.total} tamamlandı${item.late ? ` · ${item.late} geç` : ''}${item.pendingReview ? ` · ${item.pendingReview} değerlendirme bekliyor` : ''}`}
                     trailing={item.isActive ? undefined : <StatusBadge label="Pasif" tone="neutral" />}

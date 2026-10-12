@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, View } from 'react-native';
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -12,8 +12,12 @@ import { fetchEducationEditor, previewEducationLessons, saveEducationForm } from
 import { useReadyBootstrap, useSession } from '@/lib/auth/session-provider';
 import { downloadMaterialFile, userDirectoryName } from '@/lib/files/material-files';
 import { useMaterialOpener } from '../od/use-material-opener';
-import { adminErrorText, QueryView, useAdminMutation, useAdminQuery, usePullToRefresh } from './shared';
-import { DateTimeField } from '../staff/shared';
+import { adminErrorText, QueryView, usePullToRefresh } from './shared';
+import { DateTimeField, useStableKey, useOnline } from '../staff/shared';
+import { useStepUp } from '../auth/step-up';
+import { runWithStepUp } from './step-up-retry';
+import { queryKeys } from '@/lib/query/keys';
+import { ApiError } from '@/lib/api/errors';
 import { FilterChips, SearchPicker } from './ui';
 
 function Field({ field, value, onChange, busy }: { field: EducationField; value: string; onChange: (value: string) => void; busy: boolean }) {
@@ -46,7 +50,14 @@ function NativeEducationForm({ form, onSaved, onFailed }: { form: EducationForm;
   const [fileName, setFileName] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
   useEffect(() => { alive.current = true; return () => { alive.current = false; if (fileRef.current) { try { new File(fileRef.current.uri).delete(); } catch {} } }; }, []);
-  const mutation = useAdminMutation(async (client, body: Record<string, unknown>, { idempotencyKey }) => {
+  const client = useQueryClient();
+  const online = useOnline();
+  const { requestStepUp } = useStepUp();
+  const stable = useStableKey<{ body: Record<string, unknown>; file: string | null }>((a, b) => JSON.stringify(a) === JSON.stringify(b));
+  const invalidate = () => client.invalidateQueries({ queryKey: user.role === 'ADMIN' ? queryKeys.admin(user.id) : queryKeys.workspace(user.id, 'OD') });
+  const mutation = useMutation({ mutationFn: async (body: Record<string, unknown>) => {
+    if (!online) throw new ApiError({ kind: 'network' });
+    const idempotencyKey = stable.keyFor({ body, file: fileRef.current?.uri ?? null });
     let payload: Record<string, unknown> | FormData = body;
     if (form.upload) {
       if (!fileRef.current) throw new Error('Dosya seçin.');
@@ -57,8 +68,11 @@ function NativeEducationForm({ form, onSaved, onFailed }: { form: EducationForm;
     }
     const targetField = form.fields.find((field) => (body.targetType === 'STUDENT' ? ['studentId'] : ['groupId', 'versionId']).includes(field.key));
     const revision = form.revision ?? targetField?.options.find((option) => option.id === String(body[targetField.key]))?.revision ?? null;
-    return saveEducationForm(client, form, payload, revision, idempotencyKey);
-  });
+    try {
+      const result = await runWithStepUp(() => saveEducationForm(api, form, payload, revision, idempotencyKey), requestStepUp);
+      stable.settle(); return result;
+    } catch (cause) { stable.settle(cause); throw cause; }
+  }, onSuccess: invalidate, onError: (cause) => { if (cause instanceof ApiError && cause.kind === 'conflict') void invalidate(); } });
   const preview = useMutation({ mutationFn: (body: Record<string, unknown>) => previewEducationLessons(api, body), onSuccess: (value, body) => setConfirmedPreview({ digest: JSON.stringify(body), value }) });
   const busy = mutation.isPending || preview.isPending || picking;
   function body() {
@@ -116,10 +130,10 @@ function Forms({ data, onSaved, onFailed }: { data: EducationEditor; onSaved: ()
   </>;
 }
 
-export default function EducationEditorScreen({ kind: fixedKind }: { kind?: EditorKind }) {
-  const params = useLocalSearchParams<{ kind?: string; id?: string; group?: string }>();
+export default function EducationEditorScreen({ kind: fixedKind, teacherMode = false }: { kind?: EditorKind; teacherMode?: boolean }) {
+  const params = useLocalSearchParams<{ kind?: string; id?: string; group?: string; lesson?: string }>();
   const router = useRouter();
-  const kind: EditorKind = fixedKind ?? (EDITOR_KINDS.includes(params.kind as EditorKind) ? params.kind as EditorKind : 'lesson');
+  const kind: EditorKind = fixedKind ?? (EDITOR_KINDS.includes(params.kind as EditorKind) ? params.kind as EditorKind : teacherMode ? 'assignment' : 'lesson');
   const [search, setSearch] = useState(''), [page, setPage] = useState(0), [week, setWeek] = useState(0);
   const [filters, setFilters] = useState({ group: params.group ?? '', teacher: '' });
   const [notice, setNotice] = useState<string | null>(null);
@@ -129,7 +143,12 @@ export default function EducationEditorScreen({ kind: fixedKind }: { kind?: Edit
   const [exporting, setExporting] = useState(false);
   const alive = useRef(true);
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
-  const query = useAdminQuery('education-editor', (client, signal) => fetchEducationEditor(client, { kind, id: params.id, q: search, page, week, ...filters }, signal), { params: { kind, id: params.id ?? null, search, page, week, ...filters } });
+  const queryParams = { kind, id: params.id ?? null, search, page, week, ...filters, lesson: params.lesson ?? null };
+  const query = useQuery({
+    queryKey: teacherMode ? queryKeys.staffResource(bootstrap.user.id, 'OD', 'education-editor', queryParams) : queryKeys.adminResource(bootstrap.user.id, 'education-editor', queryParams),
+    queryFn: ({ signal }) => fetchEducationEditor(api, { kind, id: params.id, q: search, page, ...(teacherMode ? { group: filters.group, lesson: params.lesson } : { week, ...filters }) }, signal, teacherMode),
+    enabled: teacherMode ? bootstrap.user.role === 'TEACHER' && bootstrap.workspace?.activeProduct === 'OD' && ['assignment', 'material'].includes(kind) : bootstrap.user.role === 'ADMIN',
+  });
   const refresh = usePullToRefresh(() => query.refetch());
   async function exportCalendar() {
     setExporting(true); setNotice(null);
@@ -143,9 +162,9 @@ export default function EducationEditorScreen({ kind: fixedKind }: { kind?: Edit
     } catch { setNotice('Takvim dışa aktarılamadı. Bağlantını ve cihazın paylaşım desteğini kontrol et.'); }
     finally { setExporting(false); }
   }
-  return <Screen testID={`admin-education-${kind}`} refreshing={refresh.refreshing} onRefresh={refresh.onRefresh}>
+  return <Screen testID={`${teacherMode ? 'teacher' : 'admin'}-education-${kind}`} refreshing={refresh.refreshing} onRefresh={refresh.onRefresh}>
     {notice ? <Banner title="İşlem sonucu" tone={notice === "İşlem kaydedildi." ? "info" : "critical"}>{notice}</Banner> : null}
-    {kind !== 'calendar' && !params.id ? <TextField label="Kayıt veya kazanım ara" value={search} onChangeText={(value) => { setSearch(value); setPage(0); }} maxLength={120} /> : null}
+    {kind !== 'calendar' && (!params.id || kind === 'assignment') ? <TextField label="Kayıt veya kazanım ara" value={search} onChangeText={(value) => { setSearch(value); setPage(0); }} maxLength={120} /> : null}
     {kind === 'calendar' ? <><FilterChips value={String(week)} label="Takvim haftası" options={[{ value: String(week - 1), label: 'Önceki hafta' }, { value: String(week), label: week ? `${week > 0 ? '+' : ''}${week}. hafta` : 'Bu hafta' }, { value: String(week + 1), label: 'Sonraki hafta' }]} onChange={(value) => setWeek(Number(value))} /><Button label="Kurum takvimini dışa aktar (.ics)" loading={exporting} onPress={() => { void exportCalendar(); }} /></> : null}
     <QueryView query={query}>{(data) => <>
       <PageHeader title={data.title} description={data.description} />
@@ -153,7 +172,7 @@ export default function EducationEditorScreen({ kind: fixedKind }: { kind?: Edit
       {kind === 'calendar' ? data.forms[0]?.fields.map((field) => <SearchPicker key={field.key} label={field.label} options={field.options} value={filters[field.key as keyof typeof filters] || null} testID={`calendar-${field.key}`} onChange={(value) => setFilters((current) => ({ ...current, [field.key]: value ?? '' }))} />) : <Forms key={`${kind}:${params.id ?? 'new'}:${data.forms.map((form) => form.revision).join()}`} data={data} onFailed={setNotice} onSaved={() => { setNotice('İşlem kaydedildi.'); void query.refetch(); }} />}
       {kind === 'version' ? <Button mutation label="Kazanım oluştur" onPress={() => router.push('/admin/education-editor?kind=outcome' as Href)} /> : null}
       <Section title={kind === 'assignment' && params.id ? 'Teslimler' : 'Kayıtlar'}>
-        {data.rows.length ? data.rows.map((row) => <Row key={row.id} title={row.title} subtitle={row.detail} meta={row.at ? new Date(row.at).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' }) : null} onPress={() => router.push(`/admin/education-editor?kind=${row.kind}&id=${encodeURIComponent(row.id)}` as Href)} />) : <EmptyState title="Bu bölümde kayıt yok" />}
+        {data.rows.length ? data.rows.map((row) => <Row key={row.id} title={row.title} subtitle={row.detail} meta={row.at ? new Date(row.at).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' }) : null} onPress={() => router.push((teacherMode ? row.kind === 'submission' ? `/teacher/submission/${encodeURIComponent(row.id)}` : `/teacher/education-editor?kind=${row.kind}&id=${encodeURIComponent(row.id)}` : `/admin/education-editor?kind=${row.kind}&id=${encodeURIComponent(row.id)}`) as Href)} />) : <EmptyState title="Bu bölümde kayıt yok" />}
       </Section>
       {page > 0 ? <Button label="Önceki kayıtlar" variant="quiet" onPress={() => setPage((current) => current - 1)} /> : null}
       {data.hasMore ? <Button label="Sonraki kayıtlar" variant="quiet" onPress={() => setPage((current) => current + 1)} /> : null}

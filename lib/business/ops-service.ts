@@ -7,6 +7,7 @@ import { getAdPlatformProvider } from "@/lib/business/providers";
 import { reconcileBusinessUnit } from "@/lib/business/reconciliation";
 import { resolveMutationUnit, scopedUnitIds, type BusinessAccess } from "@/lib/business/access";
 import { BusinessCommandError, runWithReceipt, type CommandExecution } from "./command-receipt";
+import { executeGovernance, dryRunGovernance } from "./governance-service";
 import type { OpsCommand } from "./ops-commands";
 
 /**
@@ -19,7 +20,7 @@ import type { OpsCommand } from "./ops-commands";
  * işlemde AYNI transaction içinde yapılır.
  */
 
-export type OpsResult = { entityId: string; section: string; summary?: Record<string, number> };
+export type OpsResult = { entityId: string; section: string; summary?: Record<string, number>; dryRunResult?: string };
 
 const fail = (status: 400 | 404 | 409 | 422, code: string, message: string) => new BusinessCommandError(status, code, message);
 const unitFor = (access: BusinessAccess, requested: string | undefined) => {
@@ -36,6 +37,11 @@ async function execute(tx: Prisma.TransactionClient, access: BusinessAccess, com
   const actor = access.session.userId;
   const unitIds = scopedUnitIds(access);
   switch (command.type) {
+    case "knowledge.create": case "knowledge.version": case "prompt.create":
+    case "automation.create": case "automation.toggle": case "retention.update":
+    case "role.assign": case "role.revoke":
+      return executeGovernance(tx, access, command);
+    case "automation.dry_run": throw new Error("dry-run transaction dışında çalışır");
     case "campaign.create": {
       const unit = unitFor(access, command.businessUnitId);
       const row = await tx.businessCampaign.create({ data: { businessUnitId: unit.id, name: command.name, platform: command.platform, budgetCents: Math.round(command.budgetTl * 100), productInterest: command.productInterest } });
@@ -106,7 +112,8 @@ async function execute(tx: Prisma.TransactionClient, access: BusinessAccess, com
 }
 
 /** Dış servis / tarama: mevcut iş kuralı kendi yazmalarını yapar; makbuz sonra. */
-async function outside(access: BusinessAccess, command: Extract<OpsCommand, { type: "meta_ads.sync" | "reconciliation.run" }>): Promise<CommandExecution<OpsResult>> {
+async function outside(access: BusinessAccess, command: Extract<OpsCommand, { type: "meta_ads.sync" | "reconciliation.run" | "automation.dry_run" }>): Promise<CommandExecution<OpsResult>> {
+  if (command.type === "automation.dry_run") return dryRunGovernance(access, command);
   if (command.type === "meta_ads.sync") {
     let result: { synced: number };
     try {
@@ -133,7 +140,7 @@ export async function runOpsCommand(access: BusinessAccess, command: OpsCommand,
     namespace: "ops",
     idempotencyKey: options.idempotencyKey,
     digestOf: { command },
-    ...(command.type === "meta_ads.sync" || command.type === "reconciliation.run"
+    ...(command.type === "meta_ads.sync" || command.type === "reconciliation.run" || command.type === "automation.dry_run"
       ? { outside: () => outside(access, command) }
       : { transactional: (tx: Prisma.TransactionClient) => execute(tx, access, command) }),
   });

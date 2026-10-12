@@ -2,10 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { requireBusinessPage, requireRecentBusinessPage, resolveMutationUnit, scopedUnitIds } from "@/lib/business/permissions";
-import { revokeAllUserSessions } from "@/lib/auth/session";
-import { prisma } from "@/lib/prisma";
-import { queueAudit } from "@/lib/audit";
+import { requireBusinessPage, requireRecentBusinessPage } from "@/lib/business/permissions";
 import { enforceMutation } from "@/lib/security/mutation-guard";
 import { crmCommandSchema, crmPermission, type LEAD_STAGE_VALUES, type LOST_REASON_VALUES } from "@/lib/business/crm-commands";
 import { CrmError, runCrmCommand } from "@/lib/business/crm-service";
@@ -138,22 +135,12 @@ export async function setConversationControl(formData: FormData) {
 }
 
 export async function createKnowledgeEntry(formData: FormData) {
-  const access = await requireBusinessPage("knowledge:write");
-  await guard("knowledge.create", access.session.userId);
-  const parsed = z.object({ title: z.string().trim().min(2).max(160), category: z.string().trim().min(2).max(80), content: z.string().trim().min(10).max(10_000), productInterest: z.enum(["ONLINE_DERSHANEM", "ONLINE_DENEME_KULUBU", "UNKNOWN"]), validFrom: z.string().optional(), validUntil: z.string().optional() }).parse(Object.fromEntries(formData));
-  const unit = resolveMutationUnit(access, formData.get("businessUnitId"));
-  const row = await prisma.knowledgeBaseEntry.create({ data: { businessUnitId: unit.id, title: parsed.title, category: parsed.category, content: parsed.content, productInterest: parsed.productInterest, validFrom: parsed.validFrom ? new Date(parsed.validFrom) : null, validUntil: parsed.validUntil ? new Date(parsed.validUntil) : null, source: "Admin paneli", updatedById: access.session.userId } });
-  queueAudit({ actorUserId: access.session.userId, entityType: "KnowledgeBaseEntry", entityId: row.id, action: "KNOWLEDGE_ENTRY_CREATED" });
-  revalidateBusiness();
+  await runOps("knowledge.create", { type: "knowledge.create", businessUnitId: field(formData, "businessUnitId") || undefined, title: field(formData, "title"), category: field(formData, "category"), content: field(formData, "content"), productInterest: field(formData, "productInterest"), validFrom: field(formData, "validFrom"), validUntil: field(formData, "validUntil") });
   redirectToSection("ai-bilgi-merkezi");
 }
 
 export async function versionKnowledgeEntry(formData: FormData) {
-  const access = await requireBusinessPage("knowledge:write"); await guard("knowledge.version", access.session.userId);
-  const parsed = z.object({ id: z.string().cuid(), content: z.string().trim().min(10).max(10_000), isActive: z.enum(["true", "false"]) }).parse(Object.fromEntries(formData));
-  const current = await prisma.knowledgeBaseEntry.findFirst({ where: { id: parsed.id, businessUnitId: { in: scopedUnitIds(access) } } }); if (!current) throw new Error("KNOWLEDGE_NOT_FOUND");
-  await prisma.knowledgeBaseEntry.update({ where: { id: current.id }, data: { content: parsed.content, isActive: parsed.isActive === "true", version: { increment: 1 }, updatedById: access.session.userId } });
-  queueAudit({ actorUserId: access.session.userId, entityType: "KnowledgeBaseEntry", entityId: current.id, action: "KNOWLEDGE_ENTRY_VERSIONED", payload: { fromVersion: current.version, toVersion: current.version + 1 } }); revalidateBusiness();
+  await runOps("knowledge.version", { type: "knowledge.version", id: field(formData, "id"), content: field(formData, "content"), isActive: z.enum(["true", "false"]).parse(field(formData, "isActive")) === "true" });
   redirectToSection("ai-bilgi-merkezi");
 }
 
@@ -168,8 +155,6 @@ export async function createAdvertisement(formData: FormData) {
 }
 
 export async function createAutomationRule(formData: FormData) {
-  const access = await requireBusinessPage("automation:write");
-  await guard("automation.create", access.session.userId);
   const {
     automationTriggerSchema,
     automationConditionSchema,
@@ -220,91 +205,18 @@ export async function createAutomationRule(formData: FormData) {
                 : { type: actionType };
 
   const actions = automationActionsSchema.parse([automationActionSchema.parse(actionPayload)]);
-  const unit = resolveMutationUnit(access, formData.get("businessUnitId"));
-  const row = await prisma.automationRule.create({
-    data: {
-      businessUnitId: unit.id,
-      name,
-      triggerType,
-      conditions,
-      actions,
-      isActive,
-      createdByUserId: access.session.userId,
-    },
-  });
-  queueAudit({
-    actorUserId: access.session.userId,
-    entityType: "AutomationRule",
-    entityId: row.id,
-    action: "AUTOMATION_RULE_CREATED",
-    payload: { triggerType, isActive },
-  });
-  revalidateBusiness();
+  await runOps("automation.create", { type: "automation.create", businessUnitId: field(formData, "businessUnitId") || undefined, name, triggerType, conditions, actions, isActive });
   redirectToSection("otomasyon-kurallari");
 }
 
 export async function toggleAutomationRule(formData: FormData) {
-  const access = await requireBusinessPage("automation:write");
-  await guard("automation.toggle", access.session.userId);
-  const parsed = z.object({ id: z.string().cuid(), isActive: z.enum(["true", "false"]) }).parse(Object.fromEntries(formData));
-  const updated = await prisma.automationRule.updateMany({
-    where: { id: parsed.id, businessUnitId: { in: scopedUnitIds(access) } },
-    data: { isActive: parsed.isActive === "true" },
-  });
-  if (!updated.count) throw new Error("RULE_NOT_FOUND");
-  queueAudit({
-    actorUserId: access.session.userId,
-    entityType: "AutomationRule",
-    entityId: parsed.id,
-    action: parsed.isActive === "true" ? "AUTOMATION_RULE_ENABLED" : "AUTOMATION_RULE_DISABLED",
-  });
-  revalidateBusiness();
+  await runOps("automation.toggle", { type: "automation.toggle", id: field(formData, "id"), isActive: z.enum(["true", "false"]).parse(field(formData, "isActive")) === "true" });
   redirectToSection("otomasyon-kurallari");
 }
 
 export async function dryRunAutomationRuleAction(formData: FormData) {
-  const access = await requireBusinessPage("automation:write");
-  await guard("automation.dry-run", access.session.userId);
-  const { automationTriggerSchema } = await import("@/lib/automation/schemas");
-  const { dryRunAutomationRule } = await import("@/lib/automation/engine");
-  const parsed = z
-    .object({
-      id: z.string().cuid(),
-      triggerType: automationTriggerSchema,
-      entityType: z.string().min(2).max(40).default("lead"),
-      entityId: z.string().min(2).max(80).default("dry-run-sample"),
-      source: z.string().optional(),
-      product: z.string().optional(),
-      severity: z.string().optional(),
-      stage: z.string().optional(),
-      ownerEmpty: z.enum(["", "true", "false"]).optional(),
-    })
-    .parse(Object.fromEntries(formData));
-
-  const outcome = await dryRunAutomationRule({
-    ruleId: parsed.id,
-    businessUnitIds: scopedUnitIds(access),
-    trigger: parsed.triggerType,
-    context: {
-      entityType: parsed.entityType as "lead",
-      entityId: parsed.entityId,
-      source: parsed.source || null,
-      product: parsed.product || null,
-      severity: parsed.severity || null,
-      stage: parsed.stage || null,
-      ownerId: parsed.ownerEmpty === "true" ? null : parsed.ownerEmpty === "false" ? "sample-owner" : null,
-    },
-  });
-
-  queueAudit({
-    actorUserId: access.session.userId,
-    entityType: "AutomationRule",
-    entityId: parsed.id,
-    action: "AUTOMATION_RULE_DRY_RUN",
-    payload: { result: outcome.result, matched: outcome.matched, planned: outcome.planned },
-  });
-  revalidateBusiness();
-  redirect(`${basePath}/otomasyon-kurallari?dryRun=${outcome.result}&matched=${outcome.matched ? "1" : "0"}&rule=${parsed.id}`);
+  const outcome = await runOps("automation.dry-run", { type: "automation.dry_run", id: field(formData, "id"), triggerType: field(formData, "triggerType"), entityType: field(formData, "entityType") || "lead", entityId: field(formData, "entityId") || "dry-run-sample", source: field(formData, "source"), product: field(formData, "product"), severity: field(formData, "severity"), stage: field(formData, "stage"), ownerEmpty: field(formData, "ownerEmpty") === "false" ? false : true });
+  redirect(`${basePath}/otomasyon-kurallari?dryRun=${outcome.dryRunResult ?? "FAILED"}&matched=${outcome.summary?.matched ? "1" : "0"}&rule=${outcome.entityId}`);
 }
 
 export async function requestAISuggestion(formData: FormData) {
@@ -357,12 +269,7 @@ export async function markConversationRead(formData: FormData) {
 }
 
 export async function createPromptVersion(formData: FormData) {
-  const access = await requireBusinessPage("knowledge:write"); await guard("prompt.create", access.session.userId);
-  const parsed = z.object({ name: z.string().trim().min(2).max(80), systemPrompt: z.string().trim().min(20).max(8000) }).parse(Object.fromEntries(formData));
-  const unit = resolveMutationUnit(access, formData.get("businessUnitId"));
-  const latest = await prisma.aIPromptVersion.findFirst({ where: { businessUnitId: unit.id, name: parsed.name }, orderBy: { version: "desc" } });
-  await prisma.$transaction(async (tx) => { await tx.aIPromptVersion.updateMany({ where: { businessUnitId: unit.id, name: parsed.name, isActive: true }, data: { isActive: false } }); await tx.aIPromptVersion.create({ data: { businessUnitId: unit.id, name: parsed.name, version: (latest?.version ?? 0) + 1, systemPrompt: parsed.systemPrompt, isActive: true } }); });
-  queueAudit({ actorUserId: access.session.userId, entityType: "AIPromptVersion", entityId: parsed.name, action: "AI_PROMPT_VERSION_CREATED" }); revalidateBusiness();
+  await runOps("prompt.create", { type: "prompt.create", businessUnitId: field(formData, "businessUnitId") || undefined, name: field(formData, "name"), systemPrompt: field(formData, "systemPrompt") });
   redirectToSection("ai-bilgi-merkezi");
 }
 
@@ -390,10 +297,7 @@ export async function setManualAttribution(formData: FormData) {
 }
 
 export async function updateRetentionSettings(formData: FormData) {
-  const access = await requireBusinessPage("settings:write"); await guard("retention.update", access.session.userId);
-  const days = z.coerce.number().int().min(30).max(3650).parse(formData.get("retentionDays"));
-  await prisma.businessUnit.updateMany({ where: { id: { in: scopedUnitIds(access) } }, data: { retentionDays: days } });
-  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessUnit", entityId: "all", action: "RETENTION_SETTINGS_UPDATED", payload: { retentionDays: days } }); revalidateBusiness();
+  await runOps("retention.update", { type: "retention.update", retentionDays: field(formData, "retentionDays") });
   redirectToSection("ayarlar");
 }
 
@@ -403,33 +307,11 @@ export async function mergeSuggestedLead(formData: FormData) {
 }
 
 export async function assignBusinessRole(formData: FormData) {
-  const access = await requireRecentBusinessPage("role:write"); await guard("role.assign", access.session.userId);
-  const parsed = z.object({ userId: z.string().min(1), businessUnitId: z.string().cuid(), role: z.enum(["SUPER_ADMIN", "ADMIN", "SALES", "SUPPORT", "ACCOUNTING", "VIEWER"]) }).parse(Object.fromEntries(formData));
-  // Formdan gelen birim, kullanıcının role:write yetkisi olan birimleri
-  // arasından doğrulanır — form değeri tek başına asla yeterli değildir.
-  resolveMutationUnit(access, parsed.businessUnitId);
-  const user = await prisma.user.findFirst({ where: { id: parsed.userId, status: "ACTIVE" }, select: { id: true } }); if (!user) throw new Error("USER_NOT_FOUND");
-  const assignment = await prisma.businessRoleAssignment.upsert({ where: { userId_businessUnitId_role: parsed }, update: {}, create: parsed });
-  await revokeAllUserSessions(parsed.userId);
-  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessRoleAssignment", entityId: assignment.id, action: "BUSINESS_ROLE_ASSIGNED", payload: { userId: parsed.userId, businessUnitId: parsed.businessUnitId, role: parsed.role } }); revalidateBusiness();
+  await runOps("role.assign", { type: "role.assign", userId: field(formData, "userId"), businessUnitId: field(formData, "businessUnitId"), role: field(formData, "role") });
   redirectToSection("ayarlar");
 }
 
-/**
- * Rol geri alma. Sistemde en az bir aktif SUPER_ADMIN kalmasını garanti eder;
- * yönetici kendi son süper yöneticiliğini kaldırarak paneli kilitleyemez.
- */
 export async function revokeBusinessRole(formData: FormData) {
-  const access = await requireRecentBusinessPage("role:write"); await guard("role.revoke", access.session.userId);
-  const id = z.string().cuid().parse(formData.get("id"));
-  const assignment = await prisma.businessRoleAssignment.findFirst({ where: { id, businessUnitId: { in: scopedUnitIds(access) } } });
-  if (!assignment) throw new Error("ROLE_ASSIGNMENT_NOT_FOUND");
-  if (assignment.role === "SUPER_ADMIN") {
-    const remaining = await prisma.businessRoleAssignment.count({ where: { role: "SUPER_ADMIN", businessUnit: { isActive: true }, user: { status: "ACTIVE" }, NOT: { id: assignment.id } } });
-    if (remaining === 0) throw new Error("LAST_SUPER_ADMIN_PROTECTED");
-  }
-  await prisma.businessRoleAssignment.delete({ where: { id: assignment.id } });
-  await revokeAllUserSessions(assignment.userId);
-  queueAudit({ actorUserId: access.session.userId, entityType: "BusinessRoleAssignment", entityId: assignment.id, action: "BUSINESS_ROLE_REVOKED", payload: { userId: assignment.userId, businessUnitId: assignment.businessUnitId, role: assignment.role } }); revalidateBusiness();
+  await runOps("role.revoke", { type: "role.revoke", id: field(formData, "id") });
   redirectToSection("ayarlar");
 }

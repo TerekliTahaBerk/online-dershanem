@@ -12,15 +12,30 @@ const names = (user: { fullName: string | null; email: string }) => user.fullNam
 const f = (key: string, label: string, value = "", type: EducationField["type"] = "text", options: Choice[] = [], required = false): EducationField => ({ key, label, value, type, options: options.map((item) => ({ ...item, revision: item.revision ?? null })), required });
 const enums = (values: string[]) => values.map((id) => ({ id, name: ({ ONE: "Yalnız bu ders", FOLLOWING: "Bu ve sonraki dersler", SINGLE: "Tek ders", SERIES: "Ders serisi", GROUP: "Grup", STUDENT: "Bireysel öğrenci", PLANNED: "Planlı", COMPLETED: "Tamamlandı", CANCELLED: "İptal", DRAFT: "Taslak", ACTIVE: "Aktif", ARCHIVED: "Arşiv", APPROVE: "Onayla", REQUEST_CHANGES: "Yeniden çalışma iste", NEEDS_WORK: "Geliştirilmeli", DEVELOPING: "Gelişiyor", MEETS: "Karşılıyor", COMPLETE_LATER: "Sonra tamamla", CATALOG_MISSING: "Katalogda yok", NOT_APPLICABLE: "Uygulanamaz" } as Record<string, string>)[id] ?? id }));
 
-export async function loadEducationEditor(input: { kind: EditorKind; id?: string; group?: string; q?: string; page?: number; week?: number; teacher?: string }) {
+export async function loadEducationEditor(input: { kind: EditorKind; id?: string; group?: string; q?: string; page?: number; week?: number; teacher?: string; teacherScope?: string; lesson?: string }) {
   const { kind, id } = input;
+  const teacherScope = input.teacherScope;
+  if (teacherScope && !["assignment", "material"].includes(kind)) throw new GroupMutationError("NOT_FOUND", "Editör bulunamadı.", 404);
+  const teacherGroup = teacherScope ? { group: { teacherId: teacherScope } } : {};
+  if (teacherScope) {
+    const target = id
+      ? kind === "assignment" ? await prisma.assignment.findFirst({ where: { id, ...teacherGroup }, select: { id: true } }) : await prisma.learningMaterial.findFirst({ where: { id, ...teacherGroup }, select: { id: true } })
+      : input.group ? await prisma.group.findFirst({ where: { id: input.group, teacherId: teacherScope, isActive: true }, select: { id: true } }) : true;
+    if (!target) throw new GroupMutationError("NOT_FOUND", "Kayıt bulunamadı.", 404);
+    if (input.lesson) {
+      const lesson = await prisma.lesson.findFirst({ where: { id: input.lesson, teacherId: teacherScope, group: { teacherId: teacherScope, isActive: true }, ...(input.group ? { groupId: input.group } : {}) }, select: { groupId: true } });
+      if (!lesson) throw new GroupMutationError("NOT_FOUND", "Ders bulunamadı.", 404);
+      input = { ...input, group: lesson.groupId };
+    }
+  }
+
   const data: EducationEditor = { contractVersion: 1, title: ({ lesson: "Dersler", assignment: "Ödevler", material: "Materyaller", setup: "Hızlı kurulum", version: "Kazanım sürümleri", outcome: "Kazanım oluştur", submission: "Teslim değerlendirme", calendar: "Kurum takvimi" })[kind], description: "", forms: [], rows: [], hasMore: false, file: null };
   const flags = getPanelFeatureFlags();
   if ((kind === "version" || kind === "outcome") && !flags.learningOutcomes) throw new GroupMutationError("FEATURE_DISABLED", "Kazanımlar henüz açık değil.", 404);
   const form = (action: string, title: string, path: string, method: EducationForm["method"], fields: EducationField[], revision: string | null = null, preview = false, upload = false) => data.forms.push({ id: action, title, path: `/api/panel/${path}`, method, fields, revision, preview, upload });
   const [groups, teachers, students, parents] = await Promise.all([
-    prisma.group.findMany({ where: { isActive: true }, orderBy: { name: "asc" }, include: { enrollments: { where: { endedAt: null }, orderBy: { id: "asc" } } } }),
-    prisma.user.findMany({ where: { role: "TEACHER", status: "ACTIVE" }, orderBy: { fullName: "asc" }, select: { id: true, fullName: true, email: true } }),
+    prisma.group.findMany({ where: { isActive: true, ...(teacherScope ? { teacherId: teacherScope } : {}) }, orderBy: { name: "asc" }, include: { enrollments: { where: { endedAt: null }, orderBy: { id: "asc" } } } }),
+    prisma.user.findMany({ where: { role: "TEACHER", status: "ACTIVE", ...(teacherScope ? { id: teacherScope } : {}) }, orderBy: { fullName: "asc" }, select: { id: true, fullName: true, email: true } }),
     (kind === "setup" || kind === "lesson") ? prisma.studentProfile.findMany({ where: { user: { status: "ACTIVE" } }, include: { user: { select: { fullName: true, email: true } }, enrollments: { where: { endedAt: null }, orderBy: { id: "asc" } } }, orderBy: { user: { fullName: "asc" } } }) : [],
     kind === "setup" ? prisma.user.findMany({ where: { role: "PARENT", status: "ACTIVE" }, select: { id: true, fullName: true, email: true } }) : [],
   ]);
@@ -48,7 +63,7 @@ export async function loadEducationEditor(input: { kind: EditorKind; id?: string
       form("MAKE_UP", "Telafi planla", `lessons/${id}`, "PATCH", [f("action", "", "MAKE_UP", "hidden"), titleField(`${lesson.title} (Telafi)`), dateField("startsAt", "Telafi başlangıcı"), f("teacherId", "Öğretmen", lesson.teacherId, "choice", teacherOptions, true), urlField(lesson.meetingUrl ?? "")], revision);
     } else {
       form("CREATE", "Ders oluştur", "lessons", "POST", [f("targetType", "Ders hedefi", "GROUP", "choice", enums(["GROUP", "STUDENT"])), groupField, f("studentId", "Öğrenci", "", "choice", studentOptions), f("teacherId", "Bireysel ders öğretmeni", "", "choice", teacherOptions), titleField(), dateField("startsAt", "Başlangıç"), f("durationMinutes", "Süre (dakika)", "60", "number", [], true), f("mode", "Planlama", "SINGLE", "choice", enums(["SINGLE", "SERIES"])), f("repeatWeeks", "Tekrar haftası", "4", "number"), f("weekdays", "Haftanın günleri", "", "ids", ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"].map((name, index) => ({ id: String(index + 1), name }))), f("totalOccurrences", "Toplam ders (en fazla 48)", "4", "number"), f("seriesEndsOn", "Seri bitiş tarihi (isteğe bağlı)", "", "date"), urlField()], null, true);
-      const lessons = await prisma.lesson.findMany({ where: { ...(input.group ? { groupId: input.group } : {}), ...(filter ? { title: filter } : {}) }, orderBy: [{ startsAt: "desc" }, { id: "asc" }], take: limit + 1, skip, include: { group: { select: { name: true } } } });
+      const lessons = await prisma.lesson.findMany({ where: { ...teacherGroup, ...(input.group ? { groupId: input.group } : {}), ...(filter ? { title: filter } : {}) }, orderBy: [{ startsAt: "desc" }, { id: "asc" }], take: limit + 1, skip, include: { group: { select: { name: true } } } });
       data.hasMore = lessons.length > limit;
       data.rows = lessons.slice(0, limit).map((item) => ({ id: item.id, title: item.title, detail: `${item.group.name} · ${item.status}`, kind, at: item.startsAt.toISOString() }));
     }
@@ -60,7 +75,7 @@ export async function loadEducationEditor(input: { kind: EditorKind; id?: string
     const fields = [titleField(assignment?.title), f("description", "Açıklama", assignment?.description ?? ""), dateField("dueAt", "Son teslim", assignment?.dueAt.toISOString())];
     if (flags.learningOutcomes) fields.push(f("outcomeIds", "Kazanımlar (en fazla 3 · arama ile katalog süzülür)", assignment?.outcomeLinks.map((link) => link.outcomeId).join(",") ?? "", "ids", outcomes.map((item) => ({ id: item.id, name: `${item.code} · ${item.title}` }))), f("outcomeSkipReason", "Kazanım erteleme nedeni", assignment?.outcomeSkipReason ?? "COMPLETE_LATER", "choice", enums(["COMPLETE_LATER", "CATALOG_MISSING", "NOT_APPLICABLE"])));
     if (assignment) fields.push(f("isActive", "Aktif", String(assignment.isActive), "boolean"));
-    else fields.unshift(groupField, f("lessonId", "Bağlı ders (isteğe bağlı)", "", "choice", (await prisma.lesson.findMany({ where: input.group ? { groupId: input.group } : {}, orderBy: { startsAt: "desc" }, take: 100 })).map((item) => ({ id: item.id, name: `${item.title} · ${item.startsAt.toISOString()}` }))));
+    else fields.unshift(groupField, f("lessonId", "Bağlı ders (isteğe bağlı)", input.lesson ?? "", "choice", (await prisma.lesson.findMany({ where: { ...teacherGroup, ...(input.group ? { groupId: input.group } : {}) }, orderBy: { startsAt: "desc" }, take: 100 })).map((item) => ({ id: item.id, name: `${item.title} · ${item.startsAt.toISOString()}` }))));
     if (!assignment && flags.assignmentEvidence) fields.push(f("evidenceRequired", "Kanıtlı teslim", "false", "boolean"), f("rubricCriteria", "Değerlendirme ölçütleri (2–4, her satıra bir ölçüt)", "", "lines"));
     form("SAVE", assignment ? "Ödevi düzenle" : "Ödev oluştur", assignment ? `assignments/${id}` : "assignments", assignment ? "PATCH" : "POST", fields, revision);
     if (assignment) {
@@ -69,7 +84,7 @@ export async function loadEducationEditor(input: { kind: EditorKind; id?: string
       data.hasMore = submissions.length > limit;
       data.rows = submissions.slice(0, limit).map((item) => ({ id: item.id, title: names(item.student.user), detail: `${item.status} · ${item.attemptNumber}. deneme`, kind: "submission", at: item.submittedAt.toISOString() }));
     } else {
-      const rows = await prisma.assignment.findMany({ where: { ...(input.group ? { groupId: input.group } : {}), ...(filter ? { title: filter } : {}) }, orderBy: [{ dueAt: "desc" }, { id: "asc" }], skip, take: limit + 1 });
+      const rows = await prisma.assignment.findMany({ where: { ...teacherGroup, ...(input.group ? { groupId: input.group } : {}), ...(filter ? { title: filter } : {}) }, orderBy: [{ dueAt: "desc" }, { id: "asc" }], skip, take: limit + 1 });
       data.hasMore = rows.length > limit;
       data.rows = rows.slice(0, limit).map((item) => ({ id: item.id, title: item.title, detail: item.isActive ? "Aktif" : "Arşiv", kind, at: item.dueAt.toISOString() }));
     }
@@ -84,10 +99,10 @@ export async function loadEducationEditor(input: { kind: EditorKind; id?: string
       form("EDIT", "Materyali düzenle", `materials/${id}`, "PATCH", [...fields, f("isActive", "Aktif", String(item.isActive), "boolean"), ...(!item.blobPathname ? [f("url", "Bağlantı", item.url, "text", [], true)] : [])], revision);
       form("ARCHIVE", "Materyali arşivle", `materials/${id}`, "PATCH", [], revision);
     } else {
-      const associations = [f("lessonId", "Bağlı ders (isteğe bağlı)", "", "choice", (await prisma.lesson.findMany({ where: input.group ? { groupId: input.group } : {}, orderBy: { startsAt: "desc" }, take: 100, include: { group: { select: { name: true } } } })).map((lesson) => ({ id: lesson.id, name: `${lesson.group.name} · ${lesson.title}` }))), f("assignmentId", "Bağlı ödev (isteğe bağlı)", "", "choice", (await prisma.assignment.findMany({ where: input.group ? { groupId: input.group } : {}, orderBy: { createdAt: "desc" }, take: 100, include: { group: { select: { name: true } } } })).map((assignment) => ({ id: assignment.id, name: `${assignment.group.name} · ${assignment.title}` })))];
+      const associations = [f("lessonId", "Bağlı ders (isteğe bağlı)", input.lesson ?? "", "choice", (await prisma.lesson.findMany({ where: { ...teacherGroup, ...(input.group ? { groupId: input.group } : {}) }, orderBy: { startsAt: "desc" }, take: 100, include: { group: { select: { name: true } } } })).map((lesson) => ({ id: lesson.id, name: `${lesson.group.name} · ${lesson.title}` }))), f("assignmentId", "Bağlı ödev (isteğe bağlı)", "", "choice", (await prisma.assignment.findMany({ where: { ...teacherGroup, ...(input.group ? { groupId: input.group } : {}) }, orderBy: { createdAt: "desc" }, take: 100, include: { group: { select: { name: true } } } })).map((assignment) => ({ id: assignment.id, name: `${assignment.group.name} · ${assignment.title}` })))];
       form("LINK", "Bağlantı paylaş", "materials", "POST", [groupField, ...associations, ...fields, f("url", "Bağlantı", "", "text", [], true), f("kind", "Tür", "LINK", "choice", enums(["LINK", "PDF", "VIDEO"]))]);
       form("UPLOAD", "PDF/MP4 yükle (en fazla 4 MB)", "materials/upload", "POST", [groupField, ...fields], null, false, true);
-      const rows = await prisma.learningMaterial.findMany({ where: { ...(input.group ? { groupId: input.group } : {}), ...(filter ? { title: filter } : {}) }, orderBy: [{ createdAt: "desc" }, { id: "asc" }], skip, take: limit + 1 });
+      const rows = await prisma.learningMaterial.findMany({ where: { ...teacherGroup, ...(input.group ? { groupId: input.group } : {}), ...(filter ? { title: filter } : {}) }, orderBy: [{ createdAt: "desc" }, { id: "asc" }], skip, take: limit + 1 });
       data.hasMore = rows.length > limit;
       data.rows = rows.slice(0, limit).map((row) => ({ id: row.id, title: row.title, detail: `${row.kind} · ${row.isActive ? "Aktif" : "Arşiv"}`, kind, at: row.createdAt.toISOString() }));
     }

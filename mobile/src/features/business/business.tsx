@@ -14,6 +14,7 @@ import { queryKeys } from '@/lib/query/keys';
 
 import { ConversationActions, CreateLeadSheet, LeadActions } from './crm';
 import { AttributionForm, SectionOps } from './ops';
+import { GovernanceActions } from './governance';
 
 /**
  * İŞLETME (P2.7a — okuma). Web `isletme/[section]` ile AYNI yükleyici ve
@@ -94,6 +95,7 @@ function SectionBody({ data, onQuery }: { data: MobileBusinessSection; onQuery: 
         <FilterChips key={filter.key} label={filter.label} value={filter.value} onChange={(value) => onQuery({ [filter.key]: value, cursor: undefined })} options={filter.options} />
       ))}
       {data.notice ? <Banner tone="info">{data.notice}</Banner> : null}
+      <GovernanceActions data={data} />
       <SectionOps data={data}>{(onAction) => <Cards cards={data.cards} onAction={onAction} />}</SectionOps>
       {data.nextCursor ? <Button label="Sonraki sayfa" variant="quiet" onPress={() => onQuery({ cursor: data.nextCursor ?? undefined })} testID="business-next" /> : null}
     </>

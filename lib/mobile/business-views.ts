@@ -1,5 +1,5 @@
 import { AiMode, ConversationStatus, LeadTemperature } from "@prisma/client";
-import { AUTOMATION_ACTION_LABELS, AUTOMATION_TRIGGER_LABELS } from "@/lib/automation/definitions";
+import { AUTOMATION_ACTION_LABELS, AUTOMATION_TRIGGER_LABELS, AUTOMATION_TRIGGERS, PART12_ACTIONS, LEGACY_ACTIONS } from "@/lib/automation/definitions";
 import { calculateAdMetrics } from "@/lib/business/finance";
 import {
   LEAD_LOST_REASON_LABELS,
@@ -396,7 +396,15 @@ export function toMobileBusinessSection(ctx: Ctx): MobileBusinessSection {
     nextCursor: body.nextCursor ?? null,
     conversation: body.conversation ?? null,
     lead: body.lead ?? null,
-    can: { conversationRead: ctx.granted.has("conversation:read"), conversationReply: ctx.granted.has("conversation:reply"), leadWrite: ctx.granted.has("lead:write"), campaignWrite: ctx.granted.has("campaign:write"), integrationWrite: ctx.granted.has("integration:write"), financeWrite: ctx.granted.has("finance:write"), financeReverse: ctx.granted.has("finance:reverse") },
+    governance: {
+      knowledge: ctx.granted.has("knowledge:write") ? data.knowledge.map((x) => ({ id: x.id, title: x.title, content: x.content, isActive: x.isActive, revision: x.updatedAt.toISOString() })) : [],
+      rules: ctx.granted.has("automation:write") ? data.rules.map((x) => ({ id: x.id, name: x.name, triggerType: x.triggerType, isActive: x.isActive, revision: x.updatedAt.toISOString() })) : [],
+      users: ctx.granted.has("role:write") ? data.settingsUsers.map((x) => ({ value: x.id, label: `${x.fullName || "İsimsiz"} · ${x.email}` })) : [],
+      triggers: AUTOMATION_TRIGGERS.map((value) => ({ value, label: AUTOMATION_TRIGGER_LABELS[value] })),
+      actions: [...PART12_ACTIONS, ...LEGACY_ACTIONS].map((value) => ({ value, label: AUTOMATION_ACTION_LABELS[value] })),
+      roles: ["SUPER_ADMIN", "ADMIN", "SALES", "SUPPORT", "ACCOUNTING", "VIEWER"].map((value) => ({ value, label: value })),
+    },
+    can: { knowledgeWrite: ctx.granted.has("knowledge:write"), automationWrite: ctx.granted.has("automation:write"), settingsWrite: ctx.granted.has("settings:write"), roleWrite: ctx.granted.has("role:write"), conversationRead: ctx.granted.has("conversation:read"), conversationReply: ctx.granted.has("conversation:reply"), leadWrite: ctx.granted.has("lead:write"), campaignWrite: ctx.granted.has("campaign:write"), integrationWrite: ctx.granted.has("integration:write"), financeWrite: ctx.granted.has("finance:write"), financeReverse: ctx.granted.has("finance:reverse") },
     options: {
       stages: LEAD_STAGES.map((stage) => ({ value: stage, label: LEAD_STAGE_LABELS[stage] })),
       lostReasons: Object.entries(LEAD_LOST_REASON_LABELS).map(([value, label]) => ({ value, label })),

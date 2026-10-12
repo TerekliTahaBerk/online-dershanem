@@ -37,16 +37,16 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 
 | Alan | Rota | Tam | Kısmi | Eksik | İstisna | Yönl. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1. Yönetim (`/panel/yonetim`) | 28 | 26 | 1 | 0 | 0 | 1 |
+| 1. Yönetim (`/panel/yonetim`) | 28 | 27 | 0 | 0 | 0 | 1 |
 | 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 0 | 0 | 8 | 0 | 0 |
-| 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 7 | 3 | 10 | 0 | 0 |
+| 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 14 | 2 | 4 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
-| 5. Öğrenci (`/panel/ogrenci`) | 18 | 11 | 4 | 2 | 0 | 1 |
+| 5. Öğrenci (`/panel/ogrenci`) | 18 | 15 | 1 | 1 | 0 | 1 |
 | 6. Deneme Ligi öğrenci (`/panel/odk/ogrenci`) | 5 | 3 | 1 | 0 | 1 | 0 |
-| 7. Veli (`/panel/veli`) | 12 | 5 | 4 | 1 | 0 | 2 |
+| 7. Veli (`/panel/veli`) | 12 | 7 | 2 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 4 | 3 | 2 | 0 | 2 |
-| **Toplam** | **106** | **60** | **16** | **23** | **1** | **6** |
+| **Toplam** | **106** | **74** | **9** | **16** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
@@ -92,7 +92,7 @@ Mobil karşılık: `native-screens.ts` ADMIN eşlemesi + `(app)/admin/*` yığı
 | Y24 | `/panel/yonetim/kayitlar` | `audit` | O: tür filtreli en yeni 100 işlem, aktör ve İstanbul zamanı | `loadAdminAudit` (web/mobil ortak) | Hazır (`GET /api/panel/admin/audit`) | `admin-audit` | Tam | P2.8 | Hassas audit payload taşınmaz; rol, özel önbellek, filtre ve boş görünüm testli. |
 | Y25 | `/panel/yonetim/pilot` | `pilot` | O: yayın hazırlık kapıları, aktif gruplar, son 20 kohort (rol kapsaması, sürüm) · Y: gruptan dört rollü kohort oluştur, aktive et / duraklat / sürdür / tamamla / geri al (durdurma nedeni) | `loadPilotPage` (`lib/panel/pilot-server.ts`, sayfadan taşındı); yazma: `pilot-cohorts` POST, `pilot-cohorts/[id]` PATCH → `lib/panel/pilot-cohort-service.ts` (taze step-up, aktöre bağlı işlem anahtarı, sürüm/409, atomik audit) | Hazır (`GET /api/panel/admin/pilot`) | `admin-pilot` | Tam | P2.8 | İzinli geçişler `pilotTransitionAllowed`'dan; aktivasyon kapıları sunucuda. Deneme Ligi pilotu (`odk-pilot`) P4 |
 | Y26 | `/panel/yonetim/kalite` | `quality` (flag `cohortQuality`) | O: kazanım etiketleme, geri bildirim medyanı, eşleşmiş kohort dağılımı ve ortak hata sinyalleri | `loadAdminQuality` (web/mobil ortak) | Hazır (`GET /api/panel/admin/quality`) | `admin-quality` | Tam | P2.8 | Bayrak kapalıysa 404; küçük kohortta sayı/kapsama/tazelik JSON yanıtından çıkarılır. Gerçek DB/HTTP ve native testli; gerçek iPhone P6. |
-| Y27 | `/panel/yonetim/isletme/[section]` | `business-*` (16 bölüm) | O: genel bakış, mesaj kutusu, adaylar, satış hunisi, reklamlar, kampanyalar, gelirler, giderler, vergiler, mutabakat, raporlar, AI bilgi merkezi, otomasyon, entegrasyonlar, sistem kayıtları, ayarlar · Y: **36 eylem** — konuşma ata/etiketle/okundu/kontrol; aday oluştur/aşama/not/görev/takip/sahip/öncelik/birleştir/sipariş bağla/yaşam döngüsü; kampanya/reklam oluştur; finans işlemi oluştur/ters kayıt; dönem kilidi; mutabakat çalıştır/çöz; Meta senkron; manuel atıf; bilgi kaydı oluştur/sürümle; prompt sürümü; AI öneri; otomasyon oluştur/aç-kapa/dry-run; saklama ayarı; işletme rolü ver/al; Instagram mesaj gönder | SA `app/panel/yonetim/isletme/actions.ts`; `admin/business/reports.csv`, `integrations/instagram/{health,send}`; `lifecycle/lead-detail-server.ts`; okuma `loadBusinessSectionData` (`lib/business/section-data-server.ts`, sayfadan taşındı) | O hazır (`GET /api/panel/business/sections/[section]`, kapı `requireBusinessApi`); Y: CRM hazır (`POST /api/panel/business/crm` → `lib/business/crm-service.ts`; yanıt `integrations/instagram/send`); pazarlama + finans hazır (`POST /api/panel/business/ops` → `lib/business/ops-service.ts`; finans kaydı / ters kayıt / dönem kilidi taze step-up); AI / otomasyon / ayarlar SA (P2.7d) | `business/*` (merkez, 16 bölüm, konuşma ve aday detayı) | Kısmi | P2.7 | P2.7a: 16 bölümün okuması native (süzgeçler, sayfalama, konuşma / aday detayı); görünürlük bootstrap `business`, yetki `BusinessRoleAssignment` (ADR-0011). P2.7b: 17 CRM eylemi servise taşındı ve native (konuşma denetimi, okundu, atama, etiket, AI önerisi, yanıt; aday oluştur, aşama, not, görev, takip, sorumlu, öncelik, kopya, birleştirme, sipariş / hesap bağı). P2.7c: 9 pazarlama + finans eylemi servise taşındı ve native (kampanya, manuel reklam, manuel atıf, Meta senkronu, gelir / gider, ters kayıt, dönem kilidi, mutabakat çalıştır / çöz). Kalan: 9 eylem (P2.7d AI bilgi merkezi, prompt, otomasyon, saklama, işletme rolleri). E3 ve E5 kapsam dışı |
+| Y27 | `/panel/yonetim/isletme/[section]` | `business-*` (16 bölüm) | O: genel bakış, mesaj kutusu, adaylar, satış hunisi, reklamlar, kampanyalar, gelirler, giderler, vergiler, mutabakat, raporlar, AI bilgi merkezi, otomasyon, entegrasyonlar, sistem kayıtları, ayarlar · Y: **36 eylem** — konuşma ata/etiketle/okundu/kontrol; aday oluştur/aşama/not/görev/takip/sahip/öncelik/birleştir/sipariş bağla/yaşam döngüsü; kampanya/reklam oluştur; finans işlemi oluştur/ters kayıt; dönem kilidi; mutabakat çalıştır/çöz; Meta senkron; manuel atıf; bilgi kaydı oluştur/sürümle; prompt sürümü; AI öneri; otomasyon oluştur/aç-kapa/dry-run; saklama ayarı; işletme rolü ver/al; Instagram mesaj gönder | SA `app/panel/yonetim/isletme/actions.ts`; `admin/business/reports.csv`, `integrations/instagram/{health,send}`; `lifecycle/lead-detail-server.ts`; okuma `loadBusinessSectionData` (`lib/business/section-data-server.ts`, sayfadan taşındı) | O hazır (`GET /api/panel/business/sections/[section]`, kapı `requireBusinessApi`); Y: CRM hazır (`POST /api/panel/business/crm` → `lib/business/crm-service.ts`; yanıt `integrations/instagram/send`); pazarlama + finans hazır (`POST /api/panel/business/ops` → `lib/business/ops-service.ts`; finans kaydı / ters kayıt / dönem kilidi taze step-up); AI / otomasyon / ayarlar ortak governance servisi (P2.7d); rol ver/al step-up | `business/*` (merkez, 16 bölüm, konuşma ve aday detayı) | Tam | — | P2.7a: 16 bölümün okuması native (süzgeçler, sayfalama, konuşma / aday detayı); görünürlük bootstrap `business`, yetki `BusinessRoleAssignment` (ADR-0011). P2.7b: 17 CRM eylemi servise taşındı ve native (konuşma denetimi, okundu, atama, etiket, AI önerisi, yanıt; aday oluştur, aşama, not, görev, takip, sorumlu, öncelik, kopya, birleştirme, sipariş / hesap bağı). P2.7c: 9 pazarlama + finans eylemi servise taşındı ve native (kampanya, manuel reklam, manuel atıf, Meta senkronu, gelir / gider, ters kayıt, dönem kilidi, mutabakat çalıştır / çöz). P2.7d: kalan 9 eylem ortak servis + native formlar; işlem anahtarı, revizyon, atomik rol/oturum iptali. Kanıt: `business-governance.integration.ts`, `business-governance.spec.ts`, `mobile/src/test/business.test.tsx`. Gerçek iPhone kabulü P6. E3 ve E5 kapsam dışı |
 | Y28 | `/panel/yonetim/isletme` | — | — | `redirect → genel-bakis` | — | — | Yönl. | — | |
 
 ## 2. Deneme Ligi yönetimi — `/panel/odk/yonetim` (ADMIN + izinli Deneme Ligi personeli)
@@ -116,19 +116,19 @@ Mobil karşılık: **yok** (öğretmen ODK alanında yalnız `teacher-odk-report
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | T01 | `/panel/ogretmen` | `today` (OD) | O: Bugün | `teacher-workspace-server.ts`; `staff/teacher/home` | Hazır | `teacher-home` | Tam | — | Dino kısa yolu P5'te (S18) |
 | T02 | `/panel/ogretmen/takvim` | `lessons` | O: ders takvimi | Prisma (RSC); mobil `staff/teacher/lessons` | Hazır | `teacher-lessons` | Tam | — | |
-| T03 | `/panel/ogretmen/ders/[id]` | — | O: ders detayı · Y: yoklama/kapanış, ders notları, dersten ödev oluştur, şablon oluştur/düzenle, kazanım arama/favori | `lessons/[id]/notes` PUT, `assignments` POST, `teacher/templates*`, `curriculum/outcomes/search`, `teacher/outcome-favorites`; `teacher-lesson-server.ts` | Hazır | `teacher/lesson/[id]` | Kısmi | P3 | Dersten ödev oluşturma, şablonlar, kazanım favorileri |
-| T04 | `/panel/ogretmen/odevler` | `assignments` | O: ödev listesi, teslim kuyruğu · Y: teslim değerlendir, ödev oluştur/düzenle, kazanım arama | `assignments` POST, `assignments/[id]` PATCH, `assignment-submissions/[id]/review`; `teacher-assignments-server.ts` | Hazır | `teacher-assignments`, `teacher/submission/[id]` | Kısmi | P3 | Oluşturma/düzenleme (ekranda "web panelinde" banner'ı) |
+| T03 | `/panel/ogretmen/ders/[id]` | — | O: ders detayı · Y: yoklama/kapanış, ders notları, dersten ödev oluştur, şablon oluştur/düzenle/sil/uygula, kazanım arama/favori | `lessons/[id]/notes` PUT, `assignments` POST, `teacher/templates*`, `curriculum/outcomes/search`, `teacher/outcome-favorites`; `teacher-lesson-server.ts` | Hazır | `teacher/lesson/[id]`, `teacher/education-editor` | Tam | P3.1 | Ortak hazır/kişisel şablonlar, native arama/favori. Şablon tekrar/409/IDOR gerçek HTTP; native belirsiz hata tekrarı ve favori testi. Cihaz kabulü P6 |
+| T04 | `/panel/ogretmen/odevler` | `assignments` | O: ödev listesi, teslim kuyruğu · Y: teslim değerlendir, ödev oluştur/düzenle, kazanım arama | `assignments` POST, `assignments/[id]` PATCH, `assignment-submissions/[id]/review`, `staff/teacher/education`; `teacher-assignments-server.ts` | Hazır | `teacher-assignments`, `teacher/submission/[id]`, `teacher/education-editor` | Tam | P3.1 | Öğretmen kapsamlı ortak eğitim editörü; Bearer yazmaları atomik receipt/sürüm kontrolü kullanır. Gerçek HTTP tekrar/409/IDOR; native ağ tekrarı |
 | T05 | `/panel/ogretmen/yardim` | `help` | O: yardım kutusu · Y: yanıtla | `student-help-requests/[id]/respond` | Hazır | `teacher-help` | Tam | — | |
-| T06 | `/panel/ogretmen/gruplar` | `students` | O: grup + öğrenci listesi | `teacher-roster-server.ts` | O yok | — | Eksik | P3 | |
-| T07 | `/panel/ogretmen/ogrenci/[id]` | — | O: öğrenci profili · Y: ilişki ekle/güncelle, öğretmen atama, Dino bağlamı | `relationships*`, `student-teachers` | Y var, O yok | — | Eksik | P3 | Öğretmen kapsamlı öğrenci 360 |
-| T08 | `/panel/ogretmen/materyaller` | `materials` | O: materyaller · Y: yükle, oluştur, düzenle, dosya | `materials` GET/POST, `materials/[id]` PATCH, `materials/upload`, `materials/[id]/file` | Hazır | — | Eksik | P3 | Dosya seçici |
-| T09 | `/panel/ogretmen/tekrar` | `review` | O: tekrar gerekenler · Y: tekrar kaydı oluştur | `review-queue` POST | Y var, O yok | — | Eksik | P3 | |
+| T06 | `/panel/ogretmen/gruplar` | `students` | O: grup + öğrenci listesi | `teacher-roster-server.ts` | Hazır (`staff/teacher/students`) | `teacher-students` | Tam | P3.2 | Ortak roster, sunucu filtreleri ve native profil bağlantısı; yabancı öğretmen/öğrenci ve sona ermiş kayıt gerçek HTTP testleri geçti |
+| T07 | `/panel/ogretmen/ogrenci/[id]` | — | O: öğretmen kapsamlı öğrenci 360 · Y: bayraklı Dino bağlamı (veli/öğretmen ataması web’de de yalnız ADMIN) | `loadStudent360Bundle`, Dino açıklama | Hazır (okuma: `staff/teacher/students/[id]`) | `teacher/student/[id]` | Kısmi | P3.2 / P5.4 | Native profil sekmeleri, ticaret/yönetim alanları kapalı; HTTP IDOR ve ilişki sona erme testi geçti. Dino bağlamı açık |
+| T08 | `/panel/ogretmen/materyaller` | `materials` | O: materyaller · Y: yükle, oluştur, düzenle, dosya | `staff/teacher/education`, `materials` POST, `materials/[id]` PATCH, `materials/upload`, `materials/[id]/file` | Hazır | `teacher-materials`, `teacher/education-editor` | Tam | P3.1 | Ortak native dosya seçici/yükleme ve özel dosya açma; öğretmen kapsamlı seçenekler; HTTP yabancı materyal ve 413 testi. Gerçek Blob/iPhone kabulü P6 |
+| T09 | `/panel/ogretmen/tekrar` | `review` | O: kuyruk gözetimi · Y: kaynak referansından tekrar oluştur | `staff/teacher/review`, `review-queue` POST, ortak `teacher-review-server` | Hazır | `teacher-review` | Tam | P3.3 | Ortak web/mobil yükleyici; native öğrenci seçimi, kaynak formu ve gözetim. Bearer tekrar oluşturma atomik receipt/öğrenci sürümü; HTTP tekrar/IDOR/409, native belirsiz hata tekrarı |
 | T10 | `/panel/ogretmen/telafi` | `recovery` | O: telafi paketleri · Y: paket üret, yayınla | `recovery-packages/generate`, `recovery-packages/[id]/publish` | Y var, O yok | — | Eksik | P3 | |
 | T11 | `/panel/ogretmen/mudahale` | `interventions` | O: müdahale kutusu · Y: oluştur, güncelle, üret | `interventions*`; `intervention-inbox-server.ts` | Y var, O yok | — | Eksik | P3 | |
 | T12 | `/panel/ogretmen/ozetler` | `digests` | O: haftalık özetler · Y: üret, yayınla | `weekly-digests/generate`, `weekly-digests/[id]/publish` | Y var, O yok | — | Eksik | P3 | |
-| T13 | `/panel/ogretmen/analiz` | `analiz` | O: sınıf gidişatı | `progress-insights/server.ts` | O yok | — | Eksik | P3 | |
+| T13 | `/panel/ogretmen/analiz` | `analiz` | O: grup ortalamaları, düşen gidişat ve öğrenci listesi | `staff/teacher/analysis`, ortak `loadTeacherGidisatOverview` | Hazır | `teacher-analysis` | Tam | P3.2 | Bayrak + OD personel izni; yalnız aktif grup/kayıt; native ortalamalar ve profil bağlantıları. HTTP yabancı öğretmen/sona ermiş kayıt boş liste |
 | T14 | `/panel/ogretmen/ai-yardimci` | `ai-drafts` | O: taslaklar · Y: taslak oluştur, onayla/düzenle | `ai-drafts` POST, `ai-drafts/[id]` PATCH | Y var, O yok | — | Eksik | P3 | `safe-teacher-ai-operations` + bayrak |
-| T15 | `/panel/ogretmen/denemeler` | `mock-exams` | O: dış deneme analizi · Y: kayıt ekle/düzenle | `mock-exams` GET/POST, `mock-exams/[id]` PATCH | Yetki | — | Eksik | P3 | `mock-exams` GET yalnız STUDENT; öğretmen kapsamlı GET gerekli |
+| T15 | `/panel/ogretmen/denemeler` | `mock-exams` | O: dış deneme analizi · Y: kayıt ekle, hata nedenlerini düzenle, sonraki eylemi onayla | `staff/teacher/mock-exams`, `mock-exams` POST, `mock-exams/[id]` PATCH, ortak `teacher-mock-exams-server` | Hazır | `teacher-mock-exams` | Tam | P3.2 | Aktif öğretmen/grup/kayıt kapsamlı GET; ortak native giriş/yapıştırma/revizyon/onay. HTTP IDOR/ilişki sona erme; native öğretmen sorgusu yenileme |
 | T16 | `/panel/ogretmen/plan` | `plan` | O: haftalık plan / öneriler · Y: planı onayla, öneri incele | `adaptive-plan/[id]/approve`, `kocum/suggestions/[id]/review` | Hazır | `coach-plans`, `coach/plan/[id]` | Tam | — | Yön alanında |
 | T17 | `/panel/ogretmen/yon` | `today` (OK) | O: koç Bugün | `kocum/coach-workspace-server.ts`; `staff/coach/home` | Hazır | `coach-home` | Tam | — | |
 | T18 | `/panel/ogretmen/yon/ogrenciler` | `coach-students` | O: koçluk öğrencileri | `staff/coach/students` | Hazır | `coach-students` | Tam | — | |
@@ -148,21 +148,21 @@ Mobil karşılık: **yok** (öğretmen ODK alanında yalnız `teacher-odk-report
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | S01 | `/panel/ogrenci` | `today` (OD) | O: Bugün, onboarding · Y: plan görevi tamamla | Hazır | `od-home` | Tam | — | Dino kısa yolu P5'te (S18) |
 | S02 | `/panel/ogrenci/odevler` | `assignments` | O · Y: ilerleme, teslim (kanıt) | Hazır | `od-assignments`, `od/assignment/[id]` | Tam | — | |
-| S03 | `/panel/ogrenci/takvim` | `lessons` | O: dersler · Y: .ics dışa aktar | Hazır | `od-lessons` | Kısmi | P5 | Takvime ekle |
+| S03 | `/panel/ogrenci/takvim` | `lessons` | O: dersler · Y: .ics dışa aktar | Hazır | `od-lessons` | Tam | — | Kimlikli ICS indir/paylaş, geçici dosya temizliği; `profile-calendar.test.tsx`, `mobile-p5-basics.spec.ts`. iPhone paylaşma kabulü P6 |
 | S04 | `/panel/ogrenci/takvim/[id]` | — | O: ders detayı, katılım | Hazır | `od/lesson/[id]` | Tam | — | |
 | S05 | `/panel/ogrenci/materyaller` | `materials` | O + dosya aç | Hazır | `od-materials` | Tam | — | |
 | S06 | `/panel/ogrenci/tekrar` | `review-recovery` | O · Y: yanıtla, ertele | Hazır | `od-review-recovery` | Tam | — | |
 | S07 | `/panel/ogrenci/telafi` | `review-recovery` | O · Y: madde tamamla, kontrol noktası | Hazır | `od/review-recovery` | Tam | — | |
 | S08 | `/panel/ogrenci/analiz` | `analiz` | O · Y: haftalık hedef | Hazır | `od-progress` | Tam | — | |
 | S09 | `/panel/ogrenci/gelisim` | `progress` | — | — | — | Yönl. | — | `redirect → analiz` / ana sayfa |
-| S10 | `/panel/ogrenci/denemeler` | `mock-exams` | O: dış denemeler · Y: sonuç ekle, düzenle | Hazır | `external-mock-exams` | Kısmi | P5 | Ekleme/düzenleme (POST/PATCH) |
+| S10 | `/panel/ogrenci/denemeler` | `mock-exams` | O: dış denemeler · Y: sonuç ekle, düzenle | Hazır | `external-mock-exams` + `od/mock-exam-editor` | Tam | P5.1 | Ortak native giriş/yapıştırma/hata nedeni formu, kişisel ısı haritası, sürüm ve işlem anahtarı; OK üyeliğiyle gerçek HTTP oluşturma/tekrar/409 ve personel onayı reddi test edildi |
 | S11 | `/panel/ogrenci/check-in` | `check-in` | O · Y: check-in, yardım geri bildirimi | Hazır | `check-in` | Tam | — | |
-| S12 | `/panel/ogrenci/haftalik` | `weekly-digest` | O · Y: geri bildirim | Yetki | `od-weekly-digest`, `yon-weekly` | Kısmi | P5 | Feedback ucu OD-only → yalnız Yön üyesi öğrenci gönderemez |
+| S12 | `/panel/ogrenci/haftalik` | `weekly-digest` | O · Y: geri bildirim | Hazır | `od-weekly-digest`, `yon-weekly` | Tam | — | OD/OK öğrenci geri bildirimi; `mobile-p5-basics.spec.ts` yalnız OK hesabıyla gerçek HTTP kanıtı |
 | S13 | `/panel/ogrenci/yon` | `today` (OK) | O · Y: görev tamamla | Hazır | `yon-today` | Tam | — | |
 | S14 | `/panel/ogrenci/plan` | `plan` | O · Y: görev tamamla, değişiklik iste, tercihler, plan üret | Hazır | `yon-plan`, `yon/task/[id]` | Kısmi | P5 | `adaptive-plan/generate` |
 | S15 | `/panel/ogrenci/hedefler` | `goals` | O | Hazır | `yon-goals` | Tam | — | |
 | S16 | `/panel/ogrenci/kocluk` | `coaching` | O · Y: görüşme saat değişikliği iste, öneriyi kabul et | Hazır | `yon-coaching` | Tam | — | |
-| S17 | `/panel/ogrenci/profil` | — | O: profil | Hazır (`student/profile` GET) | — | Eksik | P5 | Yalnız ekran |
+| S17 | `/panel/ogrenci/profil` | — | O: profil | Hazır (`student/profile` GET) | `account/profile` | Tam | — | Native profil; aktif veli bağları ve başlamış ürünler; `profile-calendar.test.tsx`, `mobile-p5-basics.spec.ts` |
 | S18 | `/panel/ogrenci/dino` | `dino` (flag `dinoAi`) | O · Y: Dino sohbet | Hazır (`dino`) | web devam (`OD_WEB_ONLY`) | Eksik | P5 | Çocuk verisi incelemesi onayı |
 
 ## 6. Deneme Ligi öğrenci — `/panel/odk/ogrenci`
@@ -182,12 +182,12 @@ Mobil karşılık: **yok** (öğretmen ODK alanında yalnız `teacher-odk-report
 | V01 | `/panel/veli` | `today` | O: sakin özet, çocuk seçimi | Hazır | `parent-home` | Tam | — | |
 | V02 | `/panel/veli/analiz` | `analiz` | O | Hazır | `parent-insights` | Tam | — | |
 | V03 | `/panel/veli/takip` | `progress` | — | — | — | Yönl. | — | `redirect → analiz` |
-| V04 | `/panel/veli/takvim` | `lessons` | O · Y: .ics dışa aktar | Hazır | `parent-lessons` | Kısmi | P5 | Takvime ekle |
+| V04 | `/panel/veli/takvim` | `lessons` | O · Y: .ics dışa aktar | Hazır | `parent-lessons` | Tam | — | Kimlikli ICS indir/paylaş, geçici dosya temizliği; `profile-calendar.test.tsx`, `mobile-p5-basics.spec.ts`. iPhone paylaşma kabulü P6 |
 | V05 | `/panel/veli/odevler` | `assignments` | O | Hazır | `parent-assignments` | Tam | — | |
 | V06 | `/panel/veli/ogretmenler` | `teachers` | O | Hazır | `parent-teachers` | Tam | — | |
 | V07 | `/panel/veli/kocluk` | `coaching` | O · Y: görüşme saat değişikliği talebi, katılım bağlantısı | Yetki | `parent-coaching` | Kısmi | P5 | `coaching-sessions/[id]` veli kapsamı doğrulanmalı |
 | V08 | `/panel/veli/denemeler` | `mock-exams` | O | Hazır | `parent-external-exams` | Tam | — | |
-| V09 | `/panel/veli/haftalik` | `weekly-digest` | O · Y: geri bildirim | Yetki | `parent-weekly` | Kısmi | P5 | Feedback ucu OD-only (`requireApiOdRole`) |
+| V09 | `/panel/veli/haftalik` | `weekly-digest` | O · Y: geri bildirim | Hazır | `parent-weekly` | Tam | — | Hedef çocuğun OD/OK üyeliği + aktif akademik veli bağı; `mobile-p5-basics.spec.ts` olumlu/yabancı/pasif/izinsiz bağ testleri |
 | V10 | `/panel/veli/hesap` | `account` | O: hesap ve paket · Y: paket görüşmesi iste | SA | `parent-account` | Kısmi | P5 | SA `requestPackageMeeting` → route |
 | V11 | `/panel/veli/dino` | `dino` | O · Y: Dino | Hazır | web devam (`PARENT_WEB_ONLY`) | Eksik | P5 | |
 | V12 | `/panel/veli/bildirimler` | — | — | — | — | Yönl. | — | `redirect → /panel/bildirimler` |
@@ -240,10 +240,10 @@ Onaylı istisnalar **alt işlem** düzeyindedir; etkilenen satırlar kalan alt i
 
 | Tür | Satırlar | Adet |
 | --- | --- | ---: |
-| GET projeksiyonu (O yok / Y var, O yok) | Y01–Y07, Y09–Y17, Y19–Y27; K01–K08; T06, T07, T09–T14 | 41 |
-| Server Action → `lib/` servisi + route | Y27 (9 eylem kaldı; CRM P2.7b'de, pazarlama + finans P2.7c'de taşındı), T20 (2 eylem), V10 (1), C07–C08 (7) — `assignCoach` ve `retryOrderProvisioning` P2.2'de çıkarıldı | 4 dosya / 46 eylem |
-| Yetki düzeltmesi | S12 + V09 (haftalık geri bildirim OD-only), V07 (veli görüşme işlemleri), T15 (dış deneme öğretmen GET) | 3 |
-| Yalnız mobil sözleşme + ekran (API hazır) | Y08, K03 (+ detay GET), T03, T04, T08, S03, S10, S14, S17, S18, S20, V04, V11, C09–C11 | 16 |
+| GET projeksiyonu (O yok / Y var, O yok) | K01–K08; T10–T12, T14 | 12 |
+| Server Action → `lib/` servisi + route | T20 (2 eylem), V10 (1), C07–C08 (7); Y27 ortak servislere taşındı | 3 dosya / 10 eylem |
+| Yetki düzeltmesi / kabul | V07 (veli görüşme işlemleri); S12/V09 ve T15 düzeltildi ve HTTP ile doğrulandı | 1 |
+| Yalnız mobil sözleşme + ekran (API hazır) | K03 (+ detay GET), S14, S18, S20, V11, C09–C11 | 8 |
 
 ## Bakım
 

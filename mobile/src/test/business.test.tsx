@@ -47,7 +47,7 @@ describe('P2.7a İşletme (okuma)', () => {
     await waitFor(() => expect(h.server.called('GET', '/api/panel/business/sections/mesaj-kutusu').some((call) => call.path.includes('q=ay%C5%9Fe') && call.path.includes('unread=1'))).toBe(true), WAIT);
     await press(h, await h.screen.findByTestId('business-next', {}, WAIT));
     await waitFor(() => expect(h.server.called('GET', '/api/panel/business/sections/mesaj-kutusu').some((call) => call.path.includes('cursor=c1'))).toBe(true), WAIT);
-  });
+  }, 30000); // Cold Expo Router transforms can exceed Jest's 5s default on CI.
 
   it('konuşma detayı web parametresiyle yüklenir; daha eski mesajlar sayfalanır; aday detayına geçilir', async () => {
     const h = await open(['mesaj-kutusu', 'adaylar'], {
@@ -236,5 +236,52 @@ describe('P2.7a İşletme (okuma)', () => {
     await go('/business/entegrasyonlar');
     await press(h, await h.screen.findByTestId('ops-meta-sync', {}, WAIT));
     expect(await h.screen.findByText('Meta Ads entegrasyonu yapılandırılmamış.', {}, WAIT)).toBeTruthy();
+  });
+});
+
+const governance = {
+  knowledge: [{ id: 'cknow00000000000000000001', title: 'Paket bilgisi', content: 'Mevcut paket içeriği yeterince uzun', isActive: true, revision: '2026-10-12T08:00:00.000Z' }],
+  rules: [{ id: 'crule00000000000000000001', name: 'Aday takibi', triggerType: 'lead_created', isActive: true, revision: '2026-10-12T08:00:00.000Z' }],
+  users: [], triggers: opt('lead_created'), actions: opt('create_task'), roles: opt('VIEWER'),
+};
+const governanceCan = { knowledgeWrite: true, automationWrite: true, settingsWrite: true, roleWrite: true, conversationRead: false, conversationReply: false, leadWrite: false, campaignWrite: false, integrationWrite: false, financeWrite: false, financeReverse: false };
+
+describe('P2.7d işletme bilgi / otomasyon / ayarlar', () => {
+  it('bilgi sürümü ekran revizyonunu taşır; 409 görünümü yeniler ve başarısız form açık kalır', async () => {
+    let reads = 0;
+    const h = await open(['ai-bilgi-merkezi'], {
+      'GET /api/panel/business/sections/ai-bilgi-merkezi': () => { reads++; return jsonResponse(200, section('ai-bilgi-merkezi', { governance, can: governanceCan })); },
+      'POST /api/panel/business/ops': () => jsonResponse(409, { code: 'REVISION_CONFLICT', error: 'Kayıt değişti.' }),
+    });
+    await go('/business/ai-bilgi-merkezi');
+    await press(h, await h.screen.findByText('Paket bilgisi · yeni sürüm', {}, WAIT));
+    fireEvent.changeText(h.screen.getByTestId('governance-content'), 'Düzenlenen yeni bilgi içeriği');
+    await press(h, h.screen.getByTestId('governance-knowledge-save'));
+    await waitFor(() => expect(h.server.called('POST', '/api/panel/business/ops')[0]?.body).toEqual({ command: { type: 'knowledge.version', id: governance.knowledge[0].id, content: 'Düzenlenen yeni bilgi içeriği', isActive: true, expectedRevision: governance.knowledge[0].revision }, idempotencyKey: expect.any(String) }), WAIT);
+    await waitFor(() => expect(reads).toBeGreaterThan(1), WAIT);
+    expect(h.screen.getByTestId('governance-content').props.value).toBe('Düzenlenen yeni bilgi içeriği');
+  });
+
+  it('otomasyonu ekran revizyonuyla kapatır; deneme sonucunu gösterir', async () => {
+    const h = await open(['otomasyon-kurallari'], {
+      'GET /api/panel/business/sections/otomasyon-kurallari': () => jsonResponse(200, section('otomasyon-kurallari', { governance, can: governanceCan })),
+      'POST /api/panel/business/ops': () => jsonResponse(200, { result: { entityId: governance.rules[0].id, section: 'otomasyon-kurallari', summary: { matched: 1, planned: 1, failed: 0 } }, replayed: false }),
+    });
+    await go('/business/otomasyon-kurallari');
+    await press(h, await h.screen.findByText('Kapat', {}, WAIT));
+    await waitFor(() => expect(h.server.called('POST', '/api/panel/business/ops')[0]?.body).toEqual({ command: { type: 'automation.toggle', id: governance.rules[0].id, isActive: false, expectedRevision: governance.rules[0].revision }, idempotencyKey: expect.any(String) }), WAIT);
+    await press(h, h.screen.getByText('Deneme çalıştırması'));
+    await press(h, h.screen.getByText('Denemeyi çalıştır'));
+    expect(await h.screen.findByText('Deneme: tamamlandı · eşleşti · 1 planlanan işlem.', {}, WAIT)).toBeTruthy();
+  });
+
+  it('capability olmadığında bilgi yazma düğmeleri görünmez', async () => {
+    const h = await open(['ai-bilgi-merkezi'], {
+      'GET /api/panel/business/sections/ai-bilgi-merkezi': () => jsonResponse(200, section('ai-bilgi-merkezi', { governance })),
+    });
+    await go('/business/ai-bilgi-merkezi');
+    await h.screen.findByTestId('business-ai-bilgi-merkezi', {}, WAIT);
+    expect(h.screen.queryByText('Bilgi kaydı ekle')).toBeNull();
+    expect(h.server.called('POST', '/api/panel/business/ops')).toHaveLength(0);
   });
 });

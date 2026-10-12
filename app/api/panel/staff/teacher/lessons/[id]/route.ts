@@ -1,3 +1,4 @@
+import { operationDigest } from "@/lib/panel/group-mutation-core";
 import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { academicSupportLabels } from "@/lib/accessibility-preferences";
@@ -44,10 +45,11 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
       note: lesson.notes.find((note) => note.studentId === enrollment.student.id)?.note ?? "",
       supportLabels: flags.accessibilityProfile && enrollment.student.user.accessibilityPreference ? academicSupportLabels(enrollment.student.user.accessibilityPreference) : [],
     })),
+    noteTemplates: data.noteTemplates.map((template) => ({ ...template, revision: operationDigest(template) })),
     outcomes: {
       linked: lesson.outcomeLinks.map((link) => ({ outcomeId: link.outcomeId, evidenceType: link.evidenceType })),
       skipReason: lesson.outcomeSkipReason,
-      catalog: (outcomes as Array<{ id: string; code: string; title: string; unit: { name: string; subject: { name: string } } }>).map((outcome) => ({ id: outcome.id, code: outcome.code, title: outcome.title, subject: outcome.unit.subject.name, unit: outcome.unit.name })),
+      catalog: (outcomes as Array<{ id: string; code: string; title: string; unit: { name: string; subject: { name: string } }; favorites: unknown[] }>).map((outcome) => ({ id: outcome.id, code: outcome.code, title: outcome.title, subject: outcome.unit.subject.name, unit: outcome.unit.name, favorite: outcome.favorites.length > 0 })),
     },
   });
 }

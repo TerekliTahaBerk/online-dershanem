@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Native teacher assignment/material editors with scoped choices, linked-lesson assignment creation, private file handling, atomic Bearer write receipts and revision checks.
+- Native lesson template create/apply/edit/delete, outcome search/favorites, class analysis, review queue monitoring/creation and scoped external-exam entry/reason revision/action approval; shared web loaders and real HTTP isolation coverage.
+
+- Native business knowledge/prompt versioning, automation creation/toggle/dry run, retention settings and role management (P2.7d), backed by shared web/mobile commands with step-up and atomic role/session revocation.
+- Native student profile and authenticated student/parent ICS export with temporary-file cleanup; a tracked P2–P5 implementation and acceptance plan.
+- Native student external-exam entry, bulk paste and versioned error-reason revisions with shared admin forms and learner-only workspace projection.
+- Native teacher roster filters and scoped student profile tabs using the existing web loaders; real HTTP coverage for foreign teachers/students and ended enrollment.
+
 - Panel design roadmap (`docs/panel-design-roadmap.md`): inventory of every panel route and capability, a functionality preservation matrix, the Notion-inspired design system, per-persona navigation and a phased migration plan
 - Panel token layer (`.pn-scope` in `app/globals.css`) with neutral surfaces, semantic status tones and product accents (onlinedershanem. green, Yön Koçluk blue, Deneme Ligi purple) selected by `data-product` on the panel shell; additive, no visual change yet
 - `lib/panel/status-vocabulary.ts`: one source for user, order payment, readiness, plan-suggestion and Deneme Ligi exam status labels
@@ -103,6 +111,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - Parent academic access now requires an active, unended link with `canViewAcademic`, across parent pages, student-success APIs, Deneme Ligi parent reports, material access, weekly-digest feedback and lesson notifications; the account and package screen keeps working for links without academic access
 
 ### Fixed
+
+- Weekly feedback accepts OD or Yön students; parents are authorized through the target child's active academic relationship and membership. Parent calendar export uses the child's OD membership. Student profile responses are private and exclude inactive parent links and future memberships.
 
 - The two-admin MFA reset approval queue is visible again on `/panel/yonetim/kisiler`; it lived only on the `/panel/yonetim/kullanicilar` list, which `next.config.ts` redirects, so no admin could see or approve pending resets. Expiry now shows the time, not only the date (requests last 30 minutes)
 - Pages without an entry point are linked from the menu: Deneme Ligi "Puanlama ve yayın" for admins, OD and Deneme Ligi controlled rollout (`/panel/yonetim/pilot`, `/panel/odk/yonetim/pilot`), learning quality (`/panel/yonetim/kalite`, behind `cohortQuality`) and the student weekly summary (`/panel/ogrenci/haftalik`, behind `parentWeeklyDigest`)

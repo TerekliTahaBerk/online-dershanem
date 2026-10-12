@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, PageHeader, Row, Screen, Section, StatusBadge, Text } from '@/design/primitives';
@@ -23,6 +23,7 @@ export default function AccountScreen() {
     <Screen>
       <PageHeader title={bootstrap.user.fullName ?? 'Hesabım'} context={<Text tone="muted" variant="meta">{ROLE_LABEL[bootstrap.user.role]}</Text>} />
       <Section first title="Kimlik">
+        {bootstrap.user.role === 'STUDENT' ? <Row title="Öğrenci profilim" onPress={() => router.push('/account/profile' as Href)} testID="account-profile" /> : null}
         <Row title="E-posta" subtitle={bootstrap.user.email} />
         <Row title="Rol" subtitle={ROLE_LABEL[bootstrap.user.role]} />
       </Section>

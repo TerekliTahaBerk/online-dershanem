@@ -4,6 +4,14 @@ import { Alert, StyleSheet, View } from 'react-native';
 
 import { Banner, BottomSheet, Button, EmptyState, PageHeader, Row, Screen, Section, StatusBadge, Text, TextField } from '@/design/primitives';
 import { space } from '@/design/tokens';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { ApiClient } from '@/lib/api/client';
+import { ApiError } from '@/lib/api/errors';
+import { useReadyBootstrap, useSession } from '@/lib/auth/session-provider';
+import { queryKeys } from '@/lib/query/keys';
+import { useStableKey, useOnline } from '../staff/shared';
+import { useStepUp } from '../auth/step-up';
+import { runWithStepUp } from './step-up-retry';
 import { createMockExam, createPilotCohort, fetchAdminMockExams, fetchPilot, reviseMockExam, transitionPilotCohort, type MockExamEntry } from '@/lib/api/admin-rollout';
 import { formatDayMonth, formatShortDateTime, istanbulDateKey } from '@/lib/format/istanbul';
 
@@ -121,11 +129,30 @@ export function MockExamsScreen() {
   );
 }
 
-function MockExamsBody({ data, onStudent }: { data: MobileMockExams; onStudent: (id: string | null) => void }) {
+function useMockExamMutation<V, R>(execute: (api: ApiClient, input: V, context: { idempotencyKey: string }) => Promise<R>) {
+  const { api } = useSession();
+  const bootstrap = useReadyBootstrap();
+  const client = useQueryClient();
+  const online = useOnline();
+  const { requestStepUp } = useStepUp();
+  const stable = useStableKey<V>((a, b) => {
+    const digest = (value: V) => JSON.stringify(value, (key, item) => key === 'entryDurationMs' ? undefined : item);
+    return digest(a) === digest(b);
+  });
+  const invalidate = () => client.invalidateQueries({ queryKey: bootstrap.user.role === 'ADMIN' ? queryKeys.admin(bootstrap.user.id) : queryKeys.staff(bootstrap.user.id, 'OD') });
+  return useMutation({ mutationFn: async (input: V) => {
+    if (!online) throw new ApiError({ kind: 'network' });
+    const idempotencyKey = stable.keyFor(input);
+    try { const result = await runWithStepUp(() => execute(api, input, { idempotencyKey }), requestStepUp); stable.settle(); return result; }
+    catch (cause) { stable.settle(cause); throw cause; }
+  }, onSuccess: invalidate, onError: (cause) => { if (cause instanceof ApiError && cause.kind === 'conflict') void invalidate(); } });
+}
+
+export function MockExamsBody({ data, onStudent }: { data: MobileMockExams; onStudent: (id: string | null) => void }) {
   const [notice, setNotice] = useState<Notice>(null);
   const [editing, setEditing] = useState<MobileMockExams['exams'][number] | null>(null);
   const [picking, setPicking] = useState(false);
-  const revise = useAdminMutation((api, input: { examId: string; body: Parameters<typeof reviseMockExam>[2] }, { idempotencyKey }) => reviseMockExam(api, input.examId, input.body, idempotencyKey));
+  const revise = useMockExamMutation((api, input: { examId: string; body: Parameters<typeof reviseMockExam>[2] }, { idempotencyKey }) => reviseMockExam(api, input.examId, input.body, idempotencyKey));
   const labels = Object.fromEntries(data.errorCategories.map((item) => [item.value, item.label])) as Record<MockExamErrorCode, string>;
   const student = data.students.find((item) => item.id === data.studentId) ?? null;
   const approvalExam = data.approval ? data.exams.find((exam) => exam.id === data.approval!.examId) : undefined;
@@ -211,6 +238,12 @@ const toNumber = (value: string) => (/^\d{1,3}$/.test(value.trim()) ? Number(val
 const draftFor = (template: MobileMockExams['templates'][number]): SectionDraft[] => template.sections.map((section) => ({ code: section.code, name: section.name, questions: section.questions, correct: '0', incorrect: '0', blank: String(section.questions), duration: '', reasons: [] }));
 
 function EntryForm({ data, studentId, onSaved }: { data: MobileMockExams; studentId: string; onSaved: (text: string) => void }) {
+  const isAdmin = useReadyBootstrap().user.role === 'ADMIN';
+  const save = useMockExamMutation((api, input: MockExamEntry, { idempotencyKey }) => createMockExam(api, input, idempotencyKey));
+  return <MockExamEntryForm data={data} studentId={studentId} onSaved={onSaved} save={save} staff={isAdmin} />;
+}
+
+export function MockExamEntryForm({ data, studentId, onSaved, save, staff = true }: { data: MobileMockExams; studentId: string; onSaved: (text: string) => void; save: { isPending: boolean; mutateAsync: (input: MockExamEntry) => Promise<unknown> }; staff?: boolean }) {
   const [exam, setExam] = useState<MockExamTypeCode>(data.templates[0]?.exam ?? 'LGS');
   const template = data.templates.find((item) => item.exam === exam) ?? data.templates[0];
   const [sections, setSections] = useState<SectionDraft[]>(() => draftFor(template));
@@ -222,7 +255,6 @@ function EntryForm({ data, studentId, onSaved }: { data: MobileMockExams; studen
   const [pasted, setPasted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const startedAt = useRef<number | null>(null);
-  const save = useAdminMutation((api, input: MockExamEntry, { idempotencyKey }) => createMockExam(api, input, idempotencyKey));
   const reasonCount = sections.reduce((sum, section) => sum + section.reasons.length, 0);
   const sectionValid = (section: SectionDraft) => [section.correct, section.incorrect, section.blank].every((value) => Number.isInteger(toNumber(value))) && toNumber(section.correct) + toNumber(section.incorrect) + toNumber(section.blank) === section.questions && (!section.duration.trim() || Number.isInteger(toNumber(section.duration)));
   const totalMinutes = toNumber(duration);
@@ -312,15 +344,19 @@ function EntryForm({ data, studentId, onSaved }: { data: MobileMockExams; studen
         );
       })}
       <Button label="Denemeyi kaydet" onPress={() => void submit()} disabled={!valid || save.isPending} loading={save.isPending} testID="mock-submit" />
-      <Text tone="muted" variant="meta">Yönetici kaydı hassastır; kimliğini yeniden doğrulaman istenebilir.</Text>
+      {staff ? <Text tone="muted" variant="meta">Yönetici kaydı hassastır; kimliğini yeniden doğrulaman istenebilir.</Text> : null}
     </Section>
   );
 }
 
 function ReasonSheet({ exam, categories, onClose, onSaved }: { exam: MobileMockExams['exams'][number]; categories: MobileMockExams['errorCategories']; onClose: () => void; onSaved: () => void }) {
+  const revise = useMockExamMutation((api, body: Parameters<typeof reviseMockExam>[2], { idempotencyKey }) => reviseMockExam(api, exam.id, body, idempotencyKey));
+  return <MockExamReasonSheet exam={exam} categories={categories} onClose={onClose} onSaved={onSaved} revise={revise} />;
+}
+
+export function MockExamReasonSheet({ exam, categories, onClose, onSaved, revise }: { exam: MobileMockExams['exams'][number]; categories: MobileMockExams['errorCategories']; onClose: () => void; onSaved: () => void; revise: { isPending: boolean; mutateAsync: (input: Parameters<typeof reviseMockExam>[2]) => Promise<unknown> } }) {
   const [values, setValues] = useState<Record<string, MockExamErrorCode[]>>(() => Object.fromEntries(exam.sections.map((section) => [section.id, section.errors])));
   const [error, setError] = useState<string | null>(null);
-  const revise = useAdminMutation((api, body: Parameters<typeof reviseMockExam>[2], { idempotencyKey }) => reviseMockExam(api, exam.id, body, idempotencyKey));
   const count = Object.values(values).reduce((sum, list) => sum + list.length, 0);
   function toggle(sectionId: string, category: MockExamErrorCode) {
     const has = values[sectionId].includes(category);

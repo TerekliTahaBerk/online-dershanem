@@ -348,7 +348,7 @@ Matris: 60 Tam / 15 Kısmi / 24 Eksik / 1 İstisna / 6 Yönl.; yönetimde yalnı
 | **P2.7a** | Kapı, bootstrap, 16 bölümün okuması, konuşma / aday detayı | **Tamamlandı** |
 | P2.7b | CRM yazmaları: konuşma (durum/AI modu, okundu, atama, etiket, AI önerisi, yanıt), aday (oluştur, aşama, not, görev, takip, sahip, öncelik, birleştir, kopya, sipariş / yaşam döngüsü bağı) | **Tamamlandı** |
 | P2.7c | Pazarlama + finans: kampanya, reklam, manuel atıf, Meta senkronu; işlem, ters kayıt, dönem kilidi (step-up), mutabakat | **Tamamlandı** |
-| P2.7d | AI bilgi merkezi, prompt sürümü, otomasyon (oluştur / aç-kapa / dry-run), saklama süresi, işletme rolleri (step-up) | Sırada |
+| P2.7d | AI bilgi merkezi, prompt sürümü, otomasyon (oluştur / aç-kapa / dry-run), saklama süresi, işletme rolleri (step-up) | Kod uygulandı; doğrulama ve açık işler aşağıdaki 12 Ekim kaydında |
 
 **P2.7a teslimatı.**
 
@@ -385,3 +385,38 @@ Matris: 60 Tam / 16 Kısmi / 23 Eksik / 1 İstisna / 6 Yönl.; yönetimde Y27 K�
 
 **Doğrulama:** sunucu birim testleri (kapsam eşikleri karşılanıyor); yerel PostgreSQL'de tam entegrasyon paketi 137/137 (yeni: eşzamanlı aynı anahtar, KDV ayrıştırma, kilitli dönem, ters kayıt, mutabakat çözümü, atomik audit, iş birimi kapsamı); mobil 32 paket / 244 test; API girdi, sözleşme sınırı, matris kontrolleri ve `next build`. Gerçek HTTP senaryosuna finans step-up ve işlem anahtarı kontrolleri eklendi; bu ortamda koşulmadı.
 
+
+
+### P2.7d ve P5 temel akışları — 12 Ekim 2026
+
+Kapatma sırası ve her dilimin test/bağımlılık kapısı [P2–P5 uygulama planında](./p2-p5-execution-plan.md) kayıtlıdır. PR #453 başlangıçta `main`'e birleşmişti (`0e706fff`).
+
+- Y27'nin son dokuz eylemi aynı `runOpsCommand` servisine taşındı. Web action'ları PRG davranışını korur; native bilgi/prompt/otomasyon/saklama/rol formları eklendi. Bearer güncellemeleri revizyon ister; rol işlemleri step-up ister. Rol değişikliği, oturum iptali ve audit Serializable transaction içindedir; son aktif süper yönetici korunur. Prompt sürümü mevcut global `(name, version)` tekilliğine uyar.
+- S03/V04 kimlikli ICS indirme ve native paylaşma, geçici dosya temizliği; S17 native profil. Profil yanıtı `private, no-store`; pasif veli bağları ve henüz başlamamış ürünler çıkarılır.
+- S12/V09 geri bildirimi yalnız OD veya OK öğrencisini kabul eder. Veli için kendi üyeliği yerine hedef çocuğun aktif akademik bağı ve OD/OK üyeliği aranır. Veli ICS ucunda aynı yanlış kendi-üyeliği gereksinimi kaldırıldı; hedef çocuğun aktif OD erişimi korunur.
+- Matris: 66 Tam / 11 Kısmi / 22 Eksik / 1 İstisna / 6 Yönl. Bu sayı **faz kabulü değildir**. P2.9 gerçek iPhone kabulü ve P1 operasyon kanıtı açık; P3/P4 geliştirmeleri ve P5'in diğer dilimleri tamamlanmadı. Dino çocuk verisi incelemesi ve P6 cihaz/TestFlight işleri açık.
+
+Kanıtlar: `tests/integration/business-governance.integration.ts` (izole PostgreSQL, dokuz komut ve hata/tekrar/kapsam/rol-oturum kontrolleri), `tests/e2e/business-governance.spec.ts` (sentetik hesaplarla gerçek HTTP), `tests/e2e/mobile-p5-basics.spec.ts` (yalnız OK öğrenci, üyeliği olmayan veli, yabancı/pasif/akademik izinsiz bağ, profil ve ICS), `mobile/src/test/business.test.tsx`, `mobile/src/test/profile-calendar.test.tsx`. Native testler gerçek rota ağacını ve sahte native modülleri kullanır; gerçek iPhone paylaşma/MFA kabulünün yerine geçmez.
+
+
+Bu dilimin son kontrolleri: **984 sunucu birim testi**, **33 paket / 250 mobil test**, **4 işletme PostgreSQL entegrasyonu** geçti. P2.7d HTTP ve P5 HTTP senaryoları sentetik hesaplarla geçti. Sunucu/mobil tip kontrolü, değişen dosyaların lint kontrolü, API girdi doğrulama (255 route / 279 metot), sözleşme sınırı ve eşlik matrisi kontrolü temiz. Test PostgreSQL şeması yalnız izole yerel veritabanına kuruldu; migration/production uyumluluğu veya gerçek iPhone kabulü iddia edilmez.
+
+### 12 Ekim 2026 — P3.2 ilk okuma dilimi
+
+- T06: ortak `getTeacherRoster` kullanan filtreli native liste ve öğretmen GET ucu. T07: `loadStudent360Bundle` ile rol/kaynak kapsamlı native profil ve sekmeler; Dino bağlamı açık. Veli/öğretmen atama butonları web’de de ADMIN’e ait olduğundan öğretmene yeni yetki verilmedi.
+- Gerçek HTTP testi kendi grup/başka öğretmen/başka öğrenci, sona eren kayıt, filtre doğrulama, private cache ve ticaret/yönetim alanlarının kapalı olduğunu doğruladı. Native liste → profil gezinmesi test edildi; gerçek iPhone kabulü açık.
+
+### 12 Ekim 2026 — P5.1 dış deneme editörü
+
+- S10: öğrenciye özgü, `private, no-store` workspace projeksiyonu; native giriş/toplu yapıştırma, en fazla üç neden, hata nedeni revizyonu ve kişisel ısı haritası. Mevcut analiz ve karşılaştırma ekranı korundu. Yönetim giriş/revizyon formu ortaklaştırıldı; öğrenciye onay yetkisi verilmedi.
+- Gerçek HTTP: yalnız OK üyeliğiyle oluşturma, aynı anahtarın tekrarı, neden güncelleme, eski revizyon 409, öğrenci nextAction onayı 403. Native öğrenci, yönetim formu ve analiz regresyonları geçti. Gerçek iPhone kabulü açık.
+
+
+### 12 Ekim 2026 — P3.1 ve P3.2/T09 devamı
+
+- **T03/T04/T08:** Öğretmen kapsamlı eğitim GET, ortak native ödev/materyal editörü, dersten ödev oluşturma. Bearer öğretmen yazmaları mevcut eğitim transaction/receipt/revizyon mekanizmasına katılır; cookie web yazmaları korunur. Dosya seçimi, 4 MB sınırı, özel dosya açma ve önbellek temizliği ortak akışla çalışır.
+- **Ders şablonları:** Web/mobil hazır şablonları tek bağımlılıksız kaynaktan alır. Kişisel oluştur/uygula/düzenle/sil native; teacher-scoped transaction, 20 şablon sınırı, audit, işlem anahtarı ve eski sürüm/409. Kazanım arama/favori OD personel izni ve bayrakla korunur; yabancı ders araması 404.
+- **T13/T15:** Web’in sınıf analizi ve dış deneme yükleyicileriyle native okumalar. Dış deneme ortak giriş/toplu yapıştırma/neden revizyonu ve sonraki eylem onayı; yazma sonrası öğretmenin kendi sorguları yenilenir. Aktif grup kaydı sona erince veri kapsamdan çıkar.
+- **T09:** Web ve mobil aynı tekrar gözetimi yükleyicisini kullanır. Kaynak referansıyla oluşturma native; Bearer işleminde öğrenci sürümü ve atomik receipt/audit, belirsiz ağ hatasında aynı anahtar.
+- **Kanıt:** 984 sunucu birim testi; 40 mobil paket/257 test; 8 PostgreSQL eğitim/dış deneme entegrasyonu; sentetik hesaplarla gerçek HTTP senaryosu: yabancı kaynaklar, eski sürümler, tekrar/anahtar çakışması, şablon sınırı yarışı, materyal düzenleme, 413, kayıt sona ermesi. iOS/Android/web Expo export başarılı. Sunucu/mobil tip, değişen kaynak lint, API doğrulama, sözleşme sınırı ve matris kontrolü geçti. Mobil lintte önceden var olan `admin-activation-desk.test.tsx` import sırası uyarısı bulunur.
+- **Durum:** 74 Tam / 9 Kısmi / 16 Eksik / 1 İstisna / 6 Yönl. P3.1 uygulama eşliği tamam; T07 Dino, T10–T12/T14, T20, P4 ve P5’in kalanları açık. Özel Blob gerçek yükleme ve fiziksel iPhone kabulü P6’da; bunlar çalıştırılmış sayılmaz. P2.9/P1 operasyon ve dış inceleme kabulü açık.

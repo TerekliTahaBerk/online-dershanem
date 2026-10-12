@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
+import { useRouter, type Href } from 'expo-router';
 import { useState } from 'react';
 
 import { Banner, Button, EmptyState, PageHeader, Row, Screen, Section, StatusBadge, Text } from '@/design/primitives';
-import { openOnWeb, webUrlFor } from '@/features/shell/web-continuation';
 import { fetchMockExams } from '@/lib/api/student';
 import { useReadyBootstrap, useSession } from '@/lib/auth/session-provider';
 import { formatDayMonth } from '@/lib/format/istanbul';
@@ -15,8 +15,7 @@ import { QueryView, usePullToRefresh } from '../od/shared';
  * kendi girdiği denemeler (`GET /api/panel/mock-exams`, bayrak
  * `mockExamAnalysis`). Bu Deneme Ligi DEĞİLDİR: Deneme Ligi uçları burada
  * hiç çağrılmaz. Uç OD veya Yön üyeliğini kabul eder; sorgu etkin çalışma
- * alanıyla kapsamlanır. Deneme GİRİŞİ (bölüm bölüm form) mobilde yok:
- * web paneline açık devam yolu verilir.
+ * alanıyla kapsamlanır. Giriş ve hata nedeni revizyonu native editörde açılır.
  */
 export default function ExternalMockExamsScreen() {
   const { api } = useSession();
@@ -30,7 +29,8 @@ export default function ExternalMockExamsScreen() {
     enabled: allowed,
   });
   const refresh = usePullToRefresh(() => query.refetch());
-  const entryUrl = webUrlFor('/panel/ogrenci/denemeler');
+  const router = useRouter();
+  const openEditor = () => router.push('/od/mock-exam-editor' as Href);
 
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="external-mock-exams">
@@ -45,8 +45,8 @@ export default function ExternalMockExamsScreen() {
               return (
                 <EmptyState
                   title="Henüz dış deneme sonucun yok."
-                  body="Deneme sonucunu web panelinden ekleyebilirsin; burada analizini görürsün."
-                  action={entryUrl ? <Button label="Web panelinde deneme ekle" variant="secondary" onPress={() => void openOnWeb('/panel/ogrenci/denemeler')} /> : undefined}
+                  body="Deneme sonucunu ekleyerek kendi geçmişine göre gelişimini takip edebilirsin."
+                  action={<Button label="Deneme ekle" variant="secondary" onPress={openEditor} />}
                 />
               );
             }
@@ -80,7 +80,7 @@ export default function ExternalMockExamsScreen() {
                     />
                   ))}
                 </Section>
-                {entryUrl ? <Button label="Web panelinde deneme ekle" variant="quiet" onPress={() => void openOnWeb('/panel/ogrenci/denemeler')} /> : null}
+                <Button label="Deneme ekle veya hata nedenlerini düzenle" variant="secondary" onPress={openEditor} />
               </>
             );
           }}

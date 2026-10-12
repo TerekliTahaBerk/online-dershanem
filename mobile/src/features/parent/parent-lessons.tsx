@@ -1,3 +1,4 @@
+import { CalendarExport } from '@/features/shared/calendar-export';
 import { EmptyState, Row, Section, StatusBadge, Text } from '@/design/primitives';
 import { fetchParentLessons } from '@/lib/api/parent';
 import { formatDayMonth, formatTime } from '@/lib/format/istanbul';
@@ -8,7 +9,7 @@ import { ParentQueryView, ParentScreen, usePullToRefresh } from './parent-shared
 /**
  * VELİ · DERSLER — web `app/panel/veli/takvim` (aynı yükleyici). Yoklama
  * etiketi sunucudan. Yalnız ortak ders notunun konusu; öğretmenin öğrenciye
- * özel notu yanıtta yoktur. Takvime yazma (native izin) M6 kapsamı dışıdır.
+ * özel notu yanıtta yoktur. Takvim yetkili ICS dosyası olarak indirilir ve native paylaşılır.
  */
 export default function ParentLessonsScreen() {
   const query = useParentQuery('lessons', fetchParentLessons);
@@ -24,6 +25,7 @@ export default function ParentLessonsScreen() {
               <EmptyState title="Henüz ders kaydı yok" body="Dersler planlandıkça tarih, öğretmen ve katılım bilgisi burada listelenir." />
             ) : (
               <>
+                <CalendarExport key={child.studentId} studentId={child.studentId} />
                 <Section title="Son ders özeti" first>
                   <Text tone="secondary">{data.lastSummary ?? 'Öğretmen henüz ders özeti eklemedi. Eklendiğinde burada görünecek.'}</Text>
                   <Text tone="muted" variant="meta">Öğretmenin öğrenciye özel notları veliyle paylaşılmaz.</Text>

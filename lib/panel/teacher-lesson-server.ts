@@ -61,6 +61,7 @@ export async function loadTeacherLessonWorkspaceData(teacherId: string, id: stri
         note: true,
         nextGoal: true,
         homework: true,
+        updatedAt: true,
       },
     }),
     learningOutcomes
