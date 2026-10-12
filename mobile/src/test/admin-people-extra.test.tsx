@@ -69,6 +69,7 @@ describe('Faz 2.2 kalan kişi ekranları', () => {
         }
         return jsonResponse(200, { ok: true });
       },
+      'GET /api/panel/admin/orders/o1/provisioning-retry': () => jsonResponse(200, { revision: 'a'.repeat(64) }),
       'POST /api/panel/admin/orders/o1/provisioning-retry': () => jsonResponse(200, { ok: true, outcome: 'manual_review:Veli eksik', succeeded: false, message: 'Elle inceleme gerekiyor: Veli eksik' }),
     });
     await press(h, await h.screen.findByTestId('nav-menu', {}, WAIT));

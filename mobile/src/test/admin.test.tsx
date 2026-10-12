@@ -1,3 +1,4 @@
+import { orderFixture } from './admin-orders-fixture';
 import { fireEvent, waitFor } from '@testing-library/react-native';
 
 import { makeBootstrap } from './fixtures';
@@ -49,16 +50,15 @@ describe('Faz 1 yönetim kabuğu', () => {
   it('alan süzgeci sunucuya ?grup= ile gider; satır yetkili menüdeki bölüme (en uzun önek) açılır', async () => {
     const h = await boot([
       account('admin@example.com', admin(), {
-        routes: { 'GET /api/panel/admin/operations-center': ({ query }) => jsonResponse(200, query.get('grup') === 'COMMERCE' ? { ...center, group: 'COMMERCE', actions: [center.actions[0]] } : center) },
+        routes: { 'GET /api/panel/admin/orders/o1': () => jsonResponse(200, { contractVersion: 1, order: orderFixture }), 'GET /api/panel/admin/operations-center': ({ query }) => jsonResponse(200, query.get('grup') === 'COMMERCE' ? { ...center, group: 'COMMERCE', actions: [center.actions[0]] } : center) },
       }),
     ]);
     await signIn(h, 'admin@example.com');
     await press(h, await h.screen.findByTestId('chip-COMMERCE', {}, WAIT));
     await waitFor(() => expect(h.server.called('GET', '/api/panel/admin/operations-center').some((call) => call.path.endsWith('?grup=COMMERCE'))).toBe(true), WAIT);
     await press(h, await h.screen.findByTestId('admin-action-a1', {}, WAIT));
-    // "Siparişler" henüz native değil: faz etiketli yer tutucu (P2), başka ekrana düşmez.
-    expect(await h.screen.findByTestId('placeholder-orders', {}, WAIT)).toBeTruthy();
-    expect(h.screen.getByText(/yönetim bölümü mobil uygulamaya geliyor/)).toBeTruthy();
+    expect(await h.screen.findByText('Ne oldu?', {}, WAIT)).toBeTruthy();
+    expect(h.screen.getByTestId('admin-order')).toBeTruthy();
   });
 
   it('global arama: kısa sorguda yalnız komutlar; sonuçlar türüne göre gruplanır, menüde karşılığı yoksa "Mobilde yakında"', async () => {

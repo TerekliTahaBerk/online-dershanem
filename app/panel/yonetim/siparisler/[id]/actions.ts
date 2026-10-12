@@ -1,8 +1,10 @@
 "use server";
 
+import { redirect } from "next/navigation";
+import { OrderRetryConflict } from "@/lib/panel/order-retry-core";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireRole } from "@/lib/auth/guards";
+import { requireRecentAdminStepUp } from "@/lib/auth/guards";
 import { enforceMutation } from "@/lib/security/mutation-guard";
 import { retryOrderProvisioningService } from "@/lib/panel/order-provisioning-service";
 
@@ -17,7 +19,7 @@ import { retryOrderProvisioningService } from "@/lib/panel/order-provisioning-se
  * ÖDEME İLE ERİŞİM AYRI SÜREÇLERDİR: bu aksiyon ödemeye DOKUNMAZ.
  */
 export async function retryOrderProvisioning(formData: FormData) {
-  const session = await requireRole("ADMIN");
+  const session = await requireRecentAdminStepUp();
   await enforceMutation({
     action: "order.provisioning.retry",
     userId: session.userId,
@@ -25,11 +27,13 @@ export async function retryOrderProvisioning(formData: FormData) {
     rateLimit: { max: 20, windowMs: 60_000 },
   });
 
-  const { orderId } = z
-    .object({ orderId: z.string().min(1) })
+  const { orderId, idempotencyKey, expectedRevision } = z
+    .object({ orderId: z.string().min(1), idempotencyKey: z.string().uuid(), expectedRevision: z.string().regex(/^[a-f0-9]{64}$/) })
     .parse(Object.fromEntries(formData));
 
-  const result = await retryOrderProvisioningService({ actorUserId: session.userId, orderId });
+  let result;
+  try { result = await retryOrderProvisioningService({ actorUserId: session.userId, orderId, idempotencyKey, expectedRevision }); }
+  catch (error) { if (error instanceof OrderRetryConflict) redirect(`/panel/yonetim/siparisler/${encodeURIComponent(orderId)}?hata=conflict`); throw error; }
   if (!result.found) return;
 
   revalidatePath(`/panel/yonetim/siparisler/${orderId}`);

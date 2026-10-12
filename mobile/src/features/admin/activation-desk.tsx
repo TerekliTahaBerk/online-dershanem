@@ -243,7 +243,7 @@ function SystemTab({ desk }: { desk: MobileActivationDesk }) {
   );
 }
 
-function OnboardingSheet({ item, desk, onClose, onLink }: { item: MobileOnboarding; desk: MobileActivationDesk; onClose: () => void; onLink: () => void }) {
+export function OnboardingSheet({ item, desk, onClose, onLink }: { item: MobileOnboarding; desk: MobileActivationDesk; onClose: () => void; onLink: () => void }) {
   const [toState, setToState] = useState<string | null>(item.allowedTransitions[0]?.value ?? null);
   const [ownerId, setOwnerId] = useState<string | null>(item.ownerId);
   const [blocker, setBlocker] = useState('');
@@ -314,7 +314,7 @@ function OnboardingSheet({ item, desk, onClose, onLink }: { item: MobileOnboardi
   );
 }
 
-function LinkOrderSheet({ orderId, desk, onClose }: { orderId: string; desk: MobileActivationDesk; onClose: () => void }) {
+export function LinkOrderSheet({ orderId, desk, onClose }: { orderId: string; desk: MobileActivationDesk; onClose: () => void }) {
   const [search, setSearch] = useState('');
   const [studentId, setStudentId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

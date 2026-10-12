@@ -1,8 +1,6 @@
 import Link from "next/link";
-import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { loadAdminOrders, ORDER_PAGE_SIZE as PAGE_SIZE } from "@/lib/panel/admin-orders-server";
 import { requireRole } from "@/lib/auth/guards";
-import { istanbulMonthStart } from "@/lib/istanbul-time";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   EmptyState,
@@ -38,7 +36,6 @@ const LIRA = new Intl.NumberFormat("tr-TR", {
   currency: "TRY",
   maximumFractionDigits: 0,
 });
-const PAGE_SIZE = 30;
 
 const PAYMENT_LABEL = {
   PAID: { label: "Alındı", tone: "success" as const },
@@ -62,54 +59,7 @@ export default async function AdminOrdersPage({
 }) {
   const session = await requireRole("ADMIN");
   const sp = await searchParams;
-  const filtre = ["sorun", "ay"].includes(sp.filtre ?? "")
-    ? (sp.filtre ?? "")
-    : "";
-  const page = Math.max(1, Number.parseInt(sp.sayfa ?? "1", 10) || 1);
-  const q = (sp.q ?? "").trim().slice(0, 80);
-
-  const monthStart = istanbulMonthStart(new Date());
-
-  const where: Prisma.OdOrderWhereInput = {
-    ...(filtre === "sorun"
-      ? { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } }
-      : {}),
-    ...(filtre === "ay" ? { createdAt: { gte: monthStart } } : {}),
-    ...(q
-      ? {
-          OR: [
-            { packageName: { contains: q, mode: "insensitive" as const } },
-            { user: { fullName: { contains: q, mode: "insensitive" as const } } },
-            { user: { email: { contains: q, mode: "insensitive" as const } } },
-          ],
-        }
-      : {}),
-  };
-
-  const [total, orders, problemCount] = await Promise.all([
-    prisma.odOrder.count({ where }),
-    prisma.odOrder.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-      select: {
-        id: true,
-        packageName: true,
-        status: true,
-        provisioningStatus: true,
-        totalCents: true,
-        createdAt: true,
-        user: { select: { fullName: true, email: true } },
-        lines: { select: { productName: true }, orderBy: { position: "asc" } },
-      },
-    }),
-    prisma.odOrder.count({
-      where: { status: "PAID", provisioningStatus: { not: "SUCCEEDED" } },
-    }),
-  ]);
-
-  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const { filtre, page, q, total, orders, problemCount, pageCount } = await loadAdminOrders(sp);
   const listHref = (patch: { filtre?: string; sayfa?: number }) => {
     const params = new URLSearchParams();
     const nextFilter = patch.filtre ?? filtre;
