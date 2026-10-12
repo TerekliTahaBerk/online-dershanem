@@ -323,3 +323,65 @@ Dört GET ucu gerçek ADMIN hesabını doğrular, `private, no-store` döner ve 
 **P2.8 henüz bütünüyle tamamlanmadı:** Y25 pilot kohort oluşturma/geçişleri ve Y18 dış deneme ekleme/hata nedeni/sonraki adım revizyonu sıradaki geliştirmedir; bunların yazmalarında web ve mobil için ortak step-up, idempotency, sürüm/409 ve atomik audit uygulanmalıdır. Özellik ekranı mevcut web eşliği kapsamında salt okunur; [ADR-0015](../adr/0015-runtime-panel-feature-snapshot.md) onaylanmadan runtime okuma/yazma politikası eklenmez. Üretim ayarı, pilot aktivasyonu veya yayın yapılmadı.
 
 Matris: 58 Tam / 15 Kısmi / 26 Eksik / 1 İstisna / 6 Yönl.; yönetimde 24 Tam, 3 Eksik (Y18, Y25, Y27), 1 Yönl.
+
+### P2.8 tamamlandı: kontrollü yayın ve dış denemeler — 12 Ekim 2026
+
+Y25 ve Y18 native. **Kontrollü yayın:** hazırlık kapıları, gruptan dört rollü kohort oluşturma ve sunucunun izin verdiği geçişler (aktive et / duraklat / sürdür / tamamla / geri al, durdurma nedeniyle). **Dış denemeler:** öğrenci seçimi, elle veya toplu yapıştırmayla giriş, kişisel hata eğilimi, tek sonraki adım onayı ve neden revizyonu.
+
+Web sayfalarının yükleyicileri `lib/panel/pilot-server.ts` ve `lib/panel/admin-mock-exams-server.ts`'e taşındı; iki yeni GET ucu (`/api/panel/admin/pilot`, `/api/panel/admin/mock-exams`) aynı yükleyiciyi projeksiyonla sunar. Yazmalar web ile AYNI `pilot-cohorts*` ve `mock-exams*` uçlarında kalır; rota mantığı `pilot-cohort-service.ts` ve `mock-exam-service.ts` servislerine taşındı:
+
+- **Step-up:** pilot oluşturma/geçiş her yönetici için; dış deneme yazmaları yalnız yönetici aktörde taze step-up ister (öğretmen / öğrenci akışı değişmedi). Web formları 428'de güvenlik sayfasını gösterir.
+- **İşlem anahtarı:** aktöre bağlı makbuz `AuditLog.idempotencyKey`; aynı anahtar aynı gövdeyle ilk sonucu döndürür, başka gövde veya başka yönetici 409 `IDEMPOTENCY_REUSE`. Bearer yazmalarında anahtar (ve deneme revizyonunda `expectedRevision`) zorunlu.
+- **Sürüm / 409:** pilot `expectedVersion`; deneme revizyonu nedenler + onaylı adım özeti (`mockExamRevision`).
+- **Atomik audit:** kayıt ve audit tek Serializable transaction'da; ürün olayları commit sonrası.
+
+**Doğrulama:** sunucu/mobil tip ve lint; 977 sunucu birim testi (kapsam eşikleri karşılanıyor); yerel PostgreSQL'de tam entegrasyon paketi 134/134 (yeni: eşzamanlı aynı anahtar, yeniden kullanım, eski sürüm/revizyon, atomik audit); mobil 31 paket / 234 test; API girdi, sözleşme sınırı ve matris kontrolleri; `next build`. Yeni gerçek HTTP senaryosu `tests/e2e/mobile-api.spec.ts` içinde; web pilot e2e'si step-up'a uyarlandı. Bu ortamda E2E hesapları olmadığından e2e koşulmadı; gerçek iPhone kabulü P6'da.
+
+Matris: 60 Tam / 15 Kısmi / 24 Eksik / 1 İstisna / 6 Yönl.; yönetimde yalnız Y27 (İşletme, P2.7) eksik.
+
+### P2.7a İşletme okuma ve altyapı — 12 Ekim 2026
+
+İşletme (Y27) dört dilimde açılır; her dilim web Server Action'larını `lib/business/**` servislerine taşır ve web ile mobil aynı servisi çağırır:
+
+| Dilim | Kapsam | Durum |
+| --- | --- | --- |
+| **P2.7a** | Kapı, bootstrap, 16 bölümün okuması, konuşma / aday detayı | **Tamamlandı** |
+| P2.7b | CRM yazmaları: konuşma (durum/AI modu, okundu, atama, etiket, AI önerisi, yanıt), aday (oluştur, aşama, not, görev, takip, sahip, öncelik, birleştir, kopya, sipariş / yaşam döngüsü bağı) | **Tamamlandı** |
+| P2.7c | Pazarlama + finans: kampanya, reklam, manuel atıf, Meta senkronu; işlem, ters kayıt, dönem kilidi (step-up), mutabakat | **Tamamlandı** |
+| P2.7d | AI bilgi merkezi, prompt sürümü, otomasyon (oluştur / aç-kapa / dry-run), saklama süresi, işletme rolleri (step-up) | Sırada |
+
+**P2.7a teslimatı.**
+
+- **Kapı:** `requireBusinessApi` (`lib/business/api-guard.ts`) web `requireBusinessPage` kuralının çerez + Bearer karşılığıdır. Yetki yalnız `BusinessRoleAssignment` (ADR-0011); yetkisizde 404, önizleme / öğretmen modunda 403, `stepUp` seçeneği web'in `requireRecentBusinessPage` kuralına eşdeğer (428). Erişim çözümleme çekirdeği `lib/business/access.ts`'e ayrıldı (`next/navigation` içermez); `permissions.ts` sayfa guard'larını tutar ve çekirdeği yeniden dışa aktarır.
+- **Bootstrap:** eklemeli `business: { sections }` alanı kullanıcının görebildiği bölümleri (grup etiketiyle) taşır; platform rolünden bağımsızdır, mod açıkken null.
+- **Okuma:** sayfanın koşullu yükleyicisi olduğu gibi `loadBusinessSectionData`'ya taşındı (web davranışı değişmedi). `GET /api/panel/business/sections/[section]` aynı sorgu parametreleriyle (tarih, ürün, gelen kutusu ve aday süzgeçleri, imleçler, `conversation`, `lead`) kart projeksiyonu döner; hesaplar web'deki saf fonksiyonlardan (`calculateAdMetrics`, `leadDisplayName`, `deriveLeadLifecycleStatus`, etiket sözlükleri).
+- **Mobil:** menüde "İşletme" (iş birimi rolü olan her kullanıcı), grup bazlı bölüm listesi, bölüm ekranı (tarih aralığı, ürün ve süzgeç çipleri, arama, sayfalama), konuşma detayı (son 100 mesaj + eski sayfalar, AI önerisi) ve aday detayı (bilgiler, zaman çizelgesi, atıf, kopyalar, satıştan erişime). Web `isletme/*` bağlantıları görünür bölüme eşlenir.
+
+**Doğrulama:** 977 sunucu birim testi (kapsam eşikleri karşılanıyor); yerel PostgreSQL'de tam entegrasyon paketi 135/135 (yeni: 16 bölüm gerçek veriyle sözleşme, konuşma / aday detayı, iş birimi kapsamı dışı veri sızmaz); mobil 32 paket / 239 test; API girdi, sözleşme sınırı, matris kontrolleri ve `next build`. Gerçek HTTP senaryosu (`mobile-api.spec.ts`: atamasız 404, atamalı 16 bölüm) eklendi; bu ortamda E2E hesapları olmadığından koşulmadı.
+
+Matris: 60 Tam / 16 Kısmi / 23 Eksik / 1 İstisna / 6 Yönl.; yönetimde Y27 Kısmi.
+
+### P2.7b CRM yazmaları — 12 Ekim 2026
+
+17 konuşma / aday Server Action'ının iş kuralları `lib/business/crm-service.ts`'e (`runCrmCommand`) olduğu gibi taşındı; komut şeması `lib/business/crm-commands.ts`'te (Server Action zod sınırlarıyla aynı). Web eylemleri artık bu servisi çağırır (imzaları, yönlendirmeleri ve Kanban'ın `transitionLeadStageAction` sonucu aynı); mobil `POST /api/panel/business/crm` aynı servisi, aynı izinle (`crmPermission`) ve iş birimi kapsamıyla çalıştırır. Instagram yanıtı mevcut `integrations/instagram/send` ucundan; ucun kapısı `requireBusinessApi`'ye alındı (Bearer, önizleme / öğretmen modunda kapalı).
+
+- **İşlem anahtarı:** aktöre bağlı `AuditLog.idempotencyKey` makbuzu; aynı anahtar aynı komutla ilk sonucu döndürür, farklı komutta 409 `IDEMPOTENCY_REUSE`. Bearer'da zorunlu.
+- **Revizyon / 409:** kaydın tamamını değiştiren komutlar (konuşma denetimi / atama; aday aşaması, takip, sorumlu, öncelik, birleştirme, sipariş / hesap bağı) `expectedRevision` (kaydın `updatedAt`) taşır; Bearer'da zorunlu.
+- **Atomik audit:** kayıt + etkinlik + audit tek Serializable transaction (önceden `queueAudit` ile ayrık yazılıyordu; artık okundu ve öncelik değişikliği de denetlenir). Otomasyon olayı ve AI önerisi commit sonrası; tekrarda çalışmaz. Hesap / sipariş bağı mevcut `linkLeadLifecycleEntities`'in kendi transaction'ını kullanır, makbuz bağdan sonra yazılır.
+- **Kapsam sıkılaştı:** web'de kapsam dışı kimlikle gelen konuşma / aday güncellemeleri önceden sessizce etkisiz kalıyordu (`updateMany`); artık açık 404 döner.
+- **Mobil:** konuşma ekranında yanıt (AI önerisini kullan), okundu, durum + AI modu, AI önerisi üret, sorumlu, etiket, aday notu / görevi; aday ekranında aşama (kayıp nedeni zorunlu), sorumlu, öncelik, takip planı (İstanbul saati), not, görev, görev tamamlama, kopya birleştirme (onaylı) / öneriyi kapatma, sipariş ve öğrenci hesabı bağı (manuel onay ayrıca onaylatılır); Adaylar'da "Aday ekle". Yazma alanları yalnız ilgili izin varken görünür.
+
+**Doğrulama:** 977+ sunucu birim testi (kapsam eşikleri karşılanıyor); yerel PostgreSQL'de tam entegrasyon paketi 136/136 (yeni: eşzamanlı aynı anahtar, yeniden kullanım, kayıp nedeni, eski revizyon, not / görev / takip / sorumlu / birleştirme / sipariş, konuşma komutları, iş birimi kapsamı); mobil 32 paket / 242 test; API girdi, sözleşme sınırı, matris kontrolleri ve `next build`. Gerçek HTTP senaryosuna CRM (anahtarsız 400, tekrar, eski revizyon 409) eklendi; bu ortamda koşulmadı.
+
+### P2.7c pazarlama + finans yazmaları — 12 Ekim 2026
+
+9 Server Action'ın (kampanya, manuel reklam, manuel atıf, Meta Ads senkronu, gelir / gider kaydı, ters kayıt, dönem kilidi, mutabakat çalıştır / çöz) iş kuralları `lib/business/ops-service.ts`'e (`runOpsCommand`) olduğu gibi taşındı; şema `lib/business/ops-commands.ts` (Server Action zod sınırlarıyla aynı; form dizgileri sayıya çevrilir). Web eylemleri servisi çağırır (yönlendirmeler aynı); mobil `POST /api/panel/business/ops` aynı servis, izin (`opsPermission`) ve iş birimi kapsamıyla çalışır.
+
+- **Ortak makbuz çalıştırıcısı:** `lib/business/command-receipt.ts` (`runWithReceipt`) CRM ve pazarlama / finans komutlarında ortak: aktöre bağlı işlem anahtarı, tek Serializable transaction'da kayıt + audit, dış servis / tarama komutlarında (Meta senkronu, mutabakat taraması, yaşam döngüsü bağı) makbuz iş bittikten sonra. CRM servisi bu çalıştırıcıya geçirildi (davranış aynı).
+- **Step-up:** finans kaydı, ters kayıt ve dönem kilidi web'de olduğu gibi taze step-up ister (mobilde 428 → native doğrulama → aynı anahtarla tekrar). Finans bayrağı kapalıyken finans komutları 404.
+- **Dönem kilidi:** ters kayıt artık çağıranın transaction'ında çalışabilir (`reverseLedgerTransaction(…, client)`); kilit kontrolü, ters kayıt ve audit aynı transaction'da. Kilitli tarihe kayıt / ters kayıt 409 `ACCOUNTING_PERIOD_LOCKED`.
+- **Güvenlik yeteneği:** finans veya işletme rolü yetkisi olan yönetici dışı personel (ör. muhasebe atamalı öğretmen hesabı) bootstrap'ta güvenlik yeteneği alır; böylece mobilde step-up yapabilir.
+- **Mobil:** Kampanyalar'da "Kampanya ekle", Reklamlar'da "Manuel reklam ekle" (tam sayı alanları doğrulanır), aday detayında manuel atıf, Entegrasyonlar'da Meta Ads senkronu, Gelirler / Giderler'de kayıt ekleme ve satırda onaylı ters kayıt, Vergiler'de onaylı dönem kilidi, Mutabakat'ta tarama (özetli) ve satırda çözüm. Yazma alanları yalnız izin varken.
+
+**Doğrulama:** sunucu birim testleri (kapsam eşikleri karşılanıyor); yerel PostgreSQL'de tam entegrasyon paketi 137/137 (yeni: eşzamanlı aynı anahtar, KDV ayrıştırma, kilitli dönem, ters kayıt, mutabakat çözümü, atomik audit, iş birimi kapsamı); mobil 32 paket / 244 test; API girdi, sözleşme sınırı, matris kontrolleri ve `next build`. Gerçek HTTP senaryosuna finans step-up ve işlem anahtarı kontrolleri eklendi; bu ortamda koşulmadı.
+

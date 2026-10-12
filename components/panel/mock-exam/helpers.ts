@@ -22,3 +22,12 @@ export function countBand(count: number) {
         ? ("2-3" as const)
         : ("4+" as const);
 }
+
+/**
+ * Uç hatasının kullanıcı metni. Yönetici yazmaları taze step-up ister
+ * (428 `STEP_UP_REQUIRED`); bu durumda nereden doğrulanacağı söylenir.
+ */
+export function mockExamErrorText(body: { error?: string; code?: string }, fallback: string) {
+  const text = body.error || fallback;
+  return body.code === "STEP_UP_REQUIRED" ? `${text} Güvenlik sayfasından (/panel/guvenlik) doğrulayıp tekrar deneyin.` : text;
+}

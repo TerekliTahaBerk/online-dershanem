@@ -73,6 +73,12 @@ test("sözleşme: durum bayraklarla çelişirse reddedilir; eksik alan reddedili
   assert.equal(parseMobileBootstrap({ ...body, contractVersion: 2 }).ok, false);
   assert.equal(parseMobileBootstrap({ ...body, futureField: { anything: true } }).ok, true);
   assert.equal(parseMobileBootstrap(null).ok, false);
+  // P2.7 eklemeli `business` alanı: yoksa null; varsa bölümler doğrulanır.
+  const plain = parseMobileBootstrap(body);
+  assert.equal(plain.ok && plain.value.business, null);
+  const business = parseMobileBootstrap({ ...body, business: { sections: [{ slug: "adaylar", label: "Adaylar", group: "crm", groupLabel: "CRM" }] } });
+  assert.deepEqual(business.ok && business.value.business, { sections: [{ slug: "adaylar", label: "Adaylar", group: "crm", groupLabel: "CRM" }] });
+  assert.equal(parseMobileBootstrap({ ...body, business: { sections: [{ slug: "adaylar" }] } }).ok, false);
   assert.equal(parseMobileBootstrap("<html>").ok, false);
 });
 

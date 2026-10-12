@@ -43,6 +43,9 @@ export const queryKeys = {
    */
   admin: (userId: string) => ['user', userId, 'admin'] as const,
   adminResource: (userId: string, resource: string, params?: Record<string, string | number | null>) => [...queryKeys.admin(userId), resource, params ?? {}] as const,
+  /** P2.7 İşletme: `['user', id, 'business', bölüm, parametreler]` (yetki iş birimi atamasından). */
+  business: (userId: string) => ['user', userId, 'business'] as const,
+  businessSection: (userId: string, slug: string, params: Record<string, string | undefined>) => [...queryKeys.business(userId), slug, params] as const,
 };
 
 /** Token'dan geri döndürülemez kısa bir anahtar (FNV-1a). Token önbellek anahtarına girmez. */

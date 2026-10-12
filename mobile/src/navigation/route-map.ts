@@ -184,7 +184,22 @@ const ADMIN_PEOPLE_SCREENS: Record<string, string> = {
   '/panel/yonetim/egitmenler': '/admin/educators',
 };
 
-export function mapAdminWebPath(href: string | null | undefined, navigation: Navigation | null): NativeTarget {
+/**
+ * İşletme (P2.7) web yolu → native bölüm. Yalnız bootstrap'ın `business`
+ * listesinde (kullanıcının görebildiği bölümler) olan bölüm açılır.
+ */
+export function mapBusinessWebPath(href: string | null | undefined, business: { sections: { slug: string }[] } | null | undefined): NativeTarget | null {
+  const path = normalizeWebPath(href);
+  const match = path ? /^\/panel\/yonetim\/isletme(?:\/([a-z-]{1,40}))?$/.exec(path) : null;
+  if (!match) return null;
+  if (!business?.sections.length) return { kind: 'none' };
+  if (!match[1]) return { kind: 'detail', href: '/business' };
+  return business.sections.some((section) => section.slug === match[1]) ? { kind: 'detail', href: `/business/${match[1]}` } : { kind: 'none' };
+}
+
+export function mapAdminWebPath(href: string | null | undefined, navigation: Navigation | null, business?: { sections: { slug: string }[] } | null): NativeTarget {
+  const businessTarget = mapBusinessWebPath(href, business);
+  if (businessTarget) return businessTarget;
   const path = normalizeWebPath(href);
   if (!path || !navigation) return { kind: 'none' };
   const metric = /^\/panel\/yonetim\/analitik\/([\w-]{1,64})$/.exec(path);

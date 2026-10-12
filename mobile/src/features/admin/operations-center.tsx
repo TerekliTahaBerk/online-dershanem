@@ -43,8 +43,9 @@ export default function OperationsCenterScreen() {
 
 function Body({ center, group, onGroup }: { center: MobileOperationsCenter; group: MobileOpsGroupFilter; onGroup: (group: MobileOpsGroupFilter) => void }) {
   const router = useRouter();
-  const navigation = useReadyBootstrap().workspace?.navigation ?? null;
-  const hrefFor = (webPath: string | null) => expoHrefFor(mapAdminWebPath(webPath, navigation));
+  const bootstrap = useReadyBootstrap();
+  const navigation = bootstrap.workspace?.navigation ?? null;
+  const hrefFor = (webPath: string | null) => expoHrefFor(mapAdminWebPath(webPath, navigation, bootstrap.business));
   const open = (href: string | null) => href && router.push(href as Href);
   return (
     <>

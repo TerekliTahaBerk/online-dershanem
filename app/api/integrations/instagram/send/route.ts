@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { authorizeBusinessRequest } from "@/lib/business/permissions";
+import { requireBusinessApi } from "@/lib/business/api-guard";
 import { sendConversationMessage } from "@/lib/business/jobs";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getRateLimitKeyFromUser, rateLimitResponseHeaders } from "@/lib/security/rate-limit";
@@ -12,8 +12,10 @@ import { businessFlags } from "@/lib/business/flags";
 const schema = z.object({ conversationId: z.string().cuid(), text: z.string().trim().min(1).max(1500), idempotencyKey: z.string().min(8).max(120) });
 export async function POST(request: Request) {
   if (!businessFlags.instagram && process.env.NODE_ENV === "production") return NextResponse.json({ error: "Instagram entegrasyonu kapalı." }, { status: 503 });
-  const access = await authorizeBusinessRequest("conversation:reply");
-  if (!access) return NextResponse.json({ error: "Yetkisiz." }, { status: 401 });
+  // Çerez + Bearer (mobil P2.7b); önizleme / öğretmen modunda kapalı, yetkisizde 404.
+  const auth = await requireBusinessApi("conversation:reply");
+  if (!auth.ok) return auth.response;
+  const access = auth.access;
   const guard = await guardMutation({ action: "business.instagram.send", userId: access.session.userId, headers: request.headers, requireSameOrigin: true });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "ORIGIN" ? 403 : 429 });
   const rate = await checkRateLimit(getRateLimitKeyFromUser(access.session.userId, "instagram.send"), 30, 60_000);

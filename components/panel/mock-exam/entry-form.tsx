@@ -15,7 +15,8 @@ import {
 } from "@/components/panel/ui";
 import { mockExamErrorLabels, mockExamTemplates } from "@/lib/mock-exams";
 import { sendPanelEvent } from "@/lib/panel-event-client";
-import { initialSections } from "./helpers";
+import { parseMockExamPaste } from "@/lib/mobile-contracts/admin-rollout";
+import { initialSections, mockExamErrorText } from "./helpers";
 import type { MockExamView, SectionState } from "./types";
 
 const SECTION_FIELDS = [
@@ -95,55 +96,20 @@ export function MockExamEntryForm({
   }
   function applyPaste() {
     markStarted();
-    const lines = paste.trim().split(/\r?\n/).filter(Boolean);
-    if (lines.length !== sections.length) {
-      sendPanelEvent({
-        name: "mock_exam_import_failed",
-        properties: { examType, reason: "ROW_COUNT" },
-      });
-      return setStatus(`${sections.length} satır bekleniyor.`);
-    }
-    const parsedLines = lines.map((line) =>
-      line
-        .trim()
-        .split(/[\t;, ]+/)
-        .map(Number),
+    const result = parseMockExamPaste(
+      paste,
+      mockExamTemplates[examType].sections.map((section) => section.questions),
     );
-    if (
-      parsedLines.some(
-        (values) =>
-          values.length < 3 ||
-          values.length > 4 ||
-          values.some((value) => !Number.isInteger(value) || value < 0),
-      )
-    ) {
+    if (!result.ok) {
       sendPanelEvent({
         name: "mock_exam_import_failed",
-        properties: { examType, reason: "FORMAT" },
+        properties: { examType, reason: result.reason },
       });
-      return setStatus("Her satırda 3 veya 4 negatif olmayan tam sayı olmalı.");
+      return setStatus(result.message);
     }
-    if (
-      parsedLines.some(
-        (values, index) =>
-          values[0] + values[1] + values[2] !==
-          mockExamTemplates[examType].sections[index].questions,
-      )
-    ) {
-      sendPanelEvent({
-        name: "mock_exam_import_failed",
-        properties: { examType, reason: "TOTAL_MISMATCH" },
-      });
-      return setStatus(
-        "Yapıştırılan satırlardan birinin soru toplamı şablonla eşleşmiyor.",
-      );
-    }
-    const next = parsedLines.map((values, index) => ({
+    const next = result.rows.map((values, index) => ({
       ...sections[index],
-      correctCount: values[0],
-      incorrectCount: values[1],
-      blankCount: values[2],
-      durationMinutes: values[3] || 0,
+      ...values,
     }));
     setPrevious(sections);
     setSections(next);
@@ -176,6 +142,7 @@ export function MockExamEntryForm({
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
+          idempotencyKey: crypto.randomUUID(),
           studentId: role === "STUDENT" ? undefined : studentId,
           exam: examType,
           title,
@@ -193,7 +160,8 @@ export function MockExamEntryForm({
         }),
       });
       const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(body.error || "Deneme kaydedilemedi.");
+      if (!response.ok)
+        throw new Error(mockExamErrorText(body, "Deneme kaydedilemedi."));
       onCreated(body.exam as MockExamView);
       setStatus("Deneme kaydedildi. Analiz yeni kayıtla güncellendi.");
       setTitle("");

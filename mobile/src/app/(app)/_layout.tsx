@@ -56,6 +56,10 @@ export default function AppLayout() {
       <Stack.Screen name="coach/session/[id]" options={{ title: 'Görüşme' }} />
       <Stack.Screen name="coach/plan/[id]" options={{ title: 'Plan' }} />
       {/* Faz 1 yönetim (AdminRouteGate + sunucu yetkisi). */}
+      <Stack.Screen name="business/index" options={{ title: 'İşletme' }} />
+      <Stack.Screen name="business/[slug]" options={{ title: 'İşletme' }} />
+      <Stack.Screen name="business/conversation/[id]" options={{ title: 'Konuşma' }} />
+      <Stack.Screen name="business/lead/[id]" options={{ title: 'Aday' }} />
       <Stack.Screen name="admin/preview" options={{ title: 'Panel önizlemesi' }} />
       <Stack.Screen name="admin/search" options={{ title: 'Ara' }} />
       <Stack.Screen name="admin/person/[id]" options={{ title: 'Kişi' }} />

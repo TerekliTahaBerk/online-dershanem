@@ -18,7 +18,10 @@ import { mobilePrimaryNav, panelNavSections } from "@/lib/panel/navigation";
 import { listParentVisibleChildren } from "@/lib/panel/parent-product-policy";
 import { getResolvedAdminPreview } from "@/lib/auth/admin-preview";
 import { getResolvedAdminTeacherMode } from "@/lib/auth/admin-teacher-mode";
-import type { MobileBootstrap, MobileMfaMethods, MobileSecurityCapabilities, MobileWorkspace } from "@/lib/mobile-contracts/bootstrap";
+import type { MobileBootstrap, MobileBusinessWorkspace, MobileMfaMethods, MobileSecurityCapabilities, MobileWorkspace } from "@/lib/mobile-contracts/bootstrap";
+import { businessFlags } from "@/lib/business/flags";
+import { getUserBusinessPermissions } from "@/lib/business/access";
+import { BUSINESS_SECTION_GROUPS, SECTION_LABELS, visibleSections } from "@/lib/business/sections";
 import { STEP_UP_MAX_AGE_MS, hasFreshStepUp } from "@/lib/auth/mfa-policy";
 import { bootstrapGates, projectBootstrap, selectActiveWorkspace, toMobileNavItems, toMobileNavSections } from "@/lib/mobile/bootstrap";
 
@@ -88,7 +91,17 @@ export async function buildMobileBootstrap(
     now,
     workspace,
   });
-  return { ...result, adminOverlay };
+  // İşletme alanı gerçek kullanıcının atamasından; mod açıkken gösterilmez.
+  const business = gates.status === "READY" && !adminOverlay ? await loadBusinessWorkspace(session) : null;
+  return { ...result, adminOverlay, business };
+}
+
+async function loadBusinessWorkspace(session: SessionUser): Promise<MobileBusinessWorkspace | null> {
+  if (!businessFlags.panel) return null;
+  const allowed = visibleSections(await getUserBusinessPermissions(session), { financeEnabled: businessFlags.finance });
+  if (!allowed.length) return null;
+  const groupOf = new Map(BUSINESS_SECTION_GROUPS.flatMap((group) => group.sections.map((slug) => [slug, group] as const)));
+  return { sections: allowed.map((slug) => ({ slug, label: SECTION_LABELS[slug], group: groupOf.get(slug)?.id ?? "genel", groupLabel: groupOf.get(slug)?.label ?? "Genel" })) };
 }
 
 /** `/api/auth/mfa/status` ile aynı kaynak; yalnız var/yok bilgisi döner. */
@@ -106,8 +119,18 @@ async function loadMfaMethods(userId: string): Promise<MobileMfaMethods> {
  * ADMIN ve MFA zorunlu personel: native step-up için kayıtlı yöntemler +
  * mevcut step-up penceresi. Politika `userRequiresMfa`; burada icat edilmez.
  */
+/** Taze step-up isteyen işletme izinleri (finans kaydı / ters kayıt / dönem kilidi, işletme rolleri). */
+const STEP_UP_BUSINESS_PERMISSIONS = ["finance:write", "finance:reverse", "role:write"] as const;
+
+async function needsBusinessStepUp(session: SessionUser): Promise<boolean> {
+  if (!businessFlags.panel) return false;
+  const granted = await getUserBusinessPermissions(session);
+  return STEP_UP_BUSINESS_PERMISSIONS.some((permission) => granted.has(permission));
+}
+
 async function loadSecurityCapabilities(session: SessionUser): Promise<MobileSecurityCapabilities | null> {
-  if (session.role !== "ADMIN" && !(await userRequiresMfa(session.userId, session.role))) return null;
+  // İşletme finans / rol yetkisi olan yönetici dışı kullanıcı da mobilde step-up yapabilmeli (P2.7c).
+  if (session.role !== "ADMIN" && !(await userRequiresMfa(session.userId, session.role)) && !(await needsBusinessStepUp(session))) return null;
   const mfa = await loadMfaMethods(session.userId);
   const stepUpExpiresAt = session.stepUpAt && hasFreshStepUp(session.stepUpAt) ? new Date(session.stepUpAt.getTime() + STEP_UP_MAX_AGE_MS).toISOString() : null;
   return { mfa, stepUpExpiresAt };

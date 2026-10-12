@@ -5,6 +5,8 @@ import { hashPassword } from "../../lib/auth/password";
 import { parseMobileBootstrap, type MobileBootstrap } from "../../lib/mobile-contracts/bootstrap";
 import { parseSessionList } from "../../lib/mobile-contracts/api";
 import { parseActivationDesk, parseAdminReports, parseEducators, parseInterventionInbox, parseOperationsCenter, parseParentsPage, parsePeopleDirectory, parsePersonDetail, parseSignups, parseStudent360 } from "../../lib/mobile-contracts/admin";
+import { parseMockExamsAdmin, parsePilot } from "../../lib/mobile-contracts/admin-rollout";
+import { parseBusinessSection } from "../../lib/mobile-contracts/business";
 import { GROUP_TABS, parseEducation, parseGroup360, parseGroupMutationResult } from "../../lib/mobile-contracts/admin-education";
 import { parseAssignmentList, parseInsights, parseLessonDetail, parseLessonList, parseOdHome, parseRecovery, parseReviewQueue, parseWeeklyDigest } from "../../lib/mobile-contracts/student";
 import { hasE2EEnv } from "./env-requirements";
@@ -571,6 +573,85 @@ test.describe.serial("Faz 1 mobil yönetim kapısı", () => {
     for (const path of ["/api/panel/admin/parents", "/api/panel/admin/educators", "/api/panel/admin/signups", `/api/panel/admin/students/${profileId}`]) {
       expect((await learner.context.get(path, { headers: { ...MOBILE, authorization: `Bearer ${learner.body.token}` } })).status()).toBe(403);
     }
+  });
+
+  test("P2.8 kontrollü yayın ve dış denemeler: okuma sözleşmesi; yazmalar taze step-up ve Bearer işlem anahtarı ister", async () => {
+    const admin = await temporaryUser("ADMIN");
+    const { context, body } = await mobileLogin(admin.user.email, admin.password);
+    const auth = { ...MOBILE, authorization: `Bearer ${body.token}` };
+    const pilotRead = await context.get("/api/panel/admin/pilot", { headers: auth });
+    expect(pilotRead.status(), await pilotRead.text()).toBe(200);
+    expect(pilotRead.headers()["cache-control"]).toContain("no-store");
+    const pilotView = parsePilot(await pilotRead.json());
+    if (!pilotView.ok) throw new Error(pilotView.error);
+    const exams = await context.get("/api/panel/admin/mock-exams", { headers: auth });
+    // Bayrak kapalı ortamda açıkça 404 FEATURE_DISABLED; açıksa sözleşmeye uyar.
+    if (exams.status() === 404) expect((await exams.json()).code).toBe("FEATURE_DISABLED");
+    else {
+      expect(exams.status(), await exams.text()).toBe(200);
+      const parsed = parseMockExamsAdmin(await exams.json());
+      if (!parsed.ok) throw new Error(parsed.error);
+    }
+    const create = await context.post("/api/panel/pilot-cohorts", { headers: auth, data: { groupId: "yok", requestKey: randomUUID() } });
+    expect(create.status()).toBe(428);
+    expect((await create.json()).code).toBe("STEP_UP_REQUIRED");
+    const transition = await context.patch("/api/panel/pilot-cohorts/yok", { headers: auth, data: { action: "PAUSE", expectedVersion: 1, stopReason: "OPERATIONAL" } });
+    expect(transition.status()).toBe(428);
+
+    const learner = await mobileLogin(student().email, student().password);
+    for (const path of ["/api/panel/admin/pilot", "/api/panel/admin/mock-exams"]) {
+      expect((await learner.context.get(path, { headers: { ...MOBILE, authorization: `Bearer ${learner.body.token}` } })).status()).toBe(403);
+    }
+  });
+
+  test("P2.7a İşletme: yetki iş birimi atamasından; atamasız ADMIN 404, atamalı kullanıcı 16 bölümü sözleşmeyle okur", async () => {
+    const admin = await temporaryUser("ADMIN");
+    const unit = await db.businessUnit.findFirst({ where: { isActive: true } });
+    test.skip(!unit, "E2E veritabanında aktif iş birimi yok");
+    const { context, body } = await mobileLogin(admin.user.email, admin.password);
+    const auth = { ...MOBILE, authorization: `Bearer ${body.token}` };
+    const before = await bootstrapOf(await me(context, body.token!));
+    expect(before.business ?? null).toBeNull();
+    expect((await context.get("/api/panel/business/sections/adaylar", { headers: auth })).status()).toBe(404);
+
+    await db.businessRoleAssignment.create({ data: { userId: admin.user.id, businessUnitId: unit!.id, role: "SUPER_ADMIN" } });
+    try {
+      const after = await bootstrapOf(await me(context, body.token!));
+      const slugs = after.business?.sections.map((section) => section.slug) ?? [];
+      expect(slugs).toContain("adaylar");
+      for (const slug of slugs) {
+        const response = await context.get(`/api/panel/business/sections/${slug}`, { headers: auth });
+        expect(response.status(), `${slug}: ${await response.text()}`).toBe(200);
+        expect(response.headers()["cache-control"]).toContain("no-store");
+        const parsed = parseBusinessSection(await response.json());
+        if (!parsed.ok) throw new Error(`${slug}: ${parsed.error}`);
+      }
+      expect((await context.get("/api/panel/business/sections/yok-boyle", { headers: auth })).status()).toBe(404);
+      // P2.7b CRM: Bearer işlem anahtarı ister; anahtarla aday oluşur ve aynı anahtar tekrar uygulanmaz.
+      const command = { type: "lead.create", firstName: `E2E ${randomUUID().slice(0, 6)}`, productInterest: "UNKNOWN", businessUnitId: unit!.id };
+      expect((await context.post("/api/panel/business/crm", { headers: auth, data: { command } })).status()).toBe(400);
+      const idempotencyKey = randomUUID();
+      const first = await context.post("/api/panel/business/crm", { headers: auth, data: { command, idempotencyKey } });
+      expect(first.status(), await first.text()).toBe(200);
+      const created = (await first.json()) as { result: { entityId: string }; replayed: boolean };
+      const again = (await (await context.post("/api/panel/business/crm", { headers: auth, data: { command, idempotencyKey } })).json()) as { result: { entityId: string }; replayed: boolean };
+      expect(again).toEqual({ result: created.result, replayed: true });
+      const lead = await db.businessLead.findUniqueOrThrow({ where: { id: created.result.entityId } });
+      const stale = await context.post("/api/panel/business/crm", { headers: auth, data: { command: { type: "lead.priority", leadId: lead.id, priority: "HIGH" }, idempotencyKey: randomUUID(), expectedRevision: "2000-01-01T00:00:00.000Z" } });
+      expect(stale.status()).toBe(409);
+      await db.leadActivity.deleteMany({ where: { leadId: lead.id } });
+      await db.businessLead.delete({ where: { id: lead.id } });
+      // P2.7c: finans kaydı taze step-up ister (428); pazarlama komutu Bearer'da işlem anahtarı ister.
+      const finance = await context.post("/api/panel/business/ops", { headers: auth, data: { command: { type: "finance.create", kind: "EXPENSE", description: "E2E", category: "Test", amountTl: 1 }, idempotencyKey: randomUUID() } });
+      expect([428, 404]).toContain(finance.status());
+      if (finance.status() === 428) expect((await finance.json()).code).toBe("STEP_UP_REQUIRED");
+      expect((await context.post("/api/panel/business/ops", { headers: auth, data: { command: { type: "campaign.create", name: "E2E", platform: "INSTAGRAM", budgetTl: 0, productInterest: "UNKNOWN" } } })).status()).toBe(400);
+      expect((await context.get("/api/panel/business/sections/adaylar?bilinmeyen=1", { headers: auth })).status()).toBe(400);
+    } finally {
+      await db.businessRoleAssignment.deleteMany({ where: { userId: admin.user.id } });
+    }
+    const learner = await mobileLogin(student().email, student().password);
+    expect((await learner.context.get("/api/panel/business/sections/adaylar", { headers: { ...MOBILE, authorization: `Bearer ${learner.body.token}` } })).status()).toBe(404);
   });
 
   test("yönetim ucu: öğrenci ve öğretmen 403, kimliksiz 401", async () => {
