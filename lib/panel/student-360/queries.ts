@@ -167,6 +167,8 @@ export async function loadStudent360QueryData(input: {
         where: { endedAt: null },
         take: 1,
         select: {
+          id: true,
+          coachId: true,
           cadenceDays: true,
           coach: { select: { id: true, user: { select: { fullName: true, email: true } } } },
         },

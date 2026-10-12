@@ -85,7 +85,7 @@ function Operations({ data, onOpenPerson }: { data: MobileStudent360; onOpenPers
   const [overrideReason, setOverrideReason] = useState('');
   const [needsReason, setNeedsReason] = useState(false);
   const [notice, setNotice] = useState<{ tone: 'info' | 'critical'; text: string } | null>(null);
-  const assign = useAdminMutation((api, input: { studentId: string; coachId: string; cadenceDays?: string; overrideReason?: string }) => assignCoach(api, input));
+  const assign = useAdminMutation((api, input: { studentId: string; coachId: string; cadenceDays?: string; overrideReason?: string; expectedRevision: string }, { idempotencyKey }) => assignCoach(api, input, idempotencyKey));
   const retry = useAdminMutation((api, orderId: string) => retryProvisioning(api, orderId));
   const transferring = Boolean(coach.currentCoachId);
 
@@ -93,6 +93,7 @@ function Operations({ data, onOpenPerson }: { data: MobileStudent360; onOpenPers
     setNotice(null);
     try {
       await assign.mutateAsync({
+        expectedRevision: coach.revision!,
         studentId: data.studentProfileId,
         coachId,
         ...(cadence.trim() ? { cadenceDays: cadence.trim() } : {}),
@@ -128,7 +129,7 @@ function Operations({ data, onOpenPerson }: { data: MobileStudent360; onOpenPers
           <FilterChips label="Koç" value={coachId} onChange={setCoachId} options={coach.options.map((option) => ({ value: option.id, label: option.label }))} />
           <TextField label="Görüşme sıklığı (gün)" value={cadence} onChangeText={setCadence} keyboardType="number-pad" maxLength={3} testID="student-coach-cadence" />
           {needsReason ? <TextField label="Kapasite aşımı gerekçesi" value={overrideReason} onChangeText={setOverrideReason} maxLength={500} hint="En az 3 karakter; denetim kaydına yazılır." testID="student-coach-reason" /> : null}
-          <Button label={transferring ? 'Devret' : 'Koç ata'} onPress={onAssign} disabled={!coachId || assign.isPending || (needsReason && overrideReason.trim().length < 3)} loading={assign.isPending} testID="student-coach-submit" />
+          <Button label={transferring ? 'Devret' : 'Koç ata'} onPress={onAssign} disabled={!coach.revision || !coachId || assign.isPending || (needsReason && overrideReason.trim().length < 3)} loading={assign.isPending} testID="student-coach-submit" />
         </>
       ) : (
         <Text tone="muted">Aktif koç bulunamadı.</Text>

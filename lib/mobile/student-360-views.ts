@@ -208,7 +208,7 @@ export function toMobileStudent360(bundle: Student360Bundle, now: Date = new Dat
     view: bundle.view,
     views: bundle.group === "ogrenme" ? learningViews.map((view) => ({ id: view, label: STUDENT_360_TAB_LABELS[view] })) : [],
     cards: cardsFor(bundle, now),
-    coach: { currentCoachId: bundle.currentCoachId, cadenceDays: bundle.currentCadenceDays, options: bundle.coachOptions },
+    coach: { revision: bundle.coachRevision ?? null, currentCoachId: bundle.currentCoachId, cadenceDays: bundle.currentCadenceDays, options: bundle.coachOptions },
     blockedOrders: (bundle.commerce?.orders ?? []).filter((order) => order.status === "PAID" && order.provisioningStatus !== "SUCCEEDED").map((order) => ({ id: order.id, packageName: order.packageName })),
     // Web'de `canManage = access.role === "ADMIN"` ile aynı koşul.
     manage:

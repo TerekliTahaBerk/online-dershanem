@@ -221,6 +221,7 @@ export type Student360Bundle = {
   coachOptions: { id: string; label: string }[];
   parentOptions: { id: string; label: string }[];
   teacherOptions: { id: string; label: string }[];
+  coachRevision?: string;
   currentCoachId: string | null;
   currentCadenceDays: number | null;
 };

@@ -37,7 +37,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 
 | Alan | Rota | Tam | Kısmi | Eksik | İstisna | Yönl. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1. Yönetim (`/panel/yonetim`) | 28 | 16 | 0 | 11 | 0 | 1 |
+| 1. Yönetim (`/panel/yonetim`) | 28 | 17 | 0 | 10 | 0 | 1 |
 | 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 0 | 0 | 8 | 0 | 0 |
 | 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 7 | 3 | 10 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
@@ -46,7 +46,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | 7. Veli (`/panel/veli`) | 12 | 5 | 4 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 4 | 3 | 2 | 0 | 2 |
-| **Toplam** | **106** | **50** | **15** | **34** | **1** | **6** |
+| **Toplam** | **106** | **51** | **15** | **33** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
@@ -82,7 +82,7 @@ Mobil karşılık: `native-screens.ts` ADMIN eşlemesi + `(app)/admin/*` yığı
 | Y14 | `/panel/yonetim/gruplar/[id]` | — | O: grup 360 · Y: grup güncelle, üye ekle, öğrenci listesi | `groups/[id]` PATCH, `groups/[id]/members` POST, `groups/[id]/students` GET; `group-360-server.ts` | Hazır (`GET /api/panel/admin/groups/[id]?sekme=` aynı yükleyici) | `admin/group/[id]` | Tam | P2.3 | Beş sekme ve grup/üye yazmalarına ek olarak programdan gruba ders/seri oluşturma ve ders düzenleme/telafi/yedek/iptal akışları native. HTTP seri kapsamı ve sürüm çakışması doğrulandı; fiziksel cihaz kabulü Faz 6’da. |
 | Y15 | `/panel/yonetim/takvim` | `calendar` | O: kurum takvimi · Y: .ics dışa aktar | `calendar/export` GET; Prisma | Hazır (`GET /api/panel/admin/education/editor?kind=calendar`) | `admin-calendar` | Tam | P2.3 | Native haftalık görünüm, grup/öğretmen filtreleri, ders detayına geçiş ve kimlikli ICS indirme/paylaşma. Kurum dışa aktarımı mevcut web aralığını korur; fiziksel paylaşım kabulü Faz 6’da. |
 | Y16 | `/panel/yonetim/kazanimlar` | `outcomes` (flag `learningOutcomes`) | O: kazanım sürümleri · Y: kazanım oluştur, sürüm oluştur/güncelle | `curriculum/outcomes` POST, `curriculum/versions` POST, `curriculum/versions/[id]` PATCH | Hazır (`GET /api/panel/admin/education/editor?kind=version`) | `admin-curriculum` | Tam | P2.3 | Bayrağa bağlı native sürüm listesi/detayı/durum değişikliği, kazanım oluşturma/detayı ve son 30 gün ders/ödev etiket kapsaması. Sürüm çocuk kayıtlarını içeren revizyonla korunur; HTTP oluşturma/aktif etme/eski sürüm reddi geçti. |
-| Y17 | `/panel/yonetim/kocluk` | `coaching` | O: koç kapasitesi, atamalar · Y: koç ata | `assignCoachService` (SA'dan çıkarıldı, P2.2); `kocum/server.ts` | Y var, O yok | — | Eksik | P2.4 | Yazma ucu hazır: `POST /api/panel/admin/coach-assignments`; kuyruk okuması GET gerekir |
+| Y17 | `/panel/yonetim/kocluk` | `coaching` | O: kapasite, atama/gecikme/plan/hedef/sinyal kuyrukları, öğrenci takip ve görüşme detayı · Y: koç ata/devret | `loadAdminCoaching` (web/mobil ortak); `assignCoachService` | Hazır | `admin-coaching`, `admin/coaching-session/[id]` | Tam | P2.4 | GET `/api/panel/admin/coaching`, görüşme detayı; POST atama taze step-up, UUID, atama sürümü, 409 ve atomik audit ile. Son kapasite yarışı/tekrar/rol sınırı testli; gerçek iPhone kabulü P6. |
 | Y18 | `/panel/yonetim/denemeler` | `mock-analysis` (flag `mockExamAnalysis`) | O: dış deneme sonuç analizi · Y: deneme kaydı ekle/düzenle | `mock-exams` GET/POST, `mock-exams/[id]` PATCH | Hazır (GET öğrenci kapsamlı → ADMIN projeksiyonu kontrol) | — | Eksik | P2.8 | |
 | Y19 | `/panel/yonetim/siparisler` | `orders` | O: sipariş listesi + filtre | Prisma (RSC) | O yok | — | Eksik | P2.6 | Müşteri satın alma akışı DEĞİL |
 | Y20 | `/panel/yonetim/siparisler/[id]` | — | O: sipariş detayı · Y: provizyon tekrarı | `retryOrderProvisioningService` (SA'dan çıkarıldı, P2.2) | Y var, O yok | — | Eksik | P2.6 | Yazma ucu hazır: `POST /api/panel/admin/orders/[id]/provisioning-retry`; detay okuması GET gerekir |

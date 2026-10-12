@@ -132,8 +132,8 @@ P1 tamamlanmadan hiçbir yönetim yazma işlemi açılmaz. P2–P5 P1'den sonra 
 | Sıra | Kalan iş | Hazır olan / sonraki somut teslimat |
 | --- | --- | --- |
 | 1 | P2.9 kabul | Gerçek HTTP senaryolarını E2E ortamında çalıştır; üç rol önizlemesi, yazma reddi, öğretmen yazması/audit, süre dolumu, çıkış ve web çerez regresyonunu gerçek iPhone ile doğrula |
-| 2 | P2.3 Eğitim | Grup listesi/360 ve grup/üye yazmaları tamamlandı. Sıradaki teslimat ders oluşturma/düzenleme + seri önizleme; ardından ödev/materyal yazma, yükleme, kurulum, takvim ve kazanımlar |
-| 3 | P2.4 Koçluk | Koç atama servisi/uçları 2.2 ile hazır; kapasite, takip ve görüşmeler için yönetim projeksiyonu + native koçluk ekranı eksik |
+| 2 | P2.3 Eğitim | Uygulama eşliği tamamlandı; ders/seri, ödev/teslim, materyal/dosya, kurulum, takvim ve kazanımlar native. Gerçek cihaz dosya kabulü P6 |
+| 3 | P2.4 Koçluk | Uygulama eşliği tamamlandı: ortak web/mobil kuyrukları, native kapasite/öğrenci/görüşme takibi ve güvenli atama/devretme. Sonraki geliştirme P2.6 |
 | 4 | P2.6 Siparişler | Provizyon tekrar servisi/uçları 2.2 ile hazır; sipariş listesi/detayı GET ve native ticari operasyon ekranları eksik |
 | 5 | P2.8 Analitik/sistem | Metrik/audit/kalite projeksiyonları, native ekranlar, özellik bayraklarının yazma kararı (ADR-0015) ve kohort yönetimi |
 | 6 | P2.7 İşletme | Ortak servis çıkarımı + BusinessPermission API'leri + 16 bölümün native karşılıkları; E3–E5 kapsam dışı kalır |
@@ -194,6 +194,14 @@ Production personel izin modu/kanıtı P1'in açık operasyon maddesi olarak kal
 - Özel dosya URL’si mobil yanıta veya işlem makbuzuna yazılmaz. Yükleme başarısızsa Blob temizliği çalışır; e-posta/outbox transaction’a dahildir, katalog invalidation ve çapraz ürün yayınları commit sonrasına ertelenir. Native seçim geçici kullanıcı önbelleğine kopyalanır; başarı/ekrandan ayrılma/oturum kapanışında temizlenir. PDF/MP4 sınırı 4 MB. `expo-document-picker` eklendiği için yeni native build gerekir; yalnız OTA yeterli değildir.
 
 **Doğrulama:** 962 sunucu birim testi; geçici yerel PostgreSQL’de 17 eğitim/grup/ders entegrasyon testi; tam mobil Jest 27 paket/215 test; beş rolün gerçek tarayıcı yetki matrisi 10 testle geçti; gerçek HTTP sentetik hesap senaryosu geçti (yetki, 428, önkoşul, tekrar, eski sürüm, seri kapsamı, bireysel/erteleme/yedek/telafi, kanıtlı teslim değerlendirme, ödev, materyal, kurulum, ICS, kazanım ve dosya boyutu/depo-kapalı hataları). Sunucu/mobil tip ve lint, API doğrulama ve eşlik matrisi temiz; iOS/Android/web Expo export başarılı. Gerçek iPhone dosya seçme/açma/paylaşma ve yapılandırılmış özel Blob’a başarılı yükleme kabulü Faz 6’da bekler; bu testte dış dosya/e-posta servisleri kapalıdır. Üretim ayarı, TestFlight veya kamu yayını yapılmadı.
+
+### P2.4 koçluk operasyonu tamamlandı — 12 Ekim 2026
+
+- Web ve mobil kuyrukları `loadAdminCoaching` üzerinden aynı veri ve gecikme kuralını kullanır. Koç bekleyen, geciken, plansız (bayrak açıkken), hedefsiz, kapasite üstü ve Yön sinyalleri kuyrukları; koç dizini, bugünkü/geciken sayıları, öğrenci takip ve görüşme detayları native. Webin plan/hedef kuyruklarındaki 12 satır sınırı kaldırıldı; sayaç ve liste artık aynı kapsamda.
+- `POST /api/panel/admin/coach-assignments` taze step-up ister. Bearer yazmaları UUID işlem anahtarı ve atama sürümü taşır; eksik/geçersiz önkoşul 400, eski sürüm veya anahtarın farklı içerikte kullanımı 409. Web ve mobil aynı Serializable servisi kullanır; üyelik, aktif öğrenci/koç ve kapasite işlem içinde kontrol edilir, atama ve denetim makbuzu birlikte commit olur. Gerekçesiz kapasite aşımı 422. Eski web gövdeleri uyumludur.
+- Öğrenci 360 atama kısayolu da sürüm ve aynı step-up tekrar anahtarını kullanır. Native atama onay ister; 428 sonrası tek tekrar aynı anahtarla, 409 sonrası okuma yenilenir. Özel koç notları yeni yönetim yanıtlarında seçilmez; yalnız paylaşılan not, odak, bağlantı ve saat değişikliği bilgisi gösterilir.
+
+**Doğrulama:** 964 sunucu birim testi + 2 yeni sözleşme testi, tam mobil Jest 28 paket/217 test; sunucu/mobil tip ve lint, API doğrulama ve eşlik matrisi temiz; iOS/Android/web Expo export başarılı. İzole yerel PostgreSQL’de 4 testle atama tekrarı, son kapasite yarışı, gerekçeli aşım, eski sürüm, üyelik/aktif hesap ve geri alma testleri; sentetik hesaplarla gerçek HTTP rol/step-up/önkoşul/409/özel not gizliliği ve gerçek tarayıcıyla web formunda devir senaryosu; native kapasite/onay/428/409/arama/boş kuyruk/görüşme detayı testleri. Gerçek iPhone kabulü P6’da bekler; üretim ayarı veya yayın yapılmadı. Sıradaki geliştirme P2.6 Siparişler.
 
 ## P3 — Öğretmen ve Yön Koçu işlev eşliği
 

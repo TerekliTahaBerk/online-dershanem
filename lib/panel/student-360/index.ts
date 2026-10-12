@@ -1,5 +1,6 @@
 /** Student 360 orkestrasyonu; sorgu, politika ve DTO katmanlarını birleştirir. */
 import "server-only";
+import { coachAssignmentRevision } from "../coach-assignment-core";
 
 import type { UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -517,6 +518,7 @@ export async function loadStudent360Bundle(input: {
       id: teacher.id,
       label: teacher.fullName || teacher.email,
     })),
+    coachRevision: coachAssignmentRevision(currentCoach),
     currentCoachId: currentCoach?.coach.id ?? null,
     currentCadenceDays: currentCoach?.cadenceDays ?? null,
   };

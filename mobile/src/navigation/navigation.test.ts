@@ -49,6 +49,7 @@ describe('native ekran eşlemesi (rol + çalışma alanı + menü kimliği)', ()
   });
 
   it('yönetim: henüz native olmayan öğe faz etiketli yer tutucudur (Deneme Ligi yönetimi P4, diğerleri P2)', () => {
+    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('coaching') })).toMatchObject({ key: 'admin-coaching' });
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('groups') })).toMatchObject({ key: 'admin-education' });
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('people') }).key).toBe('admin-people');
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('signups') }).key).toBe('admin-signups');
