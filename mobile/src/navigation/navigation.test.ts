@@ -53,6 +53,9 @@ describe('native ekran eşlemesi (rol + çalışma alanı + menü kimliği)', ()
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('groups') })).toMatchObject({ key: 'admin-education' });
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('people') }).key).toBe('admin-people');
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('signups') }).key).toBe('admin-signups');
+    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('pilot') }).key).toBe('admin-pilot');
+    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('mock-analysis') }).key).toBe('admin-mock-exams');
+    expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'ODK', item: item('odk-pilot') })).toMatchObject({ key: 'placeholder', phase: 'P4' });
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'ODK', item: item('odk-exams') })).toMatchObject({ key: 'placeholder', phase: 'P4' });
     expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'OD', item: item('orders') })).toMatchObject({ key: 'admin-orders' });
   });

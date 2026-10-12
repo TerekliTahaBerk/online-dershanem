@@ -1,3 +1,4 @@
+import { MockExamsScreen, PilotScreen } from '@/features/admin/rollout';
 import { AdminAnalyticsScreen, AdminAuditScreen, AdminFeaturesScreen, AdminQualityScreen } from '@/features/admin/system';
 import AdminOrdersScreen from '@/features/admin/orders';
 import AdminCoachingScreen from '@/features/admin/coaching';
@@ -107,6 +108,8 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'admin-audit': () => <AdminAuditScreen />,
   'admin-features': () => <AdminFeaturesScreen />,
   'admin-quality': () => <AdminQualityScreen />,
+  'admin-pilot': () => <PilotScreen />,
+  'admin-mock-exams': () => <MockExamsScreen />,
   'admin-orders': () => <AdminOrdersScreen />,
   'admin-coaching': () => <AdminCoachingScreen />,
   'admin-curriculum': () => <EducationEditorScreen kind="version" />,

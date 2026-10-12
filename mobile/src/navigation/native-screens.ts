@@ -62,6 +62,8 @@ export type NativeScreenKey =
   | 'admin-audit'
   | 'admin-features'
   | 'admin-quality'
+  | 'admin-pilot'
+  | 'admin-mock-exams'
   | 'admin-orders'
   | 'admin-coaching'
   | 'admin-curriculum'
@@ -215,6 +217,8 @@ const ADMIN: Record<string, NativeScreenKey> = {
   audit: 'admin-audit',
   features: 'admin-features',
   quality: 'admin-quality',
+  pilot: 'admin-pilot',
+  'mock-analysis': 'admin-mock-exams',
 };
 
 /**
