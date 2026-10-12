@@ -1,5 +1,5 @@
 import type { MobileInterventionInbox, MobileInterventionRow } from '@contracts/admin';
-import { useMemo, useState } from 'react';
+import { createContext, useContext, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Banner, BottomSheet, Button, EmptyState, PageHeader, Row, Screen, Section, StatusBadge, Text, TextField } from '@/design/primitives';
@@ -9,6 +9,19 @@ import { formatShortDateTime, istanbulDateKey } from '@/lib/format/istanbul';
 
 import { adminErrorText, QueryView, useAdminMutation, useAdminQuery, usePullToRefresh } from './shared';
 import { FilterChips } from './ui';
+
+export type InterventionAdapter = {
+  useMutation: typeof useAdminMutation;
+  disabled?: boolean;
+  create: (api: Parameters<typeof createIntervention>[0], input: Parameters<typeof createIntervention>[1], context: { idempotencyKey: string }) => ReturnType<typeof createIntervention>;
+  update: (api: Parameters<typeof updateIntervention>[0], id: string, version: number, patch: InterventionPatch, context: { idempotencyKey: string }) => ReturnType<typeof updateIntervention>;
+  generate: (api: Parameters<typeof generateInterventions>[0], context: { idempotencyKey: string }) => ReturnType<typeof generateInterventions>;
+};
+export const InterventionAdapterContext = createContext<InterventionAdapter>({ useMutation: useAdminMutation, create: createIntervention, update: updateIntervention, generate: generateInterventions });
+function useInterventionMutation<V, R>(mutate: Parameters<typeof useAdminMutation<V, R>>[0]) {
+  const adapter = useContext(InterventionAdapterContext);
+  return adapter.useMutation(mutate);
+}
 
 type Filter = 'ACTIVE' | 'CLOSED' | 'ALL';
 const CLOSED = new Set(['RESOLVED', 'FALSE_POSITIVE']);
@@ -28,13 +41,14 @@ export default function InterventionsScreen() {
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="admin-interventions">
       <PageHeader title="Müdahale" description="Hiçbir sinyal sahipsiz kalmasın: kural, 24 saat hedefi, sahiplik ve sonuç tek yerde." />
       <QueryView query={query} disabledTitle="Müdahale kutusu şu anda açık değil.">
-        {(inbox) => <Body inbox={inbox} />}
+        {(inbox) => <InterventionBody inbox={inbox} />}
       </QueryView>
     </Screen>
   );
 }
 
-function Body({ inbox }: { inbox: MobileInterventionInbox }) {
+export function InterventionBody({ inbox, prefix = "admin" }: { inbox: MobileInterventionInbox; prefix?: string }) {
+  const adapter = useContext(InterventionAdapterContext);
   const [filter, setFilter] = useState<Filter>('ACTIVE');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
@@ -43,7 +57,7 @@ function Body({ inbox }: { inbox: MobileInterventionInbox }) {
     reason: Object.fromEntries(inbox.vocabulary.reasons.map((entry) => [entry.value, entry.label])),
     status: Object.fromEntries(inbox.vocabulary.statuses.map((entry) => [entry.value, entry.label])),
   }), [inbox.vocabulary]);
-  const generate = useAdminMutation((api) => generateInterventions(api));
+  const generate = useInterventionMutation((api, _input: undefined, context) => adapter.generate(api, context));
   const now = Date.now();
   const active = inbox.rows.filter((row) => !CLOSED.has(row.status));
   const overdue = active.filter((row) => row.status !== 'SNOOZED' && Date.parse(row.dueAt) < now);
@@ -62,13 +76,13 @@ function Body({ inbox }: { inbox: MobileInterventionInbox }) {
 
   return (
     <>
-      <Text tone="secondary" testID="admin-interventions-counts">
+      <Text tone="secondary" testID={`${prefix}-interventions-counts`}>
         {active.length} açık · {overdue.length} gecikmiş · {inbox.rows.filter((row) => row.status === 'FALSE_POSITIVE').length} yanlış işaret
       </Text>
       {notice ? <Banner tone="info">{notice}</Banner> : null}
       <View style={styles.actions}>
-        <Button label="Elle kayıt" variant="secondary" onPress={() => setCreating(true)} testID="admin-intervention-create-open" />
-        <Button label="Kuralları çalıştır" variant="secondary" onPress={runRules} loading={generate.isPending} testID="admin-intervention-generate" />
+        <Button label="Elle kayıt" variant="secondary" onPress={() => setCreating(true)} testID={`${prefix}-intervention-create-open`} />
+        <Button label="Kuralları çalıştır" variant="secondary" onPress={runRules} loading={generate.isPending} disabled={adapter.disabled || generate.isPending} testID={`${prefix}-intervention-generate`} />
       </View>
       <FilterChips label="Durum süzgeci" value={filter} onChange={setFilter} options={[{ value: 'ACTIVE', label: 'Açık', count: active.length }, { value: 'CLOSED', label: 'Kapanan' }, { value: 'ALL', label: 'Tümü' }]} />
       <Section title="Kayıtlar" first>
@@ -78,7 +92,7 @@ function Body({ inbox }: { inbox: MobileInterventionInbox }) {
             return (
               <Row
                 key={row.id}
-                testID={`admin-intervention-${row.id}`}
+                testID={`${prefix}-intervention-${row.id}`}
                 title={row.studentName}
                 subtitle={`${labels.reason[row.reasonCode] ?? row.reasonCode} · ${row.ownerName ?? 'Sahipsiz'}`}
                 meta={late ? `Gecikti · ${formatShortDateTime(row.dueAt)}` : `Hedef ${formatShortDateTime(row.dueAt)}`}
@@ -98,11 +112,12 @@ function Body({ inbox }: { inbox: MobileInterventionInbox }) {
 }
 
 function CaseSheet({ row, inbox, labels, onClose }: { row: MobileInterventionRow; inbox: MobileInterventionInbox; labels: { reason: Record<string, string>; status: Record<string, string> }; onClose: () => void }) {
+  const adapter = useContext(InterventionAdapterContext);
   const [note, setNote] = useState('');
   const [outcome, setOutcome] = useState(inbox.vocabulary.outcomes.find((entry) => entry.value === 'SUPPORT_PLANNED')?.value ?? inbox.vocabulary.outcomes[0]?.value ?? '');
   const [falseReason, setFalseReason] = useState(inbox.vocabulary.falsePositiveReasons[0]?.value ?? '');
   const [error, setError] = useState<string | null>(null);
-  const mutation = useAdminMutation((api, patch: InterventionPatch) => updateIntervention(api, row.id, row.version, patch));
+  const mutation = useInterventionMutation((api, patch: InterventionPatch, context) => adapter.update(api, row.id, row.version, patch, context));
   const activityLabel = Object.fromEntries(inbox.vocabulary.activities.map((entry) => [entry.value, entry.label]));
   const outcomeLabel = Object.fromEntries(inbox.vocabulary.outcomes.map((entry) => [entry.value, entry.label]));
   const closed = CLOSED.has(row.status);
@@ -135,32 +150,32 @@ function CaseSheet({ row, inbox, labels, onClose }: { row: MobileInterventionRow
       {!row.canAct ? (
         <Banner tone="info">Bu kayıt başka bir sorumluya ait.</Banner>
       ) : closed ? (
-        <Button label="Yeniden aç" variant="secondary" onPress={() => act({ action: 'REOPEN' })} loading={mutation.isPending} testID="intervention-reopen" />
+        <Button label="Yeniden aç" variant="secondary" onPress={() => act({ action: 'REOPEN' })} loading={mutation.isPending} disabled={adapter.disabled || mutation.isPending} testID="intervention-reopen" />
       ) : (
         <>
           <TextField label="İç aksiyon notu" value={note} onChangeText={setNote} multiline maxLength={500} testID="intervention-note" />
           <View style={styles.actions}>
-            {!row.ownerName ? <Button label="Üstlen" variant="secondary" onPress={() => act({ action: 'ASSIGN_SELF' })} disabled={mutation.isPending} testID="intervention-assign" /> : null}
-            {row.status === 'OPEN' ? <Button label="İncelemeye başla" variant="secondary" onPress={() => act({ action: 'START', ...withNote })} disabled={mutation.isPending} testID="intervention-start" /> : null}
-            <Button label="Notu kaydet" variant="secondary" onPress={() => act({ action: 'LOG_ACTION', note: trimmed })} disabled={!trimmed || mutation.isPending} testID="intervention-log" />
+            {!row.ownerName ? <Button label="Üstlen" variant="secondary" onPress={() => act({ action: 'ASSIGN_SELF' })} disabled={adapter.disabled || mutation.isPending} testID="intervention-assign" /> : null}
+            {row.status === 'OPEN' ? <Button label="İncelemeye başla" variant="secondary" onPress={() => act({ action: 'START', ...withNote })} disabled={adapter.disabled || mutation.isPending} testID="intervention-start" /> : null}
+            <Button label="Notu kaydet" variant="secondary" onPress={() => act({ action: 'LOG_ACTION', note: trimmed })} disabled={adapter.disabled || !trimmed || mutation.isPending} testID="intervention-log" />
           </View>
           <Text variant="label">Beklet</Text>
           <View style={styles.actions}>
             {inbox.vocabulary.snoozeDays.map((days) => (
-              <Button key={days} label={`${days} gün`} variant="quiet" onPress={() => act({ action: 'SNOOZE', days, ...withNote })} disabled={mutation.isPending} testID={`intervention-snooze-${days}`} />
+              <Button key={days} label={`${days} gün`} variant="quiet" onPress={() => act({ action: 'SNOOZE', days, ...withNote })} disabled={adapter.disabled || mutation.isPending} testID={`intervention-snooze-${days}`} />
             ))}
           </View>
           <Section title="Çöz">
             {inbox.vocabulary.outcomes.map((entry) => (
               <Row key={entry.value} title={entry.label} selected={outcome === entry.value} onPress={() => setOutcome(entry.value)} testID={`intervention-outcome-${entry.value}`} />
             ))}
-            <Button label="Çözüldü olarak kapat" onPress={() => act({ action: 'RESOLVE', outcomeCode: outcome, ...withNote })} disabled={!outcome || mutation.isPending} loading={mutation.isPending} testID="intervention-resolve" />
+            <Button label="Çözüldü olarak kapat" onPress={() => act({ action: 'RESOLVE', outcomeCode: outcome, ...withNote })} disabled={adapter.disabled || !outcome || mutation.isPending} loading={mutation.isPending} testID="intervention-resolve" />
           </Section>
           <Section title="Yanlış işaret">
             {inbox.vocabulary.falsePositiveReasons.map((entry) => (
               <Row key={entry.value} title={entry.label} selected={falseReason === entry.value} onPress={() => setFalseReason(entry.value)} testID={`intervention-false-${entry.value}`} />
             ))}
-            <Button label="Yanlış işaret olarak kapat" variant="destructive" onPress={() => act({ action: 'FALSE_POSITIVE', falsePositiveReason: falseReason, ...withNote })} disabled={!falseReason || mutation.isPending} testID="intervention-false-positive" />
+            <Button label="Yanlış işaret olarak kapat" variant="destructive" onPress={() => act({ action: 'FALSE_POSITIVE', falsePositiveReason: falseReason, ...withNote })} disabled={adapter.disabled || !falseReason || mutation.isPending} testID="intervention-false-positive" />
           </Section>
         </>
       )}
@@ -182,6 +197,7 @@ const FOLLOW_UPS = [
 ] as const;
 
 function CreateSheet({ visible, inbox, onClose, onCreated }: { visible: boolean; inbox: MobileInterventionInbox; onClose: () => void; onCreated: () => void }) {
+  const adapter = useContext(InterventionAdapterContext);
   const [search, setSearch] = useState('');
   const [studentId, setStudentId] = useState<string | null>(null);
   const [reasonCode, setReasonCode] = useState(inbox.vocabulary.manualReasons[0]?.value ?? '');
@@ -189,7 +205,7 @@ function CreateSheet({ visible, inbox, onClose, onCreated }: { visible: boolean;
   const [suggestedAction, setSuggestedAction] = useState('');
   const [followUpDays, setFollowUpDays] = useState<number>(3);
   const [error, setError] = useState<string | null>(null);
-  const mutation = useAdminMutation((api, input: Parameters<typeof createIntervention>[1]) => createIntervention(api, input));
+  const mutation = useInterventionMutation((api, input: Parameters<typeof createIntervention>[1], context) => adapter.create(api, input, context));
   const needle = search.trim().toLocaleLowerCase('tr-TR');
   const matches = needle ? inbox.students.filter((student) => student.name.toLocaleLowerCase('tr-TR').includes(needle)).slice(0, 20) : [];
   const student = inbox.students.find((entry) => entry.id === studentId) ?? null;
@@ -230,7 +246,7 @@ function CreateSheet({ visible, inbox, onClose, onCreated }: { visible: boolean;
       <TextField label="Önerilen adım" value={suggestedAction} onChangeText={setSuggestedAction} maxLength={300} hint="En az 4 karakter" testID="intervention-create-action" />
       <Text variant="label">Takip</Text>
       <FilterChips label="Takip tarihi" value={String(followUpDays)} onChange={(value) => setFollowUpDays(Number(value))} options={FOLLOW_UPS.map((entry) => ({ value: String(entry.days), label: entry.label }))} />
-      <Button label="Kaydı oluştur" onPress={submit} disabled={!valid || mutation.isPending} loading={mutation.isPending} testID="intervention-create-submit" />
+      <Button label="Kaydı oluştur" onPress={submit} disabled={adapter.disabled || !valid || mutation.isPending} loading={mutation.isPending} testID="intervention-create-submit" />
     </BottomSheet>
   );
 }

@@ -12,7 +12,7 @@ import { logAudit, type LogAuditInput } from "@/lib/audit";
 import { sanitizeAuditPayload } from "@/lib/audit-policy";
 import { LessonLifecycleError } from "./lesson-lifecycle";
 
-export type EducationKind = "lesson" | "assignment" | "material" | "setup" | "version" | "outcome" | "submission" | "review" | "recovery";
+export type EducationKind = "lesson" | "assignment" | "material" | "setup" | "version" | "outcome" | "submission" | "review" | "recovery" | "intervention";
 type Context = { params: Promise<{ id: string }> };
 const transactional = new WeakSet<object>();
 type Effect = () => unknown | Promise<unknown>;
