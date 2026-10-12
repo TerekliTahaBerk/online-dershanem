@@ -64,6 +64,7 @@ export default function AppLayout() {
       <Stack.Screen name="admin/educators" options={{ title: 'Öğretmenler' }} />
       <Stack.Screen name="admin/group/[id]" options={{ title: 'Grup 360' }} />
       <Stack.Screen name="admin/group-create" options={{ title: 'Grup oluştur' }} />
+      <Stack.Screen name="admin/education-editor" options={{ title: 'Eğitim yönetimi' }} />
     </Stack>
     </ParentContextProvider>
     </StepUpProvider>

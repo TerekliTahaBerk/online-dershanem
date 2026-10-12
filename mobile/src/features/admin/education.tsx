@@ -8,16 +8,16 @@ import { fetchEducation } from '@/lib/api/admin-education';
 import { QueryView, useAdminQuery, usePullToRefresh } from './shared';
 import { FilterChips } from './ui';
 
-export function EducationRows({ rows, testID }: { rows: EducationRow[]; testID: string }) {
+export function EducationRows({ rows, testID, editorKind }: { rows: EducationRow[]; testID: string; editorKind?: 'lesson' | 'assignment' | 'material' }) {
   const router = useRouter();
   return rows.length ? rows.map((row) => (
     <Row key={row.id} testID={`${testID}-${row.id}`} title={row.title} subtitle={row.detail || null}
       meta={row.at ? new Date(row.at).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul', dateStyle: 'medium', timeStyle: 'short' }) : null}
-      onPress={row.groupId ? () => router.push(`/admin/group/${encodeURIComponent(row.groupId!)}` as Href) : row.studentId ? () => router.push(`/admin/student/${encodeURIComponent(row.studentId!)}` as Href) : undefined} />
+      onPress={editorKind ? () => router.push(`/admin/education-editor?kind=${editorKind}&id=${encodeURIComponent(row.id)}` as Href) : row.groupId ? () => router.push(`/admin/group/${encodeURIComponent(row.groupId!)}` as Href) : row.studentId ? () => router.push(`/admin/student/${encodeURIComponent(row.studentId!)}` as Href) : undefined} />
   )) : <EmptyState title="Bu bölümde kayıt yok" />;
 }
 
-/** P2.3 okuma teslimatı; yazma akışları tamamlanana kadar açıkça belirtilir. */
+/** P2.3 native education entry point. */
 export default function EducationScreen() {
   const router = useRouter();
   const [tab, setTab] = useState<EducationTab>('gruplar');
@@ -29,13 +29,15 @@ export default function EducationScreen() {
   return (
     <Screen testID="admin-education" refreshing={refresh.refreshing} onRefresh={refresh.onRefresh}>
       <PageHeader title="Eğitim" description="Gruplar, dersler, ödevler ve materyaller." />
-      <Banner tone="info" title="Eğitim yönetimi">Grup oluşturma ve üye yönetimi uygulamada. Ders planlama, ödev ve dosya düzenleme işlemleri web panelinde.</Banner>
+      <Banner tone="info" title="Eğitim yönetimi">Ders, ödev, materyal ve grup işlemlerini buradan yönetebilirsin.</Banner>
       <Button mutation label="Grup oluştur" testID="education-create" onPress={() => router.push('/admin/group-create' as Href)} />
+      <Button mutation label="Hızlı kurulum" variant="secondary" onPress={() => router.push('/admin/education-editor?kind=setup' as Href)} />
       <FilterChips value={tab} onChange={setTab} label="Eğitim bölümleri" options={[{ value: 'gruplar', label: 'Gruplar' }, { value: 'dersler', label: 'Dersler' }, { value: 'odevler', label: 'Ödevler' }, { value: 'materyaller', label: 'Materyaller' }]} />
       <QueryView query={query}>{(data) => {
         if (tab !== 'gruplar') {
           const section = data.sections.find((item) => item.id === tab);
-          return <Section title={section?.title ?? ''} first><EducationRows rows={section?.rows ?? []} testID={`education-${tab}`} /></Section>;
+          const kind = ({ dersler: 'lesson', odevler: 'assignment', materyaller: 'material' } as const)[tab];
+          return <><Button label="Oluştur ve tüm kayıtları yönet" onPress={() => router.push(`/admin/education-editor?kind=${kind}` as Href)} /><Section title={section?.title ?? ''} first><EducationRows rows={section?.rows ?? []} testID={`education-${tab}`} editorKind={kind} /></Section></>;
         }
         const groups = data.groups.filter((group) => (filter === 'tumu' || group.active === (filter === 'aktif')) && [group.name, group.subject, group.level, group.teacherName].join(' ').toLocaleLowerCase('tr-TR').includes(needle));
         return <>

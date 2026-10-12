@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { GROUP_TABS, type GroupTab } from '@contracts/admin-education';
 
-import { Banner, PageHeader, Screen, Section } from '@/design/primitives';
+import { Banner, Button, PageHeader, Screen, Section } from '@/design/primitives';
 import { fetchGroup360 } from '@/lib/api/admin-education';
 
 import { EducationRows } from './education';
@@ -13,6 +13,7 @@ import { GroupEditor, GroupMembers } from './group-management';
 const LABELS: Record<GroupTab, string> = { genel: 'Genel', ogrenciler: 'Öğrenciler', program: 'Program', gecmis: 'Geçmiş', operasyon: 'Operasyon' };
 
 export default function GroupDetailScreen() {
+  const router = useRouter();
   const params = useLocalSearchParams<{ id: string; sekme?: string }>();
   const id = typeof params.id === 'string' ? params.id : '';
   const [tab, setTab] = useState<GroupTab>(GROUP_TABS.includes(params.sekme as GroupTab) ? params.sekme as GroupTab : 'genel');
@@ -31,7 +32,8 @@ export default function GroupDetailScreen() {
         </MetricGrid>
         <Banner tone={data.reasons.length ? 'warning' : 'info'} title={data.status}>{data.reasons.length ? data.reasons.join('\n') : 'Güncel grup durumu.'}</Banner>
         <FilterChips value={tab} onChange={setTab} label="Grup bölümleri" options={GROUP_TABS.map((value) => ({ value, label: LABELS[value] }))} />
-        {data.sections.map((section, index) => <Section key={section.id} title={section.title} first={index === 0}><EducationRows rows={section.rows} testID={`group-${section.id}`} /></Section>)}
+        {tab === 'program' ? <Button mutation label="Bu gruba ders planla" onPress={() => router.push(`/admin/education-editor?kind=lesson&group=${encodeURIComponent(id)}` as Href)} /> : null}
+        {data.sections.map((section, index) => <Section key={section.id} title={section.title} first={index === 0}><EducationRows rows={section.rows} testID={`group-${section.id}`} editorKind={['upcoming', 'weekly', 'completed', 'cancelled'].includes(section.id) ? 'lesson' : undefined} /></Section>)}
         {tab === 'operasyon' ? <GroupEditor key={`${data.id}:${data.revision}`} group={data} onNotice={onNotice} /> : null}
         {tab === 'ogrenciler' ? <GroupMembers key={`${data.id}:${data.revision}`} group={data} onNotice={onNotice} /> : null}
       </>}</QueryView>

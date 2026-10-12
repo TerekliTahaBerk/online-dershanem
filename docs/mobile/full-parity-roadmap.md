@@ -186,6 +186,15 @@ Production personel izin modu/kanıtı P1'in açık operasyon maddesi olarak kal
 
 ---
 
+### P2.3 eğitim yazmaları ve native eşlik tamamlandı — 12 Ekim 2026
+
+- Ders, ödev, materyal, kurulum, kazanım ve teslim değerlendirme web işleyicileri `lib/panel/education-handlers/` altında ortaklaştırıldı. ADMIN yazmaları taze step-up, UUID işlem anahtarı ve hedef sürümüyle çalışır; webin eski gövde sözleşmeleri korunur. Bearer’da eksik önkoşul 400, eski sürüm/anahtar çakışması 409. Kayıtlar, bildirim/outbox ve denetim makbuzu aynı Serializable transaction içindedir. Yerel Prisma facade iç transaction’ları aynı işleme bağlar; global istemci değiştirilmez.
+- Native ortak eğitim editörü grup/bireysel ders, seri önizleme, ONE/FOLLOWING düzenleme/erteleme/iptal/yedek öğretmen ve telafi; ödev oluşturma/düzenleme/arşiv, kazanım/kanıt/rubric ve teslim değerlendirme; materyal bağlantı/PDF/MP4/düzenleme/arşiv/kimlikli açma; grup+öğrenci+veli bağlantısı+ders hızlı kurulumunu kapsar. Program sekmesinden gruba ders planlanabilir.
+- Haftalık kurum takvimi grup/öğretmen filtreleri ve mevcut kurum ICS aralığıyla indirme/paylaşma sağlar. Kazanımlar bayrağa bağlı sürüm listesi/detayı/durum değişikliği, kazanım oluşturma/detayı ve son 30 gün ders/ödev kapsamasını gösterir. Y13–Y16 uygulama eşliği `Tam`; sıradaki geliştirme P2.4’tür.
+- Özel dosya URL’si mobil yanıta veya işlem makbuzuna yazılmaz. Yükleme başarısızsa Blob temizliği çalışır; e-posta/outbox transaction’a dahildir, katalog invalidation ve çapraz ürün yayınları commit sonrasına ertelenir. Native seçim geçici kullanıcı önbelleğine kopyalanır; başarı/ekrandan ayrılma/oturum kapanışında temizlenir. PDF/MP4 sınırı 4 MB. `expo-document-picker` eklendiği için yeni native build gerekir; yalnız OTA yeterli değildir.
+
+**Doğrulama:** 962 sunucu birim testi; geçici yerel PostgreSQL’de 17 eğitim/grup/ders entegrasyon testi; tam mobil Jest 27 paket/215 test; gerçek HTTP sentetik hesap senaryosu geçti (yetki, 428, önkoşul, tekrar, eski sürüm, seri kapsamı, bireysel/erteleme/yedek/telafi, kanıtlı teslim değerlendirme, ödev, materyal, kurulum, ICS, kazanım ve dosya boyutu/depo-kapalı hataları). Sunucu/mobil tip ve lint, API doğrulama ve eşlik matrisi temiz; iOS/Android/web Expo export başarılı. Gerçek iPhone dosya seçme/açma/paylaşma ve yapılandırılmış özel Blob’a başarılı yükleme kabulü Faz 6’da bekler; bu testte dış dosya/e-posta servisleri kapalıdır. Üretim ayarı, TestFlight veya kamu yayını yapılmadı.
+
 ## P3 — Öğretmen ve Yön Koçu işlev eşliği
 
 **Amaç.** M7 ekranlarını koruyarak `/panel/ogretmen/**` (19 rota) eşliğini tamamlamak.

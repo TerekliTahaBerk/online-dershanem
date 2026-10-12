@@ -6,6 +6,7 @@ import PeopleScreen from '@/features/admin/people';
 import AdminReportsScreen from '@/features/admin/reports';
 import SignupsScreen from '@/features/admin/signups';
 import EducationScreen from '@/features/admin/education';
+import EducationEditorScreen from '@/features/admin/education-editor';
 import OdkExamsScreen from '@/features/odk/odk-exams';
 import OdkHomeScreen from '@/features/odk/odk-home';
 import OdkSwitchScreen from '@/features/odk/odk-switch';
@@ -98,6 +99,8 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'admin-people': () => <PeopleScreen />,
   'admin-signups': () => <SignupsScreen />,
   'admin-education': () => <EducationScreen />,
+  'admin-calendar': () => <EducationEditorScreen kind="calendar" />,
+  'admin-curriculum': () => <EducationEditorScreen kind="version" />,
 };
 
 /** Üst güvenli alanı sekmelerde PanelHeader, detaylarda Stack header bırakır. */
