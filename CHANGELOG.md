@@ -118,6 +118,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Fixed
 
+- Teacher intervention retries retain the original request, case version and revision across a background refresh after an uncertain network result.
+
 - Weekly feedback accepts OD or Yön students; parents are authorized through the target child's active academic relationship and membership. Parent calendar export uses the child's OD membership. Student profile responses are private and exclude inactive parent links and future memberships.
 
 - The two-admin MFA reset approval queue is visible again on `/panel/yonetim/kisiler`; it lived only on the `/panel/yonetim/kullanicilar` list, which `next.config.ts` redirects, so no admin could see or approve pending resets. Expiry now shows the time, not only the date (requests last 30 minutes)
