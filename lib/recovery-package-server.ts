@@ -1,22 +1,24 @@
 import "server-only";
-import { prisma } from "@/lib/prisma";
+import { prisma as defaultDb } from "@/lib/prisma";
+import type { PrismaClient } from "@prisma/client";
+import { afterEducationCommit, transactionalNotificationEmails } from "@/lib/panel/education-write";
 import { buildRecoveryDraft } from "@/lib/recovery-package";
 import { buildAdaptiveWeek, plannedTaskRows } from "@/lib/adaptive-plan";
 import { collectPlanCandidates } from "@/lib/adaptive-plan-server";
 import { findCoachAssignmentForCoach } from "@/lib/panel/coaching";
 import { activePlanSourceKeys, planSourceKey } from "@/lib/kocum";
-import { filterNotificationRows, queuePanelNotificationEmails } from "@/lib/panel-notifications";
+import { filterNotificationRows } from "@/lib/panel-notifications";
 
-export async function generateRecoveryPackage(attendanceId: string, teacherId: string) {
+export async function generateRecoveryPackage(attendanceId: string, teacherId: string, prisma: PrismaClient = defaultDb) {
   const attendance = await prisma.attendance.findFirst({
     where: { id: attendanceId, status: { in: ["ABSENT", "EXCUSED"] }, lesson: { status: "COMPLETED", teacherId, group: { isActive: true } } },
     include: {
       student: { select: { id: true } },
       lesson: {
         include: {
-          notes: { where: { studentId: null }, orderBy: { updatedAt: "desc" }, take: 1, select: { topic: true, nextGoal: true, homework: true } },
-          materials: { where: { isActive: true }, orderBy: { createdAt: "asc" }, take: 3, select: { id: true, title: true } },
-          assignments: { where: { isActive: true }, orderBy: { dueAt: "asc" }, take: 2, select: { id: true, title: true } },
+          notes: { where: { studentId: null }, orderBy: [{ updatedAt: "desc" }, { id: "asc" }], take: 1, select: { topic: true, nextGoal: true, homework: true } },
+          materials: { where: { isActive: true }, orderBy: [{ createdAt: "asc" }, { id: "asc" }], take: 3, select: { id: true, title: true } },
+          assignments: { where: { isActive: true }, orderBy: [{ dueAt: "asc" }, { id: "asc" }], take: 2, select: { id: true, title: true } },
         },
       },
     },
@@ -30,7 +32,7 @@ export async function generateRecoveryPackage(attendanceId: string, teacherId: s
   const draft = buildRecoveryDraft({ lessonTitle: attendance.lesson.title, lessonEndsAt: attendance.lesson.endsAt, sharedTopic: shared?.topic, sharedNextGoal: shared?.nextGoal, sharedHomework: shared?.homework, materials: attendance.lesson.materials, assignments: attendance.lesson.assignments });
   const row = await prisma.$transaction(async (tx) => {
     const packageRow = current
-      ? await tx.recoveryPackage.update({ where: { id: current.id }, data: { ruleVersion: draft.ruleVersion, summaryTopic: draft.summaryTopic, summaryNextStep: draft.summaryNextStep, checkpointPrompt: draft.checkpointPrompt, dueAt: draft.dueAt, generatedById: teacherId, version: { increment: 1 } } })
+      ? await tx.recoveryPackage.update({ where: { id: current.id, status: "DRAFT", version: current.version }, data: { ruleVersion: draft.ruleVersion, summaryTopic: draft.summaryTopic, summaryNextStep: draft.summaryNextStep, checkpointPrompt: draft.checkpointPrompt, dueAt: draft.dueAt, generatedById: teacherId, version: { increment: 1 } } })
       : await tx.recoveryPackage.create({ data: { lessonId: attendance.lessonId, studentId: attendance.studentId, ruleVersion: draft.ruleVersion, summaryTopic: draft.summaryTopic, summaryNextStep: draft.summaryNextStep, checkpointPrompt: draft.checkpointPrompt, dueAt: draft.dueAt, generatedById: teacherId } });
     if (current) await tx.recoveryPackageItem.deleteMany({ where: { packageId: packageRow.id } });
     if (draft.items.length) await tx.recoveryPackageItem.createMany({ data: draft.items.map((item) => ({ packageId: packageRow.id, kind: item.kind, position: item.position, title: item.title, materialId: item.materialId, assignmentId: item.assignmentId })) });
@@ -52,7 +54,7 @@ export async function publishRecoveryPackage(input: {
   teacherId: string;
   expectedVersion?: number;
   rebalancePlan?: boolean;
-}): Promise<PublishRecoveryPackageResult> {
+}, prisma: PrismaClient = defaultDb): Promise<PublishRecoveryPackageResult> {
   const item = await prisma.recoveryPackage.findFirst({
     where: { id: input.packageId, lesson: { teacherId: input.teacherId, status: "COMPLETED", group: { isActive: true } } },
     include: { lesson: { select: { groupId: true, endsAt: true } }, student: { include: { user: { select: { id: true } } } }, items: true },
@@ -69,7 +71,7 @@ export async function publishRecoveryPackage(input: {
     return { kind: "REPLAYED", itemCount: item.items.length, publishDelayMs };
   }
   const rawRows = [{ userId: item.student.user.id, type: "ABSENCE" as const, title: "Kaçırdığın ders için küçük telafi hazır", body: "Özet, kaynak ve mini kontrol tek sırada hazır.", href: "/panel/ogrenci/telafi" }];
-  const rows = await filterNotificationRows(rawRows, "absence");
+  const rows = await filterNotificationRows(rawRows, "absence", prisma);
   const changed = await prisma.$transaction(async (tx) => {
     const where = input.expectedVersion === undefined
       ? { id: item.id, status: "DRAFT" as const }
@@ -91,8 +93,12 @@ export async function publishRecoveryPackage(input: {
     }
     return { kind: "CONFLICT" };
   }
-  await queuePanelNotificationEmails(rawRows, "absence");
-  const planRebalanced = input.rebalancePlan ? await rebalanceApprovedPlanForRecovery(item.studentId, input.teacherId).catch(() => false) : false;
+  await transactionalNotificationEmails(prisma)(rawRows, "absence");
+  let planRebalanced = false;
+  // Optional planning runs after commit: a planner failure must not abort publication.
+  if (input.rebalancePlan) await afterEducationCommit(prisma, async () => {
+    planRebalanced = await rebalanceApprovedPlanForRecovery(item.studentId, input.teacherId).catch(() => false);
+  });
   return { kind: "PUBLISHED", itemCount: item.items.length, publishDelayMs, planRebalanced };
 }
 
@@ -105,7 +111,7 @@ export async function publishRecoveryPackage(input: {
  * onayladığı görevler sessizce SKIPPED olmaz. Telafi adayları planlayıcının
  * aday listesinde kalır; koç bir sonraki planda görür.
  */
-export async function rebalanceApprovedPlanForRecovery(studentId: string, approvedById: string): Promise<boolean> {
+export async function rebalanceApprovedPlanForRecovery(studentId: string, approvedById: string, prisma: PrismaClient = defaultDb): Promise<boolean> {
   const preference = await prisma.studentPlanPreference.findUnique({ where: { studentId } });
   if (!preference?.planningEnabled) return false;
   const plan = await prisma.weeklyPlan.findFirst({ where: { studentId, status: "APPROVED" }, orderBy: { weekStart: "desc" }, include: { tasks: true, productRef: { select: { requiresPlanApproval: true } } } });

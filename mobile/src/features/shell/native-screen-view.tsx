@@ -49,6 +49,7 @@ import TeacherHelpScreen from '@/features/staff/teacher/teacher-help';
 import TeacherHomeScreen from '@/features/staff/teacher/teacher-home';
 import TeacherStudentsScreen from '@/features/staff/teacher/teacher-students';
 import TeacherMaterialsScreen from '@/features/staff/teacher/teacher-materials';
+import TeacherRecoveryScreen from '../staff/teacher/teacher-recovery';
 import TeacherReviewScreen from '../staff/teacher/teacher-review';
 import TeacherAnalysisScreen from '../staff/teacher/teacher-analysis';
 import TeacherMockExamsScreen from '@/features/staff/teacher/teacher-mock-exams';
@@ -95,6 +96,7 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'teacher-home': () => <TeacherHomeScreen />,
   'teacher-students': () => <TeacherStudentsScreen />,
   'teacher-materials': () => <TeacherMaterialsScreen />,
+  'teacher-recovery': () => <TeacherRecoveryScreen />,
   'teacher-review': () => <TeacherReviewScreen />,
   'teacher-analysis': () => <TeacherAnalysisScreen />,
   'teacher-mock-exams': () => <TeacherMockExamsScreen />,
