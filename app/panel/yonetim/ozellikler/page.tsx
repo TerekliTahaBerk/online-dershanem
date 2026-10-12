@@ -1,9 +1,8 @@
 import { Flag, ShieldCheck, TriangleAlert } from "lucide-react";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { loadAdminFeatures } from "@/lib/panel/admin-system-server";
 import { requireRole } from "@/lib/auth/guards";
 import {
-  getPanelFeatureSnapshot,
   type PanelFeatureStatus,
 } from "@/lib/panel-feature-registry";
 import { PanelShell } from "@/components/panel/panel-shell";
@@ -36,35 +35,7 @@ const AUDIT_WHEN = new Intl.DateTimeFormat("tr-TR", {
 
 export default async function PanelFeatureInventoryPage() {
   const session = await requireRole("ADMIN");
-  const snapshot = getPanelFeatureSnapshot();
-
-  /*
-   * SON İŞLEMLER — onaylı tasarım (Panel.dc.html → aSys, alt blok).
-   * Gerçek `AuditLog` satırları; erişim ve atama değişikliklerinin izi.
-   */
-  const auditRows = await prisma.auditLog.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 12,
-    select: {
-      id: true,
-      action: true,
-      summary: true,
-      entityType: true,
-      actorType: true,
-      actorUserId: true,
-      createdAt: true,
-    },
-  });
-  const actorIds = [
-    ...new Set(auditRows.map((r) => r.actorUserId).filter(Boolean) as string[]),
-  ];
-  const actors = actorIds.length
-    ? await prisma.user.findMany({
-        where: { id: { in: actorIds } },
-        select: { id: true, fullName: true, email: true },
-      })
-    : [];
-  const actorName = new Map(actors.map((a) => [a.id, a.fullName || a.email]));
+  const { features: snapshot, logs: auditRows } = await loadAdminFeatures();
   const enabled = snapshot.filter((feature) => feature.enabled).length;
   const drift = snapshot.filter((feature) => feature.legacyPublicDrift);
 
@@ -141,10 +112,8 @@ export default async function PanelFeatureInventoryPage() {
           <ul className="mt-3 flex flex-col gap-1.5 text-[13.5px] leading-[1.7] text-dc-ink-muted">
             {auditRows.map((row) => (
               <li key={row.id}>
-                {AUDIT_WHEN.format(row.createdAt)} ·{" "}
-                {row.actorUserId
-                  ? (actorName.get(row.actorUserId) ?? "Bilinmeyen kullanıcı")
-                  : "Sistem"}{" "}
+                {AUDIT_WHEN.format(new Date(row.createdAt))} ·{" "}
+                {row.actor}{" "}
                 · {row.summary || `${row.entityType} · ${row.action}`}
               </li>
             ))}

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { loadAdminAudit } from "@/lib/panel/admin-system-server";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { EmptyState, PageHeader, ViewTabs } from "@/components/panel/ui";
@@ -41,27 +41,7 @@ export default async function AuditLogsPage({
   const session = await requireRole("ADMIN");
   const { tur = "" } = await searchParams;
   const allowedType = FILTERS.some((filter) => filter.value === tur) ? tur : "";
-  const logs = await prisma.auditLog.findMany({
-    where: allowedType ? { entityType: allowedType } : undefined,
-    orderBy: { createdAt: "desc" },
-    take: 100,
-  });
-  const actorIds = [
-    ...new Set(
-      logs
-        .map((log) => log.actorUserId)
-        .filter((id): id is string => Boolean(id)),
-    ),
-  ];
-  const actors = actorIds.length
-    ? await prisma.user.findMany({
-        where: { id: { in: actorIds } },
-        select: { id: true, fullName: true, email: true },
-      })
-    : [];
-  const actorNames = new Map(
-    actors.map((actor) => [actor.id, actor.fullName || actor.email]),
-  );
+  const { logs } = await loadAdminAudit(allowedType);
 
   return (
     <PanelShell role={session.role} fullName={session.fullName} email={session.email} pageTitle="İşlem geçmişi">
@@ -90,11 +70,11 @@ export default async function AuditLogsPage({
                 <span className="mr-2 text-[12px] font-semibold text-pn-text-muted">{ENTITY_LABELS[log.entityType] || log.entityType}</span>
                 <span className="text-pn-text">{log.summary || log.action}</span>
                 <span className="block text-[12.5px] text-pn-text-muted">
-                  {log.actorUserId ? actorNames.get(log.actorUserId) || "Silinmiş kullanıcı" : "Sistem"} · {log.action}
+                  {log.actor} · {log.action}
                 </span>
               </span>
-              <time dateTime={log.createdAt.toISOString()} className="shrink-0 text-[12.5px] tabular-nums text-pn-text-muted">
-                {formatDate(log.createdAt)}
+              <time dateTime={log.createdAt} className="shrink-0 text-[12.5px] tabular-nums text-pn-text-muted">
+                {formatDate(new Date(log.createdAt))}
               </time>
             </li>
           ))}

@@ -135,7 +135,7 @@ P1 tamamlanmadan hiçbir yönetim yazma işlemi açılmaz. P2–P5 P1'den sonra 
 | 2 | P2.3 Eğitim | Uygulama eşliği tamamlandı; ders/seri, ödev/teslim, materyal/dosya, kurulum, takvim ve kazanımlar native. Gerçek cihaz dosya kabulü P6 |
 | 3 | P2.4 Koçluk | Uygulama eşliği tamamlandı: ortak web/mobil kuyrukları, native kapasite/öğrenci/görüşme takibi ve güvenli atama/devretme. Sonraki geliştirme P2.6 |
 | 4 | P2.6 Siparişler | Uygulama eşliği tamamlandı: ortak liste/detay GET, native vaka/ödeme/erişim takibi ve güvenli provizyon tekrarı. Sonraki geliştirme P2.8 |
-| 5 | P2.8 Analitik/sistem | Metrik/audit/kalite projeksiyonları, native ekranlar, özellik bayraklarının yazma kararı (ADR-0015) ve kohort yönetimi |
+| 5 | P2.8 Analitik/sistem | Okuma ekranları tamamlandı (Y21–Y24, Y26). Sırada Y25 pilot kohort yönetimi ve Y18 dış deneme kaydı/revizyonu; runtime özellik yazması ADR-0015 kararını bekler |
 | 6 | P2.7 İşletme | Ortak servis çıkarımı + BusinessPermission API'leri + 16 bölümün native karşılıkları; E3–E5 kapsam dışı kalır |
 | 7 | P3–P5 ve P6 | Rol bazlı eksikler aşağıdaki faz tabloları ve `parity-matrix.md` üzerinden kapanır; gerçek cihaz kabulü/TestFlight tüm fazları bekler |
 
@@ -311,3 +311,15 @@ Production personel izin modu/kanıtı P1'in açık operasyon maddesi olarak kal
 7. `mobile`: ODK yönetimi salt okuma (API hazır olduğu için paralel başlatılabilir).
 
 Her dilim kendi başına yayınlanabilir ve mevcut rollerin davranışını değiştirmez.
+
+### P2.8 analitik ve sistem okumaları tamamlandı — 12 Ekim 2026
+
+Y21–Y24 ve Y26 native: İstanbul tarih aralığı, ürün/sınav/sınıf/grup/öğretmen filtreleri, metrik kataloğu ve detay sözleşmesi, ticari/eğitim/başarı özetleri, kohort dağılımı ve pozitif değişim çubukları; özellik envanteri/drift/geri alma bilgisi; tür filtreli son 100 işlem; öğrenme kalitesi ve ortak eksik sinyalleri. Liste filtreleri metrik detayına taşınır. CSV dışa aktarımı E5 istisnası olarak kalır.
+
+Dört GET ucu gerçek ADMIN hesabını doğrular, `private, no-store` döner ve bağımlılıksız mobil sözleşmelerle kontrol edilir. Web ve mobil aynı metrik hesabını, kalite yükleyicisini ve audit/özellik yükleyicilerini kullanır. Audit payload ve kimlik doğrulama bilgileri taşınmaz. Yetersiz örneklemli kohortlar yalnız sınav türü/durum içerir; kesin öğrenci sayısı, kapsama, değişim yönü ve veri tarihi istemciye gönderilmez. Kalite bayrağı kapalıysa API 404 döner.
+
+**Doğrulama:** 973 sunucu birim testi; izole PostgreSQL'de tam 132 entegrasyon testi; native filtre aktarımı, detay/rol reddi, audit filtresi/boş durum, özellik drift/geri alma, kalite dağılımı ve kapalı bayrak/bozuk sözleşme testleri; sentetik dört rolle gerçek HTTP 401/403/400, sözleşme ve private/no-store; tarayıcıda dört mevcut web ekranı regresyonu. Sunucu/mobil tip ve lint, sözleşme/tasarım token sınırı ve eşlik matrisi kontrol edilir; iOS/Android/web export başarılı. Gerçek iPhone kabulü P6'da bekler.
+
+**P2.8 henüz bütünüyle tamamlanmadı:** Y25 pilot kohort oluşturma/geçişleri ve Y18 dış deneme ekleme/hata nedeni/sonraki adım revizyonu sıradaki geliştirmedir; bunların yazmalarında web ve mobil için ortak step-up, idempotency, sürüm/409 ve atomik audit uygulanmalıdır. Özellik ekranı mevcut web eşliği kapsamında salt okunur; [ADR-0015](../adr/0015-runtime-panel-feature-snapshot.md) onaylanmadan runtime okuma/yazma politikası eklenmez. Üretim ayarı, pilot aktivasyonu veya yayın yapılmadı.
+
+Matris: 58 Tam / 15 Kısmi / 26 Eksik / 1 İstisna / 6 Yönl.; yönetimde 24 Tam, 3 Eksik (Y18, Y25, Y27), 1 Yönl.

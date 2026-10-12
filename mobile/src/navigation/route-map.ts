@@ -187,6 +187,8 @@ const ADMIN_PEOPLE_SCREENS: Record<string, string> = {
 export function mapAdminWebPath(href: string | null | undefined, navigation: Navigation | null): NativeTarget {
   const path = normalizeWebPath(href);
   if (!path || !navigation) return { kind: 'none' };
+  const metric = /^\/panel\/yonetim\/analitik\/([\w-]{1,64})$/.exec(path);
+  if (metric) return navHas(navigation, 'analytics') ? { kind: 'detail', href: `/admin/metric/${metric[1]}` } : { kind: 'none' };
   const order = /^\/panel\/yonetim\/siparisler\/([\w-]{1,64})$/.exec(path);
   if (order) return navHas(navigation, 'orders') ? { kind: 'detail', href: `/admin/order/${order[1]}` } : { kind: 'none' };
   const group = /^\/panel\/yonetim\/gruplar\/([\w-]{1,64})$/.exec(path);

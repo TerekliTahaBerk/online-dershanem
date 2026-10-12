@@ -37,7 +37,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 
 | Alan | Rota | Tam | Kısmi | Eksik | İstisna | Yönl. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1. Yönetim (`/panel/yonetim`) | 28 | 19 | 0 | 8 | 0 | 1 |
+| 1. Yönetim (`/panel/yonetim`) | 28 | 24 | 0 | 3 | 0 | 1 |
 | 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 0 | 0 | 8 | 0 | 0 |
 | 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 7 | 3 | 10 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
@@ -46,7 +46,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | 7. Veli (`/panel/veli`) | 12 | 5 | 4 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 4 | 3 | 2 | 0 | 2 |
-| **Toplam** | **106** | **53** | **15** | **31** | **1** | **6** |
+| **Toplam** | **106** | **58** | **15** | **26** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
@@ -86,12 +86,12 @@ Mobil karşılık: `native-screens.ts` ADMIN eşlemesi + `(app)/admin/*` yığı
 | Y18 | `/panel/yonetim/denemeler` | `mock-analysis` (flag `mockExamAnalysis`) | O: dış deneme sonuç analizi · Y: deneme kaydı ekle/düzenle | `mock-exams` GET/POST, `mock-exams/[id]` PATCH | Hazır (GET öğrenci kapsamlı → ADMIN projeksiyonu kontrol) | — | Eksik | P2.8 | |
 | Y19 | `/panel/yonetim/siparisler` | `orders` | O: sipariş listesi, sorun/bu ay filtresi, arama ve sayfalama | `loadAdminOrders` (web/mobil ortak) | Hazır (`GET /api/panel/admin/orders`) | `admin-orders` | Tam | P2.6 | Native liste; ödeme ve erişim ayrı gösterilir. `admin-orders.test.tsx`, `admin-orders.integration.ts`, gerçek HTTP `admin-orders.spec.ts`. Müşteri satın alma akışı eklenmez. |
 | Y20 | `/panel/yonetim/siparisler/[id]` | — | O: vaka/ödeme/ürün erişimi/onboarding/teknik detay · Y: provizyon tekrarı; mevcut aktivasyon formlarına geçiş | `loadAdminOrder`, `retryOrderProvisioningService` (web/mobil ortak) | Hazır (`GET /api/panel/admin/orders/[id]`, `POST .../provisioning-retry`) | `admin/order/[id]` | Tam | P2.6 | Web/mobil tekrar taze step-up, UUID, sipariş sürümü ve 409 ile korunur; sahiplenme ve kalıcı başlangıç kaydı atomiktir. Aynı isteğin sonucu tekrar okunur, süren istek yeniden yürütülmez. Başarı/hata/ODK/yarış/geri alma ve native onay/428/409 testli; gerçek iPhone P6. |
-| Y21 | `/panel/yonetim/analitik` | `analytics` | O: yönetim metrikleri · Y: dışa aktar | `analytics/export` GET; `lib/analytics/server.ts` | O yok | — | Eksik | P2.8 | Grafikler |
-| Y22 | `/panel/yonetim/analitik/[metric]` | — | O: metrik detayı | `lib/analytics/server.ts` | O yok | — | Eksik | P2.8 | |
-| Y23 | `/panel/yonetim/ozellikler` | `features` | O: özellik bayrakları kaydı/durumu | Prisma + `panel-feature-registry` | O yok | — | Eksik | P2.8 | Web'de de salt okuma; yazma eklenirse step-up |
-| Y24 | `/panel/yonetim/kayitlar` | `audit` | O: işlem geçmişi | Prisma (RSC) | O yok | — | Eksik | P2.8 | |
+| Y21 | `/panel/yonetim/analitik` | `analytics` | O: yönetim metrikleri, yedi filtre, ticari/eğitim/başarı özetleri ve kohort grafiği | `loadManagementAnalyticsSnapshot` (web/mobil ortak) | Hazır (`GET /api/panel/admin/analytics`) | `admin-analytics` | Tam | P2.8 | CSV dışa aktarımı onaylı E5 istisnası. Küçük kohortlar JSON sınırında bastırılır; native filtre ve grafik testli. |
+| Y22 | `/panel/yonetim/analitik/[metric]` | — | O: metrik değeri, tanım, payda, kaynak, tarih semantiği ve saat dilimi | Ortak `metricValue`, metrik kataloğu ve snapshot | Hazır (`GET /api/panel/admin/analytics`) | `admin/metric/[metric]` | Tam | P2.8 | Liste filtreleri detaya taşınır; yönetim web yolu yalnız analitik menüsü yetkisiyle eşlenir. |
+| Y23 | `/panel/yonetim/ozellikler` | `features` | O: özellik durumu, olgunluk, sorumlu, rol, veri/test/geri alma bilgisi, eski public env uyumsuzluğu ve son işlemler | `loadAdminFeatures` (web/mobil ortak) | Hazır (`GET /api/panel/admin/features`) | `admin-features` | Tam | P2.8 | Web gibi salt okunur. Runtime politika yazması ADR-0015 onayını bekler; bu teslimata dahil değildir. |
+| Y24 | `/panel/yonetim/kayitlar` | `audit` | O: tür filtreli en yeni 100 işlem, aktör ve İstanbul zamanı | `loadAdminAudit` (web/mobil ortak) | Hazır (`GET /api/panel/admin/audit`) | `admin-audit` | Tam | P2.8 | Hassas audit payload taşınmaz; rol, özel önbellek, filtre ve boş görünüm testli. |
 | Y25 | `/panel/yonetim/pilot` | `pilot` | O: kontrollü yayın hazırlığı · Y: kohort oluştur/güncelle | `pilot-cohorts` POST, `pilot-cohorts/[id]` PATCH; `pilot-readiness-server.ts` | Y var, O yok | — | Eksik | P2.8 | |
-| Y26 | `/panel/yonetim/kalite` | `quality` (flag `cohortQuality`) | O: öğrenme kalitesi | `lib/cohort-quality` (RSC) | O yok | — | Eksik | P2.8 | Salt okuma |
+| Y26 | `/panel/yonetim/kalite` | `quality` (flag `cohortQuality`) | O: kazanım etiketleme, geri bildirim medyanı, eşleşmiş kohort dağılımı ve ortak hata sinyalleri | `loadAdminQuality` (web/mobil ortak) | Hazır (`GET /api/panel/admin/quality`) | `admin-quality` | Tam | P2.8 | Bayrak kapalıysa 404; küçük kohortta sayı/kapsama/tazelik JSON yanıtından çıkarılır. Gerçek DB/HTTP ve native testli; gerçek iPhone P6. |
 | Y27 | `/panel/yonetim/isletme/[section]` | `business-*` (16 bölüm) | O: genel bakış, mesaj kutusu, adaylar, satış hunisi, reklamlar, kampanyalar, gelirler, giderler, vergiler, mutabakat, raporlar, AI bilgi merkezi, otomasyon, entegrasyonlar, sistem kayıtları, ayarlar · Y: **36 eylem** — konuşma ata/etiketle/okundu/kontrol; aday oluştur/aşama/not/görev/takip/sahip/öncelik/birleştir/sipariş bağla/yaşam döngüsü; kampanya/reklam oluştur; finans işlemi oluştur/ters kayıt; dönem kilidi; mutabakat çalıştır/çöz; Meta senkron; manuel atıf; bilgi kaydı oluştur/sürümle; prompt sürümü; AI öneri; otomasyon oluştur/aç-kapa/dry-run; saklama ayarı; işletme rolü ver/al; Instagram mesaj gönder | SA `app/panel/yonetim/isletme/actions.ts`; `admin/business/reports.csv`, `integrations/instagram/{health,send}`; `lifecycle/lead-detail-server.ts` | SA + O yok | — | Eksik | P2.7 | `BusinessPermission` (ADR-0011); dönem kilidi/rol/ters kayıt → step-up; E3 (bağlantı kurulumu) ve E5 (rapor CSV) kapsam dışı |
 | Y28 | `/panel/yonetim/isletme` | — | — | `redirect → genel-bakis` | — | — | Yönl. | — | |
 
