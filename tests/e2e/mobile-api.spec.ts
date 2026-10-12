@@ -627,6 +627,20 @@ test.describe.serial("Faz 1 mobil yönetim kapısı", () => {
         if (!parsed.ok) throw new Error(`${slug}: ${parsed.error}`);
       }
       expect((await context.get("/api/panel/business/sections/yok-boyle", { headers: auth })).status()).toBe(404);
+      // P2.7b CRM: Bearer işlem anahtarı ister; anahtarla aday oluşur ve aynı anahtar tekrar uygulanmaz.
+      const command = { type: "lead.create", firstName: `E2E ${randomUUID().slice(0, 6)}`, productInterest: "UNKNOWN", businessUnitId: unit!.id };
+      expect((await context.post("/api/panel/business/crm", { headers: auth, data: { command } })).status()).toBe(400);
+      const idempotencyKey = randomUUID();
+      const first = await context.post("/api/panel/business/crm", { headers: auth, data: { command, idempotencyKey } });
+      expect(first.status(), await first.text()).toBe(200);
+      const created = (await first.json()) as { result: { entityId: string }; replayed: boolean };
+      const again = (await (await context.post("/api/panel/business/crm", { headers: auth, data: { command, idempotencyKey } })).json()) as { result: { entityId: string }; replayed: boolean };
+      expect(again).toEqual({ result: created.result, replayed: true });
+      const lead = await db.businessLead.findUniqueOrThrow({ where: { id: created.result.entityId } });
+      const stale = await context.post("/api/panel/business/crm", { headers: auth, data: { command: { type: "lead.priority", leadId: lead.id, priority: "HIGH" }, idempotencyKey: randomUUID(), expectedRevision: "2000-01-01T00:00:00.000Z" } });
+      expect(stale.status()).toBe(409);
+      await db.leadActivity.deleteMany({ where: { leadId: lead.id } });
+      await db.businessLead.delete({ where: { id: lead.id } });
       expect((await context.get("/api/panel/business/sections/adaylar?bilinmeyen=1", { headers: auth })).status()).toBe(400);
     } finally {
       await db.businessRoleAssignment.deleteMany({ where: { userId: admin.user.id } });

@@ -26,7 +26,7 @@ import { deriveLeadLifecycleStatus } from "@/lib/panel/operations-inbox";
  */
 
 type Tone = MobileBusinessCard["metrics"][number]["tone"];
-type Ctx = { section: BusinessSectionSlug; data: BusinessSectionData; units: { name: string }[]; granted: ReadonlySet<BusinessPermission>; query: Record<string, string | string[] | undefined> };
+type Ctx = { section: BusinessSectionSlug; data: BusinessSectionData; units: { id: string; name: string }[]; granted: ReadonlySet<BusinessPermission>; query: Record<string, string | string[] | undefined> };
 
 const tl = new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" });
 const dt = new Intl.DateTimeFormat("tr-TR", { timeZone: "Europe/Istanbul", dateStyle: "short", timeStyle: "short" });
@@ -115,6 +115,8 @@ function inbox(ctx: Ctx): Pick<MobileBusinessSection, "cards" | "filters" | "nex
           messages: data.orderedMessages.map((m) => ({ id: m.id, body: m.body || "Medya", outbound: m.direction === "OUTBOUND", meta: `${m.senderType} · ${m.status} · ${dt.format(m.occurredAt)}${m.failureCode ? ` · ${m.failureCode}` : ""}` })),
           aiSuggestion: suggestion && typeof suggestion === "object" && !Array.isArray(suggestion) && "reply" in suggestion && typeof suggestion.reply === "string" ? suggestion.reply : null,
           leadId: lead?.id ?? null,
+          revision: selected.updatedAt.toISOString(),
+          staff: [{ value: "", label: "Atanmamış" }, ...data.staff.map((item) => ({ value: item.user.id, label: `${item.user.fullName || "İsimsiz"} · ${item.role}` }))],
           cards: lead
             ? [
                 card("lead-activities", "Aday etkinliği", { rows: lead.activities.map((item) => row(item.type, { meta: dt.format(item.createdAt) })), empty: "Etkinlik yok." }),
@@ -138,6 +140,10 @@ const FOCUS_OPTIONS = [
 function followUp(at: Date | null): MobileBusinessLead["followUp"] {
   if (!at) return { label: "Planlı takip yok", tone: "warning" };
   return isFollowUpOverdue(at) ? { label: `Takip gecikti: ${dt.format(at)}`, tone: "critical" } : { label: `Sonraki takip: ${dt.format(at)}`, tone: "info" };
+}
+
+function matchSuggestionId(value: unknown): string | null {
+  return value && typeof value === "object" && !Array.isArray(value) && "leadId" in value && typeof (value as { leadId: unknown }).leadId === "string" ? (value as { leadId: string }).leadId : null;
 }
 
 function noteText(metadata: unknown): string | null {
@@ -178,6 +184,13 @@ function leads(ctx: Ctx): Pick<MobileBusinessSection, "cards" | "filters" | "lea
       subtitle: `${LEAD_SOURCE_LABELS[d.source]} · ${PRODUCT_INTEREST_LABELS[d.productInterest]} · ${LEAD_PRIORITY_LABELS[d.priority]}${d.estimatedValueCents ? ` · beklenen ${money(d.estimatedValueCents)}` : ""}`,
       lifecycle: { label: lifecycle.label, nextAction: lifecycle.nextAction },
       followUp: followUp(d.nextFollowUpAt),
+      revision: d.updatedAt.toISOString(),
+      assignedUserId: d.assignedUserId,
+      priority: d.priority,
+      owners: [{ value: "", label: "Atanmamış" }, ...data.uniqueOwners.map((owner) => ({ value: owner.id, label: owner.fullName }))],
+      tasks: d.tasks.map((task) => ({ id: task.id, title: task.title, dueAt: task.dueAt?.toISOString() ?? null, done: Boolean(task.completedAt) })),
+      duplicates: data.leadDuplicates.map((dup) => ({ value: dup.id, label: `${leadDisplayName(dup)} · ${LEAD_STAGE_LABELS[dup.stage]}` })),
+      suggestionLeadId: matchSuggestionId(d.matchSuggestion),
       cards: [
         card("lead-info", "Bilgiler", {
           rows: [
@@ -383,6 +396,16 @@ export function toMobileBusinessSection(ctx: Ctx): MobileBusinessSection {
     nextCursor: body.nextCursor ?? null,
     conversation: body.conversation ?? null,
     lead: body.lead ?? null,
+    can: { conversationRead: ctx.granted.has("conversation:read"), conversationReply: ctx.granted.has("conversation:reply"), leadWrite: ctx.granted.has("lead:write") },
+    options: {
+      stages: LEAD_STAGES.map((stage) => ({ value: stage, label: LEAD_STAGE_LABELS[stage] })),
+      lostReasons: Object.entries(LEAD_LOST_REASON_LABELS).map(([value, label]) => ({ value, label })),
+      priorities: Object.entries(LEAD_PRIORITY_LABELS).map(([value, label]) => ({ value, label })),
+      aiModes: Object.values(AiMode).map((value) => ({ value, label: value })),
+      statuses: Object.values(ConversationStatus).map((value) => ({ value, label: value })),
+      productInterests: Object.entries(PRODUCT_INTEREST_LABELS).map(([value, label]) => ({ value, label })),
+      units: units.map((unit) => ({ value: unit.id, label: unit.name })),
+    },
   };
 }
 

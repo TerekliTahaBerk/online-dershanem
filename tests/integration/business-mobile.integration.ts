@@ -8,6 +8,7 @@ import type { BusinessAccess } from "@/lib/business/permissions";
 import type { SessionUser } from "@/lib/auth/session";
 import { toMobileBusinessSection } from "@/lib/mobile/business-views";
 import { parseBusinessSection } from "@/lib/mobile-contracts/business";
+import { runCrmCommand, CrmError, crmRevision } from "@/lib/business/crm-service";
 import { integration } from "./integration-utils";
 
 /**
@@ -71,6 +72,94 @@ integration("P2.7a İşletme: 16 bölüm gerçek veriyle sözleşmeye uyar; deta
     await db.businessMessage.deleteMany({ where: { conversationId: conversation.id } });
     await db.leadActivity.deleteMany({ where: { leadId: lead.id } });
     await db.businessLead.deleteMany({ where: { id: lead.id } });
+    await db.businessConversation.deleteMany({ where: { id: conversation.id } });
+    await db.instagramAccount.deleteMany({ where: { id: account.id } });
+    await db.integrationConnection.deleteMany({ where: { id: connection.id } });
+    if (!existing) await db.businessUnit.delete({ where: { id: unit.id } });
+    await db.user.delete({ where: { id: user.id } });
+  }
+});
+
+integration("P2.7b CRM komutları: web ile aynı kurallar; işlem anahtarı, revizyon 409, atomik audit, iş birimi kapsamı", async () => {
+  const run = randomUUID().slice(0, 8);
+  const user = await db.user.create({ data: { email: `p27b-${run}@example.com`, role: "TEACHER", status: "ACTIVE", passwordHash: "unused", fullName: "P27b Satış" } });
+  const existing = await db.businessUnit.findFirst({ where: { product: "OD" } });
+  const unit = existing ?? (await db.businessUnit.create({ data: { code: `p27b-${run}`, name: "P27b OD", product: "OD" } }));
+  const connection = await db.integrationConnection.create({ data: { businessUnitId: unit.id, provider: "INSTAGRAM", displayName: `P27b ${run}` } });
+  const account = await db.instagramAccount.create({ data: { businessUnitId: unit.id, connectionId: connection.id, externalId: `p27b-acc-${run}` } });
+  const conversation = await db.businessConversation.create({ data: { businessUnitId: unit.id, instagramAccountId: account.id, instagramScopedUserId: `p27b-user-${run}`, unreadCount: 3 } });
+  const session = { userId: user.id, role: "TEACHER", email: user.email, fullName: user.fullName } as unknown as SessionUser;
+  const access: BusinessAccess = { session, units: [{ id: unit.id, code: unit.code, name: unit.name, product: unit.product, role: "SALES" }] };
+  const leadIds: string[] = [];
+  try {
+    // Aday oluşturma: aynı anahtar eşzamanlı tek aday + tek audit; başka komutta 409.
+    const key = randomUUID();
+    const create = { type: "lead.create" as const, firstName: `P27b${run}`, phone: "+905551234567", productInterest: "ONLINE_DERSHANEM" as const };
+    const created = await Promise.all([runCrmCommand(access, create, { idempotencyKey: key }), runCrmCommand(access, create, { idempotencyKey: key })]);
+    assert.equal(created.filter((item) => item.replayed).length, 1);
+    const leadId = created[0].result.entityId;
+    leadIds.push(leadId);
+    assert.equal(await db.businessLead.count({ where: { firstName: `P27b${run}` } }), 1);
+    assert.equal(await db.auditLog.count({ where: { actorUserId: user.id, action: "LEAD_CREATED" } }), 1);
+    await assert.rejects(runCrmCommand(access, { ...create, firstName: "Başka" }, { idempotencyKey: key }), (error) => error instanceof CrmError && error.code === "IDEMPOTENCY_REUSE");
+
+    // Aşama: kayıp nedeni olmadan LOST 422; revizyonla ilerler; eski revizyon 409.
+    let lead = await db.businessLead.findUniqueOrThrow({ where: { id: leadId } });
+    await assert.rejects(runCrmCommand(access, { type: "lead.stage", leadId, stage: "LOST" }, { expectedRevision: crmRevision(lead) }), (error) => error instanceof CrmError && error.code === "LOST_REASON_REQUIRED");
+    const stale = crmRevision(lead);
+    const staged = await runCrmCommand(access, { type: "lead.stage", leadId, stage: "QUALIFIED" }, { idempotencyKey: randomUUID(), expectedRevision: stale });
+    assert.equal(staged.result.lead?.stage, "QUALIFIED");
+    await assert.rejects(runCrmCommand(access, { type: "lead.priority", leadId, priority: "HIGH" }, { idempotencyKey: randomUUID(), expectedRevision: stale }), (error) => error instanceof CrmError && error.code === "CRM_CONFLICT");
+    lead = await db.businessLead.findUniqueOrThrow({ where: { id: leadId } });
+    await runCrmCommand(access, { type: "lead.priority", leadId, priority: "HIGH" }, { expectedRevision: crmRevision(lead) });
+
+    // Not, görev, görev tamamlama, takip, sorumlu.
+    await runCrmCommand(access, { type: "lead.note", leadId, note: "Akşam aranacak" });
+    const due = new Date(Date.now() + 86_400_000).toISOString();
+    await runCrmCommand(access, { type: "lead.task", leadId, title: "Geri ara", dueAt: due });
+    const task = await db.leadTask.findFirstOrThrow({ where: { leadId } });
+    await runCrmCommand(access, { type: "lead.task_complete", taskId: task.id });
+    assert.ok((await db.leadTask.findUniqueOrThrow({ where: { id: task.id } })).completedAt);
+    lead = await db.businessLead.findUniqueOrThrow({ where: { id: leadId } });
+    await runCrmCommand(access, { type: "lead.follow_up", leadId, nextFollowUpAt: due, taskTitle: "Takip görüşmesi" }, { expectedRevision: crmRevision(lead) });
+    lead = await db.businessLead.findUniqueOrThrow({ where: { id: leadId } });
+    assert.equal(lead.nextFollowUpAt?.toISOString(), due);
+    await runCrmCommand(access, { type: "lead.owner", leadId, assignedUserId: "" }, { expectedRevision: crmRevision(lead) });
+    assert.equal((await db.businessLead.findUniqueOrThrow({ where: { id: leadId } })).assignedUserId, null);
+    const types = (await db.leadActivity.findMany({ where: { leadId }, select: { type: true } })).map((item) => item.type);
+    for (const type of ["LEAD_CREATED", "STAGE_CHANGED", "NOTE", "FOLLOW_UP_SCHEDULED", "OWNER_CHANGED"]) assert.ok(types.includes(type as never), type);
+
+    // Birleştirme: aynı telefonla ikinci aday öneri taşır; kaynak SPAM olur.
+    const dup = await runCrmCommand(access, { ...create, firstName: `P27b${run}-iki` });
+    leadIds.push(dup.result.entityId);
+    const duplicate = await db.businessLead.findUniqueOrThrow({ where: { id: dup.result.entityId } });
+    assert.equal((duplicate.matchSuggestion as { leadId: string }).leadId, leadId);
+    const target = await db.businessLead.findUniqueOrThrow({ where: { id: leadId } });
+    await runCrmCommand(access, { type: "lead.merge", sourceId: duplicate.id, targetId: leadId }, { expectedRevision: crmRevision(target) });
+    assert.equal((await db.businessLead.findUniqueOrThrow({ where: { id: duplicate.id } })).stage, "SPAM");
+    await assert.rejects(runCrmCommand(access, { type: "lead.link_order", leadId, product: "OD", orderId: "cjld2cjxh0000qzrmn831i7rn" }), (error) => error instanceof CrmError && error.code === "ORDER_NOT_FOUND");
+
+    // Konuşma: okundu, etiket, atama, denetim; AI kapalıyken öneri sessizce geçer.
+    await runCrmCommand(access, { type: "conversation.read", conversationId: conversation.id });
+    await runCrmCommand(access, { type: "conversation.tag", conversationId: conversation.id, tag: "sıcak" });
+    let current = await db.businessConversation.findUniqueOrThrow({ where: { id: conversation.id } });
+    assert.equal(current.unreadCount, 0);
+    assert.deepEqual(current.tags, ["sıcak"]);
+    await runCrmCommand(access, { type: "conversation.control", conversationId: conversation.id, aiMode: "OFF", status: "WAITING_HUMAN" }, { expectedRevision: crmRevision(current) });
+    current = await db.businessConversation.findUniqueOrThrow({ where: { id: conversation.id } });
+    assert.equal(current.status, "WAITING_HUMAN");
+    assert.equal(current.assignedUserId, user.id, "web ile aynı: denetimi değiştiren kişi sorumlu olur");
+    await runCrmCommand(access, { type: "conversation.ai_suggest", conversationId: conversation.id });
+
+    // Kapsam: başka iş birimine erişen kullanıcı bu kayıtları değiştiremez.
+    const other: BusinessAccess = { session, units: [{ id: "baska-birim", code: "x", name: "Başka", product: "ODK", role: "SALES" }] };
+    await assert.rejects(runCrmCommand(other, { type: "lead.note", leadId, note: "sızma" }), (error) => error instanceof CrmError && error.status === 404);
+    await assert.rejects(runCrmCommand(other, { type: "conversation.read", conversationId: conversation.id }), (error) => error instanceof CrmError && error.status === 404);
+  } finally {
+    await db.auditLog.deleteMany({ where: { actorUserId: user.id } });
+    await db.leadTask.deleteMany({ where: { leadId: { in: leadIds } } });
+    await db.leadActivity.deleteMany({ where: { leadId: { in: leadIds } } });
+    await db.businessLead.deleteMany({ where: { id: { in: leadIds } } });
     await db.businessConversation.deleteMany({ where: { id: conversation.id } });
     await db.instagramAccount.deleteMany({ where: { id: account.id } });
     await db.integrationConnection.deleteMany({ where: { id: connection.id } });

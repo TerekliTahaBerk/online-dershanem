@@ -42,6 +42,8 @@ const filter = v.object({
 
 const message = v.object({ id: v.nonEmpty(), body: v.string(), outbound: v.boolean(), meta: v.string() });
 
+const option = v.object({ value: v.string(), label: v.string() });
+
 const conversation = v.object({
   id: v.nonEmpty(),
   name: v.string(),
@@ -56,6 +58,9 @@ const conversation = v.object({
   aiSuggestion: v.nullable(v.string()),
   leadId: v.nullable(v.string()),
   cards: v.array(card),
+  /** P2.7b yazma alanları: `updatedAt` revizyonu ve atanabilir personel. */
+  revision: v.nonEmpty(),
+  staff: v.array(option),
 });
 
 const lead = v.object({
@@ -67,6 +72,13 @@ const lead = v.object({
   lifecycle: v.object({ label: v.string(), nextAction: v.string() }),
   followUp: v.object({ label: v.string(), tone }),
   cards: v.array(card),
+  revision: v.nonEmpty(),
+  assignedUserId: v.nullable(v.string()),
+  priority: v.string(),
+  owners: v.array(option),
+  tasks: v.array(v.object({ id: v.nonEmpty(), title: v.string(), dueAt: v.nullable(v.iso()), done: v.boolean() })),
+  duplicates: v.array(option),
+  suggestionLeadId: v.nullable(v.string()),
 });
 
 const section = v.object({
@@ -82,6 +94,10 @@ const section = v.object({
   nextCursor: v.nullable(v.string()),
   conversation: v.nullable(conversation),
   lead: v.nullable(lead),
+  /** Görünürlük (yetki değil — uç ayrıca doğrular): web `can(...)` ile aynı izinler. */
+  can: v.object({ conversationRead: v.boolean(), conversationReply: v.boolean(), leadWrite: v.boolean() }),
+  /** Yazma seçenek sözlükleri (web formlarıyla aynı değerler ve etiketler). */
+  options: v.object({ stages: v.array(option), lostReasons: v.array(option), priorities: v.array(option), aiModes: v.array(option), statuses: v.array(option), productInterests: v.array(option), units: v.array(option) }),
 });
 export type MobileBusinessSection = Infer<typeof section>;
 export type MobileBusinessConversation = Infer<typeof conversation>;
