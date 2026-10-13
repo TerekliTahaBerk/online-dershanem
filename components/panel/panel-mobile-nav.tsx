@@ -12,6 +12,7 @@ import { PanelNav, mobilePrimaryNav } from "@/components/panel/panel-nav";
 import { LogoutButton } from "@/components/panel/logout-button";
 import type { PanelNavItem } from "@/lib/panel/navigation";
 import type { StaffPermission } from "@/lib/products/staff-permission-matrix";
+import { withWorkspace } from "@/lib/panel/workspace-context";
 
 export type PanelMobileDrawerAccount = {
   displayName: string;
@@ -129,7 +130,7 @@ export function PanelMobileNav({
                 item.href.startsWith("/panel/odk/veli"));
             const href = shouldPreserveParentContext
               ? withParentStudentContext(item.href, selectedStudentId)
-              : item.href;
+              : withWorkspace(item.href, scope);
             return (
               <li key={item.id}>
                 <Link

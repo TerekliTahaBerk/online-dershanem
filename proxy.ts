@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { WORKSPACE_HEADER, WORKSPACE_PARAM, parseWorkspace } from "@/lib/panel/workspace-context";
 
 /**
  * İYİMSER yönlendirme — GÜVENLİK SINIRI DEĞİLDİR.
@@ -92,6 +93,8 @@ export function proxy(request: NextRequest) {
   const csp = contentSecurityPolicy(nonce);
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
+  // Always overwrite the incoming hint; it controls presentation, never access.
+  requestHeaders.set(WORKSPACE_HEADER, parseWorkspace(request.nextUrl.searchParams.get(WORKSPACE_PARAM)) ?? "");
   requestHeaders.set("Content-Security-Policy", csp);
 
   // Panel kapalıyken karışmıyoruz: layout guard'ı 404 verecek. Tek otorite orası.
@@ -111,6 +114,8 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
+    // Workspace hints must also reach prefetched panel pages.
+    "/panel/:path*",
     {
       source: "/((?!api|_next/static|_next/image|favicon.ico).*)",
       missing: [

@@ -7,6 +7,7 @@ import { getAccessibleProducts } from "@/lib/auth/products";
 import { resolveProductEntryPath } from "@/lib/products/product-entry";
 import { getSession } from "@/lib/auth/session";
 import { checkProductPanelPilot } from "@/lib/auth/product-panels";
+import { withWorkspace } from "@/lib/panel/workspace-context";
 
 /**
  * Ürün paneli seçimi (OD / OK / ODK).
@@ -57,5 +58,5 @@ export async function POST(request: Request) {
   if (!entry) return NextResponse.json({ error: "Bu ürüne erişiminiz yok.", code: "PRODUCT_ACCESS_REQUIRED" }, { status: 403 });
 
   await prisma.session.update({ where: { id: actor.sessionId }, data: { activeProduct: product } });
-  return NextResponse.json({ redirect: entry });
+  return NextResponse.json({ redirect: withWorkspace(entry, product) });
 }

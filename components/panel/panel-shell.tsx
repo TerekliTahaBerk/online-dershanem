@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { unstable_noStore as noStore } from "next/cache";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import type { ProductCode, UserRole } from "@prisma/client";
 import { ArrowLeftRight, Bell, Settings, ShieldCheck } from "lucide-react";
 import { ACCOUNT_SETTINGS_PATH, PRODUCT_SELECTOR_PATH, productLabel, productRolePath, roleLabel, rolePath } from "@/lib/auth/roles";
@@ -32,7 +32,8 @@ import { OfflineSyncProvider } from "@/components/panel/offline-sync-provider";
 import { offlineSessionScope } from "@/lib/offline-scope";
 import { PanelFeatureProvider } from "@/components/panel/panel-feature-provider";
 import { visibleGlobalSearchCommands } from "@/lib/panel/global-search";
-import { panelNavSections, resolveNavScope, staffOdkNavItems, type PanelNavItem } from "@/lib/panel/navigation";
+import { panelNavSections, staffOdkNavItems, type PanelNavItem } from "@/lib/panel/navigation";
+import { WORKSPACE_HEADER, parseWorkspace, resolveWorkspaceScope, withWorkspace } from "@/lib/panel/workspace-context";
 import { effectiveStaffPermissions } from "@/lib/products/staff-permissions";
 import { staffAssignmentMode } from "@/lib/products/staff-mode";
 import { AccountCompletionBanner } from "@/components/account/account-completion-banner";
@@ -57,7 +58,7 @@ export async function PanelShell({
   role,
   fullName,
   email,
-  product = "OD",
+  product,
   workspace = "PRODUCT",
   pageTitle,
   topbarSlot,
@@ -164,21 +165,17 @@ export async function PanelShell({
    * ÜRÜN PANELİ KAPSAMI.
    *
    * Girişte seçilen ürün (`Session.activeProduct`) menüyü daraltır. ODK'nın
-   * kendi route ağacı olduğu için ODK sayfası açıksa kapsam ODK'dır; OD/OK
-   * sayfalarında seçim ODK ise kapsam kullanıcının sahip olduğu OD/OK'ye
-   * döner. Kapsam yalnız SUNUMDUR — sayfalar kendi guard'larını çalıştırır.
+   * kendi route ağacı olduğu için ODK sayfası açıksa kapsam ODK'dır.
+   * Ortak sayfalar bağlantıdaki çalışma alanını veya oturum seçimini korur.
+   * Kapsam yalnız SUNUMDUR — sayfalar kendi guard'larını çalıştırır.
    */
-  const navScope = (() => {
-    if (isBusinessWorkspace || nav) return null;
-    if (product === "ODK") return resolveNavScope(effectiveRole, products, "ODK");
-    const selected = session?.activeProduct;
-    const candidates: ProductCode[] = [...(selected && selected !== "ODK" ? [selected] : []), "OD", "OK"];
-    for (const candidate of candidates) {
-      const resolved = resolveNavScope(effectiveRole, products, candidate);
-      if (resolved) return resolved;
-    }
-    return null;
-  })();
+  const navScope = isBusinessWorkspace || nav ? null : resolveWorkspaceScope({
+    role: effectiveRole,
+    products,
+    product,
+    requested: parseWorkspace((await headers()).get(WORKSPACE_HEADER)),
+    selected: session?.activeProduct,
+  });
   // Enforce modunda öğretmenin Deneme Ligi menüsü personel izinlerinden kurulur
   // (editör / operatör / yayıncı / rapor okuyucu). Menü yetki değildir.
   const staffOdkPermissions = await (async () => {
@@ -220,7 +217,7 @@ export async function PanelShell({
                 id: `nav:${item.id}`,
                 label: item.label,
                 detail: `Sayfa · ${navSection.title.toLocaleLowerCase("tr-TR").replace(/^./, (c) => c.toLocaleUpperCase("tr-TR"))}`,
-                href: item.href,
+                href: withWorkspace(item.href, navScope),
               })),
           ),
           { id: "nav:notifications", label: "Bildirimler", detail: "Sayfa · Genel", href: "/panel/bildirimler" },
@@ -244,7 +241,7 @@ export async function PanelShell({
     ? "/panel/yonetim/isletme/genel-bakis"
     : staffOdkPermissions
       ? (staffOdkNavItems(staffOdkPermissions)[0]?.href ?? productRolePath("ODK", effectiveRole))
-      : productRolePath(navScope ?? product, effectiveRole);
+      : withWorkspace(productRolePath(navScope ?? product ?? "OD", effectiveRole), navScope);
 
   /*
    * ÇALIŞMA ALANI DEĞİŞTİRME.
@@ -261,7 +258,7 @@ export async function PanelShell({
     preview || isBusinessWorkspace
       ? isBusinessWorkspace
         ? {
-            href: productRolePath(product, effectiveRole),
+            href: productRolePath(product ?? session?.activeProduct ?? "OD", effectiveRole),
             label: "Eğitim paneline dön",
           }
         : null
@@ -304,7 +301,7 @@ export async function PanelShell({
         key: code,
         label: productLabel(code),
         logo: WORKSPACE_LOGO[code],
-        href: productRolePath(code, effectiveRole),
+        href: withWorkspace(productRolePath(code, effectiveRole), code),
       })),
     ...(businessUnits.length > 0 || isBusinessWorkspace
       ? [{ key: "BUSINESS" as const, label: "İşletme", logo: WORKSPACE_LOGO.BUSINESS, href: "/panel/yonetim/isletme/genel-bakis" }]

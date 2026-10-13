@@ -13,6 +13,7 @@ import {
 } from "@/lib/panel/navigation";
 import { withParentStudentContext } from "@/lib/parent-home-summary";
 import type { StaffPermission } from "@/lib/products/staff-permission-matrix";
+import { withWorkspace } from "@/lib/panel/workspace-context";
 
 export type { PanelNavItem, PanelNavSection };
 export { mobilePrimaryNav, panelNavSections };
@@ -57,7 +58,7 @@ export function PanelNav({
                 item.href.startsWith("/panel/odk/veli"));
             const href = shouldPreserveParentContext
               ? withParentStudentContext(item.href, selectedStudentId)
-              : item.href;
+              : withWorkspace(item.href, scope);
 
             return (
               <Link
