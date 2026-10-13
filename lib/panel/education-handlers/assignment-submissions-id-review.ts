@@ -9,6 +9,7 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent as emitProductEvent } from "@/lib/panel-product-events";
 import { afterEducationCommit } from "@/lib/panel/education-write";
+import { notifyAssignmentReviewed } from "@/lib/panel/study-notifications";
 
 const schema = z.object({ expectedVersion: z.number().int().min(1), decision: z.enum(["APPROVE", "REQUEST_CHANGES"]), feedback: z.string().trim().min(2).max(1000), interactionDurationMs: z.number().int().min(0).max(30 * 60 * 1000), scores: z.array(z.object({ criterionId: z.string().min(1), level: z.enum(["NEEDS_WORK", "DEVELOPING", "MEETS"]) }).strict()).min(2).max(4) }).strict();
 const MAX_AGE = 365 * 24 * 60 * 60 * 1000;
@@ -31,7 +32,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const updated = await tx.assignmentSubmission.updateMany({ where: { id, status: "SUBMITTED", version: parsed.data.expectedVersion }, data: { status, feedback: parsed.data.feedback, reviewerId: auth.session.userId, reviewedAt: now, version: { increment: 1 } } }); if (updated.count !== 1) return false;
     await tx.assignmentRubricScore.createMany({ data: parsed.data.scores.map((score) => ({ submissionId: id, criterionId: score.criterionId, level: score.level })) });
     if (status === "APPROVED") await tx.assignmentProgress.update({ where: { assignmentId_studentId: { assignmentId: submission.assignmentId, studentId: submission.studentId } }, data: { status: "DONE", completedAt: now } });
-    await tx.notification.create({ data: { userId: submission.student.user.id, type: "ASSIGNMENT", title: status === "APPROVED" ? "Çalışman onaylandı" : "Küçük bir yeniden deneme hazır", body: status === "APPROVED" ? "Rubric geri bildirimin hazır." : "Geri bildirimi inceleyip yeni bir deneme gönderebilirsin.", href: "/panel/ogrenci/odevler" } });
+    await notifyAssignmentReviewed(tx, { submissionId: id, approved: status === "APPROVED" });
     return true;
   });
   if (!changed) return NextResponse.json({ error: "Teslim başka bir sekmede değerlendirildi." }, { status: 409 });

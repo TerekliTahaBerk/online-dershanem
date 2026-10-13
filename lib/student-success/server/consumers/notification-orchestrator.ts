@@ -4,6 +4,8 @@ import type { CrossProductEventOutbox, NotificationType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { filterNotificationRows, queuePanelNotificationEmails, type NotificationRow } from "@/lib/panel-notifications";
 import { parseEventPayload } from "@/lib/student-success/server/event-processor";
+import { notifyPlanPublishedToParents } from "@/lib/panel/study-notifications";
+import { notifyOdkExamAssignedToParents } from "@/lib/panel/exam-notifications";
 
 const DEDUP_WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -39,6 +41,8 @@ export async function consumeNotificationOrchestrator(event: CrossProductEventOu
   if (event.eventType === "COACHING_PLAN_PUBLISHED") {
     const payload = parseEventPayload("COACHING_PLAN_PUBLISHED", event.payload);
     const dedupKey = `plan:${payload.planId}`;
+    // Veli satırının kimliği olaydan türetilir; tekrar tüketim ikinci satır üretmez.
+    await notifyPlanPublishedToParents(prisma, { planId: payload.planId });
     if (await recentNotificationExists(student.userId, dedupKey)) return;
 
     await deliverNotification(
@@ -66,6 +70,7 @@ export async function consumeNotificationOrchestrator(event: CrossProductEventOu
 
   if (event.eventType === "MOCK_EXAM_ASSIGNED") {
     const payload = parseEventPayload("MOCK_EXAM_ASSIGNED", event.payload);
+    await notifyOdkExamAssignedToParents(prisma, { examId: payload.examId, studentProfileId: event.studentId });
     const exam = await prisma.odkExam.findUnique({ where: { id: payload.examId }, select: { title: true } });
     const dedupKey = `mock-exam:${payload.examId}`;
     if (await recentNotificationExists(student.userId, dedupKey)) return;

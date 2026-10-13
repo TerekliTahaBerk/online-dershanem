@@ -77,8 +77,24 @@ export async function rescoreOdkExamCommand(id: string, input: z.output<typeof r
   if (impact.publishedResultsWillChange && !input?.confirmPublishedChange) {
     return NextResponse.json({ error: "Yayınlanmış sonuçlar değişecek. confirmPublishedChange=true ile onaylayın.", preview: { message: `${impact.attemptCount} öğrenci yeniden puanlanacak.`, ...impact } }, { status: 409 });
   }
+  // Yayınlanmış netler yeniden puanlamadan önce: yalnız neti DEĞİŞEN öğrenci ve veli bilgilendirilir.
+  const publishedBefore = exam.status === "RELEASED"
+    ? await db.odkAttemptScore.findMany({ where: { attempt: { examId: id }, publicationStatus: "PUBLISHED" }, select: { attemptId: true, totalNet: true } })
+    : [];
   const result = await scoreOdkExam(id, actor.userId, { rescore: true }, db);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
+  if (publishedBefore.length) {
+    const previous = new Map(publishedBefore.map((row) => [row.attemptId, row.totalNet.toString()]));
+    const after = await db.odkAttemptScore.findMany({ where: { attemptId: { in: [...previous.keys()] }, publicationStatus: "PUBLISHED" }, select: { attemptId: true, totalNet: true, attempt: { select: { studentUserId: true } } } });
+    const studentUserIds = [...new Set(after.filter((row) => previous.get(row.attemptId) !== row.totalNet.toString()).map((row) => row.attempt.studentUserId))];
+    const version = new Date().toISOString();
+    if (studentUserIds.length) {
+      await afterEducationCommit(db, () => afterResponse("odk.exam_rescore.notification_failed", async () => {
+        const { notifyOdkResultsUpdated } = await import("@/lib/odk/student-notifications");
+        await notifyOdkResultsUpdated({ examId: id, studentUserIds, version });
+      }, { examId: id }));
+    }
+  }
   const last = await db.odkAnswerKeyRevision.findFirst({ where: { versionId: exam.currentVersionId }, orderBy: { revisionNumber: "desc" } });
   if (last && !last.rescoreCompletedAt) {
     await db.odkAnswerKeyRevision.update({ where: { id: last.id }, data: { rescoreRequestedAt: new Date(), rescoreCompletedAt: new Date() } });

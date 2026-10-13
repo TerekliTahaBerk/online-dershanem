@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma as defaultDb } from "@/lib/prisma";
 import type { PrismaClient } from "@prisma/client";
-import { transactionalAudit, transactionalNotificationFilter, transactionalNotificationEmails } from "@/lib/panel/education-write";
+import { transactionalAudit } from "@/lib/panel/education-write";
+import { notifyAssignmentCreated } from "@/lib/panel/study-notifications";
 import { afterResponse } from "@/lib/after-response";
 import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
@@ -119,8 +120,6 @@ export async function GET(request: Request) {
 export async function POST(request: Request, _context: { params: Promise<{ id: string }> }, prisma: PrismaClient = defaultDb) {
   const recordPanelProductEvent = (...args: Parameters<typeof emitProductEvent>) => afterEducationCommit(prisma, () => emitProductEvent(...args));
   const logAudit = transactionalAudit(prisma);
-  const filterNotificationRows = transactionalNotificationFilter(prisma);
-  const queuePanelNotificationEmails = transactionalNotificationEmails(prisma);
   const auth = await requireApiOdRole("ADMIN", "TEACHER");
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.assignments.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:assignments:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } });
@@ -164,13 +163,8 @@ export async function POST(request: Request, _context: { params: Promise<{ id: s
       rubricCriteria: { create: evidenceRequired ? rubricCriteria.map((label, index) => ({ label, position: index + 1 })) : [] },
     },
   });
-  const body = `${assignment.title} · son tarih ${new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium" }).format(assignment.dueAt)}`;
-  const studentRecipients = [...new Set(group.enrollments.map((item) => item.student.userId))];
-  const parentRecipients = [...new Set(group.enrollments.flatMap((item) => item.student.parents.map((link) => link.parentId)))];
-  const rawNotificationRows = [...studentRecipients.map((userId) => ({ userId, type: "ASSIGNMENT" as const, title: "Yeni çalışma eklendi", body, href: "/panel/ogrenci/odevler" })), ...parentRecipients.map((userId) => ({ userId, type: "ASSIGNMENT" as const, title: "Yeni çalışma eklendi", body, href: "/panel/veli/takip" }))];
-  const notificationRows = await filterNotificationRows(rawNotificationRows, "assignment");
-  if (notificationRows.length) await prisma.notification.createMany({ data: notificationRows });
-  await queuePanelNotificationEmails(rawNotificationRows, "assignment");
+  // Öğrenci + akademik izinli veli; tercih, e-posta outbox ve push aynı yoldan.
+  await notifyAssignmentCreated(prisma, assignment.id);
   await logAudit({ actorUserId: auth.session.userId, entityType: "Assignment", entityId: assignment.id, action: "assignment.created", summary: `${assignment.title} ödevi oluşturuldu`, payload: { groupId: group.id, dueAt: assignment.dueAt.toISOString() } });
   const { onAssignmentCreated } = await import("@/lib/student-success/server/emit-hooks");
   await afterEducationCommit(prisma, () => afterResponse("panel.assignment.cross_product_emit_failed", () => onAssignmentCreated({

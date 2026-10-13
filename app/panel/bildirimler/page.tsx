@@ -68,6 +68,7 @@ export default async function NotificationsPage({
     absence: preferences?.absence ?? true,
     assignment: preferences?.assignment ?? true,
     payment: preferences?.payment ?? true,
+    examUpdates: preferences?.examUpdates ?? true,
     quietStartMinute: preferences?.quietStartMinute ?? null,
     quietEndMinute: preferences?.quietEndMinute ?? null,
     dailyDigest: preferences?.dailyDigest ?? false,

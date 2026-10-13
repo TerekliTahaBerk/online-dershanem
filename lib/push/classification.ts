@@ -70,6 +70,12 @@ export function classifyNotification(row: ClassifiableNotification, recipient: P
     case "ODK_EXAM":
       // Hatırlatma / açılış kısa ömürlü; sonuç / anahtar daha uzun.
       return { category: "EXAM", preferenceKey: "examUpdates", ttlMs: row.category?.startsWith("RESULT") || row.category?.startsWith("ANSWER_KEY") ? 48 * HOUR : 2 * HOUR };
+    case "ODK_AUDIENCE":
+      // Veli: çocuğun Deneme Ligi olayları. (Öğretmen satırı yukarıda STAFF olur.)
+      return { category: "EXAM", preferenceKey: "examUpdates", ttlMs: row.category?.startsWith("RESULT") ? 48 * HOUR : 24 * HOUR };
+    case "MOCK_EXAM":
+      // Okul / kurum denemesi sonucu ve sonraki adım.
+      return { category: "EXAM", preferenceKey: "examUpdates", ttlMs: 48 * HOUR };
     case "SUMMARY":
       return { category: "DIGEST", preferenceKey: null, ttlMs: 24 * HOUR };
     default:
@@ -94,13 +100,47 @@ export const PUSH_COPY: Record<PushCategory, { title: string; body: string }> = 
 };
 
 /** Deneme Ligi olay türüne göre daha belirli ama yine kişisel veri içermeyen metin. */
-export function pushCopyFor(cls: PushClass, row: Pick<ClassifiableNotification, "category">) {
+/** Ödev / plan görevi olayları (`lib/panel/study-notifications.ts`); alıcı rolünden bağımsız, kişisel veri yok. */
+const STUDY_COPY: Record<string, string> = {
+  "ASSIGNMENT:NEW": "Yeni bir ödev eklendi.",
+  "ASSIGNMENT:DONE": "Bir ödev tamamlandı.",
+  "ASSIGNMENT:SUBMITTED": "Değerlendirme bekleyen bir ödev var.",
+  "ASSIGNMENT:REVIEWED": "Bir ödev değerlendirildi.",
+  "PLAN_TASK:DONE": "Plandaki bir görevde ilerleme var.",
+  "PLAN_TASK:ADDED": "Plana yeni bir görev eklendi.",
+  "PLAN:PUBLISHED": "Haftalık plan yayınlandı.",
+};
+
+/** Veli / personel Deneme Ligi ve kurum denemesi olayları (ikinci kişi ağzıyla değil, genel). */
+const AUDIENCE_EXAM_COPY: Record<string, string> = {
+  DAY_BEFORE: "Yarın bir deneme var.",
+  MISSED: "Bir denemeye katılım görünmüyor.",
+  SUBMITTED: "Bir deneme tamamlandı.",
+  RESULT: "Deneme sonucu açıklandı.",
+  TEACHER_RESULT: "Deneme sonuçları açıklandı.",
+  COACH_RESULT: "Öğrencinin deneme sonucu açıklandı.",
+  RESULT_UPDATED: "Deneme sonucu güncellendi.",
+  ASSIGNED: "Yeni bir deneme eklendi.",
+  "MOCK:ENTERED": "Yeni bir deneme sonucu eklendi.",
+  "MOCK:NEXT_ACTION": "Deneme için sonraki adım hazır.",
+};
+
+export function pushCopyFor(cls: PushClass, row: Pick<ClassifiableNotification, "category"> & { sourceType?: string | null }) {
+  if ((row.sourceType === "ODK_AUDIENCE" || row.sourceType === "MOCK_EXAM") && (cls.category === "EXAM" || cls.category === "STAFF")) {
+    const kind = row.sourceType === "MOCK_EXAM" ? row.category?.split(":").slice(0, 2).join(":") : row.category?.split(":")[0];
+    const body = kind ? AUDIENCE_EXAM_COPY[kind] : undefined;
+    if (body) return { title: row.sourceType === "MOCK_EXAM" ? "Online Dershanem" : "Deneme Ligi", body };
+  }
+  if ((cls.category === "ASSIGNMENT" || cls.category === "STAFF") && row.category && STUDY_COPY[row.category]) return { title: "Online Dershanem", body: STUDY_COPY[row.category] };
   if (cls.category === "EXAM") {
     const kind = row.category?.split(":")[0];
     if (kind === "RESULT") return { title: "Deneme Ligi", body: "Deneme sonucun açıklandı." };
     if (kind === "ANSWER_KEY") return { title: "Deneme Ligi", body: "Deneme cevap anahtarı yayınlandı." };
     if (kind === "OPEN") return { title: "Deneme Ligi", body: "Denemen başladı." };
     if (kind === "REMINDER") return { title: "Deneme Ligi", body: "Denemen yakında başlıyor." };
+    if (kind === "DAY_BEFORE") return { title: "Deneme Ligi", body: "Yarın denemen var." };
+    if (kind === "MISSED") return { title: "Deneme Ligi", body: "Bir denemeyi kaçırdın." };
+    if (kind === "RESULT_UPDATED") return { title: "Deneme Ligi", body: "Deneme sonucun güncellendi." };
   }
   return PUSH_COPY[cls.category];
 }

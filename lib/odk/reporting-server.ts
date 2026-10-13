@@ -10,6 +10,19 @@ import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 type ReportViewer = { userId: string; role: Extract<UserRole, "ADMIN" | "TEACHER" | "PARENT"> };
 
+/**
+ * Personel rapor kapsamı: öğrencinin aktif grubunun öğretmeni VEYA aktif koç
+ * ataması (`CoachAssignment`). Sayfa ayrıca `odk:report:read_related` iznini,
+ * sözleşme ise `teacherReports` hakkını ister; koç ilişkisi tek başına yetki
+ * vermez.
+ */
+function staffStudentScope(userId: string) {
+  return { OR: [
+    { enrollments: { some: { endedAt: null, group: { isActive: true, teacherId: userId } } } },
+    { coachAssignments: { some: { endedAt: null, coach: { userId } } } },
+  ] };
+}
+
 export async function listOdkReportStudents(viewer: ReportViewer) {
   const students = viewer.role === "ADMIN"
     ? await prisma.studentProfile.findMany({
@@ -19,12 +32,12 @@ export async function listOdkReportStudents(viewer: ReportViewer) {
     : viewer.role === "TEACHER"
     ? await (async () => {
       const rows = await prisma.studentProfile.findMany({
-        where: { user: { status: "ACTIVE" }, enrollments: { some: { endedAt: null, group: { isActive: true, teacherId: viewer.userId } } } },
+        where: { user: { status: "ACTIVE" }, ...staffStudentScope(viewer.userId) },
         orderBy: { user: { fullName: "asc" } },
         select: { user: { select: { id: true, fullName: true, email: true } }, enrollments: { where: { endedAt: null, group: { isActive: true, teacherId: viewer.userId } }, select: { group: { select: { name: true } } } } },
       });
       const visible = await Promise.all(rows.map(async (student) => ({ student, contracts: await listActiveOdkContracts(student.user.id) })));
-      return visible.filter(({ contracts }) => contracts.some(({ contract }) => contractAllowsReport(contract, "TEACHER"))).map(({ student }) => ({ userId: student.user.id, name: student.user.fullName || student.user.email, context: student.enrollments.map((item) => item.group.name).join(" · ") }));
+      return visible.filter(({ contracts }) => contracts.some(({ contract }) => contractAllowsReport(contract, "TEACHER"))).map(({ student }) => ({ userId: student.user.id, name: student.user.fullName || student.user.email, context: student.enrollments.map((item) => item.group.name).join(" · ") || "Koçluk öğrencisi" }));
     })()
     : await (async () => {
       const links = await prisma.parentStudent.findMany({
@@ -42,7 +55,7 @@ export async function getOdkAudienceStudentReport(viewer: ReportViewer, studentU
   const allowed = viewer.role === "ADMIN"
     ? await prisma.studentProfile.findFirst({ where: { userId: studentUserId, user: { status: "ACTIVE" } }, select: { user: { select: { fullName: true, email: true } } } })
     : viewer.role === "TEACHER"
-    ? await prisma.studentProfile.findFirst({ where: { userId: studentUserId, enrollments: { some: { endedAt: null, group: { isActive: true, teacherId: viewer.userId } } } }, select: { user: { select: { fullName: true, email: true } } } })
+    ? await prisma.studentProfile.findFirst({ where: { userId: studentUserId, ...staffStudentScope(viewer.userId) }, select: { user: { select: { fullName: true, email: true } } } })
     : await prisma.parentStudent.findFirst({ where: { parentId: viewer.userId, active: true, endedAt: null, canViewAcademic: true, student: { userId: studentUserId } }, select: { student: { select: { user: { select: { fullName: true, email: true } } } } } });
   if (!allowed) return null;
   const contracts = viewer.role === "ADMIN" ? [] : await listActiveOdkContracts(studentUserId);

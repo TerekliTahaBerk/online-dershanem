@@ -26,7 +26,7 @@ const CATEGORIES: { key: keyof MobileNotificationPreferences; title: string; sub
   { key: 'lessonSummary', title: 'Dersler ve koçluk', subtitle: 'Ders hatırlatmaları, ders özetleri, görüşme güncellemeleri' },
   { key: 'absence', title: 'Devamsızlık', subtitle: 'Derse katılım bildirimleri' },
   { key: 'weeklyDigest', title: 'Haftalık özet', subtitle: 'Yayınlanan haftalık özetler' },
-  { key: 'examUpdates', title: 'Deneme Ligi', subtitle: 'Deneme hatırlatması, sonuç ve cevap anahtarı' },
+  { key: 'examUpdates', title: 'Denemeler', subtitle: 'Deneme hatırlatması, katılım, sonuç ve sonraki adım' },
 ];
 
 const QUIET_PRESETS: { label: string; start: number | null; end: number | null }[] = [

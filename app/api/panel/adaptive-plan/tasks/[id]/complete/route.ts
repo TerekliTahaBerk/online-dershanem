@@ -7,6 +7,8 @@ import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { appendTimelineEvent } from "@/lib/kocum/server";
 import { istanbulDayStart } from "@/lib/istanbul-time";
+import { afterResponse } from "@/lib/after-response";
+import { notifyAssignmentCompleted, notifyPlanTaskCompleted } from "@/lib/panel/study-notifications";
 import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 /**
@@ -47,6 +49,10 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     metadata: { taskId: task.id, status: "DONE" },
     occurredAt: istanbulDayStart(new Date()),
   });
+  afterResponse("panel.plan_task.notification_failed", async () => {
+    await notifyPlanTaskCompleted(prisma, { taskId: task.id, status: "DONE" });
+    if (task.sourceType === "ASSIGNMENT" && task.sourceReferenceId) await notifyAssignmentCompleted(prisma, { assignmentId: task.sourceReferenceId, studentProfileId: task.plan.studentId });
+  }, { taskId: task.id });
   await recordPanelProductEvent({ name: "plan_task_completed", properties: { sourceType: task.sourceType, reasonCode: task.reasonCode } }, auth.session.role);
   await recordPanelProductEvent({
     name: "student_next_action_completed",
