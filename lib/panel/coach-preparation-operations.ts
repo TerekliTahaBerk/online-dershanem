@@ -7,6 +7,9 @@ import { recordPlanRevision, appendTimelineEvent } from "@/lib/kocum/server";
 import { buildRevisionChangeSummary, selectTasksForPlanCopy } from "@/lib/kocum";
 import { istanbulDayStart, istanbulWeekStart, addIstanbulCalendarDays } from "@/lib/istanbul-time";
 import { getOkPlanProductId } from "@/lib/kocum/plan-product";
+import { afterResponse } from "@/lib/after-response";
+import { notifyPlanTaskAdded } from "@/lib/panel/study-notifications";
+import { afterEducationCommit } from "@/lib/panel/education-write";
 
 export const coachTaskSchema = z.object({
   studentId: z.string().min(1),
@@ -163,6 +166,10 @@ export async function createCoachTask(input: z.infer<typeof coachTaskSchema>, ac
       visibility: "STUDENT",
       tx: db,
     });
+    // Yayınlanmış plana eklenen görev öğrenciye ve veliye bildirilir (taslak plan henüz görünmez).
+    const taskId = result.task.id;
+    // Mobil koç hazırlığı dış işlemle çağırır: bildirim commit sonrası global istemciyle.
+    await afterEducationCommit(db, () => afterResponse("panel.kocum_task.added_notification_failed", () => notifyPlanTaskAdded(prisma, { taskId }), { taskId }));
   }
 
   return NextResponse.json({ ok: true, taskId: result.task.id, planId: result.planId, version: result.version });

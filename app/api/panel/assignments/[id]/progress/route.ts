@@ -6,6 +6,7 @@ import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { afterResponse } from "@/lib/after-response";
+import { notifyAssignmentCompleted } from "@/lib/panel/study-notifications";
 import { rejectAssignmentProgressTransition } from "@/lib/panel/assignment-progress-policy";
 
 const schema = z.object({ status: z.enum(["TODO", "IN_PROGRESS", "DONE"]), expectedVersion: z.number().int().min(0).optional(), mutationKey: z.string().uuid().optional() }).strict().superRefine((value, context) => {
@@ -60,6 +61,9 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     throw error;
   }
   await recordFinished("success", parsed.data.status);
+  if (parsed.data.status === "DONE" && existing?.status !== "DONE") {
+    afterResponse("panel.assignment_progress.notification_failed", () => notifyAssignmentCompleted(prisma, { assignmentId: id, studentProfileId: profile.id }), { assignmentId: id });
+  }
   if (parsed.data.status === "DONE") {
     const progress = await prisma.assignmentProgress.findUnique({
       where: { assignmentId_studentId: { assignmentId: id, studentId: profile.id } },

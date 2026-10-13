@@ -94,7 +94,19 @@ export const PUSH_COPY: Record<PushCategory, { title: string; body: string }> = 
 };
 
 /** Deneme Ligi olay türüne göre daha belirli ama yine kişisel veri içermeyen metin. */
+/** Ödev / plan görevi olayları (`lib/panel/study-notifications.ts`); alıcı rolünden bağımsız, kişisel veri yok. */
+const STUDY_COPY: Record<string, string> = {
+  "ASSIGNMENT:NEW": "Yeni bir ödev eklendi.",
+  "ASSIGNMENT:DONE": "Bir ödev tamamlandı.",
+  "ASSIGNMENT:SUBMITTED": "Değerlendirme bekleyen bir ödev var.",
+  "ASSIGNMENT:REVIEWED": "Bir ödev değerlendirildi.",
+  "PLAN_TASK:DONE": "Plandaki bir görevde ilerleme var.",
+  "PLAN_TASK:ADDED": "Plana yeni bir görev eklendi.",
+  "PLAN:PUBLISHED": "Haftalık plan yayınlandı.",
+};
+
 export function pushCopyFor(cls: PushClass, row: Pick<ClassifiableNotification, "category">) {
+  if ((cls.category === "ASSIGNMENT" || cls.category === "STAFF") && row.category && STUDY_COPY[row.category]) return { title: "Online Dershanem", body: STUDY_COPY[row.category] };
   if (cls.category === "EXAM") {
     const kind = row.category?.split(":")[0];
     if (kind === "RESULT") return { title: "Deneme Ligi", body: "Deneme sonucun açıklandı." };

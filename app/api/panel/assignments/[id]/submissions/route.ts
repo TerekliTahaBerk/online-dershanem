@@ -5,6 +5,7 @@ import { requireApiOdRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
+import { notifyAssignmentSubmitted } from "@/lib/panel/study-notifications";
 
 const schema = z.object({ textEvidence: z.string().trim().min(20).max(2000), idempotencyKey: z.string().regex(/^[a-zA-Z0-9_-]{12,80}$/) }).strict();
 function attemptBand(value: number): "1" | "2" | "3+" { return value === 1 ? "1" : value === 2 ? "2" : "3+"; }
@@ -26,7 +27,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const submission = await prisma.$transaction(async (tx) => {
     const created = await tx.assignmentSubmission.create({ data: { assignmentId: id, studentId: assignment.progress[0].studentId, attemptNumber, textEvidence: parsed.data.textEvidence, idempotencyKey: storedKey } });
     await tx.assignmentProgress.update({ where: { assignmentId_studentId: { assignmentId: id, studentId: assignment.progress[0].studentId } }, data: { status: "IN_PROGRESS", completedAt: null } });
-    await tx.notification.create({ data: { userId: assignment.group.teacherId, type: "ASSIGNMENT", title: "Değerlendirme bekleyen çalışma", body: "Bir öğrenci kanıtlı çalışmasını gönderdi.", href: "/panel/ogretmen/odevler" } });
+    await notifyAssignmentSubmitted(tx, { submissionId: created.id });
     return created;
   });
   await recordPanelProductEvent({ name: "assignment_evidence_submitted", properties: { attemptBand: attemptBand(attemptNumber), characterBand: characterBand(parsed.data.textEvidence.length), late: new Date() > assignment.dueAt, replayed: false } }, auth.session.role);

@@ -89,7 +89,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   const assignmentBody = parsed.data.assignmentDraft ? `${parsed.data.assignmentDraft.title} · son tarih ${new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium" }).format(new Date(parsed.data.assignmentDraft.dueAt))}` : "";
   const rawAssignmentRows = firstCompletion && parsed.data.assignmentDraft ? [
     ...assignmentRecipients.map((item) => ({ userId: item.student.userId, type: "ASSIGNMENT" as const, title: "Yeni çalışma eklendi", body: assignmentBody, href: "/panel/ogrenci/odevler" })),
-    ...assignmentRecipients.flatMap((item) => item.student.parents.map((link) => ({ userId: link.parentId, type: "ASSIGNMENT" as const, title: "Yeni çalışma eklendi", body: assignmentBody, href: "/panel/veli/takip" }))),
+    ...assignmentRecipients.flatMap((item) => item.student.parents.map((link) => ({ userId: link.parentId, type: "ASSIGNMENT" as const, title: "Yeni çalışma eklendi", body: assignmentBody, href: `/panel/veli/odevler?studentId=${item.student.id}` }))),
   ] : [];
   const [summaryRows, absenceRows, assignmentRows] = await Promise.all([
     filterNotificationRows(rawSummaryRows, "lessonSummary"),

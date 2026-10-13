@@ -17,6 +17,8 @@ import {
 import { loadPlanTaskForStudentMutation } from "@/lib/kocum/access-server";
 import { appendTimelineEvent } from "@/lib/kocum/server";
 import { istanbulDayStart } from "@/lib/istanbul-time";
+import { afterResponse } from "@/lib/after-response";
+import { notifyAssignmentCompleted, notifyPlanTaskCompleted } from "@/lib/panel/study-notifications";
 
 const bodySchema = z.object({
   status: z.enum(["IN_PROGRESS", "DONE", "PARTIAL", "COULD_NOT"]),
@@ -144,6 +146,17 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       metadata: { taskId: task.id, status: nextStatus },
       occurredAt: istanbulDayStart(now),
     });
+
+    if (nextStatus === "DONE" || nextStatus === "PARTIAL" || nextStatus === "COULD_NOT") {
+      const completedStatus = nextStatus;
+      // Koç + veli: madde madde ilerleme. Ödev kaynaklı görev bitince OD öğretmeni de duyar.
+      afterResponse("panel.kocum_task.notification_failed", async () => {
+        await notifyPlanTaskCompleted(prisma, { taskId: task.id, status: completedStatus });
+        if (completedStatus === "DONE" && task.sourceType === "ASSIGNMENT" && task.sourceReferenceId) {
+          await notifyAssignmentCompleted(prisma, { assignmentId: task.sourceReferenceId, studentProfileId: task.plan.studentId });
+        }
+      }, { taskId: task.id });
+    }
 
     await recordPanelProductEvent(
       {

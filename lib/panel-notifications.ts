@@ -8,7 +8,7 @@ export type NotificationRow = { userId: string; type: NotificationType; title: s
 export type NotificationPreferenceKey = "lessonSummary" | "weeklyDigest" | "absence" | "assignment" | "payment" | "examUpdates";
 
 /** Aynı kullanıcıya aynı içerik: tek satır. */
-function dedupeNotificationRows(rows: NotificationRow[]): NotificationRow[] {
+function dedupeNotificationRows<T extends NotificationRow>(rows: T[]): T[] {
   return [...new Map(rows.map((row) => [`${row.userId}:${row.type}:${row.title}:${row.body}`, row])).values()];
 }
 
@@ -21,7 +21,7 @@ function dedupeNotificationRows(rows: NotificationRow[]): NotificationRow[] {
  * kullanıcı). E-posta yolu zaten tekilleştiriyordu; uygulama içi bildirim
  * tekilleştirmiyordu ve kullanıcı aynı bildirimi iki kez görüyordu.
  */
-export async function filterNotificationRows(rows: NotificationRow[], preferenceKey?: NotificationPreferenceKey, db: Pick<Prisma.TransactionClient, "notificationPreference"> = prisma): Promise<NotificationRow[]> {
+export async function filterNotificationRows<T extends NotificationRow>(rows: T[], preferenceKey?: NotificationPreferenceKey, db: Pick<Prisma.TransactionClient, "notificationPreference"> = prisma): Promise<T[]> {
   if (!rows.length) return [];
   rows = dedupeNotificationRows(rows);
   const userIds = [...new Set(rows.map((row) => row.userId))];
