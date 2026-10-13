@@ -223,7 +223,18 @@ const coaching = v.object({
       sharedNote: v.nullable(v.string()),
     }),
   ),
-  sessions: v.array(v.object({ id: v.nonEmpty(), scheduledAt: v.iso(), rescheduleRequested: v.boolean(), proposedAt: v.nullable(v.iso()) })),
+  sessions: v.array(
+    v.object({
+      id: v.nonEmpty(),
+      scheduledAt: v.iso(),
+      rescheduleRequested: v.boolean(),
+      proposedAt: v.nullable(v.iso()),
+      /** V07: veli saat değişikliği talebi için görülen sürüm (eski sunucuda yok → talep kapalı). */
+      version: v.optional(v.nullable(v.int(1)), null),
+      /** V07: HTTPS katılım bağlantısı; öneri bekleyen görüşmede null. */
+      meetingUrl: v.optional(v.nullable(v.string()), null),
+    }),
+  ),
   week: v.nullable(v.object({ start: v.iso(), end: v.iso(), planCompletionPct: v.nullable(v.int(0)), lines: v.array(v.string()) })),
   summary: v.nullable(
     v.object({ coachSummary: v.nullable(v.string()), strengths: v.nullable(v.string()), focusAreas: v.nullable(v.string()), nextWeekFocus: v.nullable(v.string()) }),

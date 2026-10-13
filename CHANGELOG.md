@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Native weekly plan generation/rebalancing with version-checked retries, cursor pagination for older Deneme Ligi exams, and parent coaching reschedule requests with join links (S14, S20, V07). Concurrent plan regenerations now return 409 instead of both succeeding.
+
 - Native account settings (profile, education, contact, billing, consents, pending children), accessibility and low-data preferences, and the parent package-meeting request (P5.2). Web Server Actions and the new mobile endpoints share one service with role section scope, revision checks and atomic actor-scoped receipts; staff can no longer save the hidden contact/billing/consent sections.
 
 - Native Deneme Ligi scoring/publication queue and full management reports with shared web loaders, stage/student/class filters, personal net changes and outcome evidence; read-all permission remains separate from related-teacher reports.

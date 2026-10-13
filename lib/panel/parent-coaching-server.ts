@@ -103,5 +103,8 @@ export async function loadParentCoachingSessions(parentUserId: string, child: Pa
     scheduledAt: session.scheduledAt,
     rescheduleRequested: Boolean(session.rescheduleRequestedAt),
     proposedAt: session.proposedAt,
+    // V07: veli REQUEST için görülen sürüm ve (web'deki gibi) katılım bağlantısı.
+    version: session.version,
+    meetingUrl: session.meetingUrl,
   }));
 }

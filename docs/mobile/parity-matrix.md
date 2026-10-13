@@ -41,12 +41,12 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 5 | 0 | 3 | 0 | 0 |
 | 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 19 | 1 | 0 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
-| 5. Öğrenci (`/panel/ogrenci`) | 18 | 15 | 1 | 1 | 0 | 1 |
-| 6. Deneme Ligi öğrenci (`/panel/odk/ogrenci`) | 5 | 3 | 1 | 0 | 1 | 0 |
-| 7. Veli (`/panel/veli`) | 12 | 8 | 1 | 1 | 0 | 2 |
+| 5. Öğrenci (`/panel/ogrenci`) | 18 | 16 | 0 | 1 | 0 | 1 |
+| 6. Deneme Ligi öğrenci (`/panel/odk/ogrenci`) | 5 | 4 | 0 | 0 | 1 | 0 |
+| 7. Veli (`/panel/veli`) | 12 | 9 | 0 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 8 | 1 | 0 | 0 | 2 |
-| **Toplam** | **106** | **89** | **5** | **5** | **1** | **6** |
+| **Toplam** | **106** | **92** | **2** | **5** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
@@ -159,7 +159,7 @@ Mobil karşılık: `odk-management-*` ekranları ADMIN ve yetkili ODK personeli;
 | S11 | `/panel/ogrenci/check-in` | `check-in` | O · Y: check-in, yardım geri bildirimi | Hazır | `check-in` | Tam | — | |
 | S12 | `/panel/ogrenci/haftalik` | `weekly-digest` | O · Y: geri bildirim | Hazır | `od-weekly-digest`, `yon-weekly` | Tam | — | OD/OK öğrenci geri bildirimi; `mobile-p5-basics.spec.ts` yalnız OK hesabıyla gerçek HTTP kanıtı |
 | S13 | `/panel/ogrenci/yon` | `today` (OK) | O · Y: görev tamamla | Hazır | `yon-today` | Tam | — | |
-| S14 | `/panel/ogrenci/plan` | `plan` | O · Y: görev tamamla, değişiklik iste, tercihler, plan üret | Hazır | `yon-plan`, `yon/task/[id]` | Kısmi | P5 | `adaptive-plan/generate` |
+| S14 | `/panel/ogrenci/plan` | `plan` | O · Y: görev tamamla, değişiklik iste, tercihler, plan üret | Hazır (`adaptive-plan/generate` + `expectedVersion`) | `yon-plan`, `yon/task/[id]` | Tam | P5.1 | Plan üret / haftayı dengele native; görülen sürüm (plan yoksa 0) Bearer'da zorunlu, eski sürüm ve eşzamanlı üretim 409; koç onaylı plan kilitli. `yon-plan-generate.test.tsx` |
 | S15 | `/panel/ogrenci/hedefler` | `goals` | O | Hazır | `yon-goals` | Tam | — | |
 | S16 | `/panel/ogrenci/kocluk` | `coaching` | O · Y: görüşme saat değişikliği iste, öneriyi kabul et | Hazır | `yon-coaching` | Tam | — | |
 | S17 | `/panel/ogrenci/profil` | — | O: profil | Hazır (`student/profile` GET) | `account/profile` | Tam | — | Native profil; aktif veli bağları ve başlamış ürünler; `profile-calendar.test.tsx`, `mobile-p5-basics.spec.ts` |
@@ -170,7 +170,7 @@ Mobil karşılık: `odk-management-*` ekranları ADMIN ve yetkili ODK personeli;
 | # | Web rotası | Nav id | Alt işlemler (O / Y) | API | Mobil | Durum | Faz | Not |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | S19 | `/panel/odk/ogrenci` | `today` (ODK) | O: Deneme Ligi Bugün | Hazır | `odk-home` | Tam | — | |
-| S20 | `/panel/odk/ogrenci/denemeler` | `odk-exams` | O: deneme listesi | Hazır | `odk-exams` | Kısmi | P5 | Eski kayıtlar web'e yönlendiriyor |
+| S20 | `/panel/odk/ogrenci/denemeler` | `odk-exams` | O: deneme listesi | Hazır (`?cursor=` sayfalama) | `odk-exams` | Tam | P5.1 | 50 kayıt sınırını aşan eski denemeler `nextCursor` ile native yüklenir ve kendi ayrıntı/sonuç ekranında açılır (web 50 ile sınırlı). `odk-exams-older.test.tsx` |
 | S21 | `/panel/odk/ogrenci/denemeler/[id]` | — | O: deneme detayı · Y: başlat | Hazır | `odk/exam/[id]` | Tam | — | "Başlat" çözme akışıdır → E1 kapsamında web'e devam |
 | S22 | `/panel/odk/ogrenci/denemeler/[id]/sonuc` | — | O: sonuç, cevap anahtarı, Dino açıklaması | Hazır | `odk/exam/[id]/result` | Tam | — | Dino açıklaması S18'e bağlı |
 | S23 | `/panel/odk/ogrenci/denemeler/[id]/coz` | — | Y: cevaplar, olaylar, heartbeat, süre, teslim | Hazır | — | İstisna | — | E1: sınav çözme mobil kapsam dışı |
@@ -185,7 +185,7 @@ Mobil karşılık: `odk-management-*` ekranları ADMIN ve yetkili ODK personeli;
 | V04 | `/panel/veli/takvim` | `lessons` | O · Y: .ics dışa aktar | Hazır | `parent-lessons` | Tam | — | Kimlikli ICS indir/paylaş, geçici dosya temizliği; `profile-calendar.test.tsx`, `mobile-p5-basics.spec.ts`. iPhone paylaşma kabulü P6 |
 | V05 | `/panel/veli/odevler` | `assignments` | O | Hazır | `parent-assignments` | Tam | — | |
 | V06 | `/panel/veli/ogretmenler` | `teachers` | O | Hazır | `parent-teachers` | Tam | — | |
-| V07 | `/panel/veli/kocluk` | `coaching` | O · Y: görüşme saat değişikliği talebi, katılım bağlantısı | Yetki | `parent-coaching` | Kısmi | P5 | `coaching-sessions/[id]` veli kapsamı doğrulanmalı |
+| V07 | `/panel/veli/kocluk` | `coaching` | O · Y: görüşme saat değişikliği talebi, katılım bağlantısı | Hazır (`coaching-sessions/[id]` REQUEST) | `parent-coaching` | Tam | P5.1 | Görülen sürüm + işlem anahtarı; HTTPS katılım bağlantısı (öneri bekleyen/geçmiş görüşmede yok). Veli kapsamı (aktif bağ, `canViewAcademic`, çocuğun OK üyeliği) `parent-coaching-scope.integration.ts` ile doğrulandı |
 | V08 | `/panel/veli/denemeler` | `mock-exams` | O | Hazır | `parent-external-exams` | Tam | — | |
 | V09 | `/panel/veli/haftalik` | `weekly-digest` | O · Y: geri bildirim | Hazır | `parent-weekly` | Tam | — | Hedef çocuğun OD/OK üyeliği + aktif akademik veli bağı; `mobile-p5-basics.spec.ts` olumlu/yabancı/pasif/izinsiz bağ testleri |
 | V10 | `/panel/veli/hesap` | `account` | O: hesap ve paket · Y: paket görüşmesi iste | `POST /api/panel/parent/account/package-meeting` (SA ile ortak `lib/panel/parent-package-meeting.ts`) | `parent-account` | Tam | P5.2 | Yalnız `account` amaçlı bağlı çocuk; onaylı talep, işlem anahtarıyla tek `LeadSubmission`. Fiyat / satın alma yok (MD-09). `account-settings.integration.ts`, `account-settings.test.tsx` |

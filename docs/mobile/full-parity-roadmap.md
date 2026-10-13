@@ -451,3 +451,10 @@ Bu dilimin son kontrolleri: **984 sunucu birim testi**, **33 paket / 250 mobil t
 - Ortak makbuz çalıştırıcısı `lib/panel/command-receipt.ts`'e taşındı; işletme anahtar biçimi (`business-<ad alanı>:…`) değişmedi.
 - Kanıt: 1003 sunucu birim testi; 49 mobil paket / 289 test; PostgreSQL entegrasyonu 138/140 (başarısız iki test — koçluk saat talebi ve ders günü hatırlatmaları — `main` üzerinde de aynı şekilde başarısız, bu dilimle ilgisiz). Tip/lint/API doğrulama/sözleşme/matris kontrolleri geçti. Gerçek HTTP ve fiziksel iPhone kabulü açık.
 - Matris: 89 Tam / 5 Kısmi / 5 Eksik / 1 İstisna / 6 Yönl. Kalan: K03/K04/K08 (P4), T07 Dino, S14/S18/S20, V07/V11, C09 ve dış kabul kapıları.
+
+### 13 Ekim 2026 — P5.1 kalanları (S14, S20, V07)
+
+- S14: `POST /api/panel/adaptive-plan/generate` isteğe bağlı `expectedVersion` alır (Bearer'da zorunlu; plan yoksa 0). Görülen sürüm farklıysa 409 `STALE_VERSION`; güncelleme sürüm koşullu olduğundan eşzamanlı iki üretimden biri (web dahil) 409 alır. Native "Planı oluştur / Haftayı dengele"; koç onaylı plan web'deki gibi kilitli.
+- S20: `listStudentExams` `startsAt, id` ile kararlı sıralanır; `?cursor=` aynı sözleşme kapsamında sonraki 50 denemeyi okur, yanıt `nextCursor` taşır. Mobil "Daha eski denemeleri yükle"; web değişmedi.
+- V07: veli görüşme projeksiyonu sürüm ve yalnız HTTPS katılım bağlantısı taşır (eklemeli, eski istemci uyumlu). Talep mevcut `coaching-sessions/[id]` REQUEST ile; kapsam testi: akademik izni kapalı veli, sona ermiş bağ ve OK üyeliği bitmiş çocukta 404, eski sürüm 409.
+- Kanıt: 1003 birim, 52 mobil paket / 295 test; PostgreSQL entegrasyonu 139/141 (iki başarısızlık main'de de aynı, ilgisiz). Matris: 92 Tam / 2 Kısmi / 5 Eksik / 1 İstisna / 6 Yönl.

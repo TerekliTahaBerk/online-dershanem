@@ -1,4 +1,4 @@
-import type { OdkListView } from '@contracts/odk';
+import type { MobileOdkExamList, OdkListView } from '@contracts/odk';
 import { useRouter, type Href } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -6,6 +6,7 @@ import { StyleSheet, View } from 'react-native';
 import { Banner, Button, EmptyState, PageHeader, Screen, SegmentedTabs, Text } from '@/design/primitives';
 import { space, tone } from '@/design/tokens';
 import { fetchOdkExams } from '@/lib/api/odk';
+import { useSession } from '@/lib/auth/session-provider';
 import { formatShortDateTime } from '@/lib/format/istanbul';
 
 import { OdkExamRow } from './exam-row';
@@ -18,6 +19,8 @@ import { QueryView, usePullToRefresh, useOdkQuery } from './shared';
  * açık → yaklaşan → tamamlanan). Durumlar sunucunun `studentExamState`
  * kararıdır. Devam eden deneme en üstte açıklamalı satırdır; sınav web'de
  * sürer, mobil deneme çalıştırmaz. OD dış denemeleri bu ekrana girmez.
+ * S20: okuma sınırını aşan eski denemeler `nextCursor` ile sayfa sayfa native
+ * yüklenir ve kendi ayrıntı / sonuç ekranlarında açılır.
  */
 const VIEWS: { value: OdkListView; label: string }[] = [
   { value: 'tumu', label: 'Tümü' },
@@ -56,13 +59,44 @@ export default function OdkExamsScreen() {
                 body={data.counts.tumu ? undefined : 'Yeni deneme açıldığında burada görünecek.'}
               />
             )}
-            {data.truncated ? (
-              <Banner tone="info">{`Yalnız en yeni ${data.limit} deneme gösteriliyor. Daha eski denemeler için web panelini kullanabilirsin.`}</Banner>
-            ) : null}
+            {data.truncated ? <OlderExams key={`${view}:${data.generatedAt}`} first={data} view={view} /> : null}
           </>
         )}
       </QueryView>
     </Screen>
+  );
+}
+
+/** Daha eski sayfalar: ilk sayfanın imlecinden başlar; görünüm veya yenileme değişince sıfırlanır. */
+function OlderExams({ first, view }: { first: MobileOdkExamList; view: OdkListView }) {
+  const { api } = useSession();
+  const [pages, setPages] = useState<MobileOdkExamList[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const last = pages.at(-1) ?? first;
+  async function loadMore() {
+    if (!last.nextCursor || loading) return;
+    setLoading(true);
+    setFailed(false);
+    try {
+      const page = await fetchOdkExams(api, view, undefined, last.nextCursor);
+      setPages((current) => [...current, page]);
+    } catch {
+      setFailed(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+  return (
+    <>
+      {pages.flatMap((page) => page.exams).map((exam) => <OdkExamRow key={exam.id} exam={exam} />)}
+      {failed ? <Banner tone="critical">Eski denemeler yüklenemedi. Bağlantını kontrol edip tekrar dene.</Banner> : null}
+      {last.nextCursor ? (
+        <Button label="Daha eski denemeleri yükle" variant="secondary" loading={loading} disabled={loading} onPress={() => void loadMore()} testID="odk-exams-older" />
+      ) : last.truncated ? (
+        <Banner tone="info">{`Yalnız en yeni ${first.limit} deneme gösteriliyor. Daha eski denemeler için web panelini kullanabilirsin.`}</Banner>
+      ) : null}
+    </>
   );
 }
 

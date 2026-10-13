@@ -21,7 +21,7 @@ export const studentExamInclude = {
  * Öğrencinin yetkili denemeleri, en yeni başlangıç önce. `limit` varsayılanı
  * web ile aynı 50; mobil liste kesildiğini bilmek için bir fazlasını ister.
  */
-export async function listStudentExams(studentUserId: string, options: { limit?: number } = {}) {
+export async function listStudentExams(studentUserId: string, options: { limit?: number; cursor?: string } = {}) {
   const now = new Date();
   const contracts = await listActiveOdkContracts(studentUserId, now);
   const examIds = [...new Set(contracts.flatMap(({ contract }) => contract.exams.map((exam) => exam.id)))];
@@ -31,8 +31,10 @@ export async function listStudentExams(studentUserId: string, options: { limit?:
   }
   return prisma.odkExam.findMany({
     where: { id: { in: examIds }, status: { in: ["SCHEDULED", "LIVE", "ENDED", "SCORED", "RELEASED"] }, publishedAt: { not: null } },
-    orderBy: [{ startsAt: "desc" }],
+    // `id` eşitlik bozucudur: aynı başlangıçlı denemelerde sayfalama kararlı kalır.
+    orderBy: [{ startsAt: "desc" }, { id: "desc" }],
     take: options.limit ?? 50,
+    ...(options.cursor ? { cursor: { id: options.cursor }, skip: 1 } : {}),
     select: {
       id: true, title: true, family: true, examFamilyRef: { select: { code: true } }, status: true, startsAt: true, endsAt: true, lateEntryMinutes: true, meetRequired: true, resultsReleasedAt: true,
       currentVersion: { select: { durationMinutes: true } },

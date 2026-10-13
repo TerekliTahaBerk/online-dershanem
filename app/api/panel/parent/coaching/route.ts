@@ -5,7 +5,9 @@ import { parentJson, requireParentChild } from "@/lib/panel/parent-api";
 /**
  * Veli · Yön Koçluk — web `app/panel/veli/kocluk` ile aynı yükleyici. Yalnız
  * çocuğun Yön Koçluk (OK) erişimi varsa veri; yayınlanmış plan / özet ve
- * PARENT_VISIBLE notlar. Görüşmeler salt okunur (katılım bağlantısı yok).
+ * PARENT_VISIBLE notlar. Görüşmeler sürüm ve HTTPS katılım bağlantısıyla döner;
+ * veli saat değişikliği talebini `POST /api/panel/coaching-sessions/[id]`
+ * (REQUEST) ile web ile aynı kapsamda iletir (V07).
  */
 export async function GET(request: Request) {
   const scope = await requireParentChild(request);
