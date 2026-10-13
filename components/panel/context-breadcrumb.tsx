@@ -8,6 +8,7 @@ import { rolePath } from "@/lib/auth/roles";
 import { usePanelFeatureFlags } from "@/components/panel/panel-feature-provider";
 import { panelNavSections, type PanelNavItem } from "@/lib/panel/navigation";
 import type { StaffPermission } from "@/lib/products/staff-permission-matrix";
+import { withWorkspace } from "@/lib/panel/workspace-context";
 
 /**
  * Bağlam çubuğu breadcrumb'ı: `Çalışma alanı / Menü öğesi / Sayfa`.
@@ -50,7 +51,7 @@ export function ContextBreadcrumb({
   }
 
   const crumbs: Array<{ label: string; href?: string }> = [{ label: workspace.label, href: workspace.href }];
-  if (match && match.href !== workspace.href) crumbs.push({ label: match.label, href: match.href });
+  if (match && withWorkspace(match.href, scope) !== workspace.href) crumbs.push({ label: match.label, href: withWorkspace(match.href, scope) });
   const last = crumbs[crumbs.length - 1];
   if (pageTitle && pageTitle !== last.label && pageTitle !== match?.label) crumbs.push({ label: pageTitle });
 
