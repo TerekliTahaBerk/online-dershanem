@@ -12,6 +12,8 @@ export type OdkExamTab = (typeof ODK_EXAM_TABS)[number];
 const tabId = () => v.oneOf(ODK_EXAM_TABS);
 const counters = v.object({ notStarted: v.int(0), inProgress: v.int(0), disconnected: v.int(0), submitted: v.int(0), autoSubmitted: v.int(0), review: v.int(0) });
 
+const releasePreview = v.object({ publishable: v.int(0), reviewRequired: v.int(0), scoringErrors: v.int(0), warnings: v.array(v.string()), canPublish: v.boolean() });
+
 const workspace = v.object({
   contractVersion: v.literal(1),
   revision: v.nonEmpty(),
@@ -51,7 +53,7 @@ const workspace = v.object({
     v.object({
       filter: v.oneOf(["tumu", "kazanimsiz", "anahtarsiz"]),
       counts: v.object({ tumu: v.int(0), kazanimsiz: v.int(0), anahtarsiz: v.int(0) }),
-      rows: v.array(v.object({ id: v.nonEmpty(), number: v.int(0), section: v.string(), correctOption: v.nullable(v.string()), outcomeCount: v.int(0), hasPrimaryOutcome: v.boolean(), contentType: v.string(), bookletPage: v.nullable(v.int(0)) })),
+      rows: v.array(v.object({ id: v.nonEmpty(), number: v.int(0), section: v.string(), correctOption: v.nullable(v.string()), outcomeCount: v.int(0), hasPrimaryOutcome: v.boolean(), contentType: v.string(), bookletPage: v.nullable(v.int(0)), difficulty: v.optional(v.oneOf(["EASY", "MEDIUM", "HARD"]), "MEDIUM"), outcomes: v.optional(v.array(v.object({ id: v.nonEmpty(), label: v.string() })), []), primaryOutcomeId: v.optional(v.nullable(v.string()), null) })),
     }),
   ),
   files: v.nullable(v.array(v.object({ id: v.nonEmpty(), type: v.string(), fileName: v.string() }))),
@@ -97,6 +99,17 @@ const workspace = v.object({
     ),
     null,
   ),
+  /** K03c · puanlama sekmesi: sonuç özeti; tablo ve yayın önizlemesi (dahil / inceleme bekleyenler hariç) yalnız puanlama izniyle. */
+  scoring: v.optional(
+    v.nullable(
+      v.object({
+        summary: v.object({ participation: v.int(0), submitted: v.int(0), missing: v.int(0), averageNet: v.nullable(v.number()), medianNet: v.nullable(v.number()), integrityReviewCount: v.int(0), scoringErrors: v.int(0), sections: v.array(v.object({ code: v.string(), title: v.string(), averageNet: v.nullable(v.number()), averageAccuracy: v.nullable(v.number()) })) }),
+        rows: v.array(v.object({ attemptId: v.nonEmpty(), name: v.string(), correct: v.nullable(v.int(0)), wrong: v.nullable(v.int(0)), blank: v.nullable(v.int(0)), net: v.nullable(v.number()), durationMinutes: v.nullable(v.int(0)), integrityLabel: v.string(), integrityTone: tone(), result: v.oneOf(["ERROR", "PUBLISHED", "HIDDEN", "NONE"]), resultLabel: v.string() })),
+        release: v.nullable(v.object({ include: releasePreview, exclude: releasePreview })),
+      }),
+    ),
+    null,
+  ),
   /** K03b · önizleme sekmesi: öğrenci / öğretmen / veli görünümü (deneme başlatmaz). */
   previews: v.optional(v.nullable(v.array(v.object({ kind: v.nonEmpty(), label: v.string(), disclaimer: v.string(), lines: v.array(v.string()) }))), null),
   history: v.nullable(v.array(v.object({ id: v.nonEmpty(), label: v.string(), actor: v.nullable(v.string()), at: v.iso() }))),
@@ -116,8 +129,17 @@ export type OdkExamCommand =
   | { operation: "sessions"; sessions: Array<{ key: string; durationMinutes: number; breakAfterMinutes: number }> }
   | { operation: "assign"; input: { source: "STUDENT" | "GROUP" | "CLASS" | "COHORT" | "BULK"; groupId?: string; classLevel?: string; packageId?: string; cohortId?: string; studentEmails?: string[] } }
   | { operation: "import.preview"; kind: "answer-key" | "outcomes"; payload: unknown }
-  | { operation: "import.commit"; kind: "answer-key" | "outcomes"; importId: string };
+  | { operation: "import.commit"; kind: "answer-key" | "outcomes"; importId: string }
+  | { operation: "question.update"; question: { id: string; correctOption: "A" | "B" | "C" | "D" | "E" | null; difficulty: "EASY" | "MEDIUM" | "HARD"; bookletPage: number | null; outcomeIds: string[]; primaryOutcomeId: string | null } }
+  | { operation: "score" }
+  | { operation: "rescore"; input: { confirmPublishedChange?: boolean; reason?: string } }
+  | { operation: "release"; input: { excludeReviewRequired?: boolean; createCoachSuggestions?: boolean } };
 
 export function parseOdkExamCommandResult(input: unknown) {
-  return check(v.object({ ok: v.literal(true), operation: v.nonEmpty(), result: v.optional(v.object({ importId: v.optional(v.nullable(v.string()), null), summary: v.optional(v.nullable(v.object({ message: v.optional(v.string(), "") })), null), issues: v.optional(v.array(v.object({ level: v.optional(v.string(), "error"), message: v.optional(v.string(), "") })), []), total: v.optional(v.nullable(v.int(0)), null), count: v.optional(v.nullable(v.int(0)), null) }), { importId: null, summary: null, issues: [], total: null, count: null }), replayed: v.boolean() }), input);
+  return check(v.object({ ok: v.literal(true), operation: v.nonEmpty(), result: v.optional(v.object({ importId: v.optional(v.nullable(v.string()), null), summary: v.optional(v.nullable(v.object({ message: v.optional(v.string(), "") })), null), issues: v.optional(v.array(v.object({ level: v.optional(v.string(), "error"), message: v.optional(v.string(), "") })), []), total: v.optional(v.nullable(v.int(0)), null), count: v.optional(v.nullable(v.int(0)), null), scoredCount: v.optional(v.nullable(v.int(0)), null), published: v.optional(v.nullable(v.int(0)), null), excluded: v.optional(v.nullable(v.int(0)), null), coach: v.optional(v.nullable(v.object({ created: v.int(0) })), null) }), { importId: null, summary: null, issues: [], total: null, count: null, scoredCount: null, published: null, excluded: null, coach: null }), replayed: v.boolean() }), input);
+}
+
+/** `GET /api/panel/odk/management/exams/[id]/outcomes?q=` — soru düzenleme için kazanım arama. */
+export function parseOdkOutcomeOptions(input: unknown) {
+  return check(v.object({ options: v.array(v.object({ id: v.nonEmpty(), label: v.string() })) }), input);
 }

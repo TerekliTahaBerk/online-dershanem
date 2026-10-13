@@ -35,6 +35,8 @@ function median(values: number[]): number | null {
   return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
 }
 
+export type SectionBreakdownRow = { code?: string; sectionId?: string; title: string; net?: number; accuracy?: number; correct?: number; questionCount?: number };
+
 export function buildExamResultsSummary(input: {
   assignmentCount: number;
   attempts: Array<{
@@ -51,7 +53,8 @@ export function buildExamResultsSummary(input: {
       totalNet: number;
       publicationStatus: "HIDDEN" | "PUBLISHED";
       activeDurationMs?: number | null;
-      sectionBreakdown?: Array<{ code: string; title: string; net?: number; accuracy?: number }> | null;
+      /** Puanlama motoru `SectionScore` ({sectionId, questionCount, correct}) yazar; eski/sentetik satırlar `code`/`accuracy` taşıyabilir. */
+      sectionBreakdown?: Array<SectionBreakdownRow> | null;
     };
   }>;
 }): ExamResultsSummary {
@@ -64,10 +67,13 @@ export function buildExamResultsSummary(input: {
   const sectionBuckets = new Map<string, { title: string; nets: number[]; accuracies: number[] }>();
   for (const attempt of submitted) {
     for (const section of attempt.score?.sectionBreakdown || []) {
-      const bucket = sectionBuckets.get(section.code) || { title: section.title, nets: [], accuracies: [] };
+      const code = section.code ?? section.sectionId;
+      if (!code) continue;
+      const bucket = sectionBuckets.get(code) || { title: section.title, nets: [], accuracies: [] };
       if (typeof section.net === "number") bucket.nets.push(section.net);
-      if (typeof section.accuracy === "number") bucket.accuracies.push(section.accuracy);
-      sectionBuckets.set(section.code, bucket);
+      const accuracy = typeof section.accuracy === "number" ? section.accuracy : typeof section.correct === "number" && section.questionCount ? (section.correct / section.questionCount) * 100 : null;
+      if (accuracy != null) bucket.accuracies.push(accuracy);
+      sectionBuckets.set(code, bucket);
     }
   }
 

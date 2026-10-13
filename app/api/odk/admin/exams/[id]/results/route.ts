@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireApiStaffPermission } from "@/lib/auth/api-guards";
-import { buildExamResultsSummary } from "@/lib/odk/results-ops";
+import { buildExamResultsSummary, type SectionBreakdownRow } from "@/lib/odk/results-ops";
 import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
@@ -66,7 +66,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
             publicationStatus: attempt.score.publicationStatus,
             activeDurationMs: attempt.score.activeDurationMs,
             sectionBreakdown: Array.isArray(attempt.score.sectionBreakdown)
-              ? (attempt.score.sectionBreakdown as Array<{ code: string; title: string; net?: number; accuracy?: number }>)
+              ? (attempt.score.sectionBreakdown as SectionBreakdownRow[])
               : null,
           }
         : null,

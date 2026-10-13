@@ -38,7 +38,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | Alan | Rota | Tam | Kısmi | Eksik | İstisna | Yönl. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1. Yönetim (`/panel/yonetim`) | 28 | 27 | 0 | 0 | 0 | 1 |
-| 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 7 | 1 | 0 | 0 | 0 |
+| 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 8 | 0 | 0 | 0 | 0 |
 | 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 19 | 1 | 0 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 5. Öğrenci (`/panel/ogrenci`) | 18 | 16 | 0 | 1 | 0 | 1 |
@@ -46,17 +46,17 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | 7. Veli (`/panel/veli`) | 12 | 9 | 0 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 8 | 1 | 0 | 0 | 2 |
-| **Toplam** | **106** | **94** | **3** | **2** | **1** | **6** |
+| **Toplam** | **106** | **95** | **2** | **2** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
 ### Ana bulgular
 
 1. **Yönetim kod eşliği tamamlandı.** P2.9 gerçek HTTP/iPhone kabulü ve P1 operasyon kanıtı açık.
-2. **Deneme Ligi yönetiminde K01, K02, K04, K05, K06, K07 ve K08 native tamamlandı.** K03 okuması (K03a) ve hazırlık yazmaları (K03b) native; puanlama ve yayın yazmaları (K03c) açık; mevcut `/api/odk/admin/**` servisleri ve personel izinleri temel alınacak.
+2. **Deneme Ligi yönetimi (K01–K08) native tamamlandı.** K03 çalışma alanı okuma (K03a), hazırlık yazmaları ve soru düzenleme (K03b) ile puanla / yeniden puanla / yayın (K03c, step-up) web uçlarıyla aynı `lib/odk` servislerini kullanır.
 3. **Server Action kalanı yok:** V10 paket görüşmesi ve C07/C08 yedi ayar action'ı (P5.2), Y27 ve T20 ortak servis + native uçlara taşındı.
 4. **S12/V09 geri bildirim yetkisi düzeltildi.** OD/OK öğrenci ve aktif akademik veli bağı gerçek HTTP ile doğrulandı. V07 veli görüşme kapsamı PostgreSQL ile doğrulandı (P5.1).
-5. **P4 kalanı:** K03 kapsamlı sınav çalışma alanı. K04 canlı operasyon/inceleme, K05/K06/K07 okumaları ve K08 pilot yönetimi native tamamlandı.
+5. **P4 kod eşliği tamamlandı.** Gerçek cihaz kabulü P6 kapsamında açık.
 
 ---
 
@@ -103,7 +103,7 @@ Mobil karşılık: `odk-management-*` ekranları ADMIN ve yetkili ODK personeli;
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | K01 | `/panel/odk/yonetim` | `today` | O: personel çalışma alanı özeti, pilot hazırlığı | `odk/admin-exam-server.ts`, `odk/pilot-readiness-server.ts` | Ortak GET projeksiyonu | `odk-management-home` | Tam | P4 | |
 | K02 | `/panel/odk/yonetim/sinavlar` | `odk-exams` | O: sınav listesi · Y: sınav oluştur, seri oluştur | `odk/admin/exams` POST, `odk/admin/exam-series` POST | Ortak GET/POST + sürüm/receipt | `odk-management-exams` | Tam | P4 | |
-| K03 | `/panel/odk/yonetim/sinavlar/[id]` | — | O: sınav detayı, önizleme, sonuçlar, dosya, girişim · Y: düzenle, sorular, cevap anahtarı içe aktar (doğrula/uygula), kazanım içe aktar, dosya yükle, hazır işaretle, takvim, oturumlar, atamalar, puanla, yeniden puanla, yayın önizleme, yayınla, girişim düzelt | `loadOdkExamWorkspace` (`lib/odk/exam-workspace-server.ts`, sayfadan taşındı); yazmalar `odk/admin/exams/[id]/**` | O + hazırlık Y hazır (`GET`/`POST /api/panel/odk/management/exams/[id]`; komutlar `exam-command-runner` → `exam-commands-server`; bütünlük paneli `.../attempts/[attemptId]` + review) | `odk/manage/[id]` | Kısmi | P4.3 | K03a: izinli sekmeler, genel/hazırlık/sorular/dosyalar/oturumlar/zamanlama/canlı/raporlar/geçmiş okuması ve bütünlük incelemesi native; K03b: zamanlama/güvenlik düzenleme, hazır/planla, oturumlar, atamalar, JSON içe aktarma, PDF yükleme, önizleme native. Kalan: K03c puanla/yeniden puanla/yayın (step-up); soru bazında düzenleme ve puanlama sekmesi şimdilik web'de |
+| K03 | `/panel/odk/yonetim/sinavlar/[id]` | — | O: sınav detayı, önizleme, sonuçlar, dosya, girişim · Y: düzenle, sorular, cevap anahtarı içe aktar (doğrula/uygula), kazanım içe aktar, dosya yükle, hazır işaretle, takvim, oturumlar, atamalar, puanla, yeniden puanla, yayın önizleme, yayınla, girişim düzelt | `loadOdkExamWorkspace` (`lib/odk/exam-workspace-server.ts`); yazmalar `lib/odk/exam-commands-server.ts` + `exam-results-commands.ts` (web `odk/admin/exams/[id]/**` uçları aynı servisleri çağırır) | `GET`/`POST /api/panel/odk/management/exams/[id]` (`exam-command-runner`: işlem anahtarı + revizyon, makbuz, rescore/yayın step-up), `.../outcomes` kazanım arama, PDF `odk/admin/exams/[id]/files`; bütünlük paneli `.../attempts/[attemptId]` + review | `odk/manage/[id]` | Tam | P4.3 | K03a okuma + bütünlük incelemesi; K03b zamanlama/güvenlik, hazır/planla, oturumlar, soru düzenleme (anahtar/zorluk/sayfa/kazanım), atamalar, JSON içe aktarma, PDF, önizleme; K03c sonuç tablosu, puanla, yeniden puanla, yayın önizleme → onay → yayın (native step-up). Kanıt: `mobile/src/test/odk-management-exam*.test.tsx`, `tests/integration/odk-exam-commands.integration.ts` |
 | K04 | `/panel/odk/yonetim/operasyon` | `odk-ops` | O: canlı oturumlar, ihlal/bağlantı sayaçları · Y: girişim müdahalesi | `loadOdkOpsConsole` (`lib/odk/ops-console-server.ts`, sayfadan taşındı); yazma `odk/admin/attempts/[id]` PATCH → `reviewAttemptIntegrity` | Hazır (`GET /api/panel/odk/management/operations`, `.../attempts/[id]`, `POST .../attempts/[id]/review`) | `odk-management-operations` | Tam | P4.2 | 15 sn otomatik yenileme (kapatılabilir; panel açıkken durur). İnceleme `odk:integrity:review`, işlem anahtarı + okunan sürüm (409); yalnız izlenen denemelerin kayıtları. `odk-operations.integration.ts`, `odk-management-operations.test.tsx` |
 | K05 | `/panel/odk/yonetim/sonuclar` | `odk-results` | O: puanlama/yayın kuyruğu + filtre | `odk/results-queue-server.ts` | Ortak GET projeksiyonu | `odk-management-results` | Tam | P4 | Eylemler K03 üzerinden; detay şimdilik web’de |
 | K06 | `/panel/odk/yonetim/raporlar` | `odk-reports` | O: kitle bazlı sonuç raporları | `odk/reporting-server.ts`, `odk/report-table-server.ts` | Ortak GET projeksiyonu | `odk-management-reports` | Tam | P4 | Genel rapor yalnız `odk:report:read_all`; ilişkili öğretmen ayrı |
@@ -243,7 +243,7 @@ Onaylı istisnalar **alt işlem** düzeyindedir; etkilenen satırlar kalan alt i
 | GET projeksiyonu (O yok / Y var, O yok) | — | 0 |
 | Server Action → `lib/` servisi + route | V10 (1), C07–C08 (7); Y27 ortak servislere taşındı | 2 dosya / 8 eylem |
 | Yetki düzeltmesi / kabul | V07 (veli görüşme işlemleri); S12/V09 ve T15 düzeltildi ve HTTP ile doğrulandı | 1 |
-| Yalnız mobil sözleşme + ekran (API hazır) | K03 (+ detay GET), S18, V11, C09 (passkey) | 4 |
+| Yalnız mobil sözleşme + ekran (API hazır) | S18, V11, C09 (passkey) | 3 |
 
 ## Bakım
 

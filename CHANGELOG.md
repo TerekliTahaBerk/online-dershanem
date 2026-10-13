@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Native Deneme Ligi scoring and release (K03c): results table, score, rescore and two-step release with native step-up, plus per-question editing (answer key, difficulty, booklet page, outcomes with catalog search); web endpoints share the same service layer and the mobile command keeps score, release, coach suggestions, audit and receipt in one transaction.
+
 - Native Deneme Ligi exam preparation writes (K03b): schedule/security edit, mark ready, schedule, session durations, assignments by group/class/package/cohort/email, answer-key and outcome JSON import (validate → apply), draft PDF upload and previews; the web endpoints and the mobile command share one service layer, with actor-scoped receipts, in-transaction revision checks and identical rejection messages.
 
 - Native Deneme Ligi exam workspace (K03a, read): permission-scoped tabs, lifecycle/readiness/issues, questions, files, sessions, schedule, live counters, reports, history and exam-scoped integrity review, sharing one loader with the web page; exam list, scoring queue and notifications now open it natively.
@@ -141,6 +143,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - Parent academic access now requires an active, unended link with `canViewAcademic`, across parent pages, student-success APIs, Deneme Ligi parent reports, material access, weekly-digest feedback and lesson notifications; the account and package screen keeps working for links without academic access
 
 ### Fixed
+
+- Exam result summaries now average sections per section using the scoring engine's stored section rows; previously all sections collapsed into one bucket.
 
 - Teacher intervention retries retain the original request, case version and revision across a background refresh after an uncertain network result.
 

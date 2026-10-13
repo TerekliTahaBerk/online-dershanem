@@ -1,12 +1,14 @@
-import { parseOdkExamCommandResult, type OdkExamCommand, type OdkExamWorkspaceView } from '@contracts/odk-management-exam';
+import { parseOdkExamCommandResult, parseOdkOutcomeOptions, type OdkExamCommand, type OdkExamWorkspaceView } from '@contracts/odk-management-exam';
 import { useMutation } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
 import { useState } from 'react';
 import { StyleSheet, Switch, View } from 'react-native';
 
-import { Banner, Button, EmptyState, Row, Section, StatusBadge, Text, TextField } from '@/design/primitives';
+import { Banner, BottomSheet, Button, EmptyState, Row, Section, StatusBadge, Text, TextField } from '@/design/primitives';
 import { useDesign } from '@/design/theme';
+import { runWithStepUp, StepUpCancelledError } from '@/features/admin/step-up-retry';
 import { FilterChips } from '@/features/admin/ui';
+import { useStepUp } from '@/features/auth/step-up';
 import { ApiError } from '@/lib/api/errors';
 import { useSession } from '@/lib/auth/session-provider';
 import { formatShortDateTime } from '@/lib/format/istanbul';
@@ -17,12 +19,15 @@ import { confirmAction, DateTimeField, OfflineWriteNotice, useOnline, useStableK
  * aynı servisler, mobil komut ucu `POST /api/panel/odk/management/exams/[id]`.
  * Her komut işlem anahtarı + okunan çalışma alanı `revision` taşır; belirsiz
  * ağ hatasında aynı gövdeyle aynı anahtar; 409'da görünüm yenilenir.
+ * K03c: puanla, yeniden puanla ve yayın; son ikisi web gibi taze step-up
+ * ister (native doğrulama sonrası aynı anahtarla tek tekrar).
  */
 const base = (examId: string) => `/api/panel/odk/management/exams/${encodeURIComponent(examId)}`;
 type Result = Extract<ReturnType<typeof parseOdkExamCommandResult>, { ok: true }>['value'];
 
 export function useExamCommand(examId: string, revision: string, onChanged: () => void) {
   const { api } = useSession();
+  const { requestStepUp } = useStepUp();
   const online = useOnline();
   const [state, setState] = useState<WriteState>(null);
   const key = useStableKey<{ command: OdkExamCommand; revision: string }>((a, b) => JSON.stringify(a) === JSON.stringify(b));
@@ -31,11 +36,16 @@ export function useExamCommand(examId: string, revision: string, onChanged: () =
     mutationFn: async (command: OdkExamCommand) => {
       if (!online) throw new ApiError({ kind: 'network' });
       const input = { command, revision };
-      try {
+      // 428'de native step-up; doğrulanırsa AYNI anahtarla bir kez tekrar.
+      const send = async () => {
         const parsed = parseOdkExamCommandResult(await api.request(base(examId), { method: 'POST', body: command, headers: { 'X-Od-Idempotency-Key': key.keyFor(input), 'X-Od-Expected-Revision': revision } }));
         if (!parsed.ok) throw new ApiError({ kind: 'invalid_response' });
-        key.settle();
         return parsed.value;
+      };
+      try {
+        const value = await runWithStepUp(send, requestStepUp);
+        key.settle();
+        return value;
       } catch (error) {
         key.settle(error);
         throw error;
@@ -52,7 +62,7 @@ export function useExamCommand(examId: string, revision: string, onChanged: () =
       if (options.refresh !== false) onChanged();
       return result;
     } catch (error) {
-      setState(writeError(error, 'Deneme başka bir işlemde değişti. Güncel çalışma alanı yüklendi; kontrol edip yeniden deneyin.'));
+      setState(error instanceof StepUpCancelledError ? { tone: 'warning', message: error.message } : writeError(error, 'Deneme başka bir işlemde değişti. Güncel çalışma alanı yüklendi; kontrol edip yeniden deneyin.'));
       if (error instanceof ApiError && error.kind === 'conflict') onChanged();
       return null;
     }
@@ -66,11 +76,34 @@ function Toggle({ title, value, onChange, testID }: { title: string; value: bool
 }
 
 /** Zamanlama sekmesi: planlama + güvenlik formu (taslak / hazır), hazır işaretle, planla. */
+type Command = ReturnType<typeof useExamCommand>;
+
 export function ScheduleWrites({ data, examId, onChanged }: { data: OdkExamWorkspaceView; examId: string; onChanged: () => void }) {
   const { exam, caps } = data;
-  const schedule = data.schedule!;
   const command = useExamCommand(examId, data.revision, onChanged);
   const editable = caps.edit && (exam.status === 'DRAFT' || exam.status === 'READY');
+  return (
+    <>
+      <OfflineWriteNotice online={command.online} />
+      <WriteBanner state={command.state} />
+      {/* Form yeni revizyonda sunucu değerleriyle yeniden kurulur; durum bandı korunur. */}
+      {editable ? <ScheduleForm key={data.revision} data={data} command={command} /> : null}
+      <Section title="Yaşam döngüsü">
+        {exam.status === 'DRAFT' && caps.edit ? (
+          <Button mutation label="Hazır olarak işaretle" disabled={!command.online || command.pending || !exam.draftEditable} onPress={() => void command.run({ operation: 'ready' }, 'Sürüm kilitlendi; deneme planlamaya hazır.', { confirm: { title: 'Hazır olarak işaretle', message: 'Sürüm kilitlenir; içerik ve cevap anahtarı doğrudan değiştirilemez. Hazırlık engelleri varsa işlem reddedilir.', label: 'Kilitle' } })} testID="exam-ready" />
+        ) : null}
+        {exam.status === 'READY' && caps.schedule ? (
+          <Button mutation label="Planla" disabled={!command.online || command.pending} onPress={() => void command.run({ operation: 'schedule' }, 'Deneme planlandı.', { confirm: { title: 'Denemeyi planla', message: 'Atanan öğrenciler için erişim hazırlığı başlar. Pencere ve Meet bilgileri yeniden kontrol edilir.', label: 'Planla' } })} testID="exam-schedule" />
+        ) : null}
+        {exam.status !== 'DRAFT' && exam.status !== 'READY' ? <Text tone="secondary">Deneme planlandıktan sonra kritik alanlar kilitlidir.</Text> : null}
+      </Section>
+    </>
+  );
+}
+
+function ScheduleForm({ data, command }: { data: OdkExamWorkspaceView; command: Command }) {
+  const { exam } = data;
+  const schedule = data.schedule!;
   const [title, setTitle] = useState(exam.title);
   const [startsAt, setStartsAt] = useState(exam.startsAt ? new Date(exam.startsAt) : null);
   const [endsAt, setEndsAt] = useState(exam.endsAt ? new Date(exam.endsAt) : null);
@@ -101,50 +134,43 @@ export function ScheduleWrites({ data, examId, onChanged }: { data: OdkExamWorks
     }, 'Planlama ve güvenlik bilgileri kaydedildi.');
   }
   return (
-    <>
-      <OfflineWriteNotice online={command.online} />
-      <WriteBanner state={command.state} />
-      {editable ? (
-        <Section title="Düzenle">
-          <TextField label="Deneme adı" value={title} onChangeText={setTitle} maxLength={180} testID="exam-title" />
-          {startsAt ? <DateTimeField label="Başlangıç" value={startsAt} onChange={setStartsAt} /> : <Button label="Başlangıç ekle" variant="secondary" onPress={() => setStartsAt(new Date(Date.now() + 86_400_000))} testID="exam-add-start" />}
-          {endsAt ? <DateTimeField label="Bitiş" value={endsAt} onChange={setEndsAt} minimumDate={startsAt ?? undefined} /> : <Button label="Bitiş ekle" variant="secondary" onPress={() => setEndsAt(new Date((startsAt?.getTime() ?? Date.now()) + 3 * 3_600_000))} testID="exam-add-end" />}
-          <TextField label="Geç giriş (dk)" value={late} onChangeText={setLate} keyboardType="number-pad" maxLength={3} testID="exam-late" />
-          <Toggle title="Meet zorunlu" value={meetRequired} onChange={setMeetRequired} testID="exam-meet-required" />
-          {meetRequired ? <TextField label="Meet bağlantısı" value={meetUrl} onChangeText={setMeetUrl} autoCapitalize="none" keyboardType="url" maxLength={500} testID="exam-meet-url" /> : null}
-          <FilterChips label="Tam ekran" value={fullscreenMode} onChange={setFullscreenMode} options={[{ value: 'OFF', label: 'Kapalı' }, { value: 'SUGGESTED', label: 'Önerilir' }, { value: 'REQUIRED', label: 'İstenir' }]} />
-          <Toggle title="Kopyala / yapıştır engeli" value={blockCopyPaste} onChange={setBlock} testID="exam-block-copy" />
-          <Toggle title="Sekme değişimini izle" value={trackVisibility} onChange={setTrack} testID="exam-track" />
-          <Toggle title="Süre bitince otomatik teslim" value={autoSubmit} onChange={setAutoSubmit} testID="exam-autosubmit" />
-          <TextField label="Ek süre hakkı (dk)" value={extra} onChangeText={setExtra} keyboardType="number-pad" maxLength={2} />
-          <Text tone="muted" variant="meta">İstemci tarafı engeller güvenlik garantisi değildir.</Text>
-          <Button mutation label="Kaydet" loading={command.pending} disabled={!command.online || !valid || command.pending} onPress={save} testID="exam-save" />
-        </Section>
-      ) : null}
-      <Section title="Yaşam döngüsü">
-        {exam.status === 'DRAFT' && caps.edit ? (
-          <Button mutation label="Hazır olarak işaretle" disabled={!command.online || command.pending || !exam.draftEditable} onPress={() => void command.run({ operation: 'ready' }, 'Sürüm kilitlendi; deneme planlamaya hazır.', { confirm: { title: 'Hazır olarak işaretle', message: 'Sürüm kilitlenir; içerik ve cevap anahtarı doğrudan değiştirilemez. Hazırlık engelleri varsa işlem reddedilir.', label: 'Kilitle' } })} testID="exam-ready" />
-        ) : null}
-        {exam.status === 'READY' && caps.schedule ? (
-          <Button mutation label="Planla" disabled={!command.online || command.pending} onPress={() => void command.run({ operation: 'schedule' }, 'Deneme planlandı.', { confirm: { title: 'Denemeyi planla', message: 'Atanan öğrenciler için erişim hazırlığı başlar. Pencere ve Meet bilgileri yeniden kontrol edilir.', label: 'Planla' } })} testID="exam-schedule" />
-        ) : null}
-        {exam.status !== 'DRAFT' && exam.status !== 'READY' ? <Text tone="secondary">Deneme planlandıktan sonra kritik alanlar kilitlidir.</Text> : null}
-      </Section>
-    </>
+    <Section title="Düzenle">
+      <TextField label="Deneme adı" value={title} onChangeText={setTitle} maxLength={180} testID="exam-title" />
+      {startsAt ? <DateTimeField label="Başlangıç" value={startsAt} onChange={setStartsAt} /> : <Button label="Başlangıç ekle" variant="secondary" onPress={() => setStartsAt(new Date(Date.now() + 86_400_000))} testID="exam-add-start" />}
+      {endsAt ? <DateTimeField label="Bitiş" value={endsAt} onChange={setEndsAt} minimumDate={startsAt ?? undefined} /> : <Button label="Bitiş ekle" variant="secondary" onPress={() => setEndsAt(new Date((startsAt?.getTime() ?? Date.now()) + 3 * 3_600_000))} testID="exam-add-end" />}
+      <TextField label="Geç giriş (dk)" value={late} onChangeText={setLate} keyboardType="number-pad" maxLength={3} testID="exam-late" />
+      <Toggle title="Meet zorunlu" value={meetRequired} onChange={setMeetRequired} testID="exam-meet-required" />
+      {meetRequired ? <TextField label="Meet bağlantısı" value={meetUrl} onChangeText={setMeetUrl} autoCapitalize="none" keyboardType="url" maxLength={500} testID="exam-meet-url" /> : null}
+      <FilterChips label="Tam ekran" value={fullscreenMode} onChange={setFullscreenMode} options={[{ value: 'OFF', label: 'Kapalı' }, { value: 'SUGGESTED', label: 'Önerilir' }, { value: 'REQUIRED', label: 'İstenir' }]} />
+      <Toggle title="Kopyala / yapıştır engeli" value={blockCopyPaste} onChange={setBlock} testID="exam-block-copy" />
+      <Toggle title="Sekme değişimini izle" value={trackVisibility} onChange={setTrack} testID="exam-track" />
+      <Toggle title="Süre bitince otomatik teslim" value={autoSubmit} onChange={setAutoSubmit} testID="exam-autosubmit" />
+      <TextField label="Ek süre hakkı (dk)" value={extra} onChangeText={setExtra} keyboardType="number-pad" maxLength={2} />
+      <Text tone="muted" variant="meta">İstemci tarafı engeller güvenlik garantisi değildir.</Text>
+      <Button mutation label="Kaydet" loading={command.pending} disabled={!command.online || !valid || command.pending} onPress={save} testID="exam-save" />
+    </Section>
   );
 }
 
 /** Oturumlar sekmesi: oturum süreleri ve aralar (yalnız taslak sürüm). */
 export function SessionWrites({ data, examId, onChanged }: { data: OdkExamWorkspaceView; examId: string; onChanged: () => void }) {
-  const sessions = data.sessions ?? [];
   const command = useExamCommand(examId, data.revision, onChanged);
+  if (!data.caps.edit || !data.exam.draftEditable) return <WriteBanner state={command.state} />;
+  return (
+    <>
+      <WriteBanner state={command.state} />
+      <SessionForm key={data.revision} data={data} command={command} />
+    </>
+  );
+}
+
+function SessionForm({ data, command }: { data: OdkExamWorkspaceView; command: Command }) {
+  const sessions = data.sessions ?? [];
   const [values, setValues] = useState(() => Object.fromEntries(sessions.map((item) => [item.key, { duration: String(item.durationMinutes), pause: String(item.breakAfterMinutes) }])));
-  if (!data.caps.edit || !data.exam.draftEditable) return null;
   const parsed = sessions.map((item) => ({ key: item.key, durationMinutes: Number.parseInt(values[item.key]?.duration ?? '', 10), breakAfterMinutes: Number.parseInt(values[item.key]?.pause ?? '', 10) }));
   const valid = parsed.every((item) => Number.isInteger(item.durationMinutes) && Number.isInteger(item.breakAfterMinutes));
   return (
     <Section title="Süreleri düzenle">
-      <WriteBanner state={command.state} />
       {sessions.map((item) => (
         <View key={item.key} style={styles.pair}>
           <Text variant="bodyStrong">{item.title}</Text>
@@ -295,4 +321,150 @@ function PdfUpload({ examId, onChanged }: { examId: string; onChanged: () => voi
   );
 }
 
-const styles = StyleSheet.create({ pair: { gap: 8 } });
+/** Puanlama sekmesi (K03c): özet, sonuç tablosu, puanla, yeniden puanla, yayın önizleme → onay → yayınla. */
+export function ScoringWrites({ data, examId, onChanged }: { data: OdkExamWorkspaceView; examId: string; onChanged: () => void }) {
+  const scoring = data.scoring;
+  const { exam, caps } = data;
+  const command = useExamCommand(examId, data.revision, onChanged);
+  const [exclude, setExclude] = useState(true);
+  const [confirming, setConfirming] = useState(false);
+  if (!scoring) return null;
+  const { summary } = scoring;
+  const preview = scoring.release ? (exclude ? scoring.release.exclude : scoring.release.include) : null;
+  const released = exam.status === 'RELEASED';
+  async function score() {
+    await command.run({ operation: 'score' }, 'Teslimler puanlandı (yayınlanmadı).', { confirm: { title: 'Teslimleri puanla', message: 'Teslim edilen oturumlar kilitli cevap anahtarıyla puanlanır. Sonuçlar henüz öğrenciye açılmaz.', label: 'Puanla' } });
+  }
+  async function rescore() {
+    await command.run({ operation: 'rescore', input: { confirmPublishedChange: released, reason: 'Mobil yeniden puanlama' } }, 'Yeniden puanlama tamamlandı.', { confirm: { title: 'Yeniden puanla', message: released ? 'Yayınlanmış sonuçlar değişecek; öğrenciler güncel sonucu görür. Kimlik doğrulaması istenebilir.' : 'Tüm teslimler güncel cevap anahtarıyla yeniden puanlanır. Kimlik doğrulaması istenebilir.', label: 'Yeniden puanla' } });
+  }
+  async function release() {
+    const result = await command.run({ operation: 'release', input: { excludeReviewRequired: exclude, createCoachSuggestions: true } }, 'Sonuçlar yayınlandı.');
+    if (result) setConfirming(false);
+  }
+  return (
+    <>
+      <OfflineWriteNotice online={command.online} />
+      <WriteBanner state={command.state} />
+      <Section first title="Sonuç özeti">
+        <Text tone="muted" variant="meta">Puanlama ≠ yayın. Öğrenci yalnız yayın sonrası görür.</Text>
+        <Row title="Katılım / teslim" meta={`${summary.participation} / ${summary.submitted}`} />
+        <Row title="Eksik" meta={String(summary.missing)} />
+        <Row title="Ortalama / medyan net" meta={`${summary.averageNet == null ? '—' : summary.averageNet.toFixed(2)} / ${summary.medianNet == null ? '—' : summary.medianNet.toFixed(2)}`} />
+        <Row title="İnceleme bekleyen" meta={String(summary.integrityReviewCount)} />
+        {summary.scoringErrors ? <Banner tone="critical">{`${summary.scoringErrors} teslim puanlanamadı.`}</Banner> : null}
+        {summary.sections.map((section) => <Row key={section.code} title={section.title} meta={`${section.averageNet == null ? '—' : section.averageNet.toFixed(2)} net${section.averageAccuracy == null ? '' : ` · %${section.averageAccuracy.toFixed(0)}`}`} />)}
+      </Section>
+      <Section title="İşlemler">
+        {['SCHEDULED', 'LIVE', 'ENDED'].includes(exam.status) && caps.score ? (
+          <Button mutation label="Teslimleri puanla" disabled={!command.online || !exam.windowEnded || command.pending} loading={command.pending} onPress={() => void score()} testID="exam-score" />
+        ) : null}
+        {['SCHEDULED', 'LIVE', 'ENDED'].includes(exam.status) && caps.score && !exam.windowEnded ? <Text tone="secondary">Deneme penceresi kapanınca puanlanabilir.</Text> : null}
+        {caps.rescore && ['ENDED', 'SCORED', 'RELEASED'].includes(exam.status) ? (
+          <Button mutation label="Yeniden puanla" variant="secondary" disabled={!command.online || command.pending} onPress={() => void rescore()} testID="exam-rescore" />
+        ) : null}
+      </Section>
+      {preview && caps.release ? (
+        <Section title="Yayın">
+          <Toggle title="İnceleme bekleyenleri hariç tut" value={exclude} onChange={(next) => { setExclude(next); setConfirming(false); }} testID="release-exclude" />
+          <Row title="Yayınlanacak" meta={String(preview.publishable)} />
+          {preview.warnings.map((warning) => <Banner key={warning} tone="warning">{warning}</Banner>)}
+          {!confirming ? (
+            <Button label="Yayın önizleme" variant="secondary" disabled={preview.publishable <= 0 || (!preview.canPublish && !exclude)} onPress={() => setConfirming(true)} testID="release-preview" />
+          ) : (
+            <View style={styles.pair} testID="release-confirm">
+              <Text variant="bodyStrong">{`${preview.publishable} öğrencinin sonucu yayınlanacak.`}</Text>
+              <Text tone="secondary">Yayın geri alınamaz; öğrenciler ve veliler sonucu görür, koç önerileri oluşturulur. Kimlik doğrulaması istenebilir.</Text>
+              <Button mutation label="Sonuçları yayınla" disabled={!command.online || command.pending} loading={command.pending} onPress={() => void release()} testID="release-commit" />
+              <Button label="Vazgeç" variant="secondary" onPress={() => setConfirming(false)} />
+            </View>
+          )}
+        </Section>
+      ) : null}
+      {scoring.rows.length ? (
+        <Section title="Sonuçlar">
+          {scoring.rows.map((row) => (
+            <Row
+              key={row.attemptId}
+              title={row.name}
+              subtitle={`D ${row.correct ?? '—'} · Y ${row.wrong ?? '—'} · B ${row.blank ?? '—'} · Net ${row.net == null ? '—' : row.net.toFixed(2)}${row.durationMinutes == null ? '' : ` · ${row.durationMinutes} dk`} · ${row.integrityLabel}`}
+              trailing={<StatusBadge label={row.resultLabel} tone={row.result === 'ERROR' ? 'critical' : row.result === 'PUBLISHED' ? 'success' : 'neutral'} />}
+            />
+          ))}
+        </Section>
+      ) : caps.score ? <Section title="Sonuçlar"><EmptyState title="Henüz oturum yok" /></Section> : null}
+    </>
+  );
+}
+
+type QuestionRow = NonNullable<OdkExamWorkspaceView['questions']>['rows'][number];
+type Option = 'A' | 'B' | 'C' | 'D' | 'E';
+
+/**
+ * Soru düzenleme (web soru editörü): anahtar, zorluk, kitapçık sayfası ve en
+ * çok 3 kazanım (biri ana). Sunucu güncel taslak listesine yalnız bu soruyu
+ * uygular; içerik alanları korunur. Yalnız taslak sürümde.
+ */
+export function QuestionEditSheet({ data, examId, question, onClose, onSaved, onChanged }: { data: OdkExamWorkspaceView; examId: string; question: QuestionRow; onClose: () => void; onSaved: (message: string) => void; onChanged: () => void }) {
+  const { api } = useSession();
+  const command = useExamCommand(examId, data.revision, onChanged);
+  const [option, setOption] = useState<Option | 'NONE'>(question.correctOption ? (question.correctOption as Option) : 'NONE');
+  const [difficulty, setDifficulty] = useState(question.difficulty);
+  const [page, setPage] = useState(question.bookletPage ? String(question.bookletPage) : '');
+  const [outcomes, setOutcomes] = useState(question.outcomes);
+  const [primary, setPrimary] = useState(question.primaryOutcomeId);
+  const [term, setTerm] = useState('');
+  const [results, setResults] = useState<{ id: string; label: string }[] | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const pageValue = page.trim() ? Number.parseInt(page, 10) : null;
+  const validPage = pageValue == null || (Number.isInteger(pageValue) && pageValue >= 1 && pageValue <= 1000);
+  async function search() {
+    setSearchError(null);
+    try {
+      const parsed = parseOdkOutcomeOptions(await api.request(`${base(examId)}/outcomes?q=${encodeURIComponent(term.trim())}`));
+      if (!parsed.ok) throw new ApiError({ kind: 'invalid_response' });
+      setResults(parsed.value.options);
+    } catch (error) {
+      setSearchError(error instanceof ApiError ? error.message : 'Kazanımlar yüklenemedi.');
+    }
+  }
+  function add(item: { id: string; label: string }) {
+    if (outcomes.length >= 3 || outcomes.some((outcome) => outcome.id === item.id)) return;
+    setOutcomes([...outcomes, item]);
+    if (!primary) setPrimary(item.id);
+  }
+  function remove(id: string) {
+    const next = outcomes.filter((outcome) => outcome.id !== id);
+    setOutcomes(next);
+    if (primary === id) setPrimary(next[0]?.id ?? null);
+  }
+  async function save() {
+    const result = await command.run({ operation: 'question.update', question: { id: question.id, correctOption: option === 'NONE' ? null : option, difficulty, bookletPage: pageValue, outcomeIds: outcomes.map((outcome) => outcome.id), primaryOutcomeId: primary } }, `Soru ${question.number} kaydedildi.`, { refresh: false });
+    if (result) onSaved(`Soru ${question.number} kaydedildi.`);
+  }
+  return (
+    <BottomSheet visible title={`Soru ${question.number} · ${question.section}`} onClose={() => { if (!command.pending) onClose(); }}>
+      <View style={styles.pair}>
+        <WriteBanner state={command.state} />
+        <FilterChips label="Doğru cevap" value={option} onChange={setOption} options={[...(['A', 'B', 'C', 'D', 'E'] as const).map((value) => ({ value, label: value })), { value: 'NONE' as const, label: 'Yok' }]} />
+        <FilterChips label="Zorluk" value={difficulty} onChange={setDifficulty} options={[{ value: 'EASY', label: 'Kolay' }, { value: 'MEDIUM', label: 'Orta' }, { value: 'HARD', label: 'Zor' }]} />
+        <TextField label="Kitapçık sayfası" value={page} onChangeText={setPage} keyboardType="number-pad" maxLength={4} error={validPage ? undefined : '1–1000 arası bir sayfa girin.'} testID="question-page" />
+        <Text variant="bodyStrong">{`Kazanımlar (${outcomes.length}/3)`}</Text>
+        {outcomes.length ? outcomes.map((outcome) => (
+          <Row key={outcome.id} title={outcome.label} trailing={<View style={styles.inline}><Button label={primary === outcome.id ? 'Ana' : 'Ana yap'} variant={primary === outcome.id ? 'primary' : 'secondary'} onPress={() => setPrimary(outcome.id)} testID={`question-primary-${outcome.id}`} /><Button label="Kaldır" variant="secondary" onPress={() => remove(outcome.id)} testID={`question-remove-${outcome.id}`} /></View>} />
+        )) : <Text tone="secondary">Bağlı kazanım yok.</Text>}
+        {outcomes.length < 3 ? (
+          <>
+            <TextField label="Kazanım ara" value={term} onChangeText={setTerm} autoCapitalize="none" returnKeyType="search" onSubmitEditing={() => void search()} testID="question-outcome-search" />
+            <Button label="Ara" variant="secondary" onPress={() => void search()} testID="question-outcome-search-submit" />
+            {searchError ? <Banner tone="critical">{searchError}</Banner> : null}
+            {results ? (results.length ? results.map((item) => <Row key={item.id} title={item.label} onPress={() => add(item)} disabled={outcomes.some((outcome) => outcome.id === item.id)} testID={`question-outcome-${item.id}`} />) : <Text tone="secondary">Eşleşen kazanım yok.</Text>) : null}
+          </>
+        ) : null}
+        <Button mutation label="Kaydet" disabled={!command.online || !validPage || command.pending} loading={command.pending} onPress={() => void save()} testID="question-save" />
+      </View>
+    </BottomSheet>
+  );
+}
+
+const styles = StyleSheet.create({ pair: { gap: 8 }, inline: { flexDirection: 'row', gap: 6 } });

@@ -8,7 +8,8 @@ import { prisma } from "@/lib/prisma";
 import { afterResponse } from "@/lib/after-response";
 import { afterEducationCommit, transactionalAudit } from "@/lib/panel/education-write";
 import { getOdkExamReadiness } from "@/lib/odk/admin-exam-server";
-import type { assignmentCreateSchema, updateExamScheduleSchema } from "@/lib/odk/admin-schemas";
+import type { assignmentCreateSchema, updateExamScheduleSchema, updateQuestionsSchema } from "@/lib/odk/admin-schemas";
+import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 import { previewAnswerKeyImport, summarizeAnswerKeyPreview } from "@/lib/odk/answer-key-import";
 import { resolveAssignmentStudents } from "@/lib/odk/assignment-resolve";
 import { validateSchedule } from "@/lib/odk/exam-domain";
@@ -27,6 +28,7 @@ import { previewOutcomeImport } from "@/lib/odk/outcome-import";
 type Db = PrismaClient;
 type ScheduleInput = z.output<typeof updateExamScheduleSchema>;
 type AssignmentInput = z.output<typeof assignmentCreateSchema>;
+type QuestionsInput = z.output<typeof updateQuestionsSchema>["questions"];
 export type ImportKind = "answer-key" | "outcomes";
 
 export async function updateOdkExamSchedule(id: string, input: ScheduleInput, actorId: string, db: Db = prisma) {
@@ -249,4 +251,46 @@ export async function commitOdkImport(kind: ImportKind, id: string, importId: st
   });
   await transactionalAudit(db)({ actorUserId: actorId, entityType: "OdkExam", entityId: id, action: "odk.outcomes_imported", summary: "Kazanım JSON import commit edildi", payload: { importId: audit.id, count: preview.mappings.length } });
   return NextResponse.json({ committed: true, count: preview.mappings.length });
+}
+
+/** Taslak sürümün tüm soru listesi: anahtar, zorluk, sayfa, içerik ve kazanımlar (web soru editörü). */
+export async function updateOdkExamQuestions(id: string, questions: QuestionsInput, actorId: string, db: Db = prisma) {
+  const exam = await db.odkExam.findFirst({ where: { id, status: "DRAFT", currentVersion: { status: "DRAFT" } }, select: { family: true, examFamilyRef: { select: { code: true } }, currentVersion: { select: { id: true, sections: { select: { questions: { select: { id: true } } } } } } } });
+  if (!exam?.currentVersion) return NextResponse.json({ error: "Kilitlenmiş veya bulunamayan sürüm düzenlenemez." }, { status: 409 });
+  const familyCode = getOdkExamFamilyCode(exam);
+  const expectedIds = exam.currentVersion.sections.flatMap((section) => section.questions.map((question) => question.id));
+  const submittedIds = questions.map((question) => question.id);
+  if (submittedIds.length !== expectedIds.length || new Set(submittedIds).size !== submittedIds.length || submittedIds.some((questionId) => !expectedIds.includes(questionId))) return NextResponse.json({ error: "Soru listesi aktif sürümle eşleşmiyor." }, { status: 400 });
+  const requestedOutcomeIds = [...new Set(questions.flatMap((question) => question.outcomeIds))];
+  if (requestedOutcomeIds.length) {
+    const validOutcomes = await db.learningOutcome.findMany({ where: { id: { in: requestedOutcomeIds }, isActive: true, unit: { subject: { version: { examFamilyRef: { code: familyCode }, status: { in: ["DRAFT", "ACTIVE"] } } } } }, select: { id: true } });
+    if (validOutcomes.length !== requestedOutcomeIds.length) return NextResponse.json({ error: "Kazanımlardan biri sınav türüyle eşleşmiyor veya aktif değil." }, { status: 400 });
+  }
+  await db.$transaction(async (tx) => {
+    await tx.odkQuestionOutcome.deleteMany({ where: { questionId: { in: expectedIds } } });
+    for (const question of questions) {
+      await tx.odkExamQuestion.update({ where: { id: question.id }, data: { correctOption: question.correctOption, difficulty: question.difficulty, bookletPage: question.bookletPage, contentType: question.contentType, contentText: question.contentText, assetUrl: question.assetUrl } });
+      if (question.outcomeIds.length) await tx.odkQuestionOutcome.createMany({ data: question.outcomeIds.map((outcomeId) => ({ questionId: question.id, outcomeId, isPrimary: outcomeId === question.primaryOutcomeId })) });
+    }
+  });
+  await transactionalAudit(db)({ actorUserId: actorId, entityType: "OdkExam", entityId: id, action: "odk.questions_updated", summary: "Cevap anahtarı ve soru kazanımları güncellendi", payload: { questionCount: questions.length, outcomeLinkCount: requestedOutcomeIds.length } });
+  return NextResponse.json({ ok: true });
+}
+
+/**
+ * Tek soru düzenlemesi (mobil): güncel taslak listesini okur, yalnız o sorunun
+ * anahtar / zorluk / sayfa / kazanım alanlarını değiştirir (içerik alanları
+ * korunur) ve web editörüyle AYNI `updateOdkExamQuestions` kurallarından geçer.
+ */
+export async function updateOdkExamQuestion(id: string, edit: { id: string; correctOption: OdkAnswerOption | null; difficulty: "EASY" | "MEDIUM" | "HARD"; bookletPage: number | null; outcomeIds: string[]; primaryOutcomeId: string | null }, actorId: string, db: Db = prisma) {
+  const version = await db.odkExam.findFirst({ where: { id, status: "DRAFT", currentVersion: { status: "DRAFT" } }, select: { currentVersion: { select: { sections: { orderBy: { position: "asc" }, select: { questions: { orderBy: { position: "asc" }, select: { id: true, correctOption: true, difficulty: true, bookletPage: true, contentType: true, contentText: true, assetUrl: true, outcomes: { select: { outcomeId: true, isPrimary: true } } } } } } } } } });
+  if (!version?.currentVersion) return NextResponse.json({ error: "Kilitlenmiş veya bulunamayan sürüm düzenlenemez." }, { status: 409 });
+  const current = version.currentVersion.sections.flatMap((section) => section.questions);
+  if (!current.some((question) => question.id === edit.id)) return NextResponse.json({ error: "Soru bu denemenin aktif sürümünde değil." }, { status: 404 });
+  const questions = current.map((question) =>
+    question.id === edit.id
+      ? { ...edit, contentType: question.contentType, contentText: question.contentText, assetUrl: question.assetUrl }
+      : { id: question.id, correctOption: question.correctOption, difficulty: question.difficulty, bookletPage: question.bookletPage, contentType: question.contentType, contentText: question.contentText, assetUrl: question.assetUrl, outcomeIds: question.outcomes.map((outcome) => outcome.outcomeId), primaryOutcomeId: question.outcomes.find((outcome) => outcome.isPrimary)?.outcomeId ?? null },
+  );
+  return updateOdkExamQuestions(id, questions, actorId, db);
 }

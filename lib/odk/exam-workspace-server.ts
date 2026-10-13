@@ -6,7 +6,8 @@ import { getOdkExamReadiness } from "@/lib/odk/admin-exam-server";
 import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 import { parseExamSecurityPolicy } from "@/lib/odk/exam-security";
 import { readSessionPlan } from "@/lib/odk/exam-sessions";
-import { buildExamResultsSummary } from "@/lib/odk/results-ops";
+import { buildExamResultsSummary, type SectionBreakdownRow } from "@/lib/odk/results-ops";
+import { previewResultPublication } from "@/lib/odk/result-publication";
 import { SUBMITTED_STATUSES, loadStaffViewer } from "@/lib/odk/staff-management-data";
 import {
   examCapabilities,
@@ -56,7 +57,7 @@ export async function loadOdkExamWorkspace(userId: string, examId: string, query
         deadlineAt: true,
         lastActivityAt: true,
         student: { select: { fullName: true, email: true } },
-        score: tab === "raporlar"
+        score: tab === "raporlar" || tab === "puanlama"
           ? { select: { attemptId: true, correctCount: true, wrongCount: true, blankCount: true, totalNet: true, publicationStatus: true, activeDurationMs: true, sectionBreakdown: true } }
           : { select: { attemptId: true } },
       },
@@ -122,9 +123,9 @@ export async function loadOdkExamWorkspace(userId: string, examId: string, query
 export type OdkExamWorkspace = NonNullable<Awaited<ReturnType<typeof loadOdkExamWorkspace>>>;
 type ReportAttempt = { id: string; status: string; integrityLevel: "NORMAL" | "REVIEW" | "HIGH"; startedAt: Date; submittedAt: Date | null; student: { fullName: string | null; email: string }; score: unknown };
 
-/** Raporlar sekmesi: özet + en zayıf 6 kazanım (web ve mobil aynı). */
-export async function loadOdkExamReport(examId: string, assignedCount: number, attempts: ReportAttempt[]) {
-  const summary = buildExamResultsSummary({
+/** Sonuç özeti (raporlar ve puanlama sekmeleri; web sonuç paneliyle aynı hesap). */
+export function examResultsSummaryFor(assignedCount: number, attempts: ReportAttempt[], studentLabel: (student: ReportAttempt["student"]) => string = (student) => student.fullName || student.email) {
+  return buildExamResultsSummary({
     assignmentCount: assignedCount,
     attempts: attempts.map((attempt) => {
       const score = attempt.score as null | {
@@ -138,7 +139,7 @@ export async function loadOdkExamReport(examId: string, assignedCount: number, a
       };
       return {
         id: attempt.id,
-        studentName: attempt.student.fullName || attempt.student.email,
+        studentName: studentLabel(attempt.student),
         status: attempt.status,
         integrityLevel: attempt.integrityLevel,
         startedAt: attempt.startedAt,
@@ -152,13 +153,41 @@ export async function loadOdkExamReport(examId: string, assignedCount: number, a
               publicationStatus: score.publicationStatus,
               activeDurationMs: score.activeDurationMs,
               sectionBreakdown: Array.isArray(score.sectionBreakdown)
-                ? (score.sectionBreakdown as Array<{ code: string; title: string; net?: number; accuracy?: number }>)
+                ? (score.sectionBreakdown as SectionBreakdownRow[])
                 : null,
             }
           : null,
       };
     }),
   });
+}
+
+/**
+ * Puanlama sekmesi (K03c): sonuç tablosu + iki yayın önizlemesi (inceleme
+ * bekleyenler dahil / hariç). Yayın ucu aynı `previewResultPublication`'ı
+ * çağırır; öğrenci yalnız adla.
+ */
+export function buildOdkExamScoring(ws: OdkExamWorkspace) {
+  const summary = examResultsSummaryFor(ws.assignedCount, ws.attempts, (student) => student.fullName || "Öğrenci");
+  const candidates = ws.attempts.filter((attempt) => (SUBMITTED_STATUSES as readonly string[]).includes(attempt.status));
+  const preview = (excludeReviewRequired: boolean) =>
+    previewResultPublication(
+      candidates.map((attempt) => ({
+        attemptId: attempt.id,
+        studentLabel: attempt.student.fullName || "Öğrenci",
+        hasScore: Boolean(attempt.score),
+        scoringError: !attempt.score,
+        integrityLevel: attempt.integrityLevel,
+        reviewRequired: attempt.status === "REVIEW_REQUIRED" || attempt.integrityLevel !== "NORMAL",
+      })),
+      { excludeReviewRequired },
+    );
+  return { summary, release: ws.exam.status === "SCORED" ? { include: preview(false), exclude: preview(true) } : null };
+}
+
+/** Raporlar sekmesi: özet + en zayıf 6 kazanım (web ve mobil aynı). */
+export async function loadOdkExamReport(examId: string, assignedCount: number, attempts: ReportAttempt[]) {
+  const summary = examResultsSummaryFor(assignedCount, attempts);
   const weakest = await prisma.odkAttemptOutcomeScore.groupBy({
     by: ["outcomeId"],
     where: { score: { attempt: { examId, status: { not: "VOID" } } } },
@@ -175,4 +204,21 @@ export async function loadOdkExamReport(examId: string, assignedCount: number, a
       )
     : new Map<string, string>();
   return { summary, weakest, outcomeTitles };
+}
+
+/** Sorular sekmesi (mobil soru düzenleme): bağlı kazanımların etiketleri. */
+export async function loadOdkQuestionOutcomeLabels(ws: OdkExamWorkspace) {
+  const ids = [...new Set(ws.questions.flatMap((question) => question.outcomeIds))];
+  if (!ids.length) return new Map<string, string>();
+  const rows = await prisma.learningOutcome.findMany({ where: { id: { in: ids } }, select: { id: true, code: true, title: true } });
+  return new Map(rows.map((row) => [row.id, `${row.code} · ${row.title}`]));
+}
+
+/** Kazanım arama (mobil soru düzenleme): web editörüyle aynı aktif katalog, en çok 30 sonuç. */
+export async function searchOdkExamOutcomes(examId: string, query: string) {
+  const exam = await prisma.odkExam.findUnique({ where: { id: examId }, select: { family: true, structureMode: true, examFamilyRef: { select: { code: true } } } });
+  if (!exam) return null;
+  const options = await getActiveOutcomeOptions(getOdkExamFamilyCode(exam), exam.structureMode === "MATH_ONLY");
+  const tokens = query.toLocaleLowerCase("tr-TR").split(/\s+/).filter(Boolean);
+  return options.filter((option) => { const label = option.label.toLocaleLowerCase("tr-TR"); return tokens.every((token) => label.includes(token)); }).slice(0, 30).map((option) => ({ id: option.id, label: option.label }));
 }

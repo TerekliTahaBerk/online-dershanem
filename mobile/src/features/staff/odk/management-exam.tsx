@@ -7,26 +7,21 @@ import { FilterChips, MetricGrid, MetricTile } from '@/features/admin/ui';
 import { ApiError } from '@/lib/api/errors';
 import { useReadyBootstrap } from '@/lib/auth/session-provider';
 import { formatShortDateTime } from '@/lib/format/istanbul';
-import { openOnWeb } from '../../shell/web-continuation';
 import { QueryView, usePullToRefresh } from '../shared';
-import { AssignmentWrites, ContentWrites, ScheduleWrites, SessionWrites } from './management-exam-writes';
+import { AssignmentWrites, ContentWrites, QuestionEditSheet, ScheduleWrites, ScoringWrites, SessionWrites } from './management-exam-writes';
 import { AttemptSheet } from './management-operations';
 import { useOdkManagementQuery } from './management-shared';
 
 /**
  * K03 · DENEME ÇALIŞMA ALANI — web `/panel/odk/yonetim/sinavlar/[id]`
  * (aynı yükleyici, aynı izinli sekmeler). K03a okuma; K03b hazırlık yazmaları
- * (zamanlama/güvenlik, hazır/planla, oturumlar, katılımcılar, JSON içe aktarma,
- * PDF); bütünlük incelemesi K04 paneliyle. Soru bazında düzenleme ve
- * puanlama/yayın (K03c) web'de açılır.
+ * (zamanlama/güvenlik, hazır/planla, oturumlar, soru düzenleme, katılımcılar,
+ * JSON içe aktarma, PDF); K03c puanla / yeniden puanla / yayın (step-up);
+ * bütünlük incelemesi K04 paneliyle. Tüm sekmeler native.
  */
 const base = (examId: string) => `/api/panel/odk/management/exams/${encodeURIComponent(examId)}`;
 const date = (value: string | null) => (value ? formatShortDateTime(value) : '—');
 const net = (value: number | null) => (value === null ? '—' : value.toFixed(2));
-const WRITE_LATER: Partial<Record<OdkExamTab, string>> = {
-  sorular: 'Soru bazında anahtar, zorluk ve kazanım düzenleme (toplu değişiklik için İçerik sekmesindeki JSON içe aktarma kullanılabilir)',
-  puanlama: 'Puanlama, yeniden puanlama ve yayın',
-};
 
 export function OdkManagementExamScreen({ examId, initialTab }: { examId: string; initialTab?: string }) {
   const bootstrap = useReadyBootstrap();
@@ -57,7 +52,9 @@ export function OdkManagementExamScreen({ examId, initialTab }: { examId: string
 function Workspace({ data, examId, onTab, onFilter, onChanged }: { data: OdkExamWorkspaceView; examId: string; onTab: (tab: OdkExamTab) => void; onFilter: (filter: string) => void; onChanged: () => void }) {
   const { exam, counts } = data;
   const [attemptId, setAttemptId] = useState<string | null>(null);
-  const later = WRITE_LATER[data.tab];
+  const [questionId, setQuestionId] = useState<string | null>(null);
+  const [questionNotice, setQuestionNotice] = useState<string | null>(null);
+  const editingQuestion = questionId ? data.questions?.rows.find((row) => row.id === questionId) ?? null : null;
   return (
     <>
       <PageHeader title={exam.title} description={`${exam.description}. Sonuçlar yayınlanmadan öğrenciye açılmaz.`} />
@@ -69,11 +66,6 @@ function Workspace({ data, examId, onTab, onFilter, onChanged }: { data: OdkExam
       <Text tone="secondary" variant="secondary">{`Atanan ${counts.assigned} · Katılım ${counts.submitted}/${counts.attempts}`}</Text>
       {data.primaryAction && data.primaryAction.tab !== data.tab ? <Button label={data.primaryAction.label} onPress={() => onTab(data.primaryAction!.tab)} testID="exam-primary" /> : null}
       <FilterChips label="Çalışma alanı sekmesi" value={data.tab} onChange={onTab} options={data.tabs.map((item) => ({ value: item.id, label: item.label }))} />
-      {later ? (
-        <Banner tone="info" action={<Button label="Web'de aç" variant="secondary" onPress={() => void openOnWeb(`/panel/odk/yonetim/sinavlar/${encodeURIComponent(examId)}?sekme=${data.tab}`)} />}>
-          {`${later} şimdilik web panelinde.`}
-        </Banner>
-      ) : null}
 
       {data.tab === 'genel' ? (
         <>
@@ -113,17 +105,20 @@ function Workspace({ data, examId, onTab, onFilter, onChanged }: { data: OdkExam
         <Section first title="Sorular">
           <FilterChips label="Soru süzgeci" value={data.questions.filter} onChange={onFilter} options={[{ value: 'tumu', label: 'Tümü', count: data.questions.counts.tumu }, { value: 'kazanimsiz', label: 'Kazanımsız', count: data.questions.counts.kazanimsiz }, { value: 'anahtarsiz', label: 'Anahtarsız', count: data.questions.counts.anahtarsiz }]} />
           {data.questions.rows.length ? data.questions.rows.map((question) => (
-            <Row key={question.id} title={`Soru ${question.number} · ${question.section}`} subtitle={`Anahtar ${question.correctOption ?? '—'} · ${question.outcomeCount} kazanım${question.hasPrimaryOutcome ? ' (birincil var)' : ''}${question.bookletPage ? ` · kitapçık s. ${question.bookletPage}` : ''}`} trailing={!question.correctOption ? <StatusBadge label="Anahtarsız" tone="warning" /> : undefined} />
+            <Row key={question.id} title={`Soru ${question.number} · ${question.section}`} subtitle={`Anahtar ${question.correctOption ?? '—'} · ${question.outcomeCount} kazanım${question.hasPrimaryOutcome ? ' (birincil var)' : ''}${question.bookletPage ? ` · kitapçık s. ${question.bookletPage}` : ''}`} trailing={!question.correctOption ? <StatusBadge label="Anahtarsız" tone="warning" /> : undefined} onPress={exam.draftEditable ? () => { setQuestionNotice(null); setQuestionId(question.id); } : undefined} testID={`exam-question-${question.id}`} />
           )) : <EmptyState title="Süzgece uyan soru yok" />}
+          {!exam.draftEditable ? <Text tone="secondary">Sürüm kilitli; soru alanları yalnız taslak sürümde düzenlenir.</Text> : null}
         </Section>
       ) : null}
+      {questionNotice ? <Banner tone="success">{questionNotice}</Banner> : null}
+      {editingQuestion ? <QuestionEditSheet key={editingQuestion.id} data={data} examId={examId} question={editingQuestion} onClose={() => setQuestionId(null)} onChanged={onChanged} onSaved={(message) => { setQuestionId(null); setQuestionNotice(message); onChanged(); }} /> : null}
 
       {data.sessions ? (
         <Section first title="Oturumlar">
           {data.sessions.map((item) => <Row key={item.key} title={item.title} subtitle={`${item.sections.join(', ')} · ${item.durationMinutes} dk${item.breakAfterMinutes ? ` · ardından ${item.breakAfterMinutes} dk ara` : ''}`} />)}
         </Section>
       ) : null}
-      {data.sessions ? <SessionWrites key={data.revision} data={data} examId={examId} onChanged={onChanged} /> : null}
+      {data.sessions ? <SessionWrites data={data} examId={examId} onChanged={onChanged} /> : null}
 
       {data.schedule ? (
         <Section first title="Zamanlama ve güvenlik">
@@ -136,7 +131,8 @@ function Workspace({ data, examId, onTab, onFilter, onChanged }: { data: OdkExam
           <Row title="Otomatik teslim" meta={data.schedule.autoSubmit ? 'Açık' : 'Kapalı'} />
         </Section>
       ) : null}
-      {data.schedule ? <ScheduleWrites key={data.revision} data={data} examId={examId} onChanged={onChanged} /> : null}
+      {data.schedule ? <ScheduleWrites data={data} examId={examId} onChanged={onChanged} /> : null}
+      {data.scoring ? <ScoringWrites data={data} examId={examId} onChanged={onChanged} /> : null}
       {data.assignments ? <AssignmentWrites data={data} examId={examId} onChanged={onChanged} /> : null}
       {data.previews ? (
         <Section first title="Önizleme">

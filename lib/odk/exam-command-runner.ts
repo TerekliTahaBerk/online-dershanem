@@ -3,8 +3,10 @@ import "server-only";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { odkExamRevision } from "@/lib/mobile/odk-exam-views";
-import { assignmentCreateSchema, updateExamScheduleSchema } from "@/lib/odk/admin-schemas";
-import { assignOdkExam, commitOdkImport, lockOdkExam, previewOdkImport, scheduleOdkExam, updateOdkExamSchedule, updateOdkExamSessions } from "@/lib/odk/exam-commands-server";
+import type { UserRole } from "@prisma/client";
+import { assignmentCreateSchema, releaseCommitSchema, rescoreSchema, updateExamScheduleSchema } from "@/lib/odk/admin-schemas";
+import { assignOdkExam, commitOdkImport, lockOdkExam, updateOdkExamQuestion, previewOdkImport, scheduleOdkExam, updateOdkExamSchedule, updateOdkExamSessions } from "@/lib/odk/exam-commands-server";
+import { releaseOdkExam, rescoreOdkExamCommand, scoreOdkExamCommand } from "@/lib/odk/exam-results-commands";
 import { runEducationMutation } from "@/lib/panel/education-write";
 import { GroupMutationError, operationDigest, readGroupReceipt } from "@/lib/panel/group-mutation-core";
 
@@ -17,6 +19,14 @@ import { GroupMutationError, operationDigest, readGroupReceipt } from "@/lib/pan
  * `GroupMutationError` olarak döner (makbuz yazılmaz).
  */
 const sessionsInput = z.array(z.object({ key: z.string().min(1).max(40), durationMinutes: z.number().int(), breakAfterMinutes: z.number().int() })).min(2).max(6);
+const questionEdit = z.object({
+  id: z.string().min(1),
+  correctOption: z.enum(["A", "B", "C", "D", "E"]).nullable(),
+  difficulty: z.enum(["EASY", "MEDIUM", "HARD"]),
+  bookletPage: z.number().int().min(1).max(1000).nullable(),
+  outcomeIds: z.array(z.string().min(1)).max(3),
+  primaryOutcomeId: z.string().min(1).nullable(),
+}).strict().refine((value) => !value.primaryOutcomeId || value.outcomeIds.includes(value.primaryOutcomeId), { message: "Ana kazanım, bağlı kazanımlar içinde olmalıdır." });
 export const odkExamCommandSchema = z.discriminatedUnion("operation", [
   z.object({ operation: z.literal("update"), input: updateExamScheduleSchema }).strict(),
   z.object({ operation: z.literal("ready") }).strict(),
@@ -25,11 +35,18 @@ export const odkExamCommandSchema = z.discriminatedUnion("operation", [
   z.object({ operation: z.literal("assign"), input: assignmentCreateSchema }).strict(),
   z.object({ operation: z.literal("import.preview"), kind: z.enum(["answer-key", "outcomes"]), payload: z.unknown() }).strict(),
   z.object({ operation: z.literal("import.commit"), kind: z.enum(["answer-key", "outcomes"]), importId: z.string().min(1).max(64) }).strict(),
+  z.object({ operation: z.literal("question.update"), question: questionEdit }).strict(),
+  // K03c · puanlama ve yayın (yeniden puanlama ve yayın taze step-up ister).
+  z.object({ operation: z.literal("score") }).strict(),
+  z.object({ operation: z.literal("rescore"), input: rescoreSchema }).strict(),
+  z.object({ operation: z.literal("release"), input: releaseCommitSchema }).strict(),
 ]);
 export type OdkExamCommandInput = z.output<typeof odkExamCommandSchema>;
-export const ODK_EXAM_COMMAND_PERMISSION = { update: "odk:exam:edit", ready: "odk:exam:edit", sessions: "odk:exam:edit", "import.preview": "odk:exam:edit", "import.commit": "odk:exam:edit", schedule: "odk:exam:schedule", assign: "odk:exam:assign" } as const;
+export const ODK_EXAM_COMMAND_PERMISSION = { update: "odk:exam:edit", "question.update": "odk:exam:edit", ready: "odk:exam:edit", sessions: "odk:exam:edit", "import.preview": "odk:exam:edit", "import.commit": "odk:exam:edit", schedule: "odk:exam:schedule", assign: "odk:exam:assign", score: "odk:result:score", rescore: "odk:key:revise", release: "odk:result:release" } as const;
+/** Web uçlarıyla aynı: `requireApiRecentStaffStepUp`. */
+export const ODK_EXAM_STEP_UP_OPERATIONS: ReadonlySet<OdkExamCommandInput["operation"]> = new Set(["rescore", "release"]);
 
-export async function runOdkExamCommand(input: { examId: string; actorId: string; idempotencyKey: string; expectedRevision: string; command: OdkExamCommandInput }): Promise<{ body: unknown; replayed: boolean }> {
+export async function runOdkExamCommand(input: { examId: string; actorId: string; actorRole: UserRole; idempotencyKey: string; expectedRevision: string; command: OdkExamCommandInput }): Promise<{ body: unknown; replayed: boolean }> {
   const { examId, actorId, command } = input;
   const key = `odk-exam:${actorId}:${input.idempotencyKey}`;
   const digest = operationDigest({ examId, command, revision: input.expectedRevision });
@@ -47,6 +64,10 @@ export async function runOdkExamCommand(input: { examId: string; actorId: string
           case "assign": return assignOdkExam(examId, command.input, actorId, db);
           case "import.preview": return previewOdkImport(command.kind, examId, command.payload, actorId, db);
           case "import.commit": return commitOdkImport(command.kind, examId, command.importId, actorId, db);
+          case "question.update": return updateOdkExamQuestion(examId, command.question, actorId, db);
+          case "score": return scoreOdkExamCommand(examId, { userId: actorId, role: input.actorRole }, db);
+          case "rescore": return rescoreOdkExamCommand(examId, command.input, { userId: actorId, role: input.actorRole }, db);
+          case "release": return releaseOdkExam(examId, command.input, { userId: actorId, role: input.actorRole }, db);
         }
       })();
       if (!response.ok) {

@@ -497,3 +497,13 @@ Bu dilimin son kontrolleri: **984 sunucu birim testi**, **33 paket / 250 mobil t
 - Çalışma alanı sözleşmesi: düzenleme formu alanları (`meetRequired`, `meetUrl` yalnız düzenleme/planlama izniyle, `fullscreenMode`), katılımcılar sekmesinde atama listesi + kaynaklar (öğrenci yalnız adla), önizleme sekmesinde öğrenci/öğretmen/veli görünümleri.
 - Mobil: zamanlama/güvenlik formu, hazır işaretle ve planla (onaylı), oturum süreleri, grup/sınıf/paket/pilot/e-posta ile atama, cevap anahtarı/kazanım JSON doğrula → uygula, taslak sürüme PDF yükleme (≤30 MB), önizleme. Soru bazında düzenleme ve puanlama/yayın (K03c) web devam yolunda.
 - Kanıt: 1008 birim, 59 mobil paket / 314 test, PostgreSQL entegrasyonu 143/145 (iki başarısızlık main'de de aynı; yeni test revizyon çakışması, makbuz tekrarı, ret sonrası makbuz yokluğu, içe aktarma ve atama); `next build` başarılı.
+
+### 13 Ekim 2026 — P4.3 K03c puanlama ve yayın; soru düzenleme
+
+- Web `score`, `rescore`, `release`, `release/preview` ve `questions` gövdeleri `lib/odk/exam-results-commands.ts` / `exam-commands-server.ts`'e taşındı; `scoreOdkExam` ve koç önerisi köprüsü transaction istemcisi alır. Mobil komutta puan, yayın, koç önerileri, audit ve makbuz tek transaction; ürün olayı ve ürünler arası bildirim commit sonrası.
+- Komutlar: `score` (`odk:result:score`), `rescore` (`odk:key:revise`, taze step-up; yayınlanmış sonuç için açık onay), `release` (`odk:result:release`, taze step-up), `question.update` (tek soru; diğer sorular ve içerik alanları korunur, web editörüyle aynı kazanım kuralları). Kazanım arama `GET .../exams/[id]/outcomes?q=` (aktif katalog, 30 sonuç).
+- Puanlama sekmesi projeksiyonu: sonuç özeti; tablo ve yayın önizlemesi (inceleme bekleyenler dahil / hariç) yalnız puanlama izniyle; öğrenci yalnız adla.
+- Düzeltme: sonuç özeti bölüm ortalamaları, puanlama motorunun `sectionId`/`correct` satırlarını bölüm bazında topluyor (önceden `code` aranıyordu ve çok bölümlü denemelerde tüm bölümler tek kovada birleşiyordu; web sonuç paneli ve raporlar da etkileniyordu).
+- Mobil: sonuç tablosu, teslimleri puanla, yeniden puanla, yayın önizleme → satır içi onay → yayınla; 428'de native doğrulama ve aynı işlem anahtarıyla tek tekrar. Soru satırından düzenleme sayfası. Web devam yolu kalmadı.
+- Kanıt: 1009 birim, 58 mobil paket / 317 test, PostgreSQL entegrasyonu 144/146 (iki başarısızlık main'de de aynı; yeni test puanla → yayın makbuzu, yayınlanmış sonuçta onaysız yeniden puanlama reddi, soru düzenlemede içerik korunması ve geçersiz kazanım reddi); `next build` başarılı.
+- Matris: 95 Tam / 2 Kısmi / 2 Eksik / 1 İstisna / 6 Yönl. P4 kod eşliği tamamlandı; kalan: T07/S18/V11 Dino (dış inceleme), C09 passkey, staffPush production kararı, P2.9/P6 gerçek cihaz kabulü.

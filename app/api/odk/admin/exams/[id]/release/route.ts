@@ -1,15 +1,8 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
 import { requireApiRecentStaffStepUp } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { releaseCommitSchema } from "@/lib/odk/admin-schemas";
-import { previewResultPublication } from "@/lib/odk/result-publication";
-import { createCoachSuggestionsFromReleasedExam } from "@/lib/odk/coach-bridge";
-import { odkAttemptBand } from "@/lib/odk/telemetry";
-import { recordPanelProductEvent } from "@/lib/panel-product-events";
-import { afterResponse } from "@/lib/after-response";
-import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
+import { releaseOdkExam } from "@/lib/odk/exam-results-commands";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiRecentStaffStepUp("odk:result:release"); if (!auth.ok) return auth.response;
@@ -17,92 +10,5 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const { id } = await context.params;
   const parsed = releaseCommitSchema.safeParse(await request.json().catch(() => ({})));
-  const excludeReviewRequired = parsed.success ? Boolean(parsed.data.excludeReviewRequired) : false;
-  const createCoachSuggestions = parsed.success ? parsed.data.createCoachSuggestions !== false : true;
-
-  const exam = await prisma.odkExam.findUnique({
-    where: { id },
-    select: {
-      family: true,
-      examFamilyRef: { select: { code: true } },
-      status: true,
-      attempts: {
-        where: { status: { in: ["SUBMITTED", "AUTO_SUBMITTED", "REVIEW_REQUIRED"] } },
-        select: {
-          id: true,
-          status: true,
-          integrityLevel: true,
-          student: { select: { fullName: true } },
-          score: { select: { attemptId: true } },
-        },
-      },
-    },
-  });
-  if (!exam || exam.status !== "SCORED") return NextResponse.json({ error: "Yalnız puanlanmış bir denemenin sonucu açıklanabilir." }, { status: 409 });
-
-  const preview = previewResultPublication(
-    exam.attempts.map((attempt) => ({
-      attemptId: attempt.id,
-      studentLabel: attempt.student.fullName || "Öğrenci",
-      hasScore: Boolean(attempt.score),
-      scoringError: !attempt.score,
-      integrityLevel: attempt.integrityLevel,
-      reviewRequired: attempt.status === "REVIEW_REQUIRED" || attempt.integrityLevel !== "NORMAL",
-    })),
-    { excludeReviewRequired },
-  );
-  if (!preview.canPublish && !excludeReviewRequired) {
-    return NextResponse.json({ error: preview.warnings.join(" ") || "Yayınlanacak sonuç yok.", preview }, { status: 409 });
-  }
-  if (preview.publishable <= 0) {
-    return NextResponse.json({ error: "Yayınlanacak puanlanmış sonuç yok.", preview }, { status: 409 });
-  }
-
-  const now = new Date();
-  const publishAttemptIds = exam.attempts
-    .filter((attempt) => attempt.score && !preview.excludedAttemptIds.includes(attempt.id))
-    .map((attempt) => attempt.id);
-
-  await prisma.$transaction([
-    prisma.odkExam.update({ where: { id }, data: { status: "RELEASED", resultsReleasedAt: now, answerKeyReleasedAt: now } }),
-    prisma.odkAttemptScore.updateMany({
-      where: { attemptId: { in: publishAttemptIds } },
-      data: { publicationStatus: "PUBLISHED" },
-    }),
-  ]);
-
-  let coach = { created: 0, attemptCount: 0 };
-  if (createCoachSuggestions) {
-    coach = await createCoachSuggestionsFromReleasedExam(id, now);
-  }
-
-  const publishedStudents = await prisma.odkExamAttempt.findMany({
-    where: { id: { in: publishAttemptIds } },
-    select: { student: { select: { studentProfile: { select: { id: true } } } } },
-  });
-  const studentIds = [...new Set(
-    publishedStudents
-      .map((row) => row.student.studentProfile?.id)
-      .filter((sid): sid is string => Boolean(sid)),
-  )];
-  if (studentIds.length) {
-    const { onMockExamResultPublished } = await import("@/lib/student-success/server/emit-hooks");
-    afterResponse("odk.exam_release.cross_product_emit_failed", () => onMockExamResultPublished({
-      examId: id,
-      actorUserId: auth.session.userId,
-      studentIds,
-      attemptCount: publishAttemptIds.length,
-    }), { examId: id });
-  }
-
-  await logAudit({
-    actorUserId: auth.session.userId,
-    entityType: "OdkExam",
-    entityId: id,
-    action: "odk.exam_results_released",
-    summary: "Deneme sonuçları öğrencilere açıklandı",
-    payload: { attemptCount: publishAttemptIds.length, excluded: preview.excludedAttemptIds.length, coachSuggestions: coach.created },
-  });
-  await recordPanelProductEvent({ name: "odk_results_released", properties: { family: getOdkExamFamilyCode(exam), attemptBand: odkAttemptBand(publishAttemptIds.length) } }, auth.session.role);
-  return NextResponse.json({ status: "RELEASED", resultsReleasedAt: now, published: publishAttemptIds.length, excluded: preview.excludedAttemptIds.length, coach });
+  return releaseOdkExam(id, parsed.success ? parsed.data : null, { userId: auth.session.userId, role: auth.session.role });
 }

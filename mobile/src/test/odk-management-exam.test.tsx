@@ -42,7 +42,7 @@ describe('K03a deneme çalışma alanı', () => {
     expect(h.screen.getByText('Hazırlık durumu · 4/2')).toBeTruthy();
     await press(h, h.screen.getByTestId('chip-sorular'));
     expect(await h.screen.findByText('Soru 14 · Matematik', {}, WAIT)).toBeTruthy();
-    expect(h.screen.getByText(/şimdilik web panelinde/)).toBeTruthy();
+    expect(h.screen.getByText('Sürüm kilitli; soru alanları yalnız taslak sürümde düzenlenir.')).toBeTruthy();
     await press(h, h.screen.getByTestId('chip-anahtarsiz'));
     await waitFor(() => expect(h.server.called('GET', path).some((call) => call.path.includes('sekme=sorular') && call.path.includes('filtre=anahtarsiz'))).toBe(true), WAIT);
     await press(h, await h.screen.findByTestId('chip-raporlar', {}, WAIT));

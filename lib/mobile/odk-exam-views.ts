@@ -5,6 +5,7 @@ import { opsCounters, questionMatchesFilter, type ActivityEvent } from "@/lib/od
 import { FULLSCREEN_LABEL_TEXT } from "@/lib/odk/exam-workspace-labels";
 import { buildAdminPreview, type AdminPreviewKind } from "@/lib/odk/admin-preview";
 import type { loadOdkExamAssignments } from "@/lib/odk/exam-assignments-server";
+import type { buildOdkExamScoring } from "@/lib/odk/exam-workspace-server";
 import { operationDigest } from "@/lib/panel/group-mutation-core";
 
 /** K03 mobil projeksiyonu — web çalışma alanıyla aynı veri; sekmeye özgü bloklar yalnız o sekmede. */
@@ -23,6 +24,8 @@ export function toMobileOdkExamWorkspace(
     report?: { summary: { submitted: number; participation: number; averageNet: number | null; medianNet: number | null; integrityReviewCount: number; sectionAverages: Array<{ code: string; title: string; averageNet: number | null; averageAccuracy: number | null }> }; weakest: Array<{ outcomeId: string; _avg: { accuracyRate: unknown } }>; outcomeTitles: Map<string, string> } | null;
     history?: ActivityEvent[] | null;
     assignments?: Awaited<ReturnType<typeof loadOdkExamAssignments>> | null;
+    scoring?: ReturnType<typeof buildOdkExamScoring> | null;
+    outcomeLabels?: Map<string, string> | null;
   },
 ): OdkExamWorkspaceView {
   const { exam, version, caps, tab } = ws;
@@ -85,6 +88,9 @@ export function toMobileOdkExamWorkspace(
                 hasPrimaryOutcome: Boolean(question.primaryOutcomeId),
                 contentType: question.contentType,
                 bookletPage: question.bookletPage,
+                difficulty: question.difficulty,
+                outcomes: question.outcomeIds.map((outcomeId) => ({ id: outcomeId, label: extras.outcomeLabels?.get(outcomeId) ?? "Kazanım" })),
+                primaryOutcomeId: question.primaryOutcomeId,
               })),
           }
         : null,
@@ -155,6 +161,7 @@ export function toMobileOdkExamWorkspace(
             },
           }
         : null,
+    scoring: tab === "puanlama" && extras.scoring ? scoringView(extras.scoring, caps.score) : null,
     previews: tab === "onizleme" ? PREVIEW_KINDS.map(([kind, label]) => previewLines(ws, kind, label)) : null,
     history: tab === "gecmis" && extras.history ? extras.history.map((event) => ({ id: event.id, label: event.label, actor: event.actor ?? null, at: event.at.toISOString() })) : null,
   };
@@ -179,4 +186,45 @@ function previewLines(ws: OdkExamWorkspace, kind: AdminPreviewKind, label: strin
     lines.push(report.sampleNote);
   }
   return { kind, label, disclaimer: preview.disclaimer, lines };
+}
+
+const RESULT_LABEL = { ERROR: "Hata", PUBLISHED: "Yayınlandı", HIDDEN: "Gizli" } as const;
+type ReleasePreview = { publishable: number; reviewRequired: number; scoringErrors: number; warnings: string[]; canPublish: boolean };
+const releaseView = (preview: ReleasePreview) => ({ publishable: preview.publishable, reviewRequired: preview.reviewRequired, scoringErrors: preview.scoringErrors, warnings: preview.warnings, canPublish: preview.canPublish });
+
+/** Puanlama sekmesi (K03c): özet her izinli kişiye; sonuç tablosu ve yayın önizlemesi yalnız `odk:result:score` (web sonuç paneli gibi). */
+function scoringView(scoring: ReturnType<typeof buildOdkExamScoring>, canScore: boolean) {
+  const { summary } = scoring;
+  return {
+    summary: {
+      participation: summary.participation,
+      submitted: summary.submitted,
+      missing: summary.missing,
+      averageNet: summary.averageNet,
+      medianNet: summary.medianNet,
+      integrityReviewCount: summary.integrityReviewCount,
+      scoringErrors: summary.scoringErrors,
+      sections: summary.sectionAverages,
+    },
+    rows: canScore
+      ? summary.rows.slice(0, 500).map((row) => {
+          const level = integrityLevelPresentation[row.integrityLevel];
+          const result: "ERROR" | "PUBLISHED" | "HIDDEN" | "NONE" = row.scoringError ? "ERROR" : row.publicationStatus ?? "NONE";
+          return {
+            attemptId: row.attemptId,
+            name: row.studentName,
+            correct: row.correctCount,
+            wrong: row.wrongCount,
+            blank: row.blankCount,
+            net: row.totalNet,
+            durationMinutes: row.durationSeconds == null ? null : Math.round(row.durationSeconds / 60),
+            integrityLabel: level.label,
+            integrityTone: TONE[level.tone],
+            result,
+            resultLabel: result === "NONE" ? attemptStatusPresentation[row.status as keyof typeof attemptStatusPresentation]?.label ?? row.status : RESULT_LABEL[result],
+          };
+        })
+      : [],
+    release: canScore && scoring.release ? { include: releaseView(scoring.release.include), exclude: releaseView(scoring.release.exclude) } : null,
+  };
 }

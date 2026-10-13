@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
-import { logAudit } from "@/lib/audit";
 import { requireApiStaffPermission } from "@/lib/auth/api-guards";
-import { scoreOdkExam } from "@/lib/odk/scoring-service";
-import { odkAttemptBand } from "@/lib/odk/telemetry";
-import { recordPanelProductEvent } from "@/lib/panel-product-events";
+import { scoreOdkExamCommand } from "@/lib/odk/exam-results-commands";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
@@ -13,10 +10,5 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const params = idParamsSchema.safeParse(await context.params);
   if (!params.success) return invalidApiInput();
-  const { id } = params.data;
-  const result = await scoreOdkExam(id, auth.session.userId);
-  if (!result.ok) return NextResponse.json({ error: result.error }, { status: 409 });
-  await logAudit({ actorUserId: auth.session.userId, entityType: "OdkExam", entityId: id, action: "odk.exam_scored", summary: "Teslim edilen denemeler puanlandı", payload: { scoredCount: result.scoredCount, answerKeyHash: result.answerKeyHash } });
-  await recordPanelProductEvent({ name: "odk_exam_scored", properties: { family: result.family, attemptBand: odkAttemptBand(result.scoredCount) } }, auth.session.role);
-  return NextResponse.json({ status: "SCORED", scoredCount: result.scoredCount });
+  return scoreOdkExamCommand(params.data.id, { userId: auth.session.userId, role: auth.session.role });
 }

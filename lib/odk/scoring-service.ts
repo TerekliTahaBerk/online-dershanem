@@ -8,9 +8,9 @@ import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 export const ODK_SCORING_VERSION = "odk-exam-v2";
 
-export async function scoreOdkExam(examId: string, scoredById: string, options: { rescore?: boolean } = {}) {
+export async function scoreOdkExam(examId: string, scoredById: string, options: { rescore?: boolean } = {}, db: Pick<typeof prisma, "odkExam" | "odkAttemptScore" | "$transaction"> = prisma) {
   const now = new Date();
-  const exam = await prisma.odkExam.findUnique({
+  const exam = await db.odkExam.findUnique({
     where: { id: examId },
     include: {
       examFamilyRef: { select: { code: true } },
@@ -27,7 +27,7 @@ export async function scoreOdkExam(examId: string, scoredById: string, options: 
   const answerKeyHash = createHash("sha256").update(JSON.stringify(questions.map((question) => [question.id, question.correctOption]))).digest("hex");
   const penalty = Number(exam.currentVersion.scoringPolicy.wrongPenalty);
 
-  await prisma.$transaction(async (tx) => {
+  await db.$transaction(async (tx) => {
     await tx.odkExamAttempt.updateMany({ where: { examId, status: "IN_PROGRESS", deadlineAt: { lte: now } }, data: { status: "AUTO_SUBMITTED", submittedAt: now } });
     for (const attempt of exam.attempts) {
       if (!options.rescore && attempt.score) continue;
@@ -64,6 +64,6 @@ export async function scoreOdkExam(examId: string, scoredById: string, options: 
     }
     if (exam.status !== "RELEASED") await tx.odkExam.update({ where: { id: examId }, data: { status: "SCORED" } });
   });
-  const scoredCount = await prisma.odkAttemptScore.count({ where: { attempt: { examId } } });
+  const scoredCount = await db.odkAttemptScore.count({ where: { attempt: { examId } } });
   return { ok: true as const, scoredCount, answerKeyHash, family: getOdkExamFamilyCode(exam) };
 }
