@@ -129,7 +129,7 @@ test("OD bloğu yayımlanmış telafi adayını taşır", async () => {
 });
 
 test("günlük AI kotaları process timezone yerine canonical İstanbul helper'ını kullanır", () => {
-  for (const path of ["app/api/panel/dino/route.ts", "app/api/panel/ai-drafts/route.ts"]) {
+  for (const path of ["app/api/panel/dino/route.ts", "lib/panel/teacher-ai-drafts-server.ts"]) {
     const source = readFileSync(path, "utf8");
     assert.match(source, /istanbulDayStart\(new Date\(\)\)/);
     assert.doesNotMatch(source, /setHours\(0,\s*0,\s*0,\s*0\)/);

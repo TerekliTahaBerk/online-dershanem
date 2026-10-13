@@ -12,7 +12,7 @@
 - öğrenciye bağlı olmayan ortak ders konusu, ortak not, sonraki hedef ve çalışma notu,
 - derse bağlı en fazla üç kazanım kodu ve başlığı.
 
-Öğrenciye özel ders notu, ad, yoklama/yoklama notu, deneme ham sonucu, check-in, yardım isteği, accommodation, veli, ödeme, dosya ve materyal içeriği kullanılmaz. Aktif grup öğrenci adları yalnız sunucuda redaksiyon sözlüğü olarak okunur ve prompta eklenmez. E-posta, telefon, 11 haneli kimlik benzeri değer, URL ve bilinen adlar dış çağrıdan önce yer tutucuyla değiştirilir.
+Öğrenciye özel ders notu, ad, yoklama/yoklama notu, deneme ham sonucu, check-in, yardım isteği, accommodation, veli, ödeme, dosya ve materyal içeriği kullanılmaz. Aktif grup öğrenci adları yalnız sunucuda redaksiyon sözlüğü olarak okunur ve prompta eklenmez. E-posta, telefon, 11 haneli kimlik benzeri değer, URL ve bilinen adlar dış çağrıdan önce yer tutucuyla değiştirilir. Bu kontrol kaynak satırlarının yanında ders başlığı, ders ve seviye üst alanlarına da uygulanır.
 
 ## Gateway kapıları
 
@@ -52,3 +52,7 @@ Taslak `DRAFT` statüsünde açılır. Öğretmen kaynak etiketlerini ve model/f
 ## Geri alma
 
 Gizlilik olayı, uydurma kaynak, otomatik yayın, maliyet oranı eksikliği veya hata guardrail ihlalinde önce `AI_DRAFT_EXTERNAL_TRANSFER_APPROVED=false` yapılarak dış çağrı kesilir. Gerekirse `PANEL_FEATURE_TEACHER_AI_DRAFTS=false` ile yüzey kapatılır. Mevcut taslak/audit kayıtları veri yönetişimi politikası doğrulanmadan silinmez; öğrenciye yayınlanmış içerik bulunmadığından geri alma akademik kaydı değiştirmez.
+
+## Native eşlik ve işlem tekrarı
+
+T14 native arayüz aynı kaynaklı üretim ve inceleme servislerini çağırır. Aktif grup ve ders öğretmeni kapsamı başarılı işlem tekrarından önce de doğrulanır. Kaynak/taslak revizyonu ve işlem anahtarı zorunludur; belirsiz ağ sonucunda özgün istek korunur. Üretim öğretmen ve istek anahtarı bazında kilitlenir; aynı anahtar için ikinci sağlayıcı çağrısı yapılmaz. Üretim sırasında kaynak değişmişse taslak kaydedilmez. Receipt ve audit yalnız kimlik/kontrollü metaveri taşır; kaynak veya çıktı metni kopyalanmaz. Onaylı metin kullanıcı isteğiyle paylaşılabilir; onay öğrenci ödevi veya bildirim oluşturmaz.
