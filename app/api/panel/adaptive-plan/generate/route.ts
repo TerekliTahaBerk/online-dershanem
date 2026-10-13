@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
+import { z } from "zod";
 import { activePlanSourceKeys, planSourceKey } from "@/lib/kocum";
 import { prisma } from "@/lib/prisma";
 import { requireApiProductCodeRole, requireApiProductRole, type ApiAuth } from "@/lib/auth/api-guards";
@@ -29,7 +31,13 @@ import { addIstanbulCalendarDays } from "@/lib/istanbul-time";
  *
  * Aday kaynağı ve kapasite ürüne göre dallanır; çekirdek çözücü
  * (`buildAdaptiveWeek`, `adaptive-v1`) iki üründe de ortaktır.
+ *
+ * Mobil (S14): gövde `expectedVersion` taşır (plan yoksa 0). Ekranın gördüğü
+ * plan sürümü değiştiyse 409 — belirsiz ağ hatasından sonraki yeniden deneme
+ * haftayı ikinci kez dengelemez. Bearer isteğinde zorunludur; web gövdesiz
+ * çağırabilir. Güncelleme de sürüm koşulludur: eşzamanlı iki üretimden biri 409.
  */
+const bodySchema = z.object({ expectedVersion: z.number().int().min(0) }).strict();
 export async function POST(request: Request) {
   // Ürün kapıları bilerek DÜZ METİN: `product-entitlement-matrix.test.ts` her
   // route'un ürün kapsamını kaynak metninden doğruluyor.
@@ -48,6 +56,18 @@ export async function POST(request: Request) {
   if (!getPanelFeatureFlags().adaptivePlan) return NextResponse.json({ error: "Haftalık plan henüz açık değil." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.adaptive_plan.generate", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:plan-generate:${auth.session.userId}`, rateLimit: { max: 12, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
+  const raw = await request.text().catch(() => "");
+  let parsedBody: z.output<typeof bodySchema> | null = null;
+  if (raw.trim()) {
+    let json: unknown = null;
+    try { json = JSON.parse(raw); } catch { json = null; }
+    const parsed = bodySchema.safeParse(json);
+    if (!parsed.success) return NextResponse.json({ error: "Plan isteği geçersiz.", code: "INVALID_INPUT" }, { status: 400 });
+    parsedBody = parsed.data;
+  }
+  if (/^Bearer\s+/i.test(request.headers.get("authorization") ?? "") && !parsedBody) {
+    return NextResponse.json({ error: "Plan sürümü eksik. Görünümü yenileyin.", code: "PRECONDITION_REQUIRED" }, { status: 400 });
+  }
   const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId }, include: { planPreference: true } });
   if (!profile) return NextResponse.json({ error: "Öğrenci profili bulunamadı." }, { status: 404 });
   const preference = profile.planPreference;
@@ -75,6 +95,9 @@ export async function POST(request: Request) {
    * yoktur — aksi halde KPSS öğrencisi ilk plandan sonra haftasını bir daha
    * dengeleyemezdi.
    */
+  if (parsedBody && (existing?.version ?? 0) !== parsedBody.expectedVersion) {
+    return NextResponse.json({ error: "Planın başka bir yerde güncellendi. Güncel planı kontrol edin.", code: "STALE_VERSION" }, { status: 409 });
+  }
   if (existing && !canRegeneratePlan(existing)) {
     return NextResponse.json({ error: "Onaylı plan kilitli. Önce değişiklik isteyin." }, { status: 409 });
   }
@@ -112,7 +135,7 @@ export async function POST(request: Request) {
   const plan = await prisma.$transaction(async (tx) => {
     const row = existing
       ? await tx.weeklyPlan.update({
-          where: { id: existing.id },
+          where: { id: existing.id, version: existing.version },
           data: {
             status: approval.status,
             ruleVersion: ADAPTIVE_PLAN_RULE_VERSION,
@@ -143,10 +166,15 @@ export async function POST(request: Request) {
     if (existing) await tx.weeklyPlanTask.updateMany({ where: { planId: row.id, status: "PLANNED" }, data: { status: "SKIPPED" } });
     if (tasks.length) await tx.weeklyPlanTask.createMany({ data: plannedTaskRows(row.id, tasks) });
     return row;
+  }).catch((error: unknown) => {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && ["P2002", "P2025"].includes(error.code)) return null;
+    throw error;
   });
+  if (!plan) return NextResponse.json({ error: "Plan eşzamanlı güncellendi. Güncel planı kontrol edin.", code: "STALE_VERSION" }, { status: 409 });
   await recordPanelProductEvent({ name: "plan_generated", properties: { ruleVersion: ADAPTIVE_PLAN_RULE_VERSION, taskCount: tasks.length, capacityMinutes: plan.capacityMinutes, reasonCount: new Set(tasks.map((task) => task.reasonCode)).size, rebalanced: Boolean(existing) } }, auth.session.role);
   return NextResponse.json({
     id: plan.id,
+    version: plan.version,
     taskCount: tasks.length,
     rebalanced: Boolean(existing),
     status: plan.status,

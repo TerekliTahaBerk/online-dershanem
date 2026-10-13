@@ -4,12 +4,15 @@ import { requireApiAccountRole } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { EXPO_PUSH_TOKEN } from "@/lib/push/expo-client";
 import { listPushDevices, registerPushDevice, revokePushDevices } from "@/lib/push/device-server";
+import { pushRoleAllowed } from "@/lib/push/classification";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 
 /**
  * Mobil push cihaz kaydı (M5).
  *  - Kimlik: etkin oturum + tamamlanmış parola / MFA kapıları
- *    (`requireApiAccountRole`). M5 kapsamı yalnız ÖĞRENCİ ve VELİ; personel
- *    push'u M7'ye kadar açılmaz.
+ *    (`requireApiAccountRole`). Öğrenci ve veli her zaman; öğretmen ve
+ *    yönetici yalnız `staffPush` bayrağı açıkken (P5.4). Kayıt silme
+ *    (DELETE) personel için bayraktan bağımsız açıktır (temizlik).
  *  - Kullanıcı ve oturum OTURUMDAN çözülür; gövdede kullanıcı / oturum
  *    kimliği kabul edilmez (`strict`).
  *  - `x-od-client: mobile` yalnız istemci türünü belirtir; KİMLİK KANITI DEĞİLDİR.
@@ -29,19 +32,29 @@ function mobileClient(request: Request) {
   return request.headers.get("x-od-client") === "mobile";
 }
 
+/** Personel push kapalıyken öğretmen / yönetici için 404 (özellik yok). */
+async function requirePushAccount(options: { allowStaffWhenDisabled?: boolean } = {}) {
+  const auth = await requireApiAccountRole("STUDENT", "PARENT", "TEACHER", "ADMIN");
+  if (!auth.ok) return auth;
+  if (!options.allowStaffWhenDisabled && !pushRoleAllowed(auth.session.role, getPanelFeatureFlags().staffPush)) {
+    return { ok: false as const, response: NextResponse.json({ error: "Telefon bildirimleri bu hesap için açık değil.", code: "FEATURE_DISABLED" }, { status: 404 }) };
+  }
+  return auth;
+}
+
 async function guard(request: Request, userId: string, action: string) {
   return guardMutation({ action, requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:push-devices:${userId}`, rateLimit: { max: 30, windowMs: 15 * 60 * 1000 } });
 }
 
 export async function GET() {
-  const auth = await requireApiAccountRole("STUDENT", "PARENT");
+  const auth = await requirePushAccount();
   if (!auth.ok) return auth.response;
   const devices = await listPushDevices(auth.session.userId, auth.session.sessionId);
   return NextResponse.json({ devices }, { headers: { "Cache-Control": "private, no-store" } });
 }
 
 export async function POST(request: Request) {
-  const auth = await requireApiAccountRole("STUDENT", "PARENT");
+  const auth = await requirePushAccount();
   if (!auth.ok) return auth.response;
   if (!mobileClient(request)) return NextResponse.json({ error: "Cihaz kaydı yalnız mobil uygulamadan yapılır." }, { status: 400 });
   const checked = await guard(request, auth.session.userId, "panel.push_devices.register");
@@ -63,7 +76,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const auth = await requireApiAccountRole("STUDENT", "PARENT");
+  const auth = await requirePushAccount({ allowStaffWhenDisabled: true });
   if (!auth.ok) return auth.response;
   const checked = await guard(request, auth.session.userId, "panel.push_devices.unregister");
   if (!checked.ok) return NextResponse.json({ error: checked.message }, { status: checked.code === "RATE_LIMIT" ? 429 : 403 });

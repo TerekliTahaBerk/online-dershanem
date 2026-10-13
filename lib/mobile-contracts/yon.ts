@@ -233,6 +233,12 @@ export function parseChangeRequestResult(input: unknown): ContractResult<{ reque
   return check(changeRequestResult, input);
 }
 
+/* POST /api/panel/adaptive-plan/generate (S14) — gövde `expectedVersion`; yanıt yeni sürüm. */
+const planGenerateResult = v.object({ id: v.nonEmpty(), version: v.int(1), taskCount: v.int(0), rebalanced: v.boolean(), requiresApproval: v.boolean() });
+export function parsePlanGenerateResult(input: unknown): ContractResult<Infer<typeof planGenerateResult>> {
+  return check(planGenerateResult, input);
+}
+
 /* PATCH /api/panel/adaptive-plan/preferences (DEĞİŞMEDİ) */
 const preferenceResult = v.object({ saved: v.literal(true) });
 export function parsePreferenceResult(input: unknown): ContractResult<{ saved: true }> {

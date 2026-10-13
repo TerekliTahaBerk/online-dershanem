@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Banner, Button, TextField } from '@/design/primitives';
 import { AuthScreen } from '@/features/auth/auth-screen';
+import { TotpEnrollment } from '@/features/auth/totp-enrollment';
 import { openOnWeb } from '@/features/shell/web-continuation';
 import * as endpoints from '@/lib/api/endpoints';
 import { ApiError } from '@/lib/api/errors';
@@ -12,8 +13,9 @@ import { useSession } from '@/lib/auth/session-provider';
  * `userRequiresLoginMfa`). İstemci MFA'yı "geçildi" diye işaretleyemez:
  * kod sunucuda doğrulanır, sonra bootstrap yeniden çekilir.
  *
- * Desteklenen: TOTP ve kurtarma kodu. Passkey ve ilk MFA kurulumu native
- * değildir; bu durumda açık bir web devam yolu ve "kontrol et" sunulur.
+ * Desteklenen: TOTP, kurtarma kodu ve ilk doğrulayıcı (TOTP) kurulumu (C09).
+ * Passkey native değildir (platform passkey kabiliyeti ve alan adı ilişkisi
+ * dış karar); yalnız passkey'li hesapta açık bir web devam yolu sunulur.
  */
 export default function MfaGate() {
   const { state, api, refreshBootstrap, signOut } = useSession();
@@ -44,14 +46,20 @@ export default function MfaGate() {
     </>
   );
 
+  if (!methods?.totp && !methods?.passkey) {
+    return (
+      <AuthScreen title="İkinci faktörü kur" description="Bu hesap için iki adımlı doğrulama zorunlu. Kurulum bu cihazda tamamlanır.">
+        <TotpEnrollment variant="auth" onDone={refreshBootstrap} />
+        {footer}
+      </AuthScreen>
+    );
+  }
+
   if (!methods?.totp) {
-    const passkeyOnly = Boolean(methods?.passkey);
     return (
       <AuthScreen title="İkinci faktör gerekli">
-        <Banner tone="warning" title={passkeyOnly ? 'Geçiş anahtarı mobilde henüz desteklenmiyor' : 'İkinci faktör kurulumu gerekiyor'}>
-          {passkeyOnly
-            ? 'Hesabın yalnız geçiş anahtarı ile doğrulanıyor. Web panelinde doğrulama yap veya bir doğrulayıcı uygulama ekle; ardından burada "Durumu kontrol et"e dokun.'
-            : 'Bu hesap için ikinci faktör kurulumu web panelinden yapılır. Kurulumu tamamladıktan sonra burada doğrulama kodunu girebilirsin.'}
+        <Banner tone="warning" title="Geçiş anahtarı mobilde henüz desteklenmiyor">
+          Hesabın yalnız geçiş anahtarı ile doğrulanıyor. Web panelinde doğrulama yap veya bir doğrulayıcı uygulama ekle; ardından burada “Durumu kontrol et”e dokun.
         </Banner>
         <Button variant="auth" label="Web panelinde devam et" onPress={() => void openOnWeb('/giris/mfa')} accessibilityHint="Tarayıcıda açılır; web oturumuyla giriş yapmanız gerekebilir." />
         {footer}

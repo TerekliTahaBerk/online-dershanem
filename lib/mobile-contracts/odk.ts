@@ -61,6 +61,8 @@ const examList = v.object({
   /** Okuma sınırı aşıldı: yalnız en yeni `limit` deneme gösteriliyor. */
   truncated: v.boolean(),
   limit: v.int(1),
+  /** S20: daha eski sayfa için `?cursor=` (yalnız `truncated` iken). Eski sunucuda yok. */
+  nextCursor: v.optional(v.nullable(v.nonEmpty()), null),
 });
 export type MobileOdkExamList = Infer<typeof examList>;
 export function parseOdkExamList(input: unknown): ContractResult<MobileOdkExamList> {

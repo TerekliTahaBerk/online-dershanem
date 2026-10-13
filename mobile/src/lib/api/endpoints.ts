@@ -1,5 +1,6 @@
 import { parseMobileLoginResponse, parseNotificationPage, parseSessionList, type MobileNotificationPage, type MobileSessionList } from '@contracts/api';
 import { parseMobileBootstrap, type MobileBootstrap, type MobileProductCode } from '@contracts/bootstrap';
+import { parseTotpEnrollmentConfirm, parseTotpEnrollmentStart } from '@contracts/mfa';
 
 import type { ApiClient } from './client';
 import { ApiError } from './errors';
@@ -45,6 +46,16 @@ export async function verifyMfaCode(api: ApiClient, code: string, method: 'TOTP'
   });
   // Sunucu açıkça doğrulamadıysa başarı sayılmaz.
   if (body?.verified !== true) throw new ApiError({ kind: 'invalid_response' });
+}
+
+/** C09 · TOTP kaydını başlatır (yeni bekleyen gizli anahtar, 10 dk geçerli). */
+export async function beginTotpEnrollment(api: ApiClient) {
+  return validated(parseTotpEnrollmentStart(await api.request<unknown>('/api/auth/mfa/totp/enroll', { method: 'PUT' })));
+}
+
+/** C09 · Kodla kaydı tamamlar; kurtarma kodları yalnız bu yanıtta bir kez döner. */
+export async function confirmTotpEnrollment(api: ApiClient, code: string) {
+  return validated(parseTotpEnrollmentConfirm(await api.request<unknown>('/api/auth/mfa/totp/enroll', { method: 'POST', body: { code } })));
 }
 
 export async function selectWorkspace(api: ApiClient, product: MobileProductCode): Promise<void> {

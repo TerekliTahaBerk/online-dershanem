@@ -134,7 +134,7 @@ export function toMobileParentCoaching(input: {
   studentId: string;
   available: boolean;
   view: ParentCoachingView | null;
-  sessions: Array<{ id: string; scheduledAt: Date; rescheduleRequested: boolean; proposedAt: Date | null }>;
+  sessions: Array<{ id: string; scheduledAt: Date; rescheduleRequested: boolean; proposedAt: Date | null; version?: number; meetingUrl?: string | null }>;
 }): MobileParentCoaching {
   const { view } = input;
   const coaching = view?.coaching ?? null;
@@ -152,7 +152,15 @@ export function toMobileParentCoaching(input: {
           sharedNote: coaching.sharedNote,
         }
       : null,
-    sessions: input.sessions.map((session) => ({ id: session.id, scheduledAt: session.scheduledAt.toISOString(), rescheduleRequested: session.rescheduleRequested, proposedAt: session.proposedAt?.toISOString() ?? null })),
+    sessions: input.sessions.map((session) => ({
+      id: session.id,
+      scheduledAt: session.scheduledAt.toISOString(),
+      rescheduleRequested: session.rescheduleRequested,
+      proposedAt: session.proposedAt?.toISOString() ?? null,
+      version: session.version ?? null,
+      // Yalnız HTTPS katılım bağlantısı; öneri varken (saat değişecek) gösterilmez.
+      meetingUrl: session.meetingUrl && /^https:\/\//i.test(session.meetingUrl) && !session.proposedAt ? session.meetingUrl : null,
+    })),
     week:
       view?.week && summary
         ? {

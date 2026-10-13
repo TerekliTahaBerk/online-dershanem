@@ -3,9 +3,10 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { isNotificationSourceCurrent } from "@/lib/notification-producer";
 import { isOdkNotificationSourceCurrent } from "@/lib/odk/student-notifications";
-import { classifyNotification, pushCopyFor } from "./classification";
+import { classifyNotification, pushCopyFor, pushRecipientRoles } from "./classification";
 import { evaluatePushEligibility, type SkipReason } from "./eligibility";
 import { classifyExpoError, getExpoReceipts, sendExpoMessages, type ExpoMessage } from "./expo-client";
 import { pushDeliveryMode, pushLimits, type PushDeliveryMode } from "./config";
@@ -62,6 +63,7 @@ function backoffMs(attempts: number, retryAfterMs: number | null): number {
 }
 
 async function fanOut(now: Date, limits: ReturnType<typeof pushLimits>): Promise<number> {
+  const staffPush = getPanelFeatureFlags().staffPush;
   const cutoff = new Date(now.getTime() - limits.backlogMaxAgeMs);
   const notifications = await prisma.notification.findMany({
     where: {
@@ -70,13 +72,13 @@ async function fanOut(now: Date, limits: ReturnType<typeof pushLimits>): Promise
       readAt: null,
       deliveryPending: false,
       pushDeliveries: { none: {} },
-      user: { status: "ACTIVE", role: { in: ["STUDENT", "PARENT"] }, notificationPrefs: { pushEnabled: true }, pushDevices: { some: { revokedAt: null } } },
+      user: { status: "ACTIVE", role: { in: pushRecipientRoles(staffPush) }, notificationPrefs: { pushEnabled: true }, pushDevices: { some: { revokedAt: null } } },
     },
     orderBy: { createdAt: "asc" },
     take: limits.maxFanOutPerRun,
-    select: { id: true, userId: true, createdAt: true, type: true, sourceType: true, category: true, preferenceKey: true, href: true },
+    select: { id: true, userId: true, createdAt: true, type: true, sourceType: true, category: true, preferenceKey: true, href: true, user: { select: { role: true } } },
   });
-  const eligible = notifications.filter((row) => classifyNotification(row));
+  const eligible = notifications.filter((row) => classifyNotification(row, { role: row.user.role, staffPush }));
   if (!eligible.length) return 0;
   const devices = await prisma.pushDevice.findMany({
     where: { userId: { in: [...new Set(eligible.map((row) => row.userId))] }, revokedAt: null },
@@ -127,7 +129,7 @@ async function processClaimed(ids: string[], token: string, now: Date, mode: Pus
       notification: {
         select: {
           id: true, userId: true, createdAt: true, readAt: true, inAppVisible: true, type: true, sourceType: true, sourceId: true, sourceVersion: true, category: true, preferenceKey: true, href: true,
-          user: { select: { status: true, notificationPrefs: true } },
+          user: { select: { status: true, role: true, notificationPrefs: true } },
         },
       },
     },
@@ -135,7 +137,8 @@ async function processClaimed(ids: string[], token: string, now: Date, mode: Pus
   const outgoing: Array<{ id: string; attempts: number; deviceId: string; message: ExpoMessage }> = [];
   for (const delivery of deliveries) {
     const { notification, device } = delivery;
-    const pushClass = classifyNotification(notification);
+    // Bayrak sonradan kapanırsa bekleyen personel teslimleri NOT_CLASSIFIED ile atlanır.
+    const pushClass = classifyNotification(notification, { role: notification.user.role, staffPush: getPanelFeatureFlags().staffPush });
     const prefs = notification.user.notificationPrefs;
     const decision = evaluatePushEligibility({
       now,

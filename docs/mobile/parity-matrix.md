@@ -41,12 +41,12 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 6 | 0 | 2 | 0 | 0 |
 | 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 19 | 1 | 0 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
-| 5. Öğrenci (`/panel/ogrenci`) | 18 | 15 | 1 | 1 | 0 | 1 |
-| 6. Deneme Ligi öğrenci (`/panel/odk/ogrenci`) | 5 | 3 | 1 | 0 | 1 | 0 |
-| 7. Veli (`/panel/veli`) | 12 | 7 | 2 | 1 | 0 | 2 |
+| 5. Öğrenci (`/panel/ogrenci`) | 18 | 16 | 0 | 1 | 0 | 1 |
+| 6. Deneme Ligi öğrenci (`/panel/odk/ogrenci`) | 5 | 4 | 0 | 0 | 1 | 0 |
+| 7. Veli (`/panel/veli`) | 12 | 9 | 0 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
-| 9. Ortak / hesap / yönlendirme | 11 | 4 | 3 | 2 | 0 | 2 |
-| **Toplam** | **106** | **85** | **8** | **6** | **1** | **6** |
+| 9. Ortak / hesap / yönlendirme | 11 | 8 | 1 | 0 | 0 | 2 |
+| **Toplam** | **106** | **93** | **2** | **4** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
@@ -54,8 +54,8 @@ Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satı
 
 1. **Yönetim kod eşliği tamamlandı.** P2.9 gerçek HTTP/iPhone kabulü ve P1 operasyon kanıtı açık.
 2. **Deneme Ligi yönetiminde K01, K02, K05, K06, K07 ve K08 native tamamlandı.** K03/K04 okumaları ile sınav editörü, puanlama ve yayın yazmaları açık; mevcut `/api/odk/admin/**` servisleri ve personel izinleri temel alınacak.
-3. **Server Action kalanları:** V10 paket görüşmesi talebi (1) ve C07/C08 ayarlar (7); Y27 ve T20 ortak servis + native uçlara taşındı.
-4. **S12/V09 geri bildirim yetkisi düzeltildi.** OD/OK öğrenci ve aktif akademik veli bağı gerçek HTTP ile doğrulandı. V07 veli görüşme kapsamı/kabulü açık.
+3. **Server Action kalanı yok:** V10 paket görüşmesi ve C07/C08 yedi ayar action'ı (P5.2), Y27 ve T20 ortak servis + native uçlara taşındı.
+4. **S12/V09 geri bildirim yetkisi düzeltildi.** OD/OK öğrenci ve aktif akademik veli bağı gerçek HTTP ile doğrulandı. V07 veli görüşme kapsamı PostgreSQL ile doğrulandı (P5.1).
 5. **P4 kalanları:** K03 kapsamlı sınav çalışma alanı ve K04 canlı operasyon/müdahale. K05/K06/K07 okumaları ve K08 pilot yönetimi native tamamlandı.
 
 ---
@@ -159,7 +159,7 @@ Mobil karşılık: `odk-management-*` ekranları ADMIN ve yetkili ODK personeli;
 | S11 | `/panel/ogrenci/check-in` | `check-in` | O · Y: check-in, yardım geri bildirimi | Hazır | `check-in` | Tam | — | |
 | S12 | `/panel/ogrenci/haftalik` | `weekly-digest` | O · Y: geri bildirim | Hazır | `od-weekly-digest`, `yon-weekly` | Tam | — | OD/OK öğrenci geri bildirimi; `mobile-p5-basics.spec.ts` yalnız OK hesabıyla gerçek HTTP kanıtı |
 | S13 | `/panel/ogrenci/yon` | `today` (OK) | O · Y: görev tamamla | Hazır | `yon-today` | Tam | — | |
-| S14 | `/panel/ogrenci/plan` | `plan` | O · Y: görev tamamla, değişiklik iste, tercihler, plan üret | Hazır | `yon-plan`, `yon/task/[id]` | Kısmi | P5 | `adaptive-plan/generate` |
+| S14 | `/panel/ogrenci/plan` | `plan` | O · Y: görev tamamla, değişiklik iste, tercihler, plan üret | Hazır (`adaptive-plan/generate` + `expectedVersion`) | `yon-plan`, `yon/task/[id]` | Tam | P5.1 | Plan üret / haftayı dengele native; görülen sürüm (plan yoksa 0) Bearer'da zorunlu, eski sürüm ve eşzamanlı üretim 409; koç onaylı plan kilitli. `yon-plan-generate.test.tsx` |
 | S15 | `/panel/ogrenci/hedefler` | `goals` | O | Hazır | `yon-goals` | Tam | — | |
 | S16 | `/panel/ogrenci/kocluk` | `coaching` | O · Y: görüşme saat değişikliği iste, öneriyi kabul et | Hazır | `yon-coaching` | Tam | — | |
 | S17 | `/panel/ogrenci/profil` | — | O: profil | Hazır (`student/profile` GET) | `account/profile` | Tam | — | Native profil; aktif veli bağları ve başlamış ürünler; `profile-calendar.test.tsx`, `mobile-p5-basics.spec.ts` |
@@ -170,7 +170,7 @@ Mobil karşılık: `odk-management-*` ekranları ADMIN ve yetkili ODK personeli;
 | # | Web rotası | Nav id | Alt işlemler (O / Y) | API | Mobil | Durum | Faz | Not |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | S19 | `/panel/odk/ogrenci` | `today` (ODK) | O: Deneme Ligi Bugün | Hazır | `odk-home` | Tam | — | |
-| S20 | `/panel/odk/ogrenci/denemeler` | `odk-exams` | O: deneme listesi | Hazır | `odk-exams` | Kısmi | P5 | Eski kayıtlar web'e yönlendiriyor |
+| S20 | `/panel/odk/ogrenci/denemeler` | `odk-exams` | O: deneme listesi | Hazır (`?cursor=` sayfalama) | `odk-exams` | Tam | P5.1 | 50 kayıt sınırını aşan eski denemeler `nextCursor` ile native yüklenir ve kendi ayrıntı/sonuç ekranında açılır (web 50 ile sınırlı). `odk-exams-older.test.tsx` |
 | S21 | `/panel/odk/ogrenci/denemeler/[id]` | — | O: deneme detayı · Y: başlat | Hazır | `odk/exam/[id]` | Tam | — | "Başlat" çözme akışıdır → E1 kapsamında web'e devam |
 | S22 | `/panel/odk/ogrenci/denemeler/[id]/sonuc` | — | O: sonuç, cevap anahtarı, Dino açıklaması | Hazır | `odk/exam/[id]/result` | Tam | — | Dino açıklaması S18'e bağlı |
 | S23 | `/panel/odk/ogrenci/denemeler/[id]/coz` | — | Y: cevaplar, olaylar, heartbeat, süre, teslim | Hazır | — | İstisna | — | E1: sınav çözme mobil kapsam dışı |
@@ -185,10 +185,10 @@ Mobil karşılık: `odk-management-*` ekranları ADMIN ve yetkili ODK personeli;
 | V04 | `/panel/veli/takvim` | `lessons` | O · Y: .ics dışa aktar | Hazır | `parent-lessons` | Tam | — | Kimlikli ICS indir/paylaş, geçici dosya temizliği; `profile-calendar.test.tsx`, `mobile-p5-basics.spec.ts`. iPhone paylaşma kabulü P6 |
 | V05 | `/panel/veli/odevler` | `assignments` | O | Hazır | `parent-assignments` | Tam | — | |
 | V06 | `/panel/veli/ogretmenler` | `teachers` | O | Hazır | `parent-teachers` | Tam | — | |
-| V07 | `/panel/veli/kocluk` | `coaching` | O · Y: görüşme saat değişikliği talebi, katılım bağlantısı | Yetki | `parent-coaching` | Kısmi | P5 | `coaching-sessions/[id]` veli kapsamı doğrulanmalı |
+| V07 | `/panel/veli/kocluk` | `coaching` | O · Y: görüşme saat değişikliği talebi, katılım bağlantısı | Hazır (`coaching-sessions/[id]` REQUEST) | `parent-coaching` | Tam | P5.1 | Görülen sürüm + işlem anahtarı; HTTPS katılım bağlantısı (öneri bekleyen/geçmiş görüşmede yok). Veli kapsamı (aktif bağ, `canViewAcademic`, çocuğun OK üyeliği) `parent-coaching-scope.integration.ts` ile doğrulandı |
 | V08 | `/panel/veli/denemeler` | `mock-exams` | O | Hazır | `parent-external-exams` | Tam | — | |
 | V09 | `/panel/veli/haftalik` | `weekly-digest` | O · Y: geri bildirim | Hazır | `parent-weekly` | Tam | — | Hedef çocuğun OD/OK üyeliği + aktif akademik veli bağı; `mobile-p5-basics.spec.ts` olumlu/yabancı/pasif/izinsiz bağ testleri |
-| V10 | `/panel/veli/hesap` | `account` | O: hesap ve paket · Y: paket görüşmesi iste | SA | `parent-account` | Kısmi | P5 | SA `requestPackageMeeting` → route |
+| V10 | `/panel/veli/hesap` | `account` | O: hesap ve paket · Y: paket görüşmesi iste | `POST /api/panel/parent/account/package-meeting` (SA ile ortak `lib/panel/parent-package-meeting.ts`) | `parent-account` | Tam | P5.2 | Yalnız `account` amaçlı bağlı çocuk; onaylı talep, işlem anahtarıyla tek `LeadSubmission`. Fiyat / satın alma yok (MD-09). `account-settings.integration.ts`, `account-settings.test.tsx` |
 | V11 | `/panel/veli/dino` | `dino` | O · Y: Dino | Hazır | web devam (`PARENT_WEB_ONLY`) | Eksik | P5 | |
 | V12 | `/panel/veli/bildirimler` | — | — | — | — | Yönl. | — | `redirect → /panel/bildirimler` |
 
@@ -209,11 +209,11 @@ Mobil karşılık: `odk-management-*` ekranları ADMIN ve yetkili ODK personeli;
 | C04 | `/panel/bildirimler` | O · Y: okundu, tercihler | Hazır | `notifications`, `account/notifications` | Tam | — | |
 | C05 | `/panel/oturumlar` | O · Y: oturum kapat, diğerlerini kapat | Hazır | `account/sessions` | Tam | — | |
 | C06 | `/panel/parola` | Y: parola değiştir | Hazır | `account/password`, `change-password` | Tam | — | |
-| C07 | `/panel/ayarlar` | O: ayar bölümleri | SA | `account/index` | Kısmi | P5 | Bölüm listesi; düzenleme C08'de |
-| C08 | `/panel/ayarlar/[section]` | Y: profil, iletişim, eğitim, fatura, onaylar, bekleyen çocuk ekle/iptal (7 SA) | SA | `account/privacy` | Kısmi | P5 | 7 Server Action → route |
-| C09 | `/panel/guvenlik` | O: MFA durumu · Y: TOTP kaydı, passkey, kod doğrulama (step-up) | Hazır | `mfa` (giriş kapısı), `StepUpProvider` (step-up) | Kısmi | P5 | Faz 1: native TOTP step-up + bootstrap `capabilities.security`. Kalan: MFA kaydı ve passkey yönetimi (P5) |
-| C10 | `/panel/erisilebilirlik` | Y: erişilebilirlik tercihleri | Hazır (PATCH; O → `me`) | — | Eksik | P5 | |
-| C11 | `/panel/veri-kullanimi` | Y: düşük veri tercihleri | Hazır (PATCH) | — | Eksik | P5 | `offline-low-data-operations` |
+| C07 | `/panel/ayarlar` | O: ayar bölümleri | `GET /api/panel/me/settings` (`lib/account/settings-service.ts`) | `account/settings` | Tam | P5.2 | Tamamlama listesi bölüme götürür; aktif paketler (satın alma bağlantısı yok); panel tercihleri bayrağa bağlı |
+| C08 | `/panel/ayarlar/[section]` | Y: profil, iletişim, eğitim, fatura, onaylar, bekleyen çocuk ekle/iptal (7 SA) | `POST /api/panel/me/settings` (7 SA ile ortak servis) | `account/settings/[section]` | Tam | P5.2 | Rol bölüm kapsamı (403), revizyon (409 `STALE_REVISION`), aktör kapsamlı makbuz; KVKK tek yönlü; ödemesi alınmış çocuk kaldırılamaz |
+| C09 | `/panel/guvenlik` | O: MFA durumu · Y: TOTP kaydı, passkey, kod doğrulama (step-up) | Hazır (`auth/mfa/totp/enroll`) | `mfa` (giriş kapısı + ilk kurulum), `account/security`, `StepUpProvider` | Kısmi | P5.3 | TOTP ilk kurulum / değiştirme ve tek seferlik kurtarma kodları native (`account-security.test.tsx`). Kalan: passkey ekle/kaldır/doğrula — platform passkey modülü ve alan adı ilişkisi (AASA `webcredentials`) dış karar; o zamana kadar web devam yolu |
+| C10 | `/panel/erisilebilirlik` | Y: erişilebilirlik tercihleri | O: `me/settings` · Y: mevcut PATCH (`expectedVersion`) | `account/accessibility` | Tam | P5.2 | Bayrak kapalıyken kapalı; 409'da güncel sürüm yeniden okunur |
+| C11 | `/panel/veri-kullanimi` | Y: düşük veri tercihleri | O: `me/settings` · Y: mevcut PATCH (`expectedVersion`) | `account/data-usage` | Tam | P5.2 | `offlineMode` bayrağı kapalıyken kapalı; çevrimdışı yazma tercihi yalnız web paneline uygulanır |
 
 **P2.9 kod teslimatı (11 Ekim 2026):** native seçici, kişi detayından giriş, kalıcı çıkış bandı, oturuma bağlı Bearer overlay ve öğretmen modu uygulandı. `full-parity-roadmap.md` P2.9 devam kaydında kalan kabul işleri ve test kanıtı bulunur. Gerçek HTTP/iPhone kabulü beklediğinden rota durumları/toplamları değiştirilmedi.
 
@@ -243,7 +243,7 @@ Onaylı istisnalar **alt işlem** düzeyindedir; etkilenen satırlar kalan alt i
 | GET projeksiyonu (O yok / Y var, O yok) | K03, K04 | 2 |
 | Server Action → `lib/` servisi + route | V10 (1), C07–C08 (7); Y27 ortak servislere taşındı | 2 dosya / 8 eylem |
 | Yetki düzeltmesi / kabul | V07 (veli görüşme işlemleri); S12/V09 ve T15 düzeltildi ve HTTP ile doğrulandı | 1 |
-| Yalnız mobil sözleşme + ekran (API hazır) | K03 (+ detay GET), S14, S18, S20, V11, C09–C11 | 8 |
+| Yalnız mobil sözleşme + ekran (API hazır) | K03 (+ detay GET), S18, V11, C09 (passkey) | 4 |
 
 ## Bakım
 

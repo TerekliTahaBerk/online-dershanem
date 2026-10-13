@@ -29,11 +29,14 @@ async function publishedNets(rows: OdkExamRow[]) {
   return new Map(scores.map((row) => [row.id, row.score ? Number(row.score.totalNet) : null]));
 }
 
-export async function loadOdkStudentExamList(studentUserId: string, view: OdkExamListView) {
+export async function loadOdkStudentExamList(studentUserId: string, view: OdkExamListView, cursor?: string) {
   // Bir fazlası istenir: liste kesildiyse ekran "tüm geçmiş" iddia etmez.
-  const fetched = await listStudentExams(studentUserId, { limit: ODK_EXAM_LIST_LIMIT + 1 });
+  // `cursor` (mobil S20): önceki sayfanın son denemesinden sonraki daha eski
+  // denemeler; yetki kümesi aynı (`listStudentExams` sözleşme kapsamı).
+  const fetched = await listStudentExams(studentUserId, { limit: ODK_EXAM_LIST_LIMIT + 1, cursor });
   const truncated = fetched.length > ODK_EXAM_LIST_LIMIT;
   const exams = fetched.slice(0, ODK_EXAM_LIST_LIMIT);
+  const nextCursor = truncated ? (exams.at(-1)?.id ?? null) : null;
   const rows: OdkExamRow[] = exams.map((exam) => ({ exam, state: studentExamState(exam) }));
   const active = rows.find((row) => row.state.key === "IN_PROGRESS") ?? null;
   const netByAttempt = await publishedNets(rows);
@@ -54,7 +57,7 @@ export async function loadOdkStudentExamList(studentUserId: string, view: OdkExa
       return a.state.tab === "tamamlanan" ? bt - at : at - bt;
     });
   const netOf = (row: OdkExamRow) => (row.exam.attempts[0] ? (netByAttempt.get(row.exam.attempts[0].id) ?? null) : null);
-  return { rows, visible, active, counts, netOf, truncated };
+  return { rows, visible, active, counts, netOf, truncated, nextCursor };
 }
 
 export async function loadOdkStudentHome(studentUserId: string, now = new Date()) {

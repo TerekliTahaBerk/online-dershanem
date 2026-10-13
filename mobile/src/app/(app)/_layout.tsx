@@ -43,6 +43,11 @@ export default function AppLayout() {
       <Stack.Screen name="account/privacy" options={{ title: 'Gizlilik' }} />
       <Stack.Screen name="account/password" options={{ title: 'Parola' }} />
       <Stack.Screen name="account/notifications" options={{ title: 'Bildirim ayarları' }} />
+      <Stack.Screen name="account/settings/index" options={{ title: 'Hesap ayarları' }} />
+      <Stack.Screen name="account/settings/[section]" options={{ title: 'Ayar bölümü' }} />
+      <Stack.Screen name="account/accessibility" options={{ title: 'Erişilebilirlik' }} />
+      <Stack.Screen name="account/data-usage" options={{ title: 'Veri kullanımı' }} />
+      <Stack.Screen name="account/security" options={{ title: 'İki adımlı doğrulama' }} />
       </Stack.Protected>
       <Stack.Screen name="od/assignment/[id]" options={{ title: 'Çalışma' }} />
       <Stack.Screen name="od/lesson/[id]" options={{ title: 'Ders' }} />

@@ -4,15 +4,17 @@
  *
  * Kanonik `Notification` satırlarını üreten pek çok yol var (merkezi üretici +
  * doğrudan yazanlar). Satırın var olması push'a uygun olduğu anlamına GELMEZ:
- * yalnız aşağıdaki izin listesine uyanlar gönderilir. Ödeme / finans ve
- * personel / yönetim bildirimleri push'a ÇIKMAZ.
+ * yalnız aşağıdaki izin listesine uyanlar gönderilir. Ödeme / finans
+ * bildirimleri push'a ÇIKMAZ. Personel (öğretmen / yönetici) bildirimleri
+ * yalnız `staffPush` bayrağı açıkken ve yalnız personel alıcıya, genel
+ * `STAFF` metniyle gider (P5.4); finans / sipariş yolları yine hariç.
  *
  * GİZLİLİK: Push başlığı / gövdesi bildirimin kendi başlığı veya gövdesi
  * DEĞİLDİR (ad, not, net, yardım ayrıntısı içerebilir). Kategoriye göre sabit,
  * genel bir metin kullanılır; ayrıntı uygulama açılınca yetkiyle okunur.
  */
 
-export type PushCategory = "LESSON" | "ASSIGNMENT" | "ABSENCE" | "COACHING" | "PLAN" | "DIGEST" | "EXAM" | "GENERAL";
+export type PushCategory = "LESSON" | "ASSIGNMENT" | "ABSENCE" | "COACHING" | "PLAN" | "DIGEST" | "EXAM" | "GENERAL" | "STAFF";
 export type PushPreferenceKey = "lessonSummary" | "weeklyDigest" | "absence" | "assignment" | "examUpdates";
 
 export type ClassifiableNotification = {
@@ -30,8 +32,29 @@ const HOUR = 60 * 60_000;
 /** Yalnız öğrenci / veli panel yolları push'a uygun "genel" bildirim olabilir. */
 const GENERAL_HREF = /^\/panel\/(?:ogrenci|veli|odk\/ogrenci|odk\/veli|bildirimler)(?:[/?#]|$)/;
 
-export function classifyNotification(row: ClassifiableNotification): PushClass | null {
+/** Personel panel yolları (öğretmen, koç, yönetim, Deneme Ligi personeli). */
+const STAFF_HREF = /^\/panel\/(?:ogretmen|yonetim|odk\/ogretmen|odk\/yonetim|bildirimler)(?:[/?#]|$)/;
+/** Finans / sipariş yüzeyleri personelde de push'a çıkmaz. */
+const STAFF_EXCLUDED_HREF = /^\/panel\/yonetim\/(?:siparisler|isletme\/(?:gelirler|giderler|vergiler|mutabakat|raporlar))(?:[/?#]|$)/;
+
+/** Push alabilen roller: öğrenci / veli; `staffPush` açıkken personel de (P5.4). */
+export function pushRecipientRoles(staffPush: boolean): ("STUDENT" | "PARENT" | "TEACHER" | "ADMIN")[] {
+  return staffPush ? ["STUDENT", "PARENT", "TEACHER", "ADMIN"] : ["STUDENT", "PARENT"];
+}
+
+/** Rol cihaz kaydı / push tercihi kullanabilir mi? Personel yalnız bayrakla. */
+export function pushRoleAllowed(role: string, staffPush: boolean): boolean {
+  return (pushRecipientRoles(staffPush) as string[]).includes(role);
+}
+
+export type PushRecipient = { role?: string | null; staffPush?: boolean };
+
+export function classifyNotification(row: ClassifiableNotification, recipient: PushRecipient = {}): PushClass | null {
   if (row.type === "PAYMENT" || row.preferenceKey === "payment") return null;
+  if (recipient.role === "TEACHER" || recipient.role === "ADMIN") {
+    if (!recipient.staffPush || !row.href || !STAFF_HREF.test(row.href) || STAFF_EXCLUDED_HREF.test(row.href)) return null;
+    return { category: "STAFF", preferenceKey: null, ttlMs: 24 * HOUR };
+  }
   if (row.type === "ASSIGNMENT") return { category: "ASSIGNMENT", preferenceKey: "assignment", ttlMs: 24 * HOUR };
   if (row.type === "ABSENCE") return { category: "ABSENCE", preferenceKey: "absence", ttlMs: 24 * HOUR };
   if (row.type === "LESSON_SUMMARY") return { category: "LESSON", preferenceKey: "lessonSummary", ttlMs: 24 * HOUR };
@@ -67,6 +90,7 @@ export const PUSH_COPY: Record<PushCategory, { title: string; body: string }> = 
   DIGEST: { title: "Online Dershanem", body: "Günün gelişmeleri hazır." },
   EXAM: { title: "Deneme Ligi", body: "Denemenle ilgili yeni bir bildirimin var." },
   GENERAL: { title: "Online Dershanem", body: "Yeni bir bildirimin var." },
+  STAFF: { title: "Online Dershanem", body: "Panelde yeni bir iş bildirimin var." },
 };
 
 /** Deneme Ligi olay türüne göre daha belirli ama yine kişisel veri içermeyen metin. */

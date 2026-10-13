@@ -59,6 +59,7 @@ export function toMobileOdkExamList(
     exams: data.visible.map((row) => toMobileOdkExamRow(row, data.netOf(row))),
     truncated: data.truncated,
     limit,
+    nextCursor: data.nextCursor,
   };
 }
 

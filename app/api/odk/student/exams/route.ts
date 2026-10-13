@@ -5,12 +5,13 @@ import { invalidApiInput } from "@/lib/api/input-validation";
 import { ODK_EXAM_LIST_LIMIT, loadOdkStudentExamList } from "@/lib/odk/student-dashboard-server";
 import { toMobileOdkExamList } from "@/lib/mobile/odk-views";
 
-const querySchema = z.object({ gorunum: z.enum(["tumu", "yaklasan", "acik", "tamamlanan"]).optional() }).strict();
+const querySchema = z.object({ gorunum: z.enum(["tumu", "yaklasan", "acik", "tamamlanan"]).optional(), cursor: z.string().regex(/^[\w-]{1,64}$/).optional() }).strict();
 
 /**
  * Denemelerim — web `app/panel/odk/ogrenci/denemeler` ile AYNI yükleyici ve
  * sıralama. Okuma en yeni `ODK_EXAM_LIST_LIMIT` denemeyle sınırlıdır;
- * aşılırsa `truncated: true` döner.
+ * aşılırsa `truncated: true` ve daha eski sayfa için `nextCursor` döner
+ * (mobil S20; `?cursor=` aynı yetki kümesinde sonraki sayfayı okur).
  */
 export async function GET(request: Request) {
   const auth = await requireApiProductRole("ODK", "STUDENT");
@@ -18,6 +19,6 @@ export async function GET(request: Request) {
   const parsed = querySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
   if (!parsed.success) return invalidApiInput();
   const view = parsed.data.gorunum ?? "tumu";
-  const data = await loadOdkStudentExamList(auth.session.userId, view);
+  const data = await loadOdkStudentExamList(auth.session.userId, view, parsed.data.cursor);
   return NextResponse.json(toMobileOdkExamList(data, view, ODK_EXAM_LIST_LIMIT), { headers: { "Cache-Control": "private, no-store" } });
 }

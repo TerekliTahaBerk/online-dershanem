@@ -1,5 +1,6 @@
 import {
   parseChangeRequestResult,
+  parsePlanGenerateResult,
   parseCheckInCreated,
   parseCheckInState,
   parseCoachingMutationResult,
@@ -78,6 +79,12 @@ export async function completePlanTask(api: ApiClient, taskId: string, payload: 
 export async function requestPlanChange(api: ApiClient, planId: string, input: { category: 'TOO_MUCH' | 'WRONG_DAYS'; overwhelmPulse: number; option: YonOverloadOption; expectedVersion: number }) {
   const body = await api.request<unknown>(`/api/panel/adaptive-plan/${id(planId)}/request-change`, { method: 'POST', body: input });
   return validated(parseChangeRequestResult(body));
+}
+
+/** S14 · Planı oluştur / haftayı dengele. `expectedVersion` = görülen plan sürümü (plan yoksa 0). */
+export async function generatePlan(api: ApiClient, expectedVersion: number) {
+  const body = await api.request<unknown>('/api/panel/adaptive-plan/generate', { method: 'POST', body: { expectedVersion } });
+  return validated(parsePlanGenerateResult(body));
 }
 
 /**

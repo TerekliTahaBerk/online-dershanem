@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 
 import { ApiError } from '@/lib/api/errors';
-import { acceptSessionProposal, completePlanTask, requestPlanChange, requestSessionReschedule, savePlanPreference, type TaskCompletionPayload } from '@/lib/api/yon';
+import { acceptSessionProposal, completePlanTask, generatePlan, requestPlanChange, requestSessionReschedule, savePlanPreference, type TaskCompletionPayload } from '@/lib/api/yon';
 import { useSession } from '@/lib/auth/session-provider';
 import { newUuid } from '@/lib/ids';
 
@@ -94,6 +94,36 @@ export function usePlanChangeRequest(plan: { id: string; version: number } | nul
   }
 
   return { submit, submitting: mutation.isPending, feedback };
+}
+
+/**
+ * S14 · Plan üretimi — web "Planı Oluştur / Haftayı Dengele" ile aynı uç.
+ * Görülen plan sürümü gönderilir: başarılı ama yanıtı kaybolan bir isteğin
+ * tekrarı 409 alır ve görünüm yenilenir; hafta ikinci kez dengelenmez.
+ */
+export function usePlanGenerate(expectedVersion: number) {
+  const { api } = useSession();
+  const invalidate = useInvalidateYon();
+  const [feedback, setFeedback] = useState<WriteFeedback>(null);
+  const mutation = useMutation({ mutationFn: () => generatePlan(api, expectedVersion) });
+
+  async function generate(): Promise<boolean> {
+    if (mutation.isPending) return false;
+    setFeedback(null);
+    try {
+      const result = await mutation.mutateAsync();
+      setFeedback({ tone: 'success', message: `${result.rebalanced ? 'Haftan yeniden dengelendi' : 'Planın oluşturuldu'} (${result.taskCount} çalışma).${result.requiresApproval ? ' Koçun onayladığında görevler açılır.' : ''}` });
+      await invalidate();
+      return true;
+    } catch (error) {
+      const conflict = error instanceof ApiError && error.kind === 'conflict';
+      if (conflict) await invalidate();
+      setFeedback({ tone: conflict ? 'warning' : 'critical', message: messageOf(error, 'Plan oluşturulamadı.') });
+      return false;
+    }
+  }
+
+  return { generate, generating: mutation.isPending, feedback };
 }
 
 /** Plan tercihleri — mevcut PATCH ucu; düzenlenmeyen alanlar sunucudaki değerleriyle geri gönderilir. */

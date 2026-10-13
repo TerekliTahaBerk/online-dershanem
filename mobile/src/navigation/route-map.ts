@@ -80,11 +80,31 @@ function mapStaffDetailPath(path: string, navigation: Navigation): NativeTarget 
   return null;
 }
 
+/**
+ * Ortak hesap ayarı yolları (P5.2) → native hesap ekranları. Rol bağımsızdır;
+ * bölüm kapsamı ve özellik bayrakları sunucu yanıtıyla uygulanır.
+ */
+export function mapAccountWebPath(path: string | null): NativeTarget | null {
+  if (!path) return null;
+  if (path === '/panel/ayarlar') return { kind: 'detail', href: '/account/settings' };
+  if (path === '/panel/ayarlar/guvenlik') return { kind: 'detail', href: '/account' };
+  if (path === '/panel/parola') return { kind: 'detail', href: '/account/password' };
+  if (path === '/panel/oturumlar') return { kind: 'detail', href: '/account/sessions' };
+  const section = /^\/panel\/ayarlar\/(profil|egitim|cocuklarim|iletisim|fatura|onaylar)$/.exec(path);
+  if (section) return { kind: 'detail', href: `/account/settings/${section[1]}` };
+  if (path === '/panel/guvenlik') return { kind: 'detail', href: '/account/security' };
+  if (path === '/panel/erisilebilirlik') return { kind: 'detail', href: '/account/accessibility' };
+  if (path === '/panel/veri-kullanimi') return { kind: 'detail', href: '/account/data-usage' };
+  return null;
+}
+
 /** Bildirim href'i → yetkili native hedef. Eşleşme yoksa `none` (liste ekranında kalınır). */
 export function mapNotificationHref(href: string | null | undefined, navigation: Navigation | null): NativeTarget {
   const path = normalizeWebPath(href);
   if (!path) return { kind: 'none' };
   if (path === '/panel/bildirimler' || path === '/panel/veli/bildirimler') return { kind: 'notifications' };
+  const account = mapAccountWebPath(path);
+  if (account) return account;
   if (!navigation) return { kind: 'none' };
   const items = [...navigation.primary, ...navigation.sections.flatMap((section) => section.items)];
   const exact = items.find((item) => normalizeWebPath(item.webPath) === path);
@@ -155,7 +175,7 @@ export function expoHrefFor(target: NativeTarget): string | null {
 }
 
 /** İzinli native rota önekleri (derin bağlantılar). Diğer her şey ana ekrana düşer. */
-const ALLOWED_DEEP_LINK = /^\/(?:$|slot-[1-3]$|menu$|notifications$|account(?:\/(?:sessions|password))?$|screen\/[\w-]{1,64}$|od\/(?:lesson|assignment)\/[\w-]{1,64}$|od\/review-recovery$|yon\/task\/[\w-]{1,64}$|odk\/exam\/[\w-]{1,64}(?:\/result)?$|teacher\/(?:lesson|submission)\/[\w-]{1,64}$|coach\/(?:student|session|plan)\/[\w-]{1,64}$|forgot-password$)/;
+const ALLOWED_DEEP_LINK = /^\/(?:$|slot-[1-3]$|menu$|notifications$|account(?:\/(?:sessions|password|security|deletion|accessibility|data-usage|settings(?:\/(?:profil|egitim|cocuklarim|iletisim|fatura|onaylar))?))?$|screen\/[\w-]{1,64}$|od\/(?:lesson|assignment)\/[\w-]{1,64}$|od\/review-recovery$|yon\/task\/[\w-]{1,64}$|odk\/exam\/[\w-]{1,64}(?:\/result)?$|teacher\/(?:lesson|submission)\/[\w-]{1,64}$|coach\/(?:student|session|plan)\/[\w-]{1,64}$|forgot-password$)/;
 
 /**
  * Sistemden gelen yol (`onlinedershanem://...`) → güvenli uygulama yolu.
@@ -201,6 +221,8 @@ export function mapAdminWebPath(href: string | null | undefined, navigation: Nav
   const businessTarget = mapBusinessWebPath(href, business);
   if (businessTarget) return businessTarget;
   const path = normalizeWebPath(href);
+  const account = mapAccountWebPath(path);
+  if (account) return account;
   if (!path || !navigation) return { kind: 'none' };
   const metric = /^\/panel\/yonetim\/analitik\/([\w-]{1,64})$/.exec(path);
   if (metric) return navHas(navigation, 'analytics') ? { kind: 'detail', href: `/admin/metric/${metric[1]}` } : { kind: 'none' };

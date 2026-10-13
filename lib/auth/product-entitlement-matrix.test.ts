@@ -45,7 +45,7 @@ test("API guard names encode product scope and shared routes stay account-scoped
     "app/api/cron/kocum-suggestions/route.ts": "kocum-suggestions",
     "app/api/panel/dino/route.ts": 'requireApiAccountRole("STUDENT", "PARENT", "TEACHER")',
     "app/api/panel/student/home/route.ts": 'requireApiAccountRole("STUDENT")',
-    "app/api/panel/notifications/preferences/route.ts": 'requireApiAccountRole("PARENT", "STUDENT")',
+    "app/api/panel/notifications/preferences/route.ts": 'requireApiAccountRole("PARENT", "STUDENT", "TEACHER", "ADMIN")',
     "app/api/panel/events/route.ts": 'requireApiAccountRole("ADMIN", "TEACHER", "STUDENT", "PARENT")',
   } as const;
 

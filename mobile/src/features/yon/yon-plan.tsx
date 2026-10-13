@@ -9,7 +9,7 @@ import { color, radius, space } from '@/design/tokens';
 import { fetchYonPlan } from '@/lib/api/yon';
 import { formatDayMonth } from '@/lib/format/istanbul';
 
-import { usePlanChangeRequest, usePreferenceSave } from './hooks';
+import { usePlanChangeRequest, usePlanGenerate, usePreferenceSave } from './hooks';
 import { CHANGE_CATEGORY_LABEL, isDoneTask, OVERLOAD_LABEL, WEEK_DAYS } from './model';
 import { QueryView, usePullToRefresh, useYonQuery } from './shared';
 import { YonTaskRow } from './task-row';
@@ -18,8 +18,8 @@ import { YonTaskRow } from './task-row';
  * YÖN · PLANIM — web `app/panel/ogrenci/plan` (`StudentAdaptivePlan`).
  * Veri `GET /api/panel/student/plan` (aynı yükleyici `loadStudentPlan`).
  * Görevler gün seçiciyle gezilir; her görev tek bir günde görünür. Tamamlama
- * görev sayfasında (`/yon/task/[id]`), değişiklik talebi ve tercihler web ile
- * aynı uçlarla. Taslak plan görevleri sunucudan gelmez.
+ * görev sayfasında (`/yon/task/[id]`), değişiklik talebi, tercihler ve plan
+ * üretimi (S14) web ile aynı uçlarla. Taslak plan görevleri sunucudan gelmez.
  */
 const DAY_SHORT = new Intl.DateTimeFormat('tr-TR', { timeZone: 'Europe/Istanbul', weekday: 'short', day: 'numeric' });
 
@@ -70,8 +70,27 @@ function PlanBody({ data }: { data: MobileYonPlan }) {
           {data.coachSummary.nextWeekFocus ? <Row title="Gelecek hafta" subtitle={data.coachSummary.nextWeekFocus} /> : null}
         </Section>
       ) : null}
+      <Generate plan={plan} planningEnabled={data.preference.planningEnabled} hasDays={data.preference.availableDays.length > 0} />
       <Preferences initial={data.preference} />
     </>
+  );
+}
+
+/**
+ * S14 · Planı oluştur / haftayı dengele. Web ile aynı kural: koçun onayladığı
+ * (otomatik onaylı olmayan) plan kilitlidir; önce değişiklik istenir.
+ */
+function Generate({ plan, planningEnabled, hasDays }: { plan: Plan | null; planningEnabled: boolean; hasDays: boolean }) {
+  const generator = usePlanGenerate(plan?.version ?? 0);
+  const locked = Boolean(plan && plan.status === 'APPROVED' && !plan.autoApproved);
+  return (
+    <Section title={plan ? 'Haftayı dengele' : 'Planı oluştur'}>
+      {generator.feedback ? <Banner tone={generator.feedback.tone}>{generator.feedback.message}</Banner> : null}
+      <Text tone="secondary">
+        {!planningEnabled ? 'Haftalık plan tercihin kapalı.' : !hasDays ? 'Önce aşağıdan uygun günlerini kaydet.' : locked ? 'Onaylı plan kilitli. Değiştirmek için önce koçundan değişiklik iste.' : plan ? 'Tamamlanmamış görevler yeniden dağıtılır; tamamladıkların korunur.' : 'Tercihlerine göre bu haftanın planı kurulur.'}
+      </Text>
+      <Button mutation label={plan ? 'Haftayı dengele' : 'Planı oluştur'} variant={plan ? 'secondary' : 'primary'} loading={generator.generating} disabled={!planningEnabled || !hasDays || locked || generator.generating} onPress={() => void generator.generate()} testID="yon-plan-generate" />
+    </Section>
   );
 }
 

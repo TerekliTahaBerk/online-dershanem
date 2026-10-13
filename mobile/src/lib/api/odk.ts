@@ -20,8 +20,9 @@ export async function fetchOdkHome(api: ApiClient, signal?: AbortSignal) {
   return validated(parseOdkHome(await api.request<unknown>('/api/odk/student/home', { signal })));
 }
 
-export async function fetchOdkExams(api: ApiClient, view: OdkListView, signal?: AbortSignal) {
-  const query = view === 'tumu' ? '' : `?gorunum=${view}`;
+export async function fetchOdkExams(api: ApiClient, view: OdkListView, signal?: AbortSignal, cursor?: string) {
+  const params = [view === 'tumu' ? null : `gorunum=${view}`, cursor ? `cursor=${id(cursor)}` : null].filter(Boolean);
+  const query = params.length ? `?${params.join('&')}` : '';
   return validated(parseOdkExamList(await api.request<unknown>(`/api/odk/student/exams${query}`, { signal })));
 }
 
