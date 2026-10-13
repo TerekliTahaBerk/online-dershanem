@@ -3,7 +3,6 @@ import {
   parseAccountSettingsWrite,
   parseDeletionRequestStatus,
   parseDeletionRequestWrite,
-  parsePackageMeetingWrite,
   parsePreferenceWrite,
   type AccessibilityPreferences,
   type AccountSettingsCommand,
@@ -38,9 +37,6 @@ export const saveNetworkPreferences = async (api: ApiClient, preference: Network
   const { version, ...body } = preference;
   return validated(parsePreferenceWrite(await api.request<unknown>('/api/panel/network/preferences', { method: 'PATCH', body: { expectedVersion: version, ...body } })));
 };
-
-export const requestPackageMeeting = async (api: ApiClient, studentId: string, idempotencyKey: string) =>
-  validated(parsePackageMeetingWrite(await api.request<unknown>('/api/panel/parent/account/package-meeting', { method: 'POST', body: { studentId, idempotencyKey } })));
 
 export const fetchDeletionRequest = async (api: ApiClient, signal?: AbortSignal) =>
   validated(parseDeletionRequestStatus(await api.request<unknown>('/api/panel/me/deletion-request', { signal })));

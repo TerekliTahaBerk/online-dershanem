@@ -1,3 +1,4 @@
+import { router, type Href } from 'expo-router';
 import { parseOdkManagementExams, parseOdkExamCreated, type OdkManagementExams, type OdkExamCreateCommand } from '@contracts/odk-management-exams';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
@@ -7,7 +8,6 @@ import { useSession } from '@/lib/auth/session-provider';
 import { formatShortDateTime } from '@/lib/format/istanbul';
 import { newUuid } from '@/lib/ids';
 import { OfflineWriteNotice, QueryView, useOnline, usePullToRefresh, WriteBanner, writeError, type WriteState } from '../shared';
-import { openOnWeb } from '../../shell/web-continuation';
 import { useOdkManagementQuery } from './management-shared';
 const path = '/api/panel/odk/management/exams';
 const statusNames: Record<string, string> = { DRAFT: 'Taslak', READY: 'Hazır', SCHEDULED: 'Planlandı', LIVE: 'Canlı', ENDED: 'Bitti', SCORED: 'Puanlandı', RELEASED: 'Yayınlandı', ARCHIVED: 'Arşiv' };
@@ -25,7 +25,7 @@ export default function OdkManagementExamsScreen() {
         <SegmentedTabs label="Sınav ailesi filtresi" value={filters.aile} onChange={(v) => filter('aile', v)} options={[{ value: '', label: 'Tüm aileler' }, ...data.families.map((f) => ({ value: f.code, label: f.name }))]} />
         <SegmentedTabs label="Durum filtresi" value={filters.durum} onChange={(v) => filter('durum', v)} options={[{ value: '', label: 'Tüm durumlar' }, ...Object.entries(statusNames).map(([value, label]) => ({ value, label }))]} />
       </Section>
-      <Section title={`${data.total} deneme`}>{!data.rows.length && <EmptyState title="Bu görünümde deneme yok" />}{data.rows.map((e) => <Row key={e.id} title={e.title} subtitle={`${e.familyCode} · ${statusNames[e.status] || e.status} · ${e.seriesTitle || 'Serisiz'}\n${e.startsAt ? formatShortDateTime(e.startsAt) : 'Planlanmadı'} – ${e.endsAt ? formatShortDateTime(e.endsAt) : '—'}\n${e.assigned} atama · ${e.attempts} giriş · ${e.submitted} teslim${e.blockingIssues != null ? ` · ${e.blockingIssues} hazırlık engeli` : ''}\nDeneme detayını web’de aç`} onPress={() => void openOnWeb(`/panel/odk/yonetim/sinavlar/${encodeURIComponent(e.id)}`)} />)}
+      <Section title={`${data.total} deneme`}>{!data.rows.length && <EmptyState title="Bu görünümde deneme yok" />}{data.rows.map((e) => <Row key={e.id} title={e.title} subtitle={`${e.familyCode} · ${statusNames[e.status] || e.status} · ${e.seriesTitle || 'Serisiz'}\n${e.startsAt ? formatShortDateTime(e.startsAt) : 'Planlanmadı'} – ${e.endsAt ? formatShortDateTime(e.endsAt) : '—'}\n${e.assigned} atama · ${e.attempts} giriş · ${e.submitted} teslim${e.blockingIssues != null ? ` · ${e.blockingIssues} hazırlık engeli` : ''}`} onPress={() => router.push(`/odk/manage/${encodeURIComponent(e.id)}` as Href)} testID={`odk-exam-row-${e.id}`} />)}
         <Text>Sayfa {data.page} / {Math.max(1, Math.ceil(data.total / data.pageSize))}</Text>
         <Button label="Önceki sayfa" disabled={data.page <= 1} onPress={() => setFilters((f) => ({ ...f, page: String(data.page - 1) }))} />
         <Button label="Sonraki sayfa" disabled={data.page * data.pageSize >= data.total} onPress={() => setFilters((f) => ({ ...f, page: String(data.page + 1) }))} />

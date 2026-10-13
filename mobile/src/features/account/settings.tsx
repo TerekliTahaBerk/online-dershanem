@@ -74,6 +74,12 @@ function useSettingsCommand(onDone: (state: WriteState) => void) {
   return { run, pending: mutation.isPending, online };
 }
 
+/**
+ * Fatura bilgileri yalnız web satın alma akışına hizmet eder; mobilde satış
+ * olmadığı için (MD-09, mağaza ödeme politikası) bölüm listelenmez ve açılmaz.
+ */
+const MOBILE_HIDDEN_SECTIONS = new Set(['fatura']);
+
 const SECTION_ROUTE = (section: AccountSettingsSection): Href => (section === 'guvenlik' ? '/account' : (`/account/settings/${section}` as Href));
 
 /** C07 · Ayarlar genel bakış: tamamlama listesi, bölümler, paketler ve panel tercihleri. */
@@ -102,7 +108,7 @@ export function AccountSettingsHome() {
               </Section>
             ) : null}
             <Section first={!data.completion} title="Bölümler">
-              {data.sections.map((section) => (
+              {data.sections.filter((section) => !MOBILE_HIDDEN_SECTIONS.has(section.key)).map((section) => (
                 <Row key={section.key} title={section.label} subtitle={section.key === 'guvenlik' ? 'Parola, oturumlar ve bildirimler' : undefined} onPress={() => router.push(SECTION_ROUTE(section.key))} testID={`settings-section-${section.key}`} />
               ))}
             </Section>
@@ -111,7 +117,7 @@ export function AccountSettingsHome() {
                 {data.memberships.length ? (
                   data.memberships.map((item) => <Row key={item.product} title={item.label} subtitle={item.expiresAt ? `Aktif · dönem sonu ${formatDayMonth(item.expiresAt)}` : 'Aktif'} />)
                 ) : (
-                  <EmptyState title="Aktif paketin yok" body="Paket satın alındığında erişimin otomatik açılır." />
+                  <EmptyState title="Aktif paketin yok" body="Hesabına erişim tanımlandığında burada görünür." />
                 )}
               </Section>
             ) : null}
@@ -139,7 +145,7 @@ export function AccountSettingsSectionScreen({ section }: { section: string }) {
       <QueryView query={query}>
         {(data) => {
           const meta = data.sections.find((item) => item.key === section);
-          if (!meta || section === 'guvenlik') return <EmptyState title="Bu bölüm hesabın için açık değil" />;
+          if (!meta || section === 'guvenlik' || MOBILE_HIDDEN_SECTIONS.has(section)) return <EmptyState title="Bu bölüm hesabın için açık değil" />;
           const submit = (next: AccountSettingsCommand) => command.run(next, data.revision);
           return (
             <>
@@ -149,7 +155,6 @@ export function AccountSettingsSectionScreen({ section }: { section: string }) {
               {section === 'profil' ? <ProfileForm key={data.revision} data={data} submit={submit} pending={command.pending} /> : null}
               {section === 'egitim' && data.education ? <EducationForm key={data.revision} data={data} education={data.education} submit={submit} pending={command.pending} /> : null}
               {section === 'iletisim' && data.contact ? <ContactForm key={data.revision} data={data} contact={data.contact} submit={submit} pending={command.pending} /> : null}
-              {section === 'fatura' && data.billing ? <BillingForm key={data.revision} billing={data.billing} submit={submit} pending={command.pending} /> : null}
               {section === 'onaylar' && data.consents ? <ConsentForm key={data.revision} consents={data.consents} submit={submit} pending={command.pending} /> : null}
               {section === 'cocuklarim' && data.children ? <ChildrenSection data={data} childrenData={data.children} submit={submit} pending={command.pending} /> : null}
             </>
@@ -291,17 +296,6 @@ function ContactForm({ data, contact, submit, pending }: { data: AccountSettings
   );
 }
 
-function BillingForm({ billing, submit, pending }: { billing: NonNullable<AccountSettings['billing']>; submit: Submit; pending: boolean }) {
-  const [address, setAddress] = useState(billing.billingAddress ?? '');
-  return (
-    <Section first title="Fatura adresi">
-      <TextField label="Fatura adresi" hint="Ödeme ekranında otomatik doldurulur." value={address} onChangeText={setAddress} maxLength={500} multiline testID="settings-billingAddress" />
-      <Text tone="muted" variant="meta">T.C. kimlik numaran profilinde saklanmaz; yalnız fatura için ödeme sırasında istenir.</Text>
-      <Button mutation label="Kaydet" loading={pending} disabled={pending} onPress={() => void submit({ type: 'billing', billingAddress: blank(address) })} testID="settings-save-billing" />
-    </Section>
-  );
-}
-
 function ConsentForm({ consents, submit, pending }: { consents: NonNullable<AccountSettings['consents']>; submit: Submit; pending: boolean }) {
   const accepted = Boolean(consents.kvkkAcceptedAt);
   const [kvkk, setKvkk] = useState(accepted);
@@ -357,7 +351,7 @@ function ChildrenSection({ data, childrenData, submit, pending }: { data: Accoun
         <Section title="Hesabı açılmayı bekleyenler">
           {childrenData.pending.map((child) => (
             <View key={child.id} style={styles.pending}>
-              <Row title={child.fullName} subtitle={child.paid ? 'Ödeme alındı — ekibimiz öğrenci hesabını açıyor.' : 'Ekibimiz öğrenci hesabını açıp size bağlayacak.'} meta={`${label(data.options.classLevels, child.classLevel)} · ${label(data.options.examTypes, child.examType)}`} />
+              <Row title={child.fullName} subtitle={child.paid ? 'Kayıt onaylandı — ekibimiz öğrenci hesabını açıyor.' : 'Ekibimiz öğrenci hesabını açıp size bağlayacak.'} meta={`${label(data.options.classLevels, child.classLevel)} · ${label(data.options.examTypes, child.examType)}`} />
               {!child.paid ? <Button mutation label="Kaldır" variant="secondary" disabled={pending} onPress={() => void cancel(child)} testID={`child-cancel-${child.id}`} /> : null}
             </View>
           ))}

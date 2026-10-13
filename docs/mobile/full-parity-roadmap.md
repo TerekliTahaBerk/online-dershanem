@@ -473,3 +473,37 @@ Bu dilimin son kontrolleri: **984 sunucu birim testi**, **33 paket / 250 mobil t
 - Personel push: `PANEL_FEATURE_STAFF_PUSH` (varsayılan kapalı). Açıkken öğretmen/yönetici cihaz kaydı ve tercihleri (ana anahtar + sessiz saat) açılır; dağıtıcı personel bildirimlerini yalnız personel yollarında, genel `STAFF` kilit ekranı metniyle gönderir; sipariş ve İşletme finans yolları hariç. Bayrak kapanınca bekleyen personel teslimleri `NOT_CLASSIFIED` ile atlanır. Yönetici bildirimine dokunma yönetim eşlemesiyle açılır.
 - Kanıt: 1006 birim (yeni `classification.test.ts`), 56 mobil paket / 300 test, PostgreSQL entegrasyonu 140/142 (iki başarısızlık main'de de aynı). Matris: 92 Tam / 2 Kısmi / 5 Eksik / 1 İstisna / 6 Yönl.
 - Açık: K03/K04/K08 (P4, kullanıcı dalında), S18/V11/T07 Dino (çocuk verisi incelemesi), C09 passkey, staffPush production kararı, P2.9/P6 gerçek cihaz kabulü.
+
+### 13 Ekim 2026 — P4.2 K04 canlı operasyon
+
+- Web `/panel/odk/yonetim/operasyon` sorgu ve süzgeçleri `lib/odk/ops-console-server.ts`'e taşındı; sayfa ve `GET /api/panel/odk/management/operations` aynı yükleyiciyi kullanır (`odk:ops:live`). Projeksiyon öğrenciyi yalnız adla verir; cevap, puan, IP ve cihaz verisi yok.
+- Kayıt paneli `GET .../operations/attempts/[id]`: durum, son sinyal, cevap sayısı, bütünlük ve son 60 olay; yalnız konsolun izlediği (planlı/canlı, son 24 saat) denemelerin kayıtları, diğerleri 404.
+- Bütünlük incelemesi `lib/odk/integrity-review-service.ts`: web `PATCH /api/odk/admin/attempts/[id]` ve mobil `POST .../review` aynı kural; kayıt + audit makbuzu tek Serializable transaction. Mobil işlem anahtarı ve okunan sürüm zorunlu (eski görünüm 409, aynı anahtar ilk sonucu döndürür).
+- Mobil: deneme/görünüm/durum/bütünlük/sinyal süzgeçleri, sayaçlar, uyarılar, 15 sn otomatik yenileme (kapatılabilir; kayıt paneli açıkken durur), onaylı inceleme eylemleri.
+- Kanıt: 1008 birim, 57 mobil paket / 306 test, PostgreSQL entegrasyonu 141/143 (iki başarısızlık main'de de aynı). Matris: 94 Tam / 2 Kısmi / 3 Eksik / 1 İstisna / 6 Yönl. P4'te yalnız K03 açık.
+
+### 13 Ekim 2026 — P4.3 K03a deneme çalışma alanı (okuma)
+
+- Web `/panel/odk/yonetim/sinavlar/[id]` veri bloğu ve rapor sekmesi `lib/odk/exam-workspace-server.ts`'e taşındı (`loadOdkExamWorkspace`, `loadOdkExamReport`); sayfa JSX'i değişmedi. Mobil okuma kazanım seçeneklerini (yalnız web editörü) yüklemez.
+- `GET /api/panel/odk/management/exams/[id]?sekme=&filtre=`: web ile aynı izinli sekmeler; genel/hazırlık/sorunlar her sekmede, sorular/dosyalar/oturumlar/zamanlama/canlı/bütünlük/raporlar/geçmiş yalnız kendi sekmesinde. Cevap anahtarı yalnız `odk:exam:edit`; öğrenci yalnız adla. Yanıt sonraki yazmalar için `revision` taşır.
+- Bütünlük sekmesi K04 kayıt panelini deneme kapsamında kullanır (`.../exams/[id]/attempts/[attemptId]` + `review`; başka denemenin kaydı 404).
+- Mobil `odk/manage/[id]`; K02 deneme listesi, K05 kuyruğu (ilgili sekme) ve bildirim/derin bağlantılar native açar. Yazma sekmeleri (içerik, sorular, oturumlar, zamanlama, katılımcılar, önizleme, puanlama) açık bir web devam yolu gösterir.
+- Kanıt: 1008 birim, 58 mobil paket / 310 test, PostgreSQL entegrasyonu 142/144 (iki başarısızlık main'de de aynı); `next build` başarılı. Matris: 94 Tam / 3 Kısmi / 2 Eksik / 1 İstisna / 6 Yönl.
+
+### 13 Ekim 2026 — P4.3 K03b deneme hazırlık yazmaları
+
+- Web `odk/admin/exams/[id]` PATCH, `ready`, `schedule`, `sessions`, `assignments`, `imports/answer-key|outcomes` gövdeleri `lib/odk/exam-commands-server.ts`'e taşındı; web uçları yalnız kimlik, guard ve girdi doğrulaması yapar. Atama listesi `loadOdkExamAssignments`.
+- `POST /api/panel/odk/management/exams/[id]` (`lib/odk/exam-command-runner.ts`): update/ready/schedule/sessions/assign/import.preview/import.commit; işlem başına web ile aynı izin; `X-Od-Idempotency-Key` + `X-Od-Expected-Revision` zorunlu. Revizyon transaction içinde yeniden hesaplanır; kayıt + audit + makbuz tek Serializable transaction; ürünler arası atama olayı commit sonrası. Kural reddi (hazırlık engeli, kilitli sürüm, hatalı önizleme) web ile aynı mesaj/durumla döner ve makbuz yazmaz.
+- Çalışma alanı sözleşmesi: düzenleme formu alanları (`meetRequired`, `meetUrl` yalnız düzenleme/planlama izniyle, `fullscreenMode`), katılımcılar sekmesinde atama listesi + kaynaklar (öğrenci yalnız adla), önizleme sekmesinde öğrenci/öğretmen/veli görünümleri.
+- Mobil: zamanlama/güvenlik formu, hazır işaretle ve planla (onaylı), oturum süreleri, grup/sınıf/paket/pilot/e-posta ile atama, cevap anahtarı/kazanım JSON doğrula → uygula, taslak sürüme PDF yükleme (≤30 MB), önizleme. Soru bazında düzenleme ve puanlama/yayın (K03c) web devam yolunda.
+- Kanıt: 1008 birim, 59 mobil paket / 314 test, PostgreSQL entegrasyonu 143/145 (iki başarısızlık main'de de aynı; yeni test revizyon çakışması, makbuz tekrarı, ret sonrası makbuz yokluğu, içe aktarma ve atama); `next build` başarılı.
+
+### 13 Ekim 2026 — P4.3 K03c puanlama ve yayın; soru düzenleme
+
+- Web `score`, `rescore`, `release`, `release/preview` ve `questions` gövdeleri `lib/odk/exam-results-commands.ts` / `exam-commands-server.ts`'e taşındı; `scoreOdkExam` ve koç önerisi köprüsü transaction istemcisi alır. Mobil komutta puan, yayın, koç önerileri, audit ve makbuz tek transaction; ürün olayı ve ürünler arası bildirim commit sonrası.
+- Komutlar: `score` (`odk:result:score`), `rescore` (`odk:key:revise`, taze step-up; yayınlanmış sonuç için açık onay), `release` (`odk:result:release`, taze step-up), `question.update` (tek soru; diğer sorular ve içerik alanları korunur, web editörüyle aynı kazanım kuralları). Kazanım arama `GET .../exams/[id]/outcomes?q=` (aktif katalog, 30 sonuç).
+- Puanlama sekmesi projeksiyonu: sonuç özeti; tablo ve yayın önizlemesi (inceleme bekleyenler dahil / hariç) yalnız puanlama izniyle; öğrenci yalnız adla.
+- Düzeltme: sonuç özeti bölüm ortalamaları, puanlama motorunun `sectionId`/`correct` satırlarını bölüm bazında topluyor (önceden `code` aranıyordu ve çok bölümlü denemelerde tüm bölümler tek kovada birleşiyordu; web sonuç paneli ve raporlar da etkileniyordu).
+- Mobil: sonuç tablosu, teslimleri puanla, yeniden puanla, yayın önizleme → satır içi onay → yayınla; 428'de native doğrulama ve aynı işlem anahtarıyla tek tekrar. Soru satırından düzenleme sayfası. Web devam yolu kalmadı.
+- Kanıt: 1009 birim, 58 mobil paket / 317 test, PostgreSQL entegrasyonu 144/146 (iki başarısızlık main'de de aynı; yeni test puanla → yayın makbuzu, yayınlanmış sonuçta onaysız yeniden puanlama reddi, soru düzenlemede içerik korunması ve geçersiz kazanım reddi); `next build` başarılı.
+- Matris: 95 Tam / 2 Kısmi / 2 Eksik / 1 İstisna / 6 Yönl. P4 kod eşliği tamamlandı; kalan: T07/S18/V11 Dino (dış inceleme), C09 passkey, staffPush production kararı, P2.9/P6 gerçek cihaz kabulü.

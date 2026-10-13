@@ -7,9 +7,10 @@ import { prisma } from "@/lib/prisma";
 import { istanbulWeekStart } from "@/lib/istanbul-time";
 import { buildCoachSuggestions } from "@/lib/odk/coach-suggestions";
 
-export async function createCoachSuggestionsFromReleasedExam(examId: string, now = new Date()) {
+/** `db`: yayın transaction'ı içinde çağrılırsa öneriler yayınla birlikte atomik yazılır. */
+export async function createCoachSuggestionsFromReleasedExam(examId: string, now = new Date(), db: Pick<typeof prisma, "odkExamAttempt" | "weeklyPlanSuggestion"> = prisma) {
   const weekStart = istanbulWeekStart(now);
-  const attempts = await prisma.odkExamAttempt.findMany({
+  const attempts = await db.odkExamAttempt.findMany({
     where: {
       examId,
       status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] },
@@ -63,7 +64,7 @@ export async function createCoachSuggestionsFromReleasedExam(examId: string, now
     if (!suggestions.length) continue;
 
     for (const suggestion of suggestions) {
-      const existing = await prisma.weeklyPlanSuggestion.findFirst({
+      const existing = await db.weeklyPlanSuggestion.findFirst({
         where: {
           studentId,
           weekStart,
@@ -75,7 +76,7 @@ export async function createCoachSuggestionsFromReleasedExam(examId: string, now
       });
       if (existing) continue;
 
-      await prisma.weeklyPlanSuggestion.create({
+      await db.weeklyPlanSuggestion.create({
         data: {
           studentId,
           weekStart,

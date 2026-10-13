@@ -20,7 +20,7 @@ import type { DeviceRegistration } from '@/lib/api/push';
 
 export type PushSupport =
   | { supported: true; projectId: string }
-  | { supported: false; reason: 'SIMULATOR' | 'EXPO_GO' | 'NO_PROJECT_ID' | 'WEB' };
+  | { supported: false; reason: 'SIMULATOR' | 'EXPO_GO' | 'NO_PROJECT_ID' | 'NO_FCM' | 'WEB' };
 
 export function pushSupport(): PushSupport {
   if (Platform.OS === 'web') return { supported: false, reason: 'WEB' };
@@ -29,6 +29,8 @@ export function pushSupport(): PushSupport {
   if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) return { supported: false, reason: 'EXPO_GO' };
   const projectId = (Constants.expoConfig?.extra as { eas?: { projectId?: string } } | undefined)?.eas?.projectId ?? Constants.easConfig?.projectId;
   if (!projectId) return { supported: false, reason: 'NO_PROJECT_ID' };
+  // Android token'ı Firebase (FCM) ister; derlemeye `google-services.json` girmediyse (app.config `extra.push.androidFcm`) desteklenmez.
+  if (Platform.OS === 'android' && (Constants.expoConfig?.extra as { push?: { androidFcm?: boolean } } | undefined)?.push?.androidFcm !== true) return { supported: false, reason: 'NO_FCM' };
   return { supported: true, projectId };
 }
 
@@ -47,6 +49,8 @@ export async function getPermission(): Promise<PermissionState> {
 export async function requestPermission(): Promise<PermissionState> {
   const current = await getPermission();
   if (current.status === 'granted' || !current.canAskAgain) return current;
+  // Android 13+: kanal yokken sistem izin istemi açılmaz.
+  await ensureAndroidChannel();
   return toState(await Notifications.requestPermissionsAsync({ ios: { allowAlert: true, allowBadge: true, allowSound: true } }));
 }
 

@@ -4,7 +4,22 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Mobile 1.0.0 release candidate
+
+- iOS privacy manifest (no tracking; declared required-reason APIs), Turkish app localization (store language and system dialogs), splash background matching the brand image, and a store link on the forced-upgrade screen (`MOBILE_IOS_APP_STORE_ID` for iOS).
+- Store payment policy: the parent "package change meeting" call to action and the billing settings section are no longer shown in the app (web only); customer copy no longer refers to purchases or payments.
+- Android: themed (monochrome) launcher icon, white notification icon with brand color, notification channel created before the Android 13+ permission prompt, and Firebase (`GOOGLE_SERVICES_JSON` EAS file variable) wiring; without it Android push reports "not configured" instead of failing.
+- Release status and the ordered human release steps: `docs/mobile/v1-release-candidate.md`.
+
 ### Added
+
+- Native Deneme Ligi scoring and release (K03c): results table, score, rescore and two-step release with native step-up, plus per-question editing (answer key, difficulty, booklet page, outcomes with catalog search); web endpoints share the same service layer and the mobile command keeps score, release, coach suggestions, audit and receipt in one transaction.
+
+- Native Deneme Ligi exam preparation writes (K03b): schedule/security edit, mark ready, schedule, session durations, assignments by group/class/package/cohort/email, answer-key and outcome JSON import (validate → apply), draft PDF upload and previews; the web endpoints and the mobile command share one service layer, with actor-scoped receipts, in-transaction revision checks and identical rejection messages.
+
+- Native Deneme Ligi exam workspace (K03a, read): permission-scoped tabs, lifecycle/readiness/issues, questions, files, sessions, schedule, live counters, reports, history and exam-scoped integrity review, sharing one loader with the web page; exam list, scoring queue and notifications now open it natively.
+
+- Native Deneme Ligi live operations console (K04) with shared web loader, filters, counters, alerts, 15-second auto refresh, attempt event timeline and integrity review; review writes share one service with the web endpoint and use actor-scoped receipts and revision checks.
 
 - Native authenticator (TOTP) enrollment/replacement with one-time recovery codes, an in-app account deletion request (password re-check, single open request, admin notification, DSR conflict guard), and staff push notifications behind `PANEL_FEATURE_STAFF_PUSH` (generic lock-screen copy, finance/order paths excluded).
 
@@ -135,6 +150,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - Parent academic access now requires an active, unended link with `canViewAcademic`, across parent pages, student-success APIs, Deneme Ligi parent reports, material access, weekly-digest feedback and lesson notifications; the account and package screen keeps working for links without academic access
 
 ### Fixed
+
+- Exam result summaries now average sections per section using the scoring engine's stored section rows; previously all sections collapsed into one bucket.
 
 - Teacher intervention retries retain the original request, case version and revision across a background refresh after an uncertain network result.
 

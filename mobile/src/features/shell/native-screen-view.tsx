@@ -53,6 +53,7 @@ import OdkManagementExamsScreen from '../staff/odk/management-exams';
 import OdkManagementResultsScreen from '../staff/odk/management-results';
 import OdkManagementReportsScreen from '../staff/odk/management-reports';
 import OdkManagementPilotScreen from '../staff/odk/management-pilot';
+import OdkManagementOperationsScreen from '../staff/odk/management-operations';
 import OdkManagementHomeScreen from '../staff/odk/management-home';
 import OdkManagementPackagesScreen from '../staff/odk/management-packages';
 import TeacherAiDraftsScreen from '../staff/teacher/teacher-ai-drafts';
@@ -109,6 +110,7 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'odk-management-results': () => <OdkManagementResultsScreen />,
   'odk-management-reports': () => <OdkManagementReportsScreen />,
   'odk-management-pilot': () => <OdkManagementPilotScreen />,
+  'odk-management-operations': () => <OdkManagementOperationsScreen />,
   'odk-management-home': () => <OdkManagementHomeScreen />,
   'odk-management-packages': () => <OdkManagementPackagesScreen />,
   'teacher-ai-drafts': () => <TeacherAiDraftsScreen />,

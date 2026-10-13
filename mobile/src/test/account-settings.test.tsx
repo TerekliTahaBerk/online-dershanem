@@ -144,18 +144,16 @@ describe('P5.2 Hesap ayarları', () => {
   });
 });
 
-describe('V10 Veli paket görüşmesi', () => {
-  it('veli hesap ekranından seçili çocuk için onaylı talep gönderir', async () => {
-    jest.spyOn(Alert, 'alert').mockImplementation((_title, _body, buttons) => buttons?.at(-1)?.onPress?.());
+describe('V10 Veli hesap (mağaza ödeme politikası)', () => {
+  it('veli hesap ekranı paket değişikliği / satış görüşmesi çağrısı göstermez', async () => {
     const h = await parent({
       'GET /api/panel/parent/account': () => jsonResponse(200, { contractVersion: 1, parent: { fullName: 'Ayşe Kaya', email: 'parent@example.com', hasPhone: true }, children: [{ studentId: 'child-1', name: 'Can Kaya', products: [{ code: 'OD', label: 'onlinedershanem.' }], academicAccess: true }] }),
-      'POST /api/panel/parent/account/package-meeting': () => jsonResponse(200, { ok: true, message: 'Görüşme talebiniz alındı. Ekibimiz sizinle iletişime geçecek.', replayed: false }),
     });
     await go('/screen/account');
-    await press(h, await h.screen.findByTestId('package-meeting-child-1', {}, WAIT));
-    expect(await h.screen.findByText('Görüşme talebiniz alındı. Ekibimiz sizinle iletişime geçecek.', {}, WAIT)).toBeTruthy();
-    expect(h.server.called('POST', '/api/panel/parent/account/package-meeting')[0].body).toEqual({ studentId: 'child-1', idempotencyKey: expect.stringMatching(/^[0-9a-f-]{36}$/) });
+    expect(await h.screen.findByText('Can Kaya', {}, WAIT)).toBeTruthy();
     expect(h.screen.getByTestId('parent-settings')).toBeTruthy();
+    expect(h.screen.queryByTestId('package-meeting-child-1')).toBeNull();
+    expect(h.screen.queryByText(/paket|satın/i)).toBeNull();
   });
 });
 

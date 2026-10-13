@@ -6,6 +6,16 @@ import { DEFAULT_EXAM_SECURITY_POLICY, parseExamSecurityPolicy, securityPolicySu
 import { integrityEventRetentionCutoff, purgeableIntegrityEventTypes } from "./event-retention";
 import { buildCoachSuggestions } from "./coach-suggestions";
 
+test("sonuç özeti puanlama motorunun bölüm satırlarını (sectionId/correct) bölüm bazında toplar", () => {
+  const base = { status: "SUBMITTED", integrityLevel: "NORMAL" as const, startedAt: new Date("2026-01-01T10:00:00Z"), submittedAt: new Date("2026-01-01T11:00:00Z") };
+  const score = (mat: number, tr: number) => ({ correctCount: 0, wrongCount: 0, blankCount: 0, totalNet: mat + tr, publicationStatus: "HIDDEN" as const, sectionBreakdown: [{ sectionId: "s-mat", title: "Matematik", questionCount: 40, correct: mat, net: mat }, { sectionId: "s-tr", title: "Türkçe", questionCount: 40, correct: tr, net: tr }] });
+  const summary = buildExamResultsSummary({ assignmentCount: 2, attempts: [{ ...base, id: "1", studentName: "A", score: score(20, 30) }, { ...base, id: "2", studentName: "B", score: score(30, 10) }] });
+  assert.deepEqual(summary.sectionAverages, [
+    { code: "s-mat", title: "Matematik", averageNet: 25, averageAccuracy: 62.5 },
+    { code: "s-tr", title: "Türkçe", averageNet: 20, averageAccuracy: 50 },
+  ]);
+});
+
 test("sonuç özeti ortalama / medyan / integrity sayar", () => {
   const summary = buildExamResultsSummary({
     assignmentCount: 5,

@@ -16,8 +16,8 @@ export const odkExamEditorInclude = {
   },
 } as const;
 
-export async function getOdkExamReadiness(examId: string) {
-  const exam = await prisma.odkExam.findUnique({ where: { id: examId }, include: odkExamEditorInclude });
+export async function getOdkExamReadiness(examId: string, db: Pick<typeof prisma, "odkExam"> = prisma) {
+  const exam = await db.odkExam.findUnique({ where: { id: examId }, include: odkExamEditorInclude });
   if (!exam?.currentVersion) return { exam, issues: [{ level: "error" as const, code: "VERSION_MISSING", message: "Aktif sınav sürümü bulunamadı." }] };
   const version = exam.currentVersion;
   const issues = validateVersionReadiness({

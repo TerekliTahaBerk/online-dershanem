@@ -7,23 +7,14 @@ import { EmptyState, PageHeader, StatusBadge, UrlDrawer, buttonClass } from "@/c
 import { OdkOperationsRefresh } from "@/components/odk/odk-operations-refresh";
 import { AttemptReviewActions } from "@/components/odk/attempt-review-actions";
 import { attemptStatusPresentation, integrityLevelPresentation } from "@/lib/odk/presentation";
-import {
-  OPS_HEARTBEAT_FILTERS,
-  OPS_STATUS_FILTERS,
-  attemptEventPresentation,
-  examWorkspaceHref,
-  opsAttemptMatches,
-  opsCounters,
-  opsStateOf,
-  parseOpsFilter,
-} from "@/lib/odk/staff-workspace";
+import { OPS_HEARTBEAT_FILTERS, OPS_STATUS_FILTERS, attemptEventPresentation, examWorkspaceHref, opsStateOf } from "@/lib/odk/staff-workspace";
+import { loadOdkOpsConsole } from "@/lib/odk/ops-console-server";
 
 export const dynamic = "force-dynamic";
 
 const TIME = new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "Europe/Istanbul" });
 const DATE_TIME = new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Istanbul" });
 const TONE = { neutral: "neutral", info: "info", warning: "warning", success: "success", danger: "critical" } as const;
-const views = ["all", "live", "attention"] as const;
 const STATUS_LABEL: Record<(typeof OPS_STATUS_FILTERS)[number], string> = {
   tumu: "Tüm durumlar",
   devam: "Devam ediyor",
@@ -37,7 +28,6 @@ const HEARTBEAT_LABEL: Record<(typeof OPS_HEARTBEAT_FILTERS)[number], string> = 
   "5": "5 dk'dan eski",
   "10": "10 dk'dan eski",
 };
-const INTEGRITY_FILTERS = ["tumu", "REVIEW", "HIGH"] as const;
 const SELECT = "min-h-8 rounded-md border border-pn-border-strong bg-white px-2 text-[13px] text-pn-text";
 
 function ageLabel(now: Date, at: Date) {
@@ -64,68 +54,7 @@ export default async function OdkOperationsPage({
   const session = await requireStaffPermission("odk:ops:live");
   const canReview = await hasStaffPermission(session.userId, "odk:integrity:review");
   const params = await searchParams;
-  const query = params.q?.trim().toLocaleLowerCase("tr-TR").slice(0, 80) || "";
-  const view = views.includes(params.gorunum as (typeof views)[number]) ? (params.gorunum as (typeof views)[number]) : "all";
-  const filters = {
-    status: parseOpsFilter(params.durum, OPS_STATUS_FILTERS),
-    integrity: parseOpsFilter(params.butunluk, INTEGRITY_FILTERS),
-    heartbeat: parseOpsFilter(params.kalp, OPS_HEARTBEAT_FILTERS),
-  };
-  const now = new Date();
-  const exams = await prisma.odkExam.findMany({
-    where: { status: { in: ["SCHEDULED", "LIVE"] }, endsAt: { gte: new Date(now.getTime() - 24 * 60 * 60_000) } },
-    orderBy: { startsAt: "asc" },
-    take: 30,
-    select: {
-      id: true,
-      title: true,
-      family: true,
-      status: true,
-      startsAt: true,
-      endsAt: true,
-      meetRequired: true,
-      _count: { select: { assignments: { where: { isActive: true } } } },
-      attempts: {
-        where: { status: { not: "VOID" } },
-        orderBy: { startedAt: "asc" },
-        select: {
-          id: true,
-          status: true,
-          meetAcknowledgedAt: true,
-          startedAt: true,
-          deadlineAt: true,
-          lastActivityAt: true,
-          integrityLevel: true,
-          integrityReviewedAt: true,
-          student: { select: { fullName: true, email: true } },
-          _count: { select: { answers: true } },
-        },
-      },
-    },
-  });
-  const isLive = (exam: (typeof exams)[number]) => Boolean(exam.startsAt && exam.startsAt <= now && exam.endsAt && exam.endsAt > now);
-  const selectable = exams.filter((exam) => {
-    const matchesView =
-      view === "all" ||
-      (view === "live" && isLive(exam)) ||
-      (view === "attention" && exam.attempts.some((attempt) => opsStateOf(attempt, now) === "DISCONNECTED"));
-    const matchesQuery =
-      !query ||
-      exam.title.toLocaleLowerCase("tr-TR").includes(query) ||
-      exam.attempts.some((attempt) => (attempt.student.fullName || attempt.student.email).toLocaleLowerCase("tr-TR").includes(query));
-    return matchesView && matchesQuery;
-  });
-  const selected = selectable.find((exam) => exam.id === params.deneme) ?? selectable.find(isLive) ?? selectable[0] ?? null;
-  const counters = selected ? opsCounters(selected.attempts, selected._count.assignments, now) : null;
-  const rows = selected
-    ? selected.attempts
-        .filter((attempt) => opsAttemptMatches(attempt, filters, now))
-        .filter((attempt) => !query || selected.title.toLocaleLowerCase("tr-TR").includes(query) || (attempt.student.fullName || attempt.student.email).toLocaleLowerCase("tr-TR").includes(query))
-        .sort((a, b) => Number(opsStateOf(b, now) === "DISCONNECTED") - Number(opsStateOf(a, now) === "DISCONNECTED"))
-    : [];
-  const alerts = selected
-    ? selected.attempts.filter((attempt) => opsStateOf(attempt, now) === "DISCONNECTED" || (attempt.integrityLevel !== "NORMAL" && !attempt.integrityReviewedAt))
-    : [];
+  const { now, view, filters, selectable, selected, counters, rows, alerts, isLive } = await loadOdkOpsConsole(params);
 
   const baseParams = () => {
     const search = new URLSearchParams();

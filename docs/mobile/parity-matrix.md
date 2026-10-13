@@ -38,25 +38,25 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | Alan | Rota | Tam | Kısmi | Eksik | İstisna | Yönl. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1. Yönetim (`/panel/yonetim`) | 28 | 27 | 0 | 0 | 0 | 1 |
-| 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 6 | 0 | 2 | 0 | 0 |
+| 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 8 | 0 | 0 | 0 | 0 |
 | 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 19 | 1 | 0 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 5. Öğrenci (`/panel/ogrenci`) | 18 | 16 | 0 | 1 | 0 | 1 |
 | 6. Deneme Ligi öğrenci (`/panel/odk/ogrenci`) | 5 | 4 | 0 | 0 | 1 | 0 |
-| 7. Veli (`/panel/veli`) | 12 | 9 | 0 | 1 | 0 | 2 |
+| 7. Veli (`/panel/veli`) | 12 | 8 | 0 | 1 | 1 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 8 | 1 | 0 | 0 | 2 |
-| **Toplam** | **106** | **93** | **2** | **4** | **1** | **6** |
+| **Toplam** | **106** | **94** | **2** | **2** | **2** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
 ### Ana bulgular
 
 1. **Yönetim kod eşliği tamamlandı.** P2.9 gerçek HTTP/iPhone kabulü ve P1 operasyon kanıtı açık.
-2. **Deneme Ligi yönetiminde K01, K02, K05, K06, K07 ve K08 native tamamlandı.** K03/K04 okumaları ile sınav editörü, puanlama ve yayın yazmaları açık; mevcut `/api/odk/admin/**` servisleri ve personel izinleri temel alınacak.
+2. **Deneme Ligi yönetimi (K01–K08) native tamamlandı.** K03 çalışma alanı okuma (K03a), hazırlık yazmaları ve soru düzenleme (K03b) ile puanla / yeniden puanla / yayın (K03c, step-up) web uçlarıyla aynı `lib/odk` servislerini kullanır.
 3. **Server Action kalanı yok:** V10 paket görüşmesi ve C07/C08 yedi ayar action'ı (P5.2), Y27 ve T20 ortak servis + native uçlara taşındı.
 4. **S12/V09 geri bildirim yetkisi düzeltildi.** OD/OK öğrenci ve aktif akademik veli bağı gerçek HTTP ile doğrulandı. V07 veli görüşme kapsamı PostgreSQL ile doğrulandı (P5.1).
-5. **P4 kalanları:** K03 kapsamlı sınav çalışma alanı ve K04 canlı operasyon/müdahale. K05/K06/K07 okumaları ve K08 pilot yönetimi native tamamlandı.
+5. **P4 kod eşliği tamamlandı.** Gerçek cihaz kabulü P6 kapsamında açık.
 
 ---
 
@@ -103,8 +103,8 @@ Mobil karşılık: `odk-management-*` ekranları ADMIN ve yetkili ODK personeli;
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | K01 | `/panel/odk/yonetim` | `today` | O: personel çalışma alanı özeti, pilot hazırlığı | `odk/admin-exam-server.ts`, `odk/pilot-readiness-server.ts` | Ortak GET projeksiyonu | `odk-management-home` | Tam | P4 | |
 | K02 | `/panel/odk/yonetim/sinavlar` | `odk-exams` | O: sınav listesi · Y: sınav oluştur, seri oluştur | `odk/admin/exams` POST, `odk/admin/exam-series` POST | Ortak GET/POST + sürüm/receipt | `odk-management-exams` | Tam | P4 | |
-| K03 | `/panel/odk/yonetim/sinavlar/[id]` | — | O: sınav detayı, önizleme, sonuçlar, dosya, girişim · Y: düzenle, sorular, cevap anahtarı içe aktar (doğrula/uygula), kazanım içe aktar, dosya yükle, hazır işaretle, takvim, oturumlar, atamalar, puanla, yeniden puanla, yayın önizleme, yayınla, girişim düzelt | `odk/admin/exams/[id]` PATCH + `{questions,imports/answer-key,imports/outcomes,files,preview,ready,schedule,sessions,assignments,score,rescore,results,release/preview,release}`, `odk/admin/files/[fileId]`, `odk/admin/attempts/[id]` | Hazır (detay okuma RSC → GET eklenmeli) | — | Eksik | P4 | Yayın/yeniden puanlama/anahtar → step-up. "Önizleme" çözme değildir |
-| K04 | `/panel/odk/yonetim/operasyon` | `odk-ops` | O: canlı oturumlar, ihlal/bağlantı sayaçları · Y: girişim müdahalesi | `odk/admin/attempts/[id]` GET/PATCH | Y var, O yok | — | Eksik | P4 | Aralıklı yenileme |
+| K03 | `/panel/odk/yonetim/sinavlar/[id]` | — | O: sınav detayı, önizleme, sonuçlar, dosya, girişim · Y: düzenle, sorular, cevap anahtarı içe aktar (doğrula/uygula), kazanım içe aktar, dosya yükle, hazır işaretle, takvim, oturumlar, atamalar, puanla, yeniden puanla, yayın önizleme, yayınla, girişim düzelt | `loadOdkExamWorkspace` (`lib/odk/exam-workspace-server.ts`); yazmalar `lib/odk/exam-commands-server.ts` + `exam-results-commands.ts` (web `odk/admin/exams/[id]/**` uçları aynı servisleri çağırır) | `GET`/`POST /api/panel/odk/management/exams/[id]` (`exam-command-runner`: işlem anahtarı + revizyon, makbuz, rescore/yayın step-up), `.../outcomes` kazanım arama, PDF `odk/admin/exams/[id]/files`; bütünlük paneli `.../attempts/[attemptId]` + review | `odk/manage/[id]` | Tam | P4.3 | K03a okuma + bütünlük incelemesi; K03b zamanlama/güvenlik, hazır/planla, oturumlar, soru düzenleme (anahtar/zorluk/sayfa/kazanım), atamalar, JSON içe aktarma, PDF, önizleme; K03c sonuç tablosu, puanla, yeniden puanla, yayın önizleme → onay → yayın (native step-up). Kanıt: `mobile/src/test/odk-management-exam*.test.tsx`, `tests/integration/odk-exam-commands.integration.ts` |
+| K04 | `/panel/odk/yonetim/operasyon` | `odk-ops` | O: canlı oturumlar, ihlal/bağlantı sayaçları · Y: girişim müdahalesi | `loadOdkOpsConsole` (`lib/odk/ops-console-server.ts`, sayfadan taşındı); yazma `odk/admin/attempts/[id]` PATCH → `reviewAttemptIntegrity` | Hazır (`GET /api/panel/odk/management/operations`, `.../attempts/[id]`, `POST .../attempts/[id]/review`) | `odk-management-operations` | Tam | P4.2 | 15 sn otomatik yenileme (kapatılabilir; panel açıkken durur). İnceleme `odk:integrity:review`, işlem anahtarı + okunan sürüm (409); yalnız izlenen denemelerin kayıtları. `odk-operations.integration.ts`, `odk-management-operations.test.tsx` |
 | K05 | `/panel/odk/yonetim/sonuclar` | `odk-results` | O: puanlama/yayın kuyruğu + filtre | `odk/results-queue-server.ts` | Ortak GET projeksiyonu | `odk-management-results` | Tam | P4 | Eylemler K03 üzerinden; detay şimdilik web’de |
 | K06 | `/panel/odk/yonetim/raporlar` | `odk-reports` | O: kitle bazlı sonuç raporları | `odk/reporting-server.ts`, `odk/report-table-server.ts` | Ortak GET projeksiyonu | `odk-management-reports` | Tam | P4 | Genel rapor yalnız `odk:report:read_all`; ilişkili öğretmen ayrı |
 | K07 | `/panel/odk/yonetim/paketler` | `odk-packages` | O: ticari paket sözleşmesi | `odk/product-contract` (RSC) | Ortak GET projeksiyonu | `odk-management-packages` | Tam | P4 | Salt okuma |
@@ -188,7 +188,7 @@ Mobil karşılık: `odk-management-*` ekranları ADMIN ve yetkili ODK personeli;
 | V07 | `/panel/veli/kocluk` | `coaching` | O · Y: görüşme saat değişikliği talebi, katılım bağlantısı | Hazır (`coaching-sessions/[id]` REQUEST) | `parent-coaching` | Tam | P5.1 | Görülen sürüm + işlem anahtarı; HTTPS katılım bağlantısı (öneri bekleyen/geçmiş görüşmede yok). Veli kapsamı (aktif bağ, `canViewAcademic`, çocuğun OK üyeliği) `parent-coaching-scope.integration.ts` ile doğrulandı |
 | V08 | `/panel/veli/denemeler` | `mock-exams` | O | Hazır | `parent-external-exams` | Tam | — | |
 | V09 | `/panel/veli/haftalik` | `weekly-digest` | O · Y: geri bildirim | Hazır | `parent-weekly` | Tam | — | Hedef çocuğun OD/OK üyeliği + aktif akademik veli bağı; `mobile-p5-basics.spec.ts` olumlu/yabancı/pasif/izinsiz bağ testleri |
-| V10 | `/panel/veli/hesap` | `account` | O: hesap ve paket · Y: paket görüşmesi iste | `POST /api/panel/parent/account/package-meeting` (SA ile ortak `lib/panel/parent-package-meeting.ts`) | `parent-account` | Tam | P5.2 | Yalnız `account` amaçlı bağlı çocuk; onaylı talep, işlem anahtarıyla tek `LeadSubmission`. Fiyat / satın alma yok (MD-09). `account-settings.integration.ts`, `account-settings.test.tsx` |
+| V10 | `/panel/veli/hesap` | `account` | O: hesap ve paket · Y: paket görüşmesi iste | `POST /api/panel/parent/account/package-meeting` (SA ile ortak `lib/panel/parent-package-meeting.ts`) | `parent-account` (yalnız O) | İstisna | V1.0 | Mağaza ödeme politikası (Apple 3.1.1 / Google Payments, MD-09): paket ekleme/değiştirme görüşmesi uygulama dışı satın almaya çağrı sayılır; mobilde gösterilmez, web'de kalır. Hesap/bağlı öğrenci okuması native. `account-settings.test.tsx` çağrının görünmediğini doğrular |
 | V11 | `/panel/veli/dino` | `dino` | O · Y: Dino | Hazır | web devam (`PARENT_WEB_ONLY`) | Eksik | P5 | |
 | V12 | `/panel/veli/bildirimler` | — | — | — | — | Yönl. | — | `redirect → /panel/bildirimler` |
 
@@ -210,7 +210,7 @@ Mobil karşılık: `odk-management-*` ekranları ADMIN ve yetkili ODK personeli;
 | C05 | `/panel/oturumlar` | O · Y: oturum kapat, diğerlerini kapat | Hazır | `account/sessions` | Tam | — | |
 | C06 | `/panel/parola` | Y: parola değiştir | Hazır | `account/password`, `change-password` | Tam | — | |
 | C07 | `/panel/ayarlar` | O: ayar bölümleri | `GET /api/panel/me/settings` (`lib/account/settings-service.ts`) | `account/settings` | Tam | P5.2 | Tamamlama listesi bölüme götürür; aktif paketler (satın alma bağlantısı yok); panel tercihleri bayrağa bağlı |
-| C08 | `/panel/ayarlar/[section]` | Y: profil, iletişim, eğitim, fatura, onaylar, bekleyen çocuk ekle/iptal (7 SA) | `POST /api/panel/me/settings` (7 SA ile ortak servis) | `account/settings/[section]` | Tam | P5.2 | Rol bölüm kapsamı (403), revizyon (409 `STALE_REVISION`), aktör kapsamlı makbuz; KVKK tek yönlü; ödemesi alınmış çocuk kaldırılamaz |
+| C08 | `/panel/ayarlar/[section]` | Y: profil, iletişim, eğitim, fatura, onaylar, bekleyen çocuk ekle/iptal (7 SA) | `POST /api/panel/me/settings` (7 SA ile ortak servis) | `account/settings/[section]` | Tam | P5.2 | Rol bölüm kapsamı (403), revizyon (409 `STALE_REVISION`), aktör kapsamlı makbuz; KVKK tek yönlü; ödemesi alınmış çocuk kaldırılamaz. Fatura bölümü yalnız web satın alma akışına hizmet ettiği için mobilde listelenmez (V1.0 mağaza ödeme politikası; web'de kalır) |
 | C09 | `/panel/guvenlik` | O: MFA durumu · Y: TOTP kaydı, passkey, kod doğrulama (step-up) | Hazır (`auth/mfa/totp/enroll`) | `mfa` (giriş kapısı + ilk kurulum), `account/security`, `StepUpProvider` | Kısmi | P5.3 | TOTP ilk kurulum / değiştirme ve tek seferlik kurtarma kodları native (`account-security.test.tsx`). Kalan: passkey ekle/kaldır/doğrula — platform passkey modülü ve alan adı ilişkisi (AASA `webcredentials`) dış karar; o zamana kadar web devam yolu |
 | C10 | `/panel/erisilebilirlik` | Y: erişilebilirlik tercihleri | O: `me/settings` · Y: mevcut PATCH (`expectedVersion`) | `account/accessibility` | Tam | P5.2 | Bayrak kapalıyken kapalı; 409'da güncel sürüm yeniden okunur |
 | C11 | `/panel/veri-kullanimi` | Y: düşük veri tercihleri | O: `me/settings` · Y: mevcut PATCH (`expectedVersion`) | `account/data-usage` | Tam | P5.2 | `offlineMode` bayrağı kapalıyken kapalı; çevrimdışı yazma tercihi yalnız web paneline uygulanır |
@@ -240,10 +240,10 @@ Onaylı istisnalar **alt işlem** düzeyindedir; etkilenen satırlar kalan alt i
 
 | Tür | Satırlar | Adet |
 | --- | --- | ---: |
-| GET projeksiyonu (O yok / Y var, O yok) | K03, K04 | 2 |
+| GET projeksiyonu (O yok / Y var, O yok) | — | 0 |
 | Server Action → `lib/` servisi + route | V10 (1), C07–C08 (7); Y27 ortak servislere taşındı | 2 dosya / 8 eylem |
 | Yetki düzeltmesi / kabul | V07 (veli görüşme işlemleri); S12/V09 ve T15 düzeltildi ve HTTP ile doğrulandı | 1 |
-| Yalnız mobil sözleşme + ekran (API hazır) | K03 (+ detay GET), S18, V11, C09 (passkey) | 4 |
+| Yalnız mobil sözleşme + ekran (API hazır) | S18, V11, C09 (passkey) | 3 |
 
 ## Bakım
 
