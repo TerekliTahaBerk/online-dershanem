@@ -8,6 +8,8 @@ Tarih: 10 Ekim 2026. Kapsam: Online Dershanem mobil 1.0.0.
 
 Uygulanan kontroller: veli hesap sayfasından paket ekleme/değiştirme yönlendirmesi kaldırıldı; mobil menü “Hesap” etiketi kullanıyor; checkout/PAYTR/ödeme/sipariş/paket satış yolları web handoff ve navigation projeksiyonunda reddediliyor; materyal dış URL'leri HTTPS zorunlu, PAYTR hostu ve bilinen ticaret yolları reddediliyor. Generic browser açıldıktan sonra web sitesinin bütün navigasyonunu kontrol etmek mümkün değil; review öncesi izinli handoff hedeflerinin satış CTA taşımadığı gerçek QA ile doğrulanmalı. Sunucudaki ders/materyal linkleri de satışa yönlendirmemeli.
 
+13 Ekim 2026 RC temizliği: P5.2 ile mobile gelen veli "paket değişikliği görüşmesi" çağrısı (uygulama dışı satın almaya çağrı riski) ve ayarlardaki "Fatura bilgileri" bölümü mobilden kaldırıldı; web'de kalır. "Paket satın alındığında", "ödeme sırasında", "Ödeme alındı" gibi müşteri metinleri nötrleştirildi. Personel arka ofis ekranları (sipariş, paket fiyatı, işletme) yalnız yetkili kurum çalışanlarına açıktır ve müşteri satış akışı değildir. Kanıt: `account-settings.test.tsx`.
+
 ## Politika sınıflandırması — karar bekliyor
 
 | Hizmet | İncelenecek kategori |

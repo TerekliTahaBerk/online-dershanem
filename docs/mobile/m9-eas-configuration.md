@@ -12,7 +12,7 @@ Tarih: 10 Ekim 2026. Kapsam: Online Dershanem mobil 1.0.0.
 
 `expo-dev-client` ve `expo-updates` SDK 57 uyumlu sürümleri kilit dosyasında. `app.config.ts` native profillerde kimlik, EAS UUID, HTTPS köken ve ortam eşleşmesini zorunlu tutar. Localhost/private IP, path/query/credential içeren API URL reddedilir. Preview/development bilinen production alan adını kullanamaz. Operasyonun MOBILE_STAGING_API_ORIGIN değerinin gerçekten ayrı DB kullandığını ayrıca kanıtlaması gerekir; hostname kontrolü DB izolasyonu kanıtlamaz.
 
-EAS ortamlarına EXPO_PUBLIC_API_URL, EXPO_PUBLIC_APP_ENV, MOBILE_IOS_BUNDLE_ID, MOBILE_ANDROID_PACKAGE, EAS_PROJECT_ID ve ilgili MOBILE_*_API_ORIGIN girilir. İlk iki değer client bundle'dadır. Diğer alanlara da secret konulmaz. Aynı anda kurulum için environment bazında gerçek, kayıtlı farklı ID'ler kullanın. Display name Dev/Preview eki taşır; kalıcı ID otomatik türetilmez.
+EAS ortamlarına EXPO_PUBLIC_API_URL, EXPO_PUBLIC_APP_ENV, MOBILE_IOS_BUNDLE_ID, MOBILE_ANDROID_PACKAGE, EAS_PROJECT_ID ve ilgili MOBILE_*_API_ORIGIN girilir. Production'a ayrıca MOBILE_IOS_APP_STORE_ID (App Store Connect Apple ID, yalnız rakam; zorunlu güncelleme ekranının mağaza bağlantısı) girilir; tanımsızsa iOS'ta buton gizlenir. İlk iki değer client bundle'dadır. Diğer alanlara da secret konulmaz. Aynı anda kurulum için environment bazında gerçek, kayıtlı farklı ID'ler kullanın. Display name Dev/Preview eki taşır; kalıcı ID otomatik türetilmez.
 
 ## Sürüm ve güncellemeler
 

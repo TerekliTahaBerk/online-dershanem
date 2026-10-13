@@ -1,5 +1,7 @@
 # M9 yayın kapısı kontrol listesi
 
+> **13 Ekim 2026 güncellemesi:** Güncel yayın durumu ve adımlar [v1-release-candidate](./v1-release-candidate.md) belgesindedir; bu belge tarihsel kayıttır.
+
 Tarih: 10 Ekim 2026. Kapsam: Online Dershanem mobil 1.0.0.
 
 | Kapı | Gereksinim | Durum / sahip |

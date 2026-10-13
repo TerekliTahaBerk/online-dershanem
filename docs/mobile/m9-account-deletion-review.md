@@ -2,7 +2,9 @@
 
 Tarih: 10 Ekim 2026. Kapsam: Online Dershanem mobil 1.0.0.
 
-Durum: **PARTIAL (giriş noktası), BLOCKED (store-compliant tamamlanma)**.
+Durum (13 Ekim 2026): **Uygulama içi başlatma tamam (P5.3)**; talebin işlenme süresi/saklama kararları hukuk + operasyonda. 10 Ekim durumu: PARTIAL / BLOCKED.
+
+P5.3 ile Hesap → Hesabımı sil ekranı parolayla yeniden doğrulanan, kullanıcı başına tek açık talep tutan ve makbuzla kaydedilen bir silme talebi oluşturur (`POST /api/panel/me/deletion-request`, `lib/account/deletion-request.ts`); yöneticilere bildirim gider ve talep mevcut DSR sürecine girer. Mobilde hesap oluşturma yoktur. Kalan: destek SLA'sı, saklama kategorileri ve `/hesap-silme` sayfasının production'da canlı kontrolü ([v1-release-candidate](./v1-release-candidate.md)).
 
 Hesap → Hesabımı sil ekranı e-posta talep hazırlama ve açık saklama/kimlik doğrulama açıklaması içerir. /hesap-silme public bilgi sayfası bu dalda eklendi; henüz deploy edilmedi. Başvuru işlemi başarı veya anında silme gibi sunulmaz. E-posta native composer açılması talebin teslim edildiğini kanıtlamaz. Bu destek mekanizması Apple'ın app içinden başlatılabilen silme şartını tek başına karşıladığı kabul edilmez.
 

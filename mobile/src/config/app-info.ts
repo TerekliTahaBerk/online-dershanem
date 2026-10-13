@@ -42,3 +42,23 @@ export const API_BASE_URL = resolveApiBaseUrl();
 
 /** Web paneli (desteklenmeyen akışlar için "web'de devam et"). API ile aynı köken. */
 export const WEB_BASE_URL = API_BASE_URL;
+
+/**
+ * Güncelleme için mağaza sayfası. Android paket kimliği çalışan uygulamadan
+ * okunur; iOS sayısal App Store kimliği EAS ortamından (`MOBILE_IOS_APP_STORE_ID`
+ * → `extra.store.iosAppStoreId`) gelir. Bilinmiyorsa `null` (buton gizlenir).
+ */
+export function resolveStoreUrls(platform: string, ids: { androidPackage?: string | null; iosAppStoreId?: unknown }): { primary: string; fallback: string } | null {
+  if (platform === 'android' && ids.androidPackage && /^[A-Za-z][\w.]*$/.test(ids.androidPackage)) {
+    return { primary: `market://details?id=${ids.androidPackage}`, fallback: `https://play.google.com/store/apps/details?id=${ids.androidPackage}` };
+  }
+  if (platform === 'ios' && typeof ids.iosAppStoreId === 'string' && /^\d{6,12}$/.test(ids.iosAppStoreId)) {
+    return { primary: `itms-apps://apps.apple.com/app/id${ids.iosAppStoreId}`, fallback: `https://apps.apple.com/app/id${ids.iosAppStoreId}` };
+  }
+  return null;
+}
+
+export const STORE_URLS = resolveStoreUrls(Platform.OS, {
+  androidPackage: Platform.OS === 'android' ? Application.applicationId : null,
+  iosAppStoreId: (Constants.expoConfig?.extra as { store?: { iosAppStoreId?: unknown } } | undefined)?.store?.iosAppStoreId,
+});

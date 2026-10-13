@@ -7,6 +7,25 @@ const required = (name: string) => {
   return value;
 };
 
+/**
+ * iOS gizlilik bildirimi (App Store "required reason API" şartı). Uygulama
+ * izleme yapmaz (reklam/ATT/analitik SDK yok). API nedenleri Expo/React Native
+ * modüllerinin kullandığı kategorilerdir: ayarlar (UserDefaults), dosya zaman
+ * damgası (önbellek/paylaşım), açılış süresi (zamanlayıcı) ve disk alanı
+ * (dosya sistemi). Toplanan veri türleri App Store Connect "App Privacy"
+ * beyanıyla birlikte hukuk onayından sonra eklenir (m9-privacy-disclosures).
+ */
+const PRIVACY_MANIFEST = {
+  NSPrivacyTracking: false,
+  NSPrivacyTrackingDomains: [],
+  NSPrivacyAccessedAPITypes: [
+    { NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryUserDefaults', NSPrivacyAccessedAPITypeReasons: ['CA92.1'] },
+    { NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryFileTimestamp', NSPrivacyAccessedAPITypeReasons: ['0A2A.1', '3B52.1', 'C617.1'] },
+    { NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategorySystemBootTime', NSPrivacyAccessedAPITypeReasons: ['35F9.1'] },
+    { NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryDiskSpace', NSPrivacyAccessedAPITypeReasons: ['E174.1', '85F4.1'] },
+  ],
+};
+
 /** No identities or credentials are guessed. EAS native builds fail before signing. */
 export default ({ config }: ConfigContext): ExpoConfig => {
   const environment = optional('EXPO_PUBLIC_APP_ENV');
@@ -16,6 +35,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   const iosId = nativeBuild ? required('MOBILE_IOS_BUNDLE_ID') : optional('MOBILE_IOS_BUNDLE_ID');
   const androidId = nativeBuild ? required('MOBILE_ANDROID_PACKAGE') : optional('MOBILE_ANDROID_PACKAGE');
   const projectId = nativeBuild ? required('EAS_PROJECT_ID') : optional('EAS_PROJECT_ID');
+  // Zorunlu güncelleme ekranındaki App Store bağlantısı (App Store Connect → Apple ID, yalnız rakam). Gizli değildir.
+  const iosAppStoreId = optional('MOBILE_IOS_APP_STORE_ID');
+  if (iosAppStoreId && !/^\d{6,12}$/.test(iosAppStoreId)) throw new Error('Invalid MOBILE_IOS_APP_STORE_ID');
   if (projectId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(projectId)) throw new Error('Invalid EAS_PROJECT_ID');
   if (iosId && !/^[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(iosId)) throw new Error('Invalid iOS bundle identifier');
   if (androidId && !/^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+$/.test(androidId)) throw new Error('Invalid Android package');
@@ -45,14 +67,22 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   }
   const releaseProfile = profile === 'preview' || profile === 'production';
   const suffix = environment === 'development' ? ' Dev' : environment === 'preview' ? ' Preview' : '';
+  const name = `Online Dershanem${suffix}`;
   return {
     ...config,
-    name: `Online Dershanem${suffix}`,
+    name,
+    // Uygulama yalnız Türkçe: mağaza dil listesi ve sistem iletişim kutuları (bildirim izni, dosya seçici) Türkçe.
+    locales: { tr: { ios: { CFBundleDisplayName: name }, android: { app_name: name } } },
     slug: config.slug ?? 'online-dershanem',
     runtimeVersion: { policy: 'fingerprint' },
     updates: projectId ? { url: `https://u.expo.dev/${projectId}`, enabled: true, checkAutomatically: 'ON_LOAD', fallbackToCacheTimeout: 0 } : { enabled: false },
-    ios: { ...config.ios, ...(iosId ? { bundleIdentifier: iosId } : {}), ...(releaseProfile ? { infoPlist: { ...config.ios?.infoPlist, NSAppTransportSecurity: { NSAllowsArbitraryLoads: false } } } : {}) },
+    ios: {
+      ...config.ios,
+      ...(iosId ? { bundleIdentifier: iosId } : {}),
+      infoPlist: { ...config.ios?.infoPlist, CFBundleDevelopmentRegion: 'tr', ...(releaseProfile ? { NSAppTransportSecurity: { NSAllowsArbitraryLoads: false } } : {}) },
+      privacyManifests: PRIVACY_MANIFEST,
+    },
     android: { ...config.android, ...(androidId ? { package: androidId } : {}), ...(releaseProfile ? { blockedPermissions: [...(config.android?.blockedPermissions ?? []), 'android.permission.SYSTEM_ALERT_WINDOW'] } : {}) },
-    extra: { ...config.extra, ...(projectId ? { eas: { projectId } } : {}) },
+    extra: { ...config.extra, ...(projectId ? { eas: { projectId } } : {}), ...(iosAppStoreId ? { store: { iosAppStoreId } } : {}) },
   };
 };

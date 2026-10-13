@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Mobile 1.0.0 release candidate
+
+- iOS privacy manifest (no tracking; declared required-reason APIs), Turkish app localization (store language and system dialogs), splash background matching the brand image, and a store link on the forced-upgrade screen (`MOBILE_IOS_APP_STORE_ID` for iOS).
+- Store payment policy: the parent "package change meeting" call to action and the billing settings section are no longer shown in the app (web only); customer copy no longer refers to purchases or payments.
+- Release status and the ordered human release steps: `docs/mobile/v1-release-candidate.md`.
+
 ### Added
 
 - Native Deneme Ligi scoring and release (K03c): results table, score, rescore and two-step release with native step-up, plus per-question editing (answer key, difficulty, booklet page, outcomes with catalog search); web endpoints share the same service layer and the mobile command keeps score, release, coach suggestions, audit and receipt in one transaction.
