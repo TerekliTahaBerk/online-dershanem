@@ -224,3 +224,10 @@ describe('yönetim web yolu eşlemesi (Faz 1)', () => {
   expect(mapAdminWebPath('/panel/yonetim/analitik/lead_count', navigation)).toEqual({ kind: 'detail', href: '/admin/metric/lead_count' });
   expect(mapAdminWebPath('/panel/yonetim/analitik/lead_count', { primary: [], sections: [] })).toEqual({ kind: 'none' });
  });
+
+it('ODK management paths distinguish staff home, related reports and pending P4 screens', () => {
+  expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'ODK', item: item('today', '/panel/odk/yonetim') }).key).toBe('odk-management-home');
+  expect(resolveNativeScreen({ role: 'TEACHER', workspace: 'ODK', item: item('today', '/panel/odk/ogretmen') }).key).toBe('teacher-odk-reports');
+  expect(resolveNativeScreen({ role: 'TEACHER', workspace: 'ODK', item: item('odk-packages', '/panel/odk/yonetim/paketler') }).key).toBe('odk-management-packages');
+  expect(resolveNativeScreen({ role: 'TEACHER', workspace: 'ODK', item: item('odk-exams', '/panel/odk/yonetim/sinavlar') })).toMatchObject({ key: 'placeholder', phase: 'P4' });
+});

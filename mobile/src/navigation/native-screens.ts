@@ -58,6 +58,8 @@ export type NativeScreenKey =
   | 'coach-students'
   | 'coach-sessions'
   | 'coach-plans'
+  | 'odk-management-home'
+  | 'odk-management-packages'
   | 'teacher-odk-reports'
   | 'admin-operations-center'
   | 'admin-interventions'
@@ -272,6 +274,10 @@ export function resolveNativeScreen(input: { role: MobileRole; workspace: Mobile
   else if (role === 'TEACHER' && workspace === 'OK') key = TEACHER_OK[item.id];
   else if (role === 'TEACHER' && workspace === 'ODK') key = TEACHER_ODK[item.id];
   else if (role === 'ADMIN') key = adminScreen(item);
+  if ((role === 'ADMIN' || role === 'TEACHER') && workspace === 'ODK' && item.webPath?.startsWith('/panel/odk/yonetim')) {
+    if (item.id === 'today') key = 'odk-management-home';
+    if (item.id === 'odk-packages') key = 'odk-management-packages';
+  }
   if (key) return { key, navId: item.id, title: item.label, webPath: item.webPath };
   // Deneme Ligi öğrencisinde eşlenmemiş her öğe bilinçli web devam yoludur.
   const webOnly =
@@ -280,7 +286,8 @@ export function resolveNativeScreen(input: { role: MobileRole; workspace: Mobile
     (role === 'PARENT' && (PARENT_WEB_ONLY.has(item.id) || !PARENT[item.id])) ||
     // Öğretmende eşlenmemiş her öğe bilinçli web devam yoludur (M7).
     role === 'TEACHER';
-  const phase = webOnly ? 'LATER' : placeholderPhase(role, workspace, item.id);
+  const management = (role === 'ADMIN' || role === 'TEACHER') && workspace === 'ODK' && item.webPath?.startsWith('/panel/odk/yonetim');
+  const phase = management ? 'P4' : webOnly ? 'LATER' : placeholderPhase(role, workspace, item.id);
   return { key: 'placeholder', navId: item.id, title: item.label, webPath: item.webPath, phase };
 }
 
