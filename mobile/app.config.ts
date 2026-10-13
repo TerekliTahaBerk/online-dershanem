@@ -37,6 +37,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   const projectId = nativeBuild ? required('EAS_PROJECT_ID') : optional('EAS_PROJECT_ID');
   // Zorunlu güncelleme ekranındaki App Store bağlantısı (App Store Connect → Apple ID, yalnız rakam). Gizli değildir.
   const iosAppStoreId = optional('MOBILE_IOS_APP_STORE_ID');
+  // Android push: Firebase istemci dosyası EAS "file" ortam değişkeni olarak verilir (yol). Gizli anahtar değildir; Git'e girmez.
+  const googleServicesFile = optional('GOOGLE_SERVICES_JSON');
   if (iosAppStoreId && !/^\d{6,12}$/.test(iosAppStoreId)) throw new Error('Invalid MOBILE_IOS_APP_STORE_ID');
   if (projectId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(projectId)) throw new Error('Invalid EAS_PROJECT_ID');
   if (iosId && !/^[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(iosId)) throw new Error('Invalid iOS bundle identifier');
@@ -82,7 +84,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       infoPlist: { ...config.ios?.infoPlist, CFBundleDevelopmentRegion: 'tr', ...(releaseProfile ? { NSAppTransportSecurity: { NSAllowsArbitraryLoads: false } } : {}) },
       privacyManifests: PRIVACY_MANIFEST,
     },
-    android: { ...config.android, ...(androidId ? { package: androidId } : {}), ...(releaseProfile ? { blockedPermissions: [...(config.android?.blockedPermissions ?? []), 'android.permission.SYSTEM_ALERT_WINDOW'] } : {}) },
-    extra: { ...config.extra, ...(projectId ? { eas: { projectId } } : {}), ...(iosAppStoreId ? { store: { iosAppStoreId } } : {}) },
+    android: { ...config.android, ...(androidId ? { package: androidId } : {}), ...(googleServicesFile ? { googleServicesFile } : {}), ...(releaseProfile ? { blockedPermissions: [...(config.android?.blockedPermissions ?? []), 'android.permission.SYSTEM_ALERT_WINDOW'] } : {}) },
+    extra: { ...config.extra, ...(projectId ? { eas: { projectId } } : {}), ...(iosAppStoreId ? { store: { iosAppStoreId } } : {}), push: { androidFcm: Boolean(googleServicesFile) } },
   };
 };

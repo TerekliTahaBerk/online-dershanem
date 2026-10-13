@@ -39,6 +39,7 @@ const SUPPORT_COPY: Record<string, string> = {
   SIMULATOR: 'Telefon bildirimleri yalnız gerçek bir cihazda çalışır.',
   EXPO_GO: 'Bu geliştirme ortamı (Expo Go) telefon bildirimlerini desteklemiyor; geliştirme derlemesi gerekir.',
   NO_PROJECT_ID: 'Bu uygulama derlemesi telefon bildirimleri için yapılandırılmamış.',
+  NO_FCM: 'Bu uygulama derlemesi telefon bildirimleri için yapılandırılmamış.',
   WEB: 'Telefon bildirimleri yalnız mobil uygulamada kullanılabilir.',
 };
 

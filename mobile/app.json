@@ -21,7 +21,8 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#007F70",
-        "foregroundImage": "./assets/images/adaptive-icon.png"
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "monochromeImage": "./assets/images/monochrome-icon.png"
       },
       "predictiveBackGestureEnabled": false,
       "versionCode": 1,
@@ -59,7 +60,9 @@
       [
         "expo-notifications",
         {
-          "defaultChannel": "default"
+          "defaultChannel": "default",
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#067A69"
         }
       ]
     ],

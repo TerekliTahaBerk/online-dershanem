@@ -8,6 +8,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - iOS privacy manifest (no tracking; declared required-reason APIs), Turkish app localization (store language and system dialogs), splash background matching the brand image, and a store link on the forced-upgrade screen (`MOBILE_IOS_APP_STORE_ID` for iOS).
 - Store payment policy: the parent "package change meeting" call to action and the billing settings section are no longer shown in the app (web only); customer copy no longer refers to purchases or payments.
+- Android: themed (monochrome) launcher icon, white notification icon with brand color, notification channel created before the Android 13+ permission prompt, and Firebase (`GOOGLE_SERVICES_JSON` EAS file variable) wiring; without it Android push reports "not configured" instead of failing.
 - Release status and the ordered human release steps: `docs/mobile/v1-release-candidate.md`.
 
 ### Added
