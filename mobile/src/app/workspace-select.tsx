@@ -15,7 +15,7 @@ import { useSession } from '@/lib/auth/session-provider';
  * varsa kullanıcıya sorulmadan o ürün seçilir — yine sunucu üzerinden.
  */
 export default function WorkspaceSelectScreen() {
-  const { state, selectWorkspace, signOut, exitAdminOverlay } = useSession();
+  const { state, selectWorkspace, skipWorkspaceSelection, signOut, exitAdminOverlay } = useSession();
   const [pending, setPending] = useState<MobileProductCode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const autoTried = useRef<MobileProductCode | null>(null);
@@ -45,6 +45,8 @@ export default function WorkspaceSelectScreen() {
 
   const products = bootstrap?.workspace?.products ?? [];
   const hasActive = products.some((product) => product.state === 'ACTIVE');
+  // Personelde ürün seçmeden açılan bilgi ekranları vardır; aktif ürünü yoksa seçim ekranında takılmaz.
+  const isStaff = bootstrap?.user.role === 'TEACHER' || bootstrap?.user.role === 'ADMIN';
 
 
   return (
@@ -52,7 +54,7 @@ export default function WorkspaceSelectScreen() {
       <View style={styles.identity}><ProductLogo size={32} /><Text variant="bodyStrong" style={{ flex: 1 }}>{bootstrap?.user.fullName ?? 'Hoş geldin'}</Text></View>
       <PageHeader title="Hangi panele girmek istiyorsun?" description="Panelini seç; istediğin zaman menüdeki “Panel değiştir” ile diğerine geçebilirsin." />
       {error ? <Banner tone="critical">{error}</Banner> : null}
-      {hasActive ? null : (
+      {hasActive || isStaff ? null : (
         <EmptyState
           title="Aktif çalışma alanın yok"
           body={products.some((product) => product.state === 'PREPARING') ? 'Öğrenci hesabı açıldığında çalışma alanın burada aktif olacak.' : 'Hesabında aktif bir ürün bulunmuyor. Sorun olduğunu düşünüyorsan ekibimizle iletişime geç.'}
@@ -77,6 +79,7 @@ export default function WorkspaceSelectScreen() {
         })}
       </Section>
       {bootstrap?.adminOverlay ? <><Text>{bootstrap.adminOverlay.mode === 'PREVIEW' ? 'Önizleme · Salt okunur' : 'Öğretmen çalışma modu'}</Text><Button label="Yönetim paneline dön" onPress={() => void exitAdminOverlay().catch(() => undefined)} /></> : null}
+      {isStaff && !hasActive ? <Button label="Panele devam et" onPress={skipWorkspaceSelection} /> : null}
       <Button label="Çıkış yap" variant="quiet" onPress={() => void signOut()} />
     </Screen>
   );

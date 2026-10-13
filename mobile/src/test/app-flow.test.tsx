@@ -1,3 +1,4 @@
+import type { MobileProductCode } from '@contracts/bootstrap';
 import * as SecureStore from 'expo-secure-store';
 import { router } from 'expo-router';
 import { act, fireEvent, renderRouter, waitFor } from 'expo-router/testing-library';
@@ -22,10 +23,12 @@ function account(email: string, bootstrap: FakeAccount['bootstrap'], extra: Part
 // renderRouter sonucu (RNTL sorguları + yol yardımcıları).
 let screen: ReturnType<typeof renderRouter>;
 let currentServer: ReturnType<typeof createFakeServer>;
+let currentAccounts: FakeAccount[] = [];
 
 async function boot(accounts: FakeAccount[]) {
   const server = createFakeServer(accounts);
   currentServer = server;
+  currentAccounts = accounts;
   globalThis.fetch = server.fetch;
   screen = renderRouter(APP, { initialUrl: '/' });
   await screen.findByTestId('sign-in-email', {}, WAIT);
@@ -47,12 +50,23 @@ async function signOutViaAccount() {
   });
 }
 
-async function signIn(email: string, password = 'Parola-1234') {
+/** Giriş; web gibi ardından açılan panel sorusuna hesabın etkin ürünüyle yanıt verir (`pick: false` açık bırakır). */
+async function signIn(email: string, password = 'Parola-1234', options: { pick?: MobileProductCode | null | false } = {}) {
   fireEvent.changeText(screen.getByTestId('sign-in-email'), email);
   fireEvent.changeText(screen.getByTestId('sign-in-password'), password);
   await act(async () => {
     fireEvent.press(screen.getByTestId('sign-in-submit'));
   });
+  if (options.pick === false) return;
+  await chooseWorkspace(options.pick !== undefined ? options.pick : currentAccounts.find((candidate) => candidate.email === email)?.bootstrap.workspace?.activeProduct ?? null);
+}
+
+/** Panel sorusunu yanıtlar; seçici açılmazsa bir şey yapmaz. */
+async function chooseWorkspace(product: MobileProductCode | null) {
+  const heading = await screen.findByText('Hangi panele girmek istiyorsun?', {}, { timeout: 3000 }).catch(() => null);
+  if (!heading) return;
+  const target = product ? screen.queryByTestId(`select-${product}`) : screen.queryByText('Panele devam et');
+  if (target) await act(async () => { fireEvent.press(target); });
 }
 
 beforeEach(() => {
@@ -148,6 +162,8 @@ describe('M1 uygulama akışları', () => {
     await act(async () => {
       fireEvent.press(screen.getByTestId('change-password-submit'));
     });
+    // Kapılardan sonra web gibi panel sorulur.
+    await chooseWorkspace('OK');
     expect(await screen.findByTestId('yon-today', {}, WAIT)).toBeTruthy();
   });
 
@@ -167,6 +183,7 @@ describe('M1 uygulama akışları', () => {
     await act(async () => {
       fireEvent.press(screen.getByTestId('mfa-submit'));
     });
+    await chooseWorkspace('ODK');
     expect(await screen.findByTestId('staff-home-TEACHER', {}, WAIT)).toBeTruthy();
     expect(server.called('POST', '/api/auth/mfa/code/verify')).toHaveLength(2);
   });
@@ -193,12 +210,33 @@ describe('M1 uygulama akışları', () => {
     expect(server.called('POST', '/api/panel/active-product')[0].body).toEqual({ product: 'OK' });
   });
 
-  it('tek aktif ürünü seçilmemiş öğrenci için seçim sunucu üzerinden otomatik yapılır', async () => {
+  it('girişten sonra tek ürünlü öğrenciye de panel sorulur (web gibi); seçim sunucuya yazılır', async () => {
     const server = await boot([
       account('tek@example.com', makeBootstrap({ products: { OD: 'ACTIVE' }, activeProduct: null }), { afterSelect: { OD: makeBootstrap({ products: { OD: 'ACTIVE' } }) } }),
     ]);
-    await signIn('tek@example.com');
+    await signIn('tek@example.com', 'Parola-1234', { pick: false });
+    expect(await screen.findByText('Hangi panele girmek istiyorsun?', {}, WAIT)).toBeTruthy();
+    expect(server.called('POST', '/api/panel/active-product')).toHaveLength(0);
+    await act(async () => { fireEvent.press(screen.getByTestId('select-OD')); });
     await waitFor(() => expect(server.called('POST', '/api/panel/active-product')).toHaveLength(1), WAIT);
+    expect(await screen.findByTestId('od-home', {}, WAIT)).toBeTruthy();
+  });
+
+  it('personel de girişten sonra panelini seçer; aktif ürünü olmayan personel ürünsüz devam eder', async () => {
+    await boot([
+      account('ogretmen@example.com', makeBootstrap({ role: 'TEACHER', products: { OD: 'ACTIVE', ODK: 'ACTIVE' }, activeProduct: null }), { afterSelect: { ODK: makeBootstrap({ role: 'TEACHER', products: { OD: 'ACTIVE', ODK: 'ACTIVE' }, activeProduct: 'ODK' }) } }),
+      account('yonetim@example.com', makeBootstrap({ role: 'ADMIN', products: {}, activeProduct: null })),
+    ]);
+    await signIn('ogretmen@example.com', 'Parola-1234', { pick: false });
+    expect(await screen.findByText('Hangi panele girmek istiyorsun?', {}, WAIT)).toBeTruthy();
+    expect(screen.queryByText('Panele devam et')).toBeNull();
+    await chooseWorkspace('ODK');
+    expect(await screen.findByTestId('staff-home-TEACHER', {}, WAIT)).toBeTruthy();
+    await signOutViaAccount();
+    await signIn('yonetim@example.com', 'Parola-1234', { pick: false });
+    expect(await screen.findByText('Hangi panele girmek istiyorsun?', {}, WAIT)).toBeTruthy();
+    await chooseWorkspace(null);
+    expect(await screen.findByTestId('staff-home-ADMIN', {}, WAIT)).toBeTruthy();
   });
 
   it('aktif ürünü olmayan öğrenci açıklamalı boş durum görür', async () => {
@@ -210,17 +248,17 @@ describe('M1 uygulama akışları', () => {
   it('veli kendi native ekranını (M6), öğretmen ve yönetim kendi bilinçli yer tutucularını görür (öğrenci sekmesi değil)', async () => {
     const server = await boot([
       account('veli@example.com', makeBootstrap({ role: 'PARENT', products: { OD: 'ACTIVE' } })),
-      account('ogretmen@example.com', makeBootstrap({ role: 'TEACHER', products: { OD: 'ACTIVE' }, activeProduct: null })),
-      account('yonetim@example.com', makeBootstrap({ role: 'ADMIN', products: { OD: 'ACTIVE', OK: 'ACTIVE', ODK: 'ACTIVE' }, activeProduct: null })),
+      account('ogretmen@example.com', makeBootstrap({ role: 'TEACHER', products: { OD: 'ACTIVE' }, activeProduct: null }), { afterSelect: { OD: makeBootstrap({ role: 'TEACHER', products: { OD: 'ACTIVE' } }) } }),
+      account('yonetim@example.com', makeBootstrap({ role: 'ADMIN', products: {}, activeProduct: null })),
     ]);
     await signIn('veli@example.com');
     expect(await screen.findByTestId('parent-home', {}, WAIT)).toBeTruthy();
     expect(server.called('GET', '/api/panel/student/home')).toHaveLength(0);
     await signOutViaAccount();
-    await signIn('ogretmen@example.com');
+    await signIn('ogretmen@example.com', 'Parola-1234', { pick: 'OD' });
     expect(await screen.findByTestId('staff-home-TEACHER', {}, WAIT)).toBeTruthy();
     await signOutViaAccount();
-    await signIn('yonetim@example.com');
+    await signIn('yonetim@example.com', 'Parola-1234', { pick: null });
     expect(await screen.findByTestId('staff-home-ADMIN', {}, WAIT)).toBeTruthy();
     expect(server.called('GET', '/api/panel/student/home')).toHaveLength(0);
   });
@@ -285,6 +323,7 @@ describe('M1 uygulama akışları', () => {
     await act(async () => {
       fireEvent.press(screen.getByText('Tekrar dene'));
     });
+    await chooseWorkspace('OK');
     expect(await screen.findByTestId('yon-today', {}, WAIT)).toBeTruthy();
   }, 30000);
 

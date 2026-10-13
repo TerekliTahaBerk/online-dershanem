@@ -34,6 +34,13 @@ export type AppStateInput = {
   bootstrap: MobileBootstrap | undefined;
   bootstrapError: ApiError | null;
   appVersion: string | null;
+  /**
+   * Bu cihazda az önce parolayla giriş yapıldı ve panel henüz seçilmedi. Web
+   * `/panel/urun-sec` ile aynı: girişten sonra her rol panelini kendisi seçer
+   * (tek ürün veya personel olsa da otomatik geçilmez). Uygulama yeniden
+   * açıldığında oturumdaki seçimle devam edilir.
+   */
+  selectionPending?: boolean;
 };
 
 /** `a < b` ise true; ikisi de geçerli `x.y.z` değilse false (sunucu kapısı ayrıca çalışır). */
@@ -87,6 +94,7 @@ export function deriveAppState(input: AppStateInput): AppState {
   // READY ama çalışma alanı verisi yok: sözleşme bunu engeller; yine de kapalı tarafta kal.
   if (!workspace) return { status: 'BOOTSTRAP_ERROR', error: input.bootstrapError ?? ({ kind: 'invalid_response', message: 'Çalışma alanı bilgisi alınamadı.' } as ApiError) };
 
+  if (input.selectionPending) return { status: 'WORKSPACE_SELECTION', bootstrap, autoSelect: null };
   if (workspace.activeProduct) return { status: 'WORKSPACE_READY', bootstrap, workspace: workspace.activeProduct };
   if (!needsWorkspace(bootstrap.user.role)) return { status: 'WORKSPACE_READY', bootstrap, workspace: null };
 

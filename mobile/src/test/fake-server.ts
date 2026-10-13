@@ -81,7 +81,8 @@ export function createFakeServer(accounts: FakeAccount[]) {
       return json(200, { ok: true });
     }
     if (method === 'POST' && path === '/api/panel/active-product') {
-      const next = account.afterSelect?.[body?.product as MobileProductCode];
+      // Zaten etkin ürünü yeniden seçmek (girişten sonraki panel sorusu) bootstrap'ı değiştirmez.
+      const next = account.afterSelect?.[body?.product as MobileProductCode] ?? (body?.product === account.bootstrap.workspace?.activeProduct ? account.bootstrap : undefined);
       if (!next) return json(403, { error: 'Bu ürüne erişiminiz yok.', code: 'PRODUCT_ACCESS_REQUIRED' });
       account.bootstrap = next;
       return json(200, { redirect: '/panel' });
