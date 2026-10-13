@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { getOdkAudienceStudentReport } from "@/lib/odk/reporting-server";
-import { summarizeAudienceReport, WEAK_OUTCOME_THRESHOLD } from "@/lib/odk/staff-workspace";
+import { loadOdkReportTable } from "@/lib/odk/report-table-server";
+import { WEAK_OUTCOME_THRESHOLD } from "@/lib/odk/staff-workspace";
 import {
   EmptyState,
   PageHeader,
@@ -35,16 +35,7 @@ export async function OdkReportTable({
   students: Student[];
   query: { q?: string; grup?: string; onizle?: string };
 }) {
-  const search = query.q?.trim().toLocaleLowerCase("tr-TR").slice(0, 80) || "";
-  const groups = [...new Set(students.flatMap((student) => student.context.split(" · ").filter(Boolean)))].sort((a, b) => a.localeCompare(b, "tr"));
-  const group = groups.includes(query.grup ?? "") ? query.grup! : "";
-  const filtered = students.filter(
-    (student) =>
-      (!search || student.name.toLocaleLowerCase("tr-TR").includes(search)) && (!group || student.context.split(" · ").includes(group)),
-  );
-  const visible = filtered.slice(0, ROW_LIMIT);
-  const reports = await Promise.all(visible.map((student) => getOdkAudienceStudentReport(viewer, student.userId)));
-  const rows = visible.map((student, index) => ({ student, report: reports[index], summary: summarizeAudienceReport(reports[index]) }));
+  const { groups, group, filtered, rows } = await loadOdkReportTable(viewer, students, query);
 
   const drawerId = query.onizle?.startsWith("ogrenci:") ? query.onizle.slice("ogrenci:".length) : null;
   const drawerRow = drawerId ? rows.find((row) => row.student.userId === drawerId) ?? null : null;
