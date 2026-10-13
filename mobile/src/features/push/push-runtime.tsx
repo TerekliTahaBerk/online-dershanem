@@ -8,12 +8,12 @@ import { ApiError } from '@/lib/api/errors';
 import { fetchSingleNotification } from '@/lib/api/push';
 import { useReadyBootstrap, useSession } from '@/lib/auth/session-provider';
 import { setBadge } from '@/lib/push/native-push';
-import { syncPushRegistration } from '@/lib/push/registration';
+import { pushAvailableFor, syncPushRegistration } from '@/lib/push/registration';
 import { queryKeys, sessionKeyFor } from '@/lib/query/keys';
 import { parentNavIdForWebPath } from '@contracts/parent';
 
 import { useParentContext } from '@/features/parent/parent-context';
-import { expoHrefFor, mapNotificationHref, parentStudentIdFromHref, workspaceForWebPath } from '@/navigation/route-map';
+import { expoHrefFor, mapAdminWebPath, mapNotificationHref, parentStudentIdFromHref, workspaceForWebPath } from '@/navigation/route-map';
 
 /**
  * Push çalışma zamanı (M5) — yalnız hazır çalışma alanında (`(app)` düzeni)
@@ -105,7 +105,8 @@ export function PushRuntime() {
       router.push('/notifications');
       return;
     }
-    const target = mapNotificationHref(item.href, ctx.current.navigation);
+    // Yönetici bildirimi yönetim / İşletme yollarına yönetim eşlemesiyle gider (P5.4).
+    const target = bootstrap.user.role === 'ADMIN' ? mapAdminWebPath(item.href, ctx.current.navigation, bootstrap.business) : mapNotificationHref(item.href, ctx.current.navigation);
     const href = expoHrefFor(target);
     if (href) {
       router.push(href as Href);
@@ -171,7 +172,9 @@ export function PushRuntime() {
   }, [bootstrap.user.id]);
 
   // Kayıt yenileme: kullanıcı push'u açmış ve izin varsa (sessiz; istem açmaz) + token rotasyonu.
+  const pushAvailable = pushAvailableFor(bootstrap);
   useEffect(() => {
+    if (!pushAvailable) return undefined;
     void syncPushRegistration(api, bootstrap.user.id).catch(() => undefined);
     const tokenSubscription = safely(() =>
       Notifications.addPushTokenListener(() => {
@@ -179,7 +182,7 @@ export function PushRuntime() {
       }),
     );
     return () => release(tokenSubscription);
-  }, [api, bootstrap.user.id]);
+  }, [api, bootstrap.user.id, pushAvailable]);
 
   // Rozet: sunucu okunmamış sayısı (başka cihazda okunanlar ön plana dönüşte / yenilemede eşitlenir).
   const unread = bootstrap.workspace?.unreadNotifications ?? 0;

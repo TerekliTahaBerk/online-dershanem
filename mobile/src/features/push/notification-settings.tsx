@@ -10,7 +10,7 @@ import { ApiError } from '@/lib/api/errors';
 import { fetchNotificationPreferences, patchNotificationPreferences } from '@/lib/api/push';
 import { useReadyBootstrap, useSession } from '@/lib/auth/session-provider';
 import { getPermission, pushSupport, requestPermission, type PermissionState } from '@/lib/push/native-push';
-import { syncPushRegistration, unregisterCurrentDevice } from '@/lib/push/registration';
+import { pushAvailableFor, syncPushRegistration, unregisterCurrentDevice } from '@/lib/push/registration';
 import { queryKeys } from '@/lib/query/keys';
 
 /**
@@ -48,7 +48,7 @@ export default function NotificationSettingsScreen() {
   const queryClient = useQueryClient();
   const { product } = useDesign();
   const key = [...queryKeys.user(bootstrap.user.id), 'notification-preferences'];
-  const query = useQuery({ queryKey: key, queryFn: ({ signal }) => fetchNotificationPreferences(api, signal) });
+  const query = useQuery({ queryKey: key, queryFn: ({ signal }) => fetchNotificationPreferences(api, signal), enabled: pushAvailableFor(bootstrap) });
   const [permission, setPermission] = useState<PermissionState | null>(null);
   const [message, setMessage] = useState<{ tone: 'success' | 'critical' | 'warning' | 'info'; text: string } | null>(null);
   const support = pushSupport();
@@ -105,7 +105,9 @@ export default function NotificationSettingsScreen() {
     }
   }
 
-  if (bootstrap.user.role !== 'STUDENT' && bootstrap.user.role !== 'PARENT') {
+  // Personel (P5.4): yalnız `staffPush` açıkken; öğrenci kategorileri gösterilmez.
+  const staff = bootstrap.user.role === 'TEACHER' || bootstrap.user.role === 'ADMIN';
+  if (!pushAvailableFor(bootstrap)) {
     return (
       <Screen>
         <EmptyState title="Bildirim ayarları bu hesap için mobilde açık değil." />
@@ -152,6 +154,11 @@ export default function NotificationSettingsScreen() {
               </>
             )}
           </Section>
+          {staff ? (
+            <Section title="İçerik">
+              <Text tone="muted" variant="meta">Personel bildirimleri kilit ekranında genel bir metinle görünür; ayrıntı uygulama açılınca yetkinle okunur. Ödeme ve finans bildirimleri telefona gönderilmez.</Text>
+            </Section>
+          ) : (
           <Section title="Kategoriler">
             {CATEGORIES.map((item) => (
               <View key={item.key} style={styles.row}>
@@ -163,6 +170,7 @@ export default function NotificationSettingsScreen() {
               </View>
             ))}
           </Section>
+          )}
           <Section title="Sessiz saatler">
             <Text tone="muted" variant="meta">Bu saatlerde telefon bildirimi gönderilmez; hâlâ geçerliyse sonradan gönderilir (İstanbul saati).</Text>
             <View accessibilityRole="radiogroup" accessibilityLabel="Sessiz saatler">

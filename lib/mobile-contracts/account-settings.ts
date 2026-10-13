@@ -122,3 +122,12 @@ export function parsePreferenceWrite(input: unknown) {
 export function parsePackageMeetingWrite(input: unknown) {
   return check(v.object({ ok: v.literal(true), message: v.string(), replayed: v.boolean() }), input);
 }
+
+/** P5.3 · `GET /api/panel/me/deletion-request`: açık talep tarihi ve DSR işlem durumu. */
+export function parseDeletionRequestStatus(input: unknown) {
+  return check(v.object({ contractVersion: v.literal(1), requestedAt: v.nullable(v.iso()), processing: v.nullable(v.oneOf(["PENDING_GRACE", "APPLIED"])) }), input);
+}
+
+export function parseDeletionRequestWrite(input: unknown) {
+  return check(v.object({ ok: v.literal(true), requestedAt: v.iso(), alreadyRequested: v.boolean(), replayed: v.boolean() }), input);
+}

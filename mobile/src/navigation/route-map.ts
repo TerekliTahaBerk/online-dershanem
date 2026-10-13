@@ -92,6 +92,7 @@ export function mapAccountWebPath(path: string | null): NativeTarget | null {
   if (path === '/panel/oturumlar') return { kind: 'detail', href: '/account/sessions' };
   const section = /^\/panel\/ayarlar\/(profil|egitim|cocuklarim|iletisim|fatura|onaylar)$/.exec(path);
   if (section) return { kind: 'detail', href: `/account/settings/${section[1]}` };
+  if (path === '/panel/guvenlik') return { kind: 'detail', href: '/account/security' };
   if (path === '/panel/erisilebilirlik') return { kind: 'detail', href: '/account/accessibility' };
   if (path === '/panel/veri-kullanimi') return { kind: 'detail', href: '/account/data-usage' };
   return null;
@@ -174,7 +175,7 @@ export function expoHrefFor(target: NativeTarget): string | null {
 }
 
 /** İzinli native rota önekleri (derin bağlantılar). Diğer her şey ana ekrana düşer. */
-const ALLOWED_DEEP_LINK = /^\/(?:$|slot-[1-3]$|menu$|notifications$|account(?:\/(?:sessions|password|accessibility|data-usage|settings(?:\/(?:profil|egitim|cocuklarim|iletisim|fatura|onaylar))?))?$|screen\/[\w-]{1,64}$|od\/(?:lesson|assignment)\/[\w-]{1,64}$|od\/review-recovery$|yon\/task\/[\w-]{1,64}$|odk\/exam\/[\w-]{1,64}(?:\/result)?$|teacher\/(?:lesson|submission)\/[\w-]{1,64}$|coach\/(?:student|session|plan)\/[\w-]{1,64}$|forgot-password$)/;
+const ALLOWED_DEEP_LINK = /^\/(?:$|slot-[1-3]$|menu$|notifications$|account(?:\/(?:sessions|password|security|deletion|accessibility|data-usage|settings(?:\/(?:profil|egitim|cocuklarim|iletisim|fatura|onaylar))?))?$|screen\/[\w-]{1,64}$|od\/(?:lesson|assignment)\/[\w-]{1,64}$|od\/review-recovery$|yon\/task\/[\w-]{1,64}$|odk\/exam\/[\w-]{1,64}(?:\/result)?$|teacher\/(?:lesson|submission)\/[\w-]{1,64}$|coach\/(?:student|session|plan)\/[\w-]{1,64}$|forgot-password$)/;
 
 /**
  * Sistemden gelen yol (`onlinedershanem://...`) → güvenli uygulama yolu.

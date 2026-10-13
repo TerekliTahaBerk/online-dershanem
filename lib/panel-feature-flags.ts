@@ -17,6 +17,8 @@ export type PanelFeatureFlags = {
   dinoAi: boolean;
   /** Öğrenci / öğretmen / veli Analiz + yönetim Gidişat paneli. */
   progressInsights: boolean;
+  /** P5.4: öğretmen / yönetici telefon bildirimleri (genel kilit ekranı metni). Production kararıyla açılır. */
+  staffPush: boolean;
 };
 
 export const panelFeatureDefaults: PanelFeatureFlags = {
@@ -37,6 +39,7 @@ export const panelFeatureDefaults: PanelFeatureFlags = {
   teacherAiDrafts: false,
   dinoAi: false,
   progressInsights: true,
+  staffPush: false,
 };
 
 export const panelFeatureEnvironmentKeys: Record<keyof PanelFeatureFlags, string> = {
@@ -57,6 +60,7 @@ export const panelFeatureEnvironmentKeys: Record<keyof PanelFeatureFlags, string
   teacherAiDrafts: "PANEL_FEATURE_TEACHER_AI_DRAFTS",
   dinoAi: "PANEL_FEATURE_DINO_AI",
   progressInsights: "PANEL_FEATURE_PROGRESS_INSIGHTS",
+  staffPush: "PANEL_FEATURE_STAFF_PUSH",
 };
 
 /**

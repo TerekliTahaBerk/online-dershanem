@@ -38,3 +38,13 @@ export async function unregisterCurrentDevice(api: ApiClient): Promise<void> {
 export function forgetPushRegistration(): void {
   lastRegistered = null;
 }
+
+/**
+ * Bu hesap telefon bildirimi kullanabilir mi? Öğrenci / veli her zaman;
+ * öğretmen / yönetici yalnız sunucu `staffPush` bayrağı açıkken (P5.4).
+ * Sunucu aynı kararı uçlarda yeniden uygular.
+ */
+export function pushAvailableFor(bootstrap: { user: { role: string }; workspace: { flags: Record<string, boolean> } | null }): boolean {
+  if (bootstrap.user.role === 'STUDENT' || bootstrap.user.role === 'PARENT') return true;
+  return (bootstrap.user.role === 'TEACHER' || bootstrap.user.role === 'ADMIN') && bootstrap.workspace?.flags.staffPush === true;
+}

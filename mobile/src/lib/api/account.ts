@@ -1,6 +1,8 @@
 import {
   parseAccountSettings,
   parseAccountSettingsWrite,
+  parseDeletionRequestStatus,
+  parseDeletionRequestWrite,
   parsePackageMeetingWrite,
   parsePreferenceWrite,
   type AccessibilityPreferences,
@@ -39,3 +41,10 @@ export const saveNetworkPreferences = async (api: ApiClient, preference: Network
 
 export const requestPackageMeeting = async (api: ApiClient, studentId: string, idempotencyKey: string) =>
   validated(parsePackageMeetingWrite(await api.request<unknown>('/api/panel/parent/account/package-meeting', { method: 'POST', body: { studentId, idempotencyKey } })));
+
+export const fetchDeletionRequest = async (api: ApiClient, signal?: AbortSignal) =>
+  validated(parseDeletionRequestStatus(await api.request<unknown>('/api/panel/me/deletion-request', { signal })));
+
+/** Parola her denemede gönderilir; istemcide saklanmaz. */
+export const requestAccountDeletion = async (api: ApiClient, password: string, idempotencyKey: string) =>
+  validated(parseDeletionRequestWrite(await api.request<unknown>('/api/panel/me/deletion-request', { method: 'POST', body: { password, idempotencyKey } })));

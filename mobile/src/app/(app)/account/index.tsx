@@ -8,6 +8,7 @@ import { color } from '@/design/tokens';
 import { APP_VERSION } from '@/config/app-info';
 import { PRODUCT_STATE_PRESENTATION, ROLE_LABEL } from '@/features/shell/labels';
 import { useReadyBootstrap, useSession } from '@/lib/auth/session-provider';
+import { pushAvailableFor } from '@/lib/push/registration';
 
 /**
  * Hesap ve ayarlar merkezi: kimlik, ürün durumları, güvenlik (parola,
@@ -35,8 +36,9 @@ export default function AccountScreen() {
       </Section>
       <Section title="Güvenlik">
         <Row leading={<KeyRound size={19} color={color.textSecondary} strokeWidth={1.7} />} title="Parolayı değiştir" onPress={() => router.push('/account/password')} testID="account-password" />
+        {bootstrap.workspace?.capabilities.security ? <Row leading={<ShieldCheck size={19} color={color.textSecondary} strokeWidth={1.7} />} title="İki adımlı doğrulama" subtitle="Doğrulayıcı uygulama ve kurtarma kodları" onPress={() => router.push('/account/security' as Href)} testID="account-security" /> : null}
         <Row leading={<Monitor size={19} color={color.textSecondary} strokeWidth={1.7} />} title="Oturumlar" subtitle="Bu hesabın açık olduğu cihazlar" onPress={() => router.push('/account/sessions')} testID="account-sessions" />
-        {bootstrap.user.role === 'STUDENT' || bootstrap.user.role === 'PARENT' ? (
+        {pushAvailableFor(bootstrap) ? (
           <Row leading={<Bell size={19} color={color.textSecondary} strokeWidth={1.7} />} title="Bildirim ayarları" subtitle="Telefon bildirimleri, kategoriler, sessiz saatler" onPress={() => router.push('/account/notifications')} testID="account-notifications" />
         ) : null}
       </Section>

@@ -1,3 +1,4 @@
+import { router, type Href } from 'expo-router';
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type PropsWithChildren } from 'react';
 
 import { Banner, BottomSheet, Button, Text, TextField } from '@/design/primitives';
@@ -14,8 +15,9 @@ import { openOnWeb } from '../shell/web-continuation';
  * yenilenir. İstemci step-up'ı "geçildi" diye işaretleyemez; karar her
  * istekte sunucudadır. Sonuç: doğrulandıysa true, vazgeçildiyse false.
  *
- * Geçiş anahtarı (passkey) ve ilk MFA kurulumu henüz native değildir;
- * yalnız bu durumda güvenlik sayfası web'de açılır.
+ * İlk doğrulayıcı kurulumu native güvenlik ekranındadır (`/account/security`,
+ * C09). Geçiş anahtarı native değildir; yalnız passkey'li hesapta güvenlik
+ * sayfası web'de açılır.
  */
 type StepUpContextValue = { requestStepUp: () => Promise<boolean> };
 
@@ -100,7 +102,11 @@ export function StepUpProvider({ children }: PropsWithChildren) {
                 ? 'Hesabın yalnız geçiş anahtarıyla doğrulanıyor. Güvenlik sayfasından bir doğrulayıcı uygulama ekleyince bu işlemi mobilde yapabilirsin.'
                 : 'Hassas işlemler için önce bir doğrulayıcı uygulama kurman gerekiyor.'}
             </Banner>
-            <Button label="Güvenlik sayfasını aç" variant="secondary" onPress={() => void openOnWeb('/panel/guvenlik')} accessibilityHint="Tarayıcıda açılır; web oturumuyla giriş yapmanız gerekebilir." />
+            {security?.mfa.passkey ? (
+              <Button label="Güvenlik sayfasını aç" variant="secondary" onPress={() => void openOnWeb('/panel/guvenlik')} accessibilityHint="Tarayıcıda açılır; web oturumuyla giriş yapmanız gerekebilir." />
+            ) : (
+              <Button label="Doğrulayıcı uygulamayı kur" variant="secondary" onPress={() => { settle(false); router.push('/account/security' as Href); }} testID="step-up-enroll" />
+            )}
             <Button label="Kapat" variant="quiet" onPress={() => settle(false)} testID="step-up-cancel" />
           </>
         )}
