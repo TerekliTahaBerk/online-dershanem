@@ -243,7 +243,7 @@ Onaylı istisnalar **alt işlem** düzeyindedir; etkilenen satırlar kalan alt i
 | GET projeksiyonu (O yok / Y var, O yok) | K03, K04 | 2 |
 | Server Action → `lib/` servisi + route | V10 (1), C07–C08 (7); Y27 ortak servislere taşındı | 2 dosya / 8 eylem |
 | Yetki düzeltmesi / kabul | V07 (veli görüşme işlemleri); S12/V09 ve T15 düzeltildi ve HTTP ile doğrulandı | 1 |
-| Yalnız mobil sözleşme + ekran (API hazır) | K03 (+ detay GET), S14, S18, S20, V11, C09–C11 | 8 |
+| Yalnız mobil sözleşme + ekran (API hazır) | K03 (+ detay GET), S18, V11, C09 (passkey) | 4 |
 
 ## Bakım
 
