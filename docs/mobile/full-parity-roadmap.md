@@ -481,3 +481,11 @@ Bu dilimin son kontrolleri: **984 sunucu birim testi**, **33 paket / 250 mobil t
 - Bütünlük incelemesi `lib/odk/integrity-review-service.ts`: web `PATCH /api/odk/admin/attempts/[id]` ve mobil `POST .../review` aynı kural; kayıt + audit makbuzu tek Serializable transaction. Mobil işlem anahtarı ve okunan sürüm zorunlu (eski görünüm 409, aynı anahtar ilk sonucu döndürür).
 - Mobil: deneme/görünüm/durum/bütünlük/sinyal süzgeçleri, sayaçlar, uyarılar, 15 sn otomatik yenileme (kapatılabilir; kayıt paneli açıkken durur), onaylı inceleme eylemleri.
 - Kanıt: 1008 birim, 57 mobil paket / 306 test, PostgreSQL entegrasyonu 141/143 (iki başarısızlık main'de de aynı). Matris: 94 Tam / 2 Kısmi / 3 Eksik / 1 İstisna / 6 Yönl. P4'te yalnız K03 açık.
+
+### 13 Ekim 2026 — P4.3 K03a deneme çalışma alanı (okuma)
+
+- Web `/panel/odk/yonetim/sinavlar/[id]` veri bloğu ve rapor sekmesi `lib/odk/exam-workspace-server.ts`'e taşındı (`loadOdkExamWorkspace`, `loadOdkExamReport`); sayfa JSX'i değişmedi. Mobil okuma kazanım seçeneklerini (yalnız web editörü) yüklemez.
+- `GET /api/panel/odk/management/exams/[id]?sekme=&filtre=`: web ile aynı izinli sekmeler; genel/hazırlık/sorunlar her sekmede, sorular/dosyalar/oturumlar/zamanlama/canlı/bütünlük/raporlar/geçmiş yalnız kendi sekmesinde. Cevap anahtarı yalnız `odk:exam:edit`; öğrenci yalnız adla. Yanıt sonraki yazmalar için `revision` taşır.
+- Bütünlük sekmesi K04 kayıt panelini deneme kapsamında kullanır (`.../exams/[id]/attempts/[attemptId]` + `review`; başka denemenin kaydı 404).
+- Mobil `odk/manage/[id]`; K02 deneme listesi, K05 kuyruğu (ilgili sekme) ve bildirim/derin bağlantılar native açar. Yazma sekmeleri (içerik, sorular, oturumlar, zamanlama, katılımcılar, önizleme, puanlama) açık bir web devam yolu gösterir.
+- Kanıt: 1008 birim, 58 mobil paket / 310 test, PostgreSQL entegrasyonu 142/144 (iki başarısızlık main'de de aynı); `next build` başarılı. Matris: 94 Tam / 3 Kısmi / 2 Eksik / 1 İstisna / 6 Yönl.

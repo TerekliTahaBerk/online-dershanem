@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Native Deneme Ligi exam workspace (K03a, read): permission-scoped tabs, lifecycle/readiness/issues, questions, files, sessions, schedule, live counters, reports, history and exam-scoped integrity review, sharing one loader with the web page; exam list, scoring queue and notifications now open it natively.
+
 - Native Deneme Ligi live operations console (K04) with shared web loader, filters, counters, alerts, 15-second auto refresh, attempt event timeline and integrity review; review writes share one service with the web endpoint and use actor-scoped receipts and revision checks.
 
 - Native authenticator (TOTP) enrollment/replacement with one-time recovery codes, an in-app account deletion request (password re-check, single open request, admin notification, DSR conflict guard), and staff push notifications behind `PANEL_FEATURE_STAFF_PUSH` (generic lock-screen copy, finance/order paths excluded).

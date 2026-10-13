@@ -98,6 +98,13 @@ export function mapAccountWebPath(path: string | null): NativeTarget | null {
   return null;
 }
 
+/** K03: Deneme Ligi yönetimi deneme çalışma alanı (yalnız "Denemeler" yetkili menüdeyken). */
+function mapOdkManagementPath(path: string, navigation: Navigation): NativeTarget | null {
+  const exam = /^\/panel\/odk\/yonetim\/sinavlar\/([\w-]{1,64})$/.exec(path);
+  if (!exam) return null;
+  return navHas(navigation, 'odk-exams') ? { kind: 'detail', href: `/odk/manage/${exam[1]}` } : { kind: 'none' };
+}
+
 /** Bildirim href'i → yetkili native hedef. Eşleşme yoksa `none` (liste ekranında kalınır). */
 export function mapNotificationHref(href: string | null | undefined, navigation: Navigation | null): NativeTarget {
   const path = normalizeWebPath(href);
@@ -109,7 +116,7 @@ export function mapNotificationHref(href: string | null | undefined, navigation:
   const items = [...navigation.primary, ...navigation.sections.flatMap((section) => section.items)];
   const exact = items.find((item) => normalizeWebPath(item.webPath) === path);
   if (exact) return targetForNavId(navigation, exact.id);
-  return mapOdDetailPath(path, navigation) ?? mapOdkDetailPath(path, navigation) ?? mapStaffDetailPath(path, navigation) ?? { kind: 'none' };
+  return mapOdDetailPath(path, navigation) ?? mapOdkDetailPath(path, navigation) ?? mapStaffDetailPath(path, navigation) ?? mapOdkManagementPath(path, navigation) ?? { kind: 'none' };
 }
 
 /**
@@ -175,7 +182,7 @@ export function expoHrefFor(target: NativeTarget): string | null {
 }
 
 /** İzinli native rota önekleri (derin bağlantılar). Diğer her şey ana ekrana düşer. */
-const ALLOWED_DEEP_LINK = /^\/(?:$|slot-[1-3]$|menu$|notifications$|account(?:\/(?:sessions|password|security|deletion|accessibility|data-usage|settings(?:\/(?:profil|egitim|cocuklarim|iletisim|fatura|onaylar))?))?$|screen\/[\w-]{1,64}$|od\/(?:lesson|assignment)\/[\w-]{1,64}$|od\/review-recovery$|yon\/task\/[\w-]{1,64}$|odk\/exam\/[\w-]{1,64}(?:\/result)?$|teacher\/(?:lesson|submission)\/[\w-]{1,64}$|coach\/(?:student|session|plan)\/[\w-]{1,64}$|forgot-password$)/;
+const ALLOWED_DEEP_LINK = /^\/(?:$|slot-[1-3]$|menu$|notifications$|account(?:\/(?:sessions|password|security|deletion|accessibility|data-usage|settings(?:\/(?:profil|egitim|cocuklarim|iletisim|fatura|onaylar))?))?$|screen\/[\w-]{1,64}$|od\/(?:lesson|assignment)\/[\w-]{1,64}$|od\/review-recovery$|yon\/task\/[\w-]{1,64}$|odk\/exam\/[\w-]{1,64}(?:\/result)?$|odk\/manage\/[\w-]{1,64}$|teacher\/(?:lesson|submission)\/[\w-]{1,64}$|coach\/(?:student|session|plan)\/[\w-]{1,64}$|forgot-password$)/;
 
 /**
  * Sistemden gelen yol (`onlinedershanem://...`) → güvenli uygulama yolu.
@@ -238,6 +245,8 @@ export function mapAdminWebPath(href: string | null | undefined, navigation: Nav
   if (student) return navHas(navigation, 'people') ? { kind: 'detail', href: `/admin/student/${student[1]}` } : { kind: 'none' };
   const peopleScreen = ADMIN_PEOPLE_SCREENS[path];
   if (peopleScreen) return navHas(navigation, 'people') ? { kind: 'detail', href: peopleScreen } : { kind: 'none' };
+  const odkExam = mapOdkManagementPath(path, navigation);
+  if (odkExam) return odkExam;
   // Öğrenci listesi: Kişiler'in "Öğrenciler" görünümü (aynı veri; satırlar Öğrenci 360'a açılır).
   if (path === '/panel/yonetim/ogrenciler') return targetForNavId(navigation, 'people');
   const items = [...navigation.primary, ...navigation.sections.flatMap((section) => section.items)];

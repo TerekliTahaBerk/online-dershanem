@@ -119,7 +119,7 @@ export default function OdkManagementOperationsScreen() {
           </>
         )}
       </QueryView>
-      {openId ? <AttemptSheet key={openId} attemptId={openId} onClose={() => setOpenId(null)} onChanged={() => void query.refetch()} /> : null}
+      {openId ? <AttemptSheet key={openId} attemptId={openId} basePath={`${path}/attempts`} onClose={() => setOpenId(null)} onChanged={() => void query.refetch()} /> : null}
     </Screen>
   );
 }
@@ -130,16 +130,17 @@ const ACTIONS: { action: OdkIntegrityAction; label: string; confirm: string }[] 
   { action: 'CLEAR_REVIEW', label: 'Sinyali temizle', confirm: 'İnceleme işareti kaldırılsın mı?' },
 ];
 
-function AttemptSheet({ attemptId, onClose, onChanged }: { attemptId: string; onClose: () => void; onChanged: () => void }) {
+/** Kayıt paneli: `basePath` K04 konsolu (`.../operations/attempts`) veya K03 deneme kapsamı (`.../exams/[id]/attempts`). */
+export function AttemptSheet({ attemptId, basePath, onClose, onChanged }: { attemptId: string; basePath: string; onClose: () => void; onChanged: () => void }) {
   const { api } = useSession();
   const bootstrap = useReadyBootstrap();
   const client = useQueryClient();
   const online = useOnline();
   const [state, setState] = useState<WriteState>(null);
   const [note, setNote] = useState('');
-  const key = ['user', bootstrap.user.id, 'workspace', 'ODK', 'management', bootstrap.user.role, 'operations-attempt', attemptId];
+  const key = ['user', bootstrap.user.id, 'workspace', 'ODK', 'management', bootstrap.user.role, 'operations-attempt', basePath, attemptId];
   const detail = useQuery({ queryKey: key, gcTime: 0, queryFn: async ({ signal }) => {
-    const parsed = parseOdkOpsAttempt(await api.request(`${path}/attempts/${encodeURIComponent(attemptId)}`, { signal }));
+    const parsed = parseOdkOpsAttempt(await api.request(`${basePath}/${encodeURIComponent(attemptId)}`, { signal }));
     if (!parsed.ok) throw new ApiError({ kind: 'invalid_response' });
     return parsed.value;
   } });
@@ -150,7 +151,7 @@ function AttemptSheet({ attemptId, onClose, onChanged }: { attemptId: string; on
       if (!online) throw new ApiError({ kind: 'network' });
       try {
         const body = { action: input.action, ...(input.note.trim() ? { note: input.note.trim() } : {}), idempotencyKey: write.keyFor(input), expectedRevision: input.revision };
-        const parsed = parseOdkIntegrityReviewWrite(await api.request(`${path}/attempts/${encodeURIComponent(attemptId)}/review`, { method: 'POST', body }));
+        const parsed = parseOdkIntegrityReviewWrite(await api.request(`${basePath}/${encodeURIComponent(attemptId)}/review`, { method: 'POST', body }));
         if (!parsed.ok) throw new ApiError({ kind: 'invalid_response' });
         write.settle();
         return parsed.value;

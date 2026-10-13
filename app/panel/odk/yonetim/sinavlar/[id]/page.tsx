@@ -1,26 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Check, CircleAlert } from "lucide-react";
-import { prisma } from "@/lib/prisma";
 import { requireAnyStaffPermission } from "@/lib/auth/guards";
 import { ODK_EXAM_LIST_PERMISSIONS } from "@/lib/products/staff-permission-matrix";
-import { getActiveOutcomeOptions } from "@/lib/curriculum/catalog-cache";
-import { getOdkExamReadiness } from "@/lib/odk/admin-exam-server";
-import { parseExamSecurityPolicy } from "@/lib/odk/exam-security";
-import { readSessionPlan } from "@/lib/odk/exam-sessions";
-import { buildExamResultsSummary } from "@/lib/odk/results-ops";
 import { examStatusPresentation } from "@/lib/odk/presentation";
 import {
   EXAM_ANCHOR_TABS,
-  examCapabilities,
-  examPrimaryAction,
-  examWindowEnded,
   opsCounters,
-  parseQuestionFilter,
   questionMatchesFilter,
-  readinessChecklist,
-  resolveExamTab,
-  visibleExamTabs,
   type QuestionFilter,
 } from "@/lib/odk/staff-workspace";
 import { PanelShell } from "@/components/panel/panel-shell";
@@ -32,7 +19,6 @@ import { AdminIntegrityReviewPanel } from "@/components/odk/admin-integrity-revi
 import { AdminResultsReviewPanel } from "@/components/odk/admin-results-review-panel";
 import { AdminSessionPlan } from "@/components/odk/admin-session-plan";
 import { AnchorTabRedirect } from "@/components/panel/anchor-tab-redirect";
-import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 import {
   EmptyState,
   PageHeader,
@@ -46,13 +32,13 @@ import {
   ViewTabs,
   buttonClass,
 } from "@/components/panel/ui";
-import { SUBMITTED_STATUSES, loadExamHistory, loadStaffViewer } from "../../staff-data";
+import { loadExamHistory } from "../../staff-data";
+import { loadOdkExamReport, loadOdkExamWorkspace } from "@/lib/odk/exam-workspace-server";
 
 export const dynamic = "force-dynamic";
 
 const DATE_TIME = new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Istanbul" });
 const TONE = { neutral: "neutral", info: "info", warning: "warning", success: "success", danger: "critical" } as const;
-const FULLSCREEN_LABEL = { OFF: "Tam ekran kapalı", SUGGESTED: "Tam ekran önerilir", REQUIRED: "Tam ekran istenir" } as const;
 const QUESTION_FILTERS: Array<{ id: QuestionFilter; label: string }> = [
   { id: "tumu", label: "Tümü" },
   { id: "kazanimsiz", label: "Kazanımsız" },
@@ -90,73 +76,13 @@ export default async function OdkAdminExamDetailPage({
   searchParams: Promise<{ sekme?: string; filtre?: string }>;
 }) {
   const session = await requireAnyStaffPermission(ODK_EXAM_LIST_PERMISSIONS);
-  const viewer = await loadStaffViewer(session.userId);
-  const caps = examCapabilities(viewer.permissions);
   const [{ id }, query] = await Promise.all([params, searchParams]);
-  const { exam, issues } = await getOdkExamReadiness(id);
-  if (!exam?.currentVersion) notFound();
-  const version = exam.currentVersion;
-  const familyCode = getOdkExamFamilyCode(exam);
-  const sessionPlan = readSessionPlan(version.settings);
-  const tabs = visibleExamTabs(caps, { hasSessions: Boolean(sessionPlan) });
-  const tab = resolveExamTab(query.sekme, tabs);
-  const questionFilter = parseQuestionFilter(query.filtre);
+  const workspace = await loadOdkExamWorkspace(session.userId, id, query);
+  if (!workspace) notFound();
+  const { caps, exam, version, issues, familyCode, sessionPlan, tabs, tab, questionFilter, windowEnded, outcomes, attempts, assignedCount, questions, submittedCount, scoredCount, reviewCount, security, readiness, primary, draftEditable } = workspace;
   const now = new Date();
-  const windowEnded = examWindowEnded(exam, now);
-
-  const [outcomes, attempts, assignedCount] = await Promise.all([
-    caps.edit && tab === "sorular" ? getActiveOutcomeOptions(familyCode, exam.structureMode === "MATH_ONLY") : Promise.resolve([]),
-    prisma.odkExamAttempt.findMany({
-      where: { examId: id, status: { not: "VOID" } },
-      orderBy: { startedAt: "desc" },
-      select: {
-        id: true,
-        status: true,
-        integrityLevel: true,
-        integrityReviewedAt: true,
-        startedAt: true,
-        submittedAt: true,
-        deadlineAt: true,
-        lastActivityAt: true,
-        student: { select: { fullName: true, email: true } },
-        score: tab === "raporlar"
-          ? { select: { attemptId: true, correctCount: true, wrongCount: true, blankCount: true, totalNet: true, publicationStatus: true, activeDurationMs: true, sectionBreakdown: true } }
-          : { select: { attemptId: true } },
-      },
-    }),
-    prisma.odkExamAssignment.count({ where: { examId: id, isActive: true } }),
-  ]);
-
-  const questions = version.sections.flatMap((section) =>
-    section.questions.map((question) => ({
-      id: question.id,
-      questionNumber: question.questionNumber,
-      correctOption: question.correctOption,
-      difficulty: question.difficulty,
-      bookletPage: question.bookletPage,
-      contentType: question.contentType,
-      contentText: question.contentText,
-      assetUrl: question.assetUrl,
-      outcomeIds: question.outcomes.map((outcome) => outcome.outcomeId),
-      primaryOutcomeId: question.outcomes.find((outcome) => outcome.isPrimary)?.outcomeId || null,
-    })),
-  );
-  const submittedCount = attempts.filter((attempt) => (SUBMITTED_STATUSES as readonly string[]).includes(attempt.status)).length;
-  const scoredCount = attempts.filter((attempt) => attempt.score).length;
-  const reviewCount = attempts.filter((attempt) => attempt.integrityLevel !== "NORMAL").length;
-  const security = parseExamSecurityPolicy(version.settings);
-  const readiness = readinessChecklist({
-    examId: exam.id,
-    questionCount: questions.length,
-    sectionCount: version.sections.length,
-    hasBooklet: version.files.some((file) => file.type === "BOOKLET_PDF"),
-    issues,
-    securityLabel: `${FULLSCREEN_LABEL[security.fullscreenMode]}${version.autoSubmit ? " · otomatik teslim" : ""}`,
-  });
-  const primary = examPrimaryAction(exam.status, caps, windowEnded);
   const status = examStatusPresentation[exam.status];
   const tabHref = (next: string, extra?: string) => `/panel/odk/yonetim/sinavlar/${exam.id}?sekme=${next}${extra ?? ""}`;
-  const draftEditable = exam.status === "DRAFT" && version.status === "DRAFT";
   const showRail = tab === "genel" || tab === "icerik" || tab === "sorular";
 
   const editorExam = {
@@ -474,45 +400,7 @@ type ReportAttempt = {
 };
 
 async function ExamReportTab({ examId, assignedCount, attempts }: { examId: string; assignedCount: number; attempts: ReportAttempt[] }) {
-  const summary = buildExamResultsSummary({
-    assignmentCount: assignedCount,
-    attempts: attempts.map((attempt) => ({
-      id: attempt.id,
-      studentName: attempt.student.fullName || attempt.student.email,
-      status: attempt.status,
-      integrityLevel: attempt.integrityLevel,
-      startedAt: attempt.startedAt,
-      submittedAt: attempt.submittedAt,
-      score: attempt.score && attempt.score.publicationStatus
-        ? {
-            correctCount: attempt.score.correctCount ?? 0,
-            wrongCount: attempt.score.wrongCount ?? 0,
-            blankCount: attempt.score.blankCount ?? 0,
-            totalNet: Number(attempt.score.totalNet ?? 0),
-            publicationStatus: attempt.score.publicationStatus,
-            activeDurationMs: attempt.score.activeDurationMs,
-            sectionBreakdown: Array.isArray(attempt.score.sectionBreakdown)
-              ? (attempt.score.sectionBreakdown as Array<{ code: string; title: string; net?: number; accuracy?: number }>)
-              : null,
-          }
-        : null,
-    })),
-  });
-  const weakest = await prisma.odkAttemptOutcomeScore.groupBy({
-    by: ["outcomeId"],
-    where: { score: { attempt: { examId, status: { not: "VOID" } } } },
-    _avg: { accuracyRate: true },
-    _count: { _all: true },
-    orderBy: { _avg: { accuracyRate: "asc" } },
-    take: 6,
-  });
-  const outcomeTitles = weakest.length
-    ? new Map(
-        (await prisma.learningOutcome.findMany({ where: { id: { in: weakest.map((row) => row.outcomeId) } }, select: { id: true, code: true, title: true } })).map(
-          (outcome) => [outcome.id, `${outcome.code} · ${outcome.title}`],
-        ),
-      )
-    : new Map<string, string>();
+  const { summary, weakest, outcomeTitles } = await loadOdkExamReport(examId, assignedCount, attempts);
   const net = (value: number | null) => (value === null ? "—" : value.toFixed(2));
   return (
     <>

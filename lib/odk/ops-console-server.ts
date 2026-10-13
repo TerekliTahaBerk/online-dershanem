@@ -94,10 +94,13 @@ export async function loadOdkOpsConsole(params: OpsConsoleParams, now = new Date
   return { now, query, view, filters, exams, selectable, selected, counters, rows, alerts, isLive };
 }
 
-/** Kayıt yan paneli: yalnız konsolun izlediği bir denemenin kaydı (son 60 olay). */
-export async function loadOdkOpsAttempt(attemptId: string, now = new Date()) {
+/**
+ * Kayıt yan paneli (son 60 olay). Kapsam: varsayılan olarak konsolun izlediği
+ * denemeler; `examId` verilirse yalnız o denemenin kayıtları (K03 bütünlük sekmesi).
+ */
+export async function loadOdkOpsAttempt(attemptId: string, now = new Date(), scope: { examId?: string } = {}) {
   const attempt = await prisma.odkExamAttempt.findFirst({
-    where: { id: attemptId, status: { not: "VOID" }, exam: opsExamWindow(now) },
+    where: { id: attemptId, status: { not: "VOID" }, ...(scope.examId ? { examId: scope.examId } : { exam: opsExamWindow(now) }) },
     select: {
       id: true,
       status: true,

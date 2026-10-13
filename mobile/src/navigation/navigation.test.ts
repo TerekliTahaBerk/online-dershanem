@@ -189,7 +189,7 @@ describe('yönetim web yolu eşlemesi (Faz 1)', () => {
     expect(mapAdminWebPath('/panel/yonetim', navigation)).toEqual({ kind: 'tab', slot: 0, navId: 'today' });
     expect(mapAdminWebPath('/panel/yonetim/kisiler', navigation)).toEqual({ kind: 'screen', navId: 'people' });
     expect(mapAdminWebPath('/panel/yonetim/siparisler/o1?sekme=log', navigation)).toEqual({ kind: 'detail', href: '/admin/order/o1' });
-    expect(mapAdminWebPath('/panel/odk/yonetim/sinavlar/e1', navigation)).toEqual({ kind: 'screen', navId: 'odk-exams' });
+    expect(mapAdminWebPath('/panel/odk/yonetim/sinavlar/e1', navigation)).toEqual({ kind: 'detail', href: '/odk/manage/e1' }); // K03a: native çalışma alanı
   });
 
   it('kişi detayı, Öğrenci 360, Veliler ve Öğretmenler (Faz 2.2) yalnız "Kişiler" yetkisiyle native ekrana', () => {
