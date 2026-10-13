@@ -17,6 +17,7 @@ type Prefs = {
   absence: boolean;
   assignment: boolean;
   payment: boolean;
+  examUpdates: boolean;
   quietStartMinute: number | null;
   quietEndMinute: number | null;
   dailyDigest: boolean;
@@ -121,6 +122,7 @@ export function NotificationPreferences({
             { key: "weeklyDigest", label: "Haftalık sakin özet" },
             { key: "absence", label: "Devamsızlık" },
             { key: "assignment", label: "Ödev" },
+            { key: "examUpdates", label: "Deneme" },
             { key: "payment", label: "Ödeme" },
           ] as const
         ).map(({ key, label }) => (

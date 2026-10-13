@@ -42,3 +42,21 @@ test("ödev / plan görevi olayları kişisel veri içermeyen kendi metniyle gid
   // Kategorisiz eski satır varsayılan metne düşer.
   assert.equal(pushCopyFor(parentClass!, { category: null }).body, PUSH_COPY.ASSIGNMENT.body);
 });
+
+test("deneme olayları: veli / öğretmen / kurum denemesi genel metinle ve Deneme tercihine bağlı", () => {
+  const parentRow = { type: "SYSTEM" as const, sourceType: "ODK_AUDIENCE", category: "MISSED:s1:2026-01-01T07:00:00.000Z", preferenceKey: "examUpdates", href: "/panel/odk/veli?studentId=s1" };
+  const parentClass = classifyNotification(parentRow, { role: "PARENT" });
+  assert.equal(parentClass?.category, "EXAM");
+  assert.equal(parentClass?.preferenceKey, "examUpdates");
+  assert.equal(pushCopyFor(parentClass!, parentRow).body, "Bir denemeye katılım görünmüyor.");
+  const teacherRow = { ...parentRow, category: "TEACHER_RESULT", href: "/panel/odk/ogretmen/raporlar" };
+  const teacherClass = classifyNotification(teacherRow, { role: "TEACHER", staffPush: true });
+  assert.equal(pushCopyFor(teacherClass!, teacherRow).body, "Deneme sonuçları açıklandı.");
+  const mockRow = { type: "SYSTEM" as const, sourceType: "MOCK_EXAM", category: "MOCK:NEXT_ACTION", preferenceKey: "examUpdates", href: "/panel/ogrenci/denemeler" };
+  const mockClass = classifyNotification(mockRow, { role: "STUDENT" });
+  assert.equal(mockClass?.category, "EXAM");
+  assert.equal(pushCopyFor(mockClass!, mockRow).body, "Deneme için sonraki adım hazır.");
+  // Öğrencinin kendi Deneme Ligi olayları kendi metnini korur.
+  const own = { type: "SYSTEM" as const, sourceType: "ODK_EXAM", category: "DAY_BEFORE:2026-01-01T07:00:00.000Z", preferenceKey: "examUpdates", href: "/panel/odk/ogrenci/denemeler/e1" };
+  assert.equal(pushCopyFor(classifyNotification(own)!, own).body, "Yarın denemen var.");
+});

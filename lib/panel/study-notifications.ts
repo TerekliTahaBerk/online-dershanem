@@ -1,8 +1,7 @@
 import "server-only";
 
-import type { Prisma, PrismaClient } from "@prisma/client";
-import { createHash } from "node:crypto";
-import { filterNotificationRows, queuePanelNotificationEmails, type NotificationRow } from "@/lib/panel-notifications";
+import type { NotificationRow } from "@/lib/panel-notifications";
+import { deliverEventNotifications, eventNotificationId, type EventNotificationDb } from "@/lib/panel/event-notifications";
 
 /**
  * Ödev ve plan görevi bildirimleri — öğrenci, veli, öğretmen ve koç.
@@ -17,19 +16,15 @@ import { filterNotificationRows, queuePanelNotificationEmails, type Notification
  * Push gövdesi kişisel veri taşımaz; ayrıntı bildirim açılınca okunur.
  */
 
-type Db = PrismaClient | Prisma.TransactionClient;
+type Db = EventNotificationDb;
 export type StudyNotificationCategory = "ASSIGNMENT:NEW" | "ASSIGNMENT:DONE" | "ASSIGNMENT:SUBMITTED" | "ASSIGNMENT:REVIEWED" | "PLAN_TASK:DONE" | "PLAN_TASK:ADDED" | "PLAN:PUBLISHED";
 type StudyRow = NotificationRow & { id: string; category: StudyNotificationCategory };
 
 const ACADEMIC_PARENTS = { where: { active: true, endedAt: null, canViewAcademic: true }, select: { parentId: true } } as const;
 const DATE = new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeZone: "Europe/Istanbul" });
 
-function rowId(userId: string, event: string) {
-  return `study:${createHash("sha256").update(`${userId}:${event}`).digest("hex").slice(0, 40)}`;
-}
-
 function row(userId: string, event: string, category: StudyNotificationCategory, title: string, body: string, href: string): StudyRow {
-  return { id: rowId(userId, event), userId, type: "ASSIGNMENT", category, title, body, href };
+  return { id: eventNotificationId("study", userId, event), userId, type: "ASSIGNMENT", category, title, body, href };
 }
 
 function studentName(student: { user: { fullName: string | null } }) {
@@ -40,17 +35,8 @@ function parentHref(path: string, studentId: string) {
   return `${path}?studentId=${encodeURIComponent(studentId)}`;
 }
 
-async function deliver(db: Db, rows: StudyRow[]) {
-  if (!rows.length) return 0;
-  // Daha önce üretilmiş olay (tekrar işaretleme) ne uygulama içine ne e-postaya düşer.
-  const seen = new Set((await db.notification.findMany({ where: { id: { in: rows.map((item) => item.id) } }, select: { id: true } })).map((item) => item.id));
-  const fresh = rows.filter((item) => !seen.has(item.id));
-  if (!fresh.length) return 0;
-  const visible = await filterNotificationRows(fresh, "assignment", db);
-  const created = visible.length ? (await db.notification.createMany({ data: visible, skipDuplicates: true })).count : 0;
-  // E-posta outbox'a yazılır; dış ağ çağrısını cron yapar.
-  await queuePanelNotificationEmails(fresh, "assignment", db as Prisma.TransactionClient);
-  return created;
+function deliver(db: Db, rows: StudyRow[]) {
+  return deliverEventNotifications(db, rows, "assignment");
 }
 
 /** Öğretmen yeni ödev girdi → gruptaki her öğrenci ve akademik izinli velileri. */

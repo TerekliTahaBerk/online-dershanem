@@ -10,6 +10,8 @@ import { mockExamViewInclude, toMockExamView } from "@/lib/mock-exam-view";
 import { initialReviewDueAt } from "@/lib/review-scheduler";
 import { operationDigest } from "./group-mutation-core";
 import { mockExamRevision } from "./mock-exam-core";
+import { afterResponse } from "@/lib/after-response";
+import { notifyMockExamEntered, notifyMockExamNextAction } from "@/lib/panel/exam-notifications";
 
 export { mockExamRevision };
 
@@ -125,6 +127,8 @@ export async function createMockExamService(actor: Actor, input: MockExamCreateI
   await recordPanelProductEvent({ name: "mock_exam_entry_completed", properties: { examType: input.exam, entryDurationMs: input.entryDurationMs || 0, sectionCount: input.sections.length, reasonCount, source: input.source } }, actor.role);
   const reviewItemCount = reviewQueue ? input.sections.filter((section) => section.incorrectCount > 0).length : 0;
   if (reviewItemCount) await recordPanelProductEvent({ name: "review_items_created", properties: { sourceType: "MOCK_EXAM_SECTION", itemCount: reviewItemCount } }, actor.role);
+  // Öğrenci girdiyse öğretmen / koç / veli; öğretmen girdiyse öğrenci / veli haberdar olur.
+  afterResponse("panel.mock_exam.entered_notification_failed", () => notifyMockExamEntered(prisma, { mockExamId: examId }), { mockExamId: examId });
   const fullExam = await prisma.mockExam.findUniqueOrThrow({ where: { id: examId }, include: mockExamViewInclude });
   return { exam: toMockExamView(fullExam), replayed: false };
 }
@@ -176,6 +180,9 @@ export async function reviseMockExamService(actor: Actor, examId: string, input:
       throw new MockExamError(409, "MOCK_EXAM_CONFLICT", "Deneme başka bir yerde güncellendi. Görünümü yenileyin.");
     }
     throw error;
+  }
+  if (input.nextAction && input.nextAction !== exam.nextAction) {
+    afterResponse("panel.mock_exam.next_action_notification_failed", () => notifyMockExamNextAction(prisma, { mockExamId: examId }), { mockExamId: examId });
   }
   if (changed) await recordPanelProductEvent({ name: "error_reason_revised", properties: { examType: exam.exam, actorRole: actor.role as "ADMIN" | "TEACHER" | "STUDENT", changedCount: changed, reasonCount: after.length } }, actor.role);
   return { replayed: false };

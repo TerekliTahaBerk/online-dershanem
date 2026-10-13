@@ -31,6 +31,44 @@ olaydan türetilir: aynı görevin tekrar işaretlenmesi ikinci bildirim üretme
 Plan görevi bildiriminin gövdesi günün ilerlemesini taşır
 (`günün görevleri: 2/3 tamamlandı`).
 
+## Deneme
+
+Tümü "Deneme" (`examUpdates`) tercihine bağlıdır (web ve mobil ayarlarda ayrı anahtar).
+
+### Deneme Ligi (cron, `lib/odk/student-notifications.ts`)
+
+Bu bildirimler yalnız `ODK_STUDENT_NOTIFICATIONS=ENABLED` ortam değişkeni ile
+üretilir (varsayılan kapalı). Cron 5 dakikada bir çalışır; satır kimliği
+olaydan türetildiği için her olay bir kez düşer.
+
+| Olay | Alıcı | Başlık | Koşul |
+| --- | --- | --- | --- |
+| Deneme atandı | Öğrenci | Yaklaşan deneme | Atama anında |
+| | Veli | Çocuğunuza deneme eklendi | Atama anında |
+| Yarın deneme var | Öğrenci | Yarın denemen var | Başlangıca 3–24 saat |
+| | Veli | Yarın deneme var | Aynı |
+| Deneme yakında | Öğrenci | Denemen yakında başlıyor | Başlangıca ≤ 60 dk |
+| Deneme başladı | Öğrenci | Denemen başladı | Hatırlatma almadıysa |
+| Deneme kaçırıldı | Öğrenci | Denemeyi kaçırdın | Geç giriş süresi doldu, deneme yok |
+| | Veli | Çocuğunuz denemeye katılmadı | Aynı |
+| Deneme teslim edildi | Veli | Çocuğunuz denemeyi tamamladı | Teslimden sonra 24 saat içinde |
+| Sonuç açıklandı | Öğrenci | Deneme sonucun açıklandı | Öğrenci rapor hakkı |
+| | Veli | Deneme sonucu açıklandı | Sözleşmede veli rapor hakkı |
+| | Öğretmen | Deneme sonuçları açıklandı | Sözleşmede öğretmen rapor hakkı; deneme başına tek bildirim |
+| Cevap anahtarı | Öğrenci | Cevap anahtarı yayınlandı | Anahtar sonuçtan ayrı yayınlanıyorsa |
+
+### Okul / kurum denemeleri (`lib/panel/exam-notifications.ts`)
+
+| Olay | Alıcı | Başlık |
+| --- | --- | --- |
+| Deneme sonucu kaydedildi | Öğrenci (başkası girdiyse) | Deneme sonucun eklendi |
+| | Grup öğretmeni, koç (girmedilerse) | Yeni deneme sonucu |
+| | Veli | Yeni deneme sonucu |
+| Öğretmen / koç sonraki adımı onayladı | Öğrenci | Denemen için sonraki adım hazır |
+| | Veli | Deneme için sonraki adım belirlendi |
+
+Gövde sınav türü, tarih ve toplam D / Y / B'yi taşır; push kilit ekranı genel metin kullanır.
+
 ## Diğer mevcut bildirimler
 
 | Alan | Olay | Alıcı |
@@ -52,8 +90,6 @@ Plan görevi bildiriminin gövdesi günün ilerlemesini taşır
 | Özet | Haftalık özet hazır | Veli |
 | Özet | Günün gelişmeleri (günlük özet tercihi) | Tümü |
 | Grup | Kayıt / transfer / çıkarılma / öğretmen ataması | Öğrenci, veli, öğretmen |
-| Deneme Ligi | Deneme yakında / başladı / sonuç / cevap anahtarı | Öğrenci |
-| Deneme | Yaklaşan deneme (takvime eklendi) | Öğrenci |
 | Hesap | İşlevsel destek düzenlemesi güncellendi | Öğrenci |
 | Ödeme | Ödeme kaydı eşleşti (push'a çıkmaz) | Öğrenci, veli |
 | Yönetim | Yeni ödeme, hesap açılışı, yeni aday, kritik cron alarmı | Yönetici |
