@@ -1,10 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireStaffPermission } from "@/lib/auth/guards";
-import {
-  getOdkAudienceStudentReport,
-  listOdkReportStudents,
-} from "@/lib/odk/reporting-server";
+import { loadOdkManagementReports } from "@/lib/odk/report-table-server";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { OdkAudienceReports } from "@/components/odk/audience-reports";
 import { OdkReportTable } from "@/components/odk/odk-report-table";
@@ -18,20 +15,9 @@ export default async function OdkAdminReportsPage({
 }) {
   // Deneme Ligi personel izni (ADMIN her izinde geçer); global rol tek başına yetmez.
   const session = await requireStaffPermission("odk:report:read_all");
-  const students = await listOdkReportStudents({
-    userId: session.userId,
-    role: "ADMIN",
-  });
   const query = await searchParams;
+  const { students, selected, report } = await loadOdkManagementReports(session.userId, query);
   const requested = query.ogrenci;
-  // Varsayılan görünüm tablo + yan panel (§11.7); `?ogrenci=` eski ayrıntılı raporu açar.
-  const selected = requested || null;
-  const report = selected
-    ? await getOdkAudienceStudentReport(
-        { userId: session.userId, role: "ADMIN" },
-        selected,
-      )
-    : null;
   if (requested && !report) notFound();
   return (
     <PanelShell

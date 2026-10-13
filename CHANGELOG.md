@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Native Deneme Ligi scoring/publication queue and full management reports with shared web loaders, stage/student/class filters, personal net changes and outcome evidence; read-all permission remains separate from related-teacher reports.
+
 - Native Deneme Ligi exam list/filter/pagination and exam/series creation using shared web services, catalog revisions and atomic idempotent writes; supports legacy templates and active curriculum registry families.
 
 - Native Deneme Ligi management overview/pilot readiness and read-only package contracts, with shared web loaders, staff permission/pilot guards and private projections. Native cached rows/forms are hidden after confirmed access or feature revocation.

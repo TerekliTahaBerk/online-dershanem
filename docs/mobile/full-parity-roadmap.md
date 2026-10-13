@@ -435,3 +435,10 @@ Bu dilimin son kontrolleri: **984 sunucu birim testi**, **33 paket / 250 mobil t
 - Web liste ve oluşturma servisleri ortaklaştırıldı. Native yazma UUID işlem anahtarı + katalog sürümü ister; seri/müfredat/politika değişimi eski seçimi reddeder. Sınav/sürüm/bölüm/soru, audit ve receipt aynı Serializable transaction’da oluşturulur. Mevcut personel/pilot/ürün kapıları korunur; production bayrakları değiştirilmedi. Yeni dependency/migration/env yok.
 - Kanıt: 999 sunucu birim testi, 47 mobil paket / 279 test. İzole PostgreSQL/gerçek HTTP: eşzamanlı tekrar tek sınav/sürüm/soru kümesi/audit, eski katalog 409, farklı payload anahtarı 409, aile/seri uyumsuzluğu, katalog tabanlı aile ve legacy web sınav/seri regresyonu. Native belirsiz yanıt sonrasında aynı anahtar ve kaynak sürümüyle retry, seri seçimi ve salt okuma personeli kontrol edildi. Fiziksel iPhone kabulü açık.
 - Matris: 82 Tam / 8 Kısmi / 9 Eksik / 1 İstisna / 6 Yönl. P4 K03–K06/K08, P5 kalanları ve Dino dış inceleme/P1/P2.9/P6 kabulü açık.
+
+
+### 13 Ekim 2026 — P4 K05/K06
+
+- Puanlama/yayın kuyruğu, aşama filtreleri ve sayaçlar native; eylemler K03 detayına aittir, bu dilimde açıkça web’de açılır. K06 arama/sınıf filtresi, öğrenci özeti, tam rapor, kendi önceki ölçümüne göre net değişimi, deneme geçmişi ve kazanım/kanıt eğilimleri native. Web ve API aynı yükleyicileri kullanır; web’in 100 deneme/50 öğrenci sınırı korunur.
+- `odk:result:score` ile kuyruk, `odk:report:read_all` ile genel rapor açılır. `read_related` öğretmen ayrı uç/ilişki/sözleşme kapsamını korur. Yeni uçlar yalnız GET; özel toplantı/cevap anahtarı, ham cevap ve audit/cihaz verisi projeksiyonda yok. Rapor sorgusu ekrandan çıkınca bellekten kaldırılır. Production personel/pilot bayrakları değişmedi.
+- Kanıt: 1001 sunucu birim testi, 48 mobil paket / 281 test; gerçek HTTP/izole PostgreSQL hem legacy hem enforce modda rol/izin, yayın aşaması, gizli skorun rapora girmemesi, önceki net farkı, yabancı/pasif öğrenci 404, rol iptali ve yalnız GET doğrulandı. Fiziksel iPhone kabulü açık. Matris: 84 Tam / 8 Kısmi / 7 Eksik / 1 İstisna / 6 Yönl. P4 K03/K04/K08, P5 kalanları ve dış kabul kapıları açık.

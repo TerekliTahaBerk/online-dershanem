@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { loadOdkResultsQueue, QUEUE_TABS } from "@/lib/odk/results-queue-server";
 import { requireStaffPermission } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
@@ -13,19 +13,11 @@ import {
   buttonClass,
 } from "@/components/panel/ui";
 import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
-import { PUBLICATION_STAGES, examWorkspaceHref, publicationStageOf, type PublicationStage } from "@/lib/odk/staff-workspace";
-import { SUBMITTED_STATUSES } from "../staff-data";
+import { PUBLICATION_STAGES, examWorkspaceHref, type PublicationStage } from "@/lib/odk/staff-workspace";
 
 export const dynamic = "force-dynamic";
 
 const DATE_TIME = new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Istanbul" });
-const QUEUE_TABS: Array<{ id: "kuyruk" | PublicationStage | "tumu"; label: string }> = [
-  { id: "kuyruk", label: "İş kuyruğu" },
-  { id: "PUANLANIYOR", label: "Puanlama bekliyor" },
-  { id: "INCELEME", label: "Yayın bekliyor" },
-  { id: "YAYINLANDI", label: "Yayınlandı" },
-  { id: "tumu", label: "Tümü" },
-];
 const ACTION: Record<PublicationStage, string> = {
   PUANLANIYOR: "Puanla",
   INCELEME: "Yayın önizleme",
@@ -43,50 +35,7 @@ const ACTION: Record<PublicationStage, string> = {
 export default async function OdkAdminResultsHubPage({ searchParams }: { searchParams: Promise<{ asama?: string }> }) {
   // Deneme Ligi personel izni (ADMIN her izinde geçer); global rol tek başına yetmez.
   const session = await requireStaffPermission("odk:result:score");
-  const requested = (await searchParams).asama;
-  const tab = QUEUE_TABS.find((item) => item.id === requested)?.id ?? "kuyruk";
-  const now = new Date();
-  const exams = await prisma.odkExam.findMany({
-    where: {
-      OR: [{ status: { in: ["ENDED", "SCORED", "RELEASED"] } }, { status: { in: ["SCHEDULED", "LIVE"] }, endsAt: { lte: now } }],
-    },
-    orderBy: [{ endsAt: "desc" }, { updatedAt: "desc" }],
-    take: 100,
-    select: {
-      id: true,
-      title: true,
-      family: true,
-      examFamilyRef: { select: { code: true } },
-      status: true,
-      startsAt: true,
-      endsAt: true,
-      resultsReleasedAt: true,
-      _count: { select: { assignments: { where: { isActive: true } } } },
-      attempts: {
-        where: { status: { in: [...SUBMITTED_STATUSES] } },
-        select: { integrityLevel: true, integrityReviewedAt: true, score: { select: { publicationStatus: true } } },
-      },
-    },
-  });
-  const rows = exams.map((exam) => {
-    const unscored = exam.attempts.filter((attempt) => !attempt.score).length;
-    return {
-      exam,
-      unscored,
-      scored: exam.attempts.length - unscored,
-      published: exam.attempts.filter((attempt) => attempt.score?.publicationStatus === "PUBLISHED").length,
-      review: exam.attempts.filter((attempt) => attempt.integrityLevel !== "NORMAL" && !attempt.integrityReviewedAt).length,
-      stage: publicationStageOf({ ...exam, unscored }, now),
-    };
-  });
-  const counts = new Map<string, number>([
-    ["kuyruk", rows.filter((row) => row.stage === "PUANLANIYOR" || row.stage === "INCELEME").length],
-    ["tumu", rows.length],
-    ...PUBLICATION_STAGES.map((stage) => [stage.id, rows.filter((row) => row.stage === stage.id).length] as [string, number]),
-  ]);
-  const shown = rows.filter((row) =>
-    tab === "tumu" ? true : tab === "kuyruk" ? row.stage === "PUANLANIYOR" || row.stage === "INCELEME" : row.stage === tab,
-  );
+  const { tab, shown, counts } = await loadOdkResultsQueue((await searchParams).asama);
 
   return (
     <PanelShell role={session.role} fullName={session.fullName} email={session.email} product="ODK" pageTitle="Puanlama ve yayın">
