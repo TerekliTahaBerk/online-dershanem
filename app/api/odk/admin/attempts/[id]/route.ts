@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
+import { CommandError } from "@/lib/panel/command-receipt";
+import { reviewAttemptIntegrity } from "@/lib/odk/integrity-review-service";
 import { requireApiStaffPermission } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { integrityReviewSchema } from "@/lib/odk/admin-schemas";
@@ -69,32 +70,11 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const parsed = integrityReviewSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "İnceleme işlemi geçersiz." }, { status: 400 });
 
-  const attempt = await prisma.odkExamAttempt.findUnique({ where: { id }, select: { id: true, examId: true, status: true, integrityLevel: true } });
-  if (!attempt) return NextResponse.json({ error: "Oturum bulunamadı." }, { status: 404 });
-
-  const data =
-    parsed.data.action === "MARK_REVIEWED"
-      ? { integrityReviewedAt: new Date(), status: attempt.status === "REVIEW_REQUIRED" ? ("SUBMITTED" as const) : undefined }
-      : parsed.data.action === "REQUIRE_REVIEW"
-        ? { status: "REVIEW_REQUIRED" as const, integrityReviewedAt: null }
-        : { integrityReviewedAt: null };
-
-  const updated = await prisma.odkExamAttempt.update({
-    where: { id },
-    data: {
-      integrityReviewedAt: data.integrityReviewedAt === undefined ? undefined : data.integrityReviewedAt,
-      ...(data.status ? { status: data.status } : {}),
-    },
-  });
-
-  await logAudit({
-    actorUserId: auth.session.userId,
-    entityType: "OdkExamAttempt",
-    entityId: id,
-    action: "odk.attempt_integrity_reviewed",
-    summary: `Integrity incelemesi: ${parsed.data.action}`,
-    payload: { examId: attempt.examId, note: parsed.data.note || null, previousLevel: attempt.integrityLevel },
-  });
-
-  return NextResponse.json({ attempt: { id: updated.id, status: updated.status, integrityReviewedAt: updated.integrityReviewedAt } });
+  try {
+    const { result } = await reviewAttemptIntegrity(auth.session.userId, id, parsed.data);
+    return NextResponse.json({ attempt: { id: result.id, status: result.status, integrityReviewedAt: result.integrityReviewedAt } });
+  } catch (error) {
+    if (error instanceof CommandError) return NextResponse.json({ error: error.message }, { status: error.status });
+    throw error;
+  }
 }

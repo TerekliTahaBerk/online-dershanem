@@ -473,3 +473,11 @@ Bu dilimin son kontrolleri: **984 sunucu birim testi**, **33 paket / 250 mobil t
 - Personel push: `PANEL_FEATURE_STAFF_PUSH` (varsayılan kapalı). Açıkken öğretmen/yönetici cihaz kaydı ve tercihleri (ana anahtar + sessiz saat) açılır; dağıtıcı personel bildirimlerini yalnız personel yollarında, genel `STAFF` kilit ekranı metniyle gönderir; sipariş ve İşletme finans yolları hariç. Bayrak kapanınca bekleyen personel teslimleri `NOT_CLASSIFIED` ile atlanır. Yönetici bildirimine dokunma yönetim eşlemesiyle açılır.
 - Kanıt: 1006 birim (yeni `classification.test.ts`), 56 mobil paket / 300 test, PostgreSQL entegrasyonu 140/142 (iki başarısızlık main'de de aynı). Matris: 92 Tam / 2 Kısmi / 5 Eksik / 1 İstisna / 6 Yönl.
 - Açık: K03/K04/K08 (P4, kullanıcı dalında), S18/V11/T07 Dino (çocuk verisi incelemesi), C09 passkey, staffPush production kararı, P2.9/P6 gerçek cihaz kabulü.
+
+### 13 Ekim 2026 — P4.2 K04 canlı operasyon
+
+- Web `/panel/odk/yonetim/operasyon` sorgu ve süzgeçleri `lib/odk/ops-console-server.ts`'e taşındı; sayfa ve `GET /api/panel/odk/management/operations` aynı yükleyiciyi kullanır (`odk:ops:live`). Projeksiyon öğrenciyi yalnız adla verir; cevap, puan, IP ve cihaz verisi yok.
+- Kayıt paneli `GET .../operations/attempts/[id]`: durum, son sinyal, cevap sayısı, bütünlük ve son 60 olay; yalnız konsolun izlediği (planlı/canlı, son 24 saat) denemelerin kayıtları, diğerleri 404.
+- Bütünlük incelemesi `lib/odk/integrity-review-service.ts`: web `PATCH /api/odk/admin/attempts/[id]` ve mobil `POST .../review` aynı kural; kayıt + audit makbuzu tek Serializable transaction. Mobil işlem anahtarı ve okunan sürüm zorunlu (eski görünüm 409, aynı anahtar ilk sonucu döndürür).
+- Mobil: deneme/görünüm/durum/bütünlük/sinyal süzgeçleri, sayaçlar, uyarılar, 15 sn otomatik yenileme (kapatılabilir; kayıt paneli açıkken durur), onaylı inceleme eylemleri.
+- Kanıt: 1008 birim, 57 mobil paket / 306 test, PostgreSQL entegrasyonu 141/143 (iki başarısızlık main'de de aynı). Matris: 94 Tam / 2 Kısmi / 3 Eksik / 1 İstisna / 6 Yönl. P4'te yalnız K03 açık.

@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Native Deneme Ligi live operations console (K04) with shared web loader, filters, counters, alerts, 15-second auto refresh, attempt event timeline and integrity review; review writes share one service with the web endpoint and use actor-scoped receipts and revision checks.
+
 - Native authenticator (TOTP) enrollment/replacement with one-time recovery codes, an in-app account deletion request (password re-check, single open request, admin notification, DSR conflict guard), and staff push notifications behind `PANEL_FEATURE_STAFF_PUSH` (generic lock-screen copy, finance/order paths excluded).
 
 - Native weekly plan generation/rebalancing with version-checked retries, cursor pagination for older Deneme Ligi exams, and parent coaching reschedule requests with join links (S14, S20, V07). Concurrent plan regenerations now return 409 instead of both succeeding.
