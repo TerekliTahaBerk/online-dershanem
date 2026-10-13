@@ -28,10 +28,21 @@ export default async function SessionsPage() {
           Aktif oturumlar
         </h1>
         <p className={PAGE_DESCRIPTION_CLASS}>
-          Bu hesap {formatPolicyDuration(policy.idleTimeoutMs)}{" "}
-          kullanılmadığında veya en geç{" "}
-          {formatPolicyDuration(policy.absoluteTtlMs)} sonunda yeniden giriş
-          ister. MFA ve adım yükseltme bu süreleri uzatmaz.
+          {policy.idleTimeoutMs < policy.absoluteTtlMs ? (
+            <>
+              Bu hesap {formatPolicyDuration(policy.idleTimeoutMs)}{" "}
+              kullanılmadığında veya en geç{" "}
+              {formatPolicyDuration(policy.absoluteTtlMs)} sonunda yeniden giriş
+              ister.
+            </>
+          ) : (
+            <>
+              Parola girildikten sonra oturum{" "}
+              {formatPolicyDuration(policy.absoluteTtlMs)} hatırlanır; ardından
+              yeniden giriş istenir.
+            </>
+          )}{" "}
+          MFA ve adım yükseltme bu süreyi uzatmaz.
         </p>
       </header>
       <SessionManager
