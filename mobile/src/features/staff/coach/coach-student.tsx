@@ -11,6 +11,8 @@ import { formatDayMonth, formatShortDateTime } from '@/lib/format/istanbul';
 
 import { confirmAction, DateTimeField, isHttps, OfflineWriteNotice, QueryView, staffStyles, useInvalidateStaff, useOnline, usePullToRefresh, useStableKey, useStaffQuery, WriteBanner, writeError, type WriteState } from '../shared';
 
+import { CoachPreparationPanel } from './coach-preparation';
+
 export const VISIBILITY_LABEL: Record<NoteVisibility, string> = { INTERNAL: 'Yalnız koçlar', STUDENT_VISIBLE: 'Öğrenci görür', PARENT_VISIBLE: 'Veli görür' };
 const VISIBILITY_HINT: Record<NoteVisibility, string> = {
   INTERNAL: 'Öğrenci ve veli bu notu görmez.',
@@ -25,7 +27,8 @@ const VISIBILITY_HINT: Record<NoteVisibility, string> = {
  */
 export function CoachStudentScreen({ studentId }: { studentId: string }) {
   const query = useStaffQuery('OK', 'coach-student', (api, signal) => fetchCoachStudent(api, studentId, signal), { params: { studentId }, gcTime: 0 });
-  const refresh = usePullToRefresh(() => query.refetch());
+  const invalidate = useInvalidateStaff("OK");
+  const refresh = usePullToRefresh(invalidate);
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="coach-student">
       <QueryView query={query}>{(data) => <Body data={data} />}</QueryView>
@@ -56,6 +59,7 @@ function Body({ data }: { data: MobileCoachStudentDetail }) {
         </Section>
       ) : null}
       <Notes data={data} online={online} />
+      <CoachPreparationPanel studentId={data.studentId} />
     </>
   );
 }

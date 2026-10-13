@@ -39,14 +39,14 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1. Yönetim (`/panel/yonetim`) | 28 | 27 | 0 | 0 | 0 | 1 |
 | 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 0 | 0 | 8 | 0 | 0 |
-| 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 17 | 2 | 1 | 0 | 0 |
+| 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 18 | 1 | 1 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 5. Öğrenci (`/panel/ogrenci`) | 18 | 15 | 1 | 1 | 0 | 1 |
 | 6. Deneme Ligi öğrenci (`/panel/odk/ogrenci`) | 5 | 3 | 1 | 0 | 1 | 0 |
 | 7. Veli (`/panel/veli`) | 12 | 7 | 2 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 4 | 3 | 2 | 0 | 2 |
-| **Toplam** | **106** | **77** | **9** | **13** | **1** | **6** |
+| **Toplam** | **106** | **78** | **8** | **13** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
@@ -133,7 +133,7 @@ Mobil karşılık: **yok** (öğretmen ODK alanında yalnız `teacher-odk-report
 | T17 | `/panel/ogretmen/yon` | `today` (OK) | O: koç Bugün | `kocum/coach-workspace-server.ts`; `staff/coach/home` | Hazır | `coach-home` | Tam | — | |
 | T18 | `/panel/ogretmen/yon/ogrenciler` | `coach-students` | O: koçluk öğrencileri | `staff/coach/students` | Hazır | `coach-students` | Tam | — | |
 | T19 | `/panel/ogretmen/yon/gorusmeler` | `coach-sessions` | O: görüşmeler | `staff/coach/sessions` | Hazır | `coach-sessions`, `coach/session/[id]` | Tam | — | |
-| T20 | `/panel/ogretmen/hazirlik/[id]` | — | O: öğrenci hazırlık çalışma alanı · Y: görüşme oluştur/güncelle, not, görev oluştur, görev ertele, öneri incele, plan onayla/kopyala, şablon uygula, özet oluştur, görüşme kaydet (SA `recordCoachingSession`), öğrenci hedefi koy (SA `setStudentGoal`) | `coaching-sessions*`, `kocum/{notes,tasks,tasks/[id]/reschedule,suggestions/[id]/review,plans/[id]/copy,templates/[id]/apply,summaries}`, `adaptive-plan/[id]/approve`, SA `recordCoachingSession`, `setStudentGoal` | SA | `coach/student/[id]` | Kısmi | P3 | Görev oluşturma, plan kopyalama, şablon uygulama, özet, görüşme kaydı + hedef (SA) |
+| T20 | `/panel/ogretmen/hazirlik/[id]` | — | O: öğrenci hazırlık çalışma alanı · Y: görüşme oluştur/güncelle, not, görev oluştur, görev ertele, öneri incele, plan onayla/kopyala, şablon uygula, özet oluştur, görüşme kaydet (SA `recordCoachingSession`), öğrenci hedefi koy (SA `setStudentGoal`) | `coaching-sessions*`, `kocum/{notes,tasks,tasks/[id]/reschedule,suggestions/[id]/review,plans/[id]/copy,templates/[id]/apply,summaries}`, `adaptive-plan/[id]/approve`, SA `recordCoachingSession`, `setStudentGoal` | Hazırlık GET/POST + ortak servisler | `coach/student/[id]` | Tam | P3 | Altı hazırlık yazması native; aktif atama/üyelik, revizyon, atomik receipt/audit, özel not ayrımı ve eşzamanlı tekrar gerçek HTTP ile doğrulandı; iPhone kabulü P6 |
 
 ## 4. Deneme Ligi öğretmen — `/panel/odk/ogretmen`
 
@@ -241,7 +241,7 @@ Onaylı istisnalar **alt işlem** düzeyindedir; etkilenen satırlar kalan alt i
 | Tür | Satırlar | Adet |
 | --- | --- | ---: |
 | GET projeksiyonu (O yok / Y var, O yok) | K01–K08; T14 | 9 |
-| Server Action → `lib/` servisi + route | T20 (2 eylem), V10 (1), C07–C08 (7); Y27 ortak servislere taşındı | 3 dosya / 10 eylem |
+| Server Action → `lib/` servisi + route | V10 (1), C07–C08 (7); Y27 ortak servislere taşındı | 2 dosya / 8 eylem |
 | Yetki düzeltmesi / kabul | V07 (veli görüşme işlemleri); S12/V09 ve T15 düzeltildi ve HTTP ile doğrulandı | 1 |
 | Yalnız mobil sözleşme + ekran (API hazır) | K03 (+ detay GET), S14, S18, S20, V11, C09–C11 | 8 |
 
