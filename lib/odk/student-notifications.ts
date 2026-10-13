@@ -5,6 +5,7 @@ import { decideAttemptStart } from "@/lib/odk/attempt-domain";
 import { listActiveOdkContracts, getActiveOdkExamGrant } from "@/lib/odk/product-contract-server";
 import { contractAnswerKeyAvailable, contractExamSchedule, contractResultAvailable, type OdkContractExam } from "@/lib/odk/product-contract";
 import { notificationKey } from "@/lib/notification-delivery";
+import { hasStaffPermission } from "@/lib/products/staff-permissions";
 
 /**
  * Deneme Ligi ÖĞRENCİ olay bildirimleri (M5) — kanonik `Notification` satırı
@@ -23,8 +24,10 @@ import { notificationKey } from "@/lib/notification-delivery";
  *    (`answerKeyReleaseMode` ≠ WITH_RESULTS) ve `contractAnswerKeyAvailable`.
  *  - DAY_BEFORE: başlangıca 3–24 saat kala ("yarın denemen var"); 60 dk
  *    hatırlatmasıyla çakışmaz.
- *  - MISSED: denemesi olmayan öğrencinin giriş süresi (başlangıç + geç giriş)
- *    dolduysa, en fazla 24 saat geriye bakarak.
+ *  - MISSED: yalnız öğrenciye AKTİF ATANMIŞ (`OdkExamAssignment`) denemede;
+ *    denemesi olmayan öğrencinin giriş süresi (başlangıç + geç giriş) dolduysa,
+ *    en fazla 24 saat geriye bakarak. Paketteki isteğe bağlı denemeler
+ *    "kaçırıldı" sayılmaz.
  *
  * VELİ / ÖĞRETMEN (kaynak `ODK_AUDIENCE`; satır kimliği aynı kararlı anahtar):
  *  - Veli (aktif, `canViewAcademic` bağlantı): DAY_BEFORE, MISSED, SUBMITTED
@@ -33,6 +36,10 @@ import { notificationKey } from "@/lib/notification-delivery";
  *  - Öğretmen (öğrencinin aktif grubunun öğretmeni, sözleşme `teacherReports`):
  *    deneme başına TEK "sonuçlar açıklandı" (TEACHER_RESULT); öğrenci başına
  *    bildirim yağmuru yok.
+ *  - Koç (aktif koç ataması, grubun öğretmeni değilse): öğrenci başına
+ *    COACH_RESULT — koçun öğrenci sayısı azdır ve bildirim öğrencinin raporunu açar.
+ *  - Personel satırı yalnız `odk:report:read_related` izni olan kişiye gider:
+ *    izinsiz personel raporu açamaz, ölü bildirim üretilmez.
  * Deneme başlatılmaz; puanlama / yayın değişmez. Varsayılan KAPALI:
  * `ODK_STUDENT_NOTIFICATIONS=ENABLED` olmadan hiçbir satır üretilmez.
  */
@@ -92,6 +99,7 @@ export async function syncOdkStudentNotifications(now = new Date()) {
         id: true, title: true, status: true, resultsReleasedAt: true, answerKeyReleasedAt: true,
         currentVersion: { select: { durationMinutes: true } },
         attempts: { where: { studentUserId: userId }, orderBy: { attemptNumber: "desc" }, take: 1, select: { status: true, submittedAt: true, score: { select: { publicationStatus: true } } } },
+        assignments: { where: { studentUserId: userId, isActive: true, revokedAt: null }, take: 1, select: { id: true } },
       },
     });
     for (const exam of exams) {
@@ -108,7 +116,7 @@ export async function syncOdkStudentNotifications(now = new Date()) {
           audience.push({ ...audienceBase, kind: "DAY_BEFORE", version });
         }
       }
-      if (!attempt && schedule.startsAt && ["SCHEDULED", "LIVE", "ENDED", "SCORED", "RELEASED"].includes(exam.status)) {
+      if (!attempt && exam.assignments.length && schedule.startsAt && ["SCHEDULED", "LIVE", "ENDED", "SCORED", "RELEASED"].includes(exam.status)) {
         const entryClosedAt = schedule.startsAt.getTime() + schedule.lateEntryMinutes * 60_000;
         const sinceClose = now.getTime() - entryClosedAt;
         if (sinceClose > 0 && sinceClose <= RECENT_MS) {
@@ -188,6 +196,43 @@ export async function syncOdkStudentNotifications(now = new Date()) {
 }
 
 /**
+ * Cevap anahtarı düzeltmesi sonrası yeniden puanlama: yayınlanmış neti DEĞİŞEN
+ * öğrenciye (öğrenci rapor hakkı) ve velisine (veli rapor hakkı) "sonuç
+ * güncellendi". Çağıran değişen öğrencileri verir; burada hak, sonucun
+ * görünürlüğü ve tercihler yeniden doğrulanır. Aynı bayrakla kapalıdır.
+ */
+export async function notifyOdkResultsUpdated(input: { examId: string; studentUserIds: string[]; version: string }, now = new Date()) {
+  if (!odkStudentNotificationsEnabled() || !input.studentUserIds.length) return 0;
+  const exam = await prisma.odkExam.findUnique({ where: { id: input.examId }, select: { id: true, title: true, status: true, resultsReleasedAt: true, answerKeyReleasedAt: true } });
+  if (!exam || exam.status !== "RELEASED") return 0;
+  const profiles = await prisma.studentProfile.findMany({
+    where: { userId: { in: input.studentUserIds }, user: { status: "ACTIVE" } },
+    select: { id: true, userId: true, user: { select: { fullName: true } }, parents: { where: { active: true, endedAt: null, canViewAcademic: true, parent: { status: "ACTIVE" } }, select: { parentId: true } } },
+  });
+  type Row = { id: string; userId: string; type: "SYSTEM"; title: string; body: string; href: string; sourceType: string; sourceId: string; sourceVersion: string; category: string; preferenceKey: string };
+  const rows: Row[] = [];
+  for (const profile of profiles) {
+    const grant = await getActiveOdkExamGrant(profile.userId, exam.id, now);
+    if (!grant || !contractResultAvailable(grant.exam, exam, now)) continue;
+    const { rights } = grant.contract.policy;
+    const name = profile.user.fullName?.trim() || "Öğrenci";
+    if (rights.studentReports) {
+      const category = `RESULT_UPDATED:${input.version}`;
+      rows.push({ id: notificationKey(profile.userId, "ODK_EXAM", exam.id, category), userId: profile.userId, type: "SYSTEM", title: "Deneme sonucun güncellendi", body: `${exam.title} · cevap anahtarı düzeltildi, netin değişti.`, href: `${BASE}/${exam.id}/sonuc`, sourceType: "ODK_EXAM", sourceId: exam.id, sourceVersion: input.version, category, preferenceKey: "examUpdates" });
+    }
+    if (rights.parentReports) {
+      const category = `RESULT_UPDATED:${profile.id}:${input.version}`;
+      for (const { parentId } of profile.parents) rows.push({ id: notificationKey(parentId, "ODK_AUDIENCE", exam.id, category), userId: parentId, type: "SYSTEM", title: "Deneme sonucu güncellendi", body: `${name} · ${exam.title} yeniden puanlandı; güncel sonuç raporlarda.`, href: `${PARENT_REPORTS}?studentId=${encodeURIComponent(profile.id)}`, sourceType: "ODK_AUDIENCE", sourceId: exam.id, sourceVersion: input.version, category, preferenceKey: "examUpdates" });
+    }
+  }
+  if (!rows.length) return 0;
+  const prefs = await prisma.notificationPreference.findMany({ where: { userId: { in: [...new Set(rows.map((row) => row.userId))] } }, select: { userId: true, inAppEnabled: true, examUpdates: true } });
+  const prefByUser = new Map(prefs.map((row) => [row.userId, row]));
+  const data = rows.filter((row) => { const pref = prefByUser.get(row.userId); return !pref || (pref.inAppEnabled && pref.examUpdates); });
+  return data.length ? (await prisma.notification.createMany({ data, skipDuplicates: true })).count : 0;
+}
+
+/**
  * Veli ve öğretmen satırları. Alıcı ilişkisi gönderim anında okunur: aktif
  * veli bağlantısı + akademik izin; öğretmen için öğrencinin aktif grubu.
  */
@@ -199,8 +244,14 @@ async function resolveAudienceRows(events: AudienceEvent[]) {
       id: true, userId: true, user: { select: { fullName: true } },
       parents: { where: { active: true, endedAt: null, canViewAcademic: true, parent: { status: "ACTIVE" } }, select: { parentId: true } },
       enrollments: { where: { endedAt: null, group: { isActive: true } }, select: { group: { select: { teacherId: true } } } },
+      coachAssignments: { where: { endedAt: null, coach: { user: { status: "ACTIVE" } } }, select: { coach: { select: { userId: true } } } },
     },
   });
+  const permission = new Map<string, Promise<boolean>>();
+  const canReadReports = (userId: string) => {
+    if (!permission.has(userId)) permission.set(userId, hasStaffPermission(userId, "odk:report:read_related"));
+    return permission.get(userId)!;
+  };
   const byUser = new Map(profiles.map((profile) => [profile.userId, profile]));
   const rows: { id: string; userId: string; type: "SYSTEM"; title: string; body: string; href: string; sourceType: string; sourceId: string; sourceVersion: string; category: string; preferenceKey: string }[] = [];
   const push = (userId: string, examId: string, category: string, version: string, title: string, body: string, href: string) =>
@@ -218,8 +269,13 @@ async function resolveAudienceRows(events: AudienceEvent[]) {
       if (event.kind === "RESULT" && event.parentReports) push(parentId, event.examId, category, event.version, "Deneme sonucu açıklandı", `${name} · ${event.examTitle} sonucu raporlarda.`, scoped(PARENT_REPORTS));
     }
     if (event.kind === "RESULT" && event.teacherReports) {
+      const teachers = new Set(profile.enrollments.map((item) => item.group.teacherId));
       // Deneme başına tek satır: kimlik öğrenciden bağımsız.
-      for (const teacherId of new Set(profile.enrollments.map((item) => item.group.teacherId))) push(teacherId, event.examId, "TEACHER_RESULT", event.version, "Deneme sonuçları açıklandı", `${event.examTitle} · öğrencilerinin sonuçlarını raporlardan inceleyebilirsin.`, TEACHER_REPORTS);
+      for (const teacherId of teachers) if (await canReadReports(teacherId)) push(teacherId, event.examId, "TEACHER_RESULT", event.version, "Deneme sonuçları açıklandı", `${event.examTitle} · öğrencilerinin sonuçlarını raporlardan inceleyebilirsin.`, TEACHER_REPORTS);
+      for (const coachId of new Set(profile.coachAssignments.map((item) => item.coach.userId))) {
+        if (teachers.has(coachId) || !(await canReadReports(coachId))) continue;
+        push(coachId, event.examId, `COACH_RESULT:${profile.id}`, event.version, "Öğrencinin deneme sonucu açıklandı", `${name} · ${event.examTitle} sonucu raporlarda.`, `${TEACHER_REPORTS}?ogrenci=${encodeURIComponent(profile.userId)}`);
+      }
     }
   }
   return [...new Map(rows.map((row) => [row.id, row])).values()];
@@ -239,13 +295,14 @@ export async function isOdkNotificationSourceCurrent(input: { userId: string; ex
       status: true, resultsReleasedAt: true, answerKeyReleasedAt: true,
       currentVersion: { select: { durationMinutes: true } },
       attempts: { where: { studentUserId: input.userId }, orderBy: { attemptNumber: "desc" }, take: 1, select: { status: true, score: { select: { publicationStatus: true } } } },
+      assignments: { where: { studentUserId: input.userId, isActive: true, revokedAt: null }, take: 1, select: { id: true } },
     },
   });
   if (!exam) return false;
   const schedule = contractExamSchedule(grant.exam);
   const attempt = exam.attempts[0] ?? null;
   if (kind === "DAY_BEFORE") return !attempt && Boolean(schedule.startsAt && schedule.startsAt.toISOString() === version && schedule.startsAt > now) && (exam.status === "SCHEDULED" || exam.status === "LIVE");
-  if (kind === "MISSED") return !attempt && schedule.startsAt?.toISOString() === version;
+  if (kind === "MISSED") return !attempt && exam.assignments.length > 0 && schedule.startsAt?.toISOString() === version;
   if (kind === "REMINDER") return !attempt && Boolean(schedule.startsAt && schedule.startsAt.toISOString() === version && schedule.startsAt > now) && (exam.status === "SCHEDULED" || exam.status === "LIVE");
   if (kind === "OPEN") {
     if (attempt || !exam.currentVersion || schedule.startsAt?.toISOString() !== version) return false;
@@ -253,7 +310,7 @@ export async function isOdkNotificationSourceCurrent(input: { userId: string; ex
   }
   const submitted = attempt && (attempt.status === "SUBMITTED" || attempt.status === "AUTO_SUBMITTED");
   if (!grant.contract.policy.rights.studentReports || !submitted) return false;
-  if (kind === "RESULT") return attempt.score?.publicationStatus === "PUBLISHED" && contractResultAvailable(grant.exam, exam, now);
+  if (kind === "RESULT" || kind === "RESULT_UPDATED") return attempt.score?.publicationStatus === "PUBLISHED" && contractResultAvailable(grant.exam, exam, now);
   if (kind === "ANSWER_KEY") return Boolean(attempt.score) && contractAnswerKeyAvailable(grant.exam, exam, now);
   return false;
 }

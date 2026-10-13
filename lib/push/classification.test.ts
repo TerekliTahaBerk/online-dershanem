@@ -60,3 +60,16 @@ test("deneme olayları: veli / öğretmen / kurum denemesi genel metinle ve Dene
   const own = { type: "SYSTEM" as const, sourceType: "ODK_EXAM", category: "DAY_BEFORE:2026-01-01T07:00:00.000Z", preferenceKey: "examUpdates", href: "/panel/odk/ogrenci/denemeler/e1" };
   assert.equal(pushCopyFor(classifyNotification(own)!, own).body, "Yarın denemen var.");
 });
+
+test("koç sonucu ve yeniden puanlama genel metinle gider", () => {
+  const coachRow = { type: "SYSTEM" as const, sourceType: "ODK_AUDIENCE", category: "COACH_RESULT:s1", preferenceKey: "examUpdates", href: "/panel/odk/ogretmen/raporlar?ogrenci=u1" };
+  const coachClass = classifyNotification(coachRow, { role: "TEACHER", staffPush: true });
+  assert.equal(coachClass?.category, "STAFF");
+  assert.equal(pushCopyFor(coachClass!, coachRow).body, "Öğrencinin deneme sonucu açıklandı.");
+  const parentRow = { ...coachRow, category: "RESULT_UPDATED:s1:2026-01-01T00:00:00.000Z", href: "/panel/odk/veli/raporlar?studentId=s1" };
+  assert.equal(pushCopyFor(classifyNotification(parentRow, { role: "PARENT" })!, parentRow).body, "Deneme sonucu güncellendi.");
+  const own = { ...parentRow, sourceType: "ODK_EXAM", category: "RESULT_UPDATED:2026-01-01T00:00:00.000Z", href: "/panel/odk/ogrenci/denemeler/e1/sonuc" };
+  const ownClass = classifyNotification(own, { role: "STUDENT" })!;
+  assert.equal(ownClass.ttlMs, 48 * 60 * 60_000);
+  assert.equal(pushCopyFor(ownClass, own).body, "Deneme sonucun güncellendi.");
+});

@@ -118,6 +118,8 @@ const AUDIENCE_EXAM_COPY: Record<string, string> = {
   SUBMITTED: "Bir deneme tamamlandı.",
   RESULT: "Deneme sonucu açıklandı.",
   TEACHER_RESULT: "Deneme sonuçları açıklandı.",
+  COACH_RESULT: "Öğrencinin deneme sonucu açıklandı.",
+  RESULT_UPDATED: "Deneme sonucu güncellendi.",
   ASSIGNED: "Yeni bir deneme eklendi.",
   "MOCK:ENTERED": "Yeni bir deneme sonucu eklendi.",
   "MOCK:NEXT_ACTION": "Deneme için sonraki adım hazır.",
@@ -138,6 +140,7 @@ export function pushCopyFor(cls: PushClass, row: Pick<ClassifiableNotification, 
     if (kind === "REMINDER") return { title: "Deneme Ligi", body: "Denemen yakında başlıyor." };
     if (kind === "DAY_BEFORE") return { title: "Deneme Ligi", body: "Yarın denemen var." };
     if (kind === "MISSED") return { title: "Deneme Ligi", body: "Bir denemeyi kaçırdın." };
+    if (kind === "RESULT_UPDATED") return { title: "Deneme Ligi", body: "Deneme sonucun güncellendi." };
   }
   return PUSH_COPY[cls.category];
 }

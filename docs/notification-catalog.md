@@ -49,13 +49,19 @@ olaydan türetildiği için her olay bir kez düşer.
 | | Veli | Yarın deneme var | Aynı |
 | Deneme yakında | Öğrenci | Denemen yakında başlıyor | Başlangıca ≤ 60 dk |
 | Deneme başladı | Öğrenci | Denemen başladı | Hatırlatma almadıysa |
-| Deneme kaçırıldı | Öğrenci | Denemeyi kaçırdın | Geç giriş süresi doldu, deneme yok |
+| Deneme kaçırıldı | Öğrenci | Denemeyi kaçırdın | Yalnız atanmış deneme; geç giriş süresi doldu, deneme yok |
 | | Veli | Çocuğunuz denemeye katılmadı | Aynı |
 | Deneme teslim edildi | Veli | Çocuğunuz denemeyi tamamladı | Teslimden sonra 24 saat içinde |
 | Sonuç açıklandı | Öğrenci | Deneme sonucun açıklandı | Öğrenci rapor hakkı |
 | | Veli | Deneme sonucu açıklandı | Sözleşmede veli rapor hakkı |
-| | Öğretmen | Deneme sonuçları açıklandı | Sözleşmede öğretmen rapor hakkı; deneme başına tek bildirim |
+| | Öğretmen | Deneme sonuçları açıklandı | Sözleşmede öğretmen rapor hakkı + `odk:report:read_related` izni; deneme başına tek bildirim |
+| | Koç | Öğrencinin deneme sonucu açıklandı | Aynı hak ve izin; öğrenci başına, grubun öğretmeni değilse |
+| Yeniden puanlama (cevap anahtarı düzeltmesi) | Öğrenci | Deneme sonucun güncellendi | Yayınlanmış neti değişen öğrenci |
+| | Veli | Deneme sonucu güncellendi | Aynı; veli rapor hakkı |
 | Cevap anahtarı | Öğrenci | Cevap anahtarı yayınlandı | Anahtar sonuçtan ayrı yayınlanıyorsa |
+
+Koçlar da artık (rapor izni varsa) aktif koç atamasındaki öğrencilerin Deneme
+Ligi raporlarını `/panel/odk/ogretmen/raporlar` üzerinden görür.
 
 ### Okul / kurum denemeleri (`lib/panel/exam-notifications.ts`)
 
