@@ -444,6 +444,13 @@ Bu dilimin son kontrolleri: **984 sunucu birim testi**, **33 paket / 250 mobil t
 - Kanıt: 1001 sunucu birim testi, 48 mobil paket / 281 test; gerçek HTTP/izole PostgreSQL hem legacy hem enforce modda rol/izin, yayın aşaması, gizli skorun rapora girmemesi, önceki net farkı, yabancı/pasif öğrenci 404, rol iptali ve yalnız GET doğrulandı. Fiziksel iPhone kabulü açık. Matris: 84 Tam / 8 Kısmi / 7 Eksik / 1 İstisna / 6 Yönl. P4 K03/K04/K08, P5 kalanları ve dış kabul kapıları açık.
 
 
+### 13 Ekim 2026 — P4 K08 pilot yönetimi
+
+- ADMIN native pilot aday/rol seçimi, dört rol/iki öğrenci koşulu, oluşturma, yayın kapıları, koşu geçmişi ve geçerli etkinleştir/duraklat/sürdür/tamamla/geri al eylemleri. Geçişler insan onayı ister; durdurma nedeni zorunludur. Web ve mobil aynı read/command/readiness servislerini kullanır.
+- Sürüm ve UUID receipt, tek açık pilot için Serializable transaction + ortak advisory lock; audit ve durum atomiktir. Web oluşturma anahtarı artık aynı actor/ad/katılımcı kümesine bağlanır. Native belirsiz yanıtı aynı istek/anahtar/sürümle tekrarlar; receipt yalnız koşu kimliği taşır. Üretimde pilot veya güvenlik bayrağı değiştirilmedi ve gerçek pilot etkinleştirilmedi.
+- Kanıt: 1003 sunucu birim testi, 49 mobil paket / 283 test. İzole PostgreSQL + HTTP: genel modda aktivasyon reddi; yalnız yerel sentetik pilot konfigürasyonunda ACTIVATE/PAUSE/RESUME/ROLLBACK/COMPLETE, eksik kabul kanıtında COMPLETE 409, aynı anahtarla tek oluşturma/geçiş/audit, farklı anahtarla eşzamanlı tek açık koşu, eski sürüm, eksik durdurma nedeni ve web replay/payload ayrımı. COMPLETE olumlu testi iki denemeli/iki öğrencili **sentetik** kanıt kullanır; gerçek kabulün yerine geçmez.
+- Matris: 85 Tam / 8 Kısmi / 6 Eksik / 1 İstisna / 6 Yönl. P4 K03/K04, P5 kalanları ve P1/P2.9/P6/dış inceleme kabulü açık.
+
 ### 13 Ekim 2026 — P5.2 hesap ayarları
 
 - C07/C08: `GET /api/panel/me/settings` tamamlama listesi, rol kapsamlı bölüm verisi, aktif paketler ve seçenekleri tek projeksiyonda döner; `POST` web'in yedi Server Action'ıyla aynı servisi (`runSettingsCommand`) kullanır. Rolün görmediği bölüm 403 (`SECTION_FORBIDDEN`) — web'de personelin form dışı iletişim/fatura/onay yazması da artık reddedilir. Formu yeniden yazan komutlar Bearer'da `expectedRevision` taşır (409 `STALE_REVISION`); tüm komutlar aktör kapsamlı makbuzla (`account-settings:<aktör>:<anahtar>`) kayıt + audit tek Serializable transaction'da yazılır. KVKK onayı tek yönlü, ödemesi alınmış bekleyen çocuk kaldırılamaz, yönetici bildirimi commit sonrası.

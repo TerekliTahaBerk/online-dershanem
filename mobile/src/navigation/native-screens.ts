@@ -61,6 +61,7 @@ export type NativeScreenKey =
   | 'odk-management-exams'
   | 'odk-management-results'
   | 'odk-management-reports'
+  | 'odk-management-pilot'
   | 'odk-management-home'
   | 'odk-management-packages'
   | 'teacher-odk-reports'
@@ -278,6 +279,7 @@ export function resolveNativeScreen(input: { role: MobileRole; workspace: Mobile
   else if (role === 'TEACHER' && workspace === 'ODK') key = TEACHER_ODK[item.id];
   else if (role === 'ADMIN') key = adminScreen(item);
   if ((role === 'ADMIN' || role === 'TEACHER') && workspace === 'ODK' && item.webPath?.startsWith('/panel/odk/yonetim')) {
+    if (item.id === 'odk-pilot') key = 'odk-management-pilot';
     if (item.id === 'odk-results') key = 'odk-management-results';
     if (item.id === 'odk-reports') key = 'odk-management-reports';
     if (item.id === 'odk-exams') key = 'odk-management-exams';
