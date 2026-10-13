@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Native Deneme Ligi exam list/filter/pagination and exam/series creation using shared web services, catalog revisions and atomic idempotent writes; supports legacy templates and active curriculum registry families.
+
 - Native Deneme Ligi management overview/pilot readiness and read-only package contracts, with shared web loaders, staff permission/pilot guards and private projections. Native cached rows/forms are hidden after confirmed access or feature revocation.
 
 - Native teacher AI draft generation, source review, editing, approval/rejection/flagging and sharing of approved text; shared web services, scoped source revisions and atomic receipts without draft content in audit. Provider calls serialize per teacher/request, generated drafts reject sources changed during generation, and header redaction/injection checks and bounded fallback output preserve the existing gateway gates.

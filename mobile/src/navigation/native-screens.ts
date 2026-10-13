@@ -58,6 +58,7 @@ export type NativeScreenKey =
   | 'coach-students'
   | 'coach-sessions'
   | 'coach-plans'
+  | 'odk-management-exams'
   | 'odk-management-home'
   | 'odk-management-packages'
   | 'teacher-odk-reports'
@@ -275,6 +276,7 @@ export function resolveNativeScreen(input: { role: MobileRole; workspace: Mobile
   else if (role === 'TEACHER' && workspace === 'ODK') key = TEACHER_ODK[item.id];
   else if (role === 'ADMIN') key = adminScreen(item);
   if ((role === 'ADMIN' || role === 'TEACHER') && workspace === 'ODK' && item.webPath?.startsWith('/panel/odk/yonetim')) {
+    if (item.id === 'odk-exams') key = 'odk-management-exams';
     if (item.id === 'today') key = 'odk-management-home';
     if (item.id === 'odk-packages') key = 'odk-management-packages';
   }

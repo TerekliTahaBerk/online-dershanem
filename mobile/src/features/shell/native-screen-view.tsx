@@ -49,6 +49,7 @@ import TeacherHelpScreen from '@/features/staff/teacher/teacher-help';
 import TeacherHomeScreen from '@/features/staff/teacher/teacher-home';
 import TeacherStudentsScreen from '@/features/staff/teacher/teacher-students';
 import TeacherMaterialsScreen from '@/features/staff/teacher/teacher-materials';
+import OdkManagementExamsScreen from '../staff/odk/management-exams';
 import OdkManagementHomeScreen from '../staff/odk/management-home';
 import OdkManagementPackagesScreen from '../staff/odk/management-packages';
 import TeacherAiDraftsScreen from '../staff/teacher/teacher-ai-drafts';
@@ -101,6 +102,7 @@ const SCREENS: Record<Exclude<NativeScreenKey, 'placeholder'>, () => ReactElemen
   'teacher-home': () => <TeacherHomeScreen />,
   'teacher-students': () => <TeacherStudentsScreen />,
   'teacher-materials': () => <TeacherMaterialsScreen />,
+  'odk-management-exams': () => <OdkManagementExamsScreen />,
   'odk-management-home': () => <OdkManagementHomeScreen />,
   'odk-management-packages': () => <OdkManagementPackagesScreen />,
   'teacher-ai-drafts': () => <TeacherAiDraftsScreen />,
