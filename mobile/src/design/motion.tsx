@@ -26,6 +26,7 @@ export function MotionPressable({ style, onPressIn, onPressOut, onHoverIn, onHov
     if (reduceMotion) return;
     Animated.timing(scale, { toValue: pressed ? 0.985 : 1, duration: pressed ? motion.press : 160, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
   };
+  const pressState = { pressed, hovered };
   return <AnimatedPressable {...props}
     onPressIn={(event) => { setPressed(true); animate(true); onPressIn?.(event); }}
     onPressOut={(event) => { setPressed(false); animate(false); onPressOut?.(event); }}
@@ -33,7 +34,7 @@ export function MotionPressable({ style, onPressIn, onPressOut, onHoverIn, onHov
     onHoverOut={(event) => { setHovered(false); onHoverOut?.(event); }}
     onPress={(event) => { if (feedback && !reduceMotion) selectionFeedback(); onPress?.(event); }}
     // Animated components need a resolved style, not Pressable's callback.
-    style={[typeof style === 'function' ? style({ pressed, hovered }) : style, { transform: [{ scale }] }]}
+    style={[typeof style === 'function' ? style(pressState) : style, { transform: [{ scale }] }]}
   />;
 }
 
