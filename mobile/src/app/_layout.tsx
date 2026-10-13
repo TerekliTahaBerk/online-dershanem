@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { Button, Text as NativeText, View } from 'react-native';
 
+import { LaunchScreen } from '@/design/launch-screen';
 import { NEUTRAL_THEME, productTheme } from '@/design/products';
 import { DesignProvider } from '@/design/theme';
 import { color } from '@/design/tokens';
@@ -30,7 +31,8 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
   }, [booting]);
 
   const theme = status === 'WORKSPACE_READY' ? productTheme(state.workspace) : NEUTRAL_THEME;
-  if (booting) return null;
+  // Yerel açılış ekranı yalnız logoyu gösterir; bootstrap sürerken tam ekran yükleme görseli devralır.
+  if (booting) return <LaunchScreen onReady={() => { void SplashScreen.hideAsync(); }} />;
 
   return (
     <DesignProvider product={theme}>

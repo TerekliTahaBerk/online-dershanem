@@ -2,7 +2,7 @@ import { fireEvent, waitFor } from '@testing-library/react-native';
 import { Alert, Share } from 'react-native';
 
 import { makeBootstrap } from './fixtures';
-import { account, boot, go, jsonResponse, press, secureStore, signIn, WAIT } from './harness';
+import { account, boot, chooseWorkspace, go, jsonResponse, press, secureStore, signIn, WAIT } from './harness';
 
 beforeEach(() => secureStore.__store.clear());
 afterEach(() => jest.restoreAllMocks());
@@ -32,6 +32,8 @@ describe('C09 doğrulayıcı kurulumu', () => {
     await press(h, h.screen.getByTestId('totp-share'));
     expect(share).toHaveBeenCalledWith({ message: expect.stringContaining('BBBB-2222') });
     await press(h, h.screen.getByTestId('totp-done'));
+    // Web gibi: MFA kapısından sonra panel sorulur.
+    await chooseWorkspace(h, 'ODK');
     expect(await h.screen.findByTestId('staff-home-TEACHER', {}, WAIT)).toBeTruthy();
   }, 30000);
 

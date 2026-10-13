@@ -27,6 +27,8 @@ type SessionContextValue = {
   /** Sunucudan güncel kapı / çalışma alanı durumunu çeker. */
   refreshBootstrap: () => Promise<void>;
   selectWorkspace: (product: MobileProductCode) => Promise<void>;
+  /** Girişten sonraki seçimi ürün seçmeden kapatır (yalnız personel; ürünsüz bilgi ekranları). */
+  skipWorkspaceSelection: () => void;
   startAdminPreview: (role: MobilePreviewRole, userId: string) => Promise<void>;
   startTeacherMode: () => Promise<void>;
   exitAdminOverlay: () => Promise<void>;
@@ -47,6 +49,7 @@ export function SessionProvider({ children, queryClient: injectedClient }: Props
   const [token, setToken] = useState<string | null>(null);
   const [tokenLoaded, setTokenLoaded] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
+  const [selectionPending, setSelectionPending] = useState(false);
   const overlayRef = useRef<{ mode: 'PREVIEW' | 'TEACHER'; token: string; expiresAt: string } | null>(null);
   const overlayWorkspace = useRef<MobileProductCode | null>(null);
   const [switchingOverlay, setSwitchingOverlay] = useState(false);
@@ -126,6 +129,7 @@ export function SessionProvider({ children, queryClient: injectedClient }: Props
     tokenRef.current = null;
     setToken(null);
     setSignOutNotice(notice);
+    setSelectionPending(false);
     gatePolicy.current.reset();
     await tokenStore.clear();
     queryClient.clear();
@@ -154,6 +158,7 @@ export function SessionProvider({ children, queryClient: injectedClient }: Props
       await tokenStore.write(newToken);
       tokenRef.current = newToken;
       setSignOutNotice(null);
+      setSelectionPending(true);
       setToken(newToken);
     } finally {
       setSigningIn(false);
@@ -202,6 +207,12 @@ export function SessionProvider({ children, queryClient: injectedClient }: Props
     // Ürün kapsamlı veriler eski çalışma alanına aittir.
     if (userId) queryClient.removeQueries({ queryKey: [...queryKeys.user(userId), 'workspace'] });
     await refreshBootstrap();
+    // Yeni seçim bootstrap'a yansıdıktan sonra kapanır; aksi halde eski veriyle otomatik seçim yeniden tetiklenirdi.
+    setSelectionPending(false);
+  }
+
+  function skipWorkspaceSelection() {
+    setSelectionPending(false);
   }
 
   async function replaceOverlay(overlay: typeof overlayRef.current) {
@@ -252,9 +263,10 @@ export function SessionProvider({ children, queryClient: injectedClient }: Props
     bootstrap: bootstrapError && !bootstrapError.transient ? undefined : bootstrapQuery.data,
     bootstrapError,
     appVersion: APP_VERSION,
+    selectionPending,
   });
 
-  const value: SessionContextValue = { state, api, token, bootstrap: bootstrapQuery.data, signIn, signOut, refreshBootstrap, selectWorkspace, startAdminPreview, startTeacherMode, exitAdminOverlay, overlayActive: Boolean(overlayRef.current) };
+  const value: SessionContextValue = { state, api, token, bootstrap: bootstrapQuery.data, signIn, signOut, refreshBootstrap, selectWorkspace, skipWorkspaceSelection, startAdminPreview, startTeacherMode, exitAdminOverlay, overlayActive: Boolean(overlayRef.current) };
 
   return (
     <QueryClientProvider client={queryClient}>

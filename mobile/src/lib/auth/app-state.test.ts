@@ -51,6 +51,16 @@ describe('kimlik doğrulama durum makinesi', () => {
     expect(deriveAppState({ ...base, bootstrap: makeBootstrap({ role: 'ADMIN', activeProduct: null }) })).toMatchObject({ status: 'WORKSPACE_READY', workspace: null });
   });
 
+  it('yeni girişten sonra her rol paneli kendisi seçer (web /panel/urun-sec); kapılar önce gelir', () => {
+    const pending = { ...base, selectionPending: true };
+    expect(deriveAppState({ ...pending, bootstrap: makeBootstrap({ products: { OD: 'ACTIVE' } }) })).toMatchObject({ status: 'WORKSPACE_SELECTION', autoSelect: null });
+    expect(deriveAppState({ ...pending, bootstrap: makeBootstrap({ products: { OD: 'ACTIVE' }, activeProduct: null }) })).toMatchObject({ status: 'WORKSPACE_SELECTION', autoSelect: null });
+    expect(deriveAppState({ ...pending, bootstrap: makeBootstrap({ role: 'TEACHER', products: { OD: 'ACTIVE' }, activeProduct: null }) }).status).toBe('WORKSPACE_SELECTION');
+    expect(deriveAppState({ ...pending, bootstrap: makeBootstrap({ role: 'ADMIN' }) }).status).toBe('WORKSPACE_SELECTION');
+    expect(deriveAppState({ ...pending, bootstrap: makeBootstrap({ role: 'TEACHER', gate: 'MFA_REQUIRED' }) }).status).toBe('MFA_REQUIRED');
+    expect(deriveAppState({ ...pending, bootstrap: makeBootstrap({ gate: 'PASSWORD_CHANGE_REQUIRED' }) }).status).toBe('PASSWORD_CHANGE_REQUIRED');
+  });
+
   it('sürüm: 426 hatası veya bootstrap minimumu yüklü sürümden yeni → UPGRADE_REQUIRED', () => {
     const upgrade = new ApiError({ kind: 'upgrade_required', status: 426, details: { minSupportedVersion: '2.0.0' } });
     expect(deriveAppState({ ...base, bootstrapError: upgrade })).toEqual({ status: 'UPGRADE_REQUIRED', minSupportedVersion: '2.0.0' });

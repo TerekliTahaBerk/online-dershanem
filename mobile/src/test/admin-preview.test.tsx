@@ -20,6 +20,8 @@ it('candidate selection replaces actor workspace; banner exits and removes subje
     'DELETE /api/panel/admin-preview': ({ account }) => { account.bootstrap = base; return jsonResponse(200, { ok: true }); },
   } })]);
   await signIn(h, 'admin@example.com');
+  // Girişten sonraki panel seçimi gerçek oturuma yazılır; önizlemedeki seçim yazılmamalı.
+  const selectionsBeforePreview = h.server.called('POST', '/api/panel/active-product').length;
   await go('/admin/preview');
   await press(h, await h.screen.findByTestId('preview-person-subject', {}, WAIT));
   expect(await h.screen.findByTestId('admin-overlay-banner', {}, WAIT)).toBeTruthy();
@@ -33,7 +35,7 @@ it('candidate selection replaces actor workspace; banner exits and removes subje
   await press(h, await h.screen.findByTestId('nav-menu', {}, WAIT));
   expect(await h.screen.findByTestId('menu-admin-search', {}, WAIT)).toBeTruthy();
   expect(h.server.called('DELETE', '/api/panel/admin-preview')).toHaveLength(1);
-  expect(h.server.called('POST', '/api/panel/active-product')).toHaveLength(0);
+  expect(h.server.called('POST', '/api/panel/active-product')).toHaveLength(selectionsBeforePreview);
   expect(h.server.called('GET', '/api/panel/me').some((call) => call.headers['X-Od-Preview'] === 'signed-preview' && call.headers['X-Od-Workspace'] === 'OD')).toBe(true);
 });
 
