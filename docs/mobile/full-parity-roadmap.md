@@ -489,3 +489,11 @@ Bu dilimin son kontrolleri: **984 sunucu birim testi**, **33 paket / 250 mobil t
 - Bütünlük sekmesi K04 kayıt panelini deneme kapsamında kullanır (`.../exams/[id]/attempts/[attemptId]` + `review`; başka denemenin kaydı 404).
 - Mobil `odk/manage/[id]`; K02 deneme listesi, K05 kuyruğu (ilgili sekme) ve bildirim/derin bağlantılar native açar. Yazma sekmeleri (içerik, sorular, oturumlar, zamanlama, katılımcılar, önizleme, puanlama) açık bir web devam yolu gösterir.
 - Kanıt: 1008 birim, 58 mobil paket / 310 test, PostgreSQL entegrasyonu 142/144 (iki başarısızlık main'de de aynı); `next build` başarılı. Matris: 94 Tam / 3 Kısmi / 2 Eksik / 1 İstisna / 6 Yönl.
+
+### 13 Ekim 2026 — P4.3 K03b deneme hazırlık yazmaları
+
+- Web `odk/admin/exams/[id]` PATCH, `ready`, `schedule`, `sessions`, `assignments`, `imports/answer-key|outcomes` gövdeleri `lib/odk/exam-commands-server.ts`'e taşındı; web uçları yalnız kimlik, guard ve girdi doğrulaması yapar. Atama listesi `loadOdkExamAssignments`.
+- `POST /api/panel/odk/management/exams/[id]` (`lib/odk/exam-command-runner.ts`): update/ready/schedule/sessions/assign/import.preview/import.commit; işlem başına web ile aynı izin; `X-Od-Idempotency-Key` + `X-Od-Expected-Revision` zorunlu. Revizyon transaction içinde yeniden hesaplanır; kayıt + audit + makbuz tek Serializable transaction; ürünler arası atama olayı commit sonrası. Kural reddi (hazırlık engeli, kilitli sürüm, hatalı önizleme) web ile aynı mesaj/durumla döner ve makbuz yazmaz.
+- Çalışma alanı sözleşmesi: düzenleme formu alanları (`meetRequired`, `meetUrl` yalnız düzenleme/planlama izniyle, `fullscreenMode`), katılımcılar sekmesinde atama listesi + kaynaklar (öğrenci yalnız adla), önizleme sekmesinde öğrenci/öğretmen/veli görünümleri.
+- Mobil: zamanlama/güvenlik formu, hazır işaretle ve planla (onaylı), oturum süreleri, grup/sınıf/paket/pilot/e-posta ile atama, cevap anahtarı/kazanım JSON doğrula → uygula, taslak sürüme PDF yükleme (≤30 MB), önizleme. Soru bazında düzenleme ve puanlama/yayın (K03c) web devam yolunda.
+- Kanıt: 1008 birim, 59 mobil paket / 314 test, PostgreSQL entegrasyonu 143/145 (iki başarısızlık main'de de aynı; yeni test revizyon çakışması, makbuz tekrarı, ret sonrası makbuz yokluğu, içe aktarma ve atama); `next build` başarılı.

@@ -9,25 +9,22 @@ import { useReadyBootstrap } from '@/lib/auth/session-provider';
 import { formatShortDateTime } from '@/lib/format/istanbul';
 import { openOnWeb } from '../../shell/web-continuation';
 import { QueryView, usePullToRefresh } from '../shared';
+import { AssignmentWrites, ContentWrites, ScheduleWrites, SessionWrites } from './management-exam-writes';
 import { AttemptSheet } from './management-operations';
 import { useOdkManagementQuery } from './management-shared';
 
 /**
  * K03 · DENEME ÇALIŞMA ALANI — web `/panel/odk/yonetim/sinavlar/[id]`
- * (aynı yükleyici, aynı izinli sekmeler). K03a okuma; bütünlük incelemesi
- * K04 paneliyle native. İçerik / zamanlama / katılımcı / puanlama yazmaları
- * sıradaki dilimlerde native olur; o zamana kadar ilgili sekme web'de açılır.
+ * (aynı yükleyici, aynı izinli sekmeler). K03a okuma; K03b hazırlık yazmaları
+ * (zamanlama/güvenlik, hazır/planla, oturumlar, katılımcılar, JSON içe aktarma,
+ * PDF); bütünlük incelemesi K04 paneliyle. Soru bazında düzenleme ve
+ * puanlama/yayın (K03c) web'de açılır.
  */
 const base = (examId: string) => `/api/panel/odk/management/exams/${encodeURIComponent(examId)}`;
 const date = (value: string | null) => (value ? formatShortDateTime(value) : '—');
 const net = (value: number | null) => (value === null ? '—' : value.toFixed(2));
 const WRITE_LATER: Partial<Record<OdkExamTab, string>> = {
-  icerik: 'Kitapçık / dosya yükleme ve cevap anahtarı içe aktarma',
-  sorular: 'Cevap anahtarı ve kazanım düzenleme',
-  oturumlar: 'Oturum planı düzenleme',
-  zamanlama: 'Hazır işaretleme, planlama ve güvenlik ayarları',
-  katilimcilar: 'Katılımcı ve atama yönetimi',
-  onizleme: 'Kitapçık ve cevap önizlemesi',
+  sorular: 'Soru bazında anahtar, zorluk ve kazanım düzenleme (toplu değişiklik için İçerik sekmesindeki JSON içe aktarma kullanılabilir)',
   puanlama: 'Puanlama, yeniden puanlama ve yayın',
 };
 
@@ -110,6 +107,7 @@ function Workspace({ data, examId, onTab, onFilter, onChanged }: { data: OdkExam
           {data.files.length ? data.files.map((file) => <Row key={file.id} title={file.fileName} meta={file.type} />) : <EmptyState title="Yüklenmiş dosya yok" />}
         </Section>
       ) : null}
+      {data.files ? <ContentWrites data={data} examId={examId} onChanged={onChanged} /> : null}
 
       {data.questions ? (
         <Section first title="Sorular">
@@ -125,6 +123,7 @@ function Workspace({ data, examId, onTab, onFilter, onChanged }: { data: OdkExam
           {data.sessions.map((item) => <Row key={item.key} title={item.title} subtitle={`${item.sections.join(', ')} · ${item.durationMinutes} dk${item.breakAfterMinutes ? ` · ardından ${item.breakAfterMinutes} dk ara` : ''}`} />)}
         </Section>
       ) : null}
+      {data.sessions ? <SessionWrites key={data.revision} data={data} examId={examId} onChanged={onChanged} /> : null}
 
       {data.schedule ? (
         <Section first title="Zamanlama ve güvenlik">
@@ -135,6 +134,20 @@ function Workspace({ data, examId, onTab, onFilter, onChanged }: { data: OdkExam
           <Row title="Sekme değişimi izleme" meta={data.schedule.trackVisibility ? 'Açık' : 'Kapalı'} />
           <Row title="Ek süre" meta={`${data.schedule.allowExtraTimeMinutes} dk`} />
           <Row title="Otomatik teslim" meta={data.schedule.autoSubmit ? 'Açık' : 'Kapalı'} />
+        </Section>
+      ) : null}
+      {data.schedule ? <ScheduleWrites key={data.revision} data={data} examId={examId} onChanged={onChanged} /> : null}
+      {data.assignments ? <AssignmentWrites data={data} examId={examId} onChanged={onChanged} /> : null}
+      {data.previews ? (
+        <Section first title="Önizleme">
+          <Text tone="muted" variant="meta">Önizleme gerçek sınav oturumu başlatmaz; süre işlemez ve cevap kaydı oluşmaz.</Text>
+          {data.previews.map((preview) => (
+            <View key={preview.kind} style={styles.preview} testID={`preview-${preview.kind}`}>
+              <Text variant="bodyStrong">{preview.label}</Text>
+              <Text tone="secondary" variant="secondary">{preview.disclaimer}</Text>
+              {preview.lines.map((line, index) => <Text key={index}>{`• ${line}`}</Text>)}
+            </View>
+          ))}
         </Section>
       ) : null}
 
@@ -196,4 +209,4 @@ function Workspace({ data, examId, onTab, onFilter, onChanged }: { data: OdkExam
   );
 }
 
-const styles = StyleSheet.create({ badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' } });
+const styles = StyleSheet.create({ badges: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }, preview: { gap: 4, paddingVertical: 8 } });

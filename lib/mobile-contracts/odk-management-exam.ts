@@ -39,6 +39,9 @@ const workspace = v.object({
     resultsReleasedAt: v.nullable(v.iso()),
     windowEnded: v.boolean(),
     draftEditable: v.boolean(),
+    /** K03b: düzenleme formu için (yalnız düzenleme / planlama izniyle). */
+    meetRequired: v.optional(v.boolean(), false),
+    meetUrl: v.optional(v.nullable(v.string()), null),
   }),
   counts: v.object({ assigned: v.int(0), attempts: v.int(0), submitted: v.int(0), scored: v.int(0), review: v.int(0) }),
   primaryAction: v.nullable(v.object({ label: v.string(), tab: tabId() })),
@@ -55,6 +58,7 @@ const workspace = v.object({
   sessions: v.nullable(v.array(v.object({ key: v.nonEmpty(), title: v.string(), sections: v.array(v.string()), durationMinutes: v.int(0), breakAfterMinutes: v.int(0) }))),
   schedule: v.nullable(
     v.object({
+      fullscreenMode: v.optional(v.oneOf(["OFF", "SUGGESTED", "REQUIRED"]), "SUGGESTED"),
       fullscreenLabel: v.string(),
       blockCopyPaste: v.boolean(),
       logCopyPaste: v.boolean(),
@@ -76,6 +80,25 @@ const workspace = v.object({
       weakest: v.array(v.object({ outcomeId: v.nonEmpty(), title: v.string(), accuracy: v.number() })),
     }),
   ),
+  /** K03b · katılımcılar sekmesi: aktif atamalar ve atama kaynakları (öğrenci yalnız adla). */
+  assignments: v.optional(
+    v.nullable(
+      v.object({
+        active: v.int(0),
+        total: v.int(0),
+        rows: v.array(v.object({ id: v.nonEmpty(), name: v.string(), source: v.string(), active: v.boolean(), assignedAt: v.iso() })),
+        options: v.object({
+          groups: v.array(v.object({ id: v.nonEmpty(), label: v.string(), memberCount: v.int(0) })),
+          classLevels: v.array(v.string()),
+          packages: v.array(v.object({ id: v.nonEmpty(), title: v.string() })),
+          cohorts: v.array(v.object({ id: v.nonEmpty(), name: v.string(), status: v.string() })),
+        }),
+      }),
+    ),
+    null,
+  ),
+  /** K03b · önizleme sekmesi: öğrenci / öğretmen / veli görünümü (deneme başlatmaz). */
+  previews: v.optional(v.nullable(v.array(v.object({ kind: v.nonEmpty(), label: v.string(), disclaimer: v.string(), lines: v.array(v.string()) }))), null),
   history: v.nullable(v.array(v.object({ id: v.nonEmpty(), label: v.string(), actor: v.nullable(v.string()), at: v.iso() }))),
 });
 
@@ -83,4 +106,18 @@ export type OdkExamWorkspaceView = Infer<typeof workspace>;
 
 export function parseOdkExamWorkspace(input: unknown) {
   return check(workspace, input);
+}
+
+/** `POST /api/panel/odk/management/exams/[id]` komutları (sunucu: rota `commandSchema`). */
+export type OdkExamCommand =
+  | { operation: "update"; input: { title: string; startsAt: string | null; endsAt: string | null; lateEntryMinutes: number; meetRequired: boolean; meetUrl: string | null; autoSubmit?: boolean; security?: { fullscreenMode: "OFF" | "SUGGESTED" | "REQUIRED"; blockCopyPaste: boolean; logCopyPaste: boolean; trackVisibility: boolean; allowExtraTimeMinutes: number; autoSubmit: boolean } } }
+  | { operation: "ready" }
+  | { operation: "schedule" }
+  | { operation: "sessions"; sessions: Array<{ key: string; durationMinutes: number; breakAfterMinutes: number }> }
+  | { operation: "assign"; input: { source: "STUDENT" | "GROUP" | "CLASS" | "COHORT" | "BULK"; groupId?: string; classLevel?: string; packageId?: string; cohortId?: string; studentEmails?: string[] } }
+  | { operation: "import.preview"; kind: "answer-key" | "outcomes"; payload: unknown }
+  | { operation: "import.commit"; kind: "answer-key" | "outcomes"; importId: string };
+
+export function parseOdkExamCommandResult(input: unknown) {
+  return check(v.object({ ok: v.literal(true), operation: v.nonEmpty(), result: v.optional(v.object({ importId: v.optional(v.nullable(v.string()), null), summary: v.optional(v.nullable(v.object({ message: v.optional(v.string(), "") })), null), issues: v.optional(v.array(v.object({ level: v.optional(v.string(), "error"), message: v.optional(v.string(), "") })), []), total: v.optional(v.nullable(v.int(0)), null), count: v.optional(v.nullable(v.int(0)), null) }), { importId: null, summary: null, issues: [], total: null, count: null }), replayed: v.boolean() }), input);
 }

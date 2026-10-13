@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
+import { lockOdkExam } from "@/lib/odk/exam-commands-server";
 import { requireApiStaffPermission } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
-import { getOdkExamReadiness } from "@/lib/odk/admin-exam-server";
 import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -13,11 +11,5 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const params = idParamsSchema.safeParse(await context.params);
   if (!params.success) return invalidApiInput();
   const { id } = params.data;
-  const { exam, issues } = await getOdkExamReadiness(id);
-  if (!exam?.currentVersion || exam.status !== "DRAFT" || exam.currentVersion.status !== "DRAFT") return NextResponse.json({ error: "Yalnız taslak sürüm kilitlenebilir." }, { status: 409 });
-  const errors = issues.filter((issue) => issue.level === "error");
-  if (errors.length) return NextResponse.json({ error: "Yayın kontrolleri tamamlanmadı.", issues }, { status: 400 });
-  await prisma.$transaction([prisma.odkExamVersion.update({ where: { id: exam.currentVersion.id }, data: { status: "LOCKED", lockedAt: new Date() } }), prisma.odkExam.update({ where: { id }, data: { status: "READY" } })]);
-  await logAudit({ actorUserId: auth.session.userId, entityType: "OdkExam", entityId: id, action: "odk.exam_version_locked", summary: "Sınav sürümü kilitlendi ve planlamaya hazırlandı", payload: { warningCount: issues.length } });
-  return NextResponse.json({ status: "READY", issues });
+  return lockOdkExam(id, auth.session.userId);
 }

@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Native Deneme Ligi exam preparation writes (K03b): schedule/security edit, mark ready, schedule, session durations, assignments by group/class/package/cohort/email, answer-key and outcome JSON import (validate → apply), draft PDF upload and previews; the web endpoints and the mobile command share one service layer, with actor-scoped receipts, in-transaction revision checks and identical rejection messages.
+
 - Native Deneme Ligi exam workspace (K03a, read): permission-scoped tabs, lifecycle/readiness/issues, questions, files, sessions, schedule, live counters, reports, history and exam-scoped integrity review, sharing one loader with the web page; exam list, scoring queue and notifications now open it natively.
 
 - Native Deneme Ligi live operations console (K04) with shared web loader, filters, counters, alerts, 15-second auto refresh, attempt event timeline and integrity review; review writes share one service with the web endpoint and use actor-scoped receipts and revision checks.
