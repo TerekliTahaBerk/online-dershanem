@@ -13,7 +13,7 @@ function load(extra: Record<string, unknown>) {
     setNotificationChannelAsync: jest.fn(async () => { calls.push('channel'); }),
     requestPermissionsAsync: jest.fn(async () => { calls.push('request'); return { granted: true, status: 'granted', canAskAgain: true }; }),
   }));
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- jest.doMock sonrası modül taze yüklenmeli (import hoist edilir)
   const module = require('./native-push') as typeof import('./native-push');
   return { module, calls };
 }
