@@ -1,6 +1,5 @@
+import { loadOdkExamList } from "@/lib/odk/exam-list-server";
 import Link from "next/link";
-import type { OdkExamStatus, Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
 import { requireAnyStaffPermission } from "@/lib/auth/guards";
 import { ODK_EXAM_LIST_PERMISSIONS } from "@/lib/products/staff-permission-matrix";
 import { PanelShell } from "@/components/panel/panel-shell";
@@ -16,25 +15,17 @@ import {
 } from "@/components/panel/ui";
 import { AdminExamCreate } from "@/components/odk/admin-exam-create";
 import { examStatusPresentation } from "@/lib/odk/presentation";
-import { getOdkExamReadiness } from "@/lib/odk/admin-exam-server";
-import { listActiveExamFamilies } from "@/lib/products/registry";
 import { asLegacyOdkExamFamily, getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 import {
   ODK_EXAM_VIEWS,
-  defaultExamView,
   examViewOf,
   examWorkspaceHref,
-  isOdkExamView,
   type OdkExamViewId,
 } from "@/lib/odk/staff-workspace";
-import { SUBMITTED_STATUSES, loadStaffViewer } from "../staff-data";
 
 export const dynamic = "force-dynamic";
-const statuses: OdkExamStatus[] = ["DRAFT", "READY", "SCHEDULED", "LIVE", "ENDED", "SCORED", "RELEASED", "ARCHIVED"];
 const DATE = new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Istanbul" });
 const TONE = { neutral: "neutral", info: "info", warning: "warning", success: "success", danger: "critical" } as const;
-/** Hazırlık sorunu sayımı satır başına sürüm okur; tabloyu hafif tutmak için sınır. */
-const READINESS_ROW_LIMIT = 25;
 
 /**
  * DENEMELER (docs/panel-design-roadmap.md §15.4) — kayıtlı görünümler
@@ -48,67 +39,7 @@ export default async function OdkAdminExamsPage({
   searchParams: Promise<{ q?: string; aile?: string; durum?: string; gorunum?: string }>;
 }) {
   const session = await requireAnyStaffPermission(ODK_EXAM_LIST_PERMISSIONS);
-  const viewer = await loadStaffViewer(session.userId);
-  const canCreate = viewer.permissions.has("odk:exam:edit");
-  const params = await searchParams;
-  const familyRecords = await listActiveExamFamilies();
-  const familyRecord = familyRecords.find((item) => item.code === params.aile);
-  const status = statuses.includes(params.durum as OdkExamStatus) ? (params.durum as OdkExamStatus) : undefined;
-  const view: OdkExamViewId = status ? "tumu" : isOdkExamView(params.gorunum) ? params.gorunum : defaultExamView(viewer);
-  const query = params.q?.trim().slice(0, 80) || "";
-  const where: Prisma.OdkExamWhereInput = {
-    ...(familyRecord ? { examFamilyRefId: familyRecord.id } : {}),
-    ...(status ? { status } : {}),
-    ...(query ? { title: { contains: query, mode: "insensitive" } } : {}),
-  };
-  const now = new Date();
-  const [series, exams] = await Promise.all([
-    canCreate
-      ? prisma.odkExamSeries.findMany({
-          where: { isActive: true },
-          orderBy: [{ title: "asc" }],
-          select: { id: true, title: true, family: true, examFamilyRef: { select: { code: true } } },
-        })
-      : Promise.resolve([]),
-    prisma.odkExam.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        title: true,
-        status: true,
-        startsAt: true,
-        endsAt: true,
-        family: true,
-        examFamilyRef: { select: { code: true } },
-        series: { select: { title: true } },
-        _count: {
-          select: {
-            assignments: { where: { isActive: true } },
-            attempts: { where: { status: { not: "VOID" } } },
-          },
-        },
-        attempts: { where: { status: { in: [...SUBMITTED_STATUSES] } }, select: { id: true } },
-      },
-    }),
-  ]);
-
-  const counts = new Map<OdkExamViewId, number>(ODK_EXAM_VIEWS.map((item) => [item.id, 0]));
-  for (const exam of exams) {
-    const id = examViewOf(exam, now);
-    counts.set(id, (counts.get(id) ?? 0) + 1);
-  }
-  counts.set("tumu", exams.filter((exam) => exam.status !== "ARCHIVED").length);
-  const shown = exams.filter((exam) => (view === "tumu" ? status === "ARCHIVED" || exam.status !== "ARCHIVED" : examViewOf(exam, now) === view));
-  const drafts = shown.filter((exam) => exam.status === "DRAFT").slice(0, READINESS_ROW_LIMIT);
-  const blockingByExam = new Map(
-    await Promise.all(
-      drafts.map(async (exam) => {
-        const { issues } = await getOdkExamReadiness(exam.id);
-        return [exam.id, issues.filter((issue) => issue.level === "error").length] as const;
-      }),
-    ),
-  );
+  const { now, viewer, canCreate, familyRecords, familyRecord, status, view, query, series, shown, counts, blockingByExam } = await loadOdkExamList(session.userId, await searchParams);
 
   const hrefFor = (next: OdkExamViewId) => {
     const search = new URLSearchParams();

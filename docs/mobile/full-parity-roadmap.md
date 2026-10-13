@@ -427,3 +427,11 @@ Bu dilimin son kontrolleri: **984 sunucu birim testi**, **33 paket / 250 mobil t
 - Web ve mobil ortak öğretmen yükleyicisini kullanır. Native taslak önizleme, üretme/yenileme ve insan onaylı yayın; öğretmen/aktif kayıt kapsamı, kaynak revizyonu ve atomik işlem receipt/audit/bildirim/outbox. İsteğe bağlı plan dengelemesi yayın transaction’ından sonra çalışır.
 - Kanıt: 985 birim testi, 41 mobil paket/259 test; güncel migration zinciriyle izole yerel PostgreSQL/HTTP üzerinde yabancı öğretmen, kaynak değişimi, tekrar, eşzamanlı yayın, tek bildirim/outbox ve kayıt sona ermesi geçti. Tip/lint/API/sözleşme/matris kontrolleri geçti.
 - Güncel durum: 75 Tam / 9 Kısmi / 15 Eksik / 1 İstisna / 6 Yönl. T07 Dino, T11–T12/T14, T20, P4 ve P5 kalanları açık; gerçek iPhone, P2.9/P1 ve dış inceleme kabulü açık.
+
+
+### 13 Ekim 2026 — P4 K01/K02/K07
+
+- K01 yönetim özeti/pilot hazırlığı ve K07 salt okunur paket sözleşmeleri PR #460 ile main/production ve build 6 uyumlu OTA’ya çıktı. K02 liste/arama/aile/durum/kayıtlı görünümler/sayfalama, sınav oluşturma ve aynı ekranda seri oluşturma native tamamlandı. K03 detay bağlantıları bu dilimde açıkça web’de açılır.
+- Web liste ve oluşturma servisleri ortaklaştırıldı. Native yazma UUID işlem anahtarı + katalog sürümü ister; seri/müfredat/politika değişimi eski seçimi reddeder. Sınav/sürüm/bölüm/soru, audit ve receipt aynı Serializable transaction’da oluşturulur. Mevcut personel/pilot/ürün kapıları korunur; production bayrakları değiştirilmedi. Yeni dependency/migration/env yok.
+- Kanıt: 999 sunucu birim testi, 47 mobil paket / 279 test. İzole PostgreSQL/gerçek HTTP: eşzamanlı tekrar tek sınav/sürüm/soru kümesi/audit, eski katalog 409, farklı payload anahtarı 409, aile/seri uyumsuzluğu, katalog tabanlı aile ve legacy web sınav/seri regresyonu. Native belirsiz yanıt sonrasında aynı anahtar ve kaynak sürümüyle retry, seri seçimi ve salt okuma personeli kontrol edildi. Fiziksel iPhone kabulü açık.
+- Matris: 82 Tam / 8 Kısmi / 9 Eksik / 1 İstisna / 6 Yönl. P4 K03–K06/K08, P5 kalanları ve Dino dış inceleme/P1/P2.9/P6 kabulü açık.

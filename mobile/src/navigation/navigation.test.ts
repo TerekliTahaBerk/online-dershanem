@@ -229,5 +229,5 @@ it('ODK management paths distinguish staff home, related reports and pending P4 
   expect(resolveNativeScreen({ role: 'ADMIN', workspace: 'ODK', item: item('today', '/panel/odk/yonetim') }).key).toBe('odk-management-home');
   expect(resolveNativeScreen({ role: 'TEACHER', workspace: 'ODK', item: item('today', '/panel/odk/ogretmen') }).key).toBe('teacher-odk-reports');
   expect(resolveNativeScreen({ role: 'TEACHER', workspace: 'ODK', item: item('odk-packages', '/panel/odk/yonetim/paketler') }).key).toBe('odk-management-packages');
-  expect(resolveNativeScreen({ role: 'TEACHER', workspace: 'ODK', item: item('odk-exams', '/panel/odk/yonetim/sinavlar') })).toMatchObject({ key: 'placeholder', phase: 'P4' });
+  expect(resolveNativeScreen({ role: 'TEACHER', workspace: 'ODK', item: item('odk-exams', '/panel/odk/yonetim/sinavlar') })).toMatchObject({ key: 'odk-management-exams' });
 });
