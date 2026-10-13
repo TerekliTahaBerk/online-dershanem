@@ -72,7 +72,7 @@ Varsayıma dayanmamak için `mobile/node_modules` içindeki native kaynak okundu
 | --- | --- | --- |
 | S1 | Gerçek cihazda çerez davranışı gözlemlenmedi | Kaynak kod + sunucu tarafı iki bağımsız savunma. M9 öncesi cihazda proxy ile doğrulanmalı |
 | S2 | `expo-file-system` indirmesi (Kaynaklar) ayrı ağ yığını; çerez davranışı doğrulanmadı | Sunucu artık mobil girişte çerez yazmıyor; Bearer + istemci başlıkları gönderiliyor. M2'de indirme dosya adı / önbellek temizliği gözden geçirilmeli |
-| S3 | Çıkışta ağ hatası → sunucu oturumu açık kalır | Kabul edilmiş, belgelenmiş; öğrenci / veli için 7 gün boşta zaman aşımı |
+| S3 | Çıkışta ağ hatası → sunucu oturumu açık kalır | Kabul edilmiş, belgelenmiş; tüm rollerde oturum en geç 24 saatte kapanır |
 | S4 | Yenileme token'ı yok; süre dolunca yeniden giriş | Mevcut politika korundu (M0 kararı) |
 | S5 | Admin önizleme bayrağı mobilde yalnız bilgi amaçlı | Mobil önizleme başlatamaz; çerez tabanlı olduğu için mobil oturumda pratikte daima false |
 | S6 | Passkey native değil | Web devam yolu; M8'de associated domains kararı |

@@ -7,20 +7,23 @@ const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
 const createdAt = new Date("2026-08-13T12:00:00.000Z");
 
-test("all roles have explicit idle limits shorter than their absolute lifetime", () => {
+test("every role is remembered for exactly 24 hours after the password", () => {
   for (const role of ["STUDENT", "PARENT", "TEACHER", "ADMIN"] satisfies UserRole[]) {
-    assert.ok(SESSION_POLICIES[role].idleTimeoutMs < SESSION_POLICIES[role].absoluteTtlMs);
+    assert.equal(SESSION_POLICIES[role].absoluteTtlMs, DAY);
+    assert.equal(SESSION_POLICIES[role].idleTimeoutMs, DAY);
   }
-  assert.ok(SESSION_POLICIES.ADMIN.absoluteTtlMs < SESSION_POLICIES.TEACHER.absoluteTtlMs);
-  assert.ok(SESSION_POLICIES.ADMIN.idleTimeoutMs < SESSION_POLICIES.TEACHER.idleTimeoutMs);
 });
 
-test("absolute and idle boundaries expire exactly at the server-side clock edge", () => {
-  const expiresAt = new Date(createdAt.getTime() + 30 * DAY);
-  const idleBoundary = new Date(createdAt.getTime() + SESSION_POLICIES.ADMIN.idleTimeoutMs);
-  assert.equal(sessionExpiryReason({ role: "ADMIN", createdAt, expiresAt, lastSeenAt: createdAt }, new Date(idleBoundary.getTime() - 1)), null);
-  assert.equal(sessionExpiryReason({ role: "ADMIN", createdAt, expiresAt, lastSeenAt: createdAt }, idleBoundary), "IDLE");
+test("an unused session stays open until the 24-hour mark, then expires", () => {
+  const expiresAt = new Date(createdAt.getTime() + DAY);
+  for (const role of ["STUDENT", "PARENT", "TEACHER", "ADMIN"] satisfies UserRole[]) {
+    assert.equal(sessionExpiryReason({ role, createdAt, expiresAt, lastSeenAt: createdAt }, new Date(createdAt.getTime() + DAY - 1)), null);
+    assert.notEqual(sessionExpiryReason({ role, createdAt, expiresAt, lastSeenAt: createdAt }, new Date(createdAt.getTime() + DAY)), null);
+  }
+});
 
+test("the absolute boundary expires exactly at the server-side clock edge", () => {
+  const expiresAt = new Date(createdAt.getTime() + 30 * DAY);
   const absoluteBoundary = new Date(createdAt.getTime() + SESSION_POLICIES.ADMIN.absoluteTtlMs);
   assert.equal(sessionExpiryReason({ role: "ADMIN", createdAt, expiresAt, lastSeenAt: new Date(absoluteBoundary.getTime() - 1) }, absoluteBoundary), "ABSOLUTE");
 });
