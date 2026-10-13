@@ -1,23 +1,17 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
 import { requirePanelRole } from "@/lib/auth/guards";
-import { resolveParentScope } from "@/lib/panel/parent-scope";
+import { CommandError } from "@/lib/panel/command-receipt";
+import { requestParentPackageMeeting } from "@/lib/panel/parent-package-meeting";
 import { enforceMutation } from "@/lib/security/mutation-guard";
-import { logAudit } from "@/lib/audit";
 
 /**
  * VELİ · PAKET DEĞİŞİKLİĞİ GÖRÜŞME TALEBİ (Panel.dc.html → pAcc).
  *
- * Tasarımdaki "Görüşme talebi oluştur" düğmesi. Yeni bir model UYDURULMADI:
- * talep mevcut `LeadSubmission` kuyruğuna düşer ve admin bunu zaten
- * `/panel/yonetim/isler` ekranında görüp durumunu ilerletebilir — yani düğme
- * gerçekten iş yaratır, dekoratif değildir.
- *
- * GÜVENLİK: hangi öğrenci için talep açıldığı `resolveParentScope` üzerinden
- * doğrulanır; velinin bağlı olmadığı bir öğrenci kimliği 404 ile reddedilir.
+ * Kural mobil uçla ORTAKTIR (`lib/panel/parent-package-meeting.ts`): talep
+ * `LeadSubmission` kuyruğuna düşer; velinin bağlı olmadığı öğrenci 404.
  */
 export async function requestPackageMeeting(formData: FormData) {
   const session = await requirePanelRole("PARENT");
@@ -32,44 +26,14 @@ export async function requestPackageMeeting(formData: FormData) {
     .object({ studentId: z.string().min(1) })
     .parse(Object.fromEntries(formData));
 
-  // Bağlı olmayan öğrenci kimliği burada 404 olur.
-  const { selected } = await resolveParentScope(session.userId, studentId, "account");
-  if (!selected) redirect("/panel/veli/hesap?talep=hata");
-
-  const [parent, profile] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: session.userId },
-      select: { fullName: true, phone: true, email: true },
-    }),
-    prisma.studentProfile.findUnique({
-      where: { id: selected.id },
-      select: { classLevel: true, targetGoal: true },
-    }),
-  ]);
-
-  await prisma.leadSubmission.create({
-    data: {
-      fullName: parent?.fullName || parent?.email || session.email,
-      // Panel kaydında telefon boş olabilir; kuyrukta görünsün diye
-      // e-postaya düşülür, uydurma numara yazılmaz.
-      phone: parent?.phone || session.email,
-      classLevel: profile?.classLevel || "belirtilmedi",
-      examType: profile?.targetGoal || "belirtilmedi",
-      targetGoal: `Paket değişikliği görüşmesi · ${selected.name}`,
-      currentNet: "belirtilmedi",
-      kvkkConsent: true,
-      source: "panel-veli-paket-degisikligi",
-      submittedAt: new Date(),
-    },
-  });
-
-  await logAudit({
-    actorUserId: session.userId,
-    entityType: "LeadSubmission",
-    entityId: selected.id,
-    action: "parent.package.meeting.requested",
-    summary: `Veli ${selected.name} için paket görüşmesi talep etti`,
-  });
+  try {
+    await requestParentPackageMeeting(session, studentId);
+  } catch (error) {
+    // Bağlı olmayan öğrenci kimliği 404 olur.
+    if (error instanceof CommandError && error.status === 404) notFound();
+    if (error instanceof CommandError) redirect("/panel/veli/hesap?talep=hata");
+    throw error;
+  }
 
   redirect("/panel/veli/hesap?talep=alindi");
 }

@@ -15,6 +15,8 @@ export const queryKeys = {
   user: (userId: string) => ['user', userId] as const,
   notifications: (userId: string, filter: 'all' | 'unread') => ['user', userId, 'notifications', filter] as const,
   sessions: (userId: string) => ['user', userId, 'sessions'] as const,
+  /** P5.2 hesap ayarları ve panel tercihleri (rol kapsamlı, ürün bağımsız). */
+  accountSettings: (userId: string) => ['user', userId, 'account-settings'] as const,
   workspace: (userId: string, workspace: MobileProductCode | null) => ['user', userId, 'workspace', workspace ?? 'none'] as const,
   workspaceResource: (userId: string, workspace: MobileProductCode | null, resource: string, params?: Record<string, string | number | null>) =>
     [...queryKeys.workspace(userId, workspace), resource, params ?? {}] as const,

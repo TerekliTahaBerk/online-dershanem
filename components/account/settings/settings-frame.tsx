@@ -1,33 +1,16 @@
 import Link from "next/link";
-import type { UserRole } from "@prisma/client";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { PanelHeading, PanelProgress } from "@/components/panel/ui";
 import type { SessionUser } from "@/lib/auth/session";
 import type { AccountStatus } from "@/lib/account/account-status";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import { userRequiresMfa } from "@/lib/products/staff-permissions";
+import { SETTINGS_SECTION_LABEL, settingsSectionsFor, type SettingsSection } from "@/lib/account/settings-sections";
 
-export type SettingsSection = "profil" | "egitim" | "cocuklarim" | "iletisim" | "fatura" | "onaylar" | "guvenlik";
-
-const SECTION_LABEL: Record<SettingsSection, string> = {
-  profil: "Profil",
-  egitim: "Eğitim bilgileri",
-  cocuklarim: "Çocuklarım",
-  iletisim: "İletişim tercihleri",
-  fatura: "Fatura bilgileri",
-  onaylar: "Onaylar",
-  guvenlik: "Güvenlik",
-};
-
-/** Rolün görebildiği ayar bölümleri. Personel yalnız profil ve güvenliği görür. */
-export function settingsSectionsFor(role: UserRole): SettingsSection[] {
-  if (role === "STUDENT") return ["profil", "egitim", "iletisim", "fatura", "onaylar", "guvenlik"];
-  if (role === "PARENT") return ["profil", "cocuklarim", "iletisim", "fatura", "onaylar", "guvenlik"];
-  return ["profil", "guvenlik"];
-}
+export { settingsSectionsFor, type SettingsSection } from "@/lib/account/settings-sections";
 
 export function settingsSectionLabel(section: SettingsSection): string {
-  return SECTION_LABEL[section];
+  return SETTINGS_SECTION_LABEL[section];
 }
 
 /**
@@ -89,7 +72,7 @@ export async function SettingsFrame({
                 active === section ? "border-dc-brand-strong bg-dc-brand-soft text-dc-brand-deep" : "border-dc-line bg-white text-dc-ink-muted hover:text-dc-ink"
               }`}
             >
-              {SECTION_LABEL[section]}
+              {SETTINGS_SECTION_LABEL[section]}
             </Link>
           ))}
         </nav>
