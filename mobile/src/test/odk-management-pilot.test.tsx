@@ -1,0 +1,25 @@
+import { act, fireEvent, waitFor } from '@testing-library/react-native';
+import { Alert, RefreshControl } from 'react-native';
+import { makeBootstrap } from './fixtures';
+import { account, boot, go, jsonResponse, press, secureStore, signIn, WAIT } from './harness';
+beforeEach(() => secureStore.__store.clear());
+const path = '/api/panel/odk/management/pilot';
+const candidates = [{ id: 'u-admin', label: 'Admin', role: 'ADMIN' }, { id: 't1', label: 'Öğretmen Bir', role: 'TEACHER' }, { id: 's1', label: 'Öğrenci Bir', role: 'STUDENT' }, { id: 's2', label: 'Öğrenci İki', role: 'STUDENT' }, { id: 'p1', label: 'Veli Bir', role: 'PARENT' }];
+const run = { id: 'r1', name: 'Kontrollü pilot', status: 'ACTIVE', version: 1, revision: 'b'.repeat(64), memberCount: 5, coverage: { ADMIN: 1, TEACHER: 1, STUDENT: 2, PARENT: 1 }, createdAt: '2026-10-13T10:00:00Z', startedAt: '2026-10-13T10:00:00Z', stoppedAt: null, stopReason: null };
+const base = { contractVersion: 1, currentAdminId: 'u-admin', revision: 'a'.repeat(64), readiness: { canActivate: true, canExpand: false, checks: [{ key: 'pilot-exams', label: 'İki gerçek deneme', status: 'WAIT', detail: 'Kabul kanıtı bekleniyor.' }] }, candidates, runs: [] as typeof run[] };
+const bootstrap = () => makeBootstrap({ role: 'ADMIN', products: { ODK: 'ACTIVE' }, activeProduct: 'ODK', adminNav: { primary: [['odk-pilot', 'Deneme Ligi pilotu', '/panel/odk/yonetim/pilot']], sections: [] } });
+it('pilot create requires four roles/two students and retries original key/revision after refresh', async () => {
+  let current = { ...base }; let attempts = 0; const keys: string[] = [];
+  const h = await boot([account('admin@example.com', bootstrap(), { routes: { [`GET ${path}`]: () => jsonResponse(200, current), [`POST ${path}`]: ({ body, headers }) => { expect(body).toMatchObject({ operation: 'create', userIds: ['u-admin', 't1', 's1', 's2', 'p1'] }); expect(headers['X-Od-Expected-Revision']).toBe(base.revision); keys.push(headers['X-Od-Idempotency-Key']); if (++attempts === 1) return jsonResponse(503, { error: 'Tekrar deneyin.' }); current = { ...current, runs: [{ ...run, status: 'DRAFT' }] }; return jsonResponse(200, { ok: true, id: 'r1', replayed: true }); } } })]);
+  await signIn(h, 'admin@example.com'); await go('/screen/odk-pilot'); expect(await h.screen.findByTestId('odk-pilot-create', {}, WAIT)).toBeTruthy(); await press(h, h.screen.getByTestId('odk-pilot-create')); expect(h.server.called('POST', path)).toHaveLength(0);
+  await press(h, h.screen.getByText('Öğretmen', { exact: true })); await press(h, h.screen.getByTestId('odk-pilot-candidate-t1')); await press(h, h.screen.getByText('Öğrenci', { exact: true })); await press(h, h.screen.getByTestId('odk-pilot-candidate-s1')); await press(h, h.screen.getByTestId('odk-pilot-candidate-s2')); await press(h, h.screen.getByText('Veli', { exact: true })); await press(h, h.screen.getByTestId('odk-pilot-candidate-p1')); fireEvent.changeText(h.screen.getByTestId('odk-pilot-name'), 'Kontrollü pilot');
+  await press(h, h.screen.getByTestId('odk-pilot-create')); expect(await h.screen.findByText('Tekrar deneyin.', {}, WAIT)).toBeTruthy(); current = { ...base, revision: 'c'.repeat(64) }; await act(async () => { h.screen.UNSAFE_getAllByType(RefreshControl)[0].props.onRefresh(); }); await waitFor(() => expect(h.server.called('GET', path).length).toBeGreaterThan(1), WAIT);
+  await press(h, h.screen.getByTestId('odk-pilot-create')); expect(await h.screen.findByText('Pilot taslağı oluşturuldu. Erişim henüz açılmadı.', {}, WAIT)).toBeTruthy(); expect(keys[0]).toBe(keys[1]);
+}, 30000);
+it('pause requires confirmation and reason; completion remains blocked until evidence exists', async () => {
+  let current = { ...base, runs: [run] }; const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+  const h = await boot([account('admin@example.com', bootstrap(), { routes: { [`GET ${path}`]: () => jsonResponse(200, current), [`POST ${path}`]: ({ body }) => { expect(body).toMatchObject({ operation: 'transition', id: 'r1', input: { action: 'PAUSE', expectedVersion: 1, stopReason: 'OPERATIONAL' } }); current = { ...base, runs: [{ ...run, status: 'PAUSED', version: 2 }] }; return jsonResponse(200, { ok: true, id: 'r1', replayed: false }); } } })]);
+  await signIn(h, 'admin@example.com'); await go('/screen/odk-pilot'); await press(h, await h.screen.findByTestId('odk-pilot-r1-COMPLETE', {}, WAIT)); expect(h.server.called('POST', path)).toHaveLength(0);
+  await press(h, h.screen.getByTestId('odk-pilot-r1-PAUSE')); expect(alert).toHaveBeenCalled(); expect(h.server.called('POST', path)).toHaveLength(0);
+  alert.mockImplementation((_t, _m, buttons) => buttons?.find((b) => b.text === 'Pilotu duraklat')?.onPress?.()); await press(h, h.screen.getByTestId('odk-pilot-r1-PAUSE')); expect(await h.screen.findByText('Pilot durumu güncellendi.', {}, WAIT)).toBeTruthy(); expect(await h.screen.findByTestId('odk-pilot-r1-RESUME', {}, WAIT)).toBeTruthy(); expect(h.screen.queryByTestId('odk-pilot-r1-COMPLETE')).toBeNull();
+});

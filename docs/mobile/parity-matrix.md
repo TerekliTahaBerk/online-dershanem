@@ -38,7 +38,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | Alan | Rota | Tam | Kısmi | Eksik | İstisna | Yönl. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1. Yönetim (`/panel/yonetim`) | 28 | 27 | 0 | 0 | 0 | 1 |
-| 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 5 | 0 | 3 | 0 | 0 |
+| 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 6 | 0 | 2 | 0 | 0 |
 | 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 19 | 1 | 0 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 5. Öğrenci (`/panel/ogrenci`) | 18 | 15 | 1 | 1 | 0 | 1 |
@@ -46,17 +46,17 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | 7. Veli (`/panel/veli`) | 12 | 7 | 2 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 4 | 3 | 2 | 0 | 2 |
-| **Toplam** | **106** | **84** | **8** | **7** | **1** | **6** |
+| **Toplam** | **106** | **85** | **8** | **6** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
 ### Ana bulgular
 
 1. **Yönetim kod eşliği tamamlandı.** P2.9 gerçek HTTP/iPhone kabulü ve P1 operasyon kanıtı açık.
-2. **Deneme Ligi yönetiminde K01, K02, K05, K06 ve K07 native tamamlandı.** K03/K04/K08 okumaları ile sınav editörü, puanlama ve yayın yazmaları açık; mevcut `/api/odk/admin/**` servisleri ve personel izinleri temel alınacak.
+2. **Deneme Ligi yönetiminde K01, K02, K05, K06, K07 ve K08 native tamamlandı.** K03/K04 okumaları ile sınav editörü, puanlama ve yayın yazmaları açık; mevcut `/api/odk/admin/**` servisleri ve personel izinleri temel alınacak.
 3. **Server Action kalanları:** V10 paket görüşmesi talebi (1) ve C07/C08 ayarlar (7); Y27 ve T20 ortak servis + native uçlara taşındı.
 4. **S12/V09 geri bildirim yetkisi düzeltildi.** OD/OK öğrenci ve aktif akademik veli bağı gerçek HTTP ile doğrulandı. V07 veli görüşme kapsamı/kabulü açık.
-5. **P4 kalanları:** K03 kapsamlı sınav çalışma alanı, K04 canlı operasyon/müdahale ve K08 pilot koşuları. K05/K06/K07 okumaları native tamamlandı.
+5. **P4 kalanları:** K03 kapsamlı sınav çalışma alanı ve K04 canlı operasyon/müdahale. K05/K06/K07 okumaları ve K08 pilot yönetimi native tamamlandı.
 
 ---
 
@@ -108,7 +108,7 @@ Mobil karşılık: `odk-management-*` ekranları ADMIN ve yetkili ODK personeli;
 | K05 | `/panel/odk/yonetim/sonuclar` | `odk-results` | O: puanlama/yayın kuyruğu + filtre | `odk/results-queue-server.ts` | Ortak GET projeksiyonu | `odk-management-results` | Tam | P4 | Eylemler K03 üzerinden; detay şimdilik web’de |
 | K06 | `/panel/odk/yonetim/raporlar` | `odk-reports` | O: kitle bazlı sonuç raporları | `odk/reporting-server.ts`, `odk/report-table-server.ts` | Ortak GET projeksiyonu | `odk-management-reports` | Tam | P4 | Genel rapor yalnız `odk:report:read_all`; ilişkili öğretmen ayrı |
 | K07 | `/panel/odk/yonetim/paketler` | `odk-packages` | O: ticari paket sözleşmesi | `odk/product-contract` (RSC) | Ortak GET projeksiyonu | `odk-management-packages` | Tam | P4 | Salt okuma |
-| K08 | `/panel/odk/yonetim/pilot` | `odk-pilot` | O: pilot koşuları · Y: koşu oluştur/güncelle | `odk/admin/pilot-runs` POST, `pilot-runs/[id]` PATCH | Y var, O yok | — | Eksik | P4 | |
+| K08 | `/panel/odk/yonetim/pilot` | `odk-pilot` | O: pilot koşuları · Y: koşu oluştur/güncelle | `odk/pilot-commands-server.ts`, `odk/pilot-workspace-server.ts` | Ortak GET/POST + sürüm/receipt | `odk-management-pilot` | Tam | P4 | Yalnız ADMIN; mevcut aktivasyon/kabul kapıları |
 
 ## 3. Öğretmen ve Yön koçu — `/panel/ogretmen` (TEACHER; OD / Yön çalışma alanı)
 
@@ -240,7 +240,7 @@ Onaylı istisnalar **alt işlem** düzeyindedir; etkilenen satırlar kalan alt i
 
 | Tür | Satırlar | Adet |
 | --- | --- | ---: |
-| GET projeksiyonu (O yok / Y var, O yok) | K03, K04, K08 | 3 |
+| GET projeksiyonu (O yok / Y var, O yok) | K03, K04 | 2 |
 | Server Action → `lib/` servisi + route | V10 (1), C07–C08 (7); Y27 ortak servislere taşındı | 2 dosya / 8 eylem |
 | Yetki düzeltmesi / kabul | V07 (veli görüşme işlemleri); S12/V09 ve T15 düzeltildi ve HTTP ile doğrulandı | 1 |
 | Yalnız mobil sözleşme + ekran (API hazır) | K03 (+ detay GET), S14, S18, S20, V11, C09–C11 | 8 |

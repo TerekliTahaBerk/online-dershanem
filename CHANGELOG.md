@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Native ADMIN Deneme Ligi pilot management with participant/role coverage, readiness gates, confirmed lifecycle transitions and atomic replay/version control shared with web; concurrent requests cannot open multiple pilot runs and web request keys bind the original actor/payload.
+
 - Native Deneme Ligi scoring/publication queue and full management reports with shared web loaders, stage/student/class filters, personal net changes and outcome evidence; read-all permission remains separate from related-teacher reports.
 
 - Native Deneme Ligi exam list/filter/pagination and exam/series creation using shared web services, catalog revisions and atomic idempotent writes; supports legacy templates and active curriculum registry families.
