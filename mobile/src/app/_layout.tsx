@@ -2,16 +2,16 @@ import { Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700
 import { DefaultTheme, Stack, ThemeProvider, type ErrorBoundaryProps } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Button, Text as NativeText, View } from 'react-native';
 
 import { LaunchScreen } from '@/design/launch-screen';
 import { NEUTRAL_THEME, productTheme } from '@/design/products';
-import { DesignProvider } from '@/design/theme';
+import { DesignProvider, useDesign } from '@/design/theme';
 import { color } from '@/design/tokens';
 import { SessionProvider, useSession } from '@/lib/auth/session-provider';
 
-void SplashScreen.preventAutoHideAsync();
+void SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 const NAV_THEME = { ...DefaultTheme, colors: { ...DefaultTheme.colors, background: color.canvas, card: color.canvas, border: color.border, text: color.text, primary: color.focus } };
 
@@ -26,17 +26,21 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
   const status = state.status;
   const booting = status === 'BOOTING' || !fontsReady;
 
-  useEffect(() => {
-    if (!booting) void SplashScreen.hideAsync();
-  }, [booting]);
-
   const theme = status === 'WORKSPACE_READY' ? productTheme(state.workspace) : NEUTRAL_THEME;
-  // Yerel açılış ekranı yalnız logoyu gösterir; bootstrap sürerken tam ekran yükleme görseli devralır.
-  if (booting) return <LaunchScreen onReady={() => { void SplashScreen.hideAsync(); }} />;
+  return <DesignProvider product={theme}><RootScreens status={status} booting={booting} /></DesignProvider>;
+}
 
+function RootScreens({ status, booting }: { status: ReturnType<typeof useSession>['state']['status']; booting: boolean }) {
+  const { reduceMotion } = useDesign();
+  const hideSplash = useCallback(() => {
+    SplashScreen.setOptions({ fade: !reduceMotion, duration: reduceMotion ? 0 : 350 });
+    void SplashScreen.hideAsync().catch(() => undefined);
+  }, [reduceMotion]);
+  useEffect(() => { if (!booting) hideSplash(); }, [booting, hideSplash]);
+  // Keep the supplied artwork visible throughout bootstrap/font loading.
+  if (booting) return <LaunchScreen onReady={hideSplash} />;
   return (
-    <DesignProvider product={theme}>
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.canvas } }}>
+      <Stack screenOptions={{ headerShown: false, animation: reduceMotion ? 'none' : 'fade', animationDuration: 220, contentStyle: { backgroundColor: color.canvas } }}>
         <Stack.Protected guard={status === 'UNAUTHENTICATED' || status === 'AUTHENTICATING'}>
           <Stack.Screen name="sign-in" />
           <Stack.Screen name="forgot-password" />
@@ -60,7 +64,6 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
           <Stack.Screen name="(app)" />
         </Stack.Protected>
       </Stack>
-    </DesignProvider>
   );
 }
 
@@ -80,7 +83,7 @@ export default function RootLayout() {
 
 /** Safe root fallback; no exception text or user data in release UI/logs. */
 export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
-  useEffect(() => { void SplashScreen.hideAsync(); }, []);
+  useEffect(() => { void SplashScreen.hideAsync().catch(() => undefined); }, []);
   return <View style={{ flex: 1, justifyContent: 'center', padding: 24, gap: 16, backgroundColor: color.canvas }}>
     <NativeText accessibilityRole="header">Bu ekran açılamadı</NativeText>
     <NativeText>Tekrar deneyin. Sorun sürerse uygulamayı yeniden açın.</NativeText>

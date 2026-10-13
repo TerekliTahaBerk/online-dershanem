@@ -1,4 +1,5 @@
 import type { LeadAnalytics } from "@/lib/business/lead-metrics";
+import { BusinessMetric } from "@/components/business/business-metric";
 import {
   LEAD_LOST_REASON_LABELS,
   LEAD_SOURCE_LABELS,
@@ -33,23 +34,16 @@ export function LeadMetricsPanel({ analytics, ownerNames }: Props) {
           ["Kaybedilen", analytics.lostLeadCount],
           ["Geciken takip", analytics.followUpOverdueCount],
         ].map(([label, value]) => (
-          <article key={String(label)} className="panel-metric-card">
-            <p className="mt-2 text-2xl font-semibold text-(--site-ink)">
-              {value}
-            </p>
-            <p className="mt-1 text-xs font-bold text-(--site-muted)">
-              {label}
-            </p>
-          </article>
+          <BusinessMetric key={String(label)} label={String(label)} value={value} />
         ))}
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
         <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
-          <h3 className="text-xs font-extrabold">Kaynak dönüşümü</h3>
-          <ul className="mt-3 space-y-2 text-xs">
+          <h3 className="text-[15px] font-semibold">Kaynak dönüşümü</h3>
+          <ul className="mt-3 space-y-2 text-[13px]">
             {analytics.sourceConversion.length === 0 ? (
-              <li className="text-(--site-muted)">Veri yok</li>
+              <li className="text-pn-text-muted">Veri yok</li>
             ) : (
               analytics.sourceConversion.map((row) => (
                 <li
@@ -67,8 +61,8 @@ export function LeadMetricsPanel({ analytics, ownerNames }: Props) {
         </article>
 
         <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
-          <h3 className="text-xs font-extrabold">Aşama dağılımı</h3>
-          <ul className="mt-3 space-y-2 text-xs">
+          <h3 className="text-[15px] font-semibold">Aşama dağılımı</h3>
+          <ul className="mt-3 space-y-2 text-[13px]">
             {analytics.stageConversion.map((row) => (
               <li
                 key={row.stage}
@@ -82,10 +76,10 @@ export function LeadMetricsPanel({ analytics, ownerNames }: Props) {
         </article>
 
         <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
-          <h3 className="text-xs font-extrabold">Ortalama aşama süresi</h3>
-          <ul className="mt-3 space-y-2 text-xs">
+          <h3 className="text-[15px] font-semibold">Ortalama aşama süresi</h3>
+          <ul className="mt-3 space-y-2 text-[13px]">
             {analytics.averageMsInStage.length === 0 ? (
-              <li className="text-(--site-muted)">
+              <li className="text-pn-text-muted">
                 Yeterli STAGE_CHANGED örneği yok
               </li>
             ) : (
@@ -105,10 +99,10 @@ export function LeadMetricsPanel({ analytics, ownerNames }: Props) {
         </article>
 
         <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
-          <h3 className="text-xs font-extrabold">Kayıp nedenleri</h3>
-          <ul className="mt-3 space-y-2 text-xs">
+          <h3 className="text-[15px] font-semibold">Kayıp nedenleri</h3>
+          <ul className="mt-3 space-y-2 text-[13px]">
             {analytics.lostReasons.length === 0 ? (
-              <li className="text-(--site-muted)">Kayıp kayıt yok</li>
+              <li className="text-pn-text-muted">Kayıp kayıt yok</li>
             ) : (
               analytics.lostReasons.map((row) => (
                 <li
@@ -128,10 +122,10 @@ export function LeadMetricsPanel({ analytics, ownerNames }: Props) {
         </article>
 
         <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4 xl:col-span-2">
-          <h3 className="text-xs font-extrabold">Sorumlu performansı</h3>
-          <ul className="mt-3 space-y-2 text-xs">
+          <h3 className="text-[15px] font-semibold">Sorumlu performansı</h3>
+          <ul className="mt-3 space-y-2 text-[13px]">
             {analytics.ownerPerformance.length === 0 ? (
-              <li className="text-(--site-muted)">Veri yok</li>
+              <li className="text-pn-text-muted">Veri yok</li>
             ) : (
               analytics.ownerPerformance.map((row) => (
                 <li

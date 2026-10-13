@@ -1,5 +1,7 @@
 "use client";
 
+import { buttonClass, inputClass } from "@/components/panel/primitives";
+
 import { useRouter } from "next/navigation";
 import { startTransition, useEffect, useOptimistic, useState } from "react";
 import type { LeadLostReasonCode, LeadStage } from "@prisma/client";
@@ -134,7 +136,7 @@ export function SalesFunnelBoard({
       {error ? (
         <p
           role="alert"
-          className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-900"
+          className="rounded-[10px] border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] text-rose-900"
         >
           {error}
         </p>
@@ -147,16 +149,16 @@ export function SalesFunnelBoard({
           aria-labelledby="lost-reason-title"
           className="overflow-hidden rounded-[10px] border border-pn-border bg-white fixed inset-x-4 top-24 z-50 mx-auto max-w-md p-4 shadow-lg md:inset-x-auto"
         >
-          <h2 id="lost-reason-title" className="text-sm font-extrabold">
+          <h2 id="lost-reason-title" className="text-[15px] font-semibold">
             Kayıp nedeni zorunlu
           </h2>
-          <p className="mt-1 text-xs text-(--site-muted)">
+          <p className="mt-1 text-[13px] text-pn-text-muted">
             LOST aşamasına geçmek için bir neden seçin. Bu veri raporlanır.
           </p>
-          <label className="mt-3 block text-xs font-bold">
+          <label className="mt-3 block text-[13px] font-medium">
             Neden
             <select
-              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+              className={inputClass("mt-1 w-full")}
               value={lostCode}
               onChange={(event) =>
                 setLostCode(event.target.value as LeadLostReasonCode)
@@ -169,10 +171,10 @@ export function SalesFunnelBoard({
               ))}
             </select>
           </label>
-          <label className="mt-2 block text-xs font-bold">
+          <label className="mt-2 block text-[13px] font-medium">
             Detay {lostCode === "OTHER" ? "(zorunlu)" : "(isteğe bağlı)"}
             <input
-              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+              className={inputClass("mt-1 w-full")}
               value={lostDetail}
               onChange={(event) => setLostDetail(event.target.value)}
               required={lostCode === "OTHER"}
@@ -181,14 +183,14 @@ export function SalesFunnelBoard({
           <div className="mt-3 flex justify-end gap-2">
             <button
               type="button"
-              className="rounded-xl border px-3 py-2 text-xs font-bold"
+              className={buttonClass("secondary", "md")}
               onClick={() => setLostPrompt(null)}
             >
               Vazgeç
             </button>
             <button
               type="button"
-              className="rounded-xl bg-(--brand-olive) px-3 py-2 text-xs font-bold text-white"
+              className={buttonClass("primary", "md")}
               onClick={() => {
                 const id = lostPrompt.id;
                 setLostPrompt(null);
@@ -231,7 +233,7 @@ export function SalesFunnelBoard({
             }}
             aria-label={`${LEAD_STAGE_LABELS[stage]} sütunu`}
           >
-            <h2 className="mb-3 text-xs font-extrabold">
+            <h2 className="mb-3 text-[15px] font-semibold">
               {LEAD_STAGE_LABELS[stage]} · {counts[stage] ?? 0}
             </h2>
             <div className="space-y-2">
@@ -251,19 +253,19 @@ export function SalesFunnelBoard({
                         event.dataTransfer.effectAllowed = "move";
                       }}
                       onDragEnd={() => setDraggingId(null)}
-                      className={`rounded-xl border bg-white p-3 ${overdue ? "border-rose-300 ring-1 ring-rose-200" : ""} ${pendingId === lead.id ? "opacity-60" : ""}`}
+                      className={`rounded-md border bg-white p-3 ${overdue ? "border-rose-300 ring-1 ring-rose-200" : ""} ${pendingId === lead.id ? "opacity-60" : ""}`}
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <p className="truncate text-xs font-bold">
+                        <p className="truncate text-[13px] font-medium">
                           {leadDisplayName(lead)}
                         </p>
                         {overdue ? (
-                          <span className="shrink-0 text-[9px] font-extrabold uppercase text-rose-700">
+                          <span className="shrink-0 text-[12px] font-semibold uppercase text-rose-700">
                             Gecikmiş
                           </span>
                         ) : null}
                       </div>
-                      <p className="mt-1 truncate text-[10px] text-(--site-muted)">
+                      <p className="mt-1 truncate text-[12px] text-pn-text-muted">
                         {PRODUCT_INTEREST_LABELS[lead.productInterest]}
                         {lead.estimatedValueCents
                           ? ` · ~${Math.round(lead.estimatedValueCents / 100)} TL`
@@ -271,16 +273,16 @@ export function SalesFunnelBoard({
                       </p>
                       <a
                         href={`/panel/yonetim/isletme/adaylar?lead=${lead.id}&focus=all`}
-                        className="mt-2 inline-block text-[10px] font-bold text-(--brand-olive) underline"
+                        className="mt-2 inline-block text-[12px] font-medium text-pn-accent underline"
                       >
                         Detay
                       </a>
                       {canWrite ? (
-                        <label className="mt-2 block text-[10px] font-bold text-(--site-muted)">
+                        <label className="mt-2 block text-[12px] font-medium text-pn-text-muted">
                           Aşamayı değiştir
                           <select
                             aria-label={`${leadDisplayName(lead)} aşaması`}
-                            className="mt-1 w-full rounded-lg border p-1 text-[10px]"
+                            className={inputClass("mt-1 w-full")}
                             value={lead.stage}
                             disabled={pendingId === lead.id}
                             onChange={(event) =>

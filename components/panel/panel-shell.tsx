@@ -391,10 +391,10 @@ export async function PanelShell({
             */}
             {/*
               Ürün çalışma alanlarında değiştirici zaten marka ve alan adını
-              gösterir; marka satırı yalnız İşletme alanında ve alan
-              belirsizken basılır (aynı adı iki kez göstermemek için).
+              gösterir; marka satırı yalnız çalışma alanı belirsizken
+              basılır (aynı adı iki kez göstermemek için).
             */}
-            {isBusinessWorkspace || !currentWorkspace ? (
+            {!currentWorkspace ? (
             <Link
               href={homeHref}
               aria-label={

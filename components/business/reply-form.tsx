@@ -1,4 +1,6 @@
 "use client";
+
+import { buttonClass, inputClass } from "@/components/panel/primitives";
 import { useState } from "react";
 export function ReplyForm({
   conversationId,
@@ -43,12 +45,12 @@ export function ReplyForm({
         onChange={(e) => setText(e.target.value)}
         maxLength={1500}
         required
-        className="min-w-0 flex-1 rounded-xl border border-(--site-line) bg-white px-3 py-2 text-sm"
+        className={inputClass("min-w-0 flex-1 w-auto")}
         placeholder="Yanıtınızı yazın…"
       />
       <button
         disabled={state === "sending"}
-        className="rounded-xl bg-(--brand-olive) px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
+        className={buttonClass("primary", "md")}
       >
         {state === "sending"
           ? "Gönderiliyor…"
@@ -57,7 +59,7 @@ export function ReplyForm({
             : "Gönder"}
       </button>
       {state === "error" ? (
-        <span role="alert" className="self-center text-xs text-rose-700">
+        <span role="alert" className="self-center text-[13px] text-rose-700">
           Gönderilemedi. Sistem tekrar denemeyi planlayabilir.
         </span>
       ) : null}

@@ -1,10 +1,11 @@
 import { Eye, EyeOff } from 'lucide-react-native';
 import { forwardRef, useState, type ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, TextInput, View, useWindowDimensions, type TextInputProps } from 'react-native';
+import { ActivityIndicator, StyleSheet, TextInput, View, useWindowDimensions, type TextInputProps } from 'react-native';
 
 import { useDesign } from '../theme';
 import { auth, color, font, radius, space, tone as toneColor, touchTarget, type Tone } from '../tokens';
 import { Text } from './text';
+import { MotionPressable } from '../motion';
 import { usePreviewReadOnly } from '@/lib/auth/preview-context';
 
 type ButtonVariant = 'primary' | 'auth' | 'secondary' | 'quiet' | 'destructive';
@@ -28,7 +29,7 @@ export function Button({ label, onPress, variant = 'primary', loading = false, d
   if (readOnly && mutation) return null;
   const inactive = disabled || loading;
   return (
-    <Pressable
+    <MotionPressable
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={label}
@@ -47,7 +48,7 @@ export function Button({ label, onPress, variant = 'primary', loading = false, d
           </Text>
         </View>
       )}
-    </Pressable>
+    </MotionPressable>
   );
 }
 
@@ -92,14 +93,14 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
           {...rest}
         />
         {secureToggle ? (
-          <Pressable
+          <MotionPressable
             accessibilityRole="button"
             accessibilityLabel={revealed ? `${label} gizle` : `${label} göster`}
             hitSlop={10}
             onPress={() => setRevealed((value) => !value)}
             style={styles.reveal}>
             {revealed ? <EyeOff size={18} color={color.textSecondary} /> : <Eye size={18} color={color.textSecondary} />}
-          </Pressable>
+          </MotionPressable>
         ) : null}
       </View>
       {error ? (
@@ -154,7 +155,7 @@ export function SegmentedTabs<T extends string>({ value, options, onChange, labe
         const selected = option.value === value;
         const text = option.count === undefined ? option.label : `${option.label} (${option.count})`;
         return (
-          <Pressable
+          <MotionPressable
             key={option.value}
             testID={`tab-${option.value}`}
             accessibilityRole="tab"
@@ -165,7 +166,7 @@ export function SegmentedTabs<T extends string>({ value, options, onChange, labe
             <Text variant={selected ? 'bodyStrong' : 'secondary'} style={selected ? { color: product.accent } : undefined}>
               {text}
             </Text>
-          </Pressable>
+          </MotionPressable>
         );
       })}
     </View>

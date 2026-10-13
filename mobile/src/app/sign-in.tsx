@@ -6,6 +6,7 @@ import { Platform, StyleSheet, type TextInput } from 'react-native';
 import { Banner, Button, Text, TextField } from '@/design/primitives';
 import { AuthScreen } from '@/features/auth/auth-screen';
 import { space } from '@/design/tokens';
+import { useDesign } from '@/design/theme';
 import { ApiError } from '@/lib/api/errors';
 import { useSession } from '@/lib/auth/session-provider';
 
@@ -17,6 +18,7 @@ import { useSession } from '@/lib/auth/session-provider';
  */
 export default function SignInScreen() {
   const { signIn, state } = useSession();
+  const { reduceMotion } = useDesign();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +34,7 @@ export default function SignInScreen() {
       await signIn(email.trim(), password);
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : 'Giriş yapılamadı. Bağlantınızı kontrol edin.');
-      if (Platform.OS === 'ios') void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      if (Platform.OS === 'ios' && !reduceMotion) void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => undefined);
     } finally {
       setSubmitting(false);
       setPassword('');

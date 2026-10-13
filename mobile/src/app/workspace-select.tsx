@@ -2,10 +2,10 @@ import type { MobileProductCode } from '@contracts/bootstrap';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { Banner, Button, EmptyState, PageHeader, Row, Screen, Section, StatusBadge, Text } from '@/design/primitives';
+import { Banner, Button, EmptyState, PageHeader, Screen, Text } from '@/design/primitives';
 import { ProductLogo } from '@/design/brand';
-import { color, radius, space } from '@/design/tokens';
-import { PRODUCT_STATE_PRESENTATION } from '@/features/shell/labels';
+import { space } from '@/design/tokens';
+import { ServiceCard } from '@/features/shell/service-card';
 import { ApiError } from '@/lib/api/errors';
 import { useSession } from '@/lib/auth/session-provider';
 
@@ -19,10 +19,13 @@ export default function WorkspaceSelectScreen() {
   const [pending, setPending] = useState<MobileProductCode | null>(null);
   const [error, setError] = useState<string | null>(null);
   const autoTried = useRef<MobileProductCode | null>(null);
+  const choosing = useRef(false);
   const bootstrap = state.status === 'WORKSPACE_SELECTION' ? state.bootstrap : null;
   const autoSelect = state.status === 'WORKSPACE_SELECTION' ? state.autoSelect : null;
 
   async function choose(code: MobileProductCode) {
+    if (choosing.current) return;
+    choosing.current = true;
     setPending(code);
     setError(null);
     try {
@@ -30,6 +33,7 @@ export default function WorkspaceSelectScreen() {
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : 'Çalışma alanı seçilemedi.');
     } finally {
+      choosing.current = false;
       setPending(null);
     }
   }
@@ -50,9 +54,9 @@ export default function WorkspaceSelectScreen() {
 
 
   return (
-    <Screen edges={['top', 'left', 'right', 'bottom']}>
+    <Screen edges={['top', 'left', 'right', 'bottom']} footer={<Button label="Çıkış yap" variant="quiet" onPress={() => void signOut()} disabled={pending !== null} />}>
       <View style={styles.identity}><ProductLogo size={32} /><Text variant="bodyStrong" style={{ flex: 1 }}>{bootstrap?.user.fullName ?? 'Hoş geldin'}</Text></View>
-      <PageHeader title="Hangi panele girmek istiyorsun?" description="Panelini seç; istediğin zaman menüdeki “Panel değiştir” ile diğerine geçebilirsin." />
+      <PageHeader title="Hangi panele girmek istiyorsun?" description="Bugünkü yolculuğunu seç. Hizmetler arasında istediğin zaman geçiş yapabilirsin." />
       {error ? <Banner tone="critical">{error}</Banner> : null}
       {hasActive || isStaff ? null : (
         <EmptyState
@@ -60,30 +64,13 @@ export default function WorkspaceSelectScreen() {
           body={products.some((product) => product.state === 'PREPARING') ? 'Öğrenci hesabı açıldığında çalışma alanın burada aktif olacak.' : 'Hesabında aktif bir ürün bulunmuyor. Sorun olduğunu düşünüyorsan ekibimizle iletişime geç.'}
         />
       )}
-      <Section first>
-        {products.map((product) => {
-          const presentation = PRODUCT_STATE_PRESENTATION[product.state];
-          return (
-            <View key={product.code} style={styles.product}>
-            <Row
-              testID={`select-${product.code}`}
-              title={product.label}
-              subtitle={product.state === 'ACTIVE' ? PRODUCT_DESCRIPTION[product.code] : presentation.description}
-              leading={<ProductLogo product={product.code} size={48} />}
-              trailing={<StatusBadge label={pending === product.code ? 'Açılıyor…' : presentation.label} tone={presentation.tone} />}
-              disabled={product.state !== 'ACTIVE' || pending !== null}
-              onPress={product.state === 'ACTIVE' ? () => void choose(product.code) : undefined}
-            />
-            </View>
-          );
-        })}
-      </Section>
+      <View style={styles.services}>
+        {products.map((product, index) => <ServiceCard key={product.code} product={product} index={index} pending={pending === product.code} disabled={product.state !== 'ACTIVE' || pending !== null} onPress={() => void choose(product.code)} />)}
+      </View>
       {bootstrap?.adminOverlay ? <><Text>{bootstrap.adminOverlay.mode === 'PREVIEW' ? 'Önizleme · Salt okunur' : 'Öğretmen çalışma modu'}</Text><Button label="Yönetim paneline dön" onPress={() => void exitAdminOverlay().catch(() => undefined)} /></> : null}
       {isStaff && !hasActive ? <Button label="Panele devam et" onPress={skipWorkspaceSelection} /> : null}
-      <Button label="Çıkış yap" variant="quiet" onPress={() => void signOut()} />
     </Screen>
   );
 }
 
-const PRODUCT_DESCRIPTION = { OD: 'Çok dersli canlı öğrenme', OK: 'Planlama ve sürdürülebilir takip', ODK: 'Ölçme, analiz ve sonraki adım' };
-const styles = StyleSheet.create({ identity: { flexDirection: 'row', alignItems: 'center', gap: space[3] }, product: { borderWidth: 1, borderColor: color.border, borderRadius: radius.card, paddingHorizontal: space[3], paddingVertical: space[2], marginBottom: space[3] } });
+const styles = StyleSheet.create({ identity: { flexDirection: 'row', alignItems: 'center', gap: space[3] }, services: { gap: space[3] } });

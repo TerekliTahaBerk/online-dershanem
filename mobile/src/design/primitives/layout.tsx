@@ -1,9 +1,10 @@
 import type { PropsWithChildren, ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react-native';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, View, useWindowDimensions, type ViewStyle } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View, useWindowDimensions, type ViewStyle } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
 import { useDesign } from '../theme';
+import { Entrance, MotionPressable } from '../motion';
 import { color, rowHeight, space } from '../tokens';
 import { Text } from './text';
 
@@ -36,10 +37,10 @@ export function Screen({ scroll = true, refreshing = false, onRefresh, edges = [
     <View style={[styles.content, styles.flex, contentStyle]}>{children}</View>
   );
   return (
-    <SafeAreaView style={[styles.screen, { backgroundColor }]} edges={edges} testID={testID}>
+    <Entrance style={styles.flex}><SafeAreaView style={[styles.screen, { backgroundColor }]} edges={edges} testID={testID}>
       {body}
       {footer ? <View style={styles.footer}>{footer}</View> : null}
-    </SafeAreaView>
+    </SafeAreaView></Entrance>
   );
 }
 
@@ -119,7 +120,7 @@ export function Row({ title, subtitle, meta, leading, trailing, onPress, selecte
     );
   }
   return (
-    <Pressable
+    <MotionPressable
       testID={testID}
       accessibilityRole="button"
       accessibilityState={{ selected, disabled }}
@@ -128,7 +129,7 @@ export function Row({ title, subtitle, meta, leading, trailing, onPress, selecte
       onPress={onPress}
       style={({ pressed }) => [styles.row, stacked && styles.stackedRow, selected && { backgroundColor: product.accentSoft }, pressed && { backgroundColor: color.pressed }, disabled && styles.disabled]}>
       {content}
-    </Pressable>
+    </MotionPressable>
   );
 }
 

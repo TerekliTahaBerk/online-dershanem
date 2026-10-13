@@ -1,3 +1,4 @@
+import { buttonClass, inputClass } from "@/components/panel/primitives";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -73,6 +74,8 @@ import {
 } from "@/lib/business/queries/leads";
 import { LeadLifecyclePanel } from "@/components/panel/lead-lifecycle-panel";
 import { AutomationRulesPanel } from "@/components/business/automation-rules-panel";
+import { BusinessMetric } from "@/components/business/business-metric";
+import { EmptyState, PageHeader } from "@/components/panel/ui";
 
 export const dynamic = "force-dynamic";
 const tl = new Intl.NumberFormat("tr-TR", {
@@ -96,22 +99,10 @@ function Card({
   value: string | number;
   icon: typeof Inbox;
 }) {
-  return (
-    <article className="panel-metric-card">
-      <Icon size={18} className="text-(--brand-olive)" />
-      <p className="mt-4 text-2xl font-semibold text-(--site-ink)">
-        {value}
-      </p>
-      <p className="mt-1 text-xs font-bold text-(--site-muted)">{label}</p>
-    </article>
-  );
+  return <BusinessMetric label={label} value={value} icon={Icon} />;
 }
 function Empty({ text }: { text: string }) {
-  return (
-    <div className="rounded-2xl border border-dashed border-(--site-line) px-5 py-10 text-center text-sm text-(--site-muted)">
-      {text}
-    </div>
-  );
+  return <EmptyState title={text} />;
 }
 
 /**
@@ -126,13 +117,13 @@ function UnitField({ units }: { units: { id: string; name: string }[] }) {
   if (units.length === 1)
     return <input type="hidden" name="businessUnitId" value={units[0].id} />;
   return (
-    <label className="text-xs font-bold text-(--site-muted)">
+    <label className="text-[13px] font-medium text-pn-text-muted">
       İş birimi
       <select
         name="businessUnitId"
         required
         defaultValue=""
-        className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+        className={inputClass("mt-1 w-full")}
       >
         <option value="" disabled>
           Birim seçin
@@ -230,20 +221,15 @@ export default async function BusinessSectionPage({
       fullName={access.session.fullName}
       email={access.session.email}
       workspace="BUSINESS"
+      pageTitle={SECTION_LABELS[section]}
       nav={<BusinessNav active={section} allowed={allowedSections} />}
       mobileQuickItems={businessMobilePrimaryNav(allowedSections)}
     >
-      <header className="mb-5">
-        <p className="text-[11px] font-extrabold uppercase tracking-widest text-(--brand-olive)">
-          Reklam, CRM ve Finans
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-[-.04em] text-(--site-ink)">
-          {SECTION_LABELS[section]}
-        </h1>
-        <p className="mt-2 text-sm text-(--site-muted)">
-          {access.units.map((unit) => unit.name).join(" · ")} · Europe/Istanbul
-        </p>
-      </header>
+      <div className="business-panel min-w-0 max-w-[1280px]">
+      <PageHeader
+        title={SECTION_LABELS[section]}
+        description={access.units.map((unit) => unit.name).join(" · ")}
+      />
       <div className="mt-5">
         {section === "genel-bakis" && kpis && (
           <>
@@ -251,47 +237,47 @@ export default async function BusinessSectionPage({
               method="get"
               className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 flex flex-wrap gap-3 p-4"
             >
-              <label className="text-xs">
+              <label className="text-[13px]">
                 Başlangıç
                 <input
                   name="from"
                   type="date"
                   defaultValue={formatIstanbulDateInput(from)}
-                  className="ml-2 rounded-xl border p-2"
+                  className={inputClass("ml-2 w-auto")}
                 />
               </label>
-              <label className="text-xs">
+              <label className="text-[13px]">
                 Bitiş
                 <input
                   name="to"
                   type="date"
                   defaultValue={formatIstanbulDateInput(to)}
-                  className="ml-2 rounded-xl border p-2"
+                  className={inputClass("ml-2 w-auto")}
                 />
               </label>
               <select
                 name="product"
                 defaultValue={product}
                 aria-label="Ürün"
-                className="rounded-xl border px-3 text-xs"
+                className={inputClass("w-auto")}
               >
                 <option value="ALL">Tüm ürünler</option>
                 <option value="OD">onlinedershanem.</option>
                 <option value="ODK">OnlineDenemeKulübü</option>
               </select>
-              <button className="rounded-xl bg-(--brand-olive) px-4 text-xs font-bold text-white">
+              <button className={buttonClass("primary", "md")}>
                 Uygula
               </button>
             </form>
             {rangeNotice ? (
               <p
                 role="status"
-                className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-950"
+                className="mb-4 rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-950"
               >
                 {rangeNotice}
               </p>
             ) : null}
-            <p className="mb-3 text-xs text-(--site-muted)">
+            <p className="mb-3 text-[13px] text-pn-text-muted">
               {formatIstanbulDateInput(from)} – {formatIstanbulDateInput(to)} ·{" "}
               {product === "ALL" ? "Tüm iş birimleri" : product} · TRY ·
               Europe/Istanbul
@@ -321,21 +307,21 @@ export default async function BusinessSectionPage({
               />
             </section>
             <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-5 p-5">
-              <h2 className="text-sm font-extrabold">Operasyon özeti</h2>
+              <h2 className="text-[15px] font-semibold">Operasyon özeti</h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <p className="rounded-xl bg-emerald-50 p-4 text-sm">
+                <p className="rounded-md bg-pn-surface-subtle p-4 text-sm">
                   Gelir{" "}
                   <strong className="block text-lg">
                     {tl.format(income / 100)}
                   </strong>
                 </p>
-                <p className="rounded-xl bg-rose-50 p-4 text-sm">
+                <p className="rounded-md bg-pn-surface-subtle p-4 text-sm">
                   Gider{" "}
                   <strong className="block text-lg">
                     {tl.format(expense / 100)}
                   </strong>
                 </p>
-                <p className="rounded-xl bg-amber-50 p-4 text-sm">
+                <p className="rounded-md bg-pn-surface-subtle p-4 text-sm">
                   Tahmini net{" "}
                   <strong className="block text-lg">
                     {tl.format(kpis.netCents / 100)}
@@ -350,13 +336,13 @@ export default async function BusinessSectionPage({
                   const count = kpis.leadsByStage[stage] ?? 0;
                   return (
                     <div key={stage}>
-                      <div className="flex justify-between text-xs">
+                      <div className="flex justify-between text-[13px]">
                         <span>{stage}</span>
                         <strong>{count}</strong>
                       </div>
                       <div className="mt-1 h-3 rounded-full bg-slate-100">
                         <div
-                          className="h-3 rounded-full bg-(--brand-olive)"
+                          className="h-3 rounded-full bg-pn-accent"
                           style={{
                             width: `${kpis.leadTotal ? Math.max(4, (count / kpis.leadTotal) * 100) : 0}%`,
                           }}
@@ -369,7 +355,7 @@ export default async function BusinessSectionPage({
             </section>
             {leadAnalytics ? (
               <div className="mt-5">
-                <h2 className="mb-3 text-sm font-extrabold">
+                <h2 className="mb-3 text-[15px] font-semibold">
                   CRM satış metrikleri
                 </h2>
                 <LeadMetricsPanel
@@ -386,14 +372,14 @@ export default async function BusinessSectionPage({
             <InboxAutoRefresh />
             <form
               method="get"
-              className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 grid gap-2 p-3 sm:grid-cols-3 xl:grid-cols-6"
+              className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 grid gap-2 p-3 sm:grid-cols-3 xl:grid-cols-6 items-end"
               aria-label="Konuşma filtreleri"
             >
               <input
                 name="q"
                 defaultValue={typeof query.q === "string" ? query.q : ""}
                 placeholder="Kullanıcı ara"
-                className="rounded-xl border px-3 py-2 text-xs"
+                className={inputClass("w-auto")}
               />
               <select
                 name="status"
@@ -401,7 +387,7 @@ export default async function BusinessSectionPage({
                   typeof query.status === "string" ? query.status : "ALL"
                 }
                 aria-label="Durum"
-                className="rounded-xl border px-3 py-2 text-xs"
+                className={inputClass("w-auto")}
               >
                 <option value="ALL">Tüm durumlar</option>
                 {Object.values(ConversationStatus).map((value) => (
@@ -416,7 +402,7 @@ export default async function BusinessSectionPage({
                     : "ALL"
                 }
                 aria-label="Sıcaklık"
-                className="rounded-xl border px-3 py-2 text-xs"
+                className={inputClass("w-auto")}
               >
                 <option value="ALL">Tüm sıcaklıklar</option>
                 {Object.values(LeadTemperature).map((value) => (
@@ -427,14 +413,14 @@ export default async function BusinessSectionPage({
                 name="ai"
                 defaultValue={typeof query.ai === "string" ? query.ai : "ALL"}
                 aria-label="AI modu"
-                className="rounded-xl border px-3 py-2 text-xs"
+                className={inputClass("w-auto")}
               >
                 <option value="ALL">Tüm AI modları</option>
                 {Object.values(AiMode).map((value) => (
                   <option key={value}>{value}</option>
                 ))}
               </select>
-              <label className="flex items-center gap-2 rounded-xl border px-3 text-xs">
+              <label className="flex items-center gap-2 rounded-md border px-3 text-[13px]">
                 <input
                   type="checkbox"
                   name="unread"
@@ -443,23 +429,23 @@ export default async function BusinessSectionPage({
                 />{" "}
                 Yalnız okunmamış
               </label>
-              <button className="rounded-xl bg-(--brand-olive) px-3 py-2 text-xs font-bold text-white">
+              <button className={buttonClass("primary", "md")}>
                 Filtrele
               </button>
             </form>
             <div className="grid gap-4 xl:grid-cols-[360px_1fr]">
               <section className="rounded-[10px] border border-pn-border bg-white overflow-hidden">
-                <p className="border-b border-(--site-line) px-4 py-3 text-xs font-bold text-(--site-muted)">
+                <p className="border-b border-pn-border px-4 py-3 text-[13px] font-medium text-pn-text-muted">
                   Filtreye uyan toplam {inboxTotal} konuşma ·{" "}
                   {conversations.length} tanesi gösteriliyor
                 </p>
-                <div className="divide-y divide-(--site-line)">
+                <div className="divide-y divide-pn-border">
                   {conversations.length ? (
                     conversations.map((c) => (
                       <Link
                         key={c.id}
                         href={`?conversation=${c.id}`}
-                        className={`block p-4 hover:bg-(--site-bg-warm) ${selectedConversation === c.id ? "bg-(--brand-olive-soft)" : ""}`}
+                        className={`block p-4 hover:bg-pn-surface-subtle ${selectedConversation === c.id ? "bg-pn-accent-soft" : ""}`}
                       >
                         <div className="flex justify-between gap-3">
                           <strong className="truncate text-sm">
@@ -467,33 +453,33 @@ export default async function BusinessSectionPage({
                               c.username ||
                               c.instagramScopedUserId}
                           </strong>
-                          <time className="text-[10px] text-(--site-muted)">
+                          <time className="text-[12px] text-pn-text-muted">
                             {dt.format(c.lastMessageAt)}
                           </time>
                         </div>
-                        <p className="mt-1 truncate text-xs text-(--site-muted)">
+                        <p className="mt-1 truncate text-[13px] text-pn-text-muted">
                           {c.messages[0]?.body || "Medya mesajı"}
                         </p>
-                        <div className="mt-2 flex flex-wrap gap-1 text-[9px] font-bold">
-                          <span className="rounded-full bg-white px-2 py-1">
+                        <div className="mt-2 flex flex-wrap gap-1 text-[12px] font-medium">
+                          <span className="rounded-md bg-pn-surface-subtle px-2 py-1">
                             {c.status}
                           </span>
-                          <span className="rounded-full bg-white px-2 py-1">
+                          <span className="rounded-md bg-pn-surface-subtle px-2 py-1">
                             AI {c.aiMode}
                           </span>
-                          <span className="rounded-full bg-white px-2 py-1">
+                          <span className="rounded-md bg-pn-surface-subtle px-2 py-1">
                             {c.temperature}
                           </span>
                           {c.tags.slice(0, 2).map((tag) => (
                             <span
                               key={tag}
-                              className="rounded-full bg-white px-2 py-1"
+                              className="rounded-md bg-pn-surface-subtle px-2 py-1"
                             >
                               #{tag}
                             </span>
                           ))}
                           {c.unreadCount ? (
-                            <span className="rounded-full bg-rose-600 px-2 py-1 text-white">
+                            <span className="rounded-md bg-rose-600 px-2 py-1 text-white">
                               {c.unreadCount}
                             </span>
                           ) : null}
@@ -507,7 +493,7 @@ export default async function BusinessSectionPage({
                 {nextCursor ? (
                   <Link
                     href={`?cursor=${nextCursor}`}
-                    className="m-3 block rounded-xl border p-2 text-center text-xs font-bold"
+                    className="m-3 block rounded-md border p-2 text-center text-[13px] font-medium"
                   >
                     Sonraki sayfa
                   </Link>
@@ -518,11 +504,11 @@ export default async function BusinessSectionPage({
                   <>
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <h2 className="font-extrabold">
+                        <h2 className="font-semibold">
                           {selected.displayName ||
                             selected.instagramScopedUserId}
                         </h2>
-                        <p className="text-xs text-(--site-muted)">
+                        <p className="text-[13px] text-pn-text-muted">
                           {selected.temperature} · {selected.productInterest} ·{" "}
                           {selected.summary || "Özet bekleniyor"}
                         </p>
@@ -530,7 +516,7 @@ export default async function BusinessSectionPage({
                           {selected.tags.map((tag) => (
                             <span
                               key={tag}
-                              className="rounded-full bg-(--brand-olive-soft) px-2 py-1 text-[10px]"
+                              className="rounded-md bg-pn-accent-soft px-2 py-1 text-[12px]"
                             >
                               #{tag}
                             </span>
@@ -546,7 +532,7 @@ export default async function BusinessSectionPage({
                           aria-label="AI modu"
                           name="aiMode"
                           defaultValue={selected.aiMode}
-                          className="rounded-xl border px-2 py-1 text-xs"
+                          className={inputClass("w-auto")}
                         >
                           {Object.values(AiMode).map((value) => (
                             <option key={value}>{value}</option>
@@ -556,13 +542,13 @@ export default async function BusinessSectionPage({
                           aria-label="Konuşma durumu"
                           name="status"
                           defaultValue={selected.status}
-                          className="rounded-xl border px-2 py-1 text-xs"
+                          className={inputClass("w-auto")}
                         >
                           {Object.values(ConversationStatus).map((value) => (
                             <option key={value}>{value}</option>
                           ))}
                         </select>
-                        <button className="rounded-xl border px-3 text-xs font-bold">
+                        <button className={buttonClass("secondary", "md")}>
                           Kaydet
                         </button>
                       </form>
@@ -570,13 +556,13 @@ export default async function BusinessSectionPage({
                     <div className="mt-3 flex flex-wrap gap-2">
                       <form action={markConversationRead}>
                         <input type="hidden" name="id" value={selected.id} />
-                        <button className="rounded-xl border px-3 py-2 text-xs">
+                        <button className={buttonClass("secondary", "md")}>
                           Okundu işaretle
                         </button>
                       </form>
                       <form action={requestAISuggestion}>
                         <input type="hidden" name="id" value={selected.id} />
-                        <button className="rounded-xl border px-3 py-2 text-xs font-bold">
+                        <button className={buttonClass("secondary", "md")}>
                           AI önerisi üret
                         </button>
                       </form>
@@ -586,7 +572,7 @@ export default async function BusinessSectionPage({
                           aria-label="Sorumlu personel"
                           name="assignedUserId"
                           defaultValue={selected.assignedUserId || ""}
-                          className="rounded-l-xl border px-2 text-xs"
+                          className={inputClass("w-auto")}
                         >
                           <option value="">Atanmamış</option>
                           {staff.map((item) => (
@@ -595,7 +581,7 @@ export default async function BusinessSectionPage({
                             </option>
                           ))}
                         </select>
-                        <button className="rounded-r-xl border px-2 text-xs">
+                        <button className={buttonClass("secondary", "sm")}>
                           Ata
                         </button>
                       </form>
@@ -606,9 +592,9 @@ export default async function BusinessSectionPage({
                           name="tag"
                           required
                           placeholder="Etiket"
-                          className="w-24 rounded-l-xl border px-2 text-xs"
+                          className={inputClass("w-24")}
                         />
-                        <button className="rounded-r-xl border px-2 text-xs">
+                        <button className={buttonClass("secondary", "sm")}>
                           Ekle
                         </button>
                       </form>
@@ -616,7 +602,7 @@ export default async function BusinessSectionPage({
                     {nextMessageCursor ? (
                       <Link
                         href={`?conversation=${selected.id}&messageCursor=${nextMessageCursor}`}
-                        className="mt-4 block text-center text-xs font-bold underline"
+                        className="mt-4 block text-center text-[13px] font-medium underline"
                       >
                         Daha eski 100 mesajı yükle
                       </Link>
@@ -628,10 +614,10 @@ export default async function BusinessSectionPage({
                       {orderedMessages.map((m) => (
                         <article
                           key={m.id}
-                          className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm ${m.direction === "OUTBOUND" ? "ml-auto bg-(--brand-olive) text-white" : "bg-(--site-bg-warm)"}`}
+                          className={`max-w-[82%] rounded-[10px] px-4 py-3 text-sm ${m.direction === "OUTBOUND" ? "ml-auto bg-pn-accent text-white" : "bg-pn-surface-subtle"}`}
                         >
                           <p>{m.body || "Medya"}</p>
-                          <p className="mt-1 text-[9px] opacity-70">
+                          <p className="mt-1 text-[12px] opacity-70">
                             {m.senderType} · {m.status} ·{" "}
                             {dt.format(m.occurredAt)}
                             {m.failureCode ? ` · ${m.failureCode}` : ""}
@@ -644,8 +630,8 @@ export default async function BusinessSectionPage({
                     "reply" in selected.aiExecutions[0].decision &&
                     typeof selected.aiExecutions[0].decision.reply ===
                       "string" ? (
-                      <section className="mt-4 rounded-2xl border border-sky-200 bg-sky-50 p-3">
-                        <p className="text-[10px] font-extrabold uppercase text-sky-800">
+                      <section className="mt-4 rounded-[10px] border border-sky-200 bg-sky-50 p-3">
+                        <p className="text-[12px] font-semibold uppercase text-sky-800">
                           AI cevap önerisi · düzenleyip gönderilebilir
                         </p>
                         <ReplyForm
@@ -657,8 +643,8 @@ export default async function BusinessSectionPage({
                     <ReplyForm conversationId={selected.id} />
                     {selected.lead ? (
                       <div className="mt-5 grid gap-3 lg:grid-cols-2">
-                        <section className="rounded-2xl border p-3">
-                          <h3 className="text-xs font-extrabold">
+                        <section className="rounded-[10px] border p-3">
+                          <h3 className="text-[15px] font-semibold">
                             Aday notu ve görev
                           </h3>
                           <form action={addLeadNote} className="mt-2 flex">
@@ -671,15 +657,15 @@ export default async function BusinessSectionPage({
                               name="note"
                               required
                               placeholder="Not ekle"
-                              className="min-w-0 flex-1 rounded-l-xl border px-2 text-xs"
+                              className={inputClass("min-w-0 flex-1 w-auto")}
                             />
-                            <button className="rounded-r-xl border px-2 text-xs">
+                            <button className={buttonClass("secondary", "sm")}>
                               Ekle
                             </button>
                           </form>
                           <form
                             action={createLeadTask}
-                            className="mt-2 grid grid-cols-[1fr_auto_auto]"
+                            className="mt-2 grid grid-cols-[1fr_auto_auto] items-end"
                           >
                             <input
                               type="hidden"
@@ -690,46 +676,46 @@ export default async function BusinessSectionPage({
                               name="title"
                               required
                               placeholder="Görev"
-                              className="min-w-0 rounded-l-xl border px-2 text-xs"
+                              className={inputClass("min-w-0 w-auto")}
                             />
                             <input
                               aria-label="Son tarih"
                               name="dueAt"
                               type="datetime-local"
-                              className="border px-2 text-xs"
+                              className={inputClass("w-auto")}
                             />
-                            <button className="rounded-r-xl border px-2 text-xs">
+                            <button className={buttonClass("secondary", "sm")}>
                               Oluştur
                             </button>
                           </form>
                           {selected.lead.activities.map((item) => (
                             <p
                               key={item.id}
-                              className="mt-2 border-t pt-2 text-[10px]"
+                              className="mt-2 border-t pt-2 text-[12px]"
                             >
                               {item.type} · {dt.format(item.createdAt)}
                             </p>
                           ))}
                           {selected.lead.tasks.map((item) => (
-                            <p key={item.id} className="mt-2 text-[10px]">
+                            <p key={item.id} className="mt-2 text-[12px]">
                               Görev: {item.title} ·{" "}
                               {item.completedAt ? "Tamamlandı" : "Açık"}
                             </p>
                           ))}
                           {selected.lead.financialTransactions.map((item) => (
-                            <p key={item.id} className="mt-2 text-[10px]">
+                            <p key={item.id} className="mt-2 text-[12px]">
                               Ödeme: {item.description} ·{" "}
                               {tl.format(item.netCents / 100)} · {item.status}
                             </p>
                           ))}
                         </section>
-                        <section className="rounded-2xl border p-3">
-                          <h3 className="text-xs font-extrabold">
+                        <section className="rounded-[10px] border p-3">
+                          <h3 className="text-[15px] font-semibold">
                             Kampanya atfı
                           </h3>
                           <form
                             action={setManualAttribution}
-                            className="mt-2 grid gap-2"
+                            className="mt-2 grid gap-2 items-end"
                           >
                             <input
                               type="hidden"
@@ -739,7 +725,7 @@ export default async function BusinessSectionPage({
                             <select
                               name="campaignId"
                               aria-label="Kampanya"
-                              className="rounded-xl border p-2 text-xs"
+                              className={inputClass("w-auto")}
                             >
                               <option value="">Kampanya seç</option>
                               {campaigns.map((item) => (
@@ -751,7 +737,7 @@ export default async function BusinessSectionPage({
                             <select
                               name="advertisementId"
                               aria-label="Reklam"
-                              className="rounded-xl border p-2 text-xs"
+                              className={inputClass("w-auto")}
                             >
                               <option value="">Reklam seç</option>
                               {ads.map((item) => (
@@ -760,12 +746,12 @@ export default async function BusinessSectionPage({
                                 </option>
                               ))}
                             </select>
-                            <button className="rounded-xl border p-2 text-xs font-bold">
+                            <button className={buttonClass("secondary", "md")}>
                               Manuel atıf oluştur
                             </button>
                           </form>
                           {selected.lead.attributions.map((item) => (
-                            <p key={item.id} className="mt-2 text-[10px]">
+                            <p key={item.id} className="mt-2 text-[12px]">
                               {item.model} ·{" "}
                               {item.campaign?.name ||
                                 item.advertisement?.name ||
@@ -790,36 +776,36 @@ export default async function BusinessSectionPage({
             {can("lead:write") ? (
               <form
                 action={createManualLead}
-                className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 grid gap-3 p-4 sm:grid-cols-5"
+                className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 grid gap-3 p-4 sm:grid-cols-5 items-end"
               >
                 <UnitField units={access.units} />
                 <input
                   name="firstName"
                   required
                   placeholder="Ad"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 />
                 <input
                   name="phone"
                   placeholder="Telefon"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 />
                 <input
                   name="email"
                   type="email"
                   placeholder="E-posta"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 />
                 <select
                   aria-label="Ürün"
                   name="productInterest"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 >
                   <option value="UNKNOWN">Ürün bilinmiyor</option>
                   <option value="ONLINE_DERSHANEM">onlinedershanem.</option>
                   <option value="ONLINE_DENEME_KULUBU">onlinedenemekulübüm.</option>
                 </select>
-                <button className="rounded-xl bg-(--brand-olive) px-3 py-2 text-sm font-bold text-white">
+                <button className={buttonClass("primary", "md")}>
                   Aday ekle
                 </button>
               </form>
@@ -890,7 +876,7 @@ export default async function BusinessSectionPage({
             {section === "kampanyalar" ? (
               <form
                 action={createCampaign}
-                className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 grid gap-3 p-4 sm:grid-cols-5"
+                className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 grid gap-3 p-4 sm:grid-cols-5 items-end"
               >
                 <UnitField units={access.units} />
                 <input
@@ -898,13 +884,13 @@ export default async function BusinessSectionPage({
                   name="name"
                   required
                   placeholder="Kampanya adı"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 />
                 <input
                   aria-label="Platform"
                   name="platform"
                   defaultValue="INSTAGRAM"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 />
                 <input
                   aria-label="Bütçe TL"
@@ -913,31 +899,31 @@ export default async function BusinessSectionPage({
                   min="0"
                   step="0.01"
                   placeholder="Bütçe TL"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 />
                 <select
                   aria-label="Ürün"
                   name="productInterest"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 >
                   <option>UNKNOWN</option>
                   <option>ONLINE_DERSHANEM</option>
                   <option>ONLINE_DENEME_KULUBU</option>
                 </select>
-                <button className="rounded-xl bg-(--brand-olive) text-sm font-bold text-white">
+                <button className={buttonClass("primary", "md")}>
                   Kampanya ekle
                 </button>
               </form>
             ) : (
               <form
                 action={createAdvertisement}
-                className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 grid gap-2 p-4 sm:grid-cols-3 xl:grid-cols-6"
+                className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 grid gap-2 p-4 sm:grid-cols-3 xl:grid-cols-6 items-end"
               >
                 <select
                   required
                   aria-label="Kampanya"
                   name="campaignId"
-                  className="rounded-xl border p-2 text-xs"
+                  className={inputClass("w-auto")}
                 >
                   <option value="">Kampanya</option>
                   {campaigns.map((item) => (
@@ -951,14 +937,14 @@ export default async function BusinessSectionPage({
                   name="adSetName"
                   aria-label="Reklam seti"
                   placeholder="Reklam seti"
-                  className="rounded-xl border p-2 text-xs"
+                  className={inputClass("w-auto")}
                 />
                 <input
                   required
                   name="name"
                   aria-label="Reklam adı"
                   placeholder="Reklam adı"
-                  className="rounded-xl border p-2 text-xs"
+                  className={inputClass("w-auto")}
                 />
                 {[
                   ["spentTl", "Harcama TL"],
@@ -977,10 +963,10 @@ export default async function BusinessSectionPage({
                     min="0"
                     step={name.endsWith("Tl") ? "0.01" : "1"}
                     defaultValue="0"
-                    className="rounded-xl border p-2 text-xs"
+                    className={inputClass("w-auto")}
                   />
                 ))}
-                <button className="rounded-xl bg-(--brand-olive) p-2 text-xs font-bold text-white">
+                <button className={buttonClass("primary", "md")}>
                   Manuel reklam ekle
                 </button>
               </form>
@@ -1006,7 +992,7 @@ export default async function BusinessSectionPage({
                 });
                 return (
                   <tr key={a.id} className="border-t">
-                    <td className="p-3 font-bold">{a.name}</td>
+                    <td className="p-3 font-medium">{a.name}</td>
                     <td className="p-3">{a.adSet.campaign.name}</td>
                     <td className="p-3">{tl.format(a.spentCents / 100)}</td>
                     <td className="p-3">{tl.format(metrics.cpmCents / 100)}</td>
@@ -1033,7 +1019,7 @@ export default async function BusinessSectionPage({
             {can("finance:write") ? (
               <form
                 action={createFinancialTransaction}
-                className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 grid gap-3 p-4 sm:grid-cols-3 xl:grid-cols-5"
+                className="overflow-hidden rounded-[10px] border border-pn-border bg-white mb-4 grid gap-3 p-4 sm:grid-cols-3 xl:grid-cols-5 items-end"
               >
                 <UnitField units={access.units} />
                 <select
@@ -1042,7 +1028,7 @@ export default async function BusinessSectionPage({
                   defaultValue={
                     section === "giderler" ? "EXPENSE" : "MANUAL_INCOME"
                   }
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 >
                   <option>MANUAL_INCOME</option>
                   <option>EXPENSE</option>
@@ -1053,14 +1039,14 @@ export default async function BusinessSectionPage({
                   name="description"
                   required
                   placeholder="Açıklama"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 />
                 <input
                   aria-label="Kategori"
                   name="category"
                   required
                   placeholder="Kategori"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 />
                 <input
                   aria-label="Tutar TL"
@@ -1070,13 +1056,13 @@ export default async function BusinessSectionPage({
                   min="0.01"
                   required
                   placeholder="Tutar TL"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 />
                 <input
                   aria-label="İşlem tarihi"
                   name="transactionDate"
                   type="date"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 />
                 <input
                   aria-label="KDV oranı"
@@ -1087,7 +1073,7 @@ export default async function BusinessSectionPage({
                   step="0.01"
                   defaultValue="0"
                   placeholder="KDV %"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 />
                 <input
                   aria-label="Stopaj oranı"
@@ -1098,7 +1084,7 @@ export default async function BusinessSectionPage({
                   step="0.01"
                   defaultValue="0"
                   placeholder="Stopaj %"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 />
                 <input
                   aria-label="Komisyon TL"
@@ -1108,9 +1094,9 @@ export default async function BusinessSectionPage({
                   step="0.01"
                   defaultValue="0"
                   placeholder="Komisyon TL"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 />
-                <button className="rounded-xl bg-(--brand-olive) p-2 text-sm font-bold text-white">
+                <button className={buttonClass("primary", "md")}>
                   Kaydet
                 </button>
               </form>
@@ -1129,12 +1115,12 @@ export default async function BusinessSectionPage({
           <>
             <div
               role="note"
-              className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"
+              className="mb-4 rounded-[10px] border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950"
             >
               Bu ekran operasyonel takip ve tahmini raporlama amaçlıdır. Resmî
               beyan ve muhasebe işlemleri için mali müşavir kontrolü gerekir.
             </div>
-            <p className="mb-3 text-xs text-(--site-muted)">
+            <p className="mb-3 text-[13px] text-pn-text-muted">
               {formatIstanbulDateInput(from)} – {formatIstanbulDateInput(to)} ·
               TRY · KDV dahil tutarlar üzerinden hesaplanır
             </p>
@@ -1172,35 +1158,35 @@ export default async function BusinessSectionPage({
             </section>
             <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white mt-4 grid gap-4 p-4 md:grid-cols-2">
               <div>
-                <h2 className="text-sm font-extrabold">Muhasebe dönemleri</h2>
+                <h2 className="text-[15px] font-semibold">Muhasebe dönemleri</h2>
                 {periods.map((item) => (
-                  <p key={item.id} className="mt-2 text-xs">
+                  <p key={item.id} className="mt-2 text-[13px]">
                     {dt.format(item.startsAt)} – {dt.format(item.endsAt)} ·{" "}
                     <strong>{item.status}</strong>
                   </p>
                 ))}
               </div>
-              <form action={lockAccountingPeriod} className="grid gap-2">
+              <form action={lockAccountingPeriod} className="grid gap-2 items-end">
                 <UnitField units={access.units} />
-                <h2 className="text-sm font-extrabold">Dönem kilitle</h2>
+                <h2 className="text-[15px] font-semibold">Dönem kilitle</h2>
                 <input
                   aria-label="Başlangıç"
                   required
                   name="startsAt"
                   type="date"
-                  className="rounded-xl border p-2 text-xs"
+                  className={inputClass("w-auto")}
                 />
                 <input
                   aria-label="Bitiş"
                   required
                   name="endsAt"
                   type="date"
-                  className="rounded-xl border p-2 text-xs"
+                  className={inputClass("w-auto")}
                 />
-                <button className="rounded-xl border p-2 text-xs font-bold">
+                <button className={buttonClass("secondary", "md")}>
                   Onayla ve kilitle
                 </button>
-                <p className="text-[10px] text-(--site-muted)">
+                <p className="text-[12px] text-pn-text-muted">
                   Kilitli dönemde sessiz değişiklik yapılamaz; yalnız
                   ters/düzeltme kaydı kullanılır.
                 </p>
@@ -1211,7 +1197,7 @@ export default async function BusinessSectionPage({
         {section === "mutabakat" && (
           <>
             <form action={runReconciliation} className="mb-4">
-              <button className="rounded-xl bg-(--brand-olive) px-4 py-2 text-xs font-bold text-white">
+              <button className={buttonClass("primary", "md")}>
                 PayTR · sipariş · ledger mutabakatını çalıştır
               </button>
             </form>
@@ -1235,7 +1221,7 @@ export default async function BusinessSectionPage({
                     <td className="p-3">
                       {tl.format((x.actualCents || 0) / 100)}
                     </td>
-                    <td className="p-3 font-bold">{x.status}</td>
+                    <td className="p-3 font-medium">{x.status}</td>
                     <td className="p-3">
                       {x.status !== "MATCHED" ? (
                         <form
@@ -1246,12 +1232,12 @@ export default async function BusinessSectionPage({
                           <select
                             aria-label="Çözüm"
                             name="status"
-                            className="rounded-sm border p-1"
+                            className={inputClass("w-auto")}
                           >
                             <option>MANUALLY_MATCHED</option>
                             <option>CORRECTED</option>
                           </select>
-                          <button className="underline">Kaydet</button>
+                          <button className={buttonClass("secondary", "md", "underline")}>Kaydet</button>
                         </form>
                       ) : (
                         "—"
@@ -1274,13 +1260,13 @@ export default async function BusinessSectionPage({
               />
             ) : null}
             <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
-              <h2 className="font-extrabold">Dışa aktarma</h2>
-              <p className="mt-2 text-sm text-(--site-muted)">
+              <h2 className="font-semibold">Dışa aktarma</h2>
+              <p className="mt-2 text-sm text-pn-text-muted">
                 Tüm hücreler CSV formula injection korumasıyla hazırlanır.
               </p>
               <Link
                 href="/api/admin/business/reports.csv"
-                className="mt-4 inline-flex rounded-xl bg-(--brand-olive) px-4 py-2 text-xs font-bold text-white"
+                className="mt-4 inline-flex rounded-md bg-pn-accent px-4 py-2 text-[13px] font-medium text-white"
               >
                 CSV indir
               </Link>
@@ -1292,28 +1278,28 @@ export default async function BusinessSectionPage({
             <div className="grid gap-4 xl:grid-cols-2">
               <form
                 action={createKnowledgeEntry}
-                className="overflow-hidden rounded-[10px] border border-pn-border bg-white grid gap-3 p-4 sm:grid-cols-2"
+                className="overflow-hidden rounded-[10px] border border-pn-border bg-white grid gap-3 p-4 sm:grid-cols-2 items-end"
               >
                 <UnitField units={access.units} />
-                <h2 className="font-extrabold sm:col-span-2">Bilgi kaydı</h2>
+                <h2 className="font-semibold sm:col-span-2">Bilgi kaydı</h2>
                 <input
                   aria-label="Başlık"
                   name="title"
                   required
                   placeholder="Başlık"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 />
                 <input
                   aria-label="Kategori"
                   name="category"
                   required
                   placeholder="Kategori"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 />
                 <select
                   aria-label="Ürün"
                   name="productInterest"
-                  className="rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("w-auto")}
                 >
                   <option>UNKNOWN</option>
                   <option>ONLINE_DERSHANEM</option>
@@ -1324,13 +1310,13 @@ export default async function BusinessSectionPage({
                     aria-label="Geçerlilik başlangıcı"
                     name="validFrom"
                     type="date"
-                    className="rounded-xl border px-2 text-xs"
+                    className={inputClass("w-auto")}
                   />
                   <input
                     aria-label="Geçerlilik bitişi"
                     name="validUntil"
                     type="date"
-                    className="rounded-xl border px-2 text-xs"
+                    className={inputClass("w-auto")}
                   />
                 </div>
                 <textarea
@@ -1338,24 +1324,24 @@ export default async function BusinessSectionPage({
                   name="content"
                   required
                   placeholder="Doğrulanmış içerik"
-                  className="min-h-24 rounded-xl border px-3 py-2 text-sm sm:col-span-2"
+                  className={inputClass("min-h-24 sm:col-span-2 w-auto")}
                 />
-                <button className="rounded-xl bg-(--brand-olive) p-2 text-sm font-bold text-white sm:col-span-2">
+                <button className={buttonClass("primary", "md", "sm:col-span-2")}>
                   Bilgi ekle
                 </button>
               </form>
               <form
                 action={createPromptVersion}
-                className="overflow-hidden rounded-[10px] border border-pn-border bg-white grid gap-3 p-4"
+                className="overflow-hidden rounded-[10px] border border-pn-border bg-white grid gap-3 p-4 items-end"
               >
                 <UnitField units={access.units} />
-                <h2 className="font-extrabold">AI prompt sürümü</h2>
+                <h2 className="font-semibold">AI prompt sürümü</h2>
                 <input
                   aria-label="Prompt adı"
                   name="name"
                   required
                   defaultValue="instagram-sales"
-                  className="rounded-xl border p-2 text-sm"
+                  className={inputClass("w-auto")}
                 />
                 <textarea
                   aria-label="Ek sistem kuralları"
@@ -1363,13 +1349,13 @@ export default async function BusinessSectionPage({
                   required
                   minLength={20}
                   placeholder="Marka dili ve izinli ek sistem kuralları"
-                  className="min-h-32 rounded-xl border p-3 text-sm"
+                  className={inputClass("min-h-32 w-auto")}
                 />
-                <button className="rounded-xl border p-2 text-sm font-bold">
+                <button className={buttonClass("secondary", "md")}>
                   Yeni aktif sürüm oluştur
                 </button>
                 {prompts.map((item) => (
-                  <p key={item.id} className="text-[10px]">
+                  <p key={item.id} className="text-[12px]">
                     {item.name} v{item.version} ·{" "}
                     {item.isActive ? "Aktif" : "Pasif"}
                   </p>
@@ -1382,35 +1368,35 @@ export default async function BusinessSectionPage({
                   <article key={x.id} className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
                     <div className="flex justify-between">
                       <strong>{x.title}</strong>
-                      <span className="text-[10px]">
+                      <span className="text-[12px]">
                         v{x.version} · {x.isActive ? "Aktif" : "Pasif"}
                       </span>
                     </div>
                     <form
                       action={versionKnowledgeEntry}
-                      className="mt-2 grid gap-2"
+                      className="mt-2 grid gap-2 items-end"
                     >
                       <input type="hidden" name="id" value={x.id} />
                       <textarea
                         aria-label={`${x.title} içeriği`}
                         name="content"
                         defaultValue={x.content}
-                        className="min-h-24 rounded-xl border p-2 text-sm"
+                        className={inputClass("min-h-24 w-auto")}
                       />
                       <select
                         aria-label="Aktiflik"
                         name="isActive"
                         defaultValue={String(x.isActive)}
-                        className="rounded-xl border p-2 text-xs"
+                        className={inputClass("w-auto")}
                       >
                         <option value="true">Aktif</option>
                         <option value="false">Pasif</option>
                       </select>
-                      <button className="rounded-xl border p-2 text-xs font-bold">
+                      <button className={buttonClass("secondary", "md")}>
                         Yeni sürüm olarak kaydet
                       </button>
                     </form>
-                    <p className="mt-2 text-[10px] text-(--site-muted)">
+                    <p className="mt-2 text-[12px] text-pn-text-muted">
                       {x.category} · {x.source || "Manuel"}
                     </p>
                   </article>
@@ -1442,12 +1428,12 @@ export default async function BusinessSectionPage({
             <div className="mb-4 flex flex-wrap gap-2">
               <Link
                 href="/api/integrations/instagram/health"
-                className="rounded-xl border px-4 py-2 text-xs font-bold"
+                className="rounded-md border px-4 py-2 text-[13px] font-medium"
               >
                 Instagram canlı sağlık kontrolü
               </Link>
               <form action={syncMetaAds}>
-                <button className="rounded-xl border px-4 py-2 text-xs font-bold">
+                <button className={buttonClass("secondary", "md")}>
                   Meta Ads senkronize et
                 </button>
               </form>
@@ -1461,14 +1447,14 @@ export default async function BusinessSectionPage({
                     <p className="mt-2 text-sm">
                       {item?.status || "DISCONNECTED"}
                     </p>
-                    <p className="mt-1 text-xs text-(--site-muted)">
+                    <p className="mt-1 text-[13px] text-pn-text-muted">
                       Son kontrol:{" "}
                       {item?.lastHealthAt
                         ? dt.format(item.lastHealthAt)
                         : "Henüz yok"}
                       {item?.lastErrorCode ? ` · ${item.lastErrorCode}` : ""}
                     </p>
-                    <p className="mt-1 text-xs text-(--site-muted)">
+                    <p className="mt-1 text-[13px] text-pn-text-muted">
                       Secret değerleri yalnız sunucu ortamından okunur.
                     </p>
                   </article>
@@ -1480,18 +1466,18 @@ export default async function BusinessSectionPage({
         {section === "sistem-kayitlari" && (
           <div className="grid gap-4 xl:grid-cols-2">
             <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
-              <h2 className="mb-3 font-extrabold">Arka plan işleri</h2>
+              <h2 className="mb-3 font-semibold">Arka plan işleri</h2>
               {jobs.map((x) => (
-                <p key={x.id} className="border-t py-2 text-xs">
+                <p key={x.id} className="border-t py-2 text-[13px]">
                   <strong>{x.type}</strong> · {x.status} · deneme {x.attempts}/
                   {x.maxAttempts}
                 </p>
               ))}
             </section>
             <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-4">
-              <h2 className="mb-3 font-extrabold">Audit kayıtları</h2>
+              <h2 className="mb-3 font-semibold">Audit kayıtları</h2>
               {audit.map((x) => (
-                <p key={x.id} className="border-t py-2 text-xs">
+                <p key={x.id} className="border-t py-2 text-[13px]">
                   <strong>{x.action}</strong> · {x.entityType} ·{" "}
                   {dt.format(x.createdAt)}
                 </p>
@@ -1502,8 +1488,8 @@ export default async function BusinessSectionPage({
         {section === "ayarlar" && (
           <div className="grid gap-4 xl:grid-cols-2">
             <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
-              <h2 className="font-extrabold">Güvenli varsayılanlar</h2>
-              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-(--site-body)">
+              <h2 className="font-semibold">Güvenli varsayılanlar</h2>
+              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-pn-text-secondary">
                 <li>AI başlangıç modu: SUGGESTION</li>
                 <li>
                   Kapalı/spam konuşmalar saklama süresi sonunda
@@ -1519,7 +1505,7 @@ export default async function BusinessSectionPage({
                   action={updateRetentionSettings}
                   className="mt-5 flex flex-wrap items-end gap-2"
                 >
-                  <label className="text-xs">
+                  <label className="text-[13px]">
                     KVKK saklama süresi (gün)
                     <input
                       name="retentionDays"
@@ -1527,10 +1513,10 @@ export default async function BusinessSectionPage({
                       min="30"
                       max="3650"
                       defaultValue={settingsUnits[0]?.retentionDays ?? 730}
-                      className="ml-2 rounded-xl border p-2"
+                      className={inputClass("ml-2 w-auto")}
                     />
                   </label>
-                  <button className="rounded-xl border px-4 py-2 text-xs font-bold">
+                  <button className={buttonClass("secondary", "md")}>
                     Tüm yetkili iş birimlerine uygula
                   </button>
                 </form>
@@ -1538,14 +1524,14 @@ export default async function BusinessSectionPage({
             </section>
             {can("role:read") ? (
               <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
-                <h2 className="font-extrabold">İş birimi rolleri</h2>
+                <h2 className="font-semibold">İş birimi rolleri</h2>
                 {can("role:write") ? (
-                  <form action={assignBusinessRole} className="mt-3 grid gap-2">
+                  <form action={assignBusinessRole} className="mt-3 grid gap-2 items-end">
                     <select
                       required
                       aria-label="Kullanıcı"
                       name="userId"
-                      className="rounded-xl border p-2 text-xs"
+                      className={inputClass("w-auto")}
                     >
                       <option value="">Kullanıcı seçin</option>
                       {settingsUsers.map((user) => (
@@ -1558,7 +1544,7 @@ export default async function BusinessSectionPage({
                       required
                       aria-label="İş birimi"
                       name="businessUnitId"
-                      className="rounded-xl border p-2 text-xs"
+                      className={inputClass("w-auto")}
                     >
                       {settingsUnits.map((unit) => (
                         <option key={unit.id} value={unit.id}>
@@ -1569,7 +1555,7 @@ export default async function BusinessSectionPage({
                     <select
                       aria-label="İşletme rolü"
                       name="role"
-                      className="rounded-xl border p-2 text-xs"
+                      className={inputClass("w-auto")}
                     >
                       {[
                         "SUPER_ADMIN",
@@ -1582,7 +1568,7 @@ export default async function BusinessSectionPage({
                         <option key={role}>{role}</option>
                       ))}
                     </select>
-                    <button className="rounded-xl border p-2 text-xs font-bold">
+                    <button className={buttonClass("secondary", "md")}>
                       Rol ata
                     </button>
                   </form>
@@ -1590,7 +1576,7 @@ export default async function BusinessSectionPage({
                 {roleAssignments.map((item) => (
                   <div
                     key={item.id}
-                    className="mt-2 flex items-center justify-between gap-2 border-t pt-2 text-[10px]"
+                    className="mt-2 flex items-center justify-between gap-2 border-t pt-2 text-[12px]"
                   >
                     <span>
                       {item.user.fullName} · {item.businessUnit.name} ·{" "}
@@ -1599,7 +1585,7 @@ export default async function BusinessSectionPage({
                     {can("role:write") ? (
                       <form action={revokeBusinessRole}>
                         <input type="hidden" name="id" value={item.id} />
-                        <button className="font-bold text-rose-700 underline">
+                        <button className={buttonClass("danger", "md", "underline")}>
                           Kaldır
                         </button>
                       </form>
@@ -1610,6 +1596,7 @@ export default async function BusinessSectionPage({
             ) : null}
           </div>
         )}
+      </div>
       </div>
     </PanelShell>
   );
@@ -1624,11 +1611,11 @@ function DataTable({
 }) {
   return rows.length ? (
     <div className="overflow-hidden rounded-[10px] border border-pn-border bg-white overflow-x-auto">
-      <table className="w-full min-w-[720px] text-left text-xs">
-        <thead>
+      <table className="w-full min-w-[720px] text-left text-[13.5px] text-pn-text-secondary">
+        <thead className="border-b border-pn-border bg-pn-surface-subtle text-[12.5px] text-pn-text-muted">
           <tr>
             {headers.map((x) => (
-              <th key={x} className="p-3">
+              <th key={x} scope="col" className="p-3 font-semibold">
                 {x}
               </th>
             ))}
@@ -1663,7 +1650,7 @@ function TransactionTable({
       rows={rows.map((x) => (
         <tr key={x.id} className="border-t">
           <td className="p-3">{dt.format(x.transactionAt)}</td>
-          <td className="p-3 font-bold">{x.description}</td>
+          <td className="p-3 font-medium">{x.description}</td>
           <td className="p-3">{x.source}</td>
           <td className="p-3">{x.category}</td>
           <td className="p-3">{tl.format(x.netCents / 100)}</td>
@@ -1673,7 +1660,7 @@ function TransactionTable({
             {!x.cancelledAt && canReverse ? (
               <form action={reverseFinancialTransaction}>
                 <input type="hidden" name="id" value={x.id} />
-                <button className="text-rose-700 underline">Ters kayıt</button>
+                <button className={buttonClass("danger", "md", "underline")}>Ters kayıt</button>
               </form>
             ) : x.cancelledAt ? (
               "İptal"

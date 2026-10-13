@@ -1,6 +1,7 @@
+import { MotionPressable } from '@/design/motion';
 import { useRouter } from 'expo-router';
 import { Bell, Settings } from 'lucide-react-native';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Text } from '@/design/primitives';
@@ -17,13 +18,13 @@ export function PanelHeader() {
   return <SafeAreaView edges={bootstrap.adminOverlay ? ['left', 'right'] : ['top', 'left', 'right']} style={styles.surface}>
     <View style={styles.bar}>
       <View style={styles.workspace}><WorkspaceSwitcher compact /></View>
-      {!bootstrap.adminOverlay ? <><Pressable accessibilityRole="button" accessibilityLabel={`Bildirimler${unread ? `, ${unread} okunmamış` : ''}`} onPress={() => router.push('/notifications')} style={({ pressed }) => [styles.action, pressed && styles.pressed]}>
+      {!bootstrap.adminOverlay ? <><MotionPressable accessibilityRole="button" accessibilityLabel={`Bildirimler${unread ? `, ${unread} okunmamış` : ''}`} onPress={() => router.push('/notifications')} style={({ pressed }) => [styles.action, pressed && styles.pressed]}>
         <Bell size={20} color={color.textSecondary} strokeWidth={1.7} />
         {unread > 0 ? <View style={styles.badge}><Text variant="caption" tone="inverse" maxFontSizeMultiplier={1.2}>{unread > 99 ? '99+' : unread}</Text></View> : null}
-      </Pressable>
-      <Pressable accessibilityRole="button" accessibilityLabel="Hesap ve ayarlar" onPress={() => router.push('/account')} style={({ pressed }) => [styles.action, pressed && styles.pressed]}>
+      </MotionPressable>
+      <MotionPressable accessibilityRole="button" accessibilityLabel="Hesap ve ayarlar" onPress={() => router.push('/account')} style={({ pressed }) => [styles.action, pressed && styles.pressed]}>
         <Settings size={20} color={color.textSecondary} strokeWidth={1.7} />
-      </Pressable></> : null}
+      </MotionPressable></> : null}
     </View>
   </SafeAreaView>;
 }

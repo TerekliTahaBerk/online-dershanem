@@ -12,7 +12,7 @@ import { color, font } from '@/design/tokens';
 
 /** Hazır çalışma alanı: sekmeler + üzerine itilen ekranlar (başlıklı). */
 export default function AppLayout() {
-  const { product } = useDesign();
+  const { product, reduceMotion } = useDesign();
   const bootstrap = useReadyBootstrap();
   return (
     // M6: veli çocuk bağlamı (yalnız PARENT rolünde etkin; diğer rollerde geçirgen).
@@ -26,6 +26,7 @@ export default function AppLayout() {
       {!bootstrap.adminOverlay ? <PushRuntime /> : null}
       <Stack
       screenOptions={{
+        animation: reduceMotion ? 'none' : 'default',
         headerTintColor: product.accent,
         headerTitleStyle: { fontFamily: font.semibold, color: color.text },
         headerShadowVisible: false,
