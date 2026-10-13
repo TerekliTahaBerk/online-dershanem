@@ -115,6 +115,12 @@ type QueryViewProps<T> = {
 export function QueryView<T>({ query, children, rows = 5, disabledTitle = 'Bu bölüm şu anda kullanıma açık değil.' }: QueryViewProps<T>) {
   const online = useOnline();
   const error = query.error;
+  // A confirmed access/feature revocation must hide previously cached rows and forms.
+  // Only transient refresh failures may keep showing the last authorized response.
+  if (error instanceof ApiError && error.kind === 'feature_disabled') return <EmptyState title={disabledTitle} />;
+  if (error instanceof ApiError && (['product_access', 'forbidden', 'pilot_unavailable', 'not_found', 'unauthenticated', 'mfa_required', 'password_change_required', 'step_up_required', 'upgrade_required'].includes(error.kind) || error.code === 'PILOT_PAUSED' || error.code === 'PANEL_DISABLED')) {
+    return <EmptyState title="Bu bölüme erişimin yok" body={error.message} />;
+  }
   if (query.data !== undefined) {
     return (
       <>
@@ -130,10 +136,6 @@ export function QueryView<T>({ query, children, rows = 5, disabledTitle = 'Bu b�
         {children(query.data)}
       </>
     );
-  }
-  if (error instanceof ApiError && error.kind === 'feature_disabled') return <EmptyState title={disabledTitle} />;
-  if (error instanceof ApiError && (error.kind === 'product_access' || error.kind === 'forbidden')) {
-    return <EmptyState title="Bu bölüme erişimin yok" body={error.message} />;
   }
   if (error) return <ErrorState error={error} onRetry={() => void query.refetch()} />;
   if (!online && query.fetchStatus === 'paused') {

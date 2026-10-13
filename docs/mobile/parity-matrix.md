@@ -38,7 +38,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | Alan | Rota | Tam | Kısmi | Eksik | İstisna | Yönl. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1. Yönetim (`/panel/yonetim`) | 28 | 27 | 0 | 0 | 0 | 1 |
-| 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 0 | 0 | 8 | 0 | 0 |
+| 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 2 | 0 | 6 | 0 | 0 |
 | 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 19 | 1 | 0 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 5. Öğrenci (`/panel/ogrenci`) | 18 | 15 | 1 | 1 | 0 | 1 |
@@ -46,14 +46,14 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | 7. Veli (`/panel/veli`) | 12 | 7 | 2 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 4 | 3 | 2 | 0 | 2 |
-| **Toplam** | **106** | **79** | **8** | **12** | **1** | **6** |
+| **Toplam** | **106** | **81** | **8** | **10** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
 ### Ana bulgular
 
 1. **Yönetim tarafında yazma uçlarının çoğu zaten var, okuma uçları yok.** `users/*`, `groups/*`, `lessons/*`, `materials/*`, `interventions/*`, `relationships/*`, `signups/*`, `orders/[id]/*`, `curriculum/*`, `pilot-cohorts/*` yazma uçları mevcut; sayfaların listesi/detayı ise RSC'de doğrudan Prisma ile okunuyor. Faz 2'nin sunucu işinin büyük kısmı **GET projeksiyonları**dır, iş kuralı yazımı değil.
-2. **Deneme Ligi yönetimi neredeyse tamamen API hazır** (`/api/odk/admin/**`, 20 uç). Eksik olan liste/özet okumaları (`sinavlar`, `sonuclar`, `paketler`, `operasyon`, `raporlar`) — bunlar `lib/odk/admin-exam-server.ts`, `reporting-server.ts`, `pilot-readiness-server.ts` üzerinden GET'e açılmalı.
+2. **Deneme Ligi yönetiminde K01 ve K07 native tamamlandı.** K02–K06/K08 okumaları ile sınav editörü, puanlama ve yayın yazmaları açık; mevcut `/api/odk/admin/**` servisleri ve personel izinleri temel alınacak.
 3. **Server Action'a bağlı 6 dosya / 48 eylem** (İşletme 36, ayarlar 7, koç hazırlık 2, `assignCoach`, `retryOrderProvisioning`, `requestPackageMeeting`) mobil için servis + route çıkarımı gerektirir.
 4. **Yetki boşluğu (kesin):** `POST /api/panel/weekly-digests/[id]/feedback` `requireApiOdRole("STUDENT","PARENT")` kullanıyor; OD üyeliği olmayan (yalnız Yön/Deneme Ligi) veli ve öğrenci haftalık geri bildirim gönderemez.
 5. **Salt-okuma web sayfaları** (`yonetim/ozellikler`, `kayitlar`, `egitmenler`, `kalite`, `siparisler` listesi, `analitik`; `odk/yonetim/paketler`, `raporlar`) mobilde yalnız GET ucu + ekran ister; `ogrenci/profil` için GET ucu zaten var; yazma riski yok — erken kazanım.
@@ -101,13 +101,13 @@ Mobil karşılık: **yok** (öğretmen ODK alanında yalnız `teacher-odk-report
 
 | # | Web rotası | Nav id | Alt işlemler (O / Y) | Web kaynağı | API | Mobil | Durum | Faz | Not |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| K01 | `/panel/odk/yonetim` | — | O: personel çalışma alanı özeti, pilot hazırlığı | `odk/admin-exam-server.ts`, `odk/pilot-readiness-server.ts` | O yok | — | Eksik | P4 | |
+| K01 | `/panel/odk/yonetim` | `today` | O: personel çalışma alanı özeti, pilot hazırlığı | `odk/admin-exam-server.ts`, `odk/pilot-readiness-server.ts` | Ortak GET projeksiyonu | `odk-management-home` | Tam | P4 | |
 | K02 | `/panel/odk/yonetim/sinavlar` | `odk-exams` | O: sınav listesi · Y: sınav oluştur, seri oluştur | `odk/admin/exams` POST, `odk/admin/exam-series` POST | Y var, O yok | — | Eksik | P4 | |
 | K03 | `/panel/odk/yonetim/sinavlar/[id]` | — | O: sınav detayı, önizleme, sonuçlar, dosya, girişim · Y: düzenle, sorular, cevap anahtarı içe aktar (doğrula/uygula), kazanım içe aktar, dosya yükle, hazır işaretle, takvim, oturumlar, atamalar, puanla, yeniden puanla, yayın önizleme, yayınla, girişim düzelt | `odk/admin/exams/[id]` PATCH + `{questions,imports/answer-key,imports/outcomes,files,preview,ready,schedule,sessions,assignments,score,rescore,results,release/preview,release}`, `odk/admin/files/[fileId]`, `odk/admin/attempts/[id]` | Hazır (detay okuma RSC → GET eklenmeli) | — | Eksik | P4 | Yayın/yeniden puanlama/anahtar → step-up. "Önizleme" çözme değildir |
 | K04 | `/panel/odk/yonetim/operasyon` | `odk-ops` | O: canlı oturumlar, ihlal/bağlantı sayaçları · Y: girişim müdahalesi | `odk/admin/attempts/[id]` GET/PATCH | Y var, O yok | — | Eksik | P4 | Aralıklı yenileme |
 | K05 | `/panel/odk/yonetim/sonuclar` | `odk-results` | O: puanlama/yayın kuyruğu + filtre | `odk/admin-exam-server.ts` | O yok | — | Eksik | P4 | Eylemler K03 üzerinden |
 | K06 | `/panel/odk/yonetim/raporlar` | `odk-reports` | O: kitle bazlı sonuç raporları | `odk/reporting-server.ts` | O yok | — | Eksik | P4 | |
-| K07 | `/panel/odk/yonetim/paketler` | `odk-packages` | O: ticari paket sözleşmesi | `odk/product-contract` (RSC) | O yok | — | Eksik | P4 | Salt okuma |
+| K07 | `/panel/odk/yonetim/paketler` | `odk-packages` | O: ticari paket sözleşmesi | `odk/product-contract` (RSC) | Ortak GET projeksiyonu | `odk-management-packages` | Tam | P4 | Salt okuma |
 | K08 | `/panel/odk/yonetim/pilot` | `odk-pilot` | O: pilot koşuları · Y: koşu oluştur/güncelle | `odk/admin/pilot-runs` POST, `pilot-runs/[id]` PATCH | Y var, O yok | — | Eksik | P4 | |
 
 ## 3. Öğretmen ve Yön koçu — `/panel/ogretmen` (TEACHER; OD / Yön çalışma alanı)
@@ -240,7 +240,7 @@ Onaylı istisnalar **alt işlem** düzeyindedir; etkilenen satırlar kalan alt i
 
 | Tür | Satırlar | Adet |
 | --- | --- | ---: |
-| GET projeksiyonu (O yok / Y var, O yok) | K01–K08 | 8 |
+| GET projeksiyonu (O yok / Y var, O yok) | K02–K06, K08 | 6 |
 | Server Action → `lib/` servisi + route | V10 (1), C07–C08 (7); Y27 ortak servislere taşındı | 2 dosya / 8 eylem |
 | Yetki düzeltmesi / kabul | V07 (veli görüşme işlemleri); S12/V09 ve T15 düzeltildi ve HTTP ile doğrulandı | 1 |
 | Yalnız mobil sözleşme + ekran (API hazır) | K03 (+ detay GET), S14, S18, S20, V11, C09–C11 | 8 |

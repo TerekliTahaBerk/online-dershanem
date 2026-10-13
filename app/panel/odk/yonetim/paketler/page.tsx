@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { loadOdkManagementPackages } from "@/lib/odk/management-read-server";
 import { requireStaffPermission } from "@/lib/auth/guards";
-import { parseOdkPackagePolicy } from "@/lib/odk/product-contract";
 import { PanelShell } from "@/components/panel/panel-shell";
 import {
   EmptyState,
@@ -52,17 +51,7 @@ export default async function OdkAdminPackagesPage({ searchParams }: { searchPar
   // Deneme Ligi personel izni (ADMIN her izinde geçer); global rol tek başına yetmez.
   const session = await requireStaffPermission("odk:package:manage");
   const { onizle } = await searchParams;
-  const packages = await prisma.odkPackage.findMany({
-    orderBy: [{ isActive: "desc" }, { title: "asc" }],
-    include: {
-      examLinks: {
-        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-        include: { exam: { include: { series: { select: { title: true } } } } },
-      },
-      _count: { select: { orders: true, entitlements: true } },
-    },
-  });
-  const rows = packages.map((pkg) => ({ pkg, parsed: parseOdkPackagePolicy(pkg.contractPolicy) }));
+  const rows = await loadOdkManagementPackages();
   const drawerId = onizle?.startsWith("paket:") ? onizle.slice("paket:".length) : null;
   const drawer = drawerId ? rows.find((row) => row.pkg.id === drawerId) ?? null : null;
 
