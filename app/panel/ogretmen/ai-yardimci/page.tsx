@@ -1,10 +1,8 @@
 import { notFound } from "next/navigation";
 import { Bot } from "lucide-react";
-import { Prisma } from "@prisma/client";
-import { requireRole } from "@/lib/auth/guards";
-import { prisma } from "@/lib/prisma";
+import { requireTeacherStaffPermission } from "@/lib/auth/guards";
+import { loadTeacherAiDrafts } from "@/lib/panel/teacher-ai-drafts-server";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
-import { aiDraftContentSchema } from "@/lib/teacher-ai";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { TeacherAiDrafts } from "@/components/panel/teacher-ai-drafts";
 import {
@@ -16,33 +14,9 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function TeacherAiAssistantPage() {
-  const session = await requireRole("TEACHER");
+  const session = await requireTeacherStaffPermission("od:lesson:teach");
   if (!getPanelFeatureFlags().teacherAiDrafts) notFound();
-  const since = new Date(Date.now() - 30 * 86_400_000);
-  const [lessons, drafts] = await Promise.all([
-    prisma.lesson.findMany({
-      where: {
-        teacherId: session.userId,
-        status: { not: "CANCELLED" },
-        startsAt: { gte: since },
-        group: { isActive: true },
-      },
-      orderBy: { startsAt: "desc" },
-      take: 40,
-      select: {
-        id: true,
-        title: true,
-        startsAt: true,
-        group: { select: { name: true } },
-      },
-    }),
-    prisma.teacherAiDraft.findMany({
-      where: { teacherId: session.userId },
-      orderBy: { createdAt: "desc" },
-      take: 20,
-      include: { lesson: { select: { title: true } } },
-    }),
-  ]);
+  const { lessons, drafts } = await loadTeacherAiDrafts(session.userId);
   return (
     <PanelShell
       role={session.role}
@@ -63,33 +37,8 @@ export default async function TeacherAiAssistantPage() {
       </header>
       <div className="mt-7">
         <TeacherAiDrafts
-          lessons={lessons.map((lesson) => ({
-            id: lesson.id,
-            title: lesson.title,
-            groupName: lesson.group.name,
-            startsAt: lesson.startsAt.toISOString(),
-          }))}
-          drafts={drafts.map((draft) => ({
-            id: draft.id,
-            taskType: draft.taskType,
-            status: draft.status,
-            provider: draft.provider,
-            promptVersion: draft.promptVersion,
-            modelName: draft.modelName,
-            fallbackReason: draft.fallbackReason,
-            version: draft.version,
-            createdAt: draft.createdAt.toISOString(),
-            lessonTitle: draft.lesson.title,
-            sourceRefs: Array.isArray(draft.sourceRefs)
-              ? (draft.sourceRefs as Array<{ id: string; label: string }>)
-              : [],
-            originalContent: aiDraftContentSchema.parse(draft.originalContent),
-            reviewedContent: draft.reviewedContent
-              ? aiDraftContentSchema.parse(
-                  draft.reviewedContent as Prisma.JsonValue,
-                )
-              : null,
-          }))}
+          lessons={lessons}
+          drafts={drafts}
         />
       </div>
     </PanelShell>

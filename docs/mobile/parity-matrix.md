@@ -39,14 +39,14 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1. Yönetim (`/panel/yonetim`) | 28 | 27 | 0 | 0 | 0 | 1 |
 | 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 0 | 0 | 8 | 0 | 0 |
-| 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 18 | 1 | 1 | 0 | 0 |
+| 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 19 | 1 | 0 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 5. Öğrenci (`/panel/ogrenci`) | 18 | 15 | 1 | 1 | 0 | 1 |
 | 6. Deneme Ligi öğrenci (`/panel/odk/ogrenci`) | 5 | 3 | 1 | 0 | 1 | 0 |
 | 7. Veli (`/panel/veli`) | 12 | 7 | 2 | 1 | 0 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 4 | 3 | 2 | 0 | 2 |
-| **Toplam** | **106** | **78** | **8** | **13** | **1** | **6** |
+| **Toplam** | **106** | **79** | **8** | **12** | **1** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
@@ -127,7 +127,7 @@ Mobil karşılık: **yok** (öğretmen ODK alanında yalnız `teacher-odk-report
 | T11 | `/panel/ogretmen/mudahale` | `interventions` | O: öğretmen kapsamlı kayıtlar, süzgeç ve geçmiş · Y: elle oluştur, üstlen, başlat, not, beklet, çöz, yanlış işaret, yeniden aç, üret | Ortak `intervention-write-server`, `intervention-server`, `intervention-inbox-server` | Hazır (`GET/POST /api/panel/staff/teacher/interventions`) | `teacher-interventions` | Tam | P3.3 | Atomik receipt/audit, kayıt sürümü + kapsam revizyonu; sahiplik ve biten üyelik reddi. `mobile-teacher-interventions.spec.ts`, `teacher-interventions.test.tsx`; gerçek iPhone kabulü P6 |
 | T12 | `/panel/ogretmen/ozetler` | `digests` | O: haftalık özet önizlemesi · Y: seçili öğrenci için üret/yenile, onayla/yayımla | Ortak `teacher-digests-server`, `generateCalmDigest` | Hazır (`GET/POST /api/panel/staff/teacher/digests`); web uçları aynı servis | `teacher-digests` | Tam | P3.3 | Taslak/alıcı revizyonu, atomik receipt/audit/bildirim/outbox, yayın insan onayı. `mobile-teacher-digests.spec.ts`, `teacher-digests.test.tsx`; iPhone kabulü P6 |
 | T13 | `/panel/ogretmen/analiz` | `analiz` | O: grup ortalamaları, düşen gidişat ve öğrenci listesi | `staff/teacher/analysis`, ortak `loadTeacherGidisatOverview` | Hazır | `teacher-analysis` | Tam | P3.2 | Bayrak + OD personel izni; yalnız aktif grup/kayıt; native ortalamalar ve profil bağlantıları. HTTP yabancı öğretmen/sona ermiş kayıt boş liste |
-| T14 | `/panel/ogretmen/ai-yardimci` | `ai-drafts` | O: taslaklar · Y: taslak oluştur, onayla/düzenle | `ai-drafts` POST, `ai-drafts/[id]` PATCH | Y var, O yok | — | Eksik | P3 | `safe-teacher-ai-operations` + bayrak |
+| T14 | `/panel/ogretmen/ai-yardimci` | `ai-drafts` | O: taslaklar · Y: taslak oluştur, onayla/düzenle | `ai-drafts` POST, `ai-drafts/[id]` PATCH | Ortak kaynaklı servis + scoped GET/POST | `teacher-ai-drafts` | Tam | P3 | Kaynak/düzenleme/insan onayı/reddetme/flag native; kaynak revizyonu, tek sağlayıcı çağrısı, atomik receipt/audit ve özel not sınırı doğrulandı; bayrak ve mevcut gateway korunur, onay otomatik yayın değildir |
 | T15 | `/panel/ogretmen/denemeler` | `mock-exams` | O: dış deneme analizi · Y: kayıt ekle, hata nedenlerini düzenle, sonraki eylemi onayla | `staff/teacher/mock-exams`, `mock-exams` POST, `mock-exams/[id]` PATCH, ortak `teacher-mock-exams-server` | Hazır | `teacher-mock-exams` | Tam | P3.2 | Aktif öğretmen/grup/kayıt kapsamlı GET; ortak native giriş/yapıştırma/revizyon/onay. HTTP IDOR/ilişki sona erme; native öğretmen sorgusu yenileme |
 | T16 | `/panel/ogretmen/plan` | `plan` | O: haftalık plan / öneriler · Y: planı onayla, öneri incele | `adaptive-plan/[id]/approve`, `kocum/suggestions/[id]/review` | Hazır | `coach-plans`, `coach/plan/[id]` | Tam | — | Yön alanında |
 | T17 | `/panel/ogretmen/yon` | `today` (OK) | O: koç Bugün | `kocum/coach-workspace-server.ts`; `staff/coach/home` | Hazır | `coach-home` | Tam | — | |
@@ -240,7 +240,7 @@ Onaylı istisnalar **alt işlem** düzeyindedir; etkilenen satırlar kalan alt i
 
 | Tür | Satırlar | Adet |
 | --- | --- | ---: |
-| GET projeksiyonu (O yok / Y var, O yok) | K01–K08; T14 | 9 |
+| GET projeksiyonu (O yok / Y var, O yok) | K01–K08 | 8 |
 | Server Action → `lib/` servisi + route | V10 (1), C07–C08 (7); Y27 ortak servislere taşındı | 2 dosya / 8 eylem |
 | Yetki düzeltmesi / kabul | V07 (veli görüşme işlemleri); S12/V09 ve T15 düzeltildi ve HTTP ile doğrulandı | 1 |
 | Yalnız mobil sözleşme + ekran (API hazır) | K03 (+ detay GET), S14, S18, S20, V11, C09–C11 | 8 |

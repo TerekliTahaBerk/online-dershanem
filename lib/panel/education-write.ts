@@ -12,7 +12,7 @@ import { logAudit, type LogAuditInput } from "@/lib/audit";
 import { sanitizeAuditPayload } from "@/lib/audit-policy";
 import { LessonLifecycleError } from "./lesson-lifecycle";
 
-export type EducationKind = "lesson" | "assignment" | "material" | "setup" | "version" | "outcome" | "submission" | "review" | "recovery" | "intervention" | "digest" | "coaching";
+export type EducationKind = "lesson" | "assignment" | "material" | "setup" | "version" | "outcome" | "submission" | "review" | "recovery" | "intervention" | "digest" | "coaching" | "ai-draft";
 type Context = { params: Promise<{ id: string }> };
 const transactional = new WeakSet<object>();
 type Effect = () => unknown | Promise<unknown>;
@@ -70,7 +70,7 @@ class RejectedResponse extends Error { constructor(public response: Response) { 
 const controls = z.object({ key: z.string().uuid().optional(), revision: z.string().regex(/^[a-f0-9]{64}$/).optional() });
 
 export async function runEducationMutation(input: {
-  db?: PrismaClient; key: string | null; digest: string; actorId: string; action: string;
+  lockName?: string; isolationLevel?: Prisma.TransactionIsolationLevel; db?: PrismaClient; key: string | null; digest: string; actorId: string; action: string;
   entityId?: string; kind: EducationKind; targetKind: EducationKind | "group" | "student";
   targetId?: unknown; expectedRevision?: string; redactFile?: boolean;
   execute: (client: PrismaClient) => Promise<Response>;
@@ -80,7 +80,7 @@ export async function runEducationMutation(input: {
   try {
     const result = await db.$transaction(async (tx) => {
         // Serializes education scheduling and identical keys, including legacy web writes.
-        await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended('education-write', 0))::text`;
+        await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${input.lockName ?? 'education-write'}, 0))::text`;
         if (key) {
           const receipt = await tx.auditLog.findUnique({ where: { idempotencyKey: key } });
           if (receipt) return readGroupReceipt(receipt.payload, digest);
@@ -98,7 +98,7 @@ export async function runEducationMutation(input: {
         const output = { body, status: response.status, replayed: false };
         await tx.auditLog.create({ data: { actorUserId: actorId, actorType: "USER", entityType: "EducationMutation", entityId: entityId || body.id || body.material?.id || kind, action: action, summary: "Eğitim yönetimi işlemi tamamlandı", idempotencyKey: key, payload: { operationDigest: digest, result: output } as Prisma.InputJsonValue } });
         return output;
-      }, { isolationLevel: "Serializable", timeout: 30_000 });
+      }, { isolationLevel: input.isolationLevel ?? "Serializable", timeout: 30_000 });
       if (transactionClient) {
         const effects = await Promise.allSettled((commitEffects.get(transactionClient) ?? []).map(async (effect) => effect()));
         if (effects.some((effect) => effect.status === "rejected")) console.error("education.after_commit_failed");

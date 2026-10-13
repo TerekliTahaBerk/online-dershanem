@@ -93,14 +93,18 @@ export function buildSafeTeacherAiSource(input: TeacherAiSource, knownNames: str
   add("NEXT_GOAL", "Sonraki hedef", input.nextGoal);
   add("HOMEWORK", "Öğretmenin çalışma notu", input.homework);
   for (const outcome of input.outcomes.slice(0, 3)) add(`OUTCOME:${compact(outcome.code, 30)}`, `Kazanım ${compact(outcome.code, 30)}`, outcome.title);
-  const safe: SafeTeacherAiSource = { taskType: input.taskType, subject: compact(input.subject, 80), level: compact(input.level, 40) || null, lessonTitle: compact(input.lessonTitle, 140), sources: sourceRows };
+  const subject = redactSensitiveText(compact(input.subject, 80), knownNames);
+  const level = redactSensitiveText(compact(input.level, 40), knownNames);
+  redactionCount += subject.redactionCount + level.redactionCount;
+  if (injectionPattern.test(subject.text) || injectionPattern.test(level.text)) injectionDetected = true;
+  const safe: SafeTeacherAiSource = { taskType: input.taskType, subject: subject.text, level: level.text || null, lessonTitle: sourceRows.find((row) => row.id === "LESSON_TITLE")?.text.slice(0, 140) || "", sources: sourceRows };
   const sourceHash = createHash("sha256").update(JSON.stringify(safe)).digest("hex");
   return { safe, sourceHash, redactionCount, injectionDetected };
 }
 
 export function fallbackTeacherDraft(source: SafeTeacherAiSource): AiDraftContent {
-  const topic = source.sources.find((item) => item.id === "LESSON_TOPIC")?.text || source.lessonTitle;
-  const next = source.sources.find((item) => item.id === "NEXT_GOAL")?.text;
+  const topic = (source.sources.find((item) => item.id === "LESSON_TOPIC")?.text || source.lessonTitle).slice(0, 110);
+  const next = source.sources.find((item) => item.id === "NEXT_GOAL")?.text.slice(0, 200);
   const outcome = source.sources.find((item) => item.id.startsWith("OUTCOME:"));
   const citations = [outcome?.id, source.sources.find((item) => item.id === "LESSON_TOPIC")?.id, "LESSON_TITLE"].filter((item, index, all): item is string => Boolean(item) && all.indexOf(item) === index).slice(0, 3);
   if (source.taskType === "MINI_CHECK") return { title: `${topic} · kısa kontrol`, body: "Öğrenciden çözüm yolunu kısa biçimde açıklamasını ve son adımı kontrol etmesini isteyin.", checkPrompt: next ? `${next} hedefine giderken hangi adımı önce kontrol edersin?` : `${topic} konusunda kullandığın ana adımı kendi cümlenle açıklar mısın?`, successCriteria: ["Ana adımı kendi cümlesiyle açıklar", "Sonucunu bir kontrol adımıyla doğrular"], citations };
