@@ -1,3 +1,4 @@
+import { buttonClass, inputClass } from "@/components/panel/primitives";
 import Link from "next/link";
 import type { LeadLifecycleDetail } from "@/lib/lifecycle/lead-detail-server";
 import {
@@ -15,7 +16,7 @@ const dt = new Intl.DateTimeFormat("tr-TR", {
 
 const KIND_DOT: Record<string, string> = {
   INSTAGRAM_MESSAGE: "bg-sky-500",
-  LEAD_CREATED: "bg-(--brand-olive)",
+  LEAD_CREATED: "bg-pn-accent",
   CONTACTED: "bg-amber-500",
   OFFERED: "bg-violet-500",
   WON: "bg-emerald-600",
@@ -41,41 +42,41 @@ export function LeadLifecyclePanel({
         ? "border-amber-200 bg-amber-50 text-amber-950"
         : detail.handoff.tone === "success"
           ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-          : "border-(--site-line) bg-white text-(--site-ink)";
+          : "border-pn-border bg-white text-pn-text";
 
   return (
     <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white grid gap-4 p-4 lg:grid-cols-[1fr_1.2fr]">
       <div className="space-y-3">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-wide text-(--site-muted)">
+          <p className="text-[12px] font-semibold uppercase tracking-wide text-pn-text-muted">
             Lifecycle
           </p>
-          <h2 className="mt-1 text-lg font-extrabold">
+          <h2 className="mt-1 text-[15px] font-semibold">
             {LIFECYCLE_LEAD_LABELS[detail.lifecycleLeadStage]}
-            <span className="ml-2 text-xs font-bold text-(--site-muted)">
+            <span className="ml-2 text-[13px] font-medium text-pn-text-muted">
               ({detail.stage})
             </span>
           </h2>
         </div>
 
-        <div className={`rounded-2xl border p-3 text-sm ${handoffTone}`}>
-          <p className="font-extrabold">{detail.handoff.label}</p>
-          <p className="mt-1 text-xs opacity-90">{detail.handoff.nextAction}</p>
+        <div className={`rounded-[10px] border p-3 text-sm ${handoffTone}`}>
+          <p className="font-semibold">{detail.handoff.label}</p>
+          <p className="mt-1 text-[13px] opacity-90">{detail.handoff.nextAction}</p>
           {!detail.wonLinksComplete ? (
-            <p className="mt-2 text-xs font-bold">
+            <p className="mt-2 text-[13px] font-medium">
               WON kaydında sipariş veya öğrenci bağı eksik.
             </p>
           ) : null}
         </div>
 
-        <div className="rounded-2xl border p-3 text-xs">
-          <p className="font-extrabold">Bağlı kayıtlar</p>
+        <div className="rounded-[10px] border p-3 text-[13px]">
+          <p className="font-semibold">Bağlı kayıtlar</p>
           <ul className="mt-2 space-y-1">
             <li>
               OD sipariş:{" "}
               {detail.links.odOrderId ? (
                 <Link
-                  className="font-bold underline text-(--brand-olive)"
+                  className="font-medium underline text-pn-accent"
                   href={`/panel/yonetim/siparisler/${detail.links.odOrderId}`}
                 >
                   {detail.links.odOrderId}
@@ -88,7 +89,7 @@ export function LeadLifecyclePanel({
               ODK sipariş:{" "}
               {detail.links.odkOrderId ? (
                 <Link
-                  className="font-bold underline text-(--brand-olive)"
+                  className="font-medium underline text-pn-accent"
                   href={`/panel/yonetim/siparisler/${detail.links.odkOrderId}`}
                 >
                   {detail.links.odkOrderId}
@@ -101,7 +102,7 @@ export function LeadLifecyclePanel({
               Öğrenci hesabı:{" "}
               {detail.links.odUserId || detail.links.odkUserId ? (
                 <Link
-                  className="font-bold underline text-(--brand-olive)"
+                  className="font-medium underline text-pn-accent"
                   href={`/panel/yonetim/kullanicilar/${detail.links.odUserId || detail.links.odkUserId}`}
                 >
                   {detail.links.odUserId || detail.links.odkUserId}
@@ -114,7 +115,7 @@ export function LeadLifecyclePanel({
               Öğrenci profili:{" "}
               {detail.links.studentProfileId ? (
                 <Link
-                  className="font-bold underline text-(--brand-olive)"
+                  className="font-medium underline text-pn-accent"
                   href={`/panel/yonetim/ogrenciler/${detail.links.studentProfileId}`}
                 >
                   {detail.links.studentProfileId}
@@ -127,8 +128,8 @@ export function LeadLifecyclePanel({
         </div>
 
         {detail.orderSummary ? (
-          <div className="rounded-2xl border p-3 text-xs">
-            <p className="font-extrabold">
+          <div className="rounded-[10px] border p-3 text-[13px]">
+            <p className="font-semibold">
               {detail.orderSummary.product} sipariş ·{" "}
               {LIFECYCLE_ORDER_LABELS[detail.orderSummary.status]}
             </p>
@@ -140,7 +141,7 @@ export function LeadLifecyclePanel({
                     detail.orderSummary.provisioning
                   ]
                 }
-                <span className="text-(--site-muted)">
+                <span className="text-pn-text-muted">
                   {" "}
                   ({detail.orderSummary.rawProvisioning})
                 </span>
@@ -148,7 +149,7 @@ export function LeadLifecyclePanel({
             ) : null}
             {detail.orderSummary.provisioningGuidance &&
             detail.orderSummary.provisioning !== "COMPLETED" ? (
-              <p className="mt-2 rounded-xl bg-rose-50 p-2 text-rose-900">
+              <p className="mt-2 rounded-md bg-rose-50 p-2 text-rose-900">
                 {detail.orderSummary.provisioningGuidance}
               </p>
             ) : null}
@@ -157,13 +158,13 @@ export function LeadLifecyclePanel({
               <div className="mt-2 flex flex-wrap gap-2">
                 <Link
                   href={`/panel/yonetim/siparisler/${detail.orderSummary.id}`}
-                  className="rounded-xl border px-3 py-1.5 font-bold text-(--brand-olive)"
+                  className="rounded-md border px-3 py-1.5 font-medium text-pn-accent"
                 >
                   İncele
                 </Link>
                 <Link
                   href={`/panel/yonetim/siparisler/${detail.orderSummary.id}`}
-                  className="rounded-xl border px-3 py-1.5 font-bold"
+                  className="rounded-md border px-3 py-1.5 font-medium"
                 >
                   Retry / Manuel çöz
                 </Link>
@@ -173,17 +174,17 @@ export function LeadLifecyclePanel({
         ) : null}
 
         {detail.studentStatus ? (
-          <p className="text-xs">
+          <p className="text-[13px]">
             Öğrenci onboarding:{" "}
             <strong>{LIFECYCLE_STUDENT_LABELS[detail.studentStatus]}</strong>
           </p>
         ) : null}
 
-        <div className="rounded-2xl border p-3 text-xs">
-          <p className="font-extrabold">Kimlik eşleştirme</p>
+        <div className="rounded-[10px] border p-3 text-[13px]">
+          <p className="font-semibold">Kimlik eşleştirme</p>
           <p className="mt-1">{detail.identityMatch.message}</p>
           {detail.identityMatch.candidate ? (
-            <p className="mt-1 text-(--site-muted)">
+            <p className="mt-1 text-pn-text-muted">
               Aday:{" "}
               {detail.identityMatch.candidate.fullName ||
                 detail.identityMatch.candidate.email}{" "}
@@ -202,7 +203,7 @@ export function LeadLifecyclePanel({
                 name="userId"
                 value={detail.identityMatch.candidate.userId}
               />
-              <button className="rounded-xl bg-(--brand-olive) px-3 py-1.5 font-bold text-white">
+              <button className={buttonClass("primary", "sm")}>
                 Mevcut hesaba bağla
               </button>
             </form>
@@ -217,14 +218,14 @@ export function LeadLifecyclePanel({
               <input
                 name="odOrderId"
                 placeholder="OD sipariş id"
-                className="rounded-xl border px-2 py-1.5"
+                className={inputClass("w-auto")}
               />
               <input
                 name="userId"
                 placeholder="Öğrenci user id"
-                className="rounded-xl border px-2 py-1.5"
+                className={inputClass("w-auto")}
               />
-              <button className="rounded-xl border px-3 py-1.5 font-bold">
+              <button className={buttonClass("secondary", "sm")}>
                 Manuel bağla
               </button>
             </form>
@@ -233,29 +234,29 @@ export function LeadLifecyclePanel({
       </div>
 
       <div>
-        <p className="text-[10px] font-extrabold uppercase tracking-wide text-(--site-muted)">
+        <p className="text-[12px] font-semibold uppercase tracking-wide text-pn-text-muted">
           Timeline
         </p>
-        <ol className="relative mt-3 space-y-0 border-l border-(--site-line) pl-4">
+        <ol className="relative mt-3 space-y-0 border-l border-pn-border pl-4">
           {detail.timeline.map((event) => (
             <li key={event.id} className="relative pb-4">
               <span
                 className={`absolute left-[-1.35rem] top-1 h-2.5 w-2.5 rounded-full ${KIND_DOT[event.kind] ?? KIND_DOT.OTHER}`}
                 aria-hidden
               />
-              <p className="text-sm font-bold">{event.label}</p>
+              <p className="text-sm font-medium">{event.label}</p>
               {event.detail ? (
-                <p className="mt-0.5 text-[11px] text-(--site-muted)">
+                <p className="mt-0.5 text-[11px] text-pn-text-muted">
                   {event.detail}
                 </p>
               ) : null}
-              <p className="mt-0.5 text-[10px] text-(--site-muted)">
+              <p className="mt-0.5 text-[12px] text-pn-text-muted">
                 {dt.format(event.occurredAt)}
               </p>
               {event.href ? (
                 <Link
                   href={event.href}
-                  className="mt-1 inline-block text-[11px] font-bold underline text-(--brand-olive)"
+                  className="mt-1 inline-block text-[11px] font-medium underline text-pn-accent"
                 >
                   Aç
                 </Link>

@@ -1,23 +1,4 @@
 import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
-import {
-  BarChart3,
-  Bot,
-  CircleDollarSign,
-  FileCheck2,
-  GitMerge,
-  Inbox,
-  Landmark,
-  Megaphone,
-  MessagesSquare,
-  ReceiptText,
-  ScrollText,
-  Settings,
-  ShieldCheck,
-  SlidersHorizontal,
-  Tags,
-  UsersRound,
-} from "lucide-react";
 import {
   BUSINESS_SECTION_GROUPS,
   SECTION_LABELS,
@@ -28,25 +9,6 @@ import {
 export const BUSINESS_SECTIONS = Object.entries(SECTION_LABELS) as Array<
   [BusinessSectionSlug, string]
 >;
-
-const icons: Record<BusinessSectionSlug, LucideIcon> = {
-  "genel-bakis": BarChart3,
-  "mesaj-kutusu": Inbox,
-  adaylar: UsersRound,
-  "satis-hunisi": GitMerge,
-  reklamlar: Megaphone,
-  kampanyalar: Tags,
-  gelirler: CircleDollarSign,
-  giderler: ReceiptText,
-  vergiler: Landmark,
-  mutabakat: FileCheck2,
-  raporlar: ScrollText,
-  "ai-bilgi-merkezi": Bot,
-  "otomasyon-kurallari": SlidersHorizontal,
-  entegrasyonlar: MessagesSquare,
-  "sistem-kayitlari": ShieldCheck,
-  ayarlar: Settings,
-};
 
 /**
  * İşletme menüsü.
@@ -73,46 +35,37 @@ export function BusinessNav({
   return (
     <nav
       aria-label="İşletme panel menüsü"
-      className="panel-nav-scroll flex gap-4 overflow-x-auto lg:flex-col lg:gap-5 lg:overflow-visible"
+      className="flex flex-col gap-4"
     >
       {groups.map((group) => (
-        <div key={group.id} className="min-w-fit lg:w-full">
+        <div key={group.id} className="flex flex-col gap-px">
           <p
             id={`business-nav-group-${group.id}`}
-            className="mb-1.5 px-3 text-[10px] font-extrabold uppercase tracking-[.12em] text-(--site-muted)"
+            className="px-2.5 pb-1 pt-1 text-[11px] font-semibold tracking-[.04em] text-pn-text-muted"
           >
-            {group.label}
+            {group.label.toLocaleUpperCase("tr-TR")}
           </p>
           <ul
             aria-labelledby={`business-nav-group-${group.id}`}
-            className="flex gap-2 lg:flex-col lg:gap-1"
+            className="flex flex-col gap-px"
           >
             {group.sections.map((slug) => {
-              const Icon = icons[slug];
               const selected = active === slug;
               return (
                 <li key={slug}>
                   <Link
                     href={`/panel/yonetim/isletme/${slug}`}
                     aria-current={selected ? "page" : undefined}
-                    className={`group flex min-w-fit items-center gap-3 rounded-2xl px-3 py-2.5 transition-all lg:w-full ${
+                    className={`relative flex min-h-11 items-center rounded-md px-2.5 py-1.5 text-[14px] transition-colors lg:min-h-9 lg:text-[13.5px] ${
                       selected
-                        ? "bg-(--panel-nav-active) text-(--brand-olive-hover) shadow-[inset_0_0_0_1px_rgba(58,74,44,.05)]"
-                        : "text-(--site-body) hover:bg-white hover:text-(--site-ink)"
+                        ? "bg-pn-selected font-semibold text-pn-text"
+                        : "font-medium text-pn-text-secondary hover:bg-pn-hover hover:text-pn-text"
                     }`}
                   >
-                    <span
-                      className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl transition-colors ${
-                        selected
-                          ? "bg-white text-(--brand-olive) shadow-xs"
-                          : "bg-white/65 text-(--site-muted) group-hover:text-(--site-ink)"
-                      }`}
-                    >
-                      <Icon size={16} strokeWidth={2.2} aria-hidden="true" />
-                    </span>
-                    <span className="text-left text-[13px] font-bold leading-4">
-                      {SECTION_LABELS[slug]}
-                    </span>
+                    {selected ? (
+                      <span aria-hidden="true" className="absolute inset-y-1.5 left-0 w-[2px] rounded-full bg-pn-accent" />
+                    ) : null}
+                    {SECTION_LABELS[slug]}
                   </Link>
                 </li>
               );

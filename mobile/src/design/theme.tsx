@@ -5,14 +5,16 @@ import { NEUTRAL_THEME, type ProductTheme } from './products';
 
 type DesignContextValue = { product: ProductTheme; reduceMotion: boolean };
 
-const DesignContext = createContext<DesignContextValue>({ product: NEUTRAL_THEME, reduceMotion: false });
+const DesignContext = createContext<DesignContextValue>({ product: NEUTRAL_THEME, reduceMotion: true });
 
 /**
  * Ürün vurgusu + işletim sistemi erişilebilirlik tercihleri. Hareket azaltma
  * açıkken iskelet animasyonu ve sheet geçişi kapanır.
  */
 export function DesignProvider({ product, children }: PropsWithChildren<{ product: ProductTheme }>) {
-  const [reduceMotion, setReduceMotion] = useState(false);
+  // Start quietly until the system preference is known; never flash motion
+  // for someone who has explicitly disabled it.
+  const [reduceMotion, setReduceMotion] = useState(true);
   useEffect(() => {
     let mounted = true;
     AccessibilityInfo.isReduceMotionEnabled().then((value) => mounted && setReduceMotion(value)).catch(() => undefined);

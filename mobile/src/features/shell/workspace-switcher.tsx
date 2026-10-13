@@ -1,8 +1,9 @@
+import { MotionPressable } from '@/design/motion';
 import type { MobileProductCode } from '@contracts/bootstrap';
 import { useRouter } from 'expo-router';
 import { Check, ChevronsUpDown } from 'lucide-react-native';
-import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { Banner, BottomSheet, Row, StatusBadge, Text } from '@/design/primitives';
 import { ProductLogo } from '@/design/brand';
@@ -25,6 +26,7 @@ export function WorkspaceSwitcher({ compact = false }: { compact?: boolean }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState<MobileProductCode | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const choosing = useRef(false);
   const workspace = bootstrap?.workspace;
   if (!workspace) return null;
 
@@ -32,6 +34,8 @@ export function WorkspaceSwitcher({ compact = false }: { compact?: boolean }) {
   const selectable = workspace.products.filter((product) => product.state === 'ACTIVE').length;
 
   async function choose(code: MobileProductCode) {
+    if (choosing.current) return;
+    choosing.current = true;
     setPending(code);
     setError(null);
     try {
@@ -41,13 +45,14 @@ export function WorkspaceSwitcher({ compact = false }: { compact?: boolean }) {
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : 'Çalışma alanı değiştirilemedi.');
     } finally {
+      choosing.current = false;
       setPending(null);
     }
   }
 
   return (
     <>
-      <Pressable
+      <MotionPressable
         accessibilityRole="button"
         accessibilityLabel={`Çalışma alanı: ${current?.label ?? 'seçilmedi'}`}
         accessibilityHint={selectable > 1 ? 'Çalışma alanlarını listeler' : undefined}
@@ -59,7 +64,7 @@ export function WorkspaceSwitcher({ compact = false }: { compact?: boolean }) {
           {!compact ? <Text variant="meta" tone="muted" numberOfLines={1}>{bootstrap?.user.fullName ?? 'Panel değiştir'}</Text> : null}
         </View>
         <ChevronsUpDown size={16} color={color.textMuted} />
-      </Pressable>
+      </MotionPressable>
       <BottomSheet visible={open} title="Panel değiştir" onClose={() => setOpen(false)}>
         {error ? <Banner tone="critical">{error}</Banner> : null}
         {workspace.products.map((product) => {
@@ -73,7 +78,7 @@ export function WorkspaceSwitcher({ compact = false }: { compact?: boolean }) {
               selected={product.code === workspace.activeProduct}
               disabled={product.state !== 'ACTIVE' || pending !== null}
               leading={<ProductLogo product={product.code} size={36} />}
-              trailing={pending === product.code ? <Text tone="muted">…</Text> : product.code === workspace.activeProduct ? <Check size={18} color={color.focus} /> : <StatusBadge label={presentation.label} tone={presentation.tone} />}
+              trailing={pending === product.code ? <ActivityIndicator size="small" color={color.focus} /> : product.code === workspace.activeProduct ? <Check size={18} color={color.focus} /> : <StatusBadge label={presentation.label} tone={presentation.tone} />}
               onPress={product.state === 'ACTIVE' && product.code !== workspace.activeProduct ? () => void choose(product.code) : undefined}
             />
           );

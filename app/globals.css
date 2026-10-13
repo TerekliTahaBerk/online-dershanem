@@ -2152,6 +2152,10 @@ html[data-panel-motion="reduced"] :is(.site-scope, .pn-scope) .panel-metric-card
   min-width: 24px;
   min-height: 24px;
 }
+/* Keep business form actions at the shared panel button's intended size;
+   the unlayered accessibility baseline above otherwise wins over utilities. */
+.pn-scope .business-panel :where(button) { min-height: 40px; }
+.pn-scope .business-panel :where(input, select, textarea) { min-width: 0; }
 .odk-panel-scope :where(button, summary) { min-height: 40px; }
 .odk-panel-scope :where(input[type="checkbox"], input[type="radio"]) { min-width: 18px; min-height: 18px; }
 

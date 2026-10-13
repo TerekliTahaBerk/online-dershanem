@@ -1,5 +1,6 @@
+import { MotionPressable } from '@/design/motion';
 import { Tabs } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/design/primitives';
@@ -30,13 +31,13 @@ export default function TabsLayout() {
         if (!route) return null;
         const selected = state.routes[state.index]?.key === route.key;
         const ink = selected ? product.accent : color.textSecondary;
-        return <Pressable key={route.key} accessibilityRole="tab" accessibilityState={{ selected }} accessibilityLabel={item.label}
+        return <MotionPressable key={route.key} accessibilityRole="tab" accessibilityState={{ selected }} accessibilityLabel={item.label}
           onPress={() => { const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true }); if (!selected && !event.defaultPrevented) navigation.navigate(route.name, route.params); }}
           onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
           testID={`nav-${item.id}`} style={({ pressed }) => [styles.tab, selected && { backgroundColor: product.accentSoft }, pressed && styles.pressed]}>
           <NavIcon id={item.id} color={ink} size={19} />
           <Text variant="caption" style={[styles.label, { color: ink }]}>{item.label}</Text>
-        </Pressable>;
+        </MotionPressable>;
       })}
     </View>
   )}>

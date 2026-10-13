@@ -1,4 +1,5 @@
 "use client";
+import { buttonClass } from "@/components/panel/primitives";
 export default function BusinessSectionError({
   reset,
 }: {
@@ -8,17 +9,17 @@ export default function BusinessSectionError({
   return (
     <section
       role="alert"
-      className="rounded-2xl border border-rose-200 bg-rose-50 p-6"
+      className="pn-scope m-6 max-w-[1280px] rounded-[10px] border border-pn-border bg-white p-5"
     >
-      <h2 className="font-extrabold text-rose-950">
+      <h2 className="text-[15px] font-semibold text-pn-text">
         Bu bölüm şu anda yüklenemedi.
       </h2>
-      <p className="mt-2 text-sm text-rose-900">
+      <p className="mt-2 text-sm text-pn-text-muted">
         Teknik ayrıntı kayıtlara alındı. Biraz sonra yeniden deneyebilirsiniz.
       </p>
       <button
         onClick={reset}
-        className="mt-4 rounded-xl border border-rose-300 bg-white px-4 py-2 text-sm font-bold"
+        className={buttonClass("secondary", "md", "mt-4")}
       >
         Yeniden dene
       </button>

@@ -30,7 +30,8 @@ test.describe("Instagram CRM ve finans merkezi", () => {
      */
     await expect(page.getByRole("link", { name: "İşletme paneline geç" })).toBeVisible();
     await page.getByRole("link", { name: "İşletme paneline geç" }).click();
-    await expect(page.getByRole("link", { name: "İşletme yönetim ana sayfası" })).toBeVisible();
+    await expect(page).toHaveURL(/\/panel\/yonetim\/isletme\/genel-bakis/);
+    await expect(page.getByRole("button", { name: "Çalışma alanı: İşletme. Değiştir", exact: true })).toBeVisible();
     await expect(page.getByRole("navigation", { name: "İşletme panel menüsü" })).toBeVisible();
     await expect(page.getByRole("link", { name: /Kontrol merkezi/ })).toHaveCount(0);
     for (const section of ["genel-bakis", "mesaj-kutusu", "adaylar", "satis-hunisi", "gelirler", "giderler", "vergiler", "entegrasyonlar"]) {

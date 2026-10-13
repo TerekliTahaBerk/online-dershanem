@@ -1,3 +1,4 @@
+import { buttonClass, inputClass } from "@/components/panel/primitives";
 import {
   APPROVED_EMAIL_TEMPLATES,
   APPROVED_EMAIL_TEMPLATE_LABELS,
@@ -49,13 +50,13 @@ function UnitField({ units }: { units: Unit[] }) {
   if (units.length === 1)
     return <input type="hidden" name="businessUnitId" value={units[0].id} />;
   return (
-    <label className="text-xs font-bold text-(--site-muted)">
+    <label className="text-[13px] font-medium text-pn-text-muted">
       İş birimi
       <select
         name="businessUnitId"
         required
         defaultValue=""
-        className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+        className={inputClass("mt-1 w-full")}
       >
         <option value="" disabled>
           Birim seçin
@@ -104,7 +105,7 @@ export function AutomationRulesPanel({
   return (
     <div className="space-y-4">
       {dryRunNotice ? (
-        <p className="rounded-xl border border-(--brand-olive)/30 bg-(--brand-olive)/5 px-4 py-3 text-sm">
+        <p className="rounded-md border border-pn-border bg-pn-surface-subtle px-4 py-3 text-sm">
           Dry-run sonucu: <strong>{dryRunNotice.result}</strong>
           {dryRunNotice.matched ? " · koşul eşleşti" : " · koşul eşleşmedi"} ·
           kural {dryRunNotice.ruleId.slice(0, 8)}…
@@ -114,13 +115,13 @@ export function AutomationRulesPanel({
       {canWrite ? (
         <form
           action={createAutomationRule}
-          className="overflow-hidden rounded-[10px] border border-pn-border bg-white grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3"
+          className="overflow-hidden rounded-[10px] border border-pn-border bg-white grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3 items-end"
         >
-          <h2 className="font-extrabold sm:col-span-2 xl:col-span-3">
+          <h2 className="font-semibold sm:col-span-2 xl:col-span-3">
             Yeni otomasyon kuralı
           </h2>
           <UnitField units={units} />
-          <label className="text-xs font-bold text-(--site-muted)">
+          <label className="text-[13px] font-medium text-pn-text-muted">
             Kural adı
             <input
               aria-label="Kural adı"
@@ -129,15 +130,15 @@ export function AutomationRulesPanel({
               minLength={2}
               maxLength={160}
               placeholder="Örn. Instagram sıcak aday görevi"
-              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+              className={inputClass("mt-1 w-full")}
             />
           </label>
-          <label className="text-xs font-bold text-(--site-muted)">
+          <label className="text-[13px] font-medium text-pn-text-muted">
             Tetikleyici
             <select
               aria-label="Tetikleyici"
               name="triggerType"
-              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+              className={inputClass("mt-1 w-full")}
             >
               {AUTOMATION_TRIGGERS.map((trigger) => (
                 <option key={trigger} value={trigger}>
@@ -147,35 +148,35 @@ export function AutomationRulesPanel({
             </select>
           </label>
 
-          <fieldset className="rounded-xl border p-3 sm:col-span-2 xl:col-span-3">
-            <legend className="px-1 text-xs font-bold text-(--site-muted)">
+          <fieldset className="rounded-md border p-3 sm:col-span-2 xl:col-span-3">
+            <legend className="px-1 text-[13px] font-medium text-pn-text-muted">
               Koşullar (AND)
             </legend>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-              <label className="text-xs">
+              <label className="text-[13px]">
                 Kaynak
                 <input
                   name="source"
                   placeholder="instagram"
-                  className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("mt-1 w-full")}
                 />
               </label>
-              <label className="text-xs">
+              <label className="text-[13px]">
                 Ürün
                 <select
                   name="product"
-                  className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("mt-1 w-full")}
                 >
                   <option value="">Her ürün</option>
                   <option value="OD">OD</option>
                   <option value="ODK">ODK</option>
                 </select>
               </label>
-              <label className="text-xs">
+              <label className="text-[13px]">
                 Önem
                 <select
                   name="severity"
-                  className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("mt-1 w-full")}
                 >
                   <option value="">Her seviye</option>
                   {SEVERITY_VALUES.map((value) => (
@@ -185,21 +186,21 @@ export function AutomationRulesPanel({
                   ))}
                 </select>
               </label>
-              <label className="text-xs">
+              <label className="text-[13px]">
                 Sahip boş
                 <select
                   name="ownerEmpty"
-                  className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("mt-1 w-full")}
                 >
                   <option value="">Fark etmez</option>
                   <option value="true">Evet</option>
                 </select>
               </label>
-              <label className="text-xs">
+              <label className="text-[13px]">
                 Sıcaklık (eski)
                 <select
                   name="temperature"
-                  className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+                  className={inputClass("mt-1 w-full")}
                 >
                   <option value="">Her sıcaklık</option>
                   <option value="COLD">COLD</option>
@@ -210,12 +211,12 @@ export function AutomationRulesPanel({
             </div>
           </fieldset>
 
-          <label className="text-xs font-bold text-(--site-muted)">
+          <label className="text-[13px] font-medium text-pn-text-muted">
             Aksiyon
             <select
               aria-label="Aksiyon"
               name="actionType"
-              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+              className={inputClass("mt-1 w-full")}
             >
               <optgroup label="Part 12">
                 {PART12_ACTIONS.map((action) => (
@@ -233,26 +234,26 @@ export function AutomationRulesPanel({
               </optgroup>
             </select>
           </label>
-          <label className="text-xs font-bold text-(--site-muted)">
+          <label className="text-[13px] font-medium text-pn-text-muted">
             Etiket / görev başlığı
             <input
               aria-label="Etiket"
               name="tag"
               placeholder="add_tag için"
-              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+              className={inputClass("mt-1 w-full")}
             />
             <input
               aria-label="Görev başlığı"
               name="taskTitle"
               placeholder="create_task için"
-              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+              className={inputClass("mt-1 w-full")}
             />
           </label>
-          <label className="text-xs font-bold text-(--site-muted)">
+          <label className="text-[13px] font-medium text-pn-text-muted">
             Onaylı e-posta şablonu
             <select
               name="templateKey"
-              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+              className={inputClass("mt-1 w-full")}
             >
               {APPROVED_EMAIL_TEMPLATES.map((key) => (
                 <option key={key} value={key}>
@@ -261,17 +262,17 @@ export function AutomationRulesPanel({
               ))}
             </select>
           </label>
-          <label className="text-xs font-bold text-(--site-muted) sm:col-span-2">
+          <label className="text-[13px] font-medium text-pn-text-muted sm:col-span-2">
             Bildirim metni
             <input
               name="notificationTitle"
               placeholder="Başlık"
-              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+              className={inputClass("mt-1 w-full")}
             />
             <input
               name="notificationBody"
               placeholder="İçerik"
-              className="mt-1 w-full rounded-xl border px-3 py-2 text-sm"
+              className={inputClass("mt-1 w-full")}
             />
           </label>
           <label className="flex items-center gap-2 text-sm sm:col-span-2 xl:col-span-3">
@@ -283,7 +284,7 @@ export function AutomationRulesPanel({
             />
             Kaydı aktif oluştur
           </label>
-          <button className="rounded-xl bg-(--brand-olive) p-2 text-sm font-bold text-white sm:col-span-2 xl:col-span-3">
+          <button className={buttonClass("primary", "md", "sm:col-span-2 xl:col-span-3")}>
             Kural ekle
           </button>
         </form>
@@ -296,14 +297,14 @@ export function AutomationRulesPanel({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <strong>{rule.name}</strong>
-                  <p className="text-xs text-(--site-muted)">
+                  <p className="text-[13px] text-pn-text-muted">
                     {AUTOMATION_TRIGGER_LABELS[
                       rule.triggerType as keyof typeof AUTOMATION_TRIGGER_LABELS
                     ] || rule.triggerType}
                     {" · "}
                     {actionSummary(rule.actions)}
                   </p>
-                  <p className="mt-1 text-[10px] text-(--site-muted)">
+                  <p className="mt-1 text-[12px] text-pn-text-muted">
                     Son çalıştırma:{" "}
                     {rule.lastRunAt ? dt.format(rule.lastRunAt) : "Henüz yok"} ·
                     Çalıştırma: {rule.runCount} · Hata (son 5):{" "}
@@ -312,7 +313,7 @@ export function AutomationRulesPanel({
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span
-                    className={`rounded-full px-2 py-1 text-[10px] font-bold ${rule.isActive ? "bg-emerald-50 text-emerald-800" : "bg-stone-100 text-stone-600"}`}
+                    className={`rounded-md px-2 py-1 text-[12px] font-medium ${rule.isActive ? "bg-emerald-50 text-emerald-800" : "bg-stone-100 text-stone-600"}`}
                   >
                     {rule.isActive ? "Aktif" : "Pasif"}
                   </span>
@@ -325,7 +326,7 @@ export function AutomationRulesPanel({
                           name="isActive"
                           value={rule.isActive ? "false" : "true"}
                         />
-                        <button className="rounded-xl border px-3 py-1 text-[10px] font-bold">
+                        <button className={buttonClass("secondary", "sm")}>
                           {rule.isActive ? "Pasifleştir" : "Aktifleştir"}
                         </button>
                       </form>
@@ -349,7 +350,7 @@ export function AutomationRulesPanel({
                         <input type="hidden" name="product" value="ODK" />
                         <input type="hidden" name="severity" value="high" />
                         <input type="hidden" name="ownerEmpty" value="true" />
-                        <button className="rounded-xl border px-3 py-1 text-[10px] font-bold">
+                        <button className={buttonClass("secondary", "sm")}>
                           Dry-run
                         </button>
                       </form>
@@ -360,7 +361,7 @@ export function AutomationRulesPanel({
               {rule.executions.map((execution) => (
                 <p
                   key={execution.id}
-                  className="mt-2 border-t pt-2 text-[10px]"
+                  className="mt-2 border-t pt-2 text-[12px]"
                 >
                   {execution.dryRun ? "DRY · " : ""}
                   {execution.result}
@@ -373,7 +374,7 @@ export function AutomationRulesPanel({
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-(--site-line) px-5 py-10 text-center text-sm text-(--site-muted)">
+        <div className="rounded-[10px] border border-dashed border-pn-border px-5 py-10 text-center text-sm text-pn-text-muted">
           Otomasyon kuralı yok.
         </div>
       )}
