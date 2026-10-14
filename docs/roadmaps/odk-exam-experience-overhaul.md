@@ -1,0 +1,252 @@
+# ODK Deneme Deneyimi — Production-Grade Revizyon Yol Haritası
+
+Durum: **Faz 1 (denetim) tamam · Faz 2 (P0 doğruluk) devam ediyor**
+Kapsam: Deneme Ligi (ODK) çevrim içi sınav motoru — yönetici oluşturma, cevap
+anahtarı/kazanım, öğrenci çözücü, puanlama, revizyon, yayın ve raporlama.
+
+> Bu belge bir denetim kaydıdır. Her bulgu "hipotez → kanıt → hedef davranış"
+> biçimindedir. Kodun zaten doğru çözdüğü noktalar **Doğrulandı (değişiklik
+> yok)** olarak işaretlenmiştir; onlar yeniden yazılmayacak, testle korunacaktır.
+
+---
+
+## 1. Mimari harita
+
+### 1.1 İki ayrı sistem (karıştırılmamalı)
+
+| Sistem | Modeller | Giriş noktası | Not |
+| --- | --- | --- | --- |
+| **ODK çevrim içi sınav motoru** (bu revizyonun konusu) | `OdkExam`, `OdkExamVersion`, `OdkExamSection`, `OdkExamQuestion`, `OdkExamAttempt`, `OdkAttemptAnswer`, `OdkAttemptScore`, `OdkAnswerKeyRevision`, `OdkImportAudit` (`prisma/schema/odk.prisma`) | `/api/odk/**`, `/api/panel/odk/management/**` (mobil), `/panel/odk/**` | Sunucu saatli attempt, kilitli sürüm, puanlama, yayın |
+| **Panelin harici deneme sonuç girişi** | `MockExam`, `MockExamSection`, `MockExamSectionError` | `lib/panel/*`, `lib/kocum/*`, `lib/progress-insights/*` | Öğretmenin/öğrencinin dışarıda çözülmüş denemenin netlerini elle girdiği akış. ODK motoruna **dokunulmaz**; yalnız ortak raporlama tüketicisidir. |
+
+Bu revizyonda `MockExam*` modellerine, product grants (`lib/odk/product-contract*`),
+commerce (`checkout`, `paytr`), Yön ve mobil sözleşme şemalarına
+(`lib/mobile-contracts/odk-*`) davranış değişikliği yapılmaz. Yanıtlara yalnız
+**eklemeli** alan eklenir.
+
+### 1.2 Uçtan uca akış
+
+```
+Yönetici                               Sunucu servisleri                         Veri
+────────                               ─────────────────                         ────
+admin-exam-create.tsx ──POST /api/odk/admin/exams──▶ exam-create-server.createOdkExam ─▶ OdkExam + Version(1) + Section + Question (şablondan)
+                                                     exam-templates.resolveTemplateForCreate
+admin-exam-editor.tsx ──PUT  …/questions────────────▶ exam-commands-server.updateOdkExamQuestions (tam liste değiştirme)
+admin-json-import-panel ─POST/PUT …/imports/{answer-key,outcomes}─▶ previewOdkImport / commitOdkImport ─▶ OdkImportAudit
+                        ─POST …/files───────────────▶ BOOKLET_PDF / ANSWER_KEY_PDF (Vercel Blob, private)
+                        ─POST …/ready───────────────▶ lockOdkExam  (exam-domain.validateVersionReadiness) DRAFT→READY, Version LOCKED
+                        ─POST …/schedule────────────▶ scheduleOdkExam READY→SCHEDULED
+                        ─POST …/assignments─────────▶ assignOdkExam
+                        ─POST …/score───────────────▶ exam-results-commands.scoreOdkExamCommand ─▶ scoring-service.scoreOdkExam
+                        ─POST …/rescore─────────────▶ rescoreOdkExamCommand (step-up `odk:key:revise`)
+                        ─POST …/release(/preview)───▶ releaseOdkExam ─▶ publicationStatus=PUBLISHED
+Mobil yönetim           ─POST /api/panel/odk/management/exams/[id]─▶ exam-command-runner (expectedRevision + idempotency) ─▶ aynı servisler
+
+Öğrenci
+student-exam-start.tsx ─POST /api/odk/student/exams/[id]/start─▶ attempt-domain.decideAttemptStart ─▶ OdkExamAttempt
+coz/page.tsx (SSR) ─▶ student-exam-server.getStudentExam + attempt-sessions-server.loadAttemptSessionState
+student-exam-runner.tsx ─PUT  …/attempts/[id]/answers (revision)──▶ decideAnswerRevision ─▶ OdkAttemptAnswer
+                        ─POST …/heartbeat · …/events · …/timings · …/sessions/close · …/submit
+                        ─GET  /api/odk/student/exams/[id]/booklet (yalnız IN_PROGRESS attempt varken)
+Sonuç ─▶ student-result-server / reporting-server / parent-report (publicationStatus=PUBLISHED filtresi)
+```
+
+### 1.3 Durum makinesi (doğrulandı)
+
+`DRAFT → READY → SCHEDULED → LIVE → ENDED → SCORED → RELEASED → ARCHIVED`
+(`exam-domain.ts::TRANSITIONS`). İçerik yalnız `DRAFT` + sürüm `DRAFT` iken
+yazılabilir (`updateOdkExamQuestions`, `commitOdkImport`, `updateOdkExamSessions`).
+LIVE sonrası anahtar değişikliği için ayrı akış gerekir (bkz. P0-2).
+
+### 1.4 Yetki modeli (doğrulandı, değişmeyecek)
+
+- Yönetici uçları: `requireApiStaffPermission("odk:exam:edit")`, rescore
+  `requireApiRecentStaffStepUp("odk:key:revise")`.
+- Öğrenci uçları: `requireApiProductRole("ODK","STUDENT")` + her sorguda
+  `studentUserId = session.userId` (başka öğrencinin attempt'ine erişim 404).
+- Sonuç/rapor: `publicationStatus = PUBLISHED` + `exam.status = RELEASED` +
+  sözleşme (`contractResultAvailable`). Veli/öğretmen `reporting-server.ts:82`.
+
+---
+
+## 2. Bulgular
+
+Öncelik: **P0** = veri doğruluğu / sessiz veri kaybı / güvenlik; **P1** = ürün
+gereksinimi veya ciddi UX açığı; **P2** = iyileştirme.
+
+### P0 — Veri doğruluğu ve kayıp
+
+#### P0-1 · Negatif bölüm netleri politika okunmadan sıfıra kırpılıyor
+- **Dosya/fonksiyon:** `lib/odk/scoring.ts::scoreAttempt`, `lib/odk/scoring-service.ts::scoreOdkExam`
+- **Kanıt:** `b.net = Math.max(0, …)` koşulsuz. `OdkScoringPolicy.minimumNetIsZero`
+  alanı şemada var (`odk.prisma`, migration 0096) ama hiçbir yerde okunmuyor.
+  Ham (kırpılmamış) net saklanmıyor; toplam net kırpılmış bölüm netlerinin
+  toplamı.
+- **Yeniden üretme:** TYT, Türkçe 10D/30Y (ham 2.5), Sosyal 0D/20Y (ham −5).
+  Toplam: kırpılmış 2.5, ham −2.5. Politika `minimumNetIsZero=false` olsa bile
+  2.5 döner.
+- **Hedef:** Kırpma politikadan gelir (`minimumNetIsZero`), her bölüm için hem
+  `rawNet` hem raporlanan `net` saklanır, toplam ve ham toplam ayrı tutulur.
+  Mevcut politikaların hepsi `true` olduğundan tarihsel sonuçlar değişmez.
+
+#### P0-2 · Cevap anahtarı revizyon + yeniden puanlama akışı uçtan uca YOK
+- **Dosya/fonksiyon:** `OdkAnswerKeyRevision` modeli; `exam-results-commands.ts::rescoreOdkExamCommand`
+- **Kanıt:** `odkAnswerKeyRevision.create` kod tabanında hiç çağrılmıyor (yalnız
+  `findFirst/update` ve staff listesi). LIVE sonrası anahtarı değiştirecek
+  ya da soru iptal edecek bir uç yok (`isActive:false` hiçbir yerde yazılmıyor).
+  Rescore aynı anahtarla yeniden hesaplar; bu nedenle "düzeltme" fiilen
+  yapılamaz ya da DB'ye elle müdahale ile yapılır (audit'siz).
+- **Yeniden üretme:** RELEASED denemede yanlış anahtarlı soruyu düzeltmeye çalış
+  → `commitOdkImport` 409, `updateOdkExamQuestions` 409; başka uç yok.
+- **Hedef:** Yetkili (`odk:key:revise` + step-up) revizyon akışı: önceki/yeni
+  cevap veya iptal, sebep, actor, **etki önizlemesi** (öğrenci başı net farkı),
+  onay, revizyon kaydı, `rescoreRequestedAt`, yeniden puanlama, önceki
+  skorların audit anlık görüntüsü ve yalnız neti değişen öğrenciye bildirim.
+
+#### P0-3 · Yeniden puanlama etkisi sabit `changedQuestionCount: 1`
+- **Dosya/fonksiyon:** `exam-results-commands.ts:76`
+- **Kanıt:** `previewRescoreImpact({ …, changedQuestionCount: 1, … })`. Gerçek
+  fark hesaplanmıyor; onay mesajı her zaman "değişecek" der.
+- **Hedef:** Saklı `OdkAttemptQuestionResult.correctOption` ile güncel aktif
+  anahtar karşılaştırılarak değişen/iptal edilen soru sayısı ve etkilenen
+  öğrenci sayısı hesaplanır.
+
+#### P0-4 · Import preview → commit arasında sürüm/hash/eşzamanlılık kontrolü yok
+- **Dosya/fonksiyon:** `exam-commands-server.ts::previewOdkImport`, `::commitOdkImport`
+- **Kanıt:**
+  1. Commit, önizlemedeki `versionId`'yi güncel sürümle karşılaştırmıyor.
+  2. Önizlemeden sonra editörden yapılan değişiklik (ya da başka bir importun
+     commit'i) fark edilmeden ezilir (lost update).
+  3. `PREVIEW → COMMITTED` geçişi koşulsuz `update`; iki eşzamanlı commit
+     ikisi de geçer.
+  4. `schemaVersion` serbest metin; desteklenmeyen sürüm reddedilmez.
+- **Yeniden üretme:** Önizle (A) → editörde 3. soruyu C yap → (A)'yı commit et →
+  3. soru sessizce eski değere döner.
+- **Hedef:** Önizleme, hedef durumun hash'ini (`targetStateHash`: soru kimlikleri +
+  anahtar/kazanım durumu) ve sürümü saklar; commit aynı transaction içinde
+  yeniden hesaplar, uyuşmazlıkta 409 `IMPORT_STALE`; durum geçişi koşullu
+  (`updateMany where status=PREVIEW`); aynı import tekrar commit edilirse
+  idempotent yanıt; desteklenmeyen şema sürümü preview hatası.
+
+#### P0-5 · Kazanım import'u başka sınav ailesinin / dersin kazanımını bağlayabiliyor
+- **Dosya/fonksiyon:** `exam-commands-server.ts::previewOdkImport` (katalog), `outcome-import.ts::previewOutcomeImport`
+- **Kanıt:** Katalog `learningOutcome.findMany({ where: { isActive: true }, take: 5000 })`
+  — aile/ders filtresi yok. `LearningOutcome.code` yalnız ünite içinde benzersiz
+  (`@@unique([unitId, code])`); aynı kod farklı aile/derslerde varsa `Map` son
+  kaydı rastgele seçer. Editör yolu (`updateOdkExamQuestions`) aileyi kontrol
+  ediyor ama ders/alt testi kontrol etmiyor.
+- **Yeniden üretme:** TYT denemesine `MAT.8.1` (LGS kataloğu) kodlu JSON import et
+  → önizleme hatasız, commit başarılı.
+- **Hedef:** Katalog sınavın ailesine (aktif/taslak müfredat sürümü) daraltılır;
+  sorunun bölümüyle aynı koda sahip müfredat dersi varsa kazanım o dersten
+  olmalıdır; belirsiz kod (aynı kod birden çok ünitede) hata; commit'te
+  savunma amaçlı yeniden doğrulama.
+
+#### P0-6 · Öğrenci çözücüsünde revision conflict sonrası sessiz cevap kaybı
+- **Dosya/fonksiyon:** `components/odk/student-exam-runner.tsx::sendAnswer`
+- **Kanıt:** 409 `REVISION_CONFLICT` yanıtında yerel revizyon sunucudakinden
+  büyükse yerel değer ekranda kalır, **ama** `pending` silinir. Sunucuda eski
+  cevap durur; teslim kontrolü (`pending` boş) geçer → öğrencinin son cevabı
+  kaybolur.
+- **Yeniden üretme:** Cevap A (rev1 kaydedildi) → ağ kesik: B (rev2, 3 deneme
+  başarısız) → C (rev3) → ağ gelir, rev3 gider → sunucu rev2 bekler → 409 →
+  ekranda C, sunucuda A, teslim C'yi kaybeder. İki sekmede de aynı.
+- **Hedef:** Çakışmada sunucu kaydı temel alınıp yerel niyet yeni revizyonla
+  (server.revision + 1) yeniden gönderilir (rebase); yerel niyet sunucuyla
+  aynıysa kabul edilir. Pending yalnız sunucu yerel niyeti onayladığında silinir.
+
+#### P0-7 · Çevrimdışı cevaplar sayfa yenilenince kayboluyor
+- **Dosya/fonksiyon:** `student-exam-runner.tsx` (`pending` yalnız `useRef`)
+- **Kanıt:** Bekleyen cevaplar bellek içinde; yenileme/sekme kapanması/çökme
+  sonrası kaybolur. SSR yalnız sunucudaki cevapları gönderir.
+- **Hedef:** Bekleyen cevaplar `localStorage`'da attempt bazlı saklanır, açılışta
+  sunucu kaydından yeni olanlar geri yüklenip gönderilir; teslimde temizlenir.
+  Depolama hatası (gizli pencere) akışı bozmaz.
+
+#### P0-8 · `blur` listener temizlenmiyor
+- **Dosya:** `student-exam-runner.tsx:481` — `window.removeEventListener("blur-sm", onBlur)`
+  (Tailwind sınıf adı codemod'unun yanlışlıkla değiştirdiği string).
+- **Etki:** Effect her `currentIndex` değişiminde yeniden çalıştığı için her
+  soru geçişinde yeni bir `blur` dinleyicisi birikir; tek pencere kaybı N adet
+  `WINDOW_BLUR` olayı üretir → bütünlük sinyalleri şişer, haksız
+  `REVIEW_REQUIRED` riski.
+- **Hedef:** `"blur"`; regresyon testi (kaynak taraması + birim).
+
+### P1 — Ürün gereksinimi / ciddi UX açığı
+
+| # | Bulgu | Dosya/fonksiyon | Yeniden üretme | Hedef |
+| --- | --- | --- | --- | --- |
+| P1-1 | LGS Sözel oturumunda Sayısal kitapçık erişilebilir | `api/odk/student/exams/[id]/booklet/route.ts`; `OdkExamFile @@unique([versionId,type])` | Sözel açıkken PDF'i sonuna kaydır → Sayısal sorular görünür; ara sırasında da PDF iner | Oturum bazlı kitapçık (`OdkExamFile.sessionKey`, additive migration) veya oturum sayfa aralığı; uç aktif oturum dışını 403 verir, aradayken hiç vermez |
+| P1-2 | Tıklanan soru ile PDF sayfası eşleşmiyor | `coz/page.tsx` `bookletPage` göndermiyor; runner iframe `src` sabit | 35. soruya tıkla → PDF 1. sayfada kalır | Soru → `bookletPage` haritası; iframe `#page=N`; yönetici editöründe sayfa eşleme |
+| P1-3 | Yönetici önizlemesi gerçek çözücüyü göstermiyor | `admin-preview-panel.tsx`, `lib/odk/admin-preview.ts` | Önizleme yalnız metin listesi | Runner'ın `preview` modu (attempt yok, yazma uçları kapalı) |
+| P1-4 | AYT/TYT alt testler (Edebiyat, Tarih-1, Coğrafya-1, Fizik, Kimya, Biyoloji…) raporlanmıyor | `exam-templates.ts` (bölüm = 40 soruluk blok), `sectionBreakdown` | AYT sonucu yalnız 4 blok neti | Şablonda `subtests` (soru aralığı) + puanlamada alt test kırılımı; alan (SAY/EA/SÖZ) bazlı "beklenen bölümler" — çözülmesi beklenmeyen blok "eksik" sayılmaz (`student-exam-state.ts::aytTrackSections` zaten var, puanlamaya taşınacak) |
+| P1-5 | Soru başı aktif süre kazanım raporlarına taşınmıyor | `scoring.ts::aggregateOutcomeScores`, `scoring-service.ts` | `OdkAttemptOutcomeScore.activeDurationMs` her zaman `null` | Kazanım bucket'ına soru sürelerinin toplamı yazılır |
+| P1-6 | Yönetici editöründe eşzamanlı düzenleme çakışması (lost update) | `updateOdkExamQuestions` tam liste değiştirir; web isteği revizyon taşımaz (mobil `expectedRevision` taşır) | İki yönetici aynı anda kaydeder → ilk kaydın tamamı silinir | Web isteğine opsiyonel `expectedRevision` (mobilin `odkExamRevision`'ı), uyuşmazlıkta 409 + farkı gösteren UI |
+| P1-7 | Sınav şablonu yıl/kaynak/sürüm/geçerlilik taşımıyor | `exam-templates.ts` | Resmî format değişirse geçmiş kayıtlar yeni şablonla yorumlanır | `templateVersion`, `validFrom/validTo`, `source`, `mode: OFFICIAL|CUSTOM`; sürüm ayarlarına şablon anlık görüntüsü yazılır |
+| P1-8 | Attempt sürümü yerine `exam.currentVersion` kullanılıyor | `scoring-service.ts`, `student-exam-server.ts::getStudentExam` | (Şu an tek sürüm olduğu için gizli) — revizyon yeni sürüm üretirse eski attempt yanlış soru setiyle puanlanır | Puanlama ve çözücü `attempt.versionId`'yi kullanır |
+| P1-9 | Çoklu kitapçık (A/B/C/D) canonical eşleme yok | `OdkExamQuestion.bookletCode/canonicalQuestionNumber` var, kullanılmıyor | Tüm attempt'ler "A" | Kitapçık başına soru sırası tablosu; puanlama canonical numaraya çevirir |
+| P1-10 | Import arayüzü yalnız JSON yapıştırma | `admin-json-import-panel.tsx` | CSV/XLSX/optik grid yok | CSV/TSV/tablo yapıştırma → aynı preview/commit; satır bazlı hata; hızlı optik grid |
+| P1-11 | Kazanım import'unda soru başına eksik kazanım yalnız uyarı | `outcome-import.ts` | Kısmi JSON commit edilir; hazırlık kontrolü yakalar | Resmî modda hata, özel modda uyarı (hazırlık kontrolüyle aynı kural) |
+| P1-12 | LGS ek süre / muafiyet veri modeli yok | `OdkExamVersion.extraTimePolicy` yalnız genel dakika | Öğrenci bazlı ek süre verilemez | `OdkAttemptAccommodation` (öğrenci, ek dk, muaf bölümler, gerekçe, onaylayan) |
+| P1-13 | İki sekmeden aynı attempt | Runner | İki sekmede farklı cevap → P0-6 düzeltmesiyle son tıklama kazanır; ancak kullanıcı uyarılmaz | `BroadcastChannel` ile sekme uyarısı |
+
+### P2 — İyileştirme
+
+- P2-1 Altı adımlı yönetici sihirbazı (tür/şablon → PDF+sayfa → anahtar → kazanım → atama/oturum → önizleme+yayın), adım bazlı taslak, kaydedilmemiş değişiklik uyarısı.
+- P2-2 Soru tablosu: arama, branş sekmeleri, eksik anahtar/kazanım filtreleri, toplu işlem, hataya git.
+- P2-3 Sonuç raporu: ham net / tahmini puan ayrımı ("tahmini" etiketi; standartlaştırma verisi yoksa resmî puan gösterilmez), veri güvenilirliği (kazanım başına soru sayısı < 3 → "düşük güven").
+- P2-4 Erişilebilirlik: optik panelde ok tuşu navigasyonu, `A–E` kısayolları, WCAG AA kontrast denetimi.
+- P2-5 Browser anti-cheat sinyalleri yalnız insan incelemesine işaret eder (mevcut `integrity.ts` bu ilkeye uygun — doğrulanacak).
+
+### Doğrulandı (değişiklik yok, testle korunacak)
+
+- Başka öğrencinin attempt'i: tüm öğrenci uçları `studentUserId` ile filtreliyor (e2e `odkForeignAttempt`).
+- Çift teslim: `submit` koşullu `updateMany(status: IN_PROGRESS)` → idempotent.
+- LGS oturum sınırları API'de: `answers` uçu `sectionWritable`, `submit` `canSubmitSessionAttempt`, `sessions/close` (birim + e2e `odk-lgs-sessions`).
+- Kilitli sınav içeriği: `updateOdkExamQuestions`/`commitOdkImport` yalnız DRAFT sürüm.
+- Yayınlanmamış sonuç sızıntısı: öğrenci/veli/öğretmen sorguları `PUBLISHED` filtreli; cevap anahtarı PDF'i `RELEASED` + sözleşme.
+- LGS 3 yanlış/1 doğru, YKS 4 yanlış/1 doğru politika kodları şablonla eşleşiyor.
+- İptal edilen soru (isActive=false) puanlamadan dışlanır — **politika kararı açıkça belgelenmeli** (P0-2 kapsamında `cancelledQuestionPolicy: "EXCLUDE"`).
+
+---
+
+## 3. Fazlar ve teslim dilimleri
+
+| Faz | Dilim | İçerik | Durum |
+| --- | --- | --- | --- |
+| 1 | Audit | Bu belge | ✅ |
+| 2 | P0-1 | Net politikası + ham net | bu dalda |
+| 2 | P0-3 | Gerçek rescore etkisi | bu dalda |
+| 2 | P0-4/5 | Import sürüm/hash/eşzamanlılık + kazanım aile/ders uyumu | bu dalda |
+| 2 | P0-6/7/8 | Runner: kalıcı bekleyen cevap, conflict rebase, blur | bu dalda |
+| 2 | P0-2 | Anahtar revizyonu + soru iptali + etki önizleme + rescore | bu dalda (sunucu + API; UI Faz 6) |
+| 3 | P1-4/7 | Şablon sürümü, alt testler, alan bazlı beklenen bölümler | sonraki |
+| 4 | P1-6/10, P2-1/2 | Yönetici sihirbazı, CSV/optik grid, conflict UI | sonraki |
+| 5 | P1-1/2/3/13 | Oturum kitapçığı, PDF sayfa eşleme, gerçek önizleme | sonraki |
+| 6 | P1-5/8/9, P2-3 | Rapor, attempt sürümüne bağlı puanlama, çoklu kitapçık | sonraki |
+| 7 | — | E2E (mobil + masaüstü), erişilebilirlik, performans | sonraki |
+
+### Migration ve geri alma ilkesi
+
+- Yalnız **eklemeli** migration (yeni nullable kolon/tablo). Kolon silme/yeniden
+  adlandırma yok. Geri alma: uygulama önceki sürüme döner; yeni kolonlar
+  okunmaz, veri kaybı olmaz.
+- Faz 2 hiçbir migration gerektirmez: ham net `sectionBreakdown` JSON'una,
+  import hash'i `previewSummary` JSON'una, revizyon değişiklikleri mevcut
+  `OdkAnswerKeyRevision.previousAnswers/nextAnswers` JSON'una yazılır.
+- Üretimde yeniden puanlama / migration **otomatik çalıştırılmaz**; operatör
+  komutu (`/rescore`, step-up) gerekir.
+
+### Mobil uyumluluk
+
+- `/api/panel/odk/management/**` yanıt şekilleri değişmez; `rescore` yanıtındaki
+  `impact` nesnesine yalnız alan eklenir. Değişen her fazda
+  `npm run lint:mobile-parity` ve `tests/integration/odk-*.integration.ts`
+  çalıştırılır.
+
+---
+
+## 4. Faz kayıtları
+
+Her faz sonunda: bulgu · dokunulan dosyalar · güvenlik gerekçesi · testler ·
+komutlar ve gerçek sonuçlar · kalan riskler · sonraki faz. (Aşağıda güncellenir.)
