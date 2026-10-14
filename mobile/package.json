@@ -85,5 +85,8 @@
       "node_modules",
       "<rootDir>/node_modules"
     ]
+  },
+  "overrides": {
+    "uuid": "11.1.1"
   }
 }

@@ -5,29 +5,31 @@ bir üst paket güncellemesi bulunmayan bağımlılık risklerini izler. İstisn
 kalıcı değildir; `config/npm-audit-allowlist.json` içindeki son kullanma tarihi
 geçince CI yeniden kırmızı olur.
 
-## Lighthouse CI / extract-zip
+## Lighthouse CI / extract-zip — giderildi (14 Ekim 2026)
 
 - Advisory: `GHSA-jmr9-qjv8-65gv` ve `GHSA-7pqw-9j4j-h8q3` (yüksek).
-- Zincir: `@lhci/cli@0.15.1` → `lighthouse@12.6.1` →
+- Eski zincir: `@lhci/cli@0.15.1` → `lighthouse@12.6.1` →
   `puppeteer-core@24.43.1` → `@puppeteer/browsers@2.13.2` →
   `extract-zip@2.0.1`.
-- Neden şimdi düzeltilemiyor: 14 Eylül 2026 itibarıyla yayımlanmış en güncel
-  `@lhci/cli` sürümü 0.15.1 ve Lighthouse 12.6.1'i sabitliyor. Audit'in önerdiği
-  0.12.0'a dönüş gerçek bir güvenlik düzeltmesi değil; güncel Lighthouse
-  `13.4.1`i zorlamak ise upstream tarafından test edilmemiş bir major geçiş.
-- Gerçek risk: Bu zincir yalnızca geliştirme/CI ortamında çalışır ve production
-  bundle'a girmez. Saldırı, CI runner'ın kötü niyetli veya değiştirilmiş bir
-  Chromium arşivini açmasını gerektirir; production kullanıcı isteği doğrudan
-  bu kod yoluna erişmez. Yine de runner dosya bütünlüğü açısından yüksek önemle
-  izlenir.
-- Azaltımlar: Lighthouse yalnızca repoda sabitlenmiş URL'leri kontrollü CI
-  runner'ında tarar. `chrome-launcher@1.2.1` override'ı eski
-  `rimraf@3`/`glob@7`/`inflight` zincirini kaldırır. Audit kapısı yalnızca bu iki
-  advisory kimliğine süreli izin verir; aynı paketlerde çıkacak yeni advisory'ler
-  de dahil olmak üzere diğer tüm high/critical bulgular CI'ı kırar.
-- Yeniden değerlendirme: 14 Ekim 2026 veya yeni bir `@lhci/cli` sürümü
-  yayımlandığında (hangisi önceyse). Güvenli sürüm çıktığında override/istisna
-  kaldırılıp `npm run lighthouse:ci` yeniden çalıştırılacak.
+- Çözüm: `package.json` `overrides` içinde `puppeteer-core` `25.13.0`'a
+  sabitlendi. Bu sürüm `@puppeteer/browsers@3.2.4` kullanır ve `extract-zip`
+  bağımlılığı tamamen kalkar. Lighthouse 12.6.1 yalnız `puppeteer.connect`
+  API'sini kullanır; yerel Chromium ile hem `lighthouse` CLI hem
+  `lhci collect` başarıyla çalıştırıldı.
+- Audit istisnası (`config/npm-audit-allowlist.json`) kaldırıldı.
+- Yeniden değerlendirme: Yeni bir `@lhci/cli` sürümü kendi Lighthouse/puppeteer
+  zincirini güncellediğinde override kaldırılıp `npm run lighthouse:ci`
+  yeniden çalıştırılacak.
+
+## Lighthouse CI / sprintf-js (orta)
+
+- Advisory: `GHSA-hp3w-g68c-fv3c` (orta, DoS).
+- Zincir: `@lhci/utils@0.15.1` → `js-yaml@3.15.2` → `argparse@1.0.10` →
+  `sprintf-js@1.0.3`. Yamalı `sprintf-js` sürümü yok; `js-yaml` 4'e zorlamak
+  `@lhci/utils`'in kullandığı `safeLoad` API'sini kırar.
+- Gerçek risk: Yalnız CI'da, repodaki `lighthouserc.json` (YAML değil)
+  okunurken yüklenir; dışarıdan girdi almaz. Audit kapısı yalnız high/critical
+  bulguları engellediği için istisna gerekmez.
 
 ## Storybook / tsconfck bakım durumu
 
@@ -57,3 +59,20 @@ geçince CI yeniden kırmızı olur.
   bu davranışı sınar. Başka bir `fast-glob` tüketicisi eklenirse veya Next
   ESLint farklı bir API kullanmaya başlarsa override yeniden değerlendirilmeli;
   bu uyarlama genel amaçlı `fast-glob` yerine geçmez.
+
+## Mobil (Expo SDK 57) bağımlılıkları
+
+- `uuid` (orta, `GHSA` buffer bounds): `xcode@3.0.1` → `uuid@7.0.3` zinciri
+  `mobile/package.json` `overrides` ile `uuid@11.1.1`'e taşındı (kök projeyle
+  aynı). `xcode` yalnız `require('uuid').v4` kullanır; `expo config --type
+  prebuild` ve tüm mobil testler başarıyla çalıştı.
+- Dependabot'un mobil için açtığı `shell-quote@1.12.0`, `source-map-js@1.2.2`,
+  `compression@1.8.2` ve `brace-expansion@1.1.21` güncellemeleri lockfile'da
+  zaten bulunuyor.
+- Kalan bulgular (`braces`, `node-forge`, `decode-uri-component`, `sprintf-js`
+  ve bunlara bağlı Expo/Jest/React Native paketleri) için yamalı sürüm yok
+  (`braces`, `node-forge` tüm sürümler) ya da düzeltme Expo SDK 58'e major
+  geçiş gerektiriyor. `decode-uri-component@0.5` yalnız ESM olduğu için
+  `query-string@7`'ye zorlanamaz. Bu paketler derleme/test araçlarında veya
+  build zamanı config eklentilerinde çalışır; uygulama paketine girmez.
+- Yeniden değerlendirme: Expo SDK 58 geçişinde.
