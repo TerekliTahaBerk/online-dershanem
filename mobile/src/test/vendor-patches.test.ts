@@ -39,6 +39,26 @@ describe('yamalı bağımlılıklar', () => {
     expect(() => keys.publicKey.verify(digest, sign(digestInfo(true)))).toThrow(/DigestInfo/);
   });
 
+  it('node-forge PEM ayrıştırıcısı kötü niyetli girdide doğrusal sürede çalışır (CodeQL js/polynomial-redos)', () => {
+    const attacks = [
+      ' '.repeat(100000),
+      '-----BEGIN ' + '-----BEGIN  '.repeat(20000),
+      '-----BEGIN A-----\n' + '!'.repeat(100000) + '\n\nQUJD\n-----END A-----',
+      '-----BEGIN X-----\n'.repeat(10000) + '!\n-----END X-----',
+    ];
+    for (const input of attacks) {
+      const started = Date.now();
+      try { forge.pem.decode(input); } catch { /* geçersiz PEM beklenen */ }
+      expect(Date.now() - started).toBeLessThan(1000);
+    }
+    const encrypted = forge.pem.encode({ type: 'RSA PRIVATE KEY', procType: { version: '4', type: 'ENCRYPTED' }, dekInfo: { algorithm: 'DES-CBC', parameters: 'ABCD' }, body: 'gizli' });
+    const plain = forge.pem.encode({ type: 'PUBLIC KEY', body: 'acik' });
+    const decoded = forge.pem.decode(`önsöz\n${plain}${encrypted}${plain.replace(/\r\n/g, '\n')}`);
+    expect(decoded.map((item: { type: string; body: string }) => `${item.type}:${item.body}`)).toEqual(['PUBLIC KEY:acik', 'RSA PRIVATE KEY:gizli', 'PUBLIC KEY:acik']);
+    expect(decoded[1].procType).toEqual({ version: '4', type: 'ENCRYPTED' });
+    expect(decoded[1].dekInfo).toEqual({ algorithm: 'DES-CBC', parameters: 'ABCD' });
+  });
+
   it('sprintf-js aşırı hassasiyette RangeError fırlatmaz (GHSA-hp3w-g68c-fv3c)', () => {
     expect(() => sprintf('%.500f', 1.5)).not.toThrow();
     expect(sprintf('%.2f', 3.14159)).toBe('3.14');

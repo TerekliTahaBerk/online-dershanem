@@ -63,7 +63,7 @@ kalan ve proje yaması olduğu açıkça görülen `-od.N` ekiyle işaretlenir.
 | Paket | Kopya | Advisory | Yama |
 | --- | --- | --- | --- |
 | `decode-uri-component` | `mobile/vendor/npm/decode-uri-component` (0.5.0) | GHSA-vcc3-ghjq-m6fr (orta) | Upstream 0.5.0 (`fa479da`) mantığı birebir, CommonJS'e taşındı; `query-string@7` (`expo-router`) `require` ile yüklüyor. Uygulama paketine girer. |
-| `node-forge` | `mobile/vendor/npm/node-forge` (1.4.1-od.1) | GHSA-86w9-cpqp-85rv (yüksek) | Upstream digitalbazaar/forge#1152: iç içe DigestAlgorithm öğe sayısı denetimi (`lib/rsa.js`). |
+| `node-forge` | `mobile/vendor/npm/node-forge` (1.4.1-od.1) | GHSA-86w9-cpqp-85rv (yüksek); CodeQL `js/polynomial-redos`, `js/prototype-polluting-assignment` | Upstream digitalbazaar/forge#1152: iç içe DigestAlgorithm öğe sayısı denetimi (`lib/rsa.js`). `pem.decode` düzenli ifadeleri doğrusal zamanlı tarayıcıyla değiştirildi (36 KB saldırı girdisi 142 sn → 360 KB 45 ms; 300 bin girdilik fark testinde çıktı aynı, tek fark eski sürümün araya giren blokları yutma hatasının düzelmesi). Kullanılmayan tarayıcı/Flash modülleri (`http.js`, `xhr.js`, `socket.js`, `index.all.js`) kopyadan çıkarıldı. |
 | `braces` | `mobile/vendor/npm/braces` (3.0.4-od.1) | GHSA-vfj7-8cjw-p6xm (yüksek) | `parse()` iç içe derinliği 128 ile sınırlar (`maxDepth` seçeneğiyle düşürülebilir). |
 | `sprintf-js` | `vendor/npm/sprintf-js`, `mobile/vendor/npm/sprintf-js` (1.1.4-od.1, temel 1.0.3) | GHSA-hp3w-g68c-fv3c (orta) | Hassasiyet değeri ECMAScript sınırlarına sıkıştırılır. |
 
