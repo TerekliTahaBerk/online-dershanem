@@ -30,6 +30,7 @@ export default async function OdkStudentExamRunnerPage({
       id: question.id,
       questionNumber: question.questionNumber,
       sectionTitle: section.title,
+      bookletPage: question.bookletPage,
       sessionKey: sessionState ? sessionForSection(sessionState.plan, section.code)?.key ?? null : null,
     })),
   );

@@ -20,6 +20,7 @@ import {
   restorePendingAnswers,
   writePendingAnswers,
 } from "@/lib/odk/runner-answer-sync";
+import { bookletSrc, shouldFollowPage } from "@/lib/odk/runner-booklet";
 
 type Option = "A" | "B" | "C" | "D" | "E";
 type Answer = {
@@ -27,7 +28,7 @@ type Answer = {
   isMarked: boolean;
   revision: number;
 };
-type Question = { id: string; questionNumber: number; sectionTitle?: string; sessionKey?: string | null };
+type Question = { id: string; questionNumber: number; sectionTitle?: string; sessionKey?: string | null; bookletPage?: number | null };
 type RunnerSession = {
   phase: "SESSION" | "BREAK";
   currentKey: string;
@@ -124,12 +125,17 @@ export function StudentExamRunner({
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [visited, setVisited] = useState<Record<string, boolean>>({});
+  // Kitapçık görüntüleyicisinin hedef sayfası (P1-2); `nonce` aynı sayfaya yeniden gitmeyi zorlar.
+  const [bookletView, setBookletView] = useState<{ page: number | null; nonce: number }>({ page: null, nonce: 0 });
   const submittedRef = useRef(false);
   const lastAutoSubmitAttemptRef = useRef(0);
   const queues = useRef<Record<string, Promise<void>>>({});
   // Sunucunun henüz onaylamadığı son niyetler; yenilemeye dayanıklı olsun diye tarayıcıda da saklanır (P0-7).
   const pending = useRef<Record<string, AnswerPayload>>({});
   const restoredRef = useRef(false);
+  // Aynı denemenin başka sekmede açık olması (P1-13): uyarı + kaydedilen cevapları paylaşma.
+  const tabChannel = useRef<BroadcastChannel | null>(null);
+  const [otherTabOpen, setOtherTabOpen] = useState(false);
   const sequenceRef = useRef(1);
   const focusStartedAt = useRef<number | null>(null);
   const focusQuestionId = useRef<string | null>(null);
@@ -283,6 +289,7 @@ export function StudentExamRunner({
               ...current,
               [payload.questionId]: { selectedOption: payload.selectedOption, isMarked: payload.isMarked, revision: decision.revision },
             }));
+            tabChannel.current?.postMessage({ type: "answer", questionId: payload.questionId, selectedOption: payload.selectedOption, isMarked: payload.isMarked, revision: decision.revision });
           }
           setSaveState((current) => ({ ...current, [payload.questionId]: "saved" }));
           return;
@@ -319,6 +326,41 @@ export function StudentExamRunner({
     },
     [attemptId, closeLocally, persistPending, router],
   );
+
+  useEffect(() => {
+    if (typeof BroadcastChannel === "undefined") return;
+    const channel = new BroadcastChannel(`odk-attempt:${attemptId}`);
+    const tab = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    tabChannel.current = channel;
+    channel.onmessage = (event: MessageEvent) => {
+      const message = event.data as { type?: string; tab?: string; questionId?: string; selectedOption?: Option | null; isMarked?: boolean; revision?: number } | null;
+      if (!message || message.tab === tab) return;
+      if (message.type === "hello") {
+        setOtherTabOpen(true);
+        channel.postMessage({ type: "here", tab });
+      } else if (message.type === "here") setOtherTabOpen(true);
+      else if (message.type === "bye") setOtherTabOpen(false);
+      else if (message.type === "answer" && message.questionId && typeof message.revision === "number") {
+        const { questionId, revision } = message;
+        // Diğer sekmenin kaydı: burada bekleyen bir niyet yoksa ve daha yeniyse ekrana yansıt.
+        if (pending.current[questionId]) return;
+        setAnswers((current) =>
+          (current[questionId]?.revision ?? 0) >= revision
+            ? current
+            : { ...current, [questionId]: { selectedOption: message.selectedOption ?? null, isMarked: Boolean(message.isMarked), revision } },
+        );
+      }
+    };
+    channel.postMessage({ type: "hello", tab });
+    const bye = () => channel.postMessage({ type: "bye", tab });
+    window.addEventListener("pagehide", bye);
+    return () => {
+      bye();
+      window.removeEventListener("pagehide", bye);
+      channel.close();
+      tabChannel.current = null;
+    };
+  }, [attemptId]);
 
   /** Bekleyen tüm niyetleri soru kuyruklarına ekler (bağlantı geri geldiğinde, açılışta). */
   const flushPending = useCallback(() => {
@@ -642,6 +684,13 @@ export function StudentExamRunner({
   const currentState = currentQuestion
     ? saveState[currentQuestion.id]
     : undefined;
+  const bookletBase = `/api/odk/student/exams/${examId}/booklet`;
+  const currentPage = currentQuestion?.bookletPage ?? null;
+
+  // Soru değişince kitapçık o sorunun sayfasına gider; aynı sayfadaki soruda öğrencinin kaydırması korunur.
+  useEffect(() => {
+    setBookletView((view) => (shouldFollowPage(view.page, currentPage) ? { page: currentPage, nonce: view.nonce } : view));
+  }, [currentPage]);
 
   function confirmSubmit() {
     const ok = window.confirm(
@@ -748,6 +797,11 @@ export function StudentExamRunner({
             )}
           </div>
         </div>
+        {otherTabOpen ? (
+          <div className="mx-auto mb-2 max-w-[1760px] rounded-md bg-[#eef1ef] px-3 py-2 text-[13px] font-medium text-[#14201c]" role="status">
+            Bu deneme başka bir sekmede de açık. Cevaplar en son işaretlediğin sekmeden kaydedilir; karışıklık olmaması için diğer sekmeyi kapat.
+          </div>
+        ) : null}
         {!online || errorCount || submitError ? (
           <div
             className="mx-auto mb-2 max-w-[1760px] rounded-md bg-[#fff4d6] px-3 py-2 text-[13px] font-medium text-[#6b4700]"
@@ -791,11 +845,11 @@ export function StudentExamRunner({
           </p>
           <iframe
             title="Deneme kitapçığı"
-            src={`/api/odk/student/exams/${examId}/booklet#toolbar=1&navpanes=0`}
+            src={bookletSrc(bookletBase, bookletView.page, bookletView.nonce)}
             className="min-h-[480px] w-full flex-1 rounded-md bg-white md:min-h-0"
           />
           <a
-            href={`/api/odk/student/exams/${examId}/booklet`}
+            href={bookletSrc(bookletBase, currentPage)}
             target="_blank"
             rel="noreferrer"
             className="mt-2 inline-flex min-h-11 items-center justify-center rounded-md border border-black/15 bg-white text-[13px] font-semibold md:hidden"
@@ -919,6 +973,18 @@ export function StudentExamRunner({
                         {currentQuestion.sectionTitle ? ` · ${currentQuestion.sectionTitle}` : ""}
                       </p>
                       <h2 className="mt-0.5 text-[20px] font-semibold">Soru {currentQuestion.questionNumber}</h2>
+                      {currentPage ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setBookletView((view) => ({ page: currentPage, nonce: view.nonce + 1 }));
+                            setMobileView("booklet");
+                          }}
+                          className="mt-1 inline-flex min-h-8 items-center gap-1 text-[12.5px] font-medium text-[#3d4a45] underline underline-offset-2 hover:text-[#14201c]"
+                        >
+                          <FileText size={13} aria-hidden="true" /> Kitapçıkta sayfa {currentPage}
+                        </button>
+                      ) : null}
                     </div>
                     <div className="flex items-center gap-2">
                       {/* Sabit genişlik: kayıt durumu değişince düzen kaymaz. */}

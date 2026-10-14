@@ -12,7 +12,7 @@ export const studentExamInclude = {
   examFamilyRef: { select: { code: true } },
   currentVersion: {
     include: {
-      sections: { orderBy: { position: "asc" as const }, include: { questions: { where: { isActive: true }, orderBy: { position: "asc" as const }, select: { id: true, questionNumber: true, position: true } } } },
+      sections: { orderBy: { position: "asc" as const }, include: { questions: { where: { isActive: true }, orderBy: { position: "asc" as const }, select: { id: true, questionNumber: true, position: true, bookletPage: true } } } },
       files: { where: { type: "BOOKLET_PDF" as const }, select: { id: true } },
     },
   },

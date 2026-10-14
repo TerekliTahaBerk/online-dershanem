@@ -246,6 +246,41 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
     expect(answers.map((row) => row.selectedOption)).toEqual(["E", "D"]);
   });
 
+  // Faz 5 / P1-2 + P1-13: kitapçık tıklanan sorunun sayfasına gider; aynı deneme iki sekmede açıksa
+  // uyarı görünür ve bir sekmede kaydedilen cevap diğerine yansır.
+  test("kitapçık soru sayfasına gider; iki sekme uyarısı ve cevap paylaşımı", async ({ page }) => {
+    test.setTimeout(90_000);
+    await prisma.odkExamQuestion.update({ where: { id: question1 }, data: { bookletPage: 2 } });
+    await prisma.odkExamQuestion.update({ where: { id: question2 }, data: { bookletPage: 5 } });
+    try {
+      await login(page);
+      await openRunnerFromPanel(page);
+      const booklet = page.getByTitle("Deneme kitapçığı");
+      await expect(booklet).toHaveAttribute("src", /#toolbar=1&navpanes=0&page=2$/);
+      await page.getByRole("button", { name: /Sonraki/ }).click();
+      await expect(booklet).toHaveAttribute("src", /&page=5$/);
+      await page.getByRole("button", { name: "Kitapçıkta sayfa 5" }).click();
+      await expect(booklet).toHaveAttribute("src", /&page=5&odk=1$/);
+
+      const second = await page.context().newPage();
+      await mockBooklet(second);
+      await second.goto(`/panel/odk/ogrenci/denemeler/${examId}/coz`);
+      if (await second.getByRole("button", { name: /Cevaplar/ }).isVisible()) await second.getByRole("button", { name: /Cevaplar/ }).click();
+      await expect(second.getByText("Bu deneme başka bir sekmede de açık.")).toBeVisible();
+      await expect(page.getByText("Bu deneme başka bir sekmede de açık.")).toBeVisible();
+      await second.getByRole("button", { name: "C", exact: true }).click();
+      await expect(second.getByText("Kaydedildi", { exact: true })).toBeVisible();
+      await page.getByRole("button", { name: /Önceki/ }).click();
+      await expect(page.getByRole("button", { name: "C", exact: true })).toHaveAttribute("aria-pressed", "true");
+      // Sekme kapanınca (pagehide) diğer sekmedeki uyarı kalkar; çözücü kapanışta beforeunload sorar.
+      second.on("dialog", (dialog) => void dialog.accept());
+      await second.close({ runBeforeUnload: true });
+      await expect(page.getByText("Bu deneme başka bir sekmede de açık.")).toBeHidden();
+    } finally {
+      await prisma.odkExamQuestion.updateMany({ where: { id: { in: [question1, question2] } }, data: { bookletPage: null } });
+    }
+  });
+
   test("sunucu saati tarayıcı saati ileri olsa da süre dolunca otomatik teslim eder", async ({ page }) => {
     test.setTimeout(45_000);
     await resetAttempt(new Date(Date.now() + 7_000));
