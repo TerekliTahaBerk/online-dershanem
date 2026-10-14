@@ -20,7 +20,7 @@ export default function AppLayout() {
     // Faz 1: hassas yönetim işlemleri için native step-up (428 → kod → tek tekrar).
     <PreviewReadOnlyContext.Provider value={bootstrap.adminOverlay?.mode === 'PREVIEW'}>
     <View style={{ flex: 1 }}>
-    <CelebrationProvider key={`${bootstrap.user.id}:${bootstrap.workspace?.activeProduct}:${bootstrap.adminOverlay?.mode ?? "normal"}`} enabled={bootstrap.user.role === "STUDENT" && !bootstrap.adminOverlay}>
+    <CelebrationProvider key={`${bootstrap.user.id}:${bootstrap.user.role}:${bootstrap.workspace?.activeProduct}:${bootstrap.adminOverlay?.mode ?? "normal"}`} enabled={bootstrap.user.role === "STUDENT" && !bootstrap.adminOverlay}>
     <AdminOverlayBanner />
     <StepUpProvider>
     <ParentContextProvider>

@@ -29,6 +29,7 @@ export function CelebrationProvider({ children, enabled = true }: PropsWithChild
     if (seen.current.size > 128) seen.current.delete(seen.current.values().next().value!);
     setEvent(next);
   }, [enabled]);
+  useEffect(() => { if (!enabled) setEvent(null); }, [enabled]);
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => { if (state !== 'active') setEvent(null); });
     return () => sub.remove();
