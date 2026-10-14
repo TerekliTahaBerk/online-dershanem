@@ -14,6 +14,12 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react";
+import {
+  readPendingAnswers,
+  reconcileAnswerResponse,
+  restorePendingAnswers,
+  writePendingAnswers,
+} from "@/lib/odk/runner-answer-sync";
 
 type Option = "A" | "B" | "C" | "D" | "E";
 type Answer = {
@@ -40,6 +46,15 @@ function formatRemaining(ms: number) {
   const minutes = Math.floor((total % 3600) / 60);
   const seconds = total % 60;
   return `${hours ? `${String(hours).padStart(2, "0")}:` : ""}${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+/** localStorage erişimi gizli pencerede/engelli sitede fırlatabilir. */
+function browserStorage() {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
 }
 
 function navSymbol(answer: Answer | undefined, visited: boolean) {
@@ -112,7 +127,9 @@ export function StudentExamRunner({
   const submittedRef = useRef(false);
   const lastAutoSubmitAttemptRef = useRef(0);
   const queues = useRef<Record<string, Promise<void>>>({});
+  // Sunucunun henüz onaylamadığı son niyetler; yenilemeye dayanıklı olsun diye tarayıcıda da saklanır (P0-7).
   const pending = useRef<Record<string, AnswerPayload>>({});
+  const restoredRef = useRef(false);
   const sequenceRef = useRef(1);
   const focusStartedAt = useRef<number | null>(null);
   const focusQuestionId = useRef<string | null>(null);
@@ -126,11 +143,18 @@ export function StudentExamRunner({
     }>
   >([]);
 
+  const persistPending = useCallback(() => {
+    writePendingAnswers(browserStorage(), attemptId, pending.current);
+  }, [attemptId]);
+
   const closeLocally = useCallback(() => {
     submittedRef.current = true;
+    // Deneme kapandı: bekleyen niyetler artık yazılamaz; saklanan kuyruk temizlenir.
+    pending.current = {};
+    writePendingAnswers(browserStorage(), attemptId, {});
     router.replace(`/panel/odk/ogrenci/denemeler/${examId}`);
     router.refresh();
-  }, [examId, router]);
+  }, [attemptId, examId, router]);
 
   const flushEvents = useCallback(async () => {
     if (!eventQueue.current.length) return;
@@ -212,67 +236,128 @@ export function StudentExamRunner({
   );
 
   const sendAnswer = useCallback(
-    async (payload: AnswerPayload) => {
-      let response: Response | null = null;
-      for (let retry = 0; retry < 3; retry += 1) {
-        try {
-          response = await fetch(
-            `/api/odk/student/attempts/${attemptId}/answers`,
-            {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            },
+    async (initial: AnswerPayload) => {
+      let payload = initial;
+      // Revizyon çakışmasında sunucu kaydının üstüne yeniden gönderim (rebase) en çok 3 tur (P0-6).
+      for (let round = 0; round < 4; round += 1) {
+        let response: Response | null = null;
+        for (let retry = 0; retry < 3; retry += 1) {
+          try {
+            response = await fetch(
+              `/api/odk/student/attempts/${attemptId}/answers`,
+              {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+              },
+            );
+            if (response.status < 500) break;
+          } catch {
+            response = null;
+          }
+          await new Promise((resolve) =>
+            window.setTimeout(resolve, 400 * 2 ** retry),
           );
-          if (response.status < 500) break;
-        } catch {
-          response = null;
         }
-        await new Promise((resolve) =>
-          window.setTimeout(resolve, 400 * 2 ** retry),
+        if (!response) {
+          // Bekleyen niyet korunur (bellek + tarayıcı); bağlantı gelince yeniden gönderilir.
+          setOnline(false);
+          setSaveState((current) => ({ ...current, [payload.questionId]: "error" }));
+          return;
+        }
+        const result = await response.json().catch(() => ({}));
+        setOnline(response.ok || response.status < 500);
+        const decision = reconcileAnswerResponse(
+          payload,
+          response.ok && result.answer
+            ? { ok: true, answer: result.answer }
+            : { ok: false, code: result.code ?? null, answer: result.answer ?? null },
         );
-      }
-      if (!response) {
-        setOnline(false);
-        setSaveState((current) => ({
-          ...current,
-          [payload.questionId]: "error",
-        }));
+        // Bu gönderimden sonra yeni bir tıklama geldiyse karar onundur; sıradaki gönderim çözer.
+        const isLatest = pending.current[payload.questionId]?.revision === payload.revision;
+        if (decision.action === "SETTLED") {
+          if (isLatest) {
+            delete pending.current[payload.questionId];
+            persistPending();
+            setAnswers((current) => ({
+              ...current,
+              [payload.questionId]: { selectedOption: payload.selectedOption, isMarked: payload.isMarked, revision: decision.revision },
+            }));
+          }
+          setSaveState((current) => ({ ...current, [payload.questionId]: "saved" }));
+          return;
+        }
+        if (decision.action === "RESEND") {
+          if (!isLatest) return;
+          if (round === 3) {
+            setSaveState((current) => ({ ...current, [payload.questionId]: "error" }));
+            return;
+          }
+          payload = decision.payload;
+          pending.current[payload.questionId] = payload;
+          persistPending();
+          setAnswers((current) => ({
+            ...current,
+            [payload.questionId]: { selectedOption: payload.selectedOption, isMarked: payload.isMarked, revision: payload.revision },
+          }));
+          continue;
+        }
+        if (decision.action === "DROP") {
+          if (isLatest) {
+            delete pending.current[payload.questionId];
+            persistPending();
+          }
+          if (result.code === "ATTEMPT_CLOSED") closeLocally();
+          // Oturum kapandı ya da aradayız: güncel oturumu sunucudan al.
+          else router.refresh();
+          return;
+        }
+        // Geçici hata: bekleyen niyet kalır, sonraki bağlantı/kalp atışında yeniden denenir.
+        setSaveState((current) => ({ ...current, [payload.questionId]: "error" }));
         return;
       }
-      const result = await response.json().catch(() => ({}));
-      if (result.answer)
-        setAnswers((current) =>
-          current[payload.questionId]?.revision > result.answer.revision
-            ? current
-            : {
-                ...current,
-                [payload.questionId]: {
-                  selectedOption: result.answer.selectedOption,
-                  isMarked: result.answer.isMarked,
-                  revision: result.answer.revision,
-                },
-              },
-        );
-      if (
-        pending.current[payload.questionId]?.revision === payload.revision &&
-        (response.ok || result.code === "REVISION_CONFLICT")
-      )
-        delete pending.current[payload.questionId];
-      setOnline(response.ok || response.status < 500);
-      setSaveState((current) => ({
-        ...current,
-        [payload.questionId]: response.ok ? "saved" : "error",
-      }));
-      if (result.code === "ATTEMPT_CLOSED") closeLocally();
-      // Oturum kapandı ya da aradayız: bekleyen kaydı bırak, güncel oturumu sunucudan al.
-      if (result.code === "SESSION_LOCKED" || result.code === "SESSION_BREAK") {
-        delete pending.current[payload.questionId];
-        router.refresh();
-      }
     },
-    [attemptId, closeLocally, router],
+    [attemptId, closeLocally, persistPending, router],
   );
+
+  /** Bekleyen tüm niyetleri soru kuyruklarına ekler (bağlantı geri geldiğinde, açılışta). */
+  const flushPending = useCallback(() => {
+    for (const payload of Object.values(pending.current))
+      queues.current[payload.questionId] = (
+        queues.current[payload.questionId] || Promise.resolve()
+      ).then(() => {
+        const latest = pending.current[payload.questionId];
+        return latest ? sendAnswer(latest) : undefined;
+      });
+  }, [sendAnswer]);
+
+  // Yenileme/çökme sonrası: tarayıcıdaki bekleyen niyetleri sunucu kaydıyla uzlaştırıp yeniden gönder (P0-7).
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+    const restored = restorePendingAnswers(
+      readPendingAnswers(browserStorage(), attemptId),
+      initialAnswers,
+      new Set(questions.map((question) => question.id)),
+    );
+    pending.current = { ...restored, ...pending.current };
+    persistPending();
+    if (!Object.keys(restored).length) return;
+    setAnswers((current) => ({
+      ...current,
+      ...Object.fromEntries(
+        Object.values(restored).map((payload) => [
+          payload.questionId,
+          { selectedOption: payload.selectedOption, isMarked: payload.isMarked, revision: payload.revision },
+        ]),
+      ),
+    }));
+    setSaveState((current) => ({
+      ...current,
+      ...Object.fromEntries(Object.keys(restored).map((questionId) => [questionId, "saving" as const])),
+    }));
+    flushPending();
+  }, [attemptId, flushPending, initialAnswers, persistPending, questions]);
 
   const submit = useCallback(
     async (auto = false) => {
@@ -415,6 +500,8 @@ export function StudentExamRunner({
         const result = await response.json().catch(() => ({}));
         setOnline(response.ok);
         if (result.code === "ATTEMPT_CLOSED") closeLocally();
+        // Sunucu erişilebilir: kayıt bekleyen niyet varsa şimdi gönder.
+        else if (response.ok && Object.keys(pending.current).length) flushPending();
       } catch {
         setOnline(false);
       }
@@ -429,7 +516,7 @@ export function StudentExamRunner({
       window.clearInterval(interval);
       window.clearInterval(eventsInterval);
     };
-  }, [attemptId, closeLocally, flushEvents]);
+  }, [attemptId, closeLocally, flushEvents, flushPending]);
 
   useEffect(() => {
     const onVisibility = () => {
@@ -463,10 +550,7 @@ export function StudentExamRunner({
     const onOnline = () => {
       setOnline(true);
       pushEvent("NETWORK_ONLINE");
-      for (const payload of Object.values(pending.current))
-        queues.current[payload.questionId] = (
-          queues.current[payload.questionId] || Promise.resolve()
-        ).then(() => sendAnswer(payload));
+      flushPending();
     };
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("blur", onBlur);
@@ -478,7 +562,7 @@ export function StudentExamRunner({
     window.addEventListener("online", onOnline);
     return () => {
       document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("blur-sm", onBlur);
+      window.removeEventListener("blur", onBlur);
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("copy", onCopy);
       document.removeEventListener("paste", onPaste);
@@ -489,9 +573,9 @@ export function StudentExamRunner({
   }, [
     currentIndex,
     endQuestionFocus,
+    flushPending,
     pushEvent,
     questions,
-    sendAnswer,
     startQuestionFocus,
   ]);
 
@@ -524,6 +608,7 @@ export function StudentExamRunner({
     setSaveState((current) => ({ ...current, [questionId]: "saving" }));
     const payload = { questionId, ...next };
     pending.current[questionId] = payload;
+    persistPending();
     queues.current[questionId] = (
       queues.current[questionId] || Promise.resolve()
     ).then(

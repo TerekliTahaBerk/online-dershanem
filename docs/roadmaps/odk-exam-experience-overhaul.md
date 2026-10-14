@@ -163,6 +163,21 @@ gereksinimi veya ciddi UX açığı; **P2** = iyileştirme.
   sunucu kaydından yeni olanlar geri yüklenip gönderilir; teslimde temizlenir.
   Depolama hatası (gizli pencere) akışı bozmaz.
 
+#### P0-9 · Yeniden puanlama yayından hariç tutulan sonucu yayınlıyor (denetim sırasında bulundu)
+- **Dosya/fonksiyon:** `scoring-service.ts::scoreOdkExam` (`publicationStatus = exam.status === "RELEASED" || … ? "PUBLISHED"`)
+- **Kanıt:** Yayın sırasında `excludeReviewRequired` ile gizli bırakılan (bütünlük
+  incelemesindeki) sonuç, RELEASED denemede yapılan her yeniden puanlamada
+  `PUBLISHED` olur → öğrenci/veli/öğretmen görür.
+- **Hedef:** Puanlama yayın durumunu değiştirmez; yeniden puanlama önceki durumu
+  korur, yeni puan `HIDDEN` başlar.
+
+#### P0-10 · Negatif nete izin veren politika DB kısıtıyla çakışıyor (denetim sırasında bulundu)
+- **Kanıt:** `odk_attempt_scores_net_check CHECK (total_net >= 0)` (migration 0062).
+  `minimumNetIsZero=false` politika uygulanırsa puanlama transaction'ı yarıda çöker.
+- **Hedef (Faz 2):** Puanlama bu politikayı açık hata mesajıyla reddeder (sessiz kesme yok).
+  **Ürün kararı gerekir:** negatif toplam net istenirse kısıtı gevşeten migration
+  (rollback: kısıtı yeniden ekle; negatif satır varsa önce raporla).
+
 #### P0-8 · `blur` listener temizlenmiyor
 - **Dosya:** `student-exam-runner.tsx:481` — `window.removeEventListener("blur-sm", onBlur)`
   (Tailwind sınıf adı codemod'unun yanlışlıkla değiştirdiği string).
@@ -215,11 +230,11 @@ gereksinimi veya ciddi UX açığı; **P2** = iyileştirme.
 | Faz | Dilim | İçerik | Durum |
 | --- | --- | --- | --- |
 | 1 | Audit | Bu belge | ✅ |
-| 2 | P0-1 | Net politikası + ham net | bu dalda |
-| 2 | P0-3 | Gerçek rescore etkisi | bu dalda |
-| 2 | P0-4/5 | Import sürüm/hash/eşzamanlılık + kazanım aile/ders uyumu | bu dalda |
-| 2 | P0-6/7/8 | Runner: kalıcı bekleyen cevap, conflict rebase, blur | bu dalda |
-| 2 | P0-2 | Anahtar revizyonu + soru iptali + etki önizleme + rescore | bu dalda (sunucu + API; UI Faz 6) |
+| 2 | P0-1/10, P1-5 | Net politikası + ham net + kazanım süresi | ✅ `73a66d1` |
+| 2 | P0-3/9 | Gerçek rescore etkisi + yayın durumunu koruma | ✅ `7e09fa0` |
+| 2 | P0-2 | Anahtar revizyonu + soru iptali + etki önizleme + rescore (sunucu + API; UI Faz 6) | ✅ `d7cee18` |
+| 2 | P0-4/5 | Import sürüm/hash/eşzamanlılık + kazanım aile/ders uyumu | ✅ `b9839fc` |
+| 2 | P0-6/7/8 | Runner: kalıcı bekleyen cevap, conflict rebase, blur | ✅ (bu dal) |
 | 3 | P1-4/7 | Şablon sürümü, alt testler, alan bazlı beklenen bölümler | sonraki |
 | 4 | P1-6/10, P2-1/2 | Yönetici sihirbazı, CSV/optik grid, conflict UI | sonraki |
 | 5 | P1-1/2/3/13 | Oturum kitapçığı, PDF sayfa eşleme, gerçek önizleme | sonraki |
@@ -249,4 +264,63 @@ gereksinimi veya ciddi UX açığı; **P2** = iyileştirme.
 ## 4. Faz kayıtları
 
 Her faz sonunda: bulgu · dokunulan dosyalar · güvenlik gerekçesi · testler ·
-komutlar ve gerçek sonuçlar · kalan riskler · sonraki faz. (Aşağıda güncellenir.)
+komutlar ve gerçek sonuçlar · kalan riskler · sonraki faz.
+
+### Faz 2 — P0 doğruluk (2026-10-14)
+
+**Dokunulan dosyalar**
+- Puanlama: `lib/odk/scoring.ts`, `lib/odk/scoring-service.ts`, `lib/odk/exam-results-commands.ts`
+- Revizyon: `lib/odk/answer-key-revision.ts` (saf), `lib/odk/answer-key-revision-server.ts`,
+  `app/api/odk/admin/exams/[id]/answer-key-revisions/route.ts`, `lib/odk/admin-schemas.ts`
+- Import: `lib/odk/answer-key-import.ts`, `lib/odk/outcome-import.ts`, `lib/odk/exam-commands-server.ts`
+- Runner: `lib/odk/runner-answer-sync.ts` (saf), `components/odk/student-exam-runner.tsx`
+
+**Neden güvenli**
+- Migration yok; yeni veriler mevcut JSON alanlarına (sectionBreakdown.rawNet,
+  previewSummary.targetStateHash, revizyon previousAnswers/nextAnswers, audit payload) yazılır.
+- Mevcut politikaların hepsi `minimumNetIsZero=true` → tarihsel netler değişmez.
+- Yanıt sözleşmeleri yalnız genişler (`impact` yeni alanlar, import `code`/`idempotent`).
+  Mobil komut ucu aynı servisleri kullanır; K03b/K03c integration testleri geçer.
+- Yeni uçlar mevcut yetkileri kullanır: önizleme `odk:key:revise`, commit
+  `requireApiRecentStaffStepUp("odk:key:revise")` (rescore ile aynı).
+- Revizyon/import commit'leri aynı transaction'da durum hash'ini yeniden doğrular
+  ve koşullu yazar; eşzamanlı iki işlemden yalnız biri uygulanır.
+
+**Eklenen testler**
+- Unit: `lib/odk/scoring-policy.test.ts`, `lib/odk/answer-key-revision.test.ts`,
+  `lib/odk/import-integrity.test.ts`, `lib/odk/runner-answer-sync.test.ts`
+  (bileşenlerde eşleşmeyen `removeEventListener` regresyon taraması dahil).
+- Integration (gerçek Postgres): `tests/integration/odk-exam-correctness.integration.ts`
+  — ham net, negatif politika reddi, kazanım süresi, P0-9 yayın koruması, kuru
+  rescore farkı, revizyon uçtan uca (onay, iptal, rescore, audit), eşzamanlı revizyon,
+  taslakta revizyon reddi, bayat import, idempotent/eşzamanlı import commit,
+  şema sürümü, başka aile/ders kazanımı (import + editör).
+- E2E: `tests/e2e/odk-exam-flow.spec.ts` — çevrimdışı çoklu cevap + yenileme +
+  yeniden bağlanma + revizyon çakışması.
+- Her yeni test önce eski kodda çalıştırılıp kırmızı olduğu doğrulandı.
+- Güncellenen test: K03c (`odk-exam-commands.integration.ts`) "değişen sonuç onay
+  ister" adımını eski sabit `changedQuestionCount: 1`'e dayanmadan, anahtarı
+  gerçekten değiştirerek doğrular; değişmeyen rescore'un onaysız geçtiği eklendi.
+
+**Çalıştırılan komutlar ve gerçek sonuçlar** (yerel Postgres 16, CI ile aynı env)
+- `npm run typecheck` → temiz · `npx eslint lib/odk components/odk/student-exam-runner.tsx` → temiz
+- `npm run test:unit` → 1052/1052 geçti
+- `node --conditions react-server --import tsx --test --test-concurrency=1 tests/integration/odk-*.integration.ts` → 20/20 geçti
+- `npm run lint:api-validation`, `lint:mobile-parity`, `lint:hygiene` → temiz
+- `next build` + `CI=true playwright test tests/e2e/odk-exam-flow.spec.ts tests/e2e/odk-lgs-sessions.spec.ts` → 5/5 geçti
+- `CI=true playwright test tests/e2e/mobile-odk-*.spec.ts tests/e2e/odk-product-quality.spec.ts tests/e2e/odk-runner-visual.spec.ts` → 17/17 geçti
+- Yeni E2E senaryosu eski runner koduyla ayrıca derlenip koşulmadı; aynı davranışın
+  saf mantığı (`runner-answer-sync`) unit testlerle önce kırmızı → sonra yeşil doğrulandı.
+
+**Kalan riskler**
+- Revizyon için yönetici arayüzü yok (yalnız API) → Faz 6.
+- Puanlama ve çözücü hâlâ `exam.currentVersion` kullanıyor (P1-8); revizyon yeni
+  sürüm üretmediği için şu an doğru, yeni sürüm akışı eklenmeden önce düzeltilmeli.
+- İptal politikası yalnız `EXCLUDE`; resmî MEB/ÖSYM yıl kuralı farklıysa ürün
+  sahibi onayıyla yeni değer eklenmeli.
+- Eşzamanlı revizyon integration testi ~20 tekrarda bir kez kilit beklemesi
+  nedeniyle kırmızı oldu; P2028/P2034 artık 409'a çevriliyor, sonraki 20+ koşu yeşil.
+- Runner'da iki sekme uyarısı (P1-13) yok; uzlaşma son niyeti kaydeder.
+
+**Sonraki faz:** Faz 3 — şablon sürümü (yıl/kaynak/geçerlilik, resmî/özel mod),
+TYT/AYT alt testleri ve alan bazlı beklenen bölümler; ardından P1-8 (attempt sürümü).

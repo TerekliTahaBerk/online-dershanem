@@ -202,6 +202,50 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
     await expect(page.getByRole("heading", { name: "Sonraki adım" })).toBeVisible();
   });
 
+  // P0-6 / P0-7 (docs/roadmaps/odk-exam-experience-overhaul.md): çevrimdışı değişen
+  // cevaplar yenilemede kaybolmaz; başka sekmenin yazdığı revizyonla çakışma son niyeti kaydeder.
+  test("çevrimdışı birden çok cevap, sayfa yenileme, yeniden bağlanma ve revizyon çakışmasında cevap kaybolmaz", async ({ page }) => {
+    test.setTimeout(120_000);
+    await login(page);
+    await openRunnerFromPanel(page);
+    const answersRoute = `**/api/odk/student/attempts/${attemptId}/answers`;
+    await page.route(answersRoute, (route) => route.abort("internetdisconnected"));
+
+    await page.getByRole("button", { name: "A", exact: true }).click();
+    await page.getByRole("button", { name: /Sonraki/ }).click();
+    await page.getByRole("button", { name: "C", exact: true }).click();
+    await page.getByRole("button", { name: "D", exact: true }).click(); // aynı soruda fikir değiştirme
+    await expect(page.getByText("Kayıt hatası", { exact: true })).toBeVisible({ timeout: 15_000 });
+    const stored = await page.evaluate((id) => localStorage.getItem(`odk:pending-answers:${id}`), attemptId);
+    expect(Object.keys(JSON.parse(stored!).answers).sort()).toEqual([question1, question2].sort());
+    expect(await prisma.odkAttemptAnswer.count({ where: { attemptId } })).toBe(0);
+
+    // Bağlantı hâlâ yokken yenile: yerel niyetler ekranda kalır.
+    await page.reload();
+    if (await page.getByRole("button", { name: /Cevaplar/ }).isVisible()) await page.getByRole("button", { name: /Cevaplar/ }).click();
+    await page.getByRole("button", { name: /^Soru 2,/ }).click();
+    await expect(page.getByRole("button", { name: "D", exact: true })).toHaveAttribute("aria-pressed", "true");
+
+    // Bağlantı geri gelir: bekleyen cevaplar gönderilir.
+    await page.unroute(answersRoute);
+    await page.evaluate(() => window.dispatchEvent(new Event("online")));
+    await expect.poll(async () => (await prisma.odkAttemptAnswer.findMany({ where: { attemptId }, orderBy: { questionId: "asc" } })).map((row) => row.selectedOption), { timeout: 20_000 }).toEqual(["A", "D"]);
+    await expect.poll(() => page.evaluate((id) => localStorage.getItem(`odk:pending-answers:${id}`), attemptId)).toBeNull();
+
+    // Başka sekme 1. soruyu daha yüksek revizyonla B yaptı; bu sekmede E seçilir → son niyet (E) kazanır.
+    await prisma.odkAttemptAnswer.update({ where: { attemptId_questionId: { attemptId, questionId: question1 } }, data: { selectedOption: "B", revision: { increment: 5 } } });
+    await page.getByRole("button", { name: /^Soru 1,/ }).click();
+    await page.getByRole("button", { name: "E", exact: true }).click();
+    await expect.poll(async () => (await prisma.odkAttemptAnswer.findUniqueOrThrow({ where: { attemptId_questionId: { attemptId, questionId: question1 } } })).selectedOption, { timeout: 15_000 }).toBe("E");
+    await expect(page.locator("header").getByText("Tüm cevaplar kaydedildi")).toBeVisible();
+
+    page.once("dialog", (dialog) => dialog.accept());
+    await page.getByRole("button", { name: "Denemeyi teslim et" }).click();
+    await page.waitForURL(new RegExp(`/panel/odk/ogrenci/denemeler/${examId}$`));
+    const answers = await prisma.odkAttemptAnswer.findMany({ where: { attemptId }, orderBy: { questionId: "asc" } });
+    expect(answers.map((row) => row.selectedOption)).toEqual(["E", "D"]);
+  });
+
   test("sunucu saati tarayıcı saati ileri olsa da süre dolunca otomatik teslim eder", async ({ page }) => {
     test.setTimeout(45_000);
     await resetAttempt(new Date(Date.now() + 7_000));
