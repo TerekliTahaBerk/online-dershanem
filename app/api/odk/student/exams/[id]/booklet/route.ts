@@ -1,8 +1,8 @@
 import { get } from "@vercel/blob";
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { getActiveOdkExamGrant } from "@/lib/odk/product-contract-server";
+import { loadStudentBookletFile } from "@/lib/odk/student-booklet-server";
 import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -12,13 +12,13 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   if (!params.success) return invalidApiInput();
   const { id } = params.data;
   if (!(await getActiveOdkExamGrant(auth.session.userId, id))) return NextResponse.json({ error: "Bu deneme için aktif paket erişiminiz yok." }, { status: 403 });
-  const attempt = await prisma.odkExamAttempt.findFirst({
-    where: { examId: id, studentUserId: auth.session.userId, status: "IN_PROGRESS", deadlineAt: { gt: new Date() } },
-    orderBy: { attemptNumber: "desc" },
-    select: { version: { select: { files: { where: { type: "BOOKLET_PDF" }, take: 1, select: { blobPathname: true, fileName: true, mimeType: true } } } } },
-  });
-  const file = attempt?.version.files[0];
-  if (!file) return NextResponse.json({ error: "Aktif sınav kitapçığı bulunamadı." }, { status: 404 });
+  // Oturumlu sınavda yalnız açık oturumun kitapçığı; arada ve bitişte hiçbiri (P1-1).
+  const booklet = await loadStudentBookletFile(id, auth.session.userId);
+  if (!booklet.ok) {
+    const error = booklet.code === "SESSION_BREAK" ? "Oturum arası: kitapçık sıradaki oturumda açılır." : booklet.code === "SESSION_FINISHED" ? "Oturumlar tamamlandı." : "Aktif sınav kitapçığı bulunamadı.";
+    return NextResponse.json({ error, code: booklet.code }, { status: booklet.status });
+  }
+  const file = booklet.file;
   const result = await get(file.blobPathname, { access: "private", ifNoneMatch: request.headers.get("if-none-match") || undefined });
   if (!result) return NextResponse.json({ error: "Kitapçık dosyası bulunamadı." }, { status: 404 });
   if (result.statusCode === 304) return new NextResponse(null, { status: 304, headers: { ETag: result.blob.etag } });

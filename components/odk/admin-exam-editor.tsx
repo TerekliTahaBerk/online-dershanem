@@ -64,7 +64,9 @@ type Props = {
     meetUrl: string;
     versionStatus: OdkExamVersionStatus;
     durationMinutes: number;
-    files: { id: string; type: string; fileName: string }[];
+    files: { id: string; type: string; fileName: string; sessionKey?: string }[];
+    /** Oturumlu sınavın oturumları (LGS: Sözel / Sayısal); kitapçık oturum başına yüklenebilir. */
+    sessions?: Array<{ key: string; title: string }>;
     questions: Question[];
     /** Soru içerik revizyonu; kayıtta gönderilir, araya giren kayıt 409 ile yakalanır. */
     questionsRevision?: string;
@@ -730,7 +732,7 @@ export function AdminExamEditor({
               rel="noreferrer"
               className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
             >
-              {file.type === "BOOKLET_PDF" ? "Kitapçık" : "Cevap anahtarı"}:{" "}
+              {file.type === "BOOKLET_PDF" ? `Kitapçık${file.sessionKey ? ` · ${exam.sessions?.find((item) => item.key === file.sessionKey)?.title ?? file.sessionKey} oturumu` : exam.sessions?.length ? " · tüm deneme" : ""}` : "Cevap anahtarı"}:{" "}
               {file.fileName}
             </a>
           ))}
@@ -742,7 +744,7 @@ export function AdminExamEditor({
         </div>
         {editable ? (
           <form
-            className="mt-4 grid gap-3 sm:grid-cols-[220px_minmax(0,1fr)_auto] sm:items-end"
+            className={`mt-4 grid gap-3 sm:items-end ${exam.sessions?.length ? "sm:grid-cols-[220px_200px_minmax(0,1fr)_auto]" : "sm:grid-cols-[220px_minmax(0,1fr)_auto]"}`}
             onSubmit={(event) => void upload(event)}
           >
             <label className="pn-field">
@@ -752,6 +754,19 @@ export function AdminExamEditor({
                 <option value="ANSWER_KEY_PDF">Cevap anahtarı PDF</option>
               </select>
             </label>
+            {exam.sessions?.length ? (
+              <label className="pn-field">
+                Kitapçık kapsamı
+                <select name="sessionKey" defaultValue={exam.sessions[0].key}>
+                  {exam.sessions.map((session) => (
+                    <option key={session.key} value={session.key}>
+                      {session.title} oturumu
+                    </option>
+                  ))}
+                  <option value="">Tüm deneme (önerilmez)</option>
+                </select>
+              </label>
+            ) : null}
             <label className="pn-field">
               PDF dosyası
               <input

@@ -1,4 +1,5 @@
 import type { OdkAnswerOption, OdkExamFamily, OdkExamStatus, OdkExamFileType } from "@prisma/client";
+import { sessionBookletIssues } from "@/lib/odk/booklet-access";
 import { getExamTemplate, type ExamTemplateMode, type TemplateSnapshot } from "@/lib/odk/exam-templates";
 
 export type ReadinessIssue = { level: "error" | "warning"; code: string; message: string; sectionCode?: string; questionNumber?: number };
@@ -9,6 +10,9 @@ export type VersionReadinessInput = {
   durationMinutes: number;
   scoringPolicyCode: string;
   files: OdkExamFileType[];
+  /** Oturumlu sınavın oturum anahtarları ve yüklenen kitapçıkların oturumları ("" = tüm deneme). */
+  sessionKeys?: string[];
+  bookletSessionKeys?: string[];
   structureMode?: "MATH_ONLY" | "FULL_TEMPLATE";
   templateCode?: string | null;
   /** Sürüm ayarlarındaki şablon görüntüsü; varsa güncel şablon yerine bu kullanılır (Faz 3). */
@@ -103,6 +107,8 @@ export function validateVersionReadiness(input: VersionReadinessInput): Readines
 
   if (requireBooklet && !input.files.includes("BOOKLET_PDF")) {
     issues.push({ level: "error", code: "BOOKLET_MISSING", message: "Öğrenci kitapçığı PDF'i yüklenmelidir." });
+  } else if (requireBooklet) {
+    issues.push(...sessionBookletIssues(input.sessionKeys ?? [], input.bookletSessionKeys ?? []));
   }
 
   if (!input.sections.length) {

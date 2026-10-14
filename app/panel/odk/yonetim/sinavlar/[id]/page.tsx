@@ -97,7 +97,8 @@ export default async function OdkAdminExamDetailPage({
     meetUrl: exam.meetUrl || "",
     versionStatus: version.status,
     durationMinutes: version.durationMinutes,
-    files: version.files.map((file) => ({ id: file.id, type: file.type, fileName: file.fileName })),
+    files: version.files.map((file) => ({ id: file.id, type: file.type, fileName: file.fileName, sessionKey: file.sessionKey })),
+    sessions: sessionPlan?.map((item) => ({ key: item.key, title: item.title })),
     // Cevap anahtarı yalnız içerik editörüne gider (EXAM_EDITOR / ADMIN).
     questions: caps.edit ? questions : [],
     questionsRevision: caps.edit ? questionsRevision : undefined,

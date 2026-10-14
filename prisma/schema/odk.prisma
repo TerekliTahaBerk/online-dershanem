@@ -601,6 +601,8 @@ model OdkExamFile {
   id           String          @id @default(cuid())
   versionId    String          @map("version_id")
   type         OdkExamFileType
+  /// Oturumlu sınavda (LGS) kitapçığın ait olduğu oturum anahtarı; "" = tüm deneme.
+  sessionKey   String          @default("") @map("session_key")
   blobPathname String          @map("blob_pathname")
   fileName     String          @map("file_name")
   mimeType     String          @map("mime_type")
@@ -611,7 +613,7 @@ model OdkExamFile {
   version      OdkExamVersion  @relation(fields: [versionId], references: [id], onDelete: Cascade)
   uploadedBy   User            @relation("OdkExamFileUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
 
-  @@unique([versionId, type])
+  @@unique([versionId, type, sessionKey])
   @@index([uploadedById, createdAt])
   @@map("odk_exam_files")
 }
