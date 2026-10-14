@@ -12,7 +12,12 @@ test('P4 K08 HTTP: admin-only pilot, atomic replay, revision and readiness gates
     const token = randomBytes(32).toString('base64url'); await db.session.create({ data: { userId: user.id, tokenHash: createHash('sha256').update(token).digest('hex'), expiresAt: new Date(Date.now() + 3600000), mfaVerifiedAt: new Date() } });
     return { user, headers: { authorization: `Bearer ${token}`, 'x-od-client': 'mobile', 'x-od-client-version': '1.0.0' } };
   }
+  // The shared seed supplies an ACTIVE pilot for exam-flow tests. This test
+  // exercises creation's single-open-pilot rule in the same isolated DB.
+  // Temporarily close only that known fixture, then restore it in finally.
+  const seededPilot = await db.odkPilotRun.findUnique({ where: { id: 'e2e-odk-pilot-run' }, select: { id: true, status: true, updatedAt: true } });
   try {
+    if (seededPilot) await db.odkPilotRun.update({ where: { id: seededPilot.id }, data: { status: 'ROLLED_BACK' } });
     const admin = await actor('ADMIN'), teacher = await actor('TEACHER'), s1 = await actor('STUDENT'), s2 = await actor('STUDENT'), parent = await actor('PARENT');
     expect((await request.get(path)).status()).toBe(401); for (const a of [teacher, s1, parent]) { expect((await request.get(path, { headers: a.headers })).status()).toBe(403); expect((await request.post(path, { headers: a.headers, data: {} })).status()).toBe(403); }
     const response = await request.get(path, { headers: admin.headers }); expect(response.headers()['cache-control']).toContain('no-store'); const parsed = parseOdkManagementPilot(await response.json()); expect(parsed.ok).toBe(true); if (!parsed.ok) throw new Error(parsed.error);
@@ -57,6 +62,7 @@ test('P4 K08 HTTP: admin-only pilot, atomic replay, revision and readiness gates
     const webReplay = await request.post('/api/odk/admin/pilot-runs', { headers: admin.headers, data: { name: command.name, userIds: users, requestKey: headers['X-Od-Idempotency-Key'] } }); expect(webReplay.status(), await webReplay.text()).toBe(200); expect((await webReplay.json()).replayed).toBe(true);
     expect((await request.post('/api/odk/admin/pilot-runs', { headers: admin.headers, data: { name: 'Different pilot', userIds: users, requestKey: headers['X-Od-Idempotency-Key'] } })).status()).toBe(409);
   } finally {
+    if (seededPilot) await db.odkPilotRun.update({ where: { id: seededPilot.id }, data: { status: seededPilot.status, updatedAt: seededPilot.updatedAt } });
     await db.odkPilotRun.deleteMany({ where: { createdById: { in: users } } }); await db.odkExamAttempt.deleteMany({ where: { examId: { in: exams } } }); await db.odkExam.deleteMany({ where: { id: { in: exams } } }); await db.auditLog.deleteMany({ where: { actorUserId: { in: users } } }); await db.productMembership.deleteMany({ where: { userId: { in: users } } }); await db.session.deleteMany({ where: { userId: { in: users } } }); await db.user.deleteMany({ where: { id: { in: users } } }); await db.$disconnect();
   }
 });

@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Banner, Button, EmptyState, PageHeader, Row, Screen, Section, SegmentedTabs, StatusBadge, Text } from '@/design/primitives';
 import { color, radius, space } from '@/design/tokens';
+import { useCelebration } from '@/design/celebration';
 import { completeRecoveryItem, deferReview, fetchRecovery, fetchReviewQueue, respondReview, submitRecoveryCheckpoint } from '@/lib/api/student';
 import { ApiError } from '@/lib/api/errors';
 import { useSession } from '@/lib/auth/session-provider';
@@ -186,6 +187,7 @@ function RecoveryPackage({ item, highlighted }: { item: RecoveryPackageRow; high
   const nav = useOdNavigation();
   const opener = useMaterialOpener();
   const [message, setMessage] = useState<{ tone: 'success' | 'critical'; text: string } | null>(null);
+  const celebrate = useCelebration();
   const completeItem = useMutation({ mutationFn: (itemId: string) => completeRecoveryItem(api, item.id, itemId) });
   const checkpoint = useMutation({ mutationFn: (response: (typeof RECOVERY_CHECKPOINT_RESPONSES)[number]) => submitRecoveryCheckpoint(api, item.id, response) });
   const done = item.status === 'COMPLETED';
@@ -236,7 +238,7 @@ function RecoveryPackage({ item, highlighted }: { item: RecoveryPackageRow; high
                 ) : null}
                 {assignmentsHref ? <Button label="Çalışmalara git" variant="secondary" onPress={() => nav.push(assignmentsHref)} /> : null}
                 {!step.completed && !done ? (
-                  <Button mutation testID={`recovery-step-${step.id}`} label="Tamamladım" disabled={busy} loading={completeItem.isPending && completeItem.variables === step.id} onPress={() => void run(() => completeItem.mutateAsync(step.id), (result) => (result.completed ? 'Telafi tamamlandı.' : 'Adım tamamlandı olarak kaydedildi.'))} />
+                  <Button mutation testID={`recovery-step-${step.id}`} label="Tamamladım" disabled={busy} loading={completeItem.isPending && completeItem.variables === step.id} onPress={() => void run(() => completeItem.mutateAsync(step.id), (result) => { if (!result.replayed) celebrate({ key: `recovery:${item.id}:${step.id}`, kind: 'task' }); return result.completed ? 'Telafi tamamlandı.' : 'Adım tamamlandı olarak kaydedildi.'; })} />
                 ) : null}
               </View>
             </View>

@@ -2,6 +2,8 @@ import type { MobileYonTask } from '@contracts/yon';
 import { useRouter, type Href } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
+import { DelightIcon } from '@/design/delight-icon';
+import { useDesign } from '@/design/theme';
 import { Row, StatusBadge } from '@/design/primitives';
 import { space } from '@/design/tokens';
 import { formatDayMonth, formatTime } from '@/lib/format/istanbul';
@@ -15,12 +17,14 @@ import { PRIORITY_LABEL, TASK_STATUS_LABEL, taskHref, taskMeta, taskTone } from 
  */
 export function YonTaskRow({ task, canOpen, showDate = false, testID }: { task: MobileYonTask; canOpen: boolean; showDate?: boolean; testID?: string }) {
   const router = useRouter();
+  const { product } = useDesign();
   const href = canOpen ? taskHref(task.id) : null;
   const priority = PRIORITY_LABEL[task.priority];
   return (
     <Row
       testID={testID ?? `yon-task-${task.id}`}
       title={task.title}
+      leading={<View style={{ width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: product.accentSoft }}><DelightIcon name={task.status === 'DONE' ? 'spark' : 'task'} size={20} color={product.accent} /></View>}
       subtitle={taskMeta(task, { date: showDate ? formatDayMonth(task.scheduledFor) : null, time: task.isFlexible ? 'Esnek' : formatTime(task.scheduledFor) })}
       meta={`${task.durationMinutes} dk`}
       trailing={

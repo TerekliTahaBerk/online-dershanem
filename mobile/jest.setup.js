@@ -21,7 +21,7 @@ jest.mock('expo-secure-store', () => {
 jest.mock('expo-application', () => ({ nativeApplicationVersion: '1.0.0' }));
 jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn(async () => ({ type: 'opened' })) }));
 jest.mock('expo-splash-screen', () => ({ preventAutoHideAsync: jest.fn(async () => true), hideAsync: jest.fn(async () => true), setOptions: jest.fn() }));
-jest.mock('expo-haptics', () => ({ selectionAsync: jest.fn(async () => undefined), notificationAsync: jest.fn(async () => undefined), NotificationFeedbackType: { Error: 'error' } }));
+jest.mock('expo-haptics', () => ({ selectionAsync: jest.fn(async () => undefined), notificationAsync: jest.fn(async () => undefined), NotificationFeedbackType: { Error: 'error', Success: 'success' } }));
 
 // lucide-react-native yalnız ESM (.mjs) yayınlar; testte ikonlar boş bileşendir.
 jest.mock('lucide-react-native', () => new Proxy({}, { get: () => () => null }));

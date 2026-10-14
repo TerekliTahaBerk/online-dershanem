@@ -2,6 +2,7 @@ import type { AssignmentProgressStatus, MobileAssignment } from '@contracts/stud
 import { useMutation } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 
+import { useCelebration } from '@/design/celebration';
 import { fetchAssignments, submitAssignmentEvidence, updateAssignmentProgress } from '@/lib/api/student';
 import { ApiError } from '@/lib/api/errors';
 import { useSession } from '@/lib/auth/session-provider';
@@ -29,6 +30,7 @@ const CONFLICT = 'ASSIGNMENT_PROGRESS_CONFLICT';
 export function useProgressWrite(assignment: MobileAssignment | undefined) {
   const { api } = useSession();
   const invalidate = useInvalidateOd();
+  const celebrate = useCelebration();
   const pending = useRef<PendingWrite<{ id: string; status: AssignmentProgressStatus; version: number }>>(null);
   const [feedback, setFeedback] = useState<WriteFeedback>(null);
   const mutation = useMutation({
@@ -42,8 +44,9 @@ export function useProgressWrite(assignment: MobileAssignment | undefined) {
     const write = keyForWrite(pending.current, input, (a, b) => a.id === b.id && a.status === b.status && a.version === b.version, newUuid);
     pending.current = write.pending;
     try {
-      await mutation.mutateAsync({ assignmentId: assignment.id, status, expectedVersion: assignment.version, mutationKey: write.key });
+      const result = await mutation.mutateAsync({ assignmentId: assignment.id, status, expectedVersion: assignment.version, mutationKey: write.key });
       pending.current = null;
+      if (status === 'DONE' && assignment.status !== 'DONE' && !result.replayed) celebrate({ key: `od:${assignment.id}`, kind: 'task' });
       setFeedback({ tone: 'success', message: status === 'DONE' ? 'Çalışma tamamlandı olarak kaydedildi.' : 'İlerlemen kaydedildi.' });
       await invalidate();
     } catch (error) {
@@ -73,6 +76,7 @@ export function useProgressWrite(assignment: MobileAssignment | undefined) {
 export function useEvidenceSubmit(assignment: MobileAssignment | undefined) {
   const { api } = useSession();
   const invalidate = useInvalidateOd();
+  const celebrate = useCelebration();
   const pending = useRef<PendingWrite<{ id: string; text: string }>>(null);
   const [feedback, setFeedback] = useState<WriteFeedback>(null);
   const mutation = useMutation({
@@ -88,6 +92,7 @@ export function useEvidenceSubmit(assignment: MobileAssignment | undefined) {
     try {
       const result = await mutation.mutateAsync({ assignmentId: assignment.id, textEvidence, idempotencyKey: write.key });
       pending.current = null;
+      if (!result.replayed) celebrate({ key: `submission:${result.id}`, kind: 'submission' });
       setFeedback({ tone: 'success', message: result.attemptNumber > 1 ? 'Yeni denemen öğretmenine gönderildi.' : 'Kanıtın öğretmen değerlendirmesine gönderildi.' });
       await invalidate();
       return true;

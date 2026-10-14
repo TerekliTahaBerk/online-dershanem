@@ -68,8 +68,8 @@ test.describe.serial("Design Phase 0 — geri getirilen yetenekler", () => {
     await loginAs(page, account("ADMIN"));
     await page.goto("/panel/yonetim");
     const nav = page.getByRole("navigation", { name: "Panel menüsü" }).first();
-    await expect(nav.getByRole("link", { name: "Kontrollü yayın", exact: true })).toHaveAttribute("href", "/panel/yonetim/pilot");
-    await expect(nav.getByRole("link", { name: "Öğrenme kalitesi", exact: true })).toHaveAttribute("href", "/panel/yonetim/kalite");
+    await expect(nav.getByRole("link", { name: "Kontrollü yayın", exact: true })).toHaveAttribute("href", "/panel/yonetim/pilot?calismaAlani=OD");
+    await expect(nav.getByRole("link", { name: "Öğrenme kalitesi", exact: true })).toHaveAttribute("href", "/panel/yonetim/kalite?calismaAlani=OD");
     await expect(nav.getByRole("link", { name: "Aktivasyon masası", exact: true })).toBeVisible();
 
     await page.goto("/panel/odk/yonetim");
@@ -83,6 +83,6 @@ test.describe.serial("Design Phase 0 — geri getirilen yetenekler", () => {
     await loginAs(page, account("STUDENT"));
     await page.goto("/panel/ogrenci");
     const nav = page.getByRole("navigation", { name: "Panel menüsü" }).first();
-    await expect(nav.getByRole("link", { name: "Haftalık özet", exact: true })).toHaveAttribute("href", "/panel/ogrenci/haftalik");
+    await expect(nav.getByRole("link", { name: "Haftalık özet", exact: true })).toHaveAttribute("href", "/panel/ogrenci/haftalik?calismaAlani=OD");
   });
 });

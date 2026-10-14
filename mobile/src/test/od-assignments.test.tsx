@@ -1,3 +1,4 @@
+import { AppState } from 'react-native';
 import { fireEvent, waitFor, within } from 'expo-router/testing-library';
 
 import { makeBootstrap } from './fixtures';
@@ -5,7 +6,7 @@ import { account, boot, go, jsonResponse, press, secureStore, signIn, WAIT, type
 import { makeAssignment, makeAssignmentList } from './od-fixtures';
 import type { FakeAccount } from './fake-server';
 
-beforeEach(() => secureStore.__store.clear());
+beforeEach(() => { secureStore.__store.clear(); AppState.currentState = 'active'; });
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
@@ -86,6 +87,7 @@ describe('M2.2 Çalışmalar', () => {
     expect((patch.body as { mutationKey: string }).mutationKey).toMatch(UUID);
     await waitFor(() => expect(h.server.called('GET', '/api/panel/assignments').length).toBeGreaterThan(before), WAIT);
     expect(server.state.status).toBe('DONE');
+    expect(await h.screen.findByTestId('celebration', {}, WAIT)).toBeTruthy();
   });
 
   it('çakışma (409): sessizce üzerine yazılmaz; yetkili durum yeniden yüklenir ve açıklanır', async () => {
@@ -101,6 +103,7 @@ describe('M2.2 Çalışmalar', () => {
     await press(h, detail.getByTestId('progress-DONE'));
     expect(await detail.findByText(/başka bir yerde \(ör\. web panelinde\) değişti/, {}, WAIT)).toBeTruthy();
     expect(server.state.status).toBe('IN_PROGRESS');
+    expect(h.screen.queryByTestId('celebration')).toBeNull();
     await waitFor(() => expect(h.server.called('GET', '/api/panel/assignments').length).toBeGreaterThan(before), WAIT);
   });
 

@@ -1,3 +1,4 @@
+import { CelebrationProvider } from '@/design/celebration';
 import { View } from 'react-native';
 import { useReadyBootstrap } from '@/lib/auth/session-provider';
 import { PreviewReadOnlyContext } from '@/lib/auth/preview-context';
@@ -19,6 +20,7 @@ export default function AppLayout() {
     // Faz 1: hassas yönetim işlemleri için native step-up (428 → kod → tek tekrar).
     <PreviewReadOnlyContext.Provider value={bootstrap.adminOverlay?.mode === 'PREVIEW'}>
     <View style={{ flex: 1 }}>
+    <CelebrationProvider key={`${bootstrap.user.id}:${bootstrap.user.role}:${bootstrap.workspace?.activeProduct}:${bootstrap.adminOverlay?.mode ?? "normal"}`} enabled={bootstrap.user.role === "STUDENT" && !bootstrap.adminOverlay}>
     <AdminOverlayBanner />
     <StepUpProvider>
     <ParentContextProvider>
@@ -87,6 +89,7 @@ export default function AppLayout() {
     </Stack>
     </ParentContextProvider>
     </StepUpProvider>
+    </CelebrationProvider>
     </View>
     </PreviewReadOnlyContext.Provider>
   );

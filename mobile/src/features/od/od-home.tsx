@@ -6,6 +6,8 @@ import { StyleSheet, View } from 'react-native';
 
 import { Banner, Button, EmptyState, PageHeader, Row, Screen, Section, StatusBadge, Text } from '@/design/primitives';
 import { PRODUCT_FALLBACK_LABEL } from '@/design/products';
+import { DelightIcon } from '@/design/delight-icon';
+import { useDesign } from '@/design/theme';
 import { ProductLogo } from '@/design/brand';
 import { color, radius, space } from '@/design/tokens';
 import { openOnWeb, webUrlFor } from '@/features/shell/web-continuation';
@@ -84,11 +86,13 @@ function OdHomeBody({ home, now }: { home: MobileOdHome; now: Date }) {
 }
 
 function NowBlock({ action }: { action: MobileOdAction | null }) {
+  const { product } = useDesign();
   const nav = useOdNavigation();
   if (!action) {
     const insights = nav.has('analiz') ? 'analiz' : nav.has('progress') ? 'progress' : null;
     return (
       <View style={styles.now} testID="od-now-empty">
+        <DelightIcon name="leaf" color={product.accent} size={32} />
         <Text variant="caption" tone="muted">Şimdi</Text>
         <Text variant="sectionTitle" accessibilityRole="header">Bekleyen bir çalışma görünmüyor</Text>
         <Text tone="secondary">Derslerine göz atabilir veya gidişatını inceleyebilirsin.</Text>

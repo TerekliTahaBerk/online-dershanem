@@ -2,6 +2,7 @@ import type { MobileCoachingSession, MobileYonPreference, MobileYonTask, YonOver
 import { useMutation } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 
+import { useCelebration } from '@/design/celebration';
 import { ApiError } from '@/lib/api/errors';
 import { acceptSessionProposal, completePlanTask, generatePlan, requestPlanChange, requestSessionReschedule, savePlanPreference, type TaskCompletionPayload } from '@/lib/api/yon';
 import { useSession } from '@/lib/auth/session-provider';
@@ -29,6 +30,7 @@ function messageOf(error: unknown, fallback: string): string {
 export function useTaskCompletion(task: MobileYonTask | undefined) {
   const { api } = useSession();
   const invalidate = useInvalidateYon();
+  const celebrate = useCelebration();
   const [feedback, setFeedback] = useState<WriteFeedback>(null);
   const mutation = useMutation({ mutationFn: (payload: TaskCompletionPayload) => completePlanTask(api, task!.id, payload) });
 
@@ -48,6 +50,7 @@ export function useTaskCompletion(task: MobileYonTask | undefined) {
                 ? 'Göreve başladın.'
                 : 'Durum kaydedildi.',
       });
+      if (result.status === 'DONE' && !result.repeated && task.status !== 'DONE') celebrate({ key: `yon:${task.id}`, kind: 'task' });
       await invalidate({ alsoOd: task.linkedAssignment });
       return true;
     } catch (error) {
