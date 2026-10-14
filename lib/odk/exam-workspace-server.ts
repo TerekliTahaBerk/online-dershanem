@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { questionsRevision } from "@/lib/odk/question-revision";
 import { getActiveOutcomeOptions } from "@/lib/curriculum/catalog-cache";
 import { getOdkExamReadiness } from "@/lib/odk/admin-exam-server";
 import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
@@ -68,6 +69,7 @@ export async function loadOdkExamWorkspace(userId: string, examId: string, query
   const questions = version.sections.flatMap((section) =>
     section.questions.map((question) => ({
       id: question.id,
+      sectionCode: section.code,
       sectionTitle: section.title,
       questionNumber: question.questionNumber,
       correctOption: question.correctOption,
@@ -80,6 +82,8 @@ export async function loadOdkExamWorkspace(userId: string, examId: string, query
       primaryOutcomeId: question.outcomes.find((outcome) => outcome.isPrimary)?.outcomeId || null,
     })),
   );
+  // Web soru editörünün eşzamanlılık revizyonu (Faz 4 / P1-6); sunucudaki hesapla aynı fonksiyon.
+  const questionsRevisionValue = questionsRevision(version.sections.flatMap((section) => section.questions.map((question) => ({ id: question.id, correctOption: question.correctOption, difficulty: question.difficulty, bookletPage: question.bookletPage, contentType: question.contentType, contentText: question.contentText, assetUrl: question.assetUrl, outcomes: question.outcomes.map((outcome) => ({ outcomeId: outcome.outcomeId, isPrimary: outcome.isPrimary })) }))));
   const submittedCount = attempts.filter((attempt) => (SUBMITTED_STATUSES as readonly string[]).includes(attempt.status)).length;
   const scoredCount = attempts.filter((attempt) => attempt.score).length;
   const reviewCount = attempts.filter((attempt) => attempt.integrityLevel !== "NORMAL").length;
@@ -110,6 +114,7 @@ export async function loadOdkExamWorkspace(userId: string, examId: string, query
     attempts,
     assignedCount,
     questions,
+    questionsRevision: questionsRevisionValue,
     submittedCount,
     scoredCount,
     reviewCount,

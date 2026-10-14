@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { OdkExamStatus, OdkExamVersionStatus } from "@prisma/client";
 import {
@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 import { OdkStatusBadge } from "@/components/odk/odk-status-badge";
 import { examStatusPresentation } from "@/lib/odk/presentation";
-import { questionMatchesFilter, type QuestionFilter } from "@/lib/odk/staff-workspace";
+import { type QuestionFilter } from "@/lib/odk/staff-workspace";
+import { fillBookletPages, keyToAnswerAction, questionVisible, sectionProgress } from "@/lib/odk/question-workbench";
 import { parseIstanbulInstant } from "@/lib/istanbul-time";
 
 /** Form değerleri İstanbul saatidir; cihazın saat dilimi farklı olsa da kaymaz. */
@@ -24,6 +25,8 @@ function istanbulIso(value: string) {
 type Outcome = { id: string; label: string };
 type Question = {
   id: string;
+  sectionCode: string;
+  sectionTitle?: string;
   questionNumber: number;
   correctOption: "A" | "B" | "C" | "D" | "E" | null;
   difficulty: "EASY" | "MEDIUM" | "HARD";
@@ -63,6 +66,8 @@ type Props = {
     durationMinutes: number;
     files: { id: string; type: string; fileName: string }[];
     questions: Question[];
+    /** Soru içerik revizyonu; kayıtta gönderilir, araya giren kayıt 409 ile yakalanır. */
+    questionsRevision?: string;
     security: Security;
   };
   outcomes: Outcome[];
@@ -87,7 +92,11 @@ type Props = {
   sections?: ReadonlyArray<EditorSection>;
   /** Sorular sekmesi süzgeci: kazanımsız / anahtarsız. */
   questionFilter?: QuestionFilter;
+  /** Açılışta seçili bölüm sekmesi (ör. içe aktarma sorunundan "Soruya git"). */
+  initialSection?: string | null;
 };
+
+const OPTIONS = ["A", "B", "C", "D", "E"] as const;
 
 export type EditorSection = "plan" | "security" | "files" | "questions" | "publish" | "scoring";
 
@@ -101,11 +110,42 @@ export function AdminExamEditor({
   capabilities = ALL_CAPABILITIES,
   sections,
   questionFilter = "tumu",
+  initialSection = null,
 }: Props) {
   const show = (section: EditorSection) => !sections || sections.includes(section);
   const router = useRouter();
   const editable = exam.status === "DRAFT" && exam.versionStatus === "DRAFT";
   const [questions, setQuestions] = useState(exam.questions);
+  const [questionsRevision, setQuestionsRevision] = useState(exam.questionsRevision);
+  const [dirty, setDirty] = useState(false);
+  const [conflict, setConflict] = useState(false);
+  const [questionView, setQuestionView] = useState<"tablo" | "optik">("tablo");
+  const [sectionTab, setSectionTab] = useState<string | null>(initialSection && exam.questions.some((question) => question.sectionCode === initialSection) ? initialSection : null);
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkDifficulty, setBulkDifficulty] = useState<Question["difficulty"]>("MEDIUM");
+  const [bulkStartPage, setBulkStartPage] = useState("1");
+  const [bulkPerPage, setBulkPerPage] = useState("2");
+  const opticRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const outcomeLabels = useMemo(() => new Map(outcomes.map((outcome) => [outcome.id, outcome.label])), [outcomes]);
+  const sectionsInOrder = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const question of exam.questions) if (!seen.has(question.sectionCode)) seen.set(question.sectionCode, question.sectionTitle || question.sectionCode);
+    return [...seen].map(([code, title]) => ({ code, title }));
+  }, [exam.questions]);
+  const progress = useMemo(() => new Map(sectionProgress(questions).map((row) => [row.sectionCode, row])), [questions]);
+  const visible = (question: Question) => questionVisible(question, { filter: questionFilter, section: sectionTab, search }, outcomeLabels);
+  const visibleIds = questions.filter(visible).map((question) => question.id);
+  const multiSection = sectionsInOrder.length > 1;
+  const questionLabel = (question: Question) => (multiSection ? `${question.sectionCode} ${question.questionNumber}` : String(question.questionNumber));
+
+  // Kaydedilmemiş değişiklik uyarısı (sekme kapatma / yenileme).
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
   const [message, setMessage] = useState<{
     text: string;
     error: boolean;
@@ -152,12 +192,71 @@ export function AdminExamEditor({
   }
 
   async function saveQuestions() {
-    await json(
-      `/api/odk/admin/exams/${exam.id}/questions`,
-      "PUT",
-      { questions },
-      "Cevaplar ve kazanımlar kaydedildi.",
-    );
+    setBusy("questions");
+    setMessage(null);
+    try {
+      const response = await fetch(`/api/odk/admin/exams/${exam.id}/questions`, {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ questions: questions.map((question) => ({ id: question.id, correctOption: question.correctOption, difficulty: question.difficulty, bookletPage: question.bookletPage, contentType: question.contentType, contentText: question.contentText, assetUrl: question.assetUrl, outcomeIds: question.outcomeIds, primaryOutcomeId: question.primaryOutcomeId })), ...(questionsRevision ? { expectedRevision: questionsRevision } : {}) }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (response.status === 409 && result.code === "QUESTIONS_STALE") {
+        setConflict(true);
+        setMessage({ text: result.error || "Sorular başka biri tarafından değiştirildi.", error: true });
+        return;
+      }
+      if (!response.ok) {
+        setMessage({ text: result.error || "İşlem tamamlanamadı.", error: true });
+        return;
+      }
+      if (typeof result.revision === "string") setQuestionsRevision(result.revision);
+      setDirty(false);
+      setMessage({ text: "Cevaplar ve kazanımlar kaydedildi.", error: false });
+      router.refresh();
+    } catch {
+      setMessage({ text: "Bağlantı kurulamadı. Değişiklik kaydedilmedi; tekrar deneyin.", error: true });
+    } finally {
+      setBusy("");
+    }
+  }
+
+  function patchById(id: string, patch: Partial<Question>) {
+    setDirty(true);
+    setQuestions((current) => current.map((item) => (item.id === id ? { ...item, ...patch } : item)));
+  }
+
+  function onOpticKey(event: React.KeyboardEvent<HTMLDivElement>, question: Question, position: number) {
+    const action = keyToAnswerAction(event.key);
+    if (!action || event.altKey || event.ctrlKey || event.metaKey) return;
+    event.preventDefault();
+    const focusAt = (next: number) => opticRefs.current[Math.max(0, Math.min(next, visibleIds.length - 1))]?.focus();
+    if (action.type === "set") {
+      patchById(question.id, { correctOption: action.option });
+      focusAt(position + 1);
+    } else if (action.type === "clear") patchById(question.id, { correctOption: null });
+    else focusAt(position + action.delta);
+  }
+
+  function applyBulkDifficulty() {
+    setDirty(true);
+    setQuestions((current) => current.map((item) => (selected.has(item.id) ? { ...item, difficulty: bulkDifficulty } : item)));
+  }
+
+  function applyBulkPages() {
+    const pages = fillBookletPages(questions.map((question) => question.id), selected, Number(bulkStartPage), Number(bulkPerPage));
+    if (!pages.size) return;
+    setDirty(true);
+    setQuestions((current) => current.map((item) => (pages.has(item.id) ? { ...item, bookletPage: pages.get(item.id)! } : item)));
+  }
+
+  function toggleSelected(id: string) {
+    setSelected((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   }
   async function upload(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -188,6 +287,7 @@ export function AdminExamEditor({
     }
   }
   function patchQuestion(index: number, patch: Partial<Question>) {
+    setDirty(true);
     setQuestions((current) =>
       current.map((item, i) => (i === index ? { ...item, ...patch } : item)),
     );
@@ -201,9 +301,9 @@ export function AdminExamEditor({
     return (
       <>
         <label className={compact ? "pn-field sm:col-span-3" : "contents"}>
-          {compact ? "İçerik türü" : <span className="sr-only">Soru {question.questionNumber} içerik türü</span>}
+          {compact ? "İçerik türü" : <span className="sr-only">Soru {questionLabel(question)} içerik türü</span>}
           <select
-            aria-label={`Soru ${question.questionNumber} içerik türü`}
+            aria-label={`Soru ${questionLabel(question)} içerik türü`}
             disabled={!editable}
             className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
             value={question.contentType}
@@ -216,9 +316,9 @@ export function AdminExamEditor({
         </label>
         {question.contentType === "RICH_CONTENT" ? (
           <label className={compact ? "pn-field sm:col-span-3" : "contents"}>
-            {compact ? "Soru metni" : <span className="sr-only">Soru {question.questionNumber} metni</span>}
+            {compact ? "Soru metni" : <span className="sr-only">Soru {questionLabel(question)} metni</span>}
             <textarea
-              aria-label={`Soru ${question.questionNumber} metni`}
+              aria-label={`Soru ${questionLabel(question)} metni`}
               disabled={!editable}
               className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-w-80 py-2"
               rows={2}
@@ -232,11 +332,11 @@ export function AdminExamEditor({
             "Doğru cevap"
           ) : (
             <span className="sr-only">
-              Soru {question.questionNumber} doğru cevap
+              Soru {questionLabel(question)} doğru cevap
             </span>
           )}
           <select
-            aria-label={`Soru ${question.questionNumber} doğru cevap`}
+            aria-label={`Soru ${questionLabel(question)} doğru cevap`}
             disabled={!editable}
             className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
             value={question.correctOption || ""}
@@ -258,11 +358,11 @@ export function AdminExamEditor({
             "Zorluk"
           ) : (
             <span className="sr-only">
-              Soru {question.questionNumber} zorluk
+              Soru {questionLabel(question)} zorluk
             </span>
           )}
           <select
-            aria-label={`Soru ${question.questionNumber} zorluk`}
+            aria-label={`Soru ${questionLabel(question)} zorluk`}
             disabled={!editable}
             className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
             value={question.difficulty}
@@ -282,11 +382,11 @@ export function AdminExamEditor({
             "PDF sayfası"
           ) : (
             <span className="sr-only">
-              Soru {question.questionNumber} PDF sayfası
+              Soru {questionLabel(question)} PDF sayfası
             </span>
           )}
           <input
-            aria-label={`Soru ${question.questionNumber} PDF sayfası`}
+            aria-label={`Soru ${questionLabel(question)} PDF sayfası`}
             disabled={!editable}
             className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
             type="number"
@@ -304,11 +404,11 @@ export function AdminExamEditor({
             "Ana kazanım"
           ) : (
             <span className="sr-only">
-              Soru {question.questionNumber} ana kazanım
+              Soru {questionLabel(question)} ana kazanım
             </span>
           )}
           <select
-            aria-label={`Soru ${question.questionNumber} ana kazanım`}
+            aria-label={`Soru ${questionLabel(question)} ana kazanım`}
             disabled={!editable}
             className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-w-0 py-2"
             value={question.primaryOutcomeId || ""}
@@ -695,14 +795,153 @@ export function AdminExamEditor({
             </button>
           ) : null}
         </div>
+        {conflict ? (
+          <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-(--pn-tone-critical) px-3 py-2 text-[13px] text-pn-text">
+            <span>Siz düzenlerken sorular başka biri tarafından kaydedildi. Değişikliklerinizi not alın; yenileyince güncel hâl yüklenir.</span>
+            <button type="button" onClick={() => window.location.reload()} className="min-h-9 rounded-md border border-pn-border-strong px-3 font-semibold hover:bg-pn-hover">
+              Güncel hâli yükle
+            </button>
+          </div>
+        ) : null}
+        {dirty && !conflict ? (
+          <p role="status" className="mt-3 text-[12.5px] font-semibold text-(--pn-tone-warning)">Kaydedilmemiş değişiklikler var.</p>
+        ) : null}
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {multiSection ? (
+            <nav aria-label="Bölüm sekmeleri" className="flex flex-wrap gap-1.5">
+              {[{ code: null as string | null, title: "Tümü" }, ...sectionsInOrder].map((section) => {
+                const row = section.code ? progress.get(section.code) : null;
+                const active = sectionTab === section.code;
+                return (
+                  <button
+                    key={section.code ?? "tumu"}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setSectionTab(section.code)}
+                    className={`inline-flex min-h-8 items-center gap-1.5 rounded-full border px-3 text-[12.5px] ${active ? "border-pn-text bg-pn-text font-semibold text-white" : "border-pn-border text-pn-text-secondary hover:bg-pn-hover"}`}
+                  >
+                    {section.title}
+                    {row ? <span className={`tabular-nums ${active ? "opacity-80" : "text-pn-text-secondary"}`}>{row.answered}/{row.total}</span> : null}
+                  </button>
+                );
+              })}
+            </nav>
+          ) : null}
+          <label className="ml-auto flex min-w-[200px] flex-1 sm:max-w-xs">
+            <span className="sr-only">Soru ara</span>
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Ara: 12, FEN 5, kazanım…"
+              className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[13.5px] text-pn-text placeholder:text-pn-text-muted focus:border-pn-accent focus:outline-none"
+            />
+          </label>
+          <div role="group" aria-label="Görünüm" className="flex gap-1">
+            {(["tablo", "optik"] as const).map((view) => (
+              <button
+                key={view}
+                type="button"
+                aria-pressed={questionView === view}
+                onClick={() => setQuestionView(view)}
+                className={`min-h-8 rounded-md border px-3 text-[12.5px] font-semibold ${questionView === view ? "border-pn-text bg-pn-text text-white" : "border-pn-border text-pn-text-secondary hover:bg-pn-hover"}`}
+              >
+                {view === "tablo" ? "Tablo" : "Optik giriş"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="mt-2 text-[12.5px] text-pn-text-muted" aria-live="polite">
+          {visibleIds.length} soru gösteriliyor · {questions.filter((question) => question.correctOption).length}/{questions.length} cevaplı · {questions.filter((question) => question.primaryOutcomeId).length}/{questions.length} kazanımlı
+        </p>
+
+        {editable && questionView === "tablo" && selected.size ? (
+          <div role="group" aria-label="Toplu işlem" className="mt-3 flex flex-wrap items-end gap-3 rounded-md border border-pn-border bg-pn-surface-subtle px-3 py-2.5 text-[13px]">
+            <span className="font-semibold text-pn-text">{selected.size} soru seçili</span>
+            <label className="flex items-center gap-1.5">
+              Zorluk
+              <select value={bulkDifficulty} onChange={(event) => setBulkDifficulty(event.target.value as Question["difficulty"])} className="rounded-md border border-pn-border-strong bg-white px-2 py-1.5">
+                <option value="EASY">Kolay</option>
+                <option value="MEDIUM">Orta</option>
+                <option value="HARD">Zor</option>
+              </select>
+            </label>
+            <button type="button" onClick={applyBulkDifficulty} className="min-h-8 rounded-md border border-pn-border-strong bg-white px-3 font-semibold hover:bg-pn-hover">
+              Zorluğu uygula
+            </button>
+            <label className="flex items-center gap-1.5">
+              PDF sayfası başlangıç
+              <input type="number" min={1} value={bulkStartPage} onChange={(event) => setBulkStartPage(event.target.value)} className="w-16 rounded-md border border-pn-border-strong bg-white px-2 py-1.5" />
+            </label>
+            <label className="flex items-center gap-1.5">
+              sayfa başına soru
+              <input type="number" min={1} value={bulkPerPage} onChange={(event) => setBulkPerPage(event.target.value)} className="w-14 rounded-md border border-pn-border-strong bg-white px-2 py-1.5" />
+            </label>
+            <button type="button" onClick={applyBulkPages} className="min-h-8 rounded-md border border-pn-border-strong bg-white px-3 font-semibold hover:bg-pn-hover">
+              Sayfaları ata
+            </button>
+            <button type="button" onClick={() => setSelected(new Set())} className="min-h-8 px-2 text-pn-text-muted hover:text-pn-text">
+              Seçimi temizle
+            </button>
+          </div>
+        ) : null}
+
+        {questionView === "optik" ? (
+          <div className="mt-4">
+            <p id="optik-yardim" className="text-[12.5px] text-pn-text-muted">
+              Satıra odaklanıp A–E tuşlarına basın; cevap girilir ve sonraki soruya geçilir. ↑/↓ gezinir, Backspace temizler.
+            </p>
+            <div role="list" aria-label="Optik cevap anahtarı" className="mt-2 grid gap-x-6 sm:grid-cols-2 xl:grid-cols-3">
+              {questions.filter(visible).map((question, position) => (
+                <div role="listitem" key={question.id} className="flex items-center gap-2 border-b border-pn-border-subtle py-1">
+                  <span className="w-16 shrink-0 font-mono text-[12.5px] tabular-nums text-pn-text-secondary">{questionLabel(question)}</span>
+                  <div
+                    ref={(element) => {
+                      opticRefs.current[position] = element;
+                    }}
+                    role="radiogroup"
+                    aria-label={`Soru ${questionLabel(question)} doğru cevap (optik)`}
+                    aria-describedby="optik-yardim"
+                    tabIndex={editable ? 0 : -1}
+                    onKeyDown={editable ? (event) => onOpticKey(event, question, position) : undefined}
+                    className="flex gap-1 rounded-md p-0.5 focus:outline-2 focus:outline-pn-accent"
+                  >
+                    {OPTIONS.map((option) => {
+                      const checked = question.correctOption === option;
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          role="radio"
+                          aria-checked={checked}
+                          tabIndex={-1}
+                          disabled={!editable}
+                          onClick={() => patchById(question.id, { correctOption: checked ? null : option })}
+                          className={`grid h-8 w-8 place-items-center rounded-full border text-[12.5px] font-semibold ${checked ? "border-pn-text bg-pn-text text-white" : "border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover"} disabled:opacity-60`}
+                        >
+                          {option}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+        <>
         <div className="mt-4 space-y-3 md:hidden">
-          {questions.map((question, index) => !questionMatchesFilter(question, questionFilter) ? null : (
+          {questions.map((question, index) => !visible(question) ? null : (
             <article
               key={question.id}
               className="rounded-2xl border border-(--site-line) bg-white p-4"
             >
-              <h3 className="text-sm font-extrabold">
-                Soru {question.questionNumber}
+              <h3 id={`soru-m-${question.sectionCode}-${question.questionNumber}`} className="flex scroll-mt-36 items-center gap-2 text-sm font-extrabold">
+                {editable ? (
+                  <input type="checkbox" aria-label={`${questionLabel(question)} seç`} checked={selected.has(question.id)} onChange={() => toggleSelected(question.id)} />
+                ) : null}
+                Soru {questionLabel(question)}
               </h3>
               <div className="mt-3 grid gap-3 sm:grid-cols-3">
                 {questionControls(question, index, true)}
@@ -719,6 +958,16 @@ export function AdminExamEditor({
           <table className="w-full min-w-[1180px] text-xs">
             <thead>
               <tr className="text-left text-[10px] uppercase tracking-wide text-(--site-muted)">
+                {editable ? (
+                  <th className="w-8 pb-2">
+                    <input
+                      type="checkbox"
+                      aria-label="Görünen soruların tümünü seç"
+                      checked={visibleIds.length > 0 && visibleIds.every((id) => selected.has(id))}
+                      onChange={(event) => setSelected(event.target.checked ? new Set(visibleIds) : new Set())}
+                    />
+                  </th>
+                ) : null}
                 <th className="pb-2">Soru</th>
                 <th>İçerik türü</th>
                 <th>Soru metni</th>
@@ -729,17 +978,22 @@ export function AdminExamEditor({
               </tr>
             </thead>
             <tbody>
-              {questions.map((question, index) => !questionMatchesFilter(question, questionFilter) ? null : (
+              {questions.map((question, index) => !visible(question) ? null : (
                 <tr
                   key={question.id}
                   className="border-t border-(--site-line)"
                 >
-                  <th className="py-2 pr-3 text-left">
-                    {question.questionNumber}
+                  {editable ? (
+                    <td className="pr-2">
+                      <input type="checkbox" aria-label={`${questionLabel(question)} seç`} checked={selected.has(question.id)} onChange={() => toggleSelected(question.id)} />
+                    </td>
+                  ) : null}
+                  <th id={`soru-${question.sectionCode}-${question.questionNumber}`} scope="row" className="scroll-mt-36 whitespace-nowrap py-2 pr-3 text-left tabular-nums">
+                    {questionLabel(question)}
                   </th>
                   <td className="w-36 pr-2">
                     <select
-                      aria-label={`Soru ${question.questionNumber} içerik türü`}
+                      aria-label={`Soru ${questionLabel(question)} içerik türü`}
                       disabled={!editable}
                       className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
                       value={question.contentType}
@@ -752,7 +1006,7 @@ export function AdminExamEditor({
                   </td>
                   <td className="min-w-80 pr-2">
                     <textarea
-                      aria-label={`Soru ${question.questionNumber} metni`}
+                      aria-label={`Soru ${questionLabel(question)} metni`}
                       disabled={!editable || question.contentType !== "RICH_CONTENT"}
                       className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
                       rows={2}
@@ -762,7 +1016,7 @@ export function AdminExamEditor({
                   </td>
                   <td className="w-28 pr-2">
                     <select
-                      aria-label={`Soru ${question.questionNumber} doğru cevap`}
+                      aria-label={`Soru ${questionLabel(question)} doğru cevap`}
                       disabled={!editable}
                       className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
                       value={question.correctOption || ""}
@@ -781,7 +1035,7 @@ export function AdminExamEditor({
                   </td>
                   <td className="w-28 pr-2">
                     <select
-                      aria-label={`Soru ${question.questionNumber} zorluk`}
+                      aria-label={`Soru ${questionLabel(question)} zorluk`}
                       disabled={!editable}
                       className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
                       value={question.difficulty}
@@ -799,7 +1053,7 @@ export function AdminExamEditor({
                   </td>
                   <td className="w-24 pr-2">
                     <input
-                      aria-label={`Soru ${question.questionNumber} PDF sayfası`}
+                      aria-label={`Soru ${questionLabel(question)} PDF sayfası`}
                       disabled={!editable}
                       className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 py-2"
                       type="number"
@@ -814,7 +1068,7 @@ export function AdminExamEditor({
                   </td>
                   <td>
                     <select
-                      aria-label={`Soru ${question.questionNumber} ana kazanım`}
+                      aria-label={`Soru ${questionLabel(question)} ana kazanım`}
                       disabled={!editable}
                       className="w-full rounded-md border border-pn-border-strong bg-white px-3 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 min-w-80 py-2"
                       value={question.primaryOutcomeId || ""}
@@ -841,6 +1095,8 @@ export function AdminExamEditor({
             </tbody>
           </table>
         </div>
+        </>
+        )}
         {!outcomes.length ? (
           <p className="mt-3 rounded-xl bg-(--pd-pastel-yellow-soft) p-3 text-xs font-bold text-(--pd-pastel-yellow-ink)">
             Bu sınav türü için aktif matematik kazanımı bulunamadı. Önce OD

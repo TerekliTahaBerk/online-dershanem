@@ -73,13 +73,13 @@ export default async function OdkAdminExamDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ sekme?: string; filtre?: string }>;
+  searchParams: Promise<{ sekme?: string; filtre?: string; bolum?: string }>;
 }) {
   const session = await requireAnyStaffPermission(ODK_EXAM_LIST_PERMISSIONS);
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const workspace = await loadOdkExamWorkspace(session.userId, id, query);
   if (!workspace) notFound();
-  const { caps, exam, version, issues, familyCode, sessionPlan, tabs, tab, questionFilter, windowEnded, outcomes, attempts, assignedCount, questions, submittedCount, scoredCount, reviewCount, security, readiness, primary, draftEditable } = workspace;
+  const { caps, exam, version, issues, familyCode, sessionPlan, tabs, tab, questionFilter, windowEnded, outcomes, attempts, assignedCount, questions, questionsRevision, submittedCount, scoredCount, reviewCount, security, readiness, primary, draftEditable } = workspace;
   const now = new Date();
   const status = examStatusPresentation[exam.status];
   const tabHref = (next: string, extra?: string) => `/panel/odk/yonetim/sinavlar/${exam.id}?sekme=${next}${extra ?? ""}`;
@@ -100,6 +100,7 @@ export default async function OdkAdminExamDetailPage({
     files: version.files.map((file) => ({ id: file.id, type: file.type, fileName: file.fileName })),
     // Cevap anahtarı yalnız içerik editörüne gider (EXAM_EDITOR / ADMIN).
     questions: caps.edit ? questions : [],
+    questionsRevision: caps.edit ? questionsRevision : undefined,
     security: { ...security, autoSubmit: version.autoSubmit },
   };
   const editorCapabilities = { edit: caps.edit, schedule: caps.schedule, score: caps.score, rescore: caps.rescore };
@@ -119,6 +120,7 @@ export default async function OdkAdminExamDetailPage({
       resultStats={resultStats}
       sections={sections}
       questionFilter={questionFilter}
+      initialSection={typeof query.bolum === "string" ? query.bolum : null}
     />
   );
 
@@ -218,7 +220,7 @@ export default async function OdkAdminExamDetailPage({
 
           {tab === "icerik" ? (
             <>
-              <div id="adim-json">{draftEditable || version.status === "DRAFT" ? <AdminJsonImportPanel examId={exam.id} /> : null}</div>
+              <div id="adim-json">{draftEditable || version.status === "DRAFT" ? <AdminJsonImportPanel examId={exam.id} sections={version.sections.map((section) => ({ code: section.code, title: section.title }))} /> : null}</div>
               {editor(["files"])}
             </>
           ) : null}
