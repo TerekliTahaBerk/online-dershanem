@@ -6,6 +6,8 @@
 import { z } from "zod";
 
 export const ANSWER_KEY_SCHEMA_VERSION = "1.0";
+/** Okunabilen şema sürümleri; bilinmeyen sürüm sessizce yorumlanmaz (P0-4). */
+export const SUPPORTED_ANSWER_KEY_SCHEMA_VERSIONS: readonly string[] = ["1", "1.0"];
 const OPTION = z.enum(["A", "B", "C", "D", "E"]);
 
 export const AnswerKeySectionSchema = z.object({
@@ -61,6 +63,15 @@ export function previewAnswerKeyImport(
   }
 
   const doc = parsed.data;
+  if (!SUPPORTED_ANSWER_KEY_SCHEMA_VERSIONS.includes(doc.schemaVersion)) {
+    return {
+      schemaVersion: doc.schemaVersion,
+      totalAnswers: 0,
+      validAnswers: 0,
+      issues: [{ level: "error", code: "UNSUPPORTED_SCHEMA_VERSION", message: `Desteklenmeyen şema sürümü: ${doc.schemaVersion}. Desteklenen: ${SUPPORTED_ANSWER_KEY_SCHEMA_VERSIONS.join(", ")}.` }],
+      mappings: [],
+    };
+  }
   if (expectedExamType && doc.examType && doc.examType !== expectedExamType) {
     issues.push({ level: "error", code: "EXAM_TYPE_MISMATCH", message: `JSON sınav türü ${doc.examType}, deneme ${expectedExamType}.` });
   }

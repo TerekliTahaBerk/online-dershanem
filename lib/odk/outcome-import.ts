@@ -1,10 +1,17 @@
 /**
  * Kazanım (learning outcome) JSON import — versioned schema, katalog bağlama.
+ *
+ * Katalog sınavın AİLESİNE daraltılmış gelir (çağıran sorgular). Kod çözümü
+ * sorunun dersine (bölüm kodu = müfredat dersi kodu, ailede o kodlu ders varsa)
+ * ve sınavın müfredat yılına göre yapılır; başka dersin kazanımı ya da aynı
+ * ders içinde birden çok kayda uyan kod hatadır (P0-5).
  */
 
+import { createHash } from "node:crypto";
 import { z } from "zod";
 
 export const OUTCOME_SCHEMA_VERSION = "1.0";
+export const SUPPORTED_OUTCOME_SCHEMA_VERSIONS: readonly string[] = ["1", "1.0"];
 
 const OutcomeItemSchema = z.object({
   code: z.string().trim().min(1).max(80),
@@ -38,7 +45,47 @@ export type OutcomeImportIssue = {
   outcomeCode?: string;
 };
 
-export type OutcomeCatalogHit = { id: string; code: string; title: string };
+export type OutcomeCatalogHit = {
+  id: string;
+  code: string;
+  title: string;
+  /** Kazanımın müfredat dersi kodu (ör. MAT); bölüm koduyla eşleşir. */
+  subjectCode?: string;
+  academicYear?: number;
+  versionStatus?: "ACTIVE" | "DRAFT" | string;
+};
+
+export type OutcomeResolution = { ok: true; hit: OutcomeCatalogHit } | { ok: false; code: "UNRESOLVED" | "OUTCOME_SUBJECT_MISMATCH" | "AMBIGUOUS_OUTCOME_CODE" };
+
+/**
+ * Bir kazanım kodunu sorunun bölümüne göre çözer.
+ * 1. Ailede bölüm koduyla aynı kodlu ders varsa yalnız o dersin kazanımları aday olur
+ *    (kod başka derste varsa OUTCOME_SUBJECT_MISMATCH).
+ * 2. Adaylar sınavın müfredat yılına (yoksa en güncel yıla), sonra ACTIVE sürüme daraltılır.
+ * 3. Hâlâ birden çok kayıt kalırsa AMBIGUOUS_OUTCOME_CODE.
+ */
+export function resolveOutcomeCode(catalog: readonly OutcomeCatalogHit[], code: string, sectionCode: string, academicYear: number | null | undefined): OutcomeResolution {
+  const byCode = catalog.filter((item) => item.code === code);
+  if (!byCode.length) return { ok: false, code: "UNRESOLVED" };
+  const subjectKnown = catalog.some((item) => item.subjectCode === sectionCode);
+  let candidates = subjectKnown ? byCode.filter((item) => item.subjectCode === sectionCode) : byCode;
+  if (!candidates.length) return { ok: false, code: "OUTCOME_SUBJECT_MISMATCH" };
+  const years = candidates.map((item) => item.academicYear ?? 0);
+  const targetYear = academicYear && years.includes(academicYear) ? academicYear : Math.max(...years);
+  candidates = candidates.filter((item) => (item.academicYear ?? 0) === targetYear);
+  if (candidates.length > 1 && candidates.some((item) => item.versionStatus === "ACTIVE")) candidates = candidates.filter((item) => item.versionStatus === "ACTIVE");
+  if (new Set(candidates.map((item) => item.id)).size > 1) return { ok: false, code: "AMBIGUOUS_OUTCOME_CODE" };
+  return { ok: true, hit: candidates[0] };
+}
+
+/**
+ * Önizleme ile commit arasındaki eşzamanlı değişikliği yakalayan hedef durum
+ * hash'i: soru kimliği + import'un yazacağı alanın güncel değeri (P0-4).
+ */
+export function importTargetStateHash(rows: ReadonlyArray<{ id: string; state: string }>): string {
+  const sorted = [...rows].sort((a, b) => a.id.localeCompare(b.id)).map((row) => [row.id, row.state]);
+  return createHash("sha256").update(JSON.stringify(sorted)).digest("hex");
+}
 
 export type OutcomeImportPreview = {
   schemaVersion: string;
@@ -57,6 +104,7 @@ export function previewOutcomeImport(
   payload: unknown,
   examQuestions: Array<{ sectionCode: string; questionNumber: number }>,
   catalog: OutcomeCatalogHit[],
+  options: { academicYear?: number | null } = {},
 ): OutcomeImportPreview {
   const issues: OutcomeImportIssue[] = [];
   const parsed = OutcomeDocumentSchema.safeParse(payload);
@@ -71,8 +119,18 @@ export function previewOutcomeImport(
     };
   }
 
+  if (!SUPPORTED_OUTCOME_SCHEMA_VERSIONS.includes(parsed.data.schemaVersion)) {
+    return {
+      schemaVersion: parsed.data.schemaVersion,
+      totalMappings: 0,
+      catalogHits: 0,
+      unresolvedCodes: [],
+      issues: [{ level: "error", code: "UNSUPPORTED_SCHEMA_VERSION", message: `Desteklenmeyen şema sürümü: ${parsed.data.schemaVersion}. Desteklenen: ${SUPPORTED_OUTCOME_SCHEMA_VERSIONS.join(", ")}.` }],
+      mappings: [],
+    };
+  }
+
   const questionSet = new Set(examQuestions.map((q) => `${q.sectionCode}:${q.questionNumber}`));
-  const catalogByCode = new Map(catalog.map((item) => [item.code, item]));
   const seenQuestions = new Set<string>();
   const unresolved = new Set<string>();
   let catalogHits = 0;
@@ -98,9 +156,20 @@ export function previewOutcomeImport(
         continue;
       }
       outcomeCodes.add(outcome.code);
-      const hit = catalogByCode.get(outcome.code) || null;
+      const resolution = resolveOutcomeCode(catalog, outcome.code, row.section, options.academicYear);
+      const hit = resolution.ok ? resolution.hit : null;
       if (hit) catalogHits += 1;
-      else unresolved.add(outcome.code);
+      else if (resolution.ok === false && resolution.code === "UNRESOLVED") unresolved.add(outcome.code);
+      else if (resolution.ok === false) {
+        issues.push({
+          level: "error",
+          code: resolution.code,
+          message: resolution.code === "OUTCOME_SUBJECT_MISMATCH" ? "Kazanım sorunun dersine ait değil." : "Kazanım kodu bu derste birden çok kayda uyuyor; katalogu düzeltin.",
+          sectionCode: row.section,
+          questionNumber: row.question,
+          outcomeCode: outcome.code,
+        });
+      }
       const title = outcome.name || outcome.title || hit?.title || outcome.code;
       outcomes.push({
         code: outcome.code,

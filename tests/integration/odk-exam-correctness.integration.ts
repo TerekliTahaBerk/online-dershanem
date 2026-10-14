@@ -5,6 +5,7 @@ import { prisma as db } from "@/lib/prisma";
 import { previewOdkRescore, scoreOdkExam } from "@/lib/odk/scoring-service";
 import { commitAnswerKeyRevision, previewAnswerKeyRevision } from "@/lib/odk/answer-key-revision-server";
 import { rescoreOdkExamCommand } from "@/lib/odk/exam-results-commands";
+import { commitOdkImport, previewOdkImport, updateOdkExamQuestions } from "@/lib/odk/exam-commands-server";
 import { integration } from "./integration-utils";
 
 /**
@@ -271,6 +272,84 @@ integration("P0-2 taslak denemede revizyon açılmaz (taslak editörü kullanıl
     assert.equal(response.status, 409);
     assert.equal((await response.json()).code, "REVISION_NOT_ALLOWED");
   });
+});
+
+const bodyOf = async (response: Response) => ({ status: response.status, body: await response.json() });
+
+integration("P0-4 cevap anahtarı import: önizlemeden sonra değişen deneme commit'i reddeder", async () => {
+  const run = randomUUID().slice(0, 8);
+  await withFixture({ run, status: "DRAFT", sections: [{ code: "MAT", key: [null, null, null] }] }, async (fixture) => {
+    const preview = await bodyOf(await previewOdkImport("answer-key", fixture.exam.id, { examType: "TYT", sections: [{ code: "MAT", answers: { "1": "A", "2": "B", "3": "C" } }] }, fixture.admin.id));
+    assert.equal(preview.status, 200, JSON.stringify(preview.body));
+    // Başka bir yönetici editörden 3. sorunun cevabını girer.
+    await db.odkExamQuestion.update({ where: { id: fixture.question("MAT", 3).id }, data: { correctOption: "E" } });
+    const commit = await bodyOf(await commitOdkImport("answer-key", fixture.exam.id, preview.body.importId, fixture.admin.id));
+    assert.equal(commit.status, 409);
+    assert.equal(commit.body.code, "IMPORT_STALE");
+    assert.equal((await db.odkExamQuestion.findUniqueOrThrow({ where: { id: fixture.question("MAT", 3).id } })).correctOption, "E");
+    assert.equal((await db.odkExamQuestion.findUniqueOrThrow({ where: { id: fixture.question("MAT", 1).id } })).correctOption, null);
+  });
+});
+
+integration("P0-4 cevap anahtarı import: tekrar ve eşzamanlı commit idempotenttir, tek audit yazılır", async () => {
+  const run = randomUUID().slice(0, 8);
+  await withFixture({ run, status: "DRAFT", sections: [{ code: "MAT", key: [null, null] }] }, async (fixture) => {
+    const preview = await bodyOf(await previewOdkImport("answer-key", fixture.exam.id, { sections: [{ code: "MAT", answers: { "1": "D", "2": "E" } }] }, fixture.admin.id));
+    const [first, second] = await Promise.all([
+      commitOdkImport("answer-key", fixture.exam.id, preview.body.importId, fixture.admin.id).then(bodyOf),
+      commitOdkImport("answer-key", fixture.exam.id, preview.body.importId, fixture.admin.id).then(bodyOf),
+    ]);
+    assert.deepEqual([first.status, second.status], [200, 200], JSON.stringify([first.body, second.body]));
+    assert.equal([first.body, second.body].filter((body) => body.idempotent).length, 1);
+    const again = await bodyOf(await commitOdkImport("answer-key", fixture.exam.id, preview.body.importId, fixture.admin.id));
+    assert.deepEqual([again.status, again.body.idempotent, again.body.count], [200, true, 2]);
+    assert.equal(await db.auditLog.count({ where: { entityId: fixture.exam.id, action: "odk.answer_key_imported" } }), 1);
+    assert.equal((await db.odkExamQuestion.findUniqueOrThrow({ where: { id: fixture.question("MAT", 2).id } })).correctOption, "E");
+  });
+});
+
+integration("P0-4 desteklenmeyen şema sürümü önizlemede hata verir", async () => {
+  const run = randomUUID().slice(0, 8);
+  await withFixture({ run, status: "DRAFT", sections: [{ code: "MAT", key: [null] }] }, async (fixture) => {
+    const preview = await bodyOf(await previewOdkImport("answer-key", fixture.exam.id, { schemaVersion: "3.0", sections: [{ code: "MAT", answers: { "1": "A" } }] }, fixture.admin.id));
+    assert.equal(preview.body.issues[0].code, "UNSUPPORTED_SCHEMA_VERSION");
+    const commit = await bodyOf(await commitOdkImport("answer-key", fixture.exam.id, preview.body.importId, fixture.admin.id));
+    assert.equal(commit.status, 400);
+  });
+});
+
+integration("P0-5 kazanım: başka sınav ailesinin ve başka dersin kazanımı bağlanamaz", async () => {
+  const run = randomUUID().slice(0, 8);
+  const tyt = await createOutcomeCatalog(run, "TYT", [{ subject: "MAT", unit: "U1", codes: [`T-MAT-${run}`] }, { subject: "FEN", unit: "U2", codes: [`T-FEN-${run}`] }]);
+  const lgs = await createOutcomeCatalog(run, "LGS", [{ subject: "MAT", unit: "U1", codes: [`L-MAT-${run}`] }]);
+  try {
+    await withFixture({ run, status: "DRAFT", sections: [{ code: "MAT", key: ["A", "B"] }] }, async (fixture) => {
+      // Başka aile (LGS) kodu TYT kataloğunda yok → çözülmez, commit edilemez.
+      const foreign = await bodyOf(await previewOdkImport("outcomes", fixture.exam.id, { questions: [{ section: "MAT", question: 1, outcomes: [{ code: `L-MAT-${run}` }] }, { section: "MAT", question: 2, outcomes: [{ code: `T-MAT-${run}` }] }] }, fixture.admin.id));
+      assert.deepEqual(foreign.body.summary.unresolvedCodes, [`L-MAT-${run}`]);
+      assert.equal((await bodyOf(await commitOdkImport("outcomes", fixture.exam.id, foreign.body.importId, fixture.admin.id))).status, 400);
+      // Aynı aile, başka ders (FEN) → hata.
+      const otherSubject = await bodyOf(await previewOdkImport("outcomes", fixture.exam.id, { questions: [{ section: "MAT", question: 1, outcomes: [{ code: `T-FEN-${run}` }] }] }, fixture.admin.id));
+      assert.equal(otherSubject.body.issues.find((issue: { level: string }) => issue.level === "error")?.code, "OUTCOME_SUBJECT_MISMATCH");
+      // Doğru ders → commit edilir.
+      const valid = await bodyOf(await previewOdkImport("outcomes", fixture.exam.id, { questions: [{ section: "MAT", question: 1, outcomes: [{ code: `T-MAT-${run}` }] }, { section: "MAT", question: 2, outcomes: [{ code: `T-MAT-${run}` }] }] }, fixture.admin.id));
+      const committed = await bodyOf(await commitOdkImport("outcomes", fixture.exam.id, valid.body.importId, fixture.admin.id));
+      assert.equal(committed.status, 200, JSON.stringify(committed.body));
+      assert.equal(await db.odkQuestionOutcome.count({ where: { outcomeId: tyt.byCode.get(`MAT:T-MAT-${run}`) } }), 2);
+
+      // Editör yolu (web + mobil): başka dersin ve başka ailenin kazanımı reddedilir.
+      const editorQuestions = (outcomeId: string) => fixture.sections[0].questions.map((question) => ({ id: question.id, correctOption: "A" as const, difficulty: "MEDIUM" as const, bookletPage: null, contentType: "BOOKLET_PDF" as const, contentText: null, assetUrl: null, outcomeIds: [outcomeId], primaryOutcomeId: outcomeId }));
+      const wrongSubject = await bodyOf(await updateOdkExamQuestions(fixture.exam.id, editorQuestions(tyt.byCode.get(`FEN:T-FEN-${run}`)!), fixture.admin.id));
+      assert.deepEqual([wrongSubject.status, wrongSubject.body.code], [400, "OUTCOME_SUBJECT_MISMATCH"]);
+      const wrongFamily = await bodyOf(await updateOdkExamQuestions(fixture.exam.id, editorQuestions(lgs.byCode.get(`MAT:L-MAT-${run}`)!), fixture.admin.id));
+      assert.equal(wrongFamily.status, 400);
+      const ok = await bodyOf(await updateOdkExamQuestions(fixture.exam.id, editorQuestions(tyt.byCode.get(`MAT:T-MAT-${run}`)!), fixture.admin.id));
+      assert.equal(ok.status, 200, JSON.stringify(ok.body));
+    });
+  } finally {
+    await tyt.cleanup();
+    await lgs.cleanup();
+  }
 });
 
 /** Sınav ailesine bağlı küçük bir müfredat kataloğu (ders → ünite → kazanım). */
