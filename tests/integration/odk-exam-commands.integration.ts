@@ -158,6 +158,12 @@ integration("K03c deneme puanlama ve yayın komutları", async () => {
     assert.equal(await db.auditLog.count({ where: { idempotencyKey: `odk-exam:${admin.id}:${releaseKey}` } }), 1);
     assert.equal(await db.auditLog.count({ where: { entityId: exam.id, action: "odk.exam_results_released" } }), 1);
 
+    // Anahtar değişmediyse hiçbir net değişmez: onay istenmez (etki gerçek farktan hesaplanır, P0-3).
+    const unchanged = await command({ operation: "rescore", input: {} });
+    assert.equal((unchanged.body as { impact: { changedAttemptCount: number; publishedResultsWillChange: boolean } }).impact.changedAttemptCount, 0);
+    assert.equal((unchanged.body as { impact: { publishedResultsWillChange: boolean } }).impact.publishedResultsWillChange, false);
+    // Anahtar düzeltmesi (revizyonun yazdığı alan) yayınlanmış neti değiştirir.
+    await db.odkExamQuestion.update({ where: { id: q2.id }, data: { correctOption: "B" } });
     // Yayınlanmış sonucu değiştiren yeniden puanlama açık onay ister (web ile aynı ret).
     await assert.rejects(command({ operation: "rescore", input: {} }), (error) => error instanceof GroupMutationError && error.status === 409);
     const rescored = await command({ operation: "rescore", input: { confirmPublishedChange: true, reason: "Anahtar düzeltmesi" } });
