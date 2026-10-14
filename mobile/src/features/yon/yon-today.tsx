@@ -42,7 +42,7 @@ export default function YonTodayScreen() {
   const data = query.data;
   const description =
     data?.state === 'READY'
-      ? [data.hasPlan ? `${data.openToday} görev` : null, data.hasPlan && data.remainingMinutesToday ? `~${minutesLabel(data.remainingMinutesToday)}` : null, data.nextSession ? `${formatShortDateTime(data.nextSession.scheduledAt)} koç görüşmesi` : null]
+      ? [data.hasPlan ? (data.openToday > 0 ? `${data.openToday} görev` : 'Haftanın kalanına aşağıdan göz atabilirsin.') : null, data.hasPlan && data.remainingMinutesToday ? `~${minutesLabel(data.remainingMinutesToday)}` : null, data.nextSession ? `${formatShortDateTime(data.nextSession.scheduledAt)} koç görüşmesi` : null]
           .filter(Boolean)
           .join(' · ') || 'Yön Koçluk planın, koçun ve hedeflerin.'
       : undefined;

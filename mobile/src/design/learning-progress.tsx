@@ -16,7 +16,7 @@ export function LearningProgress({ done, total, label }: { done: number; total: 
     animation.start();
     return () => animation.stop();
   }, [progress, ratio, reduceMotion]);
-  return <View accessibilityRole="progressbar" accessibilityLabel={label} accessibilityValue={{ min: 0, max: 100, now: Math.round(ratio * 100), text: `${done}/${total} görev` }} style={styles.track}>
+  return <View accessible accessibilityRole="progressbar" accessibilityLabel={label} accessibilityValue={{ min: 0, max: 100, now: Math.round(ratio * 100), text: `${done}/${total} görev` }} style={styles.track}>
     <Animated.View style={[styles.fill, { backgroundColor: product.accent, transform: [{ scaleX: progress }] }]} />
   </View>;
 }
