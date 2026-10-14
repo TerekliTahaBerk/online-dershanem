@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { validateVersionReadiness } from "@/lib/odk/exam-domain";
+import { readTemplateSnapshot } from "@/lib/odk/exam-templates";
 import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 
 export const odkExamEditorInclude = {
@@ -27,6 +28,7 @@ export async function getOdkExamReadiness(examId: string, db: Pick<typeof prisma
     scoringPolicyCode: version.scoringPolicy.code,
     structureMode: exam.structureMode,
     templateCode: exam.templateCode,
+    templateSnapshot: readTemplateSnapshot(version.settings),
     files: version.files.map((file) => file.type),
     requireBookletPdf: version.sections.some((section) => section.questions.some((question) => question.contentType === "BOOKLET_PDF")),
     sections: version.sections.map((section) => ({ code: section.code, questionCount: section.questionCount, questions: section.questions.map((question) => ({ questionNumber: question.questionNumber, correctOption: question.correctOption, outcomes: question.outcomes.map((outcome) => ({ outcomeId: outcome.outcomeId, isPrimary: outcome.isPrimary })) })) })),
