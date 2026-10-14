@@ -5,7 +5,7 @@ import { prisma as db } from "@/lib/prisma";
 import { previewOdkRescore, scoreOdkExam } from "@/lib/odk/scoring-service";
 import { commitAnswerKeyRevision, previewAnswerKeyRevision } from "@/lib/odk/answer-key-revision-server";
 import { rescoreOdkExamCommand } from "@/lib/odk/exam-results-commands";
-import { commitOdkImport, previewOdkImport, updateOdkExamQuestions } from "@/lib/odk/exam-commands-server";
+import { commitOdkImport, loadQuestionsRevision, previewOdkImport, updateOdkExamQuestions } from "@/lib/odk/exam-commands-server";
 import { integration } from "./integration-utils";
 
 /**
@@ -350,6 +350,30 @@ integration("P0-5 kazanım: başka sınav ailesinin ve başka dersin kazanımı 
     await tyt.cleanup();
     await lgs.cleanup();
   }
+});
+
+integration("P1-6 soru editörü: araya giren kayıt bayat revizyonla ezilemez; eşzamanlı iki kayıttan biri yazılır", async () => {
+  const run = randomUUID().slice(0, 8);
+  await withFixture({ run, status: "DRAFT", sections: [{ code: "MAT", key: [null, null] }] }, async (fixture) => {
+    const rows = (correctOption: "A" | "B" | "C" | "D" | "E", difficulty: "EASY" | "HARD" = "EASY") => fixture.sections[0].questions.map((question) => ({ id: question.id, correctOption, difficulty, bookletPage: null, contentType: "BOOKLET_PDF" as const, contentText: null, assetUrl: null, outcomeIds: [], primaryOutcomeId: null }));
+    const opened = await loadQuestionsRevision(db, fixture.version.id);
+    // Yönetici 1 kaydeder; yanıt yeni revizyonu döner.
+    const first = await bodyOf(await updateOdkExamQuestions(fixture.exam.id, rows("A"), fixture.admin.id, undefined, { expectedRevision: opened }));
+    assert.equal(first.status, 200, JSON.stringify(first.body));
+    assert.equal(first.body.revision, await loadQuestionsRevision(db, fixture.version.id));
+    // Yönetici 2 aynı eski revizyonla kaydetmeye çalışır → 409, yazılmaz.
+    const stale = await bodyOf(await updateOdkExamQuestions(fixture.exam.id, rows("E"), fixture.admin.id, undefined, { expectedRevision: opened }));
+    assert.deepEqual([stale.status, stale.body.code, stale.body.revision], [409, "QUESTIONS_STALE", first.body.revision]);
+    assert.equal((await db.odkExamQuestion.findUniqueOrThrow({ where: { id: fixture.question("MAT", 1).id } })).correctOption, "A");
+    // Aynı revizyonla iki eşzamanlı kayıt: yalnız biri.
+    const results = await Promise.all([
+      updateOdkExamQuestions(fixture.exam.id, rows("B"), fixture.admin.id, undefined, { expectedRevision: first.body.revision }),
+      updateOdkExamQuestions(fixture.exam.id, rows("C", "HARD"), fixture.admin.id, undefined, { expectedRevision: first.body.revision }),
+    ]);
+    assert.deepEqual(results.map((response) => response.status).sort(), [200, 409]);
+    // Revizyon verilmezse (mobil tek soru komutu, eski istemci) davranış eskisi gibi.
+    assert.equal((await updateOdkExamQuestions(fixture.exam.id, rows("D"), fixture.admin.id)).status, 200);
+  });
 });
 
 /** Sınav ailesine bağlı küçük bir müfredat kataloğu (ders → ünite → kazanım). */

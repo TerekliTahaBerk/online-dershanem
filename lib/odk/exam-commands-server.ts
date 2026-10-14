@@ -16,6 +16,7 @@ import { validateSchedule } from "@/lib/odk/exam-domain";
 import { DEFAULT_EXAM_SECURITY_POLICY, mergeExamSettings, parseExamSecurityPolicy } from "@/lib/odk/exam-security";
 import { applySessionPlanEdits, readSessionPlan, sessionPlanWorkingMinutes } from "@/lib/odk/exam-sessions";
 import { importTargetStateHash, previewOutcomeImport, type OutcomeCatalogHit } from "@/lib/odk/outcome-import";
+import { questionsRevision } from "@/lib/odk/question-revision";
 
 /**
  * DENEME HAZIRLIK KOMUTLARI (K03b) — web `/api/odk/admin/exams/[id]/**` uçları
@@ -314,7 +315,22 @@ export async function commitOdkImport(kind: ImportKind, id: string, importId: st
 }
 
 /** Taslak sürümün tüm soru listesi: anahtar, zorluk, sayfa, içerik ve kazanımlar (web soru editörü). */
-export async function updateOdkExamQuestions(id: string, questions: QuestionsInput, actorId: string, db: Db = prisma) {
+/** Taslak sürümün güncel soru içerik revizyonu (web editörü eşzamanlılık kontrolü). */
+export async function loadQuestionsRevision(db: Pick<Db, "odkExamQuestion">, versionId: string) {
+  const rows = await db.odkExamQuestion.findMany({
+    where: { section: { versionId } },
+    select: { id: true, correctOption: true, difficulty: true, bookletPage: true, contentType: true, contentText: true, assetUrl: true, outcomes: { select: { outcomeId: true, isPrimary: true } } },
+  });
+  return questionsRevision(rows);
+}
+
+class QuestionsStaleError extends Error {
+  constructor(readonly revision: string) {
+    super("QUESTIONS_STALE");
+  }
+}
+
+export async function updateOdkExamQuestions(id: string, questions: QuestionsInput, actorId: string, db: Db = prisma, options: { expectedRevision?: string } = {}) {
   const exam = await db.odkExam.findFirst({ where: { id, status: "DRAFT", currentVersion: { status: "DRAFT" } }, select: { family: true, examFamilyRef: { select: { code: true } }, currentVersion: { select: { id: true, sections: { select: { code: true, questions: { select: { id: true } } } } } } } });
   if (!exam?.currentVersion) return NextResponse.json({ error: "Kilitlenmiş veya bulunamayan sürüm düzenlenemez." }, { status: 409 });
   const familyCode = getOdkExamFamilyCode(exam);
@@ -336,15 +352,31 @@ export async function updateOdkExamQuestions(id: string, questions: QuestionsInp
     });
     if (mismatch) return NextResponse.json({ error: "Kazanımlardan biri sorunun dersine ait değil.", code: "OUTCOME_SUBJECT_MISMATCH", questionId: mismatch.id }, { status: 400 });
   }
-  await db.$transaction(async (tx) => {
-    await tx.odkQuestionOutcome.deleteMany({ where: { questionId: { in: expectedIds } } });
-    for (const question of questions) {
-      await tx.odkExamQuestion.update({ where: { id: question.id }, data: { correctOption: question.correctOption, difficulty: question.difficulty, bookletPage: question.bookletPage, contentType: question.contentType, contentText: question.contentText, assetUrl: question.assetUrl } });
-      if (question.outcomeIds.length) await tx.odkQuestionOutcome.createMany({ data: question.outcomeIds.map((outcomeId) => ({ questionId: question.id, outcomeId, isPrimary: outcomeId === question.primaryOutcomeId })) });
+  const versionId = exam.currentVersion.id;
+  let revision: string;
+  try {
+    revision = await db.$transaction(async (tx) => {
+      if (options.expectedRevision) {
+        // Satırları kilitle, sonra karşılaştır: iki eşzamanlı kayıttan ikincisi güncel revizyonu görür.
+        await tx.$queryRaw`SELECT q.id FROM odk_exam_questions q JOIN odk_exam_sections s ON s.id = q.section_id WHERE s.version_id = ${versionId} FOR UPDATE OF q`;
+        const current = await loadQuestionsRevision(tx, versionId);
+        if (current !== options.expectedRevision) throw new QuestionsStaleError(current);
+      }
+      await tx.odkQuestionOutcome.deleteMany({ where: { questionId: { in: expectedIds } } });
+      for (const question of questions) {
+        await tx.odkExamQuestion.update({ where: { id: question.id }, data: { correctOption: question.correctOption, difficulty: question.difficulty, bookletPage: question.bookletPage, contentType: question.contentType, contentText: question.contentText, assetUrl: question.assetUrl } });
+        if (question.outcomeIds.length) await tx.odkQuestionOutcome.createMany({ data: question.outcomeIds.map((outcomeId) => ({ questionId: question.id, outcomeId, isPrimary: outcomeId === question.primaryOutcomeId })) });
+      }
+      return loadQuestionsRevision(tx, versionId);
+    }, { timeout: 15_000 });
+  } catch (error) {
+    if (error instanceof QuestionsStaleError) {
+      return NextResponse.json({ error: "Siz düzenlerken bu denemenin soruları başka biri tarafından değiştirildi. Değişikliklerinizi not alıp sayfayı yenileyin.", code: "QUESTIONS_STALE", revision: error.revision }, { status: 409 });
     }
-  });
-  await transactionalAudit(db)({ actorUserId: actorId, entityType: "OdkExam", entityId: id, action: "odk.questions_updated", summary: "Cevap anahtarı ve soru kazanımları güncellendi", payload: { questionCount: questions.length, outcomeLinkCount: requestedOutcomeIds.length } });
-  return NextResponse.json({ ok: true });
+    throw error;
+  }
+  await transactionalAudit(db)({ actorUserId: actorId, entityType: "OdkExam", entityId: id, action: "odk.questions_updated", summary: "Cevap anahtarı ve soru kazanımları güncellendi", payload: { questionCount: questions.length, outcomeLinkCount: requestedOutcomeIds.length, revision } });
+  return NextResponse.json({ ok: true, revision });
 }
 
 /**

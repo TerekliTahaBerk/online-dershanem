@@ -76,7 +76,11 @@ const question = z.object({
   primaryOutcomeId: z.string().min(1).nullable(),
 }).refine((value) => !value.primaryOutcomeId || value.outcomeIds.includes(value.primaryOutcomeId), { message: "Ana kazanım, bağlı kazanımlar içinde olmalıdır." });
 
-export const updateQuestionsSchema = z.object({ questions: z.array(question).min(1).max(200) });
+export const updateQuestionsSchema = z.object({
+  questions: z.array(question).min(1).max(200),
+  /** Editörün açtığı andaki soru içerik revizyonu; verilirse başkasının araya giren kaydı 409 ile reddedilir (P1-6). */
+  expectedRevision: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+});
 
 export const jsonImportPreviewSchema = z.object({
   payload: z.unknown(),
