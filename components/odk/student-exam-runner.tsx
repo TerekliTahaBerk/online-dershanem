@@ -73,6 +73,8 @@ export function StudentExamRunner({
   questions: allQuestions,
   initialAnswers,
   session = null,
+  preview = null,
+  bookletUrl,
 }: {
   examId: string;
   attemptId: string;
@@ -82,6 +84,13 @@ export function StudentExamRunner({
   initialAnswers: Record<string, Answer>;
   /** Oturumlu sınav (LGS). Yoksa tek oturumlu eski akış. */
   session?: RunnerSession | null;
+  /**
+   * Yönetici önizlemesi (Faz 5 / P1-3): öğrencinin göreceği ekranın aynısı;
+   * hiçbir ağ yazması yapılmaz, cevaplar yalnız bu sayfada tutulur.
+   */
+  preview?: { exitHref: string; nextSessionHref: string | null } | null;
+  /** Kitapçık adresi; verilmezse öğrencinin kitapçık ucu, `null` ise kitapçık yok. */
+  bookletUrl?: string | null;
 }) {
   const router = useRouter();
   // Oturumlu sınavda yalnız açık oturumun soruları yazılır; önceki oturumlar kilitli.
@@ -150,19 +159,28 @@ export function StudentExamRunner({
   >([]);
 
   const persistPending = useCallback(() => {
+    if (preview) return;
     writePendingAnswers(browserStorage(), attemptId, pending.current);
-  }, [attemptId]);
+  }, [attemptId, preview]);
 
   const closeLocally = useCallback(() => {
     submittedRef.current = true;
+    if (preview) {
+      router.push(preview.exitHref);
+      return;
+    }
     // Deneme kapandı: bekleyen niyetler artık yazılamaz; saklanan kuyruk temizlenir.
     pending.current = {};
     writePendingAnswers(browserStorage(), attemptId, {});
     router.replace(`/panel/odk/ogrenci/denemeler/${examId}`);
     router.refresh();
-  }, [attemptId, examId, router]);
+  }, [attemptId, examId, preview, router]);
 
   const flushEvents = useCallback(async () => {
+    if (preview) {
+      eventQueue.current = [];
+      return;
+    }
     if (!eventQueue.current.length) return;
     const batch = eventQueue.current.splice(0, 50);
     try {
@@ -174,7 +192,7 @@ export function StudentExamRunner({
     } catch {
       eventQueue.current.unshift(...batch);
     }
-  }, [attemptId]);
+  }, [attemptId, preview]);
 
   const pushEvent = useCallback(
     (
@@ -196,7 +214,7 @@ export function StudentExamRunner({
 
   const flushTiming = useCallback(
     async (questionId: string, activeDurationMs: number) => {
-      if (activeDurationMs <= 0) return;
+      if (preview || activeDurationMs <= 0) return;
       try {
         await fetch(`/api/odk/student/attempts/${attemptId}/timings`, {
           method: "POST",
@@ -215,7 +233,7 @@ export function StudentExamRunner({
         // best-effort
       }
     },
-    [attemptId],
+    [attemptId, preview],
   );
 
   const endQuestionFocus = useCallback(() => {
@@ -243,6 +261,12 @@ export function StudentExamRunner({
 
   const sendAnswer = useCallback(
     async (initial: AnswerPayload) => {
+      if (preview) {
+        // Önizleme: sunucuya yazılmaz; kayıt anında "kaydedildi" sayılır.
+        if (pending.current[initial.questionId]?.revision === initial.revision) delete pending.current[initial.questionId];
+        setSaveState((current) => ({ ...current, [initial.questionId]: "saved" }));
+        return;
+      }
       let payload = initial;
       // Revizyon çakışmasında sunucu kaydının üstüne yeniden gönderim (rebase) en çok 3 tur (P0-6).
       for (let round = 0; round < 4; round += 1) {
@@ -324,11 +348,11 @@ export function StudentExamRunner({
         return;
       }
     },
-    [attemptId, closeLocally, persistPending, router],
+    [attemptId, closeLocally, persistPending, preview, router],
   );
 
   useEffect(() => {
-    if (typeof BroadcastChannel === "undefined") return;
+    if (preview || typeof BroadcastChannel === "undefined") return;
     const channel = new BroadcastChannel(`odk-attempt:${attemptId}`);
     const tab = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     tabChannel.current = channel;
@@ -360,7 +384,7 @@ export function StudentExamRunner({
       channel.close();
       tabChannel.current = null;
     };
-  }, [attemptId]);
+  }, [attemptId, preview]);
 
   /** Bekleyen tüm niyetleri soru kuyruklarına ekler (bağlantı geri geldiğinde, açılışta). */
   const flushPending = useCallback(() => {
@@ -377,6 +401,7 @@ export function StudentExamRunner({
   useEffect(() => {
     if (restoredRef.current) return;
     restoredRef.current = true;
+    if (preview) return;
     const restored = restorePendingAnswers(
       readPendingAnswers(browserStorage(), attemptId),
       initialAnswers,
@@ -399,11 +424,15 @@ export function StudentExamRunner({
       ...Object.fromEntries(Object.keys(restored).map((questionId) => [questionId, "saving" as const])),
     }));
     flushPending();
-  }, [attemptId, flushPending, initialAnswers, persistPending, questions]);
+  }, [attemptId, flushPending, initialAnswers, persistPending, questions, preview]);
 
   const submit = useCallback(
     async (auto = false) => {
       if (submittedRef.current) return;
+      if (preview) {
+        closeLocally();
+        return;
+      }
       submittedRef.current = true;
       setSubmitting(true);
       setSubmitError("");
@@ -446,7 +475,7 @@ export function StudentExamRunner({
         );
       }
     },
-    [attemptId, closeLocally, endQuestionFocus, flushEvents, pushEvent],
+    [attemptId, closeLocally, endQuestionFocus, flushEvents, preview, pushEvent],
   );
 
   useEffect(() => {
@@ -492,6 +521,10 @@ export function StudentExamRunner({
 
   const closeSession = useCallback(async () => {
     if (!session || sessionBusy) return;
+    if (preview) {
+      router.push(preview.nextSessionHref ?? preview.exitHref);
+      return;
+    }
     setSessionBusy(true);
     setSubmitError("");
     endQuestionFocus();
@@ -522,17 +555,19 @@ export function StudentExamRunner({
     } finally {
       setSessionBusy(false);
     }
-  }, [attemptId, closeLocally, endQuestionFocus, flushEvents, router, session, sessionBusy]);
+  }, [attemptId, closeLocally, endQuestionFocus, flushEvents, router, session, sessionBusy, preview]);
 
   useEffect(() => {
+    if (preview) return;
     const warn = (event: BeforeUnloadEvent) => {
       if (!submittedRef.current) event.preventDefault();
     };
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
-  }, []);
+  }, [preview]);
 
   useEffect(() => {
+    if (preview) return;
     const heartbeat = async () => {
       try {
         const response = await fetch(
@@ -558,7 +593,7 @@ export function StudentExamRunner({
       window.clearInterval(interval);
       window.clearInterval(eventsInterval);
     };
-  }, [attemptId, closeLocally, flushEvents, flushPending]);
+  }, [attemptId, closeLocally, flushEvents, flushPending, preview]);
 
   useEffect(() => {
     const onVisibility = () => {
@@ -684,7 +719,7 @@ export function StudentExamRunner({
   const currentState = currentQuestion
     ? saveState[currentQuestion.id]
     : undefined;
-  const bookletBase = `/api/odk/student/exams/${examId}/booklet`;
+  const bookletBase = bookletUrl === undefined ? `/api/odk/student/exams/${examId}/booklet` : bookletUrl;
   const currentPage = currentQuestion?.bookletPage ?? null;
 
   // Soru değişince kitapçık o sorunun sayfasına gider; aynı sayfadaki soruda öğrencinin kaydırması korunur.
@@ -797,6 +832,14 @@ export function StudentExamRunner({
             )}
           </div>
         </div>
+        {preview ? (
+          <div className="mx-auto mb-2 flex max-w-[1760px] flex-wrap items-center justify-between gap-2 rounded-md bg-[#e8eefb] px-3 py-2 text-[13px] font-medium text-[#14201c]" role="status">
+            <span>Önizleme: öğrencinin göreceği ekran. Cevaplar kaydedilmez, süre ve teslim gerçek değildir.</span>
+            <a href={preview.exitHref} className="font-semibold underline underline-offset-2">
+              Önizlemeden çık
+            </a>
+          </div>
+        ) : null}
         {otherTabOpen ? (
           <div className="mx-auto mb-2 max-w-[1760px] rounded-md bg-[#eef1ef] px-3 py-2 text-[13px] font-medium text-[#14201c]" role="status">
             Bu deneme başka bir sekmede de açık. Cevaplar en son işaretlediğin sekmeden kaydedilir; karışıklık olmaması için diğer sekmeyi kapat.
@@ -843,19 +886,27 @@ export function StudentExamRunner({
           <p className="mb-2 rounded-md bg-white/70 px-3 py-2 text-[12.5px] text-[#3d4a45] md:hidden">
             Kitapçığı kâğıttan çözüyorsan Cevaplar görünümünü kullan.
           </p>
-          <iframe
-            title="Deneme kitapçığı"
-            src={bookletSrc(bookletBase, bookletView.page, bookletView.nonce)}
-            className="min-h-[480px] w-full flex-1 rounded-md bg-white md:min-h-0"
-          />
-          <a
-            href={bookletSrc(bookletBase, currentPage)}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-2 inline-flex min-h-11 items-center justify-center rounded-md border border-black/15 bg-white text-[13px] font-semibold md:hidden"
-          >
-            PDF ayrı sekmede aç
-          </a>
+          {bookletBase ? (
+            <>
+              <iframe
+                title="Deneme kitapçığı"
+                src={bookletSrc(bookletBase, bookletView.page, bookletView.nonce)}
+                className="min-h-[480px] w-full flex-1 rounded-md bg-white md:min-h-0"
+              />
+              <a
+                href={bookletSrc(bookletBase, currentPage)}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-flex min-h-11 items-center justify-center rounded-md border border-black/15 bg-white text-[13px] font-semibold md:hidden"
+              >
+                PDF ayrı sekmede aç
+              </a>
+            </>
+          ) : (
+            <p className="grid min-h-[240px] flex-1 place-items-center rounded-md bg-white px-4 text-center text-[13.5px] text-[#3d4a45]">
+              Bu oturum için kitapçık PDF&apos;i henüz yüklenmedi.
+            </p>
+          )}
         </section>
 
         <aside

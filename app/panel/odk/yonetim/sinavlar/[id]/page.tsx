@@ -264,7 +264,26 @@ export default async function OdkAdminExamDetailPage({
 
           {tab === "katilimcilar" ? <AdminAssignmentPanel examId={exam.id} canEdit={exam.status !== "ARCHIVED"} /> : null}
 
-          {tab === "onizleme" ? <AdminPreviewPanel examId={exam.id} /> : null}
+          {tab === "onizleme" ? (
+            <>
+              {caps.edit ? (
+                <Section title="Öğrenci çözüm ekranı" description="Öğrencinin göreceği çözücünün aynısı. Deneme başlatılmaz, cevaplar kaydedilmez." divider={false}>
+                  <div className="flex flex-wrap gap-2">
+                    {(sessionPlan ?? [null]).map((item) => (
+                      <Link
+                        key={item?.key ?? "tek"}
+                        href={`/panel/odk/yonetim/sinavlar/${exam.id}/onizleme/cozucu${item ? `?oturum=${item.key}` : ""}`}
+                        className={buttonClass("secondary", "md")}
+                      >
+                        {item ? `${item.title} oturumunu önizle` : "Çözücüyü önizle"}
+                      </Link>
+                    ))}
+                  </div>
+                </Section>
+              ) : null}
+              <AdminPreviewPanel examId={exam.id} />
+            </>
+          ) : null}
 
           {tab === "canli" ? (
             <Section title="Canlı durum" divider={false}>
