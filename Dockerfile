@@ -7,6 +7,8 @@ WORKDIR /app
 
 FROM base AS dependencies
 COPY package.json package-lock.json ./
+# Yamalı bağımlılık kopyaları (`file:` bağımlılığı, bkz. docs/known-dependency-risks.md).
+COPY vendor ./vendor
 # `postinstall` Prisma Client'ı üretir; şema ve config'i `npm ci`'dan önce kopyala.
 COPY prisma.config.ts ./
 COPY lib/prisma-env.ts ./lib/prisma-env.ts

@@ -3,7 +3,7 @@ const expoConfig = require('eslint-config-expo/flat');
 module.exports = [
   ...expoConfig,
   {
-    ignores: ['dist/*'],
+    ignores: ['dist/*', 'vendor/**'],
   },
   {
     // Web reposundaki (`../eslint.config.mjs`) aynı gerekçeyle kapatıldı:

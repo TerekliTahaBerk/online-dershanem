@@ -123,6 +123,7 @@
     "eslint-config-next": "^16.3.8",
     "fast-glob": "file:tools/next-glob-compat",
     "postcss": "8.5.28",
+    "sprintf-js": "file:./vendor/npm/sprintf-js",
     "storybook": "^10.5.10",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.15",
@@ -139,6 +140,7 @@
     "sharp": "0.35.5",
     "tmp": "0.2.7",
     "uuid": "11.1.1",
-    "puppeteer-core": "25.13.0"
+    "puppeteer-core": "25.13.0",
+    "sprintf-js": "$sprintf-js"
   }
 }

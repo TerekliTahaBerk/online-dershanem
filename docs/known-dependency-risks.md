@@ -21,16 +21,6 @@ geçince CI yeniden kırmızı olur.
   zincirini güncellediğinde override kaldırılıp `npm run lighthouse:ci`
   yeniden çalıştırılacak.
 
-## Lighthouse CI / sprintf-js (orta)
-
-- Advisory: `GHSA-hp3w-g68c-fv3c` (orta, DoS).
-- Zincir: `@lhci/utils@0.15.1` → `js-yaml@3.15.2` → `argparse@1.0.10` →
-  `sprintf-js@1.0.3`. Yamalı `sprintf-js` sürümü yok; `js-yaml` 4'e zorlamak
-  `@lhci/utils`'in kullandığı `safeLoad` API'sini kırar.
-- Gerçek risk: Yalnız CI'da, repodaki `lighthouserc.json` (YAML değil)
-  okunurken yüklenir; dışarıdan girdi almaz. Audit kapısı yalnız high/critical
-  bulguları engellediği için istisna gerekmez.
-
 ## Storybook / tsconfck bakım durumu
 
 - Durum: `@storybook/nextjs-vite@10.6.0` →
@@ -43,8 +33,9 @@ geçince CI yeniden kırmızı olur.
 - Neden override yok: `vite-tsconfig-paths@6.1.1` dahi aynı `tsconfck@^3.0.3`
   bağımlılığını kullanır; var olmayan bir modern `tsconfck` sürümünü zorlamak
   mümkün değildir.
-- Yeniden değerlendirme: 14 Ekim 2026 veya Storybook adaptörü bu bağımlılığı
-  kaldırdığında (hangisi önceyse).
+- 14 Ekim 2026 değerlendirmesi: güvenlik advisory'si yok; `vite-tsconfig-paths`
+  en güncel sürümü (6.1.1) dahi aynı `tsconfck@^3` bağımlılığını kullanıyor.
+  Storybook adaptörü bu bağımlılığı kaldırdığında yeniden değerlendirilecek.
 
 ## Kaldırılan braces zinciri
 
@@ -60,19 +51,33 @@ geçince CI yeniden kırmızı olur.
   ESLint farklı bir API kullanmaya başlarsa override yeniden değerlendirilmeli;
   bu uyarlama genel amaçlı `fast-glob` yerine geçmez.
 
-## Mobil (Expo SDK 57) bağımlılıkları
+## Yamalı bağımlılık kopyaları (vendor) — giderildi (14 Ekim 2026)
 
-- `uuid` (orta, `GHSA` buffer bounds): `xcode@3.0.1` → `uuid@7.0.3` zinciri
-  `mobile/package.json` `overrides` ile `uuid@11.1.1`'e taşındı (kök projeyle
-  aynı). `xcode` yalnız `require('uuid').v4` kullanır; `expo config --type
-  prebuild` ve tüm mobil testler başarıyla çalıştı.
-- Dependabot'un mobil için açtığı `shell-quote@1.12.0`, `source-map-js@1.2.2`,
-  `compression@1.8.2` ve `brace-expansion@1.1.21` güncellemeleri lockfile'da
-  zaten bulunuyor.
-- Kalan bulgular (`braces`, `node-forge`, `decode-uri-component`, `sprintf-js`
-  ve bunlara bağlı Expo/Jest/React Native paketleri) için yamalı sürüm yok
-  (`braces`, `node-forge` tüm sürümler) ya da düzeltme Expo SDK 58'e major
-  geçiş gerektiriyor. `decode-uri-component@0.5` yalnız ESM olduğu için
-  `query-string@7`'ye zorlanamaz. Bu paketler derleme/test araçlarında veya
-  build zamanı config eklentilerinde çalışır; uygulama paketine girmez.
-- Yeniden değerlendirme: Expo SDK 58 geçişinde.
+Aşağıdaki paketlerin npm'de yamalı sürümü yoktu (en güncel sürüm de
+etkileniyordu) ya da düzeltme yalnız ESM olarak yayımlanmıştı. Açıklar, paketin
+yamalı bir kopyası depoya alınarak kapatıldı. Kopyalar kök bağımlılık olarak
+`file:` ile eklenir, iç içe kullanımlar `overrides` içindeki `$paket`
+referansıyla bu kopyaya yönlenir. Kopyaların sürümü, açık aralığının dışında
+kalan ve proje yaması olduğu açıkça görülen `-od.N` ekiyle işaretlenir.
+
+| Paket | Kopya | Advisory | Yama |
+| --- | --- | --- | --- |
+| `decode-uri-component` | `mobile/vendor/npm/decode-uri-component` (0.5.0) | GHSA-vcc3-ghjq-m6fr (orta) | Upstream 0.5.0 (`fa479da`) mantığı birebir, CommonJS'e taşındı; `query-string@7` (`expo-router`) `require` ile yüklüyor. Uygulama paketine girer. |
+| `node-forge` | `mobile/vendor/npm/node-forge` (1.4.1-od.1) | GHSA-86w9-cpqp-85rv (yüksek) | Upstream digitalbazaar/forge#1152: iç içe DigestAlgorithm öğe sayısı denetimi (`lib/rsa.js`). |
+| `braces` | `mobile/vendor/npm/braces` (3.0.4-od.1) | GHSA-vfj7-8cjw-p6xm (yüksek) | `parse()` iç içe derinliği 128 ile sınırlar (`maxDepth` seçeneğiyle düşürülebilir). |
+| `sprintf-js` | `vendor/npm/sprintf-js`, `mobile/vendor/npm/sprintf-js` (1.1.4-od.1, temel 1.0.3) | GHSA-hp3w-g68c-fv3c (orta) | Hassasiyet değeri ECMAScript sınırlarına sıkıştırılır. |
+
+- Doğrulama: `lib/vendor-patches.test.ts` ve
+  `mobile/src/test/vendor-patches.test.ts` her açığı tetikleyen girdiyle yamayı
+  denetler; override kaldırılırsa testler kırılır. `expo export` ile üretilen
+  Hermes paketinde yamalı `decode-uri-component` kodu yer alır.
+- `uuid`: `xcode@3.0.1` → `uuid@7.0.3` zinciri `mobile/package.json`
+  `overrides` ile `uuid@11.1.1`'e taşındı.
+- Dependabot'un mobil için açtığı `shell-quote`, `source-map-js`,
+  `compression` ve `brace-expansion` güncellemeleri lockfile'da zaten bulunuyor.
+- Bakım: Upstream yamalı sürüm yayımladığında ilgili kopya ve override
+  kaldırılır, gerçek paket kullanılır. Expo SDK geçişlerinde `npm audit` ve
+  bu testler yeniden çalıştırılır. Dockerfile bağımlılık aşaması `vendor/`
+  klasörünü `npm ci`'dan önce kopyalar.
+
+Güncel durum: kök projede ve `mobile/` içinde `npm audit` 0 açık raporlar.
