@@ -24,7 +24,7 @@ export type AnswerDecision =
   | { action: "RETRY_LATER" };
 
 /** Sunucunun kalıcı reddi: bu cevap artık yazılamaz (oturum/deneme kapandı). */
-const TERMINAL_CODES = new Set(["ATTEMPT_CLOSED", "SESSION_LOCKED", "SESSION_BREAK"]);
+const TERMINAL_CODES = new Set(["ATTEMPT_CLOSED", "SESSION_LOCKED", "SESSION_BREAK", "QUESTION_NOT_IN_VERSION"]);
 
 const sameIntent = (a: { selectedOption: AnswerOption | null; isMarked: boolean }, b: { selectedOption: AnswerOption | null; isMarked: boolean }) =>
   a.selectedOption === b.selectedOption && a.isMarked === b.isMarked;

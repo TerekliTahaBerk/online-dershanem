@@ -52,7 +52,8 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     return NextResponse.json({ error: "Sınav süresi sona erdi.", code: "ATTEMPT_CLOSED" }, { status: 409 });
   }
   const section = attempt.version.sections.find((item) => item.questions.length);
-  if (!section) return NextResponse.json({ error: "Soru bu sınav sürümünde bulunmuyor." }, { status: 400 });
+  // Soru sürümde yok ya da revizyonla iptal edildi: istemci bekleyen kaydı bırakır (kalıcı ret).
+  if (!section) return NextResponse.json({ error: "Soru bu sınav sürümünde bulunmuyor.", code: "QUESTION_NOT_IN_VERSION" }, { status: 400 });
   // Oturumlu sınav: yalnız açık oturumun soruları yazılır; kapanan oturum kilitli, aradayken hiçbiri.
   const sessionState = await loadAttemptSessionState({ id: attempt.id, startedAt: attempt.startedAt, deadlineAt: attempt.deadlineAt, settings: attempt.version.settings }, now);
   if (sessionState && !sectionWritable(sessionState.timeline, section.code)) {

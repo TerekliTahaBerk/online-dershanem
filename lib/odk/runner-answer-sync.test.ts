@@ -29,6 +29,8 @@ test("çakışmada sunucuda kayıt yoksa revizyon 1 ile yeniden gönderilir", ()
 test("kalıcı reddedilen kayıt (oturum kapalı) düşürülür; geçici hata beklemede kalır", () => {
   assert.deepEqual(reconcileAnswerResponse(intent(), { ok: false, code: "SESSION_LOCKED" }), { action: "DROP" });
   assert.deepEqual(reconcileAnswerResponse(intent(), { ok: false, code: "ATTEMPT_CLOSED" }), { action: "DROP" });
+  // Canlı sınavda revizyonla iptal edilen soru: kayıt hiç kabul edilmeyecek, teslimi engellememeli.
+  assert.deepEqual(reconcileAnswerResponse(intent(), { ok: false, code: "QUESTION_NOT_IN_VERSION" }), { action: "DROP" });
   assert.deepEqual(reconcileAnswerResponse(intent(), { ok: false, code: null }), { action: "RETRY_LATER" });
 });
 
