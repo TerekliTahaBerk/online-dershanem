@@ -1,6 +1,6 @@
 # ODK Deneme Deneyimi — Production-Grade Revizyon Yol Haritası
 
-Durum: **Faz 1 (denetim) · Faz 2 (P0 doğruluk) · Faz 3 (şablon/alt test) tamam**
+Durum: **Faz 1 (denetim) · Faz 2 (P0 doğruluk) · Faz 3 (şablon/alt test) · Faz 4 (yönetici deneyimi) tamam**
 Kapsam: Deneme Ligi (ODK) çevrim içi sınav motoru — yönetici oluşturma, cevap
 anahtarı/kazanım, öğrenci çözücü, puanlama, revizyon, yayın ve raporlama.
 
@@ -243,7 +243,7 @@ gereksinimi veya ciddi UX açığı; **P2** = iyileştirme.
 | 2 | P0-4/5 | Import sürüm/hash/eşzamanlılık + kazanım aile/ders uyumu | ✅ `b9839fc` |
 | 2 | P0-6/7/8 | Runner: kalıcı bekleyen cevap, conflict rebase, blur | ✅ (bu dal) |
 | 3 | P1-4/7, P0-11 | Şablon sürümü/modu/geçerliliği, anlık görüntü, alt testler, alan bazlı D/Y/B | ✅ `ca85472`, `ef3ffe8` |
-| 4 | P1-6/10, P2-1/2 | Yönetici sihirbazı, CSV/optik grid, conflict UI | sonraki |
+| 4 | P1-6/10, P2-2 | Soru içerik revizyonu + çakışma UI, tablo/CSV/dosya import, optik giriş, bölüm sekmesi/arama/toplu işlem | ✅ `3cc7dac`, `e612b79`, `0aaa011` |
 | 5 | P1-1/2/3/13 | Oturum kitapçığı, PDF sayfa eşleme, gerçek önizleme | sonraki |
 | 6 | P1-5/8/9, P2-3 | Rapor, attempt sürümüne bağlı puanlama, çoklu kitapçık | sonraki |
 | 7 | — | E2E (mobil + masaüstü), erişilebilirlik, performans | sonraki |
@@ -396,3 +396,67 @@ TYT/AYT alt testleri ve alan bazlı beklenen bölümler; ardından P1-8 (attempt
 **Sonraki faz:** Faz 4 — yönetici oluşturma/düzenleme deneyimi (adım bazlı akış, optik
 grid ve CSV/tablo yapıştırma import'u, soru tablosu filtreleri, web editöründe
 `expectedRevision` ile çakışma tespiti — P1-6, P1-10, P2-1, P2-2).
+
+### Faz 4 — Yönetici oluşturma/düzenleme deneyimi (2026-10-14)
+
+**Bulgu / gereksinim (doğrulandı)**
+- Web soru editörü tam listeyi yazıyor ve revizyon taşımıyordu; soru yazmak sürümün
+  `updatedAt`'ini değiştirmediği için mobilin `odkExamRevision`'ı da soru değişikliğini
+  görmüyordu → iki yöneticinin kaydı birbirini sessizce eziyordu (P1-6).
+- Soru tablosu bölümü göstermiyordu (TYT'de dört ayrı "1" satırı); arama, bölüm sekmesi,
+  toplu işlem yoktu; erişilebilir etiketler ("Soru 1 doğru cevap") belirsizdi.
+- İçe aktarma yalnız JSON yapıştırmaydı; önizleme yalnız özet sayı veriyordu (P1-10).
+
+**Mevcut yapı korundu:** Çalışma alanı zaten sekmeli (Genel · İçerik · Sorular · Oturumlar ·
+Zamanlama · Katılımcılar · Önizleme · …) ve hazırlık rayına sahip; yeni bir sihirbaz yerine
+bu sekmeler güçlendirildi. Altı adımlı akışın eşlemesi: 1 tür/şablon = oluşturma ekranı,
+2 PDF = İçerik, 3 cevap anahtarı = İçerik (içe aktarma) + Sorular (optik giriş), 4 kazanım =
+İçerik + Sorular, 5 atama/oturum/güvenlik = Katılımcılar + Oturumlar + Zamanlama,
+6 önizleme/yayın = Önizleme + hazırlık rayı.
+
+**Dokunulan dosyalar**
+- `lib/odk/question-revision.ts` (içerik hash'i), `lib/odk/exam-commands-server.ts`
+  (`expectedRevision`, satır kilidi, 409 `QUESTIONS_STALE`), `lib/odk/admin-schemas.ts`,
+  `app/api/odk/admin/exams/[id]/questions/route.ts`
+- `lib/odk/table-import.ts` (CSV/TSV/optik satır → sürümlü JSON), `components/odk/admin-json-import-panel.tsx`
+- `lib/odk/question-workbench.ts`, `components/odk/admin-exam-editor.tsx`,
+  `lib/odk/exam-workspace-server.ts`, `app/panel/odk/yonetim/sinavlar/[id]/page.tsx`
+
+**Neden güvenli**
+- `expectedRevision` opsiyonel: mobil tek soru komutu ve eski istemciler aynen çalışır.
+  Karşılaştırma soru satırları `FOR UPDATE` ile kilitlendikten sonra aynı transaction'da.
+- Tablo içe aktarma yeni sunucu yazma yolu açmaz; Faz 2'de korunan önizle/onayla akışını kullanır.
+- Tek bölümlü denemelerde erişilebilir etiketler değişmedi (mevcut E2E seçicileri korunur).
+- XLSX dosyası doğrudan okunmuyor (yeni bağımlılık eklenmedi); Excel/Sheets'ten
+  kopyala-yapıştır (TSV) ve CSV dışa aktarma destekleniyor.
+
+**Eklenen testler**
+- Unit: `question-revision.test.ts`, `table-import.test.ts` (ayırıcılar, tırnak, başlık,
+  Türkçe bölüm adı, optik satır, satır numaralı hatalar, kazanım ana/yan, sunucu önizlemesiyle
+  uyum), `question-workbench.test.ts` (bölüm + eksik filtre, arama, ilerleme, optik tuşlar,
+  toplu sayfa).
+- Integration: P1-6 — bayat revizyon 409, eşzamanlı iki kayıttan biri, revizyonsuz eski
+  davranış (8 tekrar yeşil).
+- E2E: `tests/e2e/odk-admin-editor.spec.ts` — optik klavye + kaydet + çakışma; tablo
+  yapıştırma + satır hatası + "Soruya git" + yazma; iki ekranda axe WCAG AA taraması
+  (ilk koşuda yeni sekme sayaçlarının kontrast hatasını yakaladı, düzeltildi).
+
+**Komutlar ve gerçek sonuçlar**
+- typecheck, eslint → temiz · `npm run test:unit` → 1081/1081
+- `tests/integration/odk-*.integration.ts` → 23/23
+- `lint:api-validation`, `lint:mobile-parity`, `lint:hygiene` → temiz
+- `next build` + E2E: yönetici editörü + ODK kalite + mobil ODK ×4 → 14/14;
+  ODK akışı + LGS oturumları + runner görsel → 10/10 (her grup taze seed ile)
+
+**Kalan riskler**
+- Mobil `odkExamRevision` soru değişikliğini hâlâ kapsamıyor (mobil `question.update`
+  güncel listeyi okuyup tek soruyu yazdığı için kayıp riski düşük; revizyona soru hash'i
+  eklenmesi mobil sözleşme değişikliği gerektirir).
+- Kazanım seçimi hâlâ tek açılır liste (ana kazanım); yan kazanım ve ders bazlı daraltılmış
+  arama yapılmadı. Kazanım tablosu içe aktarma yan kazanımı destekliyor.
+- Değişiklik geçmişi (Geçmiş sekmesi) import/revizyon/durum olaylarını gösteriyor; soru
+  bazlı alan farkı (diff) görünümü yok.
+- Resmî modda "eksik soru/cevap/kazanım → yayın engeli" Faz 3'ten beri hazırlık kontrolünde.
+
+**Sonraki faz:** Faz 5 — öğrenci çözücü güvenilirliği: oturum bazlı kitapçık erişimi (P1-1),
+soru → PDF sayfası navigasyonu (P1-2), gerçek çözücü önizlemesi (P1-3), iki sekme uyarısı (P1-13).
