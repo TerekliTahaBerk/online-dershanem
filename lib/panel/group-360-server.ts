@@ -247,7 +247,7 @@ export async function loadGroup360Bundle(input: {
           name: true,
           subject: true,
           capacity: true,
-          enrollments: { where: { endedAt: null }, select: { id: true } },
+          _count: { select: { enrollments: { where: { endedAt: null } } } },
         },
       }),
       prisma.$transaction((tx) => findOpenGroupScheduleConflicts(tx, group.id, now)),
@@ -302,7 +302,7 @@ export async function loadGroup360Bundle(input: {
     id: item.id,
     name: item.name,
     subject: item.subject,
-    filled: item.enrollments.length,
+    filled: item._count.enrollments,
     capacity: item.capacity,
   }));
 

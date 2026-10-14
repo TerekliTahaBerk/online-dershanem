@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { useMutation } from '@tanstack/react-query';
 import type { MobileGroup360, MobileGroupMemberPreview } from '@contracts/admin-education';
@@ -47,7 +47,10 @@ export function GroupMembers({ group, onNotice }: { group: MobileGroup360; onNot
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [confirmation, setConfirmation] = useState<{ input: GroupMemberAction; preview: MobileGroupMemberPreview } | null>(null);
-  const candidates = useAdminQuery('group-candidates', (client, signal) => fetchGroupCandidates(client, group.id, search, signal), { params: { id: group.id, search }, enabled: group.active && search.trim().length >= 2 });
+  // Her tuşta istek atılmaz; kısa duraklamadan sonra aranır.
+  const [query, setQuery] = useState('');
+  useEffect(() => { const handle = setTimeout(() => setQuery(search.trim()), 300); return () => clearTimeout(handle); }, [search]);
+  const candidates = useAdminQuery('group-candidates', (client, signal) => fetchGroupCandidates(client, group.id, query, signal), { params: { id: group.id, search: query }, enabled: group.active && query.length >= 2, keepPrevious: true });
   const add = useAdminMutation((client, studentId: string, context) => updateGroup(client, group.id, { action: 'ADD_STUDENT', studentId }, group.revision!, context.idempotencyKey));
   const preview = useMutation({ mutationFn: (input: GroupMemberAction) => previewGroupMembers(api, group.id, input), onSuccess: (result, input) => setConfirmation({ input, preview: result }), onError: (error) => onNotice(adminErrorText(error)!, true) });
   const execute = useAdminMutation((client, request: NonNullable<typeof confirmation>, context) => executeGroupMembers(client, group.id, request.input, { expectedRevision: request.preview.expectedRevision, ...(request.preview.action === 'TRANSFER' ? { expectedTargetRevision: request.preview.expectedTargetRevision } : {}) }, context.idempotencyKey));
@@ -61,7 +64,7 @@ export function GroupMembers({ group, onNotice }: { group: MobileGroup360; onNot
   return <>
     {group.active ? <Section title="Öğrenci ekle">
       <TextField label="Öğrenci adı veya e-postası" value={search} onChangeText={(value) => { setSearch(value); setCandidate(null); }} editable={!busy} maxLength={120} testID="group-candidate-search" />
-      {search.trim().length >= 2 ? <QueryView query={candidates}>{(data) => <>
+      {search.trim().length >= 2 && query.length >= 2 ? <QueryView query={candidates}>{(data) => <>
         {data.students.map((student) => <Row key={student.id} title={student.name} subtitle={[student.email, ...student.activeGroups.map((item) => item.name)].join(' · ')} selected={candidate === student.id} testID={`group-candidate-${student.id}`} onPress={busy ? undefined : () => setCandidate(student.id)} />)}
         {!data.students.length ? <Text tone="muted">Eşleşen öğrenci yok.</Text> : null}
         <Button mutation label="Öğrenciyi ekle" testID="group-add-save" loading={add.isPending} disabled={!candidate || busy || data.seats.available === 0 || !data.seats.isActive}

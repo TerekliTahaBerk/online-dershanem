@@ -16,6 +16,7 @@ type ManagedSession = {
 };
 
 const SESSION_DATE_FORMATTER = new Intl.DateTimeFormat("tr-TR", {
+  timeZone: "Europe/Istanbul",
   dateStyle: "medium",
   timeStyle: "short",
 });

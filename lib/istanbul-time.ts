@@ -68,6 +68,18 @@ export function parseIstanbulDateTimeInput(value: unknown): Date | null {
   return new Date(dayStart.getTime() + (hour * 60 + minute) * 60_000);
 }
 
+/**
+ * Formdan gelen anı okur: saat dilimi içermeyen `datetime-local` değeri
+ * İstanbul saati kabul edilir (sunucu UTC'de çalışsa da 3 saat kaymaz);
+ * ofsetli ISO metinler olduğu gibi çözülür. Geçersizse `null`.
+ */
+export function parseIstanbulInstant(value: unknown): Date | null {
+  if (typeof value !== "string" || !value.trim()) return null;
+  if (DATE_TIME_INPUT_PATTERN.test(value.trim())) return parseIstanbulDateTimeInput(value);
+  const instant = new Date(value);
+  return Number.isNaN(instant.getTime()) ? null : instant;
+}
+
 /** Verilen anın İstanbul gününün başlangıcı (00:00:00.000 +03:00). */
 export function istanbulDayStart(instant: Date): Date {
   const shifted = instant.getTime() + OFFSET_MS;

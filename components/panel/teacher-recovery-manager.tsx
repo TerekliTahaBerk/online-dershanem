@@ -80,7 +80,7 @@ export function TeacherRecoveryManager({ rows }: { rows: Row[] }) {
               <div>
                 <p className="text-xs font-extrabold uppercase tracking-[.06em] text-(--brand-olive)">
                   {row.status === "ABSENT" ? "Katılmadı" : "Mazeretli"} ·{" "}
-                  {new Date(row.lessonDate).toLocaleDateString("tr-TR")}
+                  {new Date(row.lessonDate).toLocaleDateString("tr-TR", { timeZone: "Europe/Istanbul" })}
                 </p>
                 <h2 className="mt-1 text-lg font-extrabold">
                   {row.studentName}
@@ -122,7 +122,7 @@ export function TeacherRecoveryManager({ rows }: { rows: Row[] }) {
                   Mini kontrol: {row.package.checkpointPrompt}
                 </p>
                 <p className="mt-2 text-[11px] text-(--site-muted)">
-                  Hedef: {new Date(row.package.dueAt).toLocaleString("tr-TR")} ·
+                  Hedef: {new Date(row.package.dueAt).toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" })} ·
                   Öğrenciye özel ders notu ve yoklama notu pakete alınmaz.
                 </p>
               </div>

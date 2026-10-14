@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   formatIstanbulDateTimeInput,
   parseIstanbulDateTimeInput,
+  parseIstanbulInstant,
   formatIstanbulDateInput,
   addIstanbulCalendarDays,
   istanbulDayEnd,
@@ -134,4 +135,11 @@ test("datetime-local değeri İstanbul duvar saatiyle biçimlenir ve geri okunur
   assert.equal(parseIstanbulDateTimeInput("2026-02-30T10:00"), null);
   assert.equal(parseIstanbulDateTimeInput("2026-10-15T24:00"), null);
   assert.equal(parseIstanbulDateTimeInput(""), null);
+});
+
+test("form anı: ofsetsiz değer İstanbul, ofsetli ISO olduğu gibi okunur", () => {
+  assert.equal(parseIstanbulInstant("2026-10-15T10:00")?.toISOString(), "2026-10-15T07:00:00.000Z");
+  assert.equal(parseIstanbulInstant("2026-10-15T10:00:00.000Z")?.toISOString(), "2026-10-15T10:00:00.000Z");
+  assert.equal(parseIstanbulInstant("geçersiz"), null);
+  assert.equal(parseIstanbulInstant(""), null);
 });

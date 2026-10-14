@@ -229,6 +229,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                     Hedef:{" "}
                     <strong className="text-(--site-body)">
                       {new Date(row.dueAt).toLocaleString("tr-TR", {
+                        timeZone: "Europe/Istanbul",
                         dateStyle: "medium",
                         timeStyle: "short",
                       })}
@@ -238,7 +239,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                     <span>
                       Bekletme sonu:{" "}
                       <strong>
-                        {new Date(row.snoozedUntil).toLocaleDateString("tr-TR")}
+                        {new Date(row.snoozedUntil).toLocaleDateString("tr-TR", { timeZone: "Europe/Istanbul" })}
                       </strong>
                     </span>
                   ) : null}
@@ -436,7 +437,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
                             {activityLabels[activity.type] || activity.type}
                           </strong>{" "}
                           · {activity.actorName} ·{" "}
-                          {new Date(activity.createdAt).toLocaleString("tr-TR")}
+                          {new Date(activity.createdAt).toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" })}
                           {activity.note ? (
                             <p className="mt-1 leading-5 text-(--site-body)">
                               {activity.note}

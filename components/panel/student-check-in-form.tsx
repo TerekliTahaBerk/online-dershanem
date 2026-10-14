@@ -233,7 +233,7 @@ export function StudentCheckInForm({
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <b>{item.groupName}</b>
                   <span className="text-xs text-(--site-muted)">
-                    {new Date(item.createdAt).toLocaleDateString("tr-TR")} ·{" "}
+                    {new Date(item.createdAt).toLocaleDateString("tr-TR", { timeZone: "Europe/Istanbul" })} ·{" "}
                     {item.shared ? "Öğretmenle paylaşıldı" : "Yalnız bende"}
                   </span>
                 </div>

@@ -2,6 +2,7 @@ import "server-only";
 
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { parseIstanbulInstant } from "@/lib/istanbul-time";
 import { detached } from "@/lib/after-response";
 import { generateAIReply } from "@/lib/business/jobs";
 import { validateStageTransition } from "@/lib/business/leads";
@@ -178,8 +179,8 @@ async function execute(tx: Tx, access: BusinessAccess, command: CrmCommand, expe
     }
     case "lead.task": {
       const row = await lead(command.leadId);
-      const dueAt = command.dueAt ? new Date(command.dueAt) : null;
-      if (dueAt && Number.isNaN(dueAt.getTime())) throw new CrmError(400, "INVALID_DATE", "Son tarihi kontrol edin.");
+      const dueAt = command.dueAt ? parseIstanbulInstant(command.dueAt) : null;
+      if (command.dueAt && !dueAt) throw new CrmError(400, "INVALID_DATE", "Son tarihi kontrol edin.");
       const assignedUserId = command.assignedUserId || actor;
       await tx.leadTask.create({ data: { leadId: row.id, title: command.title, note: command.note || null, dueAt, assignedUserId } });
       await tx.businessLead.update({
@@ -199,8 +200,8 @@ async function execute(tx: Tx, access: BusinessAccess, command: CrmCommand, expe
     }
     case "lead.follow_up": {
       const row = await lead(command.leadId, { anonymizedAt: null });
-      const nextFollowUpAt = new Date(command.nextFollowUpAt);
-      if (Number.isNaN(nextFollowUpAt.getTime())) throw new CrmError(400, "INVALID_FOLLOW_UP", "Takip tarihini kontrol edin.");
+      const nextFollowUpAt = parseIstanbulInstant(command.nextFollowUpAt);
+      if (!nextFollowUpAt) throw new CrmError(400, "INVALID_FOLLOW_UP", "Takip tarihini kontrol edin.");
       const assignedUserId = command.assignedUserId || row.assignedUserId || actor;
       await tx.businessLead.update({ where: { id: row.id }, data: { nextFollowUpAt, assignedUserId } });
       if (command.note?.trim()) await tx.leadActivity.create({ data: { leadId: row.id, type: "NOTE", actorUserId: actor, metadata: { note: command.note.trim(), kind: "FOLLOW_UP" } } });
