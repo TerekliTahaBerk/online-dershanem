@@ -1,6 +1,10 @@
 /**
- * ODK puanlama. Faz-3 v1: ÖSYM standardı (4 yanlış 1 doğruyu götürür) bölüm
- * bazlı net hesaplama. settings içinde override desteklenebilir gelecekte.
+ * ODK puanlama: bölüm bazlı net = doğru − yanlış / ceza katsayısı (YKS 4, LGS 3).
+ *
+ * Negatif bölüm netinin sıfırda kesilmesi bir PUANLAMA POLİTİKASI kararıdır
+ * (`OdkScoringPolicy.minimumNetIsZero`); burada sessizce uygulanmaz, çağıran
+ * politikadan geçirir. Ham (kesilmemiş) net her durumda ayrıca raporlanır;
+ * böylece politika değişse de tarihsel sonuç yeniden yorumlanabilir.
  */
 
 export type SectionScore = {
@@ -10,14 +14,21 @@ export type SectionScore = {
   correct: number;
   wrong: number;
   blank: number;
-  net: number; // correct - wrong/penalty
+  /** Raporlanan net: politika `minimumNetIsZero` ise max(0, rawNet). */
+  net: number;
+  /** Kesilmemiş ham net: correct − wrong / penalty. */
+  rawNet: number;
 };
 
 export type ScoringResult = {
   correctCount: number;
   wrongCount: number;
   blankCount: number;
+  /** Raporlanan bölüm netlerinin toplamı. */
   totalNet: number;
+  /** Ham bölüm netlerinin toplamı (politikadan bağımsız). */
+  rawTotalNet: number;
+  minimumNetIsZero: boolean;
   sectionScores: SectionScore[];
   perQuestion: Array<{
     sectionId: string;
@@ -36,14 +47,17 @@ export type OutcomeScoreSummary = {
   wrongCount: number;
   blankCount: number;
   accuracyRate: number;
+  /** Kazanıma bağlı soruların toplam aktif süresi; süre verisi verilmediyse alan yoktur. */
+  activeDurationMs?: number;
 };
 
-export function aggregateOutcomeScores(evaluations: Array<{ result: "CORRECT" | "WRONG" | "BLANK"; outcomeIds: string[] }>): OutcomeScoreSummary[] {
+export function aggregateOutcomeScores(evaluations: Array<{ result: "CORRECT" | "WRONG" | "BLANK"; outcomeIds: string[]; activeDurationMs?: number }>): OutcomeScoreSummary[] {
   const buckets = new Map<string, Omit<OutcomeScoreSummary, "outcomeId" | "accuracyRate">>();
   for (const evaluation of evaluations) {
     for (const outcomeId of new Set(evaluation.outcomeIds)) {
       const bucket = buckets.get(outcomeId) || { questionCount: 0, correctCount: 0, wrongCount: 0, blankCount: 0 };
       bucket.questionCount += 1;
+      if (evaluation.activeDurationMs !== undefined) bucket.activeDurationMs = (bucket.activeDurationMs ?? 0) + Math.max(0, evaluation.activeDurationMs);
       if (evaluation.result === "CORRECT") bucket.correctCount += 1;
       else if (evaluation.result === "WRONG") bucket.wrongCount += 1;
       else bucket.blankCount += 1;
@@ -72,13 +86,21 @@ type OpticalAnswerInput = {
 };
 
 const DEFAULT_PENALTY = 4; // 4 yanlış 1 doğru götürür
+const round2 = (value: number) => Math.round(value * 100) / 100 + 0; // +0: -0 → 0
+
+export type ScoringPolicyOptions = {
+  /** Negatif bölüm netini sıfırda kes. Varsayılan true (mevcut tüm politikalar). */
+  minimumNetIsZero?: boolean;
+};
 
 export function scoreAttempt(
   sections: SectionInput[],
   officialAnswers: OfficialAnswerInput[],
   studentAnswers: OpticalAnswerInput[],
   penalty: number = DEFAULT_PENALTY,
+  options: ScoringPolicyOptions = {},
 ): ScoringResult {
+  const minimumNetIsZero = options.minimumNetIsZero !== false;
   const studentMap = new Map<string, string>();
   for (const a of studentAnswers) {
     studentMap.set(`${a.sectionId}:${a.questionNumber}`, a.selectedOption);
@@ -94,6 +116,7 @@ export function scoreAttempt(
       wrong: 0,
       blank: 0,
       net: 0,
+      rawNet: 0,
     });
   }
 
@@ -130,22 +153,25 @@ export function scoreAttempt(
   }
 
   let totalNet = 0;
+  let rawTotalNet = 0;
   const sectionScores: SectionScore[] = [];
   for (const s of sections) {
     const b = perSection.get(s.id);
     if (!b) continue;
-    b.net = Math.max(0, b.correct - b.wrong / penalty);
-    b.net = Math.round(b.net * 100) / 100;
+    b.rawNet = round2(b.correct - b.wrong / penalty);
+    b.net = minimumNetIsZero ? Math.max(0, b.rawNet) : b.rawNet;
     totalNet += b.net;
+    rawTotalNet += b.rawNet;
     sectionScores.push(b);
   }
-  totalNet = Math.round(totalNet * 100) / 100;
 
   return {
     correctCount: correctTotal,
     wrongCount: wrongTotal,
     blankCount: blankTotal,
-    totalNet,
+    totalNet: round2(totalNet),
+    rawTotalNet: round2(rawTotalNet),
+    minimumNetIsZero,
     sectionScores,
     perQuestion,
   };

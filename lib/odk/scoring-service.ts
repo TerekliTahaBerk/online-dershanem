@@ -26,6 +26,12 @@ export async function scoreOdkExam(examId: string, scoredById: string, options: 
   if (!questions.length || questions.some((question) => !question.correctOption)) return { ok: false as const, error: "Kilitli cevap anahtarı eksik." };
   const answerKeyHash = createHash("sha256").update(JSON.stringify(questions.map((question) => [question.id, question.correctOption]))).digest("hex");
   const penalty = Number(exam.currentVersion.scoringPolicy.wrongPenalty);
+  // Negatif bölüm netinin kesilmesi politikadan gelir (P0-1); ham net sectionBreakdown'da saklanır.
+  const minimumNetIsZero = exam.currentVersion.scoringPolicy.minimumNetIsZero;
+  // `odk_attempt_scores.total_net >= 0` DB kısıtı negatif toplamı saklayamaz. Negatif
+  // nete izin veren politika bu kısıt kaldırılmadan (ürün kararı + migration)
+  // uygulanamaz; sessizce kesmek yerine puanlama açıkça reddedilir.
+  if (!minimumNetIsZero) return { ok: false as const, error: "Bu puanlama politikası negatif nete izin veriyor; sonuç deposu henüz negatif toplam neti desteklemiyor. Politikayı gözden geçirin." };
 
   await db.$transaction(async (tx) => {
     await tx.odkExamAttempt.updateMany({ where: { examId, status: "IN_PROGRESS", deadlineAt: { lte: now } }, data: { status: "AUTO_SUBMITTED", submittedAt: now } });
@@ -41,7 +47,7 @@ export async function scoreOdkExam(examId: string, scoredById: string, options: 
       const official = questions.map((question) => ({ sectionId: question.sectionId, questionNumber: question.questionNumber, correctOption: question.correctOption! }));
       const questionById = new Map(questions.map((question) => [question.id, question]));
       const student = attempt.answers.flatMap((answer) => { const question = questionById.get(answer.questionId); return question && answer.selectedOption ? [{ sectionId: question.sectionId, questionNumber: question.questionNumber, selectedOption: answer.selectedOption }] : []; });
-      const result = scoreAttempt(sections, official, student, penalty);
+      const result = scoreAttempt(sections, official, student, penalty, { minimumNetIsZero });
       const selectedByQuestion = new Map(attempt.answers.map((answer) => [answer.questionId, answer.selectedOption]));
       const questionResults = questions.map((question) => {
         const selected = selectedByQuestion.get(question.id) || null;
@@ -49,7 +55,9 @@ export async function scoreOdkExam(examId: string, scoredById: string, options: 
         return { questionId: question.id, selectedOption: selected as OdkAnswerOption | null, correctOption: question.correctOption!, result: questionResult };
       });
       const outcomesByQuestion = new Map(questions.map((question) => [question.id, question.outcomes.map((outcome) => outcome.outcomeId)]));
-      const outcomeScores = aggregateOutcomeScores(questionResults.map((question) => ({ result: question.result, outcomeIds: outcomesByQuestion.get(question.questionId) || [] })));
+      // Soru başı aktif süre kazanım özetine taşınır (P1-5); süre kaydı hiç yoksa alan boş kalır.
+      const timingByQuestion = attempt.timings?.length ? new Map(attempt.timings.map((timing) => [timing.questionId, timing.activeDurationMs])) : null;
+      const outcomeScores = aggregateOutcomeScores(questionResults.map((question) => ({ result: question.result, outcomeIds: outcomesByQuestion.get(question.questionId) || [], ...(timingByQuestion ? { activeDurationMs: timingByQuestion.get(question.questionId) ?? 0 } : {}) })));
       const activeDurationMs = (attempt.timings || []).reduce((sum, timing) => sum + timing.activeDurationMs, 0);
       const publicationStatus = exam.status === "RELEASED" || attempt.score?.publicationStatus === "PUBLISHED" ? "PUBLISHED" : "HIDDEN";
       await tx.odkAttemptScore.create({
