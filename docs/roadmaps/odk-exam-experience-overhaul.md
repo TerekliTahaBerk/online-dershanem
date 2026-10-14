@@ -1,6 +1,6 @@
 # ODK Deneme Deneyimi — Production-Grade Revizyon Yol Haritası
 
-Durum: **Faz 1 (denetim) tamam · Faz 2 (P0 doğruluk) devam ediyor**
+Durum: **Faz 1 (denetim) · Faz 2 (P0 doğruluk) · Faz 3 (şablon/alt test) tamam**
 Kapsam: Deneme Ligi (ODK) çevrim içi sınav motoru — yönetici oluşturma, cevap
 anahtarı/kazanım, öğrenci çözücü, puanlama, revizyon, yayın ve raporlama.
 
@@ -178,6 +178,13 @@ gereksinimi veya ciddi UX açığı; **P2** = iyileştirme.
   **Ürün kararı gerekir:** negatif toplam net istenirse kısıtı gevşeten migration
   (rollback: kısıtı yeniden ekle; negatif satır varsa önce raporla).
 
+#### P0-11 · AYT "Benim alanım" görünümü bölümleri boş gösteriyor (Faz 3'te bulundu)
+- **Dosya/fonksiyon:** `scoring-service.ts` (sectionBreakdown satırları `code` yazmıyordu),
+  `sonuc/page.tsx` ve `lib/mobile/odk-views.ts` (`inTrack(section.code)`)
+- **Kanıt:** Satırlar yalnız `sectionId/title` taşıdığı için alan filtresi hiçbir bölümü
+  eşlemez; alan görünümü boş tablo ve 0 alan neti gösterir (web + mobil).
+- **Hedef:** Puanlama `code` yazar; eski satırlarda kod okumada sürümün bölümlerinden tamamlanır.
+
 #### P0-8 · `blur` listener temizlenmiyor
 - **Dosya:** `student-exam-runner.tsx:481` — `window.removeEventListener("blur-sm", onBlur)`
   (Tailwind sınıf adı codemod'unun yanlışlıkla değiştirdiği string).
@@ -235,7 +242,7 @@ gereksinimi veya ciddi UX açığı; **P2** = iyileştirme.
 | 2 | P0-2 | Anahtar revizyonu + soru iptali + etki önizleme + rescore (sunucu + API; UI Faz 6) | ✅ `d7cee18` |
 | 2 | P0-4/5 | Import sürüm/hash/eşzamanlılık + kazanım aile/ders uyumu | ✅ `b9839fc` |
 | 2 | P0-6/7/8 | Runner: kalıcı bekleyen cevap, conflict rebase, blur | ✅ (bu dal) |
-| 3 | P1-4/7 | Şablon sürümü, alt testler, alan bazlı beklenen bölümler | sonraki |
+| 3 | P1-4/7, P0-11 | Şablon sürümü/modu/geçerliliği, anlık görüntü, alt testler, alan bazlı D/Y/B | ✅ `ca85472`, `ef3ffe8` |
 | 4 | P1-6/10, P2-1/2 | Yönetici sihirbazı, CSV/optik grid, conflict UI | sonraki |
 | 5 | P1-1/2/3/13 | Oturum kitapçığı, PDF sayfa eşleme, gerçek önizleme | sonraki |
 | 6 | P1-5/8/9, P2-3 | Rapor, attempt sürümüne bağlı puanlama, çoklu kitapçık | sonraki |
@@ -324,3 +331,68 @@ komutlar ve gerçek sonuçlar · kalan riskler · sonraki faz.
 
 **Sonraki faz:** Faz 3 — şablon sürümü (yıl/kaynak/geçerlilik, resmî/özel mod),
 TYT/AYT alt testleri ve alan bazlı beklenen bölümler; ardından P1-8 (attempt sürümü).
+
+### Faz 3 — Şablon / bölüm / alt test modeli (2026-10-14)
+
+**Bulgu / gereksinim**
+- Şablonlar sürüm, kaynak, geçerlilik ve resmî/özel ayrımı taşımıyordu; hazırlık
+  kontrolü her zaman GÜNCEL şablonu okuyordu (tarihsel yeniden yorumlama riski).
+- TYT/AYT alt testleri (Fizik/Kimya/Biyoloji, Edebiyat/Tarih-1/Coğrafya-1, …) yoktu.
+- AYT alan görünümü boştu (P0-11) ve alan dışı bölümlerin boşları "boş" sayılıyordu.
+
+**Dokunulan dosyalar**
+- `lib/odk/exam-templates.ts` (sürüm/kaynak/geçerlilik/mod, alt testler, AYT alanları,
+  `buildTemplateSnapshot`/`readTemplateSnapshot`, `templateIntegrityIssues`)
+- `lib/odk/exam-domain.ts`, `lib/odk/admin-exam-server.ts` (hazırlık anlık görüntüyü okur;
+  resmî modda standart dışı sayı = hata)
+- `lib/odk/exam-create-server.ts` (geçerlilik kontrolü + görüntüyü sürüme yazma)
+- `lib/odk/scoring.ts`, `lib/odk/scoring-service.ts` (bölüm kodu + `scoreSubtests`)
+- `lib/odk/student-result-view.ts`, `lib/odk/student-exam-server.ts`,
+  `lib/odk/student-exam-state.ts`, `app/panel/odk/ogrenci/denemeler/[id]/sonuc/page.tsx`,
+  `components/odk/admin-exam-create.tsx`
+
+**Neden güvenli**
+- Migration yok: görüntü `OdkExamVersion.settings.template` JSON'una, alt testler
+  `sectionBreakdown` satırına eklemeli yazılır. Eski denemelerin görüntüsü yoktur;
+  onlar için davranış aynen eskisidir (güncel şablon + uyarı/hata kuralları, alt test yok).
+- Şablon kodları (LGS_FULL, TYT_FULL, …) ve mobil sözleşmedeki `templates` biçimi değişmedi.
+- AYT alan eşlemesi önceki sabitle birebir aynı sırada şablona taşındı.
+- Alt test neti bilgi amaçlı ham nettir; resmî kesme yalnız bölüm (test) düzeyinde,
+  toplam net hesabı değişmedi.
+
+**Varsayımlar (ürün sahibinin doğrulaması gerekir)**
+- Soru dağılımları ÖSYM YKS (2018+) ve MEB LGS (2018+) yayımlanmış dağılımlarıdır; alt
+  testlerin bölüm içinde kitapçık sırasıyla ardışık olduğu varsayılır. TYT Matematik
+  ve AYT Matematik içindeki geometri ÖSYM tarafından ayrı test olarak tanımlanmadığı
+  için alt teste bölünmedi (uydurulmadı).
+- Şablonlar 2018–2027 için doğrulandı (`REVIEWED_THROUGH_YEAR`); 2028 denemeleri için
+  şablon gözden geçirilip yeni sürüm eklenmeden oluşturma reddedilir.
+
+**Eklenen testler**
+- Unit: `lib/odk/exam-template-model.test.ts` (sürüm/mod/geçerlilik, alt test toplamları,
+  TYT/AYT/LGS sayı ve süreleri, alanlar, görüntü aralıkları, resmî mod engeli, görüntü
+  önceliği), `lib/odk/scoring-policy.test.ts` (bölüm kodu, alt test puanı + iptal),
+  `lib/odk/student-result-view.test.ts` (P0-11 kod tamamlama, alan D/Y/B).
+- Integration: `tests/integration/odk-exam-templates.integration.ts` (AYT oluşturma →
+  görüntü, 160 soru, resmî mod engeli, geçerlilik dışı yıl reddi; AYT puanı → bölüm
+  kodları ve Fizik/Kimya/Biyoloji kırılımı).
+
+**Komutlar ve gerçek sonuçlar**
+- `npm run typecheck`, eslint → temiz · `npm run test:unit` → 1067/1067
+- `tests/integration/odk-*.integration.ts` → 22/22
+- `lint:api-validation`, `lint:mobile-parity`, `lint:hygiene` → temiz
+- `next build` + E2E (ODK akışı, LGS oturumları, mobil ODK ×4, runner görsel) → 14/14 geçti;
+  `odk-product-quality` aynı koşuda 2 test kırmızı oldu: önceki ODK akış testi seed
+  attempt'ini teslim ettiği için `/coz` yönlendirmesi (test verisi sıra bağımlılığı,
+  CI'da ayrı adımlarda koşuyor). Yeniden seed ile ayrı koşu → 8/8 geçti.
+
+**Kalan riskler**
+- AYT alan görünümü için tarayıcı (E2E) testi yok; mantık unit + integration ile kapsandı.
+- Mobil sonuç sözleşmesi alt testleri henüz taşımıyor (yalnız P0-11 düzeltmesinden yararlanır);
+  mobil sözleşme sürümü artırılarak eklenmeli.
+- Öğretmen/veli/admin sonuç tabloları alt testleri göstermiyor (veri hazır).
+- LGS ek süre / muafiyet modeli (P1-12) ve oturum bazlı kitapçık (P1-1) hâlâ açık.
+
+**Sonraki faz:** Faz 4 — yönetici oluşturma/düzenleme deneyimi (adım bazlı akış, optik
+grid ve CSV/tablo yapıştırma import'u, soru tablosu filtreleri, web editöründe
+`expectedRevision` ile çakışma tespiti — P1-6, P1-10, P2-1, P2-2).
