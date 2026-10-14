@@ -123,11 +123,11 @@ test.describe("panel deneyimi", () => {
     }
     await expect(nav.getByRole("link", { name: "Dersler", exact: true })).toHaveAttribute(
       "href",
-      "/panel/ogretmen/takvim",
+      "/panel/ogretmen/takvim?calismaAlani=OD",
     );
     await expect(nav.getByRole("link", { name: "Çalışmalar", exact: true })).toHaveAttribute(
       "href",
-      "/panel/ogretmen/odevler",
+      "/panel/ogretmen/odevler?calismaAlani=OD",
     );
   });
 

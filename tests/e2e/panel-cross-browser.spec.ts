@@ -26,7 +26,7 @@ test.describe("çapraz tarayıcı panel kabulü", () => {
   test.skip(!hasE2EEnv(...panelAccountGroups),"Panel E2E hesapları tanımlı değil.");
   for (const account of accounts) test(`${account.role} paneli açılır ve yatay taşmaz`, async ({ page }) => {
     await login(page, account.email!, account.password!);
-    await page.waitForURL(new RegExp(`${account.path}$`));
+    await page.waitForURL((url) => url.pathname === account.path && url.searchParams.get("calismaAlani") === "OD");
     await expect(page.getByRole("main")).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
   });
