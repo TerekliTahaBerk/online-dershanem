@@ -308,7 +308,7 @@ export function AdminAssignmentPanel({
                 {item.isActive ? "Aktif" : "Pasif"}
               </ResponsiveDataTableCell>
               <ResponsiveDataTableCell label="Atama">
-                {new Date(item.assignedAt).toLocaleString("tr-TR")}
+                {new Date(item.assignedAt).toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" })}
               </ResponsiveDataTableCell>
             </ResponsiveDataTableRow>
           ))}

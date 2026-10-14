@@ -1,9 +1,9 @@
-import { toMobileEducation } from "@/lib/mobile/admin-education-views";
+import { MOBILE_EDUCATION_SECTIONS, toMobileEducation } from "@/lib/mobile/admin-education-views";
 import { adminJson, requireAdminApi } from "@/lib/panel/admin-api";
 import { loadEducationManagement } from "@/lib/panel/education-management-server";
 
 export async function GET() {
   const auth = await requireAdminApi();
   if (!auth.ok) return auth.response;
-  return adminJson(toMobileEducation(await loadEducationManagement(auth.session.userId)));
+  return adminJson(toMobileEducation(await loadEducationManagement(auth.session.userId, MOBILE_EDUCATION_SECTIONS)));
 }

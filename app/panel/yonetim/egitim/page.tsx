@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { loadEducationManagement } from "@/lib/panel/education-management-server";
+import {
+  loadEducationManagement,
+  type EducationManagementSection,
+} from "@/lib/panel/education-management-server";
 import { requireRole } from "@/lib/auth/guards";
 import { PanelShell } from "@/components/panel/panel-shell";
 import { AdminLearningForms } from "@/components/panel/admin-learning-forms";
@@ -29,6 +32,14 @@ const EDUCATION_TABS = [
 ] as const;
 type EducationTab = (typeof EDUCATION_TABS)[number]["id"];
 
+/** Her sekme yalnız kendi verisini yükler; gizli sekmelerin verisi beklenmez. */
+const TAB_SECTIONS: Record<EducationTab, readonly EducationManagementSection[]> = {
+  gruplar: ["teachers", "groups", "lessons"],
+  planlama: ["teachers", "students", "parents", "groups"],
+  odevler: ["groups", "lessons", "assignments", "outcomes"],
+  materyaller: ["groups", "materials"],
+};
+
 /**
  * YÖNETİM · EĞİTİM (docs/panel-design-roadmap.md §9.6) — tek uzun sayfa yerine
  * sekmeler. Her sekmenin işlevi aynen korunur; çapalar (`#yeni-grup`,
@@ -44,7 +55,7 @@ export default async function EducationAdminPage({
   const tab: EducationTab = EDUCATION_TABS.some((item) => item.id === requestedTab)
     ? (requestedTab as EducationTab)
     : "gruplar";
-  const { featureFlags, teachersRaw, studentsRaw, parentsRaw, groupsRaw, lessons, assignments, materials, outcomes } = await loadEducationManagement(session.userId);
+  const { featureFlags, teachersRaw, studentsRaw, parentsRaw, groupsRaw, lessons, assignments, materials, outcomes } = await loadEducationManagement(session.userId, TAB_SECTIONS[tab]);
   const name = (item: { fullName: string | null; email: string }) => item.fullName || item.email;
 
   /*
@@ -61,13 +72,6 @@ export default async function EducationAdminPage({
    * "Program" sütunu yerine SONRAKİ PLANLI DERS gösterilir: yinelenen program
    * modeli şemada yok, dersler tek tek kayıtlı.
    */
-  const nextLessonByGroup = new Map<string, Date>();
-  for (const lesson of lessons) {
-    if (lesson.status !== "PLANNED") continue;
-    const current = nextLessonByGroup.get(lesson.groupId);
-    if (!current || lesson.startsAt < current)
-      nextLessonByGroup.set(lesson.groupId, lesson.startsAt);
-  }
   const WHEN = new Intl.DateTimeFormat("tr-TR", {
     day: "numeric",
     month: "short",
@@ -77,7 +81,7 @@ export default async function EducationAdminPage({
   });
   const activeGroups = groupsRaw.filter((group) => group.isActive);
   const openSeats = activeGroups.filter(
-    (g) => g.enrollments.length < g.capacity,
+    (g) => g.activeStudentCount < g.capacity,
   ).length;
   return (
     <PanelShell
@@ -90,7 +94,7 @@ export default async function EducationAdminPage({
         title="Grubu kur, dersi planla."
         description="Tek akıştan öğretmen ekranını, öğrenci özetini ve veli görünümünü birlikte besleyin."
         icon={BookOpenCheck}
-        meta={`${groupsRaw.filter((group) => group.isActive).length} aktif grup`}
+        meta={`${activeGroups.length} aktif grup`}
       />
       <EducationHashRedirect />
       <div className="mt-5">
@@ -132,9 +136,9 @@ export default async function EducationAdminPage({
               ]}
             >
               {activeGroups.map((group) => {
-                const filled = group.enrollments.length;
+                const filled = group.activeStudentCount;
                 const full = filled >= group.capacity;
-                const next = nextLessonByGroup.get(group.id);
+                const next = group.nextLessonAt;
                 return (
                   <PanelTableRow key={group.id}>
                     <PanelTableCell>
@@ -184,13 +188,14 @@ export default async function EducationAdminPage({
           teacherName: name(group.teacher),
           isActive: group.isActive,
           capacity: group.capacity,
-          studentCount: group.enrollments.length,
+          studentCount: group.activeStudentCount,
         }))}
         lessons={lessons.map((lesson) => ({
           id: lesson.id,
           title: lesson.title,
           startsAt: lesson.startsAt.toISOString(),
           status: lesson.status,
+          meetingUrl: lesson.meetingUrl ?? "",
           groupName: lesson.group.name,
           teacherName: name(lesson.teacher),
         }))}

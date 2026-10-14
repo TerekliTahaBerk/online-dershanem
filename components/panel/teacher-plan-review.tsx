@@ -20,6 +20,7 @@ type Plan = {
   }[];
 };
 const date = new Intl.DateTimeFormat("tr-TR", {
+  timeZone: "Europe/Istanbul",
   weekday: "short",
   day: "numeric",
   month: "short",

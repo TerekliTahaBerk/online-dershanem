@@ -31,6 +31,7 @@ export default defineConfig([
     "prisma/seed-e2e.ts",
     "prisma/backfill-access-tags.mjs",
     "PayTR IFrame API/**",
+    "vendor/**",
     "next-env.d.ts",
     "tsconfig.tsbuildinfo",
   ]),

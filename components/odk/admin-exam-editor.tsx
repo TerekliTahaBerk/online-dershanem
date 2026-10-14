@@ -14,6 +14,12 @@ import {
 import { OdkStatusBadge } from "@/components/odk/odk-status-badge";
 import { examStatusPresentation } from "@/lib/odk/presentation";
 import { questionMatchesFilter, type QuestionFilter } from "@/lib/odk/staff-workspace";
+import { parseIstanbulInstant } from "@/lib/istanbul-time";
+
+/** Form değerleri İstanbul saatidir; cihazın saat dilimi farklı olsa da kaymaz. */
+function istanbulIso(value: string) {
+  return (parseIstanbulInstant(value) ?? new Date(Number.NaN)).toISOString();
+}
 
 type Outcome = { id: string; label: string };
 type Question = {
@@ -409,8 +415,8 @@ export function AdminExamEditor({
               "PATCH",
               {
                 title: data.get("title"),
-                startsAt: starts ? new Date(starts).toISOString() : null,
-                endsAt: ends ? new Date(ends).toISOString() : null,
+                startsAt: starts ? istanbulIso(starts) : null,
+                endsAt: ends ? istanbulIso(ends) : null,
                 lateEntryMinutes: Number(data.get("lateEntryMinutes")),
                 meetRequired: data.get("meetRequired") === "on",
                 meetUrl: data.get("meetUrl") || null,
@@ -510,12 +516,8 @@ export function AdminExamEditor({
               "PATCH",
               {
                 title: exam.title,
-                startsAt: exam.startsAt
-                  ? new Date(exam.startsAt).toISOString()
-                  : null,
-                endsAt: exam.endsAt
-                  ? new Date(exam.endsAt).toISOString()
-                  : null,
+                startsAt: exam.startsAt ? istanbulIso(exam.startsAt) : null,
+                endsAt: exam.endsAt ? istanbulIso(exam.endsAt) : null,
                 lateEntryMinutes: exam.lateEntryMinutes,
                 meetRequired: exam.meetRequired,
                 meetUrl: exam.meetUrl || null,

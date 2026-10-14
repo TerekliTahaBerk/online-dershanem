@@ -211,6 +211,7 @@ export function AdminIntegrityReviewPanel({
                         #{event.sequence} {event.type} ·{" "}
                         {new Date(event.serverOccurredAt).toLocaleTimeString(
                           "tr-TR",
+                          { timeZone: "Europe/Istanbul" },
                         )}
                       </li>
                     ))}

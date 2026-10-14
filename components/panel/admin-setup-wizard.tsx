@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Plus, Rocket, UsersRound } from "lucide-react";
 import { DEFAULT_GROUP_CAPACITY } from "@/lib/panel-group-capacity";
+import { parseIstanbulDateTimeInput } from "@/lib/istanbul-time";
 
 type Person = { id: string; name: string };
 type SetupRole = "TEACHER" | "STUDENT" | "PARENT";
@@ -225,36 +226,50 @@ export function AdminSetupWizard({
           if (step === 2 && !selected.length)
             return setMessage("En az bir öğrenci seçin.");
           if (step < 3) return setStep(step + 1);
-          if (!data.get("lessonTitle") || !data.get("startsAt"))
+          const startsAt = parseIstanbulDateTimeInput(data.get("startsAt"));
+          if (!data.get("lessonTitle") || !startsAt)
             return setMessage("Ders başlığı ve ilk ders zamanı zorunlu.");
+          const formElement = event.currentTarget;
           setBusy(true);
-          const response = await fetch("/api/panel/setup", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({
-              name: data.get("name"),
-              subject: data.get("subject"),
-              level: data.get("level"),
-              teacherId: data.get("teacherId"),
-              studentIds: selected,
-              parentLinks: selected
-                .filter((id) => parentByStudent[id])
-                .map((studentId) => ({
-                  studentId,
-                  parentId: parentByStudent[studentId],
-                })),
-              lessonTitle: data.get("lessonTitle"),
-              startsAt: new Date(String(data.get("startsAt"))).toISOString(),
-              repeatWeeks: Number(data.get("repeatWeeks")),
-              meetingUrl: data.get("meetingUrl"),
-            }),
-          });
-          const result = await response.json().catch(() => ({}));
-          setBusy(false);
-          if (!response.ok)
-            return setMessage(result.error || "Kurulum tamamlanamadı.");
-          setMessage(`${result.lessonCount} haftalık dersle grup hazır.`);
-          router.refresh();
+          setMessage("");
+          try {
+            const response = await fetch("/api/panel/setup", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({
+                name: data.get("name"),
+                subject: data.get("subject"),
+                level: data.get("level"),
+                teacherId: data.get("teacherId"),
+                studentIds: selected,
+                parentLinks: selected
+                  .filter((id) => parentByStudent[id])
+                  .map((studentId) => ({
+                    studentId,
+                    parentId: parentByStudent[studentId],
+                  })),
+                lessonTitle: data.get("lessonTitle"),
+                startsAt: startsAt.toISOString(),
+                repeatWeeks: Number(data.get("repeatWeeks")),
+                meetingUrl: data.get("meetingUrl"),
+              }),
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok)
+              return setMessage(result.error || "Kurulum tamamlanamadı.");
+            // Sihirbaz başa döner; aynı kurulum ikinci kez gönderilip yinelenen
+            // grup oluşmaz.
+            formElement.reset();
+            setSelected([]);
+            setParentByStudent({});
+            setStep(1);
+            setMessage(`${result.lessonCount} haftalık dersle grup hazır.`);
+            router.refresh();
+          } catch {
+            setMessage("Bağlantı kurulamadı. Tekrar deneyin.");
+          } finally {
+            setBusy(false);
+          }
         }}
       >
         <div className={step === 1 ? "grid gap-3 sm:grid-cols-2" : "hidden"}>

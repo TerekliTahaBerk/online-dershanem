@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
 import { EmptyState } from '@/design/primitives';
@@ -22,13 +22,15 @@ export { StepUpCancelledError };
  *  - Anahtarlar `['user', id, 'admin', kaynak, parametreler]`.
  *  - Yazmalar yalnız çevrimiçi; başarı yalnız sunucu onayıyla gösterilir.
  */
-export function useAdminQuery<T>(resource: string, fetcher: (api: ApiClient, signal: AbortSignal) => Promise<T>, options: { params?: Record<string, string | number | null>; enabled?: boolean } = {}) {
+export function useAdminQuery<T>(resource: string, fetcher: (api: ApiClient, signal: AbortSignal) => Promise<T>, options: { params?: Record<string, string | number | null>; enabled?: boolean; keepPrevious?: boolean } = {}) {
   const { api } = useSession();
   const bootstrap = useReadyBootstrap();
   return useQuery({
     queryKey: queryKeys.adminResource(bootstrap.user.id, resource, options.params),
     queryFn: ({ signal }) => fetcher(api, signal),
     enabled: bootstrap.user.role === 'ADMIN' && (options.enabled ?? true),
+    // Arama gibi sık değişen parametrelerde önceki sonuç yükleme sırasında kalır.
+    ...(options.keepPrevious ? { placeholderData: keepPreviousData } : {}),
   });
 }
 

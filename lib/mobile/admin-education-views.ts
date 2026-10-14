@@ -8,19 +8,15 @@ const status = (value: string) => ({ PLANNED: "Planlandı", COMPLETED: "Tamamlan
 const date = (value: Date) => new Intl.DateTimeFormat("tr-TR", { timeZone: "Europe/Istanbul", dateStyle: "medium", timeStyle: "short" }).format(value);
 const row = (id: string, title: string, detail: string, extra: Partial<EducationRow> = {}): EducationRow => ({ id, title, detail, at: null, groupId: null, studentId: null, ...extra });
 
+/** Mobil eğitim ekranının ihtiyaç duyduğu bölümler; öğrenci/veli/kazanım kataloğu yüklenmez. */
+export const MOBILE_EDUCATION_SECTIONS = ["teachers", "groups", "lessons", "assignments", "materials"] as const;
+
 /** Salt okuma projeksiyonu: kapasite/risk/çakışma kararları ortak yükleyicide kalır. */
 export function toMobileEducation(data: Awaited<ReturnType<typeof loadEducationManagement>>): MobileEducation {
-  // Webin aynı sınırlı ders penceresinden türettiği sonraki planlı ders.
-  const nextLessonByGroup = new Map<string, Date>();
-  for (const lesson of data.lessons) {
-    if (lesson.status !== "PLANNED") continue;
-    const current = nextLessonByGroup.get(lesson.groupId);
-    if (!current || lesson.startsAt < current) nextLessonByGroup.set(lesson.groupId, lesson.startsAt);
-  }
   return {
     contractVersion: 1,
     teachers: data.teachersRaw.map((teacher) => ({ id: teacher.id, name: name(teacher) })),
-    groups: data.groupsRaw.map((group) => ({ id: group.id, name: group.name, subject: group.subject, level: group.level, teacherName: name(group.teacher), active: group.isActive, filled: group.enrollments.length, capacity: group.capacity, nextLessonAt: nextLessonByGroup.get(group.id)?.toISOString() ?? null })),
+    groups: data.groupsRaw.map((group) => ({ id: group.id, name: group.name, subject: group.subject, level: group.level, teacherName: name(group.teacher), active: group.isActive, filled: group.activeStudentCount, capacity: group.capacity, nextLessonAt: group.nextLessonAt?.toISOString() ?? null })),
     sections: [
       { id: "dersler", title: "Son 7 günden itibaren ilk 24 ders", rows: data.lessons.map((lesson) => row(lesson.id, lesson.title, `${lesson.group.name} · ${name(lesson.teacher)} · ${status(lesson.status)}`, { at: lesson.startsAt.toISOString(), groupId: lesson.groupId })) },
       { id: "odevler", title: "Son teslim tarihine göre son 40 ödev", rows: data.assignments.map((assignment) => {

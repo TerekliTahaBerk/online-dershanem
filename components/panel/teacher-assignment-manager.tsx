@@ -8,6 +8,22 @@ import {
   type OutcomeOption,
   type SelectedOutcome,
 } from "@/components/panel/outcome-picker";
+import {
+  ISTANBUL_TIME_ZONE,
+  parseIstanbulDateTimeInput,
+} from "@/lib/istanbul-time";
+
+// Sunucu (UTC) ve tarayıcı aynı metni üretsin; hidrasyon uyuşmazlığı olmasın.
+const LESSON_DAY = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "short",
+  timeZone: ISTANBUL_TIME_ZONE,
+});
+const DUE_AT = new Intl.DateTimeFormat("tr-TR", {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: ISTANBUL_TIME_ZONE,
+});
 
 type Group = { id: string; name: string; subject: string };
 type Lesson = { id: string; groupId: string; title: string; startsAt: string };
@@ -184,7 +200,7 @@ function SubmissionReview({
           {submission.studentName} · {submission.attemptNumber}. deneme
         </p>
         <span className="text-[10px] font-bold text-(--site-muted)">
-          {new Date(submission.submittedAt).toLocaleString("tr-TR")}
+          {DUE_AT.format(new Date(submission.submittedAt))}
         </span>
       </div>
       <p className="mt-3 rounded-xl bg-white p-3 text-xs leading-5">
@@ -282,7 +298,23 @@ export function TeacherAssignmentManager({
     "Çözüm yolunu açıkça gösterir",
     "Sonucunu kontrol eder",
   ]);
-  const [items, setItems] = useState(assignments);
+  // Liste her zaman sunucu verisinden türetilir: router.refresh() sonrası yeni
+  // ödevler görünür. Yalnız değerlendirilen teslimler anında gizlenir.
+  const [reviewedIds, setReviewedIds] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  const items = useMemo(
+    () =>
+      reviewedIds.size
+        ? assignments.map((item) => ({
+            ...item,
+            submissions: item.submissions.filter(
+              (entry) => !reviewedIds.has(entry.id),
+            ),
+          }))
+        : assignments,
+    [assignments, reviewedIds],
+  );
   const groupLessons = useMemo(
     () => lessons.filter((lesson) => lesson.groupId === groupId),
     [groupId, lessons],
@@ -295,10 +327,12 @@ export function TeacherAssignmentManager({
       await action();
       setMessage(success);
       router.refresh();
+      return true;
     } catch (error) {
       setMessage(
         error instanceof Error ? error.message : "İşlem tamamlanamadı.",
       );
+      return false;
     } finally {
       setBusy(null);
     }
@@ -310,7 +344,14 @@ export function TeacherAssignmentManager({
         className="overflow-hidden rounded-[10px] border border-pn-border bg-white h-fit p-5"
         onSubmit={(event) => {
           event.preventDefault();
-          const data = new FormData(event.currentTarget);
+          if (busy === "create") return;
+          const formElement = event.currentTarget;
+          const data = new FormData(formElement);
+          const dueAt = parseIstanbulDateTimeInput(data.get("dueAt"));
+          if (!dueAt) {
+            setMessage("Geçerli bir teslim tarihi ve saati girin.");
+            return;
+          }
           void run(
             "create",
             () =>
@@ -319,14 +360,21 @@ export function TeacherAssignmentManager({
                 lessonId: data.get("lessonId") || null,
                 title: data.get("title"),
                 description: data.get("description"),
-                dueAt: new Date(String(data.get("dueAt"))).toISOString(),
+                dueAt: dueAt.toISOString(),
                 outcomeIds: selectedOutcomes.map((item) => item.outcomeId),
                 outcomeSkipReason: outcomeSkipReason || null,
                 evidenceRequired,
                 rubricCriteria: evidenceRequired ? criteria : [],
               }),
             "Ödev öğrencilere gönderildi.",
-          );
+          ).then((ok) => {
+            if (!ok) return;
+            // Grup seçimi korunur; aynı ödev ikinci kez gönderilmesin diye
+            // içerik alanları temizlenir.
+            formElement.reset();
+            setSelectedOutcomes([]);
+            setOutcomeSkipReason("");
+          });
         }}
       >
         <span className="grid h-10 w-10 place-items-center rounded-2xl bg-(--brand-olive-soft) text-(--brand-olive)">
@@ -361,10 +409,7 @@ export function TeacherAssignmentManager({
           <option value="">Belirli bir derse bağlı değil</option>
           {groupLessons.map((lesson) => (
             <option key={lesson.id} value={lesson.id}>
-              {new Intl.DateTimeFormat("tr-TR", {
-                day: "numeric",
-                month: "short",
-              }).format(new Date(lesson.startsAt))}{" "}
+              {LESSON_DAY.format(new Date(lesson.startsAt))}{" "}
               · {lesson.title}
             </option>
           ))}
@@ -558,10 +603,7 @@ export function TeacherAssignmentManager({
                     ) : null}
                     <p className="mt-3 text-[10.5px] font-bold text-(--site-muted)">
                       Son tarih:{" "}
-                      {new Intl.DateTimeFormat("tr-TR", {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      }).format(new Date(assignment.dueAt))}
+                      {DUE_AT.format(new Date(assignment.dueAt))}
                     </p>
                   </div>
                   <div className="shrink-0 sm:w-40">
@@ -651,13 +693,8 @@ export function TeacherAssignmentManager({
                     assignment={assignment}
                     submission={submission}
                     onSaved={(submissionId) => {
-                      setItems((current) =>
-                        current.map((item) => ({
-                          ...item,
-                          submissions: item.submissions.filter(
-                            (entry) => entry.id !== submissionId,
-                          ),
-                        })),
+                      setReviewedIds(
+                        (current) => new Set([...current, submissionId]),
                       );
                       router.refresh();
                     }}

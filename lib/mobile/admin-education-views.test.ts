@@ -32,7 +32,7 @@ test("Grup programı: seri, süre ve iki çakışan dersin zamanı kaybolmaz", (
 });
 
 test("Eğitim: arşiv gruplar korunur; ödev özeti web ile aynı durum hesabını kullanır", () => {
-  const data = { teachersRaw: [], groupsRaw: [{ id: "g1", name: "8-A", subject: "Matematik", level: null, isActive: false, teacher: { fullName: null, email: "ada@example.com" }, capacity: 10, enrollments: [] }], lessons: [], assignments: [{ id: "a1", groupId: "g1", group: { name: "8-A" }, title: "Oran", isActive: true, dueAt: at, progress: [{ status: "DONE" }, { status: "TODO" }] }], materials: [] } as unknown as Awaited<ReturnType<typeof loadEducationManagement>>;
+  const data = { teachersRaw: [], groupsRaw: [{ id: "g1", name: "8-A", subject: "Matematik", level: null, isActive: false, teacher: { fullName: null, email: "ada@example.com" }, capacity: 10, activeStudentCount: 0, nextLessonAt: null }], lessons: [], assignments: [{ id: "a1", groupId: "g1", group: { name: "8-A" }, title: "Oran", isActive: true, dueAt: at, progress: [{ status: "DONE" }, { status: "TODO" }] }], materials: [] } as unknown as Awaited<ReturnType<typeof loadEducationManagement>>;
   const result = toMobileEducation(data);
   assert.ok(parseEducation(result).ok);
   assert.equal(result.groups[0].active, false);

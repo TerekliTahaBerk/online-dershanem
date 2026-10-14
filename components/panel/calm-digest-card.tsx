@@ -94,6 +94,7 @@ export function CalmDigestCard({
         <p className="mt-2 text-xs text-(--site-muted)">
           Veriler{" "}
           {new Intl.DateTimeFormat("tr-TR", {
+            timeZone: "Europe/Istanbul",
             dateStyle: "medium",
             timeStyle: "short",
           }).format(new Date(digest.dataThrough))}{" "}

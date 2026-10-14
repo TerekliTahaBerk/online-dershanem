@@ -4,6 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CalendarClock, ChevronDown, Pencil, UsersRound } from "lucide-react";
+import {
+  formatIstanbulDateTimeInput,
+  ISTANBUL_TIME_ZONE,
+  parseIstanbulDateTimeInput,
+} from "@/lib/istanbul-time";
 
 type Person = { id: string; name: string };
 type Group = {
@@ -22,6 +27,7 @@ type Lesson = {
   title: string;
   startsAt: string;
   status: "PLANNED" | "COMPLETED" | "CANCELLED";
+  meetingUrl: string;
   groupName: string;
   teacherName: string;
 };
@@ -36,11 +42,24 @@ async function patch(url: string, body: unknown) {
   if (!response.ok) throw new Error(result.error || "İşlem tamamlanamadı.");
 }
 
+/** Sunucu (UTC) ve tarayıcı aynı İstanbul saatini üretir; hidrasyonda saat kaymaz. */
 function localInput(iso: string) {
-  const date = new Date(iso);
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  return local.toISOString().slice(0, 16);
+  return formatIstanbulDateTimeInput(new Date(iso));
 }
+
+function instantFromInput(value: FormDataEntryValue | null) {
+  const instant = parseIstanbulDateTimeInput(value);
+  if (!instant) throw new Error("Geçerli bir tarih ve saat girin.");
+  return instant.toISOString();
+}
+
+const LESSON_WHEN = new Intl.DateTimeFormat("tr-TR", {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: ISTANBUL_TIME_ZONE,
+});
 
 export function EducationManagement({
   groups,
@@ -230,12 +249,7 @@ export function EducationManagement({
                     {lesson.title}
                   </span>
                   <span className="mt-1 block truncate text-[11px] text-(--site-muted)">
-                    {new Intl.DateTimeFormat("tr-TR", {
-                      day: "numeric",
-                      month: "short",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }).format(new Date(lesson.startsAt))}{" "}
+                    {LESSON_WHEN.format(new Date(lesson.startsAt))}{" "}
                     · {lesson.groupName}
                   </span>
                 </span>
@@ -283,13 +297,13 @@ export function EducationManagement({
                         await patch(`/api/panel/lessons/${lesson.id}`, {
                           action: "RESCHEDULE",
                           scope,
-                          startsAt: new Date(
-                            String(data.get("startsAt")),
-                          ).toISOString(),
+                          startsAt: instantFromInput(data.get("startsAt")),
                         });
                         return;
                       }
                       if (action === "SUBSTITUTE") {
+                        if (!data.get("substituteTeacherId"))
+                          throw new Error("Yeni öğretmeni seçin.");
                         await patch(`/api/panel/lessons/${lesson.id}`, {
                           action: "SUBSTITUTE",
                           scope,
@@ -300,9 +314,7 @@ export function EducationManagement({
                       if (action === "MAKE_UP") {
                         await patch(`/api/panel/lessons/${lesson.id}`, {
                           action: "MAKE_UP",
-                          startsAt: new Date(
-                            String(data.get("startsAt")),
-                          ).toISOString(),
+                          startsAt: instantFromInput(data.get("startsAt")),
                           teacherId:
                             data.get("substituteTeacherId") || undefined,
                           title: data.get("title"),
@@ -314,9 +326,7 @@ export function EducationManagement({
                         action: "UPDATE",
                         scope,
                         title: data.get("title"),
-                        startsAt: new Date(
-                          String(data.get("startsAt")),
-                        ).toISOString(),
+                        startsAt: instantFromInput(data.get("startsAt")),
                         status: data.get("status"),
                         meetingUrl: data.get("meetingUrl"),
                       });
@@ -379,6 +389,7 @@ export function EducationManagement({
                   <input
                     name="meetingUrl"
                     type="url"
+                    defaultValue={lesson.meetingUrl}
                     className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                     placeholder="https:// toplantı linki"
                     aria-label="Toplantı linki"

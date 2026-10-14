@@ -177,7 +177,7 @@ export function StudentAssignmentList({
   const opened = openId ? items.find((item) => item.id === openId) ?? null : null;
   const closeDrawer = useCallback(() => setOpenParam(null), [setOpenParam]);
   const dueLabel = (dueAt: string) =>
-    new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(dueAt));
+    new Intl.DateTimeFormat("tr-TR", { timeZone: "Europe/Istanbul", dateStyle: "medium", timeStyle: "short" }).format(new Date(dueAt));
   const isOverdue = (assignment: Assignment) =>
     assignment.status !== "DONE" && new Date(assignment.dueAt) < new Date();
   const statusTone = (assignment: Assignment) =>

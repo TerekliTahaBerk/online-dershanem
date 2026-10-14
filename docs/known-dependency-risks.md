@@ -5,29 +5,21 @@ bir üst paket güncellemesi bulunmayan bağımlılık risklerini izler. İstisn
 kalıcı değildir; `config/npm-audit-allowlist.json` içindeki son kullanma tarihi
 geçince CI yeniden kırmızı olur.
 
-## Lighthouse CI / extract-zip
+## Lighthouse CI / extract-zip — giderildi (14 Ekim 2026)
 
 - Advisory: `GHSA-jmr9-qjv8-65gv` ve `GHSA-7pqw-9j4j-h8q3` (yüksek).
-- Zincir: `@lhci/cli@0.15.1` → `lighthouse@12.6.1` →
+- Eski zincir: `@lhci/cli@0.15.1` → `lighthouse@12.6.1` →
   `puppeteer-core@24.43.1` → `@puppeteer/browsers@2.13.2` →
   `extract-zip@2.0.1`.
-- Neden şimdi düzeltilemiyor: 14 Eylül 2026 itibarıyla yayımlanmış en güncel
-  `@lhci/cli` sürümü 0.15.1 ve Lighthouse 12.6.1'i sabitliyor. Audit'in önerdiği
-  0.12.0'a dönüş gerçek bir güvenlik düzeltmesi değil; güncel Lighthouse
-  `13.4.1`i zorlamak ise upstream tarafından test edilmemiş bir major geçiş.
-- Gerçek risk: Bu zincir yalnızca geliştirme/CI ortamında çalışır ve production
-  bundle'a girmez. Saldırı, CI runner'ın kötü niyetli veya değiştirilmiş bir
-  Chromium arşivini açmasını gerektirir; production kullanıcı isteği doğrudan
-  bu kod yoluna erişmez. Yine de runner dosya bütünlüğü açısından yüksek önemle
-  izlenir.
-- Azaltımlar: Lighthouse yalnızca repoda sabitlenmiş URL'leri kontrollü CI
-  runner'ında tarar. `chrome-launcher@1.2.1` override'ı eski
-  `rimraf@3`/`glob@7`/`inflight` zincirini kaldırır. Audit kapısı yalnızca bu iki
-  advisory kimliğine süreli izin verir; aynı paketlerde çıkacak yeni advisory'ler
-  de dahil olmak üzere diğer tüm high/critical bulgular CI'ı kırar.
-- Yeniden değerlendirme: 14 Ekim 2026 veya yeni bir `@lhci/cli` sürümü
-  yayımlandığında (hangisi önceyse). Güvenli sürüm çıktığında override/istisna
-  kaldırılıp `npm run lighthouse:ci` yeniden çalıştırılacak.
+- Çözüm: `package.json` `overrides` içinde `puppeteer-core` `25.13.0`'a
+  sabitlendi. Bu sürüm `@puppeteer/browsers@3.2.4` kullanır ve `extract-zip`
+  bağımlılığı tamamen kalkar. Lighthouse 12.6.1 yalnız `puppeteer.connect`
+  API'sini kullanır; yerel Chromium ile hem `lighthouse` CLI hem
+  `lhci collect` başarıyla çalıştırıldı.
+- Audit istisnası (`config/npm-audit-allowlist.json`) kaldırıldı.
+- Yeniden değerlendirme: Yeni bir `@lhci/cli` sürümü kendi Lighthouse/puppeteer
+  zincirini güncellediğinde override kaldırılıp `npm run lighthouse:ci`
+  yeniden çalıştırılacak.
 
 ## Storybook / tsconfck bakım durumu
 
@@ -41,8 +33,9 @@ geçince CI yeniden kırmızı olur.
 - Neden override yok: `vite-tsconfig-paths@6.1.1` dahi aynı `tsconfck@^3.0.3`
   bağımlılığını kullanır; var olmayan bir modern `tsconfck` sürümünü zorlamak
   mümkün değildir.
-- Yeniden değerlendirme: 14 Ekim 2026 veya Storybook adaptörü bu bağımlılığı
-  kaldırdığında (hangisi önceyse).
+- 14 Ekim 2026 değerlendirmesi: güvenlik advisory'si yok; `vite-tsconfig-paths`
+  en güncel sürümü (6.1.1) dahi aynı `tsconfck@^3` bağımlılığını kullanıyor.
+  Storybook adaptörü bu bağımlılığı kaldırdığında yeniden değerlendirilecek.
 
 ## Kaldırılan braces zinciri
 
@@ -57,3 +50,34 @@ geçince CI yeniden kırmızı olur.
   bu davranışı sınar. Başka bir `fast-glob` tüketicisi eklenirse veya Next
   ESLint farklı bir API kullanmaya başlarsa override yeniden değerlendirilmeli;
   bu uyarlama genel amaçlı `fast-glob` yerine geçmez.
+
+## Yamalı bağımlılık kopyaları (vendor) — giderildi (14 Ekim 2026)
+
+Aşağıdaki paketlerin npm'de yamalı sürümü yoktu (en güncel sürüm de
+etkileniyordu) ya da düzeltme yalnız ESM olarak yayımlanmıştı. Açıklar, paketin
+yamalı bir kopyası depoya alınarak kapatıldı. Kopyalar kök bağımlılık olarak
+`file:` ile eklenir, iç içe kullanımlar `overrides` içindeki `$paket`
+referansıyla bu kopyaya yönlenir. Kopyaların sürümü, açık aralığının dışında
+kalan ve proje yaması olduğu açıkça görülen `-od.N` ekiyle işaretlenir.
+
+| Paket | Kopya | Advisory | Yama |
+| --- | --- | --- | --- |
+| `decode-uri-component` | `mobile/vendor/npm/decode-uri-component` (0.5.0) | GHSA-vcc3-ghjq-m6fr (orta) | Upstream 0.5.0 (`fa479da`) mantığı birebir, CommonJS'e taşındı; `query-string@7` (`expo-router`) `require` ile yüklüyor. Uygulama paketine girer. |
+| `node-forge` | `mobile/vendor/npm/node-forge` (1.4.1-od.1) | GHSA-86w9-cpqp-85rv (yüksek); CodeQL `js/polynomial-redos`, `js/prototype-polluting-assignment` | Upstream digitalbazaar/forge#1152: iç içe DigestAlgorithm öğe sayısı denetimi (`lib/rsa.js`). `pem.decode` düzenli ifadeleri doğrusal zamanlı tarayıcıyla değiştirildi (36 KB saldırı girdisi 142 sn → 360 KB 45 ms; 300 bin girdilik fark testinde çıktı aynı, tek fark eski sürümün araya giren blokları yutma hatasının düzelmesi). Kullanılmayan tarayıcı/Flash modülleri (`http.js`, `xhr.js`, `socket.js`, `index.all.js`) kopyadan çıkarıldı. |
+| `braces` | `mobile/vendor/npm/braces` (3.0.4-od.1) | GHSA-vfj7-8cjw-p6xm (yüksek) | `parse()` iç içe derinliği 128 ile sınırlar (`maxDepth` seçeneğiyle düşürülebilir). |
+| `sprintf-js` | `vendor/npm/sprintf-js`, `mobile/vendor/npm/sprintf-js` (1.1.4-od.1, temel 1.0.3) | GHSA-hp3w-g68c-fv3c (orta) | Hassasiyet değeri ECMAScript sınırlarına sıkıştırılır. |
+
+- Doğrulama: `lib/vendor-patches.test.ts` ve
+  `mobile/src/test/vendor-patches.test.ts` her açığı tetikleyen girdiyle yamayı
+  denetler; override kaldırılırsa testler kırılır. `expo export` ile üretilen
+  Hermes paketinde yamalı `decode-uri-component` kodu yer alır.
+- `uuid`: `xcode@3.0.1` → `uuid@7.0.3` zinciri `mobile/package.json`
+  `overrides` ile `uuid@11.1.1`'e taşındı.
+- Dependabot'un mobil için açtığı `shell-quote`, `source-map-js`,
+  `compression` ve `brace-expansion` güncellemeleri lockfile'da zaten bulunuyor.
+- Bakım: Upstream yamalı sürüm yayımladığında ilgili kopya ve override
+  kaldırılır, gerçek paket kullanılır. Expo SDK geçişlerinde `npm audit` ve
+  bu testler yeniden çalıştırılır. Dockerfile bağımlılık aşaması `vendor/`
+  klasörünü `npm ci`'dan önce kopyalar.
+
+Güncel durum: kök projede ve `mobile/` içinde `npm audit` 0 açık raporlar.

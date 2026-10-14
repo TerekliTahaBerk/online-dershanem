@@ -152,7 +152,7 @@ export function TeacherReviewMonitor({ students }: { students: StudentRow[] }) {
                 </div>
                 <p className="text-[10.5px] text-(--site-muted)">
                   {student.lastReviewedAt
-                    ? `Son dönüş ${new Intl.DateTimeFormat("tr-TR").format(new Date(student.lastReviewedAt))}`
+                    ? `Son dönüş ${new Intl.DateTimeFormat("tr-TR", { timeZone: "Europe/Istanbul" }).format(new Date(student.lastReviewedAt))}`
                     : "Henüz yeniden çözüm yok"}
                 </p>
               </article>

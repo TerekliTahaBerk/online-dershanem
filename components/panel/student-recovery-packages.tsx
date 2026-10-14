@@ -84,7 +84,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-extrabold uppercase tracking-[.06em] text-(--brand-olive)">
-                    {new Date(row.lessonDate).toLocaleDateString("tr-TR")} ·{" "}
+                    {new Date(row.lessonDate).toLocaleDateString("tr-TR", { timeZone: "Europe/Istanbul" })} ·{" "}
                     {row.lessonTitle}
                   </p>
                   <h2 className="mt-2 text-xl font-semibold">
@@ -259,7 +259,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                   </p>
                 )}
                 <p className="mt-3 text-[11px] text-(--site-muted)">
-                  72 saat hedefi: {new Date(row.dueAt).toLocaleString("tr-TR")}.
+                  72 saat hedefi: {new Date(row.dueAt).toLocaleString("tr-TR", { timeZone: "Europe/Istanbul" })}.
                 </p>
               </div>
             </article>

@@ -8,6 +8,7 @@
     "@react-native-community/datetimepicker": "9.1.0",
     "@react-native-community/netinfo": "12.0.1",
     "@tanstack/react-query": "^5.104.1",
+    "decode-uri-component": "file:./vendor/npm/decode-uri-component",
     "expo": "~57.0.14",
     "expo-application": "~57.0.2",
     "expo-constants": "~57.0.12",
@@ -47,11 +48,14 @@
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^29.5.14",
     "@types/react": "~19.2.2",
+    "braces": "file:./vendor/npm/braces",
     "eslint": "^9.39.5",
     "eslint-config-expo": "^57.0.1",
     "jest": "^29.7.0",
     "jest-expo": "^57.0.4",
+    "node-forge": "file:./vendor/npm/node-forge",
     "react-test-renderer": "^19.2.3",
+    "sprintf-js": "file:./vendor/npm/sprintf-js",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -85,5 +89,12 @@
       "node_modules",
       "<rootDir>/node_modules"
     ]
+  },
+  "overrides": {
+    "uuid": "11.1.1",
+    "braces": "$braces",
+    "decode-uri-component": "$decode-uri-component",
+    "node-forge": "$node-forge",
+    "sprintf-js": "$sprintf-js"
   }
 }
