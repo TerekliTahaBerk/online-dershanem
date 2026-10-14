@@ -1,0 +1,28 @@
+{
+  "name": "decode-uri-component",
+  "version": "0.5.0",
+  "description": "Proje yaması — decode-uri-component@0.5.0 (GHSA-vcc3-ghjq-m6fr düzeltmesi) CommonJS kopyası. Ayrıntı: docs/known-dependency-risks.md",
+  "license": "MIT",
+  "repository": "SamVerschueren/decode-uri-component",
+  "author": {
+    "name": "Sam Verschueren",
+    "email": "sam.verschueren@gmail.com",
+    "url": "github.com/SamVerschueren"
+  },
+  "engines": {
+    "node": ">=0.10"
+  },
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "decode",
+    "uri",
+    "component",
+    "decodeuricomponent",
+    "components",
+    "decoder",
+    "url"
+  ],
+  "private": true
+}
