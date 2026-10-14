@@ -41,6 +41,33 @@ export function parseIstanbulDateInput(value: unknown): Date | null {
   return new Date(utcMidnight - OFFSET_MS);
 }
 
+const DATE_TIME_INPUT_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
+
+/**
+ * `<input type="datetime-local">` için İstanbul duvar saati (`YYYY-MM-DDTHH:mm`).
+ * Tarayıcı/sunucu saat diliminden bağımsızdır: SSR (UTC) ile istemci aynı
+ * değeri üretir, böylece hidrasyon sonrası saat kaymaz.
+ */
+export function formatIstanbulDateTimeInput(instant: Date): string {
+  return new Date(instant.getTime() + OFFSET_MS).toISOString().slice(0, 16);
+}
+
+/**
+ * `YYYY-MM-DDTHH:mm` değerini İstanbul saatiyle ana çevirir. Cihazın saat
+ * dilimi farklı olsa da girilen saat İstanbul saati kabul edilir.
+ */
+export function parseIstanbulDateTimeInput(value: unknown): Date | null {
+  if (typeof value !== "string") return null;
+  const match = DATE_TIME_INPUT_PATTERN.exec(value.trim());
+  if (!match) return null;
+  const hour = Number(match[4]);
+  const minute = Number(match[5]);
+  if (hour > 23 || minute > 59) return null;
+  const dayStart = parseIstanbulDateInput(`${match[1]}-${match[2]}-${match[3]}`);
+  if (!dayStart) return null;
+  return new Date(dayStart.getTime() + (hour * 60 + minute) * 60_000);
+}
+
 /** Verilen anın İstanbul gününün başlangıcı (00:00:00.000 +03:00). */
 export function istanbulDayStart(instant: Date): Date {
   const shifted = instant.getTime() + OFFSET_MS;

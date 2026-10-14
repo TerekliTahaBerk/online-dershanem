@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarPlus, Link2, UsersRound } from "lucide-react";
+import { parseIstanbulDateTimeInput } from "@/lib/istanbul-time";
 
 type Person = { id: string; name: string };
 type Student = Person;
@@ -43,11 +44,18 @@ export function AdminLearningForms({
   const [targetType, setTargetType] = useState<"GROUP" | "STUDENT">("GROUP");
   const [preview, setPreview] = useState<SeriesPreview | null>(null);
 
-  async function submit(action: () => Promise<void>, success: string) {
+  async function submit(
+    action: () => Promise<void>,
+    success: string,
+    form?: HTMLFormElement,
+  ) {
     setBusy(true);
     setMessage("");
     try {
       await action();
+      // Başarılı kayıttan sonra form temizlenir; aynı kayıt yanlışlıkla ikinci
+      // kez gönderilmez.
+      form?.reset();
       setMessage(success);
       setPreview(null);
       router.refresh();
@@ -70,8 +78,11 @@ export function AdminLearningForms({
       weekdays.length || Number(data.get("repeatWeeks")) > 1
         ? "SERIES"
         : "SINGLE";
-    const starts = new Date(local);
-    const time = `${String(starts.getHours()).padStart(2, "0")}:${String(starts.getMinutes()).padStart(2, "0")}`;
+    // Girilen saat İstanbul saatidir; seri saati de aynı duvar saatinden
+    // türetilir (cihaz saat dilimi farklıysa seri kaymasın).
+    const starts = parseIstanbulDateTimeInput(local);
+    if (!starts) throw new Error("Geçerli bir başlangıç tarihi ve saati girin.");
+    const time = local.trim().slice(11, 16);
     return {
       targetType,
       groupId: targetType === "GROUP" ? data.get("groupId") : undefined,
@@ -98,7 +109,8 @@ export function AdminLearningForms({
         className="rounded-[10px] border border-pn-border bg-white p-5 scroll-mt-28"
         onSubmit={(event) => {
           event.preventDefault();
-          const data = new FormData(event.currentTarget);
+          const formElement = event.currentTarget;
+          const data = new FormData(formElement);
           const selected = data.getAll("studentIds").map(String);
           void submit(
             () =>
@@ -110,6 +122,7 @@ export function AdminLearningForms({
                 studentIds: selected,
               }),
             "Grup hazır.",
+            formElement,
           );
         }}
       >
@@ -172,10 +185,14 @@ export function AdminLearningForms({
         className="rounded-[10px] border border-pn-border bg-white p-5 scroll-mt-28"
         onSubmit={(event) => {
           event.preventDefault();
-          const data = new FormData(event.currentTarget);
+          const formElement = event.currentTarget;
+          const data = new FormData(formElement);
           void submit(
-            () => post("/api/panel/lessons", buildLessonPayload(data)),
+            async () => {
+              await post("/api/panel/lessons", buildLessonPayload(data));
+            },
             "Ders takvime eklendi.",
+            formElement,
           );
         }}
       >
@@ -320,12 +337,18 @@ export function AdminLearningForms({
             const form = event.currentTarget.form;
             if (!form) return;
             const data = new FormData(form);
+            let payload: ReturnType<typeof buildLessonPayload>;
+            try {
+              payload = buildLessonPayload(data);
+            } catch (error) {
+              setMessage(
+                error instanceof Error ? error.message : "Önizleme alınamadı.",
+              );
+              return;
+            }
             setBusy(true);
             setMessage("");
-            void post(
-              "/api/panel/lessons/preview-series",
-              buildLessonPayload(data),
-            )
+            void post("/api/panel/lessons/preview-series", payload)
               .then((result) => setPreview(result as SeriesPreview))
               .catch((error) =>
                 setMessage(
@@ -369,7 +392,8 @@ export function AdminLearningForms({
         className="rounded-[10px] border border-pn-border bg-white p-5"
         onSubmit={(event) => {
           event.preventDefault();
-          const data = new FormData(event.currentTarget);
+          const formElement = event.currentTarget;
+          const data = new FormData(formElement);
           void submit(
             () =>
               post("/api/panel/relationships", {
@@ -381,6 +405,7 @@ export function AdminLearningForms({
                 canViewPayments: data.get("canViewPayments") === "on",
               }),
             "Veli bağlantısı hazır.",
+            formElement,
           );
         }}
       >

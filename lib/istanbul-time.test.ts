@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  formatIstanbulDateTimeInput,
+  parseIstanbulDateTimeInput,
   formatIstanbulDateInput,
   addIstanbulCalendarDays,
   istanbulDayEnd,
@@ -123,4 +125,13 @@ test("filtre input'u kendi çözümlediği aralığa geri dönüştürülebilir"
 test("hafta başlangıcı ve digest window aynı İstanbul kaynağını paylaşır", () => {
   const instant = new Date("2026-08-30T22:30:00.000Z");
   assert.equal(istanbulWeekStart(instant).toISOString(), "2026-08-30T21:00:00.000Z");
+});
+
+test("datetime-local değeri İstanbul duvar saatiyle biçimlenir ve geri okunur", () => {
+  const instant = new Date("2026-10-14T21:30:00.000Z");
+  assert.equal(formatIstanbulDateTimeInput(instant), "2026-10-15T00:30");
+  assert.equal(parseIstanbulDateTimeInput("2026-10-15T00:30")?.toISOString(), instant.toISOString());
+  assert.equal(parseIstanbulDateTimeInput("2026-02-30T10:00"), null);
+  assert.equal(parseIstanbulDateTimeInput("2026-10-15T24:00"), null);
+  assert.equal(parseIstanbulDateTimeInput(""), null);
 });

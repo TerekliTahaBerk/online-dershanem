@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Archive,
@@ -35,24 +35,38 @@ export function TeacherMaterialManager({
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [archiveBusy, setArchiveBusy] = useState<string | null>(null);
-  const [items, setItems] = useState(materials);
+  // Liste sunucu verisinden türetilir (dosya bağlantısı ve grup adı dahil);
+  // arşivleme yalnız anında geri bildirim için yerelde işaretlenir.
+  const [archivedIds, setArchivedIds] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  const items = useMemo(
+    () =>
+      archivedIds.size
+        ? materials.map((item) =>
+            archivedIds.has(item.id) ? { ...item, isActive: false } : item,
+          )
+        : materials,
+    [materials, archivedIds],
+  );
   const [source, setSource] = useState<"LINK" | "FILE">("LINK");
   const icons = { LINK: Link2, PDF: FileText, VIDEO: Video };
   async function archive(id: string) {
     if (archiveBusy) return;
     setArchiveBusy(id);
-    const response = await fetch(`/api/panel/materials/${id}`, {
-      method: "PATCH",
-    });
-    if (response.ok) {
-      setItems((current) =>
-        current.map((item) =>
-          item.id === id ? { ...item, isActive: false } : item,
-        ),
-      );
-      router.refresh();
-    } else setMessage("Materyal arşivlenemedi.");
-    setArchiveBusy(null);
+    try {
+      const response = await fetch(`/api/panel/materials/${id}`, {
+        method: "PATCH",
+      });
+      if (response.ok) {
+        setArchivedIds((current) => new Set([...current, id]));
+        router.refresh();
+      } else setMessage("Materyal arşivlenemedi.");
+    } catch {
+      setMessage("Materyal arşivlenemedi. Bağlantını kontrol et.");
+    } finally {
+      setArchiveBusy(null);
+    }
   }
 
   return (
@@ -62,37 +76,42 @@ export function TeacherMaterialManager({
         onSubmit={async (event) => {
           event.preventDefault();
           const formElement = event.currentTarget;
+          if (busy) return;
           setBusy(true);
           setMessage("");
           const data = new FormData(formElement);
-          const response =
-            source === "FILE"
-              ? await fetch("/api/panel/materials/upload", {
-                  method: "POST",
-                  body: data,
-                })
-              : await fetch("/api/panel/materials", {
-                  method: "POST",
-                  headers: { "content-type": "application/json" },
-                  body: JSON.stringify({
-                    groupId: data.get("groupId"),
-                    title: data.get("title"),
-                    description: data.get("description"),
-                    url: data.get("url"),
-                    kind: data.get("kind"),
-                    captionsAvailable: data.get("captionsAvailable") === "on",
-                    transcript: data.get("transcript"),
-                  }),
-                });
-          const result = await response.json().catch(() => ({}));
-          if (response.ok) {
-            setItems((current) => [result.material as Material, ...current]);
-            formElement.reset();
-            setMessage("Materyal öğrencilere açıldı.");
-            setBusy(false);
-            router.refresh();
-          } else {
-            setMessage(result.error || "Paylaşılamadı.");
+          try {
+            const response =
+              source === "FILE"
+                ? await fetch("/api/panel/materials/upload", {
+                    method: "POST",
+                    body: data,
+                  })
+                : await fetch("/api/panel/materials", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({
+                      groupId: data.get("groupId"),
+                      title: data.get("title"),
+                      description: data.get("description"),
+                      url: data.get("url"),
+                      kind: data.get("kind"),
+                      captionsAvailable: data.get("captionsAvailable") === "on",
+                      transcript: data.get("transcript"),
+                    }),
+                  });
+            const result = await response.json().catch(() => ({}));
+            if (response.ok) {
+              // Yeni kayıt sunucudan (korumalı dosya bağlantısıyla) gelir.
+              formElement.reset();
+              setMessage("Materyal öğrencilere açıldı.");
+              router.refresh();
+            } else {
+              setMessage(result.error || "Paylaşılamadı.");
+            }
+          } catch {
+            setMessage("Bağlantı kurulamadı. Tekrar deneyin.");
+          } finally {
             setBusy(false);
           }
         }}

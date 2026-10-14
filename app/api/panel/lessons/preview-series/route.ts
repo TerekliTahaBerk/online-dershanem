@@ -85,31 +85,43 @@ export async function POST(request: Request) {
       message: string;
     }> = [];
 
-    for (let index = 0; index < preview.occurrences.length; index += 1) {
-      const occ = preview.occurrences[index];
-      const found = await findLessonScheduleConflicts(prisma, {
-        lessonId: `preview-${conflictGroupId}-${index}`,
-        teacherId,
-        groupId: conflictGroupId,
-        startsAt: occ.startsAt,
-        endsAt: occ.endsAt,
-        studentIds,
-      });
-      if (found.length) {
-        const kinds = [...new Set(found.map((item) => item.kind))];
-        conflicts.push({
-          occurrenceIndex: index,
-          message: kinds
-            .map((kind) => conflictKindLabel[kind] || kind)
-            .concat(
-              found
-                .filter((item) => item.kind === "STUDENT" && item.studentName)
-                .map((item) => item.studentName!),
-            )
-            .join(" · "),
-        });
-      }
+    // 48 oluşuma kadar sıralı sorgu önizlemeyi saniyelerce bekletiyordu;
+    // bağlantı havuzunu tüketmemek için sınırlı paralellikle denetlenir.
+    const CONCURRENCY = 6;
+    const found: Awaited<ReturnType<typeof findLessonScheduleConflicts>>[] = [];
+    for (let start = 0; start < preview.occurrences.length; start += CONCURRENCY) {
+      const chunk = preview.occurrences.slice(start, start + CONCURRENCY);
+      found.push(
+        ...(await Promise.all(
+          chunk.map((occ, offset) =>
+            findLessonScheduleConflicts(prisma, {
+              lessonId: `preview-${conflictGroupId}-${start + offset}`,
+              teacherId,
+              groupId: conflictGroupId,
+              startsAt: occ.startsAt,
+              endsAt: occ.endsAt,
+              studentIds,
+            }),
+          ),
+        )),
+      );
     }
+
+    found.forEach((items, index) => {
+      if (!items.length) return;
+      const kinds = [...new Set(items.map((item) => item.kind))];
+      conflicts.push({
+        occurrenceIndex: index,
+        message: kinds
+          .map((kind) => conflictKindLabel[kind] || kind)
+          .concat(
+            items
+              .filter((item) => item.kind === "STUDENT" && item.studentName)
+              .map((item) => item.studentName!),
+          )
+          .join(" · "),
+      });
+    });
 
     return adminJson({
       count: preview.count,
