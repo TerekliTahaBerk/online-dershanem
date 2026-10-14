@@ -66,7 +66,7 @@ function CelebrationOverlay({ event, onClose }: { event: Celebration; onClose: (
     </View> : null}
     <View style={[styles.notice, { marginTop: insets.top + 12, borderColor: product.accentSoft }]}>
       <View style={[styles.mark, { backgroundColor: product.accentSoft }]}><DelightIcon name={event.kind === 'task' ? 'spark' : 'leaf'} color={product.accent} size={28} /></View>
-      <View style={styles.copy}><Text variant="bodyStrong">{copy.title}</Text><Text variant="secondary" tone="secondary">{copy.body}</Text></View>
+      <View style={styles.copy}><Text variant="bodyStrong" maxFontSizeMultiplier={1.6}>{copy.title}</Text><Text variant="secondary" tone="secondary" maxFontSizeMultiplier={1.6}>{copy.body}</Text></View>
       <MotionPressable feedback={false} accessibilityRole="button" accessibilityLabel="Kutlamayı kapat" onPress={onClose} style={styles.close}><X size={18} color={color.textMuted} /></MotionPressable>
     </View>
   </View>;

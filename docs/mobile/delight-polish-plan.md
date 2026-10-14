@@ -18,6 +18,6 @@ Gerçek rota ağacında OD tamamlama/çakışma, Yön DONE/tekrar/kısmi/hata ve
 
 Native görsel kontrol: küçük iPhone SE üzerinde Çalışmalar → görev → Tamamlandı → onay + konfeti; görev durumunun yenilenmesi, otomatik kapanma, yeniden açmada tekrar kutlamama, ikonlu alt navigasyon. Üretim hesabı kullanılmaz; yerel sentetik API kullanılır. Tarayıcı bu native animasyonun yerine geçmez.
 
-Görsel karşılaştırma defteri: mevcut beyaz yüzey, Manrope metin ölçeği, ürün rengi, ekran kenarları ve ana görev/form sırası korunur. Kasıtlı eklemeler: başarı bildirimi/konfeti, görev simgesi, ilerleme çizgisi ve tamamlanma mesajı. Dar ekranda metin esner; bildirim eylemi en az 44 px. Fiziksel titreşim motoru ve cihaz GPU performansı simülatörden doğrulanmış sayılmaz.
+Görsel karşılaştırma defteri: mevcut beyaz yüzey, Manrope metin ölçeği, ürün rengi, ekran kenarları ve ana görev/form sırası korunur. Kasıtlı eklemeler: başarı bildirimi/konfeti, görev simgesi, ilerleme çizgisi ve tamamlanma mesajı. Dar ekranda metin esner; bildirim eylemi en az 44 px. Geçici başarı bildirimi en fazla 1,6×, alt menü etiketleri 1,25× ölçeklenir ve tek satıra sığar; ekran içeriğinin sistem yazı ölçeği korunur, tam metin ekran okuyucuya duyurulur. Fiziksel titreşim motoru ve cihaz GPU performansı simülatörden doğrulanmış sayılmaz.
 
 PR ve yayın sonrası mevcut TestFlight 1.0.0 (7) fingerprint'iyle karşılaştırılır. Runtime eşleşirse production OTA yayınlanır; native değişiklik olmadığı halde yeni binary zorlanmaz. Yayın grubu ve commit teslim mesajında verilir.
