@@ -136,3 +136,20 @@ export const rescoreSchema = z.object({
   confirmPublishedChange: z.boolean().optional(),
   reason: z.string().trim().min(3).max(500).optional(),
 });
+
+/** Kilitli denemede cevap anahtarı revizyonu (P0-2): önizleme ve onaylı commit. */
+const answerKeyChangeSchema = z.discriminatedUnion("action", [
+  z.object({ questionId: z.string().min(1).max(64), action: z.literal("SET_ANSWER"), correctOption: z.enum(["A", "B", "C", "D", "E"]) }),
+  z.object({ questionId: z.string().min(1).max(64), action: z.literal("CANCEL") }),
+]);
+
+export const answerKeyRevisionPreviewSchema = z.object({
+  changes: z.array(answerKeyChangeSchema).min(1).max(200),
+});
+
+export const answerKeyRevisionCommitSchema = answerKeyRevisionPreviewSchema.extend({
+  reason: z.string().trim().min(10).max(1000),
+  /** Önizlemedeki anahtar hash'i; arada başka revizyon yazıldıysa commit reddedilir. */
+  expectedAnswerKeyHash: z.string().regex(/^[a-f0-9]{64}$/),
+  confirmPublishedChange: z.boolean().optional(),
+});

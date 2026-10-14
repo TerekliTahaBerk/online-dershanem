@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import type { OdkAnswerOption } from "@prisma/client";
 import { prisma as db } from "@/lib/prisma";
-import { scoreOdkExam } from "@/lib/odk/scoring-service";
+import { previewOdkRescore, scoreOdkExam } from "@/lib/odk/scoring-service";
+import { commitAnswerKeyRevision, previewAnswerKeyRevision } from "@/lib/odk/answer-key-revision-server";
+import { rescoreOdkExamCommand } from "@/lib/odk/exam-results-commands";
 import { integration } from "./integration-utils";
 
 /**
@@ -138,6 +140,137 @@ integration("P1-5 puanlama: soru başı aktif süre kazanım özetine taşınır
   } finally {
     await curriculum.cleanup();
   }
+});
+
+/** Puanla, sonra yayınla (yayın komutunun yazdığı alanlar; koç önerisi/bildirim yan etkisi olmadan). */
+async function scoreAndRelease(fixture: Fixture, publishAttemptIndexes: number[]) {
+  const scored = await scoreOdkExam(fixture.exam.id, fixture.admin.id);
+  assert.ok(scored.ok, JSON.stringify(scored));
+  const now = new Date();
+  await db.odkExam.update({ where: { id: fixture.exam.id }, data: { status: "RELEASED", resultsReleasedAt: now, answerKeyReleasedAt: now } });
+  await db.odkAttemptScore.updateMany({ where: { attemptId: { in: publishAttemptIndexes.map((index) => fixture.attempts[index].id) } }, data: { publicationStatus: "PUBLISHED" } });
+}
+
+const actorOf = (fixture: Fixture) => ({ userId: fixture.admin.id, role: "ADMIN" as const });
+const netOf = async (fixture: Fixture, index: number) => Number((await db.odkAttemptScore.findUniqueOrThrow({ where: { attemptId: fixture.attempts[index].id } })).totalNet);
+
+integration("P0-9 yeniden puanlama yayından hariç tutulan sonucu yayınlamaz", async () => {
+  const run = randomUUID().slice(0, 8);
+  await withFixture({ run, students: 2, sections: [{ code: "MAT", key: key(4) }] }, async (fixture) => {
+    await fixture.answer(0, "MAT", ["A", "A", "B", null]);
+    await fixture.answer(1, "MAT", ["A", "B", "B", "B"]);
+    await scoreAndRelease(fixture, [0]); // 1. öğrenci bütünlük incelemesi nedeniyle hariç tutuldu
+    const result = await rescoreOdkExamCommand(fixture.exam.id, { confirmPublishedChange: true }, actorOf(fixture));
+    assert.equal(result.status, 200, JSON.stringify(await result.clone().json()));
+    const rows = await db.odkAttemptScore.findMany({ where: { attemptId: { in: fixture.attempts.map((attempt) => attempt.id) } }, select: { attemptId: true, publicationStatus: true } });
+    assert.equal(rows.find((row) => row.attemptId === fixture.attempts[0].id)?.publicationStatus, "PUBLISHED");
+    assert.equal(rows.find((row) => row.attemptId === fixture.attempts[1].id)?.publicationStatus, "HIDDEN");
+  });
+});
+
+integration("P0-3 yeniden puanlama etkisi gerçek anahtar farkından hesaplanır", async () => {
+  const run = randomUUID().slice(0, 8);
+  await withFixture({ run, students: 2, sections: [{ code: "MAT", key: key(4) }] }, async (fixture) => {
+    await fixture.answer(0, "MAT", ["A", "B", "A", "A"]);
+    await fixture.answer(1, "MAT", ["A", "A", "A", "A"]);
+    await scoreAndRelease(fixture, [0, 1]);
+    const same = await previewOdkRescore(fixture.exam.id);
+    assert.ok(same.ok);
+    assert.deepEqual([same.preview.changedQuestionIds, same.preview.cancelledQuestionIds, same.preview.changedAttempts.length], [[], [], 0]);
+    await db.odkExamQuestion.update({ where: { id: fixture.question("MAT", 2).id }, data: { correctOption: "B" } });
+    await db.odkExamQuestion.update({ where: { id: fixture.question("MAT", 4).id }, data: { isActive: false } });
+    const changed = await previewOdkRescore(fixture.exam.id);
+    assert.ok(changed.ok);
+    assert.deepEqual(changed.preview.changedQuestionIds, [fixture.question("MAT", 2).id]);
+    assert.deepEqual(changed.preview.cancelledQuestionIds, [fixture.question("MAT", 4).id]);
+    assert.deepEqual(changed.preview.changedAttempts.map((row) => [row.netBefore, row.netAfter]).sort(), [[2.75, 3], [4, 1.75]]);
+    assert.equal(changed.preview.publishedChangedCount, 2);
+    // Kuru çalıştırma hiçbir şey yazmaz.
+    assert.equal(await netOf(fixture, 1), 4);
+  });
+});
+
+integration("P0-2 anahtar revizyonu: önizleme, onay, revizyon kaydı, iptal, yeniden puanlama ve audit", async () => {
+  const run = randomUUID().slice(0, 8);
+  await withFixture({ run, students: 2, sections: [{ code: "MAT", key: key(4) }] }, async (fixture) => {
+    await fixture.answer(0, "MAT", ["A", "B", "A", "A"]);
+    await fixture.answer(1, "MAT", ["A", "A", "A", "A"]);
+    await scoreAndRelease(fixture, [0, 1]);
+    const changes = [
+      { questionId: fixture.question("MAT", 2).id, action: "SET_ANSWER" as const, correctOption: "B" as const },
+      { questionId: fixture.question("MAT", 4).id, action: "CANCEL" as const },
+    ];
+    const preview = await previewAnswerKeyRevision(fixture.exam.id, { changes });
+    assert.equal(preview.status, 200);
+    const previewBody = await preview.json();
+    assert.equal(previewBody.impact.changedAttemptCount, 2);
+    assert.equal(previewBody.impact.publishedResultsWillChange, true);
+    assert.equal(previewBody.cancelledQuestionPolicy, "EXCLUDE");
+    assert.match(previewBody.answerKeyHash, /^[a-f0-9]{64}$/);
+
+    const reason = "Kitapçıkta 2. sorunun doğru cevabı B; 4. soru basım hatası.";
+    // Yayınlanmış netler değişiyor: açık onay olmadan hiçbir şey yazılmaz.
+    const unconfirmed = await commitAnswerKeyRevision(fixture.exam.id, { changes, reason, expectedAnswerKeyHash: previewBody.answerKeyHash }, actorOf(fixture));
+    assert.equal(unconfirmed.status, 409);
+    assert.equal((await unconfirmed.json()).code, "CONFIRMATION_REQUIRED");
+    assert.equal(await db.odkAnswerKeyRevision.count({ where: { versionId: fixture.version.id } }), 0);
+    assert.equal((await db.odkExamQuestion.findUniqueOrThrow({ where: { id: fixture.question("MAT", 2).id } })).correctOption, "A");
+
+    const committed = await commitAnswerKeyRevision(fixture.exam.id, { changes, reason, expectedAnswerKeyHash: previewBody.answerKeyHash, confirmPublishedChange: true }, actorOf(fixture));
+    const committedBody = await committed.json();
+    assert.equal(committed.status, 201, JSON.stringify(committedBody));
+    assert.equal(committedBody.rescored, true);
+
+    const revision = await db.odkAnswerKeyRevision.findUniqueOrThrow({ where: { id: committedBody.revisionId } });
+    assert.equal(revision.revisionNumber, 1);
+    assert.equal(revision.reason, reason);
+    assert.equal(revision.changedById, fixture.admin.id);
+    assert.deepEqual(revision.previousAnswers, { [fixture.question("MAT", 2).id]: "A", [fixture.question("MAT", 4).id]: "A" });
+    assert.deepEqual(revision.nextAnswers, { [fixture.question("MAT", 2).id]: "B", [fixture.question("MAT", 4).id]: "CANCELLED" });
+    assert.ok(revision.rescoreRequestedAt && revision.rescoreCompletedAt);
+    const q4 = await db.odkExamQuestion.findUniqueOrThrow({ where: { id: fixture.question("MAT", 4).id } });
+    assert.equal(q4.isActive, false);
+    assert.equal(q4.correctOption, "A"); // iptal önceki cevabı silmez
+    assert.equal(await netOf(fixture, 0), 3);
+    assert.equal(await netOf(fixture, 1), 1.75);
+    const sectionCount = (await db.odkAttemptScore.findUniqueOrThrow({ where: { attemptId: fixture.attempts[1].id } })).sectionBreakdown as Array<{ questionCount: number }>;
+    assert.equal(sectionCount[0].questionCount, 3); // iptal edilen soru bölüm soru sayısından düşer
+    const rescoreAudit = await db.auditLog.findFirstOrThrow({ where: { entityId: fixture.exam.id, action: "odk.exam_rescored" }, orderBy: { createdAt: "desc" } });
+    const previousScores = (rescoreAudit.payload as { previousScores: Array<{ attemptId: string; totalNet: string }> }).previousScores;
+    assert.deepEqual(previousScores.map((row) => Number(row.totalNet)).sort(), [2.75, 4]);
+    assert.equal(await db.auditLog.count({ where: { entityId: fixture.exam.id, action: "odk.answer_key_revised" } }), 1);
+
+    // Aynı önizleme hash'iyle ikinci commit: anahtar değişti → bayat.
+    const stale = await commitAnswerKeyRevision(fixture.exam.id, { changes: [{ questionId: fixture.question("MAT", 1).id, action: "SET_ANSWER", correctOption: "C" }], reason, expectedAnswerKeyHash: previewBody.answerKeyHash, confirmPublishedChange: true }, actorOf(fixture));
+    assert.equal(stale.status, 409);
+    assert.equal((await stale.json()).code, "REVISION_STALE");
+    // İptal edilen soru revize edilemez.
+    const cancelled = await previewAnswerKeyRevision(fixture.exam.id, { changes: [{ questionId: fixture.question("MAT", 4).id, action: "SET_ANSWER", correctOption: "C" }] });
+    assert.equal(cancelled.status, 400);
+  });
+});
+
+integration("P0-2 eşzamanlı iki revizyondan yalnız biri yazılır", async () => {
+  const run = randomUUID().slice(0, 8);
+  await withFixture({ run, status: "ENDED", sections: [{ code: "MAT", key: key(3) }] }, async (fixture) => {
+    const preview = await (await previewAnswerKeyRevision(fixture.exam.id, { changes: [{ questionId: fixture.question("MAT", 1).id, action: "CANCEL" }] })).json();
+    const reason = "Eşzamanlı revizyon denemesi için gerekçe.";
+    const results = await Promise.all([
+      commitAnswerKeyRevision(fixture.exam.id, { changes: [{ questionId: fixture.question("MAT", 1).id, action: "CANCEL" }], reason, expectedAnswerKeyHash: preview.answerKeyHash }, actorOf(fixture)),
+      commitAnswerKeyRevision(fixture.exam.id, { changes: [{ questionId: fixture.question("MAT", 2).id, action: "SET_ANSWER", correctOption: "D" }], reason, expectedAnswerKeyHash: preview.answerKeyHash }, actorOf(fixture)),
+    ]);
+    assert.deepEqual(results.map((response) => response.status).sort(), [201, 409]);
+    assert.equal(await db.odkAnswerKeyRevision.count({ where: { versionId: fixture.version.id } }), 1);
+  });
+});
+
+integration("P0-2 taslak denemede revizyon açılmaz (taslak editörü kullanılır)", async () => {
+  const run = randomUUID().slice(0, 8);
+  await withFixture({ run, status: "DRAFT", sections: [{ code: "MAT", key: key(2) }] }, async (fixture) => {
+    const response = await previewAnswerKeyRevision(fixture.exam.id, { changes: [{ questionId: fixture.question("MAT", 1).id, action: "CANCEL" }] });
+    assert.equal(response.status, 409);
+    assert.equal((await response.json()).code, "REVISION_NOT_ALLOWED");
+  });
 });
 
 /** Sınav ailesine bağlı küçük bir müfredat kataloğu (ders → ünite → kazanım). */
