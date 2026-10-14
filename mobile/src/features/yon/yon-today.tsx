@@ -2,6 +2,7 @@ import type { MobileYonToday } from '@contracts/yon';
 import { useRouter, type Href } from 'expo-router';
 import { Linking, ScrollView, StyleSheet, View } from 'react-native';
 
+import { DayComplete, LearningProgress } from '@/design/learning-progress';
 import { Button, EmptyState, PageHeader, Row, Screen, Section, StatusBadge, Text } from '@/design/primitives';
 import { useDesign } from '@/design/theme';
 import { color, radius, space } from '@/design/tokens';
@@ -61,6 +62,7 @@ function YonTodayBody({ home }: { home: MobileYonToday }) {
   return (
     <>
       {home.canComplete && nowTask ? <NowBlock title={nowTask.title} meta={`${nowTask.durationMinutes} dk${nowTask.targetLabel ? ` · ${nowTask.targetLabel}` : ''}`} taskId={nowTask.id} overdue={home.overdue.some((task) => task.id === nowTask.id)} /> : null}
+      {home.hasPlan && home.today.length > 0 && home.today.every((task) => task.status === 'DONE') && home.overdueTotal === 0 ? <DayComplete /> : null}
       <Section title="Bugünün planı" first>
         {!home.hasPlan ? (
           <EmptyState title="Bu hafta için yayında bir plan yok." body="Koçun planı hazırlayıp yayınladığında bugünün görevleri burada görünecek." />
@@ -122,6 +124,7 @@ function WeekSection({ home }: { home: Extract<MobileYonToday, { state: 'READY' 
       {home.hasPlan ? (
         <>
           <Text tone="secondary">{`${home.week.done}/${home.week.total} görev · ${minutesLabel(home.week.doneMinutes)} / ${minutesLabel(home.week.plannedMinutes)}${home.week.remaining ? ` · ${home.week.remaining} iş kaldı` : ''}`}</Text>
+          <LearningProgress done={home.week.done} total={home.week.total} label="Haftalık görev ilerlemesi" />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.days} accessibilityLabel="Haftanın günleri">
             {home.week.days.map((day) => (
               <View

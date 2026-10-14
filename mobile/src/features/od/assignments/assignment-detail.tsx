@@ -1,7 +1,8 @@
 import { ASSIGNMENT_EVIDENCE_MAX, type AssignmentProgressStatus, type MobileAssignment } from '@contracts/student';
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
+import { MotionPressable } from '@/design/motion';
 import { usePreviewReadOnly } from '@/lib/auth/preview-context';
 import { Banner, Button, EmptyState, PageHeader, Row, Screen, Section, StatusBadge, Text, TextField } from '@/design/primitives';
 import { color, radius, space, touchTarget } from '@/design/tokens';
@@ -107,7 +108,7 @@ function ProgressSection({ assignment, evidenceEnabled }: { assignment: MobileAs
             const selected = assignment.status === value;
             const busy = write.pendingStatus === value;
             return (
-              <Pressable
+              <MotionPressable
                 key={value}
                 testID={`progress-${value}`}
                 accessibilityRole="radio"
@@ -119,7 +120,7 @@ function ProgressSection({ assignment, evidenceEnabled }: { assignment: MobileAs
                 <Text variant={selected ? 'bodyStrong' : 'secondary'} style={selected ? { color: product.accent } : undefined}>
                   {busy ? 'Kaydediliyor…' : PROGRESS_LABEL[value]}
                 </Text>
-              </Pressable>
+              </MotionPressable>
             );
           })}
         </View>

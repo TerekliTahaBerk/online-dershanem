@@ -35,7 +35,7 @@ export default function TabsLayout() {
           onPress={() => { const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true }); if (!selected && !event.defaultPrevented) navigation.navigate(route.name, route.params); }}
           onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
           testID={`nav-${item.id}`} style={({ pressed }) => [styles.tab, selected && { backgroundColor: product.accentSoft }, pressed && styles.pressed]}>
-          <NavIcon id={item.id} color={ink} size={19} />
+          <NavIcon id={item.id} color={ink} size={22} selected={selected} />
           <Text variant="caption" style={[styles.label, { color: ink }]}>{item.label}</Text>
         </MotionPressable>;
       })}
