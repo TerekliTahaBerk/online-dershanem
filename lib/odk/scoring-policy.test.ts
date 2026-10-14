@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { aggregateOutcomeScores, scoreAttempt } from "./scoring";
+import { aggregateOutcomeScores, scoreAttempt, scoreSubtests } from "./scoring";
 
 /**
  * P0-1 (docs/roadmaps/odk-exam-experience-overhaul.md): negatif bölüm netinin
@@ -70,4 +70,29 @@ test("kazanım özeti soru sürelerini (aktif süre) kazanıma taşır", () => {
 test("süre verisi verilmezse kazanım özeti eski biçimini korur", () => {
   const [row] = aggregateOutcomeScores([{ result: "CORRECT", outcomeIds: ["oran"] }]);
   assert.equal("activeDurationMs" in row, false);
+});
+
+test("bölüm satırı bölüm kodunu taşır (AYT alan görünümü filtrelemesi için)", () => {
+  const result = scoreAttempt([{ id: "s-mat", code: "MAT", title: "Matematik", questionCount: 2 }], official("s-mat", 2), answers("s-mat", 1, 1), 4);
+  assert.equal(result.sectionScores[0].code, "MAT");
+});
+
+test("alt testler bölüm içi soru aralığından puanlanır; iptal edilen soru sayılmaz; alt test neti ham nettir", () => {
+  // Fen 20 soru: Fizik 1–7, Kimya 8–14, Biyoloji 15–20. 3. soru iptal (anahtarda yok).
+  const key = official("fen", 20).filter((row) => row.questionNumber !== 3);
+  const student = [
+    ...[1, 2, 4].map((questionNumber) => ({ sectionId: "fen", questionNumber, selectedOption: "A" })), // fizik 3 doğru
+    ...[5, 6, 7, 8].map((questionNumber) => ({ sectionId: "fen", questionNumber, selectedOption: "B" })), // fizik 3 yanlış, kimya 1 yanlış
+  ];
+  const result = scoreAttempt([{ id: "fen", code: "FEN", title: "Fen", questionCount: 19 }], key, student, 4);
+  const subtests = scoreSubtests(result.perQuestion, new Map([["fen", [
+    { code: "FIZIK", title: "Fizik", questionCount: 7, questionStart: 1, questionEnd: 7 },
+    { code: "KIMYA", title: "Kimya", questionCount: 7, questionStart: 8, questionEnd: 14 },
+    { code: "BIYOLOJI", title: "Biyoloji", questionCount: 6, questionStart: 15, questionEnd: 20 },
+  ]]]), 4).get("fen")!;
+  assert.deepEqual(subtests.map((row) => [row.code, row.questionCount, row.correct, row.wrong, row.blank, row.net]), [
+    ["FIZIK", 6, 3, 3, 0, 2.25],
+    ["KIMYA", 7, 0, 1, 6, -0.25],
+    ["BIYOLOJI", 6, 0, 0, 6, 0],
+  ]);
 });

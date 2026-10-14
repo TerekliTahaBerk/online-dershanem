@@ -7,8 +7,22 @@
  * böylece politika değişse de tarihsel sonuç yeniden yorumlanabilir.
  */
 
+export type SubtestScore = {
+  code: string;
+  title: string;
+  /** Alt testte puanlamaya giren (iptal edilmemiş) soru sayısı. */
+  questionCount: number;
+  correct: number;
+  wrong: number;
+  blank: number;
+  /** Alt test neti bilgi amaçlıdır ve kesilmez (ham); resmî kesme test (bölüm) düzeyindedir. */
+  net: number;
+};
+
 export type SectionScore = {
   sectionId: string;
+  /** Bölüm kodu (ör. MAT); alan bazlı görünüm bununla filtreler. */
+  code?: string;
   title: string;
   questionCount: number;
   correct: number;
@@ -18,6 +32,7 @@ export type SectionScore = {
   net: number;
   /** Kesilmemiş ham net: correct − wrong / penalty. */
   rawNet: number;
+  subtests?: SubtestScore[];
 };
 
 export type ScoringResult = {
@@ -69,6 +84,7 @@ export function aggregateOutcomeScores(evaluations: Array<{ result: "CORRECT" | 
 
 type SectionInput = {
   id: string;
+  code?: string;
   title: string;
   questionCount: number;
 };
@@ -110,6 +126,7 @@ export function scoreAttempt(
   for (const s of sections) {
     perSection.set(s.id, {
       sectionId: s.id,
+      ...(s.code ? { code: s.code } : {}),
       title: s.title,
       questionCount: s.questionCount,
       correct: 0,
@@ -175,4 +192,29 @@ export function scoreAttempt(
     sectionScores,
     perQuestion,
   };
+}
+
+/**
+ * Bölüm içi alt test kırılımı (Faz 3): soru numarası alt testin aralığındaysa o
+ * alt teste sayılır. Anahtarda olmayan (iptal) soru `perQuestion`'da olmadığı
+ * için doğal olarak dışarıda kalır.
+ */
+export function scoreSubtests(
+  perQuestion: ScoringResult["perQuestion"],
+  subtestsBySection: ReadonlyMap<string, ReadonlyArray<{ code: string; title: string; questionStart: number; questionEnd: number }>>,
+  penalty: number = DEFAULT_PENALTY,
+): Map<string, SubtestScore[]> {
+  const result = new Map<string, SubtestScore[]>();
+  for (const [sectionId, subtests] of subtestsBySection) {
+    if (!subtests.length) continue;
+    const rows = subtests.map((subtest) => {
+      const inRange = perQuestion.filter((row) => row.sectionId === sectionId && row.questionNumber >= subtest.questionStart && row.questionNumber <= subtest.questionEnd);
+      const correct = inRange.filter((row) => row.isCorrect).length;
+      const blank = inRange.filter((row) => row.isBlank).length;
+      const wrong = inRange.length - correct - blank;
+      return { code: subtest.code, title: subtest.title, questionCount: inRange.length, correct, wrong, blank, net: round2(correct - wrong / penalty) };
+    });
+    result.set(sectionId, rows);
+  }
+  return result;
 }

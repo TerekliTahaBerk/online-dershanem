@@ -3,7 +3,8 @@ import "server-only";
 import { createHash } from "node:crypto";
 import type { OdkAnswerOption, OdkQuestionResult } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { aggregateOutcomeScores, scoreAttempt } from "@/lib/odk/scoring";
+import { aggregateOutcomeScores, scoreAttempt, scoreSubtests } from "@/lib/odk/scoring";
+import { readTemplateSnapshot } from "@/lib/odk/exam-templates";
 import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 import { diffAnswerKey, type AnswerKeyEntry } from "@/lib/odk/answer-key-revision";
 
@@ -61,11 +62,21 @@ function answerKeyHashOf(questions: ScoringQuestion[]) {
 function computeAttemptScore(exam: LoadedExam, questions: ScoringQuestion[], attempt: LoadedAttempt) {
   const policy = exam.currentVersion!.scoringPolicy;
   const activeIds = new Set(questions.map((question) => question.id));
-  const sections = exam.currentVersion!.sections.map((section) => ({ id: section.id, title: section.title, questionCount: section.questions.filter((question) => activeIds.has(question.id)).length }));
+  const sections = exam.currentVersion!.sections.map((section) => ({ id: section.id, code: section.code, title: section.title, questionCount: section.questions.filter((question) => activeIds.has(question.id)).length }));
   const official = questions.map((question) => ({ sectionId: question.sectionId, questionNumber: question.questionNumber, correctOption: question.correctOption! }));
   const questionById = new Map(questions.map((question) => [question.id, question]));
   const student = attempt.answers.flatMap((answer) => { const question = questionById.get(answer.questionId); return question && answer.selectedOption ? [{ sectionId: question.sectionId, questionNumber: question.questionNumber, selectedOption: answer.selectedOption }] : []; });
   const result = scoreAttempt(sections, official, student, Number(policy.wrongPenalty), { minimumNetIsZero: policy.minimumNetIsZero });
+  // Alt test kırılımı yalnız sürümün kendi şablon görüntüsünden (Faz 3); eski denemeler yeniden yorumlanmaz.
+  const snapshot = readTemplateSnapshot(exam.currentVersion!.settings);
+  if (snapshot) {
+    const subtestsBySection = new Map(exam.currentVersion!.sections.map((section) => [section.id, snapshot.sections.find((item) => item.code === section.code)?.subtests ?? []]));
+    const subtests = scoreSubtests(result.perQuestion, subtestsBySection, Number(policy.wrongPenalty));
+    for (const row of result.sectionScores) {
+      const rows = subtests.get(row.sectionId);
+      if (rows) row.subtests = rows;
+    }
+  }
   const selectedByQuestion = new Map(attempt.answers.map((answer) => [answer.questionId, answer.selectedOption]));
   const questionResults = questions.map((question) => {
     const selected = selectedByQuestion.get(question.id) || null;

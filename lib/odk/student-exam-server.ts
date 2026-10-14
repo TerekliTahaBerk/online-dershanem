@@ -6,6 +6,7 @@ import { getActiveOdkExamGrant, listActiveOdkContracts } from "@/lib/odk/product
 import { contractAnswerKeyAvailable, contractExamSchedule, contractResultAvailable } from "@/lib/odk/product-contract";
 import { buildOutcomeTrends, buildWeakOutcomeSignals } from "@/lib/odk/reporting";
 import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
+import { normalizeSectionBreakdown } from "@/lib/odk/student-result-view";
 
 export const studentExamInclude = {
   examFamilyRef: { select: { code: true } },
@@ -113,6 +114,8 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
         where: { studentUserId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, score: { is: { publicationStatus: "PUBLISHED" } } }, orderBy: { attemptNumber: "desc" }, take: 1,
         select: {
           id: true, submittedAt: true, startedAt: true,
+          // Eski puan satırlarında eksik bölüm kodunu tamamlamak için (P0-11).
+          version: { select: { sections: { select: { id: true, code: true } } } },
           timings: { select: { questionId: true, activeDurationMs: true } },
           // "İşaretlediğim" filtresi: öğrencinin kendi işaretleri (yalnız soru kimliği ve bayrak).
           answers: { where: { isMarked: true }, select: { questionId: true } },
@@ -225,6 +228,6 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
     timeAnalysis,
     comparison,
     coachSuggestions,
-    sectionBreakdown: Array.isArray(attempt.score.sectionBreakdown) ? attempt.score.sectionBreakdown : [],
+    sectionBreakdown: normalizeSectionBreakdown(attempt.score.sectionBreakdown, new Map(attempt.version.sections.map((section) => [section.id, section.code]))),
   };
 }

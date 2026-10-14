@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, FileText } from "lucide-react";
 import { requireProductRole } from "@/lib/auth/guards";
 import { loadOdkStudentResult } from "@/lib/odk/student-result-server";
-import { classifyOutcome, inTrack as inTrackSection, previousComparableDelta, resultTrackView } from "@/lib/odk/student-result-view";
+import { classifyOutcome, inTrack as inTrackSection, previousComparableDelta, resultTrackView, trackTotals, type ResultSectionRow } from "@/lib/odk/student-result-view";
 import { buildOutcomeDeterministicReason } from "@/lib/panel/dino-explanations";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { PanelShell } from "@/components/panel/panel-shell";
@@ -45,7 +45,6 @@ function recommendationActionKind(
   return "OPEN_ANSWER_KEY";
 }
 
-type SectionRow = { code?: string; title?: string; net?: number; correct?: number; wrong?: number; blank?: number };
 
 const NET = new Intl.NumberFormat("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const DAY = new Intl.DateTimeFormat("tr-TR", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Istanbul" });
@@ -122,8 +121,11 @@ export default async function OdkStudentResultPage({
   const trackLabel = trackView.label;
   const trackMode: "benim" | "tumu" = trackCodes && query.alan !== "tumu" ? "benim" : "tumu";
   const inTrack = (code: string | undefined) => trackMode === "tumu" || inTrackSection(trackView, code);
-  const sections = (Array.isArray(sectionBreakdown) ? (sectionBreakdown as SectionRow[]) : []).filter((section) => inTrack(section.code));
-  const trackNet = trackMode === "benim" ? sections.reduce((sum, section) => sum + Number(section.net ?? 0), 0) : null;
+  const allSections: ResultSectionRow[] = sectionBreakdown;
+  const sections = allSections.filter((section) => inTrack(section.code));
+  // Alan görünümünde D/Y/B yalnız alanın bölümlerinden: çözülmesi beklenmeyen bölümün boşları "boş" sayılmaz.
+  const totals = trackMode === "benim" ? trackTotals(allSections, trackView) : null;
+  const trackNet = totals ? totals.net : null;
 
   const markedIds = new Set(data.attempt.answers.map((answer) => answer.questionId));
   const questionFilter = query.soru === "yanlis" || query.soru === "bos" || query.soru === "isaretli" ? query.soru : "tumu";
@@ -194,9 +196,9 @@ export default async function OdkStudentResultPage({
             <p className="font-mono text-[32px] font-semibold leading-none tabular-nums text-pn-text">{NET.format(Number(score.totalNet))}</p>
           </div>
           {[
-            ["Doğru", String(score.correctCount)],
-            ["Yanlış", String(score.wrongCount)],
-            ["Boş", String(score.blankCount)],
+            ["Doğru", String(totals ? totals.correct : score.correctCount)],
+            ["Yanlış", String(totals ? totals.wrong : score.wrongCount)],
+            ["Boş", String(totals ? totals.blank : score.blankCount)],
             ["Süre", formatDuration(score.activeDurationMs)],
             ...(delta !== null ? [["Önceki denemeye göre", `${delta >= 0 ? "+" : "−"}${NET.format(Math.abs(delta))}`]] : []),
             ...(trackNet !== null && trackLabel ? [[`${trackLabel} ham neti`, NET.format(trackNet)]] : []),
@@ -218,14 +220,16 @@ export default async function OdkStudentResultPage({
                 { id: "tumu", label: "Tüm bölümler", href: withQuery({ alan: "tumu" }) },
               ]}
             />
-            <p className="mt-2 text-[12.5px] text-pn-text-muted">Ham net gösterilir; puan tahmini değildir.</p>
+            <p className="mt-2 text-[12.5px] text-pn-text-muted">
+              Ham net gösterilir; puan tahmini değildir.{trackMode === "benim" && trackLabel ? ` Doğru/yanlış/boş yalnız ${trackLabel} alanının bölümlerinden sayılır.` : ""}
+            </p>
           </div>
         ) : null}
 
         {sections.length ? (
           <Section id="dersler" title="Dersler" divider={!trackCodes}>
             <PanelTable caption="Ders bazlı sonuç" columns={["Ders", "D", "Y", "B", "Net"]}>
-              {sections.map((section, index) => (
+              {sections.flatMap((section, index) => [
                 <PanelTableRow key={section.code || index}>
                   <PanelTableCell>{section.title || section.code || `Bölüm ${index + 1}`}</PanelTableCell>
                   <PanelTableCell><span className="tabular-nums">{section.correct ?? "—"}</span></PanelTableCell>
@@ -234,8 +238,24 @@ export default async function OdkStudentResultPage({
                   <PanelTableCell>
                     <span className="font-mono font-semibold tabular-nums">{section.net == null ? "—" : NET.format(Number(section.net))}</span>
                   </PanelTableCell>
-                </PanelTableRow>
-              ))}
+                </PanelTableRow>,
+                // Alt testler (Faz 3): bölüm içi kırılım; alt test neti bilgi amaçlı ham nettir.
+                ...(section.subtests ?? []).map((subtest) => (
+                  <PanelTableRow key={`${section.code || index}:${subtest.code}`}>
+                    <PanelTableCell>
+                      <span className="pl-4 text-[13px] text-pn-text-muted">
+                        <span aria-hidden="true">↳ </span>
+                        {subtest.title}
+                        <span className="sr-only"> ({section.title} alt testi)</span>
+                      </span>
+                    </PanelTableCell>
+                    <PanelTableCell><span className="tabular-nums text-pn-text-muted">{subtest.correct}</span></PanelTableCell>
+                    <PanelTableCell><span className="tabular-nums text-pn-text-muted">{subtest.wrong}</span></PanelTableCell>
+                    <PanelTableCell><span className="tabular-nums text-pn-text-muted">{subtest.blank}</span></PanelTableCell>
+                    <PanelTableCell><span className="font-mono tabular-nums text-pn-text-muted">{NET.format(subtest.net)}</span></PanelTableCell>
+                  </PanelTableRow>
+                )),
+              ])}
             </PanelTable>
           </Section>
         ) : null}
