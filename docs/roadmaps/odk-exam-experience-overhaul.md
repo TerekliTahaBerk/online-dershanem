@@ -1,6 +1,6 @@
 # ODK Deneme Deneyimi — Production-Grade Revizyon Yol Haritası
 
-Durum: **Faz 1 (denetim) · Faz 2 (P0 doğruluk) · Faz 3 (şablon/alt test) · Faz 4 (yönetici deneyimi) tamam**
+Durum: **Faz 1 (denetim) · Faz 2 (P0 doğruluk) · Faz 3 (şablon/alt test) · Faz 4 (yönetici deneyimi) · Faz 5 (öğrenci çözücü) tamam**
 Kapsam: Deneme Ligi (ODK) çevrim içi sınav motoru — yönetici oluşturma, cevap
 anahtarı/kazanım, öğrenci çözücü, puanlama, revizyon, yayın ve raporlama.
 
@@ -244,7 +244,7 @@ gereksinimi veya ciddi UX açığı; **P2** = iyileştirme.
 | 2 | P0-6/7/8 | Runner: kalıcı bekleyen cevap, conflict rebase, blur | ✅ (bu dal) |
 | 3 | P1-4/7, P0-11 | Şablon sürümü/modu/geçerliliği, anlık görüntü, alt testler, alan bazlı D/Y/B | ✅ `ca85472`, `ef3ffe8` |
 | 4 | P1-6/10, P2-2 | Soru içerik revizyonu + çakışma UI, tablo/CSV/dosya import, optik giriş, bölüm sekmesi/arama/toplu işlem | ✅ `3cc7dac`, `e612b79`, `0aaa011` |
-| 5 | P1-1/2/3/13 | Oturum kitapçığı, PDF sayfa eşleme, gerçek önizleme | sonraki |
+| 5 | P1-1/2/3/13 | Oturum kitapçığı (migration 0116), PDF sayfa navigasyonu, gerçek çözücü önizlemesi, iki sekme | ✅ `6dcacfb`, `a8ce5b9`, `4031d81` |
 | 6 | P1-5/8/9, P2-3 | Rapor, attempt sürümüne bağlı puanlama, çoklu kitapçık | sonraki |
 | 7 | — | E2E (mobil + masaüstü), erişilebilirlik, performans | sonraki |
 
@@ -460,3 +460,76 @@ bu sekmeler güçlendirildi. Altı adımlı akışın eşlemesi: 1 tür/şablon 
 
 **Sonraki faz:** Faz 5 — öğrenci çözücü güvenilirliği: oturum bazlı kitapçık erişimi (P1-1),
 soru → PDF sayfası navigasyonu (P1-2), gerçek çözücü önizlemesi (P1-3), iki sekme uyarısı (P1-13).
+
+### Faz 5 — Öğrenci çözücü güvenilirliği (2026-10-14)
+
+**Bulgu / gereksinim (doğrulandı)**
+- P1-1: `OdkExamFile @@unique([versionId, type])` sürüm başına tek kitapçığa izin veriyordu;
+  öğrenci kitapçık ucu oturumdan bağımsız `take: 1` ile PDF veriyordu → LGS Sözel açıkken
+  Sayısal sorular, ara sırasında da tüm kitapçık indirilebiliyordu.
+- P1-2: çözücü iframe adresi sabitti; `bookletPage` öğrenciye hiç gönderilmiyordu.
+- P1-3: yönetici "önizlemesi" yalnız metin özetiydi; gerçek çözücü görülemiyordu.
+- P1-13: aynı deneme iki sekmede açıldığında uyarı yoktu.
+
+**Dokunulan dosyalar**
+- Veri: `prisma/schema/odk.prisma`, `prisma/migrations/0116_odk_session_booklets/migration.sql`,
+  `docs/data-classification-inventory.md` (yeniden üretildi)
+- Kitapçık: `lib/odk/booklet-access.ts` (saf karar + hazırlık kuralı), `lib/odk/student-booklet-server.ts`,
+  `app/api/odk/student/exams/[id]/booklet/route.ts`, `app/api/odk/admin/exams/[id]/files/route.ts`,
+  `lib/odk/exam-domain.ts`, `lib/odk/admin-exam-server.ts`, `components/odk/admin-exam-editor.tsx`
+- Çözücü: `lib/odk/runner-booklet.ts`, `lib/odk/runner-preview.ts`, `components/odk/student-exam-runner.tsx`,
+  `app/panel/odk/ogrenci/denemeler/[id]/coz/page.tsx`, `lib/odk/student-exam-server.ts`
+- Önizleme: `app/panel/odk/yonetim/sinavlar/[id]/onizleme/cozucu/page.tsx`, çalışma alanı önizleme sekmesi,
+  `docs/mobile/parity-matrix.md` (K09)
+
+**Migration 0116 ve geri alma**
+- Eklemeli: `session_key TEXT NOT NULL DEFAULT ''` ("" = tüm deneme); tekillik
+  `(version_id, type)` → `(version_id, type, session_key)`. Mevcut satırlar `''` olur,
+  davranış aynı kalır. NULL yerine `''` seçildi: Postgres'te NULL'lı unique çoklu satıra
+  izin verirdi.
+- Geri alma adımları migration dosyasının başında (oturum kitapçıklarını raporla → sil →
+  eski indeksi geri kur → kolonu düşür). Üretimde otomatik çalıştırılmadı.
+- `prisma migrate diff` (DB ↔ şema) boş; temiz kurulum (`db:bootstrap:fresh` + `migrate status`
+  + `db:verify:fresh` + tekrar kurulum) yerelde geçti.
+
+**Neden güvenli**
+- Oturum planı olmayan denemelerde kitapçık kararı eskisiyle aynı. Oturumlu denemede yalnız
+  birleşik kitapçık varsa açık oturumda o verilir (eski içerik çalışır) ve hazırlık uyarısı çıkar;
+  oturum kitapçıkları yüklenmişse eksik oturum birleşik dosyaya düşmez.
+- Önizleme hiçbir öğrenci ucunu çağırmaz (E2E istek dinleyicisiyle doğrulandı), attempt
+  yaratmaz; `odk:exam:edit` ister ve PDF'i zaten aynı izni isteyen yönetici dosya ucundan alır.
+- İki sekme kanalı yalnız aynı tarayıcıdaki aynı attempt arasında; sunucu kuralı değişmedi,
+  uzlaşma Faz 2'deki revizyon mantığıyla.
+- Mobil öğrenci ayrıntı yanıtı alanları açıkça eşlediği için `bookletPage` sözleşmeye sızmaz.
+
+**Eklenen testler**
+- Unit: `booklet-access.test.ts` (Sözel/Sayısal/ara/bitiş, eski birleşik kitapçık, hazırlık kuralı,
+  `validateVersionReadiness` entegrasyonu), `runner-booklet.test.ts`, `runner-preview.test.ts`.
+- Integration: `tests/integration/odk-session-booklets.integration.ts` — gerçek zaman çizelgesiyle
+  Sözel (10. dk), ara (90. dk), Sayısal (130. dk) anlarında doğru dosya / 403; başka öğrenciye yok;
+  eksik oturum kitapçığı hazırlık hatası.
+- E2E: `odk-exam-flow.spec.ts` (soru → `#page=N`, "Kitapçıkta sayfa N", iki sekme uyarısı, diğer
+  sekmede kaydedilen cevabın yansıması, sekme kapanınca uyarının kalkması);
+  `odk-admin-runner-preview.spec.ts` (Sözel → Oturumu bitir → Sayısal → teslim; öğrenci isteği
+  ve attempt yok; axe).
+
+**Komutlar ve gerçek sonuçlar**
+- typecheck, `npx eslint .` → temiz · `npm run test:unit` → 1092/1092
+- `tests/integration/odk-*.integration.ts` → 24/24
+- `lint:api-validation`, `lint:mobile-parity` (107 rota), `lint:hygiene`, `data:pii-inventory:check` → temiz
+- `next build` + E2E: yönetici editörü + çözücü önizlemesi + ODK kalite + mobil ODK ×4 → 15/15;
+  ODK akışı + LGS oturumları + runner görsel → 11/11 (her grup taze seed)
+
+**Kalan riskler**
+- Headless Chromium'da PDF görüntüleyicisi yok: `#page=N` adresi E2E'de doğrulanıyor, ancak
+  görüntüleyicinin sayfayı gerçekten açtığı otomatik testle kanıtlanamadı (manuel kontrol önerilir;
+  Safari/iOS'ta iframe içi PDF parçası desteği sınırlı, "PDF ayrı sekmede aç" sayfayla açılır).
+- Oturum kitapçığı kuralı yeni yüklemelerde etkili; mevcut LGS denemelerinin birleşik PDF'i
+  yeniden yüklenene kadar uyarı ile çalışır.
+- Mobil parite matrisinde K09, onaylı E1 istisnasına (sınav çözme web'de) bağlandı; ürün
+  sahibinin onayı gerekir.
+- Erişilebilirlik / ek süre (P1-12) hâlâ açık.
+
+**Sonraki faz:** Faz 6 — sonuç, rescore ve yayın: revizyon yönetici arayüzü, puanlama ve
+çözücünün attempt sürümüne bağlanması (P1-8), çoklu kitapçık eşlemesi (P1-9), ham net /
+tahmini puan ayrımı ve veri güvenilirliği (P2-3), öğretmen/veli raporlarında alt testler.
