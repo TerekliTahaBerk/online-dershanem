@@ -7,8 +7,19 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+/**
+ * Otomatik puanlama zaman bütçesi: fonksiyon 60 sn'de öldürülürse heartbeat
+ * başarı kaydı yazılamıyor, iş "gecikmiş" görünüyor ve kalan sınavlar hiç
+ * puanlanmıyordu. Bütçe dolunca kalan sınavlar sonraki çalışmaya (5 dk) kalır.
+ * Puanlaması başarısız olan sınav 1 saat beklenir: her 5 dakikada aynı hatayı
+ * tekrarlayıp kuyruğun önünü tıkamaz; hata audit'e ve loga yazılır.
+ */
+const AUTO_SCORE_BUDGET_MS = 35_000;
+const AUTO_SCORE_FAILURE_BACKOFF_MS = 60 * 60_000;
+
 export async function GET(request: Request) {
   return runJob("odk-exam-lifecycle", request, async () => {
+    const startedAt = Date.now();
     const now = new Date();
     const [liveExams, endedExams, expiredAttempts] = await Promise.all([
       prisma.odkExam.findMany({ where: { status: "SCHEDULED", startsAt: { lte: now }, endsAt: { gt: now } }, select: { id: true }, take: 500 }),
@@ -23,15 +34,34 @@ export async function GET(request: Request) {
 
     // Kapandıktan sonra otomatik puanlama (sonuç yayınlamaz — publication ayrı adım).
     let autoScored = 0;
+    let autoScoreFailed = 0;
+    let autoScoreDeferred = 0;
+    const recentFailures = await prisma.auditLog.findMany({
+      where: { action: "odk.auto_score_failed", createdAt: { gt: new Date(now.getTime() - AUTO_SCORE_FAILURE_BACKOFF_MS) } },
+      select: { entityId: true },
+      take: 500,
+    });
     const scoreable = await prisma.odkExam.findMany({
-      where: { status: "ENDED", endsAt: { lte: now } },
+      where: { status: "ENDED", endsAt: { lte: now }, id: { notIn: [...new Set(recentFailures.map((row) => row.entityId))] } },
+      orderBy: { endsAt: "asc" },
       select: { id: true, createdById: true },
       take: 20,
     });
+    const { scoreOdkExam } = await import("@/lib/odk/scoring-service");
     for (const exam of scoreable) {
-      const { scoreOdkExam } = await import("@/lib/odk/scoring-service");
-      const scored = await scoreOdkExam(exam.id, exam.createdById);
-      if (scored.ok) autoScored += 1;
+      if (Date.now() - startedAt > AUTO_SCORE_BUDGET_MS) {
+        autoScoreDeferred += 1;
+        continue;
+      }
+      const scored = await scoreOdkExam(exam.id, exam.createdById).catch((error: unknown) => ({ ok: false as const, error: error instanceof Error ? error.name : "UNKNOWN" }));
+      if (scored.ok) {
+        autoScored += 1;
+        continue;
+      }
+      autoScoreFailed += 1;
+      const reason = "error" in scored ? String(scored.error).slice(0, 300) : "UNKNOWN";
+      log.warn("odk.auto_score_failed", { examId: exam.id, reason });
+      await logAuditMany([{ actorType: "SYSTEM", entityType: "OdkExam", entityId: exam.id, action: "odk.auto_score_failed", summary: `Otomatik puanlama başarısız; 1 saat sonra yeniden denenecek: ${reason}` }]);
     }
 
     await logAuditMany([
@@ -58,8 +88,8 @@ export async function GET(request: Request) {
       return { enabled: true, candidates: 0, created: 0 };
     });
 
-    const result = { live: liveExams.length, ended: endedExams.length, autoSubmitted: expiredAttempts.length, autoScored, purgedIntegrityEvents: purgedEvents.count, studentNotifications: studentNotifications.created };
+    const result = { live: liveExams.length, ended: endedExams.length, autoSubmitted: expiredAttempts.length, autoScored, autoScoreFailed, autoScoreDeferred, purgedIntegrityEvents: purgedEvents.count, studentNotifications: studentNotifications.created };
     log.info("odk.lifecycle.completed", result);
     return result;
-  }, { metrics: (result) => ({ processedCount: result.live + result.ended + result.autoSubmitted + result.autoScored + result.purgedIntegrityEvents, details: { odkStudentNotifications: result.studentNotifications } }) });
+  }, { metrics: (result) => ({ processedCount: result.live + result.ended + result.autoSubmitted + result.autoScored + result.purgedIntegrityEvents, failedCount: result.autoScoreFailed, details: { odkStudentNotifications: result.studentNotifications, odkAutoScoreDeferred: result.autoScoreDeferred } }) });
 }
