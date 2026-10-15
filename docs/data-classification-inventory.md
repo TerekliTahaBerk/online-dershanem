@@ -12,9 +12,9 @@ Sütunlar:
 
 ## Özet
 
-- Taranan model: 156
-- Taranan scalar/enum alan: 1801
-- Olası kişisel veri alanı: 296
+- Taranan model: 157
+- Taranan scalar/enum alan: 1809
+- Olası kişisel veri alanı: 297
 - Çocuk verisi `evet`: 88; `olası`: 76
 
 | Kategori | Alan sayısı |
@@ -24,7 +24,7 @@ Sütunlar:
 | iletişim | 18 |
 | kimlik | 61 |
 | kimlik doğrulama sırrı | 10 |
-| serbest metin | 87 |
+| serbest metin | 88 |
 | yapılandırılmamış (Json) | 51 |
 
 ## Alanlar
@@ -181,6 +181,7 @@ Sütunlar:
 | OdkAttemptScore | blankCount | akademik | orta | olası (tüm roller) | yok (DB'de düz) |
 | OdkAttemptScore | totalNet | akademik | orta | olası (tüm roller) | yok (DB'de düz) |
 | OdkAttemptScore | sectionBreakdown | yapılandırılmamış (Json) | orta | olası (tüm roller) | yok (DB'de düz) |
+| OdkBookletQuestionOrder | bookletQuestionNumber | serbest metin | orta | hayır | yok (DB'de düz) |
 | OdkEntitlement | contractSnapshot | yapılandırılmamış (Json) | orta | evet | yok (DB'de düz) |
 | OdkExam | description | serbest metin | orta | olası (tüm roller) | yok (DB'de düz) |
 | OdkExam | settings | yapılandırılmamış (Json) | orta | olası (tüm roller) | yok (DB'de düz) |

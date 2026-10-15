@@ -9,14 +9,21 @@
  *   oturumda o verilir; hazırlık kontrolü bunun için uyarı üretir.
  */
 
-export type BookletFileRef = { id: string; sessionKey: string };
+export type BookletFileRef = { id: string; sessionKey: string; bookletCode?: string };
 export type BookletTimeline = { phase: "SESSION" | "BREAK" | "FINISHED"; currentKey: string | null } | null;
 
 export type BookletDecision =
   | { ok: true; fileId: string; scope: "EXAM" | "SESSION" }
   | { ok: false; code: "SESSION_BREAK" | "SESSION_FINISHED" | "BOOKLET_MISSING"; status: 403 | 404 };
 
-export function resolveBookletFile(files: readonly BookletFileRef[], timeline: BookletTimeline): BookletDecision {
+/**
+ * Çoklu kitapçıkta öğrenci yalnız KENDİ kitapçık türünün dosyalarını görür.
+ * A (kanonik) türden bağımsız ("") dosyaya düşebilir; B–E düşemez (soru sırası
+ * farklıdır, yanlış PDF yanlış cevaba yol açar).
+ */
+export function resolveBookletFile(allFiles: readonly BookletFileRef[], timeline: BookletTimeline, bookletCode = "A"): BookletDecision {
+  const typed = allFiles.filter((file) => (file.bookletCode ?? "") === bookletCode);
+  const files = typed.length || bookletCode !== "A" ? typed : allFiles.filter((file) => (file.bookletCode ?? "") === "");
   const whole = files.find((file) => file.sessionKey === "");
   if (!timeline) return whole ? { ok: true, fileId: whole.id, scope: "EXAM" } : { ok: false, code: "BOOKLET_MISSING", status: 404 };
   if (timeline.phase === "BREAK") return { ok: false, code: "SESSION_BREAK", status: 403 };
@@ -41,6 +48,23 @@ export function sessionBookletIssues(sessionKeys: readonly string[], bookletSess
     for (const key of sessionKeys) if (!present.has(key)) issues.push({ level: "error", code: "SESSION_BOOKLET_MISSING", message: `${key} oturumunun kitapçığı yüklenmedi.` });
   } else if (present.has("")) {
     issues.push({ level: "warning", code: "SESSION_BOOKLET_RECOMMENDED", message: "Tek birleşik kitapçık var: öğrenci açık oturumda diğer oturumun sorularını da görebilir. Oturum başına kitapçık yükleyin." });
+  }
+  return issues;
+}
+
+/** Hazırlık: çoklu kitapçıkta her kitapçık türünün (oturumlu sınavda her oturumun) PDF'i yüklü mü. */
+export function bookletFileIssues(bookletCodes: readonly string[], sessionKeys: readonly string[], files: ReadonlyArray<{ sessionKey: string; bookletCode: string }>): BookletReadinessIssue[] {
+  if (bookletCodes.length <= 1) return [];
+  const issues: BookletReadinessIssue[] = [];
+  for (const code of bookletCodes) {
+    const own = files.filter((file) => file.bookletCode === code || (code === "A" && file.bookletCode === ""));
+    if (!own.length) {
+      issues.push({ level: "error", code: "BOOKLET_TYPE_PDF_MISSING", message: `${code} kitapçığının PDF'i yüklenmedi.` });
+      continue;
+    }
+    if (sessionKeys.length && !own.some((file) => file.sessionKey === "")) {
+      for (const key of sessionKeys) if (!own.some((file) => file.sessionKey === key)) issues.push({ level: "error", code: "BOOKLET_TYPE_PDF_MISSING", message: `${code} kitapçığının ${key} oturumu PDF'i yüklenmedi.` });
+    }
   }
   return issues;
 }

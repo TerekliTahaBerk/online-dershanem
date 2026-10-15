@@ -45,3 +45,24 @@ test("hazırlık kontrolü oturum kitapçığı kuralını uygular (LGS tam dene
   assert.deepEqual(codes([""]), ["warning:SESSION_BOOKLET_RECOMMENDED"]);
   assert.deepEqual(codes(["SOZEL", "SAYISAL"]), []);
 });
+
+test("çoklu kitapçık: öğrenci yalnız kendi kitapçık türünün PDF'ini alır; A ortak dosyaya düşebilir, B düşemez", () => {
+  const files = [
+    { id: "a-sozel", sessionKey: "SOZEL", bookletCode: "A" },
+    { id: "b-sozel", sessionKey: "SOZEL", bookletCode: "B" },
+    { id: "ortak", sessionKey: "", bookletCode: "" },
+  ];
+  const sozel = { phase: "SESSION" as const, currentKey: "SOZEL" };
+  assert.deepEqual(resolveBookletFile(files, sozel, "B"), { ok: true, fileId: "b-sozel", scope: "SESSION" });
+  assert.deepEqual(resolveBookletFile(files, sozel, "A"), { ok: true, fileId: "a-sozel", scope: "SESSION" });
+  assert.deepEqual(resolveBookletFile([{ id: "ortak", sessionKey: "", bookletCode: "" }], null, "A"), { ok: true, fileId: "ortak", scope: "EXAM" });
+  assert.deepEqual(resolveBookletFile([{ id: "ortak", sessionKey: "", bookletCode: "" }], null, "B"), { ok: false, code: "BOOKLET_MISSING", status: 404 });
+});
+
+test("hazırlık: çoklu kitapçıkta her kitapçığın (ve oturumun) PDF'i gerekir", async () => {
+  const { bookletFileIssues } = await import("./booklet-access");
+  assert.deepEqual(bookletFileIssues(["A"], [], [{ sessionKey: "", bookletCode: "" }]), []);
+  assert.deepEqual(bookletFileIssues(["A", "B"], [], [{ sessionKey: "", bookletCode: "" }, { sessionKey: "", bookletCode: "B" }]), []);
+  assert.deepEqual(bookletFileIssues(["A", "B"], [], [{ sessionKey: "", bookletCode: "" }]).map((issue) => issue.code), ["BOOKLET_TYPE_PDF_MISSING"]);
+  assert.deepEqual(bookletFileIssues(["A", "B"], ["SOZEL", "SAYISAL"], [{ sessionKey: "SOZEL", bookletCode: "A" }, { sessionKey: "SAYISAL", bookletCode: "A" }, { sessionKey: "SOZEL", bookletCode: "B" }]).map((issue) => issue.message), ["B kitapçığının SAYISAL oturumu PDF'i yüklenmedi."]);
+});
