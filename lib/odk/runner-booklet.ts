@@ -17,3 +17,18 @@ export function bookletSrc(base: string, page: number | null | undefined, nonce 
 export function shouldFollowPage(previousPage: number | null, nextPage: number | null | undefined): boolean {
   return Boolean(nextPage) && nextPage !== previousPage;
 }
+
+/** Ekran okuyucuya duyurulan kalan süre eşikleri (dakika), büyükten küçüğe (Faz 7). */
+export const TIME_WARNING_MINUTES = [10, 5, 1] as const;
+
+/**
+ * Kalan süre bir eşiğin altına indiyse ve o eşik henüz duyurulmadıysa
+ * duyurulacak en küçük eşiği döner. Sayfa geç açıldıysa (ör. 3 dk kala)
+ * geçmiş büyük eşikler tek tek okunmaz, yalnız geçerli olan okunur.
+ */
+export function timeWarningToAnnounce(remainingMs: number, announced: ReadonlySet<number>): number | null {
+  const crossed = TIME_WARNING_MINUTES.filter((minutes) => remainingMs > 0 && remainingMs <= minutes * 60_000);
+  if (!crossed.length) return null;
+  const smallest = crossed[crossed.length - 1];
+  return announced.has(smallest) ? null : smallest;
+}

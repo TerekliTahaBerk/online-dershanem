@@ -237,7 +237,8 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
     await page.getByRole("button", { name: /^Soru 1,/ }).click();
     await page.getByRole("button", { name: "E", exact: true }).click();
     await expect.poll(async () => (await prisma.odkAttemptAnswer.findUniqueOrThrow({ where: { attemptId_questionId: { attemptId, questionId: question1 } } })).selectedOption, { timeout: 15_000 }).toBe("E");
-    await expect(page.locator("header").getByText("Tüm cevaplar kaydedildi")).toBeVisible();
+    // Masaüstünde başlıkta, mobilde cevap panelinde gösterilir; görünen kopya yeterli.
+    await expect(page.getByText("Tüm cevaplar kaydedildi").filter({ visible: true }).first()).toBeVisible();
 
     page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: "Denemeyi teslim et" }).click();
@@ -261,6 +262,8 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
       await expect(booklet).toHaveAttribute("src", /&page=5$/);
       await page.getByRole("button", { name: "Kitapçıkta sayfa 5" }).click();
       await expect(booklet).toHaveAttribute("src", /&page=5&odk=1$/);
+      // Mobilde düğme kitapçık sekmesini açar; cevaplara geri dön.
+      if (await page.getByRole("button", { name: /Cevaplar/ }).isVisible()) await page.getByRole("button", { name: /Cevaplar/ }).click();
 
       const second = await page.context().newPage();
       await mockBooklet(second);
@@ -279,6 +282,31 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
     } finally {
       await prisma.odkExamQuestion.updateMany({ where: { id: { in: [question1, question2] } }, data: { bookletPage: null } });
     }
+  });
+
+  // Faz 7: yalnız klavyeyle cevaplama, işaretleme ve gezinme; odak görünür; kalan süre
+  // eşiği ekran okuyucuya duyurulur (sayaç kendisi her saniye okunmaz).
+  test("klavyeyle çözüm, görünür odak ve kalan süre duyurusu", async ({ page }) => {
+    test.setTimeout(60_000);
+    await resetAttempt(new Date(Date.now() + 4.5 * 60_000));
+    await login(page);
+    await openRunnerFromPanel(page);
+    await expect(page.getByTestId("sure-uyarisi")).toHaveText("Denemenin bitmesine son 5 dakika.");
+    await expect(page.getByLabel(/Kalan süre/)).toHaveAttribute("aria-live", "off");
+
+    const optionB = page.getByRole("button", { name: "B", exact: true });
+    await optionB.focus();
+    await page.keyboard.press("Enter");
+    await expect(optionB).toHaveAttribute("aria-pressed", "true");
+    const outline = await page.evaluate(() => getComputedStyle(document.activeElement!).outlineStyle);
+    expect(outline).not.toBe("none");
+    await page.getByRole("button", { name: "Sonra bakmak için işaretle" }).focus();
+    await page.keyboard.press("Space");
+    await expect(page.getByRole("button", { name: "İşareti kaldır" })).toBeVisible();
+    await page.getByRole("button", { name: /Sonraki/ }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("heading", { name: "Soru 2" })).toBeVisible();
+    await expect.poll(async () => (await prisma.odkAttemptAnswer.findUnique({ where: { attemptId_questionId: { attemptId, questionId: question1 } } }))?.isMarked, { timeout: 10_000 }).toBe(true);
   });
 
   test("sunucu saati tarayıcı saati ileri olsa da süre dolunca otomatik teslim eder", async ({ page }) => {

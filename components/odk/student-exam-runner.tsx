@@ -20,7 +20,7 @@ import {
   restorePendingAnswers,
   writePendingAnswers,
 } from "@/lib/odk/runner-answer-sync";
-import { bookletSrc, shouldFollowPage } from "@/lib/odk/runner-booklet";
+import { bookletSrc, shouldFollowPage, timeWarningToAnnounce } from "@/lib/odk/runner-booklet";
 
 type Option = "A" | "B" | "C" | "D" | "E";
 type Answer = {
@@ -112,6 +112,9 @@ export function StudentExamRunner({
     () => new Date(serverNow).getTime() - Date.now(),
     [serverNow],
   );
+  // Kalan süre eşikleri ekran okuyucuya bir kez duyurulur (Faz 7; sayaç kendisi aria-live="off").
+  const [timeAnnouncement, setTimeAnnouncement] = useState("");
+  const announcedWarnings = useRef<Set<number>>(new Set());
   const [remaining, setRemaining] = useState(
     () => new Date(timerDeadline).getTime() - (Date.now() + clockOffset),
   );
@@ -727,6 +730,13 @@ export function StudentExamRunner({
     setBookletView((view) => (shouldFollowPage(view.page, currentPage) ? { page: currentPage, nonce: view.nonce } : view));
   }, [currentPage]);
 
+  useEffect(() => {
+    const minutes = timeWarningToAnnounce(remaining, announcedWarnings.current);
+    if (minutes === null) return;
+    announcedWarnings.current.add(minutes);
+    setTimeAnnouncement(`${minutes === 1 ? "Son 1 dakika" : `Son ${minutes} dakika`}.`);
+  }, [remaining]);
+
   function confirmSubmit() {
     const ok = window.confirm(
       `Sınavı bitirmek üzeresin.\n\n${questions.length} soru\n${answered} cevaplı\n${blank} boş\n${marked} işaretli\n\nSınavı teslim ettikten sonra cevaplarını değiştiremezsin.`,
@@ -743,6 +753,7 @@ export function StudentExamRunner({
         ? `${savingCount} cevap kaydediliyor…`
         : "Tüm cevaplar kaydedildi";
   const lowTime = remaining < 5 * 60_000;
+  const sessionLabel = session ? `${session.currentTitle} oturumunun` : "Denemenin";
   const nextSession = session ? session.sessions.find((item) => item.status === "UPCOMING") : null;
   const timeOf = (iso: string | null) =>
     iso ? new Intl.DateTimeFormat("tr-TR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul" }).format(new Date(iso)) : "";
@@ -807,6 +818,9 @@ export function StudentExamRunner({
             >
               {formatRemaining(remaining)}
             </div>
+            <span className="sr-only" role="status" aria-live="assertive" aria-atomic="true" data-testid="sure-uyarisi">
+              {timeAnnouncement ? `${sessionLabel} bitmesine ${timeAnnouncement.toLocaleLowerCase("tr-TR")}` : ""}
+            </span>
             {session && !session.isLast ? (
               <button
                 type="button"
