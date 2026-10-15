@@ -78,11 +78,11 @@ test.describe("ODK yönetici soru çalışma alanı", () => {
     const input = page.getByRole("textbox", { name: "İçe aktarılacak içerik" });
 
     await input.fill("Bölüm\tSoru\tCevap\nMAT\t1\tZ");
-    await page.getByRole("button", { name: "Önizle" }).click();
+    await page.getByRole("button", { name: "Önizle", exact: true }).click();
     await expect(page.getByRole("list", { name: "Satır hataları" })).toContainText("satır 2");
 
     await input.fill("Temel Matematik: ACB");
-    await page.getByRole("button", { name: "Önizle" }).click();
+    await page.getByRole("button", { name: "Önizle", exact: true }).click();
     const issues = page.getByRole("list", { name: "Önizleme sorunları" });
     await expect(issues).toContainText("FEN 1");
     await expect(issues.getByRole("link", { name: "Soruya git" }).first()).toHaveAttribute("href", new RegExp(`sekme=sorular&bolum=FEN#soru-FEN-1$`));
@@ -92,7 +92,7 @@ test.describe("ODK yönetici soru çalışma alanı", () => {
     expect(blocking, describeViolations(blocking)).toEqual([]);
 
     await input.fill("MAT: ACB\nFEN;1;D\nFEN;2;E");
-    await page.getByRole("button", { name: "Önizle" }).click();
+    await page.getByRole("button", { name: "Önizle", exact: true }).click();
     await page.getByRole("button", { name: "Onayla ve yaz" }).click();
     await expect(page.getByRole("status").filter({ hasText: "Kaydedildi · 5 soru" })).toBeVisible();
     const saved = await prisma.odkExamQuestion.findMany({ where: { section: { versionId } }, orderBy: [{ section: { position: "asc" } }, { position: "asc" }] });

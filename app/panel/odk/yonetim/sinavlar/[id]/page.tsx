@@ -19,6 +19,9 @@ import { AdminIntegrityReviewPanel } from "@/components/odk/admin-integrity-revi
 import { AdminResultsReviewPanel } from "@/components/odk/admin-results-review-panel";
 import { AdminSessionPlan } from "@/components/odk/admin-session-plan";
 import { AdminAnswerKeyRevisionPanel } from "@/components/odk/admin-answer-key-revision-panel";
+import { AdminBookletPanel } from "@/components/odk/admin-booklet-panel";
+import { bookletOrdersHash, loadBookletSetup } from "@/lib/odk/booklet-server";
+import { prisma } from "@/lib/prisma";
 import { loadAnswerKeyRevisionPanel } from "@/lib/odk/answer-key-revision-server";
 import { AnchorTabRedirect } from "@/components/panel/anchor-tab-redirect";
 import {
@@ -81,6 +84,9 @@ export default async function OdkAdminExamDetailPage({
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const workspace = await loadOdkExamWorkspace(session.userId, id, query);
   if (!workspace) notFound();
+  // Çoklu kitapçık kurulumu: İçerik (sıra, PDF, anahtar) ve Önizleme sekmelerinde gerekir.
+  const bookletSetup = workspace.tab === "icerik" || workspace.tab === "onizleme" ? await loadBookletSetup(prisma, id) : null;
+  const bookletCodes = bookletSetup?.codes ?? ["A"];
   const { caps, exam, version, issues, familyCode, sessionPlan, tabs, tab, questionFilter, windowEnded, outcomes, attempts, assignedCount, questions, questionsRevision, submittedCount, scoredCount, reviewCount, security, readiness, primary, draftEditable } = workspace;
   const now = new Date();
   const status = examStatusPresentation[exam.status];
@@ -99,8 +105,9 @@ export default async function OdkAdminExamDetailPage({
     meetUrl: exam.meetUrl || "",
     versionStatus: version.status,
     durationMinutes: version.durationMinutes,
-    files: version.files.map((file) => ({ id: file.id, type: file.type, fileName: file.fileName, sessionKey: file.sessionKey })),
+    files: version.files.map((file) => ({ id: file.id, type: file.type, fileName: file.fileName, sessionKey: file.sessionKey, bookletCode: file.bookletCode })),
     sessions: sessionPlan?.map((item) => ({ key: item.key, title: item.title })),
+    booklets: bookletCodes,
     // Cevap anahtarı yalnız içerik editörüne gider (EXAM_EDITOR / ADMIN).
     questions: caps.edit ? questions : [],
     questionsRevision: caps.edit ? questionsRevision : undefined,
@@ -223,7 +230,17 @@ export default async function OdkAdminExamDetailPage({
 
           {tab === "icerik" ? (
             <>
-              <div id="adim-json">{draftEditable || version.status === "DRAFT" ? <AdminJsonImportPanel examId={exam.id} sections={version.sections.map((section) => ({ code: section.code, title: section.title }))} /> : null}</div>
+              {bookletSetup && caps.edit ? (
+                <AdminBookletPanel
+                  examId={exam.id}
+                  sections={version.sections.map((section) => ({ code: section.code, title: section.title }))}
+                  booklets={bookletSetup.codes.map((code) => ({ code, questionCount: code === "A" ? bookletSetup.questions.length : bookletSetup.orders.filter((row) => row.bookletCode === code).length }))}
+                  currentHash={bookletOrdersHash(bookletSetup.orders)}
+                  editable={draftEditable}
+                  totalQuestions={bookletSetup.questions.length}
+                />
+              ) : null}
+              <div id="adim-json">{draftEditable || version.status === "DRAFT" ? <AdminJsonImportPanel examId={exam.id} sections={version.sections.map((section) => ({ code: section.code, title: section.title }))} bookletCodes={bookletCodes} /> : null}</div>
               {editor(["files"])}
             </>
           ) : null}
@@ -271,15 +288,20 @@ export default async function OdkAdminExamDetailPage({
               {caps.edit ? (
                 <Section title="Öğrenci çözüm ekranı" description="Öğrencinin göreceği çözücünün aynısı. Deneme başlatılmaz, cevaplar kaydedilmez." divider={false}>
                   <div className="flex flex-wrap gap-2">
-                    {(sessionPlan ?? [null]).map((item) => (
-                      <Link
-                        key={item?.key ?? "tek"}
-                        href={`/panel/odk/yonetim/sinavlar/${exam.id}/onizleme/cozucu${item ? `?oturum=${item.key}` : ""}`}
-                        className={buttonClass("secondary", "md")}
-                      >
-                        {item ? `${item.title} oturumunu önizle` : "Çözücüyü önizle"}
-                      </Link>
-                    ))}
+                    {(sessionPlan ?? [null]).flatMap((item) =>
+                      bookletCodes.map((code) => {
+                        const params = new URLSearchParams();
+                        if (item) params.set("oturum", item.key);
+                        if (bookletCodes.length > 1) params.set("kitapcik", code);
+                        const qs = params.toString();
+                        const label = `${item ? `${item.title} oturumunu` : "Çözücüyü"} önizle${bookletCodes.length > 1 ? ` (${code})` : ""}`;
+                        return (
+                          <Link key={`${item?.key ?? "tek"}-${code}`} href={`/panel/odk/yonetim/sinavlar/${exam.id}/onizleme/cozucu${qs ? `?${qs}` : ""}`} className={buttonClass("secondary", "md")}>
+                            {label}
+                          </Link>
+                        );
+                      }),
+                    )}
                   </div>
                 </Section>
               ) : null}

@@ -64,9 +64,11 @@ type Props = {
     meetUrl: string;
     versionStatus: OdkExamVersionStatus;
     durationMinutes: number;
-    files: { id: string; type: string; fileName: string; sessionKey?: string }[];
+    files: { id: string; type: string; fileName: string; sessionKey?: string; bookletCode?: string }[];
     /** Oturumlu sınavın oturumları (LGS: Sözel / Sayısal); kitapçık oturum başına yüklenebilir. */
     sessions?: Array<{ key: string; title: string }>;
+    /** Çoklu kitapçık türleri (A + B–E); tek kitapçıkta ["A"]. */
+    booklets?: string[];
     questions: Question[];
     /** Soru içerik revizyonu; kayıtta gönderilir, araya giren kayıt 409 ile yakalanır. */
     questionsRevision?: string;
@@ -732,7 +734,7 @@ export function AdminExamEditor({
               rel="noreferrer"
               className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"
             >
-              {file.type === "BOOKLET_PDF" ? `Kitapçık${file.sessionKey ? ` · ${exam.sessions?.find((item) => item.key === file.sessionKey)?.title ?? file.sessionKey} oturumu` : exam.sessions?.length ? " · tüm deneme" : ""}` : "Cevap anahtarı"}:{" "}
+              {file.type === "BOOKLET_PDF" ? `Kitapçık${file.bookletCode ? ` ${file.bookletCode}` : ""}${file.sessionKey ? ` · ${exam.sessions?.find((item) => item.key === file.sessionKey)?.title ?? file.sessionKey} oturumu` : exam.sessions?.length ? " · tüm deneme" : ""}` : "Cevap anahtarı"}:{" "}
               {file.fileName}
             </a>
           ))}
@@ -754,6 +756,18 @@ export function AdminExamEditor({
                 <option value="ANSWER_KEY_PDF">Cevap anahtarı PDF</option>
               </select>
             </label>
+            {(exam.booklets?.length ?? 0) > 1 ? (
+              <label className="pn-field">
+                Kitapçık türü
+                <select name="bookletCode" defaultValue="A">
+                  {exam.booklets!.map((code) => (
+                    <option key={code} value={code}>
+                      {code} kitapçığı
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
             {exam.sessions?.length ? (
               <label className="pn-field">
                 Kitapçık kapsamı

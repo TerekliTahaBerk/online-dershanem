@@ -75,6 +75,7 @@ export function StudentExamRunner({
   session = null,
   preview = null,
   bookletUrl,
+  bookletCode = null,
 }: {
   examId: string;
   attemptId: string;
@@ -91,6 +92,8 @@ export function StudentExamRunner({
   preview?: { exitHref: string; nextSessionHref: string | null } | null;
   /** Kitapçık adresi; verilmezse öğrencinin kitapçık ucu, `null` ise kitapçık yok. */
   bookletUrl?: string | null;
+  /** Çoklu kitapçıkta öğrencinin kitapçık türü (A–E); tek kitapçıkta null. */
+  bookletCode?: string | null;
 }) {
   const router = useRouter();
   // Oturumlu sınavda yalnız açık oturumun soruları yazılır; önceki oturumlar kilitli.
@@ -800,6 +803,7 @@ export function StudentExamRunner({
           <div className="min-w-0">
             <p className="truncate text-[12px] font-semibold text-[#3d4a45] sm:text-[13px]">
               {session ? `Deneme Ligi · ${session.currentTitle} oturumu` : "Deneme Ligi"}
+              {bookletCode ? ` · ${bookletCode} kitapçığı` : ""}
             </p>
             <p className="truncate text-[12px] text-[#5b6863] sm:text-[13px]" aria-live="polite">
               {answered}/{questions.length} cevaplandı · {blank} boş · {marked} işaretli

@@ -26,10 +26,12 @@ const PLACEHOLDER: Record<Kind, Record<Format, string>> = {
  * satır numaralı hatalarla ayrıştırılır; geçerli belge sunucu önizlemesine
  * gider, önizleme soruya bağlantılı sorunları gösterir, onaylanınca yazılır.
  */
-export function AdminJsonImportPanel({ examId, sections = [] }: { examId: string; sections?: Array<{ code: string; title: string }> }) {
+export function AdminJsonImportPanel({ examId, sections = [], bookletCodes = ["A"] }: { examId: string; sections?: Array<{ code: string; title: string }>; bookletCodes?: string[] }) {
   const router = useRouter();
   const [kind, setKind] = useState<Kind>("answer-key");
   const [format, setFormat] = useState<Format>("table");
+  // Çoklu kitapçık: cevap anahtarı hangi kitapçığın numarasıyla girildi (sunucu kanonik A'ya çevirir).
+  const [bookletCode, setBookletCode] = useState("A");
   const [payload, setPayload] = useState("");
   const [busy, setBusy] = useState(false);
   const [importId, setImportId] = useState<string | null>(null);
@@ -75,7 +77,7 @@ export function AdminJsonImportPanel({ examId, sections = [] }: { examId: string
       const response = await fetch(`/api/odk/admin/exams/${examId}/imports/${kind}`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ payload: document }),
+        body: JSON.stringify({ payload: document, ...(kind === "answer-key" && bookletCodes.length > 1 ? { bookletCode } : {}) }),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -171,6 +173,18 @@ export function AdminJsonImportPanel({ examId, sections = [] }: { examId: string
           <input type="file" accept=".csv,.tsv,.txt,.json,text/csv,text/tab-separated-values,application/json" className="sr-only" onChange={(event) => void readFile(event.target.files?.[0])} />
         </label>
       </div>
+      {kind === "answer-key" && bookletCodes.length > 1 ? (
+        <label className="mt-3 flex items-center gap-2 text-[13px] font-medium text-pn-text-secondary">
+          Anahtarın kitapçığı
+          <select value={bookletCode} onChange={(event) => { setBookletCode(event.target.value); reset(); }} className="rounded-md border border-pn-border-strong bg-white px-2 py-1.5 text-pn-text">
+            {bookletCodes.map((code) => (
+              <option key={code} value={code}>
+                {code} kitapçığı{code === "A" ? " (kanonik)" : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
       {format === "table" && sections.length ? (
         <p className="mt-2 text-[12.5px] text-pn-text-muted">Bölümler: {sections.map((section) => `${section.code} (${section.title})`).join(" · ")}</p>
       ) : null}
