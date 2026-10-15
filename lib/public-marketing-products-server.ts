@@ -3,7 +3,7 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import { log } from "@/lib/logger";
-import { listActiveProducts } from "@/lib/products/registry";
+import { withPrismaResilience } from "@/lib/prisma-resilience";
 import {
   FALLBACK_PUBLIC_PRODUCT_CODES,
   visiblePublicProducts,
@@ -21,7 +21,9 @@ export const PUBLIC_PRODUCTS_TAG = "public-products";
  */
 const readActiveRegistryProductCodes = unstable_cache(
   async (): Promise<string[]> => {
-    const products = await listActiveProducts();
+    // Arka plan yeniden doğrulaması try/catch'e takılmaz: Accelerate'in kısa
+    // kesintilerinde (P5006/P6000) yeniden dene, sonra DIRECT_URL yedeğine düş.
+    const products = await withPrismaResilience((db) => db.product.findMany({ where: { isActive: true }, orderBy: [{ name: "asc" }, { code: "asc" }], select: { code: true } }));
     return products.map((product) => product.code);
   },
   ["public-active-product-codes"],

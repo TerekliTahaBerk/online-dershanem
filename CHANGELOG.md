@@ -157,6 +157,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Fixed
 
+- Cron health: a single dropped database connection (`P1017 Server has closed the connection`) no longer raises the critical `cron.heartbeat.persistence_failed` alarm; heartbeat writes retry transient errors and fall back to the direct connection, the alarm now carries the real cause (Prisma error code), a successful job is no longer reported as failed when only its success record could not be written, and log context can no longer overwrite the log event name (alert-delivery timeouts were logged as the alarm itself).
+- Deneme Ligi lifecycle cron: automatic scoring stops after a 35-second budget instead of being killed at 60 seconds, and an exam that cannot be scored is recorded in the audit log and retried after an hour instead of every five minutes.
+- Public pages: the analytics kill switch is read once a minute per server instance without sending `$feature_flag_called` events, removing the "Error while flushing PostHog" timeouts and their 10-second background work on every page view; the public product list cache retries transient Prisma Accelerate errors (`P5006`).
+
 - Exam result summaries now average sections per section using the scoring engine's stored section rows; previously all sections collapsed into one bucket.
 
 - Teacher intervention retries retain the original request, case version and revision across a background refresh after an uncertain network result.

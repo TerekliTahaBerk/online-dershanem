@@ -12,6 +12,7 @@
  */
 import "server-only";
 import { redactSensitiveValue } from "@/lib/security/redaction.mjs";
+import { protectReservedLogKeys } from "@/lib/log-context";
 
 type Level = "debug" | "info" | "warn" | "error";
 
@@ -24,7 +25,7 @@ function shouldEmit(level: Level): boolean {
 }
 
 function sanitizeContext(ctx: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
-  return ctx ? redactSensitiveValue(ctx) as Record<string, unknown> : undefined;
+  return ctx ? redactSensitiveValue(protectReservedLogKeys(ctx)) as Record<string, unknown> : undefined;
 }
 
 function emit(level: Level, event: string, contextRaw?: Record<string, unknown>, err?: unknown) {

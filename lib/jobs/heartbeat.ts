@@ -1,6 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
+import { withPrismaResilience } from "@/lib/prisma-resilience";
 import { reportOperationalAlert } from "@/lib/error-capture";
 import { log } from "@/lib/logger";
 import { CRITICAL_CRON_DEFINITIONS, safeErrorCode, type CriticalCronName } from "./health";
@@ -18,20 +19,27 @@ export type CronRunMetrics = {
   details?: Record<string, number>;
 };
 
+/**
+ * Heartbeat yazımı geçici bağlantı kopmalarında (soğumuş havuz bağlantısı,
+ * Accelerate 5xx) kısa geri çekilmeyle yeniden denenir ve gerekirse DIRECT_URL
+ * yedek istemcisine düşer. Tek bir kopuk bağlantı kritik alarm üretmemeli.
+ */
+const HEARTBEAT_RETRY = { retries: 3, baseDelayMs: 250 };
+
 export async function startCronRun(name: CriticalCronName) {
   const runId = randomUUID();
   const startedAt = new Date();
-  await prisma.cronHeartbeat.upsert({
+  await withPrismaResilience((db) => db.cronHeartbeat.upsert({
     where: { name },
     create: { name, lastRunId: runId, lastStartedAt: startedAt },
     update: { lastRunId: runId, lastStartedAt: startedAt },
-  });
+  }), HEARTBEAT_RETRY);
   return { runId, startedAt };
 }
 
 export async function succeedCronRun(name: CriticalCronName, runId: string, startedAt: Date, metrics: CronRunMetrics) {
   const completedAt = new Date();
-  await prisma.cronHeartbeat.updateMany({
+  await withPrismaResilience((db) => db.cronHeartbeat.updateMany({
     where: { name, lastRunId: runId },
     data: {
       lastSucceededAt: completedAt,
@@ -40,7 +48,7 @@ export async function succeedCronRun(name: CriticalCronName, runId: string, star
       failedCount: Math.max(0, metrics.failedCount ?? 0),
       lastErrorCode: null,
     },
-  });
+  }), HEARTBEAT_RETRY);
   log.info("cron.run.succeeded", {
     job: name,
     durationMs: Math.max(0, completedAt.getTime() - startedAt.getTime()),
@@ -53,7 +61,8 @@ export async function succeedCronRun(name: CriticalCronName, runId: string, star
 export async function failCronRun(name: CriticalCronName, runId: string, startedAt: Date, error: unknown) {
   const failedAt = new Date();
   const errorCode = safeErrorCode(error);
-  const updated = await prisma.cronHeartbeat.updateMany({
+  log.error("cron.run.failed", error, { job: name, errorCode, durationMs: Math.max(0, failedAt.getTime() - startedAt.getTime()) });
+  const updated = await withPrismaResilience((db) => db.cronHeartbeat.updateMany({
     where: { name, lastRunId: runId },
     data: {
       lastFailedAt: failedAt,
@@ -62,7 +71,7 @@ export async function failCronRun(name: CriticalCronName, runId: string, started
       failedCount: 1,
       lastErrorCode: errorCode,
     },
-  });
+  }), HEARTBEAT_RETRY);
   if (updated.count) await notifyCronIncident(name, "failed", errorCode);
 }
 

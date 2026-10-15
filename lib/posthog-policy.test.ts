@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { cleanAnalyticsUrl, posthogHost, trackablePath, validVisitorId } from "./posthog-policy";
+import { cleanAnalyticsUrl, posthogHost, readFlagEnabled, trackablePath, validVisitorId } from "./posthog-policy";
 
 test("analytics removes tokens, queries and fragments from URLs", () => {
   assert.equal(cleanAnalyticsUrl("https://example.com/paketler?token=private#secret"), "https://example.com/paketler");
@@ -25,4 +25,11 @@ test("visitor identifiers cannot contain arbitrary personal data", () => {
 test("EU dashboard host maps to ingestion host", () => {
   assert.equal(posthogHost("https://eu.posthog.com"), "https://eu.i.posthog.com");
   assert.equal(posthogHost(undefined), "https://eu.i.posthog.com");
+});
+
+test("kill-switch: /flags v2 yanıtı okunur; tanımsız ya da bozuk yanıtta undefined", () => {
+  assert.equal(readFlagEnabled({ flags: { "website-analytics": { enabled: false } } }, "website-analytics"), false);
+  assert.equal(readFlagEnabled({ flags: { "website-analytics": { enabled: true, variant: null } } }, "website-analytics"), true);
+  assert.equal(readFlagEnabled({ flags: {} }, "website-analytics"), undefined);
+  assert.equal(readFlagEnabled(null, "website-analytics"), undefined);
 });

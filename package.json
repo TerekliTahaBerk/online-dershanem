@@ -85,7 +85,6 @@
     "test:e2e:smoke": "playwright test --grep @smoke"
   },
   "dependencies": {
-    "@flags-sdk/posthog": "^1.1.0",
     "@prisma/client": "^6.19.3",
     "@prisma/extension-accelerate": "^3.0.1",
     "@simplewebauthn/browser": "^13.3.0",

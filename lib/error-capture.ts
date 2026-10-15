@@ -46,10 +46,10 @@ export async function reportOperationalAlert(alert: OperationalAlert): Promise<v
       signal: AbortSignal.timeout(3_000),
     });
     if (!response.ok) {
-      log.warn("app.error_alert_failed", { event: alert.event, status: response.status });
+      log.warn("app.error_alert_failed", { alertEvent: alert.event, status: response.status });
     }
   } catch (alertError) {
-    log.warn("app.error_alert_failed", { event: alert.event, errorName: alertError instanceof Error ? alertError.name : "UNKNOWN" });
+    log.warn("app.error_alert_failed", { alertEvent: alert.event, errorName: alertError instanceof Error ? alertError.name : "UNKNOWN" });
   }
 }
 
