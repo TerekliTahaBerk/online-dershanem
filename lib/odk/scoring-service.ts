@@ -126,33 +126,41 @@ export async function scoreOdkExam(examId: string, scoredById: string, options: 
   const plan = scoringPlan(exam, now);
   if (!plan.ok || !exam) return { ok: false as const, error: plan.ok ? "Deneme bulunamadı." : plan.error };
 
+  // Sonuçlar transaction DIŞINDA bellekte hesaplanır; transaction yalnız toplu yazar
+  // (P0-12): öğrenci başı ayrı sorgular 160 soruluk AYT'de ~150 öğrencide 5 sn
+  // transaction sınırını aşıyor ve puanlamanın tamamı geri alınıyordu. Yazma hâlâ
+  // tek transaction'dır: ya tüm sınıf yeni anahtarla puanlanır ya hiçbiri.
+  const targets = exam.attempts.filter((attempt) => (options.rescore || !attempt.score) && !(attempt.status === "IN_PROGRESS" && attempt.deadlineAt > now));
+  const computed = targets.map((attempt) => {
+    const entry = plan.byVersion.get(attempt.versionId)!;
+    return { attempt, entry, ...computeAttemptScore(entry.version, entry.questions, attempt) };
+  });
+  const replacedIds = computed.filter((row) => row.attempt.score).map((row) => row.attempt.id);
+
   await db.$transaction(async (tx) => {
     await tx.odkExamAttempt.updateMany({ where: { examId, status: "IN_PROGRESS", deadlineAt: { lte: now } }, data: { status: "AUTO_SUBMITTED", submittedAt: now } });
-    for (const attempt of exam.attempts) {
-      if (!options.rescore && attempt.score) continue;
-      if (attempt.status === "IN_PROGRESS" && attempt.deadlineAt > now) continue;
-      if (options.rescore && attempt.score) {
-        await tx.odkAttemptQuestionResult.deleteMany({ where: { attemptId: attempt.id } });
-        await tx.odkAttemptOutcomeScore.deleteMany({ where: { attemptId: attempt.id } });
-        await tx.odkAttemptScore.delete({ where: { attemptId: attempt.id } });
-      }
-      const entry = plan.byVersion.get(attempt.versionId)!;
-      const { result, questionResults, outcomeScores, activeDurationMs } = computeAttemptScore(entry.version, entry.questions, attempt);
-      // Yayın durumu puanlamayla DEĞİŞMEZ (P0-9): yeniden puanlama önceki durumu korur;
-      // yayından hariç tutulan (ör. bütünlük incelemesi) sonuç gizli kalır. Yeni puan gizli başlar.
-      const publicationStatus = attempt.score?.publicationStatus ?? "HIDDEN";
-      await tx.odkAttemptScore.create({
-        data: {
+    if (replacedIds.length) {
+      await tx.odkAttemptQuestionResult.deleteMany({ where: { attemptId: { in: replacedIds } } });
+      await tx.odkAttemptOutcomeScore.deleteMany({ where: { attemptId: { in: replacedIds } } });
+      await tx.odkAttemptScore.deleteMany({ where: { attemptId: { in: replacedIds } } });
+    }
+    if (computed.length) {
+      await tx.odkAttemptScore.createMany({
+        data: computed.map(({ attempt, entry, result, activeDurationMs }) => ({
           attemptId: attempt.id, correctCount: result.correctCount, wrongCount: result.wrongCount, blankCount: result.blankCount, totalNet: result.totalNet,
           sectionBreakdown: result.sectionScores,
-          scoringVersion: ODK_SCORING_VERSION, answerKeyHash: entry.answerKeyHash, scoredById, publicationStatus, activeDurationMs,
-          questionResults: { create: questionResults },
-          outcomeScores: { create: outcomeScores },
-        },
+          scoringVersion: ODK_SCORING_VERSION, answerKeyHash: entry.answerKeyHash, scoredById, activeDurationMs,
+          // Yayın durumu puanlamayla DEĞİŞMEZ (P0-9): yeniden puanlama önceki durumu korur;
+          // yayından hariç tutulan (ör. bütünlük incelemesi) sonuç gizli kalır. Yeni puan gizli başlar.
+          publicationStatus: attempt.score?.publicationStatus ?? "HIDDEN",
+        })),
       });
+      await tx.odkAttemptQuestionResult.createMany({ data: computed.flatMap(({ attempt, questionResults }) => questionResults.map((row) => ({ ...row, attemptId: attempt.id }))) });
+      const outcomeRows = computed.flatMap(({ attempt, outcomeScores }) => outcomeScores.map((row) => ({ ...row, attemptId: attempt.id })));
+      if (outcomeRows.length) await tx.odkAttemptOutcomeScore.createMany({ data: outcomeRows });
     }
     if (exam.status !== "RELEASED") await tx.odkExam.update({ where: { id: examId }, data: { status: "SCORED" } });
-  });
+  }, { timeout: 120_000, maxWait: 10_000 });
   const scoredCount = await db.odkAttemptScore.count({ where: { attempt: { examId } } });
   return { ok: true as const, scoredCount, answerKeyHash: plan.currentHash, family: getOdkExamFamilyCode(exam) };
 }

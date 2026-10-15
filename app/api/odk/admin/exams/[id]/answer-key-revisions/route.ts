@@ -5,6 +5,9 @@ import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 import { answerKeyRevisionCommitSchema, answerKeyRevisionPreviewSchema } from "@/lib/odk/admin-schemas";
 import { commitAnswerKeyRevision, previewAnswerKeyRevision } from "@/lib/odk/answer-key-revision-server";
 
+/** Kalabalık sınıfta (yüzlerce öğrenci × 160 soru) puanlama/yeniden puanlama birkaç saniye sürer (Faz 7 ölçek testi). */
+export const maxDuration = 60;
+
 /**
  * Kilitli denemede cevap anahtarı revizyonu (soru düzeltme / iptal).
  * POST: etki önizlemesi (yazmaz). PUT: onaylı revizyon + gerekiyorsa yeniden puanlama (step-up).
