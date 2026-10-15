@@ -23,3 +23,12 @@ export function cleanAnalyticsUrl(value: string): string {
     return "";
   }
 }
+
+/**
+ * PostHog `/flags?v=2` yanıtından kill-switch değeri. Bayrak tanımlı değilse
+ * ya da yanıt beklenmedik biçimdeyse `undefined` (çağıran varsayılanı kullanır).
+ */
+export function readFlagEnabled(body: unknown, key: string): boolean | undefined {
+  const flag = (body as { flags?: Record<string, { enabled?: unknown }> } | null)?.flags?.[key];
+  return typeof flag?.enabled === "boolean" ? flag.enabled : undefined;
+}
