@@ -9,7 +9,6 @@ import {
   footerLegalLinks,
 } from "@/lib/site-content";
 import { listActivePublicProducts } from "@/lib/public-marketing-products-server";
-import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 
 const socials = [
   {
@@ -41,7 +40,7 @@ const socials = [
 
 /**
  * Public site footer — onaylı tasarım (Site Footer.dc.html):
- * koyu yeşil zemin, sol marka bloğu (1.4fr) + üç bağlantı kolonu,
+ * koyu yeşil zemin, sol marka bloğu (1.4fr) + dört bağlantı kolonu,
  * altta telif ve yasal şerit. Mobilde kolonlar akordeona dönüşür
  * (handoff: "footer akordeon").
  */
@@ -49,14 +48,13 @@ export async function SiteFooter() {
   const products = await listActivePublicProducts();
   const visibleFooterColumns = footerColumnsForProducts(
     products.map((product) => ({ ...product, name: publicProductDisplayName(product, true) })),
-    getPanelFeatureFlags().dinoAi,
   );
   return (
     <footer id="site-footer" className="site-scope dc-surface-deep">
       <div className="site-container py-14 sm:py-16">
-        <div className="grid gap-x-10 gap-y-10 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
+        <div className="grid gap-x-8 gap-y-10 lg:grid-cols-4 xl:grid-cols-[1.4fr_repeat(4,minmax(0,1fr))]">
           {/* Marka */}
-          <div className="flex max-w-sm flex-col gap-4">
+          <div className="flex max-w-sm flex-col gap-4 lg:col-span-4 xl:col-span-1">
             <Link
               href="/"
               aria-label="onlinedershanem. ana sayfa"

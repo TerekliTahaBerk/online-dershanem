@@ -1,6 +1,7 @@
 import { publicProductDisplayName } from "@/lib/public-product-brands";
 import { yonBrand } from "@/lib/yon-brand";
 import { application } from "@/lib/application";
+import { applicationProducts } from "@/lib/application-products";
 /**
  * PUBLIC MARKETING SITE — içerik kaynağı.
  *
@@ -93,7 +94,7 @@ export const homeFaqs: Faq[] = [
 /* ---------------- Footer ---------------- */
 
 /**
- * Footer kolonları — onaylı tasarım (Site Footer.dc.html): ÜRÜNLER / REHBERLER / DESTEK.
+ * Footer kolonları: Ürünler / Uygulamalar / Rehberler / Destek.
  *
  * Tasarımdaki "Yardım merkezi" için depoda bir route YOK; uydurma bağlantı
  * yerine mevcut gerçek destek sayfalarına bağlanır (§11 — yasal/destek route
@@ -108,6 +109,13 @@ export const footerColumns = [
     ],
   },
   {
+    title: "Uygulamalar",
+    links: applicationProducts.map(({ name, href, status }) => ({
+      label: status === "Yakında" ? `${name} · Yakında` : name,
+      href,
+    })),
+  },
+  {
     title: "Rehberler",
     links: [
       { label: "Blog", href: "/blog" },
@@ -119,7 +127,6 @@ export const footerColumns = [
       { label: "Sıkça sorulan sorular", href: "/sss" },
       { label: "Ücretsiz Ön Görüşme", href: "/iletisim#on-gorusme" },
       { label: "Öğrenci girişi", href: "/giris" },
-      { label: sharedIntelligenceLayer.name, href: sharedIntelligenceLayer.href },
     ],
   },
 ] as const;
