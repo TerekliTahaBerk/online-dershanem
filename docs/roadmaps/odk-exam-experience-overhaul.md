@@ -251,8 +251,9 @@ gereksinimi veya ciddi UX açığı; **P2** = iyileştirme.
 | 3 | P1-4/7, P0-11 | Şablon sürümü/modu/geçerliliği, anlık görüntü, alt testler, alan bazlı D/Y/B | ✅ `ca85472`, `ef3ffe8` |
 | 4 | P1-6/10, P2-2 | Soru içerik revizyonu + çakışma UI, tablo/CSV/dosya import, optik giriş, bölüm sekmesi/arama/toplu işlem | ✅ `3cc7dac`, `e612b79`, `0aaa011` |
 | 5 | P1-1/2/3/13 | Oturum kitapçığı (migration 0116), PDF sayfa navigasyonu, gerçek çözücü önizlemesi, iki sekme | ✅ `6dcacfb`, `a8ce5b9`, `4031d81` |
-| 6 | P1-8, P2-3, revizyon UI | Attempt sürümüne bağlı puanlama, revizyon arayüzü, ham net/kanıt düzeyi, rapor alt testleri | ✅ `b92a69a`, `8fc208f`, `3170d56`, `e1b9835` (P1-9 tasarım, uygulama bekliyor) |
+| 6 | P1-8, P2-3, revizyon UI | Attempt sürümüne bağlı puanlama, revizyon arayüzü, ham net/kanıt düzeyi, rapor alt testleri | ✅ `b92a69a`, `8fc208f`, `3170d56`, `e1b9835` (P1-9 Faz 8’de uygulandı) |
 | 7 | P0-12 | Ölçek testi + toplu puanlama yazımı, süre duyurusu, klavye ve cihaz matrisi E2E | ✅ `4adf8e5`, `6f5e7a9` |
+| 8 | P1-9 | Çoklu kitapçık A–E (migration 0117), K09 onayı | ✅ `91d0279f`, `4ce33a24`, `4121a8b2` |
 
 ### Migration ve geri alma ilkesi
 
@@ -670,17 +671,64 @@ etki önizlemesi ve yükleme dahildir.)
 - Gerçek PDF görüntüleyici sayfa atlaması (headless'ta görüntüleyici yok) — manuel kontrol.
 - Ekran okuyucu ile gerçek kullanıcı testi (NVDA/VoiceOver) yapılmadı; axe + rol/etiket testleri var.
 
+### Faz 8 — Çoklu kitapçık (P1-9) (2026-10-15)
+
+**Ürün kararları** (kullanıcı onayı: "Sınav çözme yalnız webde onaylıyorum. Çoklu kitapçık olsun.")
+- K09 / E1 istisnası onaylandı: sınav çözme ve yönetici çözücü önizlemesi yalnız web'de.
+- A kitapçığı kanoniktir; B–E kitapçıkları her bölümde A sorularının permütasyonudur.
+- Kitapçık öğrenciye deneme başında `examId + studentUserId` üzerinden deterministik ve dengeli
+  atanır (yarış yok, yeniden başlatmada değişmez); `odk_exam_attempts.booklet_code`'a yazılır.
+- Öğrenci kendi kitapçığının sırası, numarası ve PDF'iyle çözer; yönetici raporları kanonik (A)
+  numarayla kalır. Cevaplar/puanlar kanonik soru kimliğiyle saklandığı için puanlama değişmez.
+- Cevap anahtarı herhangi bir kitapçığa göre girilebilir; kanoniğe çevrilir, başka kitapçıktan
+  girilmiş farklı anahtar `KEY_CONFLICT_ACROSS_BOOKLETS` ile yakalanır (sessiz ezme yok).
+- Kâğıt optik form okuma kapsam dışı.
+
+**Dokunulan dosyalar**
+- Veri: `prisma/schema/odk.prisma`, `prisma/migrations/0117_odk_multi_booklets/migration.sql`
+- Kurallar: `lib/odk/booklets.ts` (+test), `lib/odk/booklet-access.ts` (+test)
+- Sunucu/API: `lib/odk/booklet-server.ts`, `app/api/odk/admin/exams/[id]/booklets/route.ts`,
+  dosya yükleme, anahtar importu, başlatma, hazırlık, öğrenci kitapçık dosyası, sonuç numarası
+- UI: `components/odk/admin-booklet-panel.tsx`, import paneli, editör yükleme formu, çözücü ve
+  önizleme sayfaları
+
+**Neden güvenli**
+- Migration 0117 eklemelidir: yeni tablo + `odk_exam_files.booklet_code NOT NULL DEFAULT ''`;
+  benzersiz indeks `(version, type, session, booklet)` olarak genişler (mevcut satırlar `''`
+  ile çakışmaz). Geri alma adımları migration başlığında.
+- Sıra tablosu yalnız taslak sürümde, satır kilidi + hash karşılaştırmasıyla değiştirilir
+  (`BOOKLET_STALE` 409); boş liste = tek kitapçık.
+- B–E öğrencisi A/ortak PDF'e asla düşmez (yanlış kitapçıkla çözmek yerine "kitapçık yok"
+  hatası); A öğrencisi eski ortak PDF'i kullanmaya devam eder. Hazırlıkta
+  `BOOKLET_TYPE_PDF_MISSING` yayını engeller.
+- Mobil sözleşmeler değişmedi (`lint:mobile-parity` temiz, mobil integration geçti).
+
+**Testler ve sonuçlar**
+- `npm run test:unit` → 1104/1104 (kitapçık kuralları 7, kitapçık erişimi 9)
+- ODK + mobil integration → 69/69 (yeni: sıra hash/bayatlık, B anahtarı kanonikleştirme,
+  çelişki, tanımsız kitapçık, hazırlık PDF eksikliği, öğrenci B/A PDF çözümü)
+- E2E `odk-multi-booklet.spec.ts` (yapıştır → eksik satır hatası → önizle → kaydet → B çözücü
+  önizlemesi, axe) + ODK E2E grubu → 25 test; `odk-product-quality` bilinen durum bağımlılığı
+  nedeniyle yeniden seed sonrası ayrı koşuldu → 8/8
+- `lint:api-validation`, `lint:mobile-parity`, `lint:hygiene`, `eslint .`, `tsc` → temiz;
+  `data:pii-inventory` yeniden üretildi.
+
+**Kalan riskler**
+- Kitapçık sırası yalnız taslakta değiştirilebilir; canlı sınavda hatalı sıra yeni sürüm gerektirir.
+- Öğrenci sonuç ekranı kitapçık numarasını gösterir; öğretmen/veli raporları kanonik numarayı
+  gösterir (raporda kitapçık sütunu yok).
+- Kitapçık atamasını yönetici elle değiştiremez (bilinçli: dengeli ve denetlenebilir).
+
 ### Dağıtım notları (birleştirmeden önce okuyun)
 - `vercel.json` derleme komutu `npm run prisma:deploy:ci` çalıştırır: dal birleştirilip
-  dağıtıldığında **migration `0116_odk_session_booklets` otomatik uygulanır** (eklemeli; geri alma
+  dağıtıldığında **migration `0116_odk_session_booklets` ve `0117_odk_multi_booklets` otomatik uygulanır** (eklemeli; geri alma
   adımları migration dosyasında). Bu çalışma sırasında üretimde hiçbir migration, puanlama ya da
   yeniden puanlama çalıştırılmadı.
 - Mevcut LGS denemeleri tek birleşik kitapçıkla uyarı vererek çalışır; Sözel/Sayısal ayrımı için
   oturum kitapçıkları yeniden yüklenmelidir.
-- Mobil parite matrisindeki K09 (yönetici çözücü önizlemesi → E1 istisnası) ürün onayı bekliyor.
+- Mobil parite matrisindeki K09 (sınav çözme ve çözücü önizlemesi yalnız web, E1 istisnası) ürün tarafından onaylandı (2026-10-15).
 
 ### Açık kalanlar (sonraki çalışma)
-- P1-9 çoklu kitapçık (tasarım Faz 6'da; ürün kararları gerekiyor).
 - P1-12 ek süre / muafiyet veri modeli.
 - Öğretmen/veli raporlarında bölüm ve alt test kırılımı (mobil sözleşme değişikliği gerekir).
 - Mobil `odkExamRevision`'ın soru içerik değişikliklerini kapsaması.
