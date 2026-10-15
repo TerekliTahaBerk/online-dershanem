@@ -1,6 +1,6 @@
 # ODK Deneme Deneyimi — Production-Grade Revizyon Yol Haritası
 
-Durum: **Faz 1 (denetim) · Faz 2 (P0 doğruluk) · Faz 3 (şablon/alt test) · Faz 4 (yönetici deneyimi) · Faz 5 (öğrenci çözücü) · Faz 6 (sonuç/rescore/yayın) tamam**
+Durum: **Faz 1 (denetim) · Faz 2 (P0 doğruluk) · Faz 3 (şablon/alt test) · Faz 4 (yönetici deneyimi) · Faz 5 (öğrenci çözücü) · Faz 6 (sonuç/rescore/yayın) · Faz 7 (E2E/erişilebilirlik/performans) tamam**
 Kapsam: Deneme Ligi (ODK) çevrim içi sınav motoru — yönetici oluşturma, cevap
 anahtarı/kazanım, öğrenci çözücü, puanlama, revizyon, yayın ve raporlama.
 
@@ -185,6 +185,12 @@ gereksinimi veya ciddi UX açığı; **P2** = iyileştirme.
   eşlemez; alan görünümü boş tablo ve 0 alan neti gösterir (web + mobil).
 - **Hedef:** Puanlama `code` yazar; eski satırlarda kod okumada sürümün bölümlerinden tamamlanır.
 
+#### P0-12 · Kalabalık sınıfta puanlama transaction zaman aşımıyla tamamen geri alınıyor (Faz 7'de bulundu)
+- **Dosya/fonksiyon:** `scoring-service.ts::scoreOdkExam` (öğrenci başı delete/create, varsayılan 5 sn interaktif transaction)
+- **Kanıt:** 160 soruluk AYT, 400 öğrenci → `Transaction already closed … 5003 ms passed`; hiçbir puan yazılmaz.
+  120 öğrencide yeniden puanlama 3,8 sn ile sınıra yakındı.
+- **Hedef:** Hesap transaction dışında, yazma toplu (`deleteMany`/`createMany`) ve tek transaction; açık zaman aşımı.
+
 #### P0-8 · `blur` listener temizlenmiyor
 - **Dosya:** `student-exam-runner.tsx:481` — `window.removeEventListener("blur-sm", onBlur)`
   (Tailwind sınıf adı codemod'unun yanlışlıkla değiştirdiği string).
@@ -246,7 +252,7 @@ gereksinimi veya ciddi UX açığı; **P2** = iyileştirme.
 | 4 | P1-6/10, P2-2 | Soru içerik revizyonu + çakışma UI, tablo/CSV/dosya import, optik giriş, bölüm sekmesi/arama/toplu işlem | ✅ `3cc7dac`, `e612b79`, `0aaa011` |
 | 5 | P1-1/2/3/13 | Oturum kitapçığı (migration 0116), PDF sayfa navigasyonu, gerçek çözücü önizlemesi, iki sekme | ✅ `6dcacfb`, `a8ce5b9`, `4031d81` |
 | 6 | P1-8, P2-3, revizyon UI | Attempt sürümüne bağlı puanlama, revizyon arayüzü, ham net/kanıt düzeyi, rapor alt testleri | ✅ `b92a69a`, `8fc208f`, `3170d56`, `e1b9835` (P1-9 tasarım, uygulama bekliyor) |
-| 7 | — | E2E (mobil + masaüstü), erişilebilirlik, performans | sonraki |
+| 7 | P0-12 | Ölçek testi + toplu puanlama yazımı, süre duyurusu, klavye ve cihaz matrisi E2E | ✅ `4adf8e5`, `6f5e7a9` |
 
 ### Migration ve geri alma ilkesi
 
@@ -605,3 +611,77 @@ tahmini puan ayrımı ve veri güvenilirliği (P2-3), öğretmen/veli raporları
 **Sonraki faz:** Faz 7 — E2E, erişilebilirlik ve performans doğrulaması: mobil cihaz matrisi
 (`e2e:odk`), 160 soruluk AYT ve 90 soruluk LGS ile uçtan uca senaryo, çözücü klavye/ekran
 okuyucu denetimi, büyük sınıfta puanlama süresi ölçümü.
+
+### Faz 7 — E2E, erişilebilirlik ve performans doğrulaması (2026-10-15)
+
+**Bulgu**
+- P0-12 (yukarıda): 400 öğrencili AYT puanlanamıyordu. Ölçek testiyle bulundu.
+- Çözücüde kalan süre hiçbir zaman ekran okuyucuya duyurulmuyordu (sayaç bilinçli olarak
+  `aria-live="off"`); yalnız renk değişiyordu.
+- Cihaz matrisi: Android Chromium'da iki test seçicisi masaüstüne özgüydü (uygulama doğru
+  davranıyordu: kayıt etiketi mobilde cevap panelinde; "Kitapçıkta sayfa N" mobilde kitapçık
+  sekmesine geçer).
+
+**Dokunulan dosyalar**
+- `lib/odk/scoring-service.ts`, `app/api/odk/admin/exams/[id]/{score,rescore,answer-key-revisions}/route.ts`,
+  `app/api/panel/odk/management/exams/[id]/route.ts` (`maxDuration = 60`)
+- `lib/odk/runner-booklet.ts` (`timeWarningToAnnounce`), `components/odk/student-exam-runner.tsx`
+- Testler: `tests/integration/odk-exam-scale.integration.ts`, `tests/e2e/odk-exam-flow.spec.ts`
+
+**Neden güvenli**
+- Puanlama yine tek transaction: ya tüm sınıf yeni anahtarla yazılır ya hiçbiri; yayın durumu
+  koruma (P0-9) ve sürüm bazlı puanlama (P1-8) aynen korunur. Tüm ODK integration testleri geçti.
+- Mobil komut ucu kendi 30 sn transaction'ı içinde çalışır; 400 öğrencilik ölçümler bunun altında.
+
+**Ölçümler (yerel Postgres 16, tek makine; üretim değerleri değildir)**
+
+| Şablon | Öğrenci × soru | Puanlama | Yeniden puanlama |
+| --- | --- | ---: | ---: |
+| AYT_FULL | 120 × 160 | 1,9 sn | 2,5 sn |
+| TYT_FULL | 120 × 120 | 1,4 sn | 1,8 sn |
+| LGS_FULL | 120 × 90 | 1,0 sn | 1,3 sn |
+| AYT_FULL | 400 × 160 | 6,0 sn | 11,0 sn |
+| TYT_FULL | 400 × 120 | 6,5 sn | 5,7 sn |
+| LGS_FULL | 400 × 90 | 3,4 sn | 4,7 sn |
+
+Eski kod: AYT 400 × 160 → zaman aşımı, hiçbir puan yazılmadı. (Yeniden puanlama süresine kuru
+etki önizlemesi ve yükleme dahildir.)
+
+**Eklenen testler**
+- Integration: `odk-exam-scale.integration.ts` — şablondan AYT 160 / TYT 120 / LGS 90 (iki oturum)
+  soru, `ODK_SCALE_STUDENTS` (CI'da 120) öğrenci; puanla, anahtar değiştir, yeniden puanla; satır
+  sayıları ve D+Y+B = soru sayısı doğrulanır.
+- Unit: `runner-booklet.test.ts` (süre eşikleri, geç açılış).
+- E2E: klavyeyle çözüm (Enter/Space), görünür odak (`outline`), "Denemenin bitmesine son 5 dakika."
+  duyurusu; cihaz matrisi Android Chromium.
+
+**Komutlar ve gerçek sonuçlar**
+- typecheck, `npx eslint .` → temiz · `npm run test:unit` → 1095/1095
+- `tests/integration/odk-*.integration.ts` → 28/28; ölçek testi `ODK_SCALE_STUDENTS=400` → 3/3
+- `lint:api-validation`, `lint:mobile-parity`, `lint:hygiene`, `data:pii-inventory:check` → temiz
+- `PLAYWRIGHT_ODK_DEVICE_MATRIX=true playwright test tests/e2e/odk-exam-flow.spec.ts
+  --project=odk-desktop-chromium --project=odk-android-chromium` → 10/10
+- Yönetici editörü + çözücü önizlemesi + revizyon + ODK kalite + mobil ODK ×4 → 16/16
+- LGS oturumları + runner görsel + panel erişilebilirlik + yetki matrisi + faz-0 güvenlik + mobil API → 67/67
+
+**Doğrulanamayanlar**
+- WebKit projeleri (`odk-desktop-webkit`, `odk-iphone-webkit`): bu ortamda WebKit tarayıcısı
+  kurulu değil ve indirilemiyor; CI'daki `e2e:odk` matrisi bunları koşar.
+- Gerçek PDF görüntüleyici sayfa atlaması (headless'ta görüntüleyici yok) — manuel kontrol.
+- Ekran okuyucu ile gerçek kullanıcı testi (NVDA/VoiceOver) yapılmadı; axe + rol/etiket testleri var.
+
+### Dağıtım notları (birleştirmeden önce okuyun)
+- `vercel.json` derleme komutu `npm run prisma:deploy:ci` çalıştırır: dal birleştirilip
+  dağıtıldığında **migration `0116_odk_session_booklets` otomatik uygulanır** (eklemeli; geri alma
+  adımları migration dosyasında). Bu çalışma sırasında üretimde hiçbir migration, puanlama ya da
+  yeniden puanlama çalıştırılmadı.
+- Mevcut LGS denemeleri tek birleşik kitapçıkla uyarı vererek çalışır; Sözel/Sayısal ayrımı için
+  oturum kitapçıkları yeniden yüklenmelidir.
+- Mobil parite matrisindeki K09 (yönetici çözücü önizlemesi → E1 istisnası) ürün onayı bekliyor.
+
+### Açık kalanlar (sonraki çalışma)
+- P1-9 çoklu kitapçık (tasarım Faz 6'da; ürün kararları gerekiyor).
+- P1-12 ek süre / muafiyet veri modeli.
+- Öğretmen/veli raporlarında bölüm ve alt test kırılımı (mobil sözleşme değişikliği gerekir).
+- Mobil `odkExamRevision`'ın soru içerik değişikliklerini kapsaması.
+- Yeni sınav sürümü üretme akışı (P1-8 koruması bunun için hazır).
