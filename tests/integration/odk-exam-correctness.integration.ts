@@ -6,7 +6,8 @@ import { previewOdkRescore, scoreOdkExam } from "@/lib/odk/scoring-service";
 import { commitAnswerKeyRevision, previewAnswerKeyRevision } from "@/lib/odk/answer-key-revision-server";
 import { rescoreOdkExamCommand } from "@/lib/odk/exam-results-commands";
 import { commitOdkImport, loadQuestionsRevision, previewOdkImport, updateOdkExamQuestions } from "@/lib/odk/exam-commands-server";
-import { previewBookletOrders, replaceBookletOrders } from "@/lib/odk/booklet-server";
+import { commitBookletCorrection, previewBookletCorrection, previewBookletOrders, replaceBookletOrders } from "@/lib/odk/booklet-server";
+import { chooseAttemptBooklet, loadBookletAssignments, setBookletAssignment } from "@/lib/odk/booklet-assignment-server";
 import { getOdkExamReadiness } from "@/lib/odk/admin-exam-server";
 import { loadStudentBookletFile } from "@/lib/odk/student-booklet-server";
 import { integration } from "./integration-utils";
@@ -448,6 +449,95 @@ integration("Çoklu kitapçık: sıra tablosu hash korumalı, B anahtarı kanoni
       await db.odkExamAttempt.deleteMany({ where: { studentUserId: student.id } });
       await db.user.deleteMany({ where: { id: student.id } });
     }
+  });
+});
+
+/** Test kısayolu: B kitapçığı sırasını doğrudan yazar (bookletNumber → A soru no). */
+async function seedBookletB(fixture: Fixture, code: string, aNumbers: number[]) {
+  const section = fixture.sections.find((row) => row.code === code)!;
+  await db.odkBookletQuestionOrder.createMany({ data: aNumbers.map((aNumber, index) => ({ versionId: fixture.version.id, bookletCode: "B", sectionId: section.id, questionId: section.questions[aNumber - 1].id, bookletQuestionNumber: index + 1 })) });
+}
+
+integration("Çoklu kitapçık ataması: küçük sınıfta dengeli, yeniden girişte aynı, yönetici seçimi öncelikli ve başlamadan önce değişir", async () => {
+  const run = randomUUID().slice(0, 8);
+  await withFixture({ run, status: "DRAFT", students: 5, sections: [{ code: "MAT", key: ["A", "B", "C"] }] }, async (fixture) => {
+    await seedBookletB(fixture, "MAT", [3, 2, 1]);
+    const codes = ["A", "B"];
+    const start = (studentIndex: number, attemptNumber = 1) =>
+      db.$transaction(async (tx) => {
+        const studentUserId = fixture.students[studentIndex].id;
+        const bookletCode = await chooseAttemptBooklet(tx, { examId: fixture.exam.id, versionId: fixture.version.id, studentUserId, codes });
+        return tx.odkExamAttempt.create({ data: { examId: fixture.exam.id, versionId: fixture.version.id, studentUserId, bookletCode, attemptNumber, startedAt: new Date(), deadlineAt: new Date(Date.now() + 3_600_000), status: attemptNumber === 1 ? "SUBMITTED" : "IN_PROGRESS" } });
+      });
+    // Dördüncü öğrenciye yönetici B seçer (başlamadan önce); C tanımsız.
+    const assignment = (index: number) => db.odkExamAssignment.create({ data: { examId: fixture.exam.id, studentUserId: fixture.students[index].id, source: "STUDENT", assignedById: fixture.admin.id } });
+    await assignment(3);
+    await assignment(4);
+    assert.equal((await setBookletAssignment(fixture.exam.id, { studentUserId: fixture.students[3].id, bookletCode: "C" }, fixture.admin.id)).status, 400);
+    assert.equal((await setBookletAssignment(fixture.exam.id, { studentUserId: fixture.students[3].id, bookletCode: "B" }, fixture.admin.id)).status, 200);
+    assert.equal((await setBookletAssignment(fixture.exam.id, { studentUserId: fixture.students[0].id, bookletCode: "B" }, fixture.admin.id)).status, 404);
+
+    const first = [await start(0), await start(1), await start(2)].map((attempt) => attempt.bookletCode);
+    const counts = (list: string[]) => codes.map((code) => list.filter((value) => value === code).length);
+    assert.ok(Math.abs(counts(first)[0] - counts(first)[1]) <= 1, first.join());
+    // Yönetici seçimi dengeden önce gelir.
+    assert.equal((await start(3)).bookletCode, "B");
+    // Başlamış öğrencinin kitapçığı değiştirilemez.
+    const locked = await setBookletAssignment(fixture.exam.id, { studentUserId: fixture.students[3].id, bookletCode: "A" }, fixture.admin.id);
+    assert.deepEqual([locked.status, (await locked.json()).code], [409, "ATTEMPT_STARTED"]);
+    // Yeniden giriş aynı kitapçığı alır.
+    assert.equal((await start(0, 2)).bookletCode, first[0]);
+    const listed = await loadBookletAssignments(fixture.exam.id);
+    assert.deepEqual(listed?.rows.map((row) => [row.chosenBooklet, row.startedBooklet]), [["B", "B"], [null, null]]);
+    assert.equal(Object.values(listed!.counts).reduce((sum, value) => sum + value, 0), 4);
+  });
+});
+
+integration("Kitapçık sırası düzeltmesi: cevaplar konuma göre taşınır, yeniden puanlanır, süren deneme ve kitapçık kümesi korunur", async () => {
+  const run = randomUUID().slice(0, 8);
+  await withFixture({ run, students: 2, sections: [{ code: "MAT", key: ["A", "B", "C"] }] }, async (fixture) => {
+    // Yanlış eşleme: B1→A3, B2→A2, B3→A1. Gerçekte B kitapçığı A ile aynı sırada basılmış.
+    await seedBookletB(fixture, "MAT", [3, 2, 1]);
+    await db.odkExamAttempt.update({ where: { id: fixture.attempts[0].id }, data: { bookletCode: "B" } });
+    // B öğrencisi ekranda B1=A, B2=B, B3=C işaretledi → yanlış eşlemeyle A3=A, A2=B, A1=C yazıldı.
+    await fixture.answer(0, "MAT", ["C", "B", "A"]);
+    await fixture.answer(1, "MAT", ["A", "B", "C"]);
+    const [q1, , q3] = fixture.sections[0].questions;
+    await db.odkAttemptQuestionTiming.create({ data: { attemptId: fixture.attempts[0].id, questionId: q3.id, activeDurationMs: 42_000, firstEnteredAt: new Date() } });
+    await scoreAndRelease(fixture, [0, 1]);
+    assert.equal(await netOf(fixture, 0), 0.5); // 1 doğru, 2 yanlış (ceza 4)
+
+    const fixed = [1, 2, 3].map((number) => ({ bookletCode: "B", sectionCode: "MAT", bookletQuestionNumber: number, canonicalQuestionNumber: number, bookletPage: null }));
+    const preview = await bodyOf(await previewBookletCorrection(fixture.exam.id, fixed));
+    assert.equal(preview.body.ok, true, JSON.stringify(preview.body));
+    assert.deepEqual(preview.body.changedBooklets, ["B"]);
+    assert.deepEqual(preview.body.impact, { affectedAttemptCount: 1, movedAnswerCount: 2, requiresRescore: true, publishedResultsMayChange: true });
+
+    // Kitapçık kümesi kilitli; süren deneme varken düzeltme yok.
+    const withC = await bodyOf(await previewBookletCorrection(fixture.exam.id, [...fixed, ...fixed.map((row) => ({ ...row, bookletCode: "C" }))]));
+    assert.ok(withC.body.issues.some((issue: { code: string }) => issue.code === "BOOKLET_SET_LOCKED"));
+    await db.odkExamAttempt.update({ where: { id: fixture.attempts[0].id }, data: { status: "IN_PROGRESS", deadlineAt: new Date(Date.now() + 600_000) } });
+    assert.ok((await bodyOf(await previewBookletCorrection(fixture.exam.id, fixed))).body.issues.some((issue: { code: string }) => issue.code === "BOOKLET_ATTEMPTS_IN_PROGRESS"));
+    await db.odkExamAttempt.update({ where: { id: fixture.attempts[0].id }, data: { status: "SUBMITTED", deadlineAt: new Date(Date.now() - 3_600_000) } });
+
+    const input = { rows: fixed, expectedHash: preview.body.currentHash, reason: "B kitapçığı A sırasıyla basılmış" };
+    const unconfirmed = await bodyOf(await commitBookletCorrection(fixture.exam.id, input, actorOf(fixture)));
+    assert.deepEqual([unconfirmed.status, unconfirmed.body.code], [409, "CONFIRMATION_REQUIRED"]);
+    assert.equal((await commitBookletCorrection(fixture.exam.id, { ...input, expectedHash: "0".repeat(64), confirmPublishedChange: true }, actorOf(fixture))).status, 409);
+    const committed = await bodyOf(await commitBookletCorrection(fixture.exam.id, { ...input, confirmPublishedChange: true }, actorOf(fixture)));
+    assert.equal(committed.status, 200, JSON.stringify(committed.body));
+    assert.deepEqual([committed.body.movedAnswerCount, committed.body.rescored], [2, true]);
+
+    const answers = await db.odkAttemptAnswer.findMany({ where: { attemptId: fixture.attempts[0].id }, include: { question: { select: { questionNumber: true } } } });
+    assert.deepEqual(answers.map((row) => [row.question.questionNumber, row.selectedOption]).sort(), [[1, "A"], [2, "B"], [3, "C"]]);
+    assert.equal((await db.odkAttemptQuestionTiming.findFirstOrThrow({ where: { attemptId: fixture.attempts[0].id } })).questionId, q1.id);
+    assert.equal(await netOf(fixture, 0), 3);
+    assert.equal(await netOf(fixture, 1), 3); // A öğrencisine dokunulmadı
+    const audit = await db.auditLog.findFirstOrThrow({ where: { action: "odk.booklet_orders_corrected", entityId: fixture.exam.id } });
+    const payload = audit.payload as { previousOrders: Array<{ questionId: string; bookletQuestionNumber: number }> };
+    assert.equal(payload.previousOrders.find((row) => row.bookletQuestionNumber === 1)?.questionId, q3.id);
+    // Aynı düzeltme ikinci kez: değişiklik yok.
+    assert.equal((await commitBookletCorrection(fixture.exam.id, { ...input, expectedHash: (await bodyOf(await previewBookletCorrection(fixture.exam.id, fixed))).body.currentHash, confirmPublishedChange: true }, actorOf(fixture))).status, 400);
   });
 });
 

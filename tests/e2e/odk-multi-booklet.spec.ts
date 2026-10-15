@@ -15,10 +15,20 @@ const examId = "e2e-odk-multi-booklet";
 const versionId = "e2e-odk-multi-booklet-v1";
 const account = panelE2EAccounts.admin;
 
+const studentEmail = "odk.student.e2e@example.com";
+
+async function removeExam() {
+  await prisma.odkExamAttempt.deleteMany({ where: { examId } });
+  await prisma.odkExam.updateMany({ where: { id: examId }, data: { currentVersionId: null } });
+  await prisma.odkExam.deleteMany({ where: { id: examId } });
+}
+
 test.describe("ODK çoklu kitapçık", () => {
   test.skip(!account.password, "Admin E2E parolası tanımlı değil.");
+  test.describe.configure({ mode: "serial" });
 
   test.beforeAll(async () => {
+    await removeExam();
     await prisma.odkExam.updateMany({ where: { id: examId }, data: { currentVersionId: null } });
     await prisma.odkExam.deleteMany({ where: { id: examId } });
     const admin = await prisma.user.findUniqueOrThrow({ where: { email: account.email } });
@@ -31,8 +41,7 @@ test.describe("ODK çoklu kitapçık", () => {
   });
 
   test.afterAll(async () => {
-    await prisma.odkExam.updateMany({ where: { id: examId }, data: { currentVersionId: null } });
-    await prisma.odkExam.deleteMany({ where: { id: examId } });
+    await removeExam();
     await prisma.$disconnect();
   });
 
@@ -68,5 +77,47 @@ test.describe("ODK çoklu kitapçık", () => {
     await page.waitForURL(/\/onizleme\/cozucu\?kitapcik=B$/);
     await expect(page.getByText(/B kitapçığı/)).toBeVisible();
     await expect(page.getByRole("button", { name: /^Soru 3,/ })).toBeVisible();
+  });
+
+  test("yönetici öğrenci başlamadan kitapçığını seçer", async ({ page }) => {
+    const admin = await prisma.user.findUniqueOrThrow({ where: { email: account.email } });
+    const student = await prisma.user.findUniqueOrThrow({ where: { email: studentEmail } });
+    await prisma.odkExamAssignment.create({ data: { examId, studentUserId: student.id, source: "STUDENT", assignedById: admin.id } });
+    await loginAs(page, account);
+    await page.goto(`/panel/odk/yonetim/sinavlar/${examId}?sekme=katilimcilar`);
+    const panel = page.getByRole("region", { name: "Kitapçık atamaları" });
+    const select = panel.getByRole("combobox", { name: /kitapçığı$/ });
+    await expect(select).toHaveValue("");
+    await select.selectOption("B");
+    await expect(panel.getByRole("status")).toContainText("B kitapçığı");
+    expect((await prisma.odkExamAssignment.findFirstOrThrow({ where: { examId, studentUserId: student.id } })).bookletCode).toBe("B");
+    const scan = await accessibilityScan(page).include("#kitapcik-atama-baslik").analyze();
+    expect(scan.violations.filter((violation) => ["critical", "serious"].includes(violation.impact || ""))).toEqual([]);
+  });
+
+  test("kilitli denemede yanlış B sırası düzeltilir; öğrencinin cevabı doğru soruya taşınır", async ({ page }) => {
+    test.setTimeout(90_000);
+    const student = await prisma.user.findUniqueOrThrow({ where: { email: studentEmail } });
+    const now = Date.now();
+    await prisma.odkExamVersion.update({ where: { id: versionId }, data: { status: "LOCKED" } });
+    await prisma.odkExam.update({ where: { id: examId }, data: { status: "ENDED", startsAt: new Date(now - 7_200_000), endsAt: new Date(now - 3_600_000) } });
+    const attempt = await prisma.odkExamAttempt.create({ data: { examId, versionId, studentUserId: student.id, bookletCode: "B", attemptNumber: 1, status: "SUBMITTED", startedAt: new Date(now - 7_000_000), deadlineAt: new Date(now - 3_700_000), submittedAt: new Date(now - 3_800_000) } });
+    // Kayıtlı (yanlış) sırada B1 = A3: öğrencinin B1 cevabı A3'e yazıldı.
+    await prisma.odkAttemptAnswer.create({ data: { attemptId: attempt.id, questionId: `${versionId}-MAT-3`, selectedOption: "D" } });
+
+    await loginAs(page, account);
+    await page.goto(`/panel/odk/yonetim/sinavlar/${examId}?sekme=icerik`);
+    const panel = page.getByRole("region", { name: "Kitapçık türleri" });
+    await expect(panel.getByText("Deneme kilitli.")).toBeVisible();
+    await panel.getByRole("textbox", { name: "Kitapçık sırası tablosu" }).fill("B;MAT;1;1\nB;MAT;2;2\nB;MAT;3;3");
+    await panel.getByRole("button", { name: "Düzeltmeyi önizle" }).click();
+    await expect(panel.getByRole("status").filter({ hasText: "1 denemede 1 cevap" })).toBeVisible();
+    const apply = panel.getByRole("button", { name: "Düzeltmeyi uygula" });
+    await expect(apply).toBeDisabled();
+    await panel.getByRole("textbox", { name: /Gerekçe/ }).fill("B kitapçığı A sırasıyla basıldı");
+    await apply.click();
+    await expect(panel.getByText(/Düzeltildi: B kitapçığı; 1 denemede 1 cevap taşındı/)).toBeVisible();
+    const answers = await prisma.odkAttemptAnswer.findMany({ where: { attemptId: attempt.id } });
+    expect(answers.map((row) => [row.questionId, row.selectedOption])).toEqual([[`${versionId}-MAT-1`, "D"]]);
   });
 });
