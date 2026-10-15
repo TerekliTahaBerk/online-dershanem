@@ -12,7 +12,8 @@ import { getActiveOdkExamGrant } from "@/lib/odk/product-contract-server";
 import { contractExamSchedule } from "@/lib/odk/product-contract";
 import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 import { readSessionPlan, sessionPlanTotalMinutes } from "@/lib/odk/exam-sessions";
-import { assignBookletCode, bookletCodesOf } from "@/lib/odk/booklets";
+import { bookletCodesOf } from "@/lib/odk/booklets";
+import { chooseAttemptBooklet } from "@/lib/odk/booklet-assignment-server";
 
 const schema = z.object({ meetAcknowledged: z.boolean().default(false) });
 
@@ -47,18 +48,22 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const deadlineAt = sessionPlan
     ? new Date(Math.min(now.getTime() + sessionPlanTotalMinutes(sessionPlan) * 60_000, windowEnd ? windowEnd.getTime() : Number.POSITIVE_INFINITY))
     : decision.deadlineAt;
-  // Çoklu kitapçık: deneme + öğrenci kimliğinden deterministik ve dengeli atama (tek kitapçıkta "A").
-  const bookletCode = assignBookletCode(id, auth.session.userId, bookletCodesOf(exam.currentVersion.bookletOrders));
+  // Çoklu kitapçık: önceki kitapçık → yönetici seçimi → en az kullanılan (kilit altında; tek kitapçıkta "A").
+  const versionId = exam.currentVersion.id;
+  const codes = bookletCodesOf(exam.currentVersion.bookletOrders);
   let attempt;
   try {
-    attempt = await prisma.odkExamAttempt.create({ data: { examId: id, versionId: exam.currentVersion.id, studentUserId: auth.session.userId, bookletCode, attemptNumber: (previous._max.attemptNumber || 0) + 1, meetAcknowledgedAt: meetRequired ? now : null, startedAt: now, deadlineAt, lastActivityAt: now } });
+    attempt = await prisma.$transaction(async (tx) => {
+      const bookletCode = await chooseAttemptBooklet(tx, { examId: id, versionId, studentUserId: auth.session.userId, codes });
+      return tx.odkExamAttempt.create({ data: { examId: id, versionId, studentUserId: auth.session.userId, bookletCode, attemptNumber: (previous._max.attemptNumber || 0) + 1, meetAcknowledgedAt: meetRequired ? now : null, startedAt: now, deadlineAt, lastActivityAt: now } });
+    });
   } catch (error) {
     if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") throw error;
     const concurrent = await prisma.odkExamAttempt.findFirst({ where: { examId: id, studentUserId: auth.session.userId, status: "IN_PROGRESS", deadlineAt: { gt: now } }, orderBy: { attemptNumber: "desc" } });
     if (!concurrent) throw error;
     return NextResponse.json({ attemptId: concurrent.id, resumed: true });
   }
-  await logAudit({ actorUserId: auth.session.userId, entityType: "OdkExamAttempt", entityId: attempt.id, action: "odk.attempt_started", summary: "Öğrenci deneme oturumunu başlattı", payload: { examId: id, attemptNumber: attempt.attemptNumber, bookletCode } });
+  await logAudit({ actorUserId: auth.session.userId, entityType: "OdkExamAttempt", entityId: attempt.id, action: "odk.attempt_started", summary: "Öğrenci deneme oturumunu başlattı", payload: { examId: id, attemptNumber: attempt.attemptNumber, bookletCode: attempt.bookletCode } });
   await recordPanelProductEvent({ name: "odk_attempt_started", properties: { family: familyCode, resumed: false, lateEntryBand: odkLateEntryBand(exam.startsAt, now) } }, "STUDENT");
   return NextResponse.json({ attemptId: attempt.id, resumed: false });
 }

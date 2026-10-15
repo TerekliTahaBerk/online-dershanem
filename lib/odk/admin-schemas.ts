@@ -170,3 +170,13 @@ const bookletOrderRow = z.object({
 });
 export const bookletOrdersPreviewSchema = z.object({ rows: z.array(bookletOrderRow).max(800) });
 export const bookletOrdersCommitSchema = bookletOrdersPreviewSchema.extend({ expectedHash: z.string().regex(/^[a-f0-9]{64}$/) });
+/** Kilitli/canlı/bitmiş denemede kitapçık sırası düzeltmesi (cevaplar konuma göre taşınır). */
+export const bookletCorrectionCommitSchema = bookletOrdersCommitSchema.extend({
+  reason: z.string().trim().min(5).max(500),
+  confirmPublishedChange: z.boolean().optional(),
+});
+/** Yöneticinin öğrenci başına kitapçık seçimi (null = otomatik). */
+export const bookletAssignmentSchema = z.object({
+  studentUserId: z.string().trim().min(1).max(64),
+  bookletCode: z.string().regex(/^[A-E]$/).nullable(),
+});

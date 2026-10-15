@@ -20,6 +20,7 @@ import { AdminResultsReviewPanel } from "@/components/odk/admin-results-review-p
 import { AdminSessionPlan } from "@/components/odk/admin-session-plan";
 import { AdminAnswerKeyRevisionPanel } from "@/components/odk/admin-answer-key-revision-panel";
 import { AdminBookletPanel } from "@/components/odk/admin-booklet-panel";
+import { AdminBookletAssignmentPanel } from "@/components/odk/admin-booklet-assignment-panel";
 import { bookletOrdersHash, loadBookletSetup } from "@/lib/odk/booklet-server";
 import { prisma } from "@/lib/prisma";
 import { loadAnswerKeyRevisionPanel } from "@/lib/odk/answer-key-revision-server";
@@ -230,13 +231,14 @@ export default async function OdkAdminExamDetailPage({
 
           {tab === "icerik" ? (
             <>
-              {bookletSetup && caps.edit ? (
+              {bookletSetup && (caps.edit || (caps.rescore && bookletSetup.codes.length > 1)) ? (
                 <AdminBookletPanel
                   examId={exam.id}
                   sections={version.sections.map((section) => ({ code: section.code, title: section.title }))}
                   booklets={bookletSetup.codes.map((code) => ({ code, questionCount: code === "A" ? bookletSetup.questions.length : bookletSetup.orders.filter((row) => row.bookletCode === code).length }))}
                   currentHash={bookletOrdersHash(bookletSetup.orders)}
-                  editable={draftEditable}
+                  editable={caps.edit && draftEditable}
+                  correctable={caps.rescore && !draftEditable && version.status !== "DRAFT" && bookletSetup.codes.length > 1}
                   totalQuestions={bookletSetup.questions.length}
                 />
               ) : null}
@@ -281,7 +283,12 @@ export default async function OdkAdminExamDetailPage({
 
           {tab === "zamanlama" ? editor(["plan", "security", "publish"]) : null}
 
-          {tab === "katilimcilar" ? <AdminAssignmentPanel examId={exam.id} canEdit={exam.status !== "ARCHIVED"} /> : null}
+          {tab === "katilimcilar" ? (
+            <>
+              <AdminAssignmentPanel examId={exam.id} canEdit={exam.status !== "ARCHIVED"} />
+              <AdminBookletAssignmentPanel examId={exam.id} canEdit={!["ENDED", "SCORED", "RELEASED", "ARCHIVED"].includes(exam.status)} />
+            </>
+          ) : null}
 
           {tab === "onizleme" ? (
             <>

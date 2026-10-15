@@ -5,8 +5,8 @@
  * - B–E kitapçıkları, her bölümde kanonik soruların bir permütasyonudur
  *   (`OdkBookletQuestionOrder`). Cevaplar ve puanlar kanonik soru kimliğiyle
  *   saklanır; kitapçık yalnız sırayı, numarayı ve PDF'i değiştirir.
- * - Öğrenciye kitapçık deneme + öğrenci kimliğinden deterministik atanır:
- *   dengeli dağılır, yarış durumu yoktur, yeniden başlatmada değişmez.
+ * - Öğrenciye kitapçık deneme başında atanır: en az kullanılan kitapçık
+ *   (`pickBalancedBooklet`), yönetici seçimi önceliklidir, yeniden girişte değişmez.
  * İstemci ve sunucuda çalışır (Node'a özgü bağımlılık yok).
  */
 
@@ -35,9 +35,16 @@ function fnv1a(value: string): number {
   return hash >>> 0;
 }
 
-export function assignBookletCode(examId: string, studentUserId: string, codes: readonly string[]): string {
+/**
+ * Dengeli atama: en az öğrenciye verilmiş kitapçık seçilir; eşitlikte sıra
+ * deneme + öğrenci kimliğinden döndürülür (küçük sınıfta da kitapçıklar
+ * eşit dağılır, hep A'dan başlamaz). Sayımlar sunucuda kilit altında okunur.
+ */
+export function pickBalancedBooklet(codes: readonly string[], counts: Readonly<Record<string, number>>, seed: string): string {
   if (codes.length <= 1) return codes[0] ?? CANONICAL_BOOKLET;
-  return codes[fnv1a(`${examId}:${studentUserId}`) % codes.length];
+  const offset = fnv1a(seed) % codes.length;
+  const rotated = codes.map((_, index) => codes[(index + offset) % codes.length]);
+  return rotated.reduce((best, code) => ((counts[code] ?? 0) < (counts[best] ?? 0) ? code : best), rotated[0]);
 }
 
 /** Sıra tablosunu doğrular: her kitapçık her bölümde kanonik soruların tam permütasyonu olmalı. */
@@ -91,6 +98,32 @@ export function validateBookletOrders(questions: readonly CanonicalQuestion[], r
   return { orders: issues.length ? [] : orders, issues };
 }
 
+type OrderRow = { bookletCode: string; questionId: string; sectionId: string; bookletQuestionNumber: number; bookletPage?: number | null };
+
+/** Sırası (ya da sayfası) değişen kitapçıklar. */
+export function changedBookletCodes(previous: readonly OrderRow[], next: readonly OrderRow[]): string[] {
+  const signature = (rows: readonly OrderRow[], code: string) =>
+    rows.filter((row) => row.bookletCode === code).map((row) => `${row.questionId}:${row.bookletQuestionNumber}:${row.bookletPage ?? ""}`).sort().join("|");
+  return [...new Set([...previous, ...next].map((row) => row.bookletCode))].sort().filter((code) => signature(previous, code) !== signature(next, code));
+}
+
+/**
+ * Kitapçık sırası düzeltmesi: öğrenci kitapçıktaki konuma (bölüm + kitapçık
+ * no) göre cevap verdi; yanlış eşlemeyle başka kanonik soruya yazılmış cevap,
+ * aynı konumun doğru kanonik sorusuna taşınır. Bölüm içinde permütasyondur.
+ * Dönen harita yalnız değişen soruları içerir (eski soru → yeni soru).
+ */
+export function bookletAnswerRemap(previous: readonly OrderRow[], next: readonly OrderRow[], bookletCode: string): Map<string, string> {
+  const nextAt = new Map(next.filter((row) => row.bookletCode === bookletCode).map((row) => [`${row.sectionId}:${row.bookletQuestionNumber}`, row.questionId]));
+  const remap = new Map<string, string>();
+  for (const row of previous) {
+    if (row.bookletCode !== bookletCode) continue;
+    const target = nextAt.get(`${row.sectionId}:${row.bookletQuestionNumber}`);
+    if (target && target !== row.questionId) remap.set(row.questionId, target);
+  }
+  return remap;
+}
+
 /**
  * Çözücü / sonuç için soruları kitapçığın sırasına dizer. Bölüm sırası korunur;
  * bölüm içinde kitapçık numarasına göre sıralanır. A (ya da sırası olmayan)
@@ -108,6 +141,24 @@ export function orderQuestionsForBooklet<Q extends CanonicalQuestion & { booklet
       })
       .sort((a, b) => a.displayNumber - b.displayNumber),
   );
+}
+
+/**
+ * Sonuç dökümü: soru satırlarını öğrencinin kitapçık numarası ve sırasına
+ * çevirir (bölüm sırası korunur) ve A karşılıklarını döner. Puan satırları
+ * kanonik kalır; yalnız gösterim değişir.
+ */
+export function bookletResultNumbering<R extends { questionId: string; question: { questionNumber: number; section: { code: string } } }>(
+  rows: readonly R[],
+  orders: ReadonlyArray<{ questionId: string; bookletQuestionNumber: number }>,
+): { rows: R[]; canonicalNumbers: Record<string, number> } | null {
+  if (!orders.length) return null;
+  const numberById = new Map(orders.map((row) => [row.questionId, row.bookletQuestionNumber]));
+  const canonicalNumbers = Object.fromEntries(rows.map((row) => [row.questionId, row.question.questionNumber]));
+  const sectionOrder = [...new Set(rows.map((row) => row.question.section.code))];
+  const renumbered = rows.map((row) => ({ ...row, question: { ...row.question, questionNumber: numberById.get(row.questionId) ?? row.question.questionNumber } }));
+  renumbered.sort((a, b) => sectionOrder.indexOf(a.question.section.code) - sectionOrder.indexOf(b.question.section.code) || a.question.questionNumber - b.question.questionNumber);
+  return { rows: renumbered, canonicalNumbers };
 }
 
 type AnswerKeyDoc = { schemaVersion?: string; examType?: string; sections: Array<{ code: string; answers: Record<string, string> }> };

@@ -13,7 +13,7 @@ Sütunlar:
 ## Özet
 
 - Taranan model: 157
-- Taranan scalar/enum alan: 1809
+- Taranan scalar/enum alan: 1810
 - Olası kişisel veri alanı: 297
 - Çocuk verisi `evet`: 88; `olası`: 76
 
