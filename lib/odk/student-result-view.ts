@@ -53,6 +53,20 @@ export function trackTotals(rows: readonly ResultSectionRow[], view: ResultTrack
   return { correct: sum("correct"), wrong: sum("wrong"), blank: sum("blank"), net: Math.round(sum("net") * 100) / 100 };
 }
 
+/** Bir kazanımı güvenilir yorumlamak için en az soru sayısı; altı "sınırlı kanıt" (P2-3). */
+export const OUTCOME_EVIDENCE_MIN_QUESTIONS = 3;
+
+export function outcomeEvidence(questionCount: number): { limited: boolean; label: string } {
+  const limited = questionCount < OUTCOME_EVIDENCE_MIN_QUESTIONS;
+  return { limited, label: `${questionCount} soru${limited ? " · sınırlı kanıt" : ""}` };
+}
+
+/** Güçlü alan sıralaması: yeterli kanıtlı kazanımlar önce, sonra doğruluk. */
+export function compareStrongOutcomes(a: { accuracy: number; questionCount: number }, b: { accuracy: number; questionCount: number }): number {
+  const limited = Number(outcomeEvidence(a.questionCount).limited) - Number(outcomeEvidence(b.questionCount).limited);
+  return limited || b.accuracy - a.accuracy;
+}
+
 export function classifyOutcome(accuracy: number, signal: Pick<WeakOutcomeSignal, "needsReview"> | null): "strong" | "improve" {
   return accuracy >= STRONG_OUTCOME_ACCURACY && !signal?.needsReview ? "strong" : "improve";
 }

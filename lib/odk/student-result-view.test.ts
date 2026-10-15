@@ -29,3 +29,11 @@ test("AYT sayısal öğrenci: alan görünümü yalnız MAT ve FEN'i sayar, eşi
   assert.deepEqual(trackTotals(rows, resultTrackView("AYT", "EA")), { correct: 40, wrong: 8, blank: 32, net: 38 });
   assert.equal(trackTotals(rows, resultTrackView("TYT", "SAY")), null);
 });
+
+test("kazanım kanıt düzeyi: 3 sorudan az ölçüm 'sınırlı kanıt'; güçlü alanlarda yeterli kanıt önce", async () => {
+  const { compareStrongOutcomes, outcomeEvidence } = await import("./student-result-view");
+  assert.deepEqual(outcomeEvidence(1), { limited: true, label: "1 soru · sınırlı kanıt" });
+  assert.deepEqual(outcomeEvidence(3), { limited: false, label: "3 soru" });
+  const rows = [{ id: "tek", accuracy: 100, questionCount: 1 }, { id: "cok", accuracy: 80, questionCount: 5 }, { id: "orta", accuracy: 90, questionCount: 4 }];
+  assert.deepEqual([...rows].sort(compareStrongOutcomes).map((row) => row.id), ["orta", "cok", "tek"]);
+});

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, FileText } from "lucide-react";
 import { requireProductRole } from "@/lib/auth/guards";
 import { loadOdkStudentResult } from "@/lib/odk/student-result-server";
-import { classifyOutcome, inTrack as inTrackSection, previousComparableDelta, resultTrackView, trackTotals, type ResultSectionRow } from "@/lib/odk/student-result-view";
+import { classifyOutcome, compareStrongOutcomes, outcomeEvidence, inTrack as inTrackSection, previousComparableDelta, resultTrackView, trackTotals, type ResultSectionRow } from "@/lib/odk/student-result-view";
 import { buildOutcomeDeterministicReason } from "@/lib/panel/dino-explanations";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 import { PanelShell } from "@/components/panel/panel-shell";
@@ -160,7 +160,9 @@ export default async function OdkStudentResultPage({
     accuracy: Number(item.accuracyRate),
     signal: weakOutcomeSignals.find((entry) => entry.outcomeId === item.outcomeId) || null,
   }));
-  const strong = outcomes.filter((row) => classifyOutcome(row.accuracy, row.signal) === "strong").sort((a, b) => b.accuracy - a.accuracy);
+  const strong = outcomes
+    .filter((row) => classifyOutcome(row.accuracy, row.signal) === "strong")
+    .sort((a, b) => compareStrongOutcomes({ accuracy: a.accuracy, questionCount: a.item.questionCount }, { accuracy: b.accuracy, questionCount: b.item.questionCount }));
   const improve = outcomes.filter((row) => classifyOutcome(row.accuracy, row.signal) === "improve");
   const slowest = [...timeAnalysis.sections]
     .filter((section) => inTrack(section.sectionCode))
@@ -192,7 +194,7 @@ export default async function OdkStudentResultPage({
 
         <section aria-label="Sonuç özeti" className="mt-6 flex flex-wrap items-end gap-x-8 gap-y-3 border-y border-pn-border py-4">
           <div>
-            <p className="text-[12.5px] text-pn-text-muted">Net</p>
+            <p className="text-[12.5px] text-pn-text-muted">Net (ham)</p>
             <p className="font-mono text-[32px] font-semibold leading-none tabular-nums text-pn-text">{NET.format(Number(score.totalNet))}</p>
           </div>
           {[
@@ -209,6 +211,9 @@ export default async function OdkStudentResultPage({
             </div>
           ))}
         </section>
+        <p className="mt-2 text-[12.5px] text-pn-text-muted">
+          Ham net, doğru sayısından yanlışların ceza katsayısıyla düşülmesiyle bulunur. Resmî sınav puanı ya da puan tahmini değildir; bu deneme için standart puan hesaplanmaz.
+        </p>
 
         {trackCodes ? (
           <div className="mt-5">
@@ -221,7 +226,7 @@ export default async function OdkStudentResultPage({
               ]}
             />
             <p className="mt-2 text-[12.5px] text-pn-text-muted">
-              Ham net gösterilir; puan tahmini değildir.{trackMode === "benim" && trackLabel ? ` Doğru/yanlış/boş yalnız ${trackLabel} alanının bölümlerinden sayılır.` : ""}
+              {trackMode === "benim" && trackLabel ? `Doğru/yanlış/boş ve alan neti yalnız ${trackLabel} alanının bölümlerinden sayılır; alan dışı bölümlerin boşları eksik sayılmaz.` : "Tüm bölümler gösteriliyor."}
             </p>
           </div>
         ) : null}
@@ -283,7 +288,7 @@ export default async function OdkStudentResultPage({
                           </div>
                           <PanelProgress className="mt-1.5" label={`${item.outcome.code} doğruluk oranı`} value={accuracy} />
                           <p className="mt-1 text-[12px] text-pn-text-muted">
-                            {item.outcome.unit.name} · {item.questionCount} soru · {item.correctCount} D, {item.wrongCount} Y, {item.blankCount} B
+                            {item.outcome.unit.name} · {outcomeEvidence(item.questionCount).label} · {item.correctCount} D, {item.wrongCount} Y, {item.blankCount} B
                             {avgSec != null ? ` · ort. ${avgSec} sn/soru` : ""}
                             {signal ? ` · ${signal.evidenceCount} ölçüm${signal.confidence === "LOW" ? " · az kanıt" : ""}` : ""}
                           </p>
