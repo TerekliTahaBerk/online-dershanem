@@ -38,6 +38,9 @@ test("yönetici LGS çözücüsünü oturum oturum önizler; hiçbir şey yazıl
   await page.getByRole("button", { name: "B", exact: true }).click();
   await expect(page.getByRole("button", { name: "B", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(page.getByText("Kaydedildi", { exact: true })).toBeVisible();
+  // Gösterge 300 ms'de belirir; axe geçiş ortasında taranırsa yarı saydam metnin
+  // karışık rengini ölçüp yanlış kontrast hatası verir. Geçişin bitmesini bekle.
+  await expect(page.getByText("Kaydedildi", { exact: true })).toHaveCSS("opacity", "1");
 
   const scan = await accessibilityScan(page).analyze();
   const blocking = scan.violations.filter((violation) => ["critical", "serious"].includes(violation.impact || ""));
