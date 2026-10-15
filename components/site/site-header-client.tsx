@@ -8,6 +8,7 @@ import { Menu } from "lucide-react";
 import { primaryNavForDino, navCta, navLogin } from "@/lib/site-content";
 import type { PublicProduct } from "@/lib/product-architecture";
 import { MobileMenu } from "@/components/site/mobile-menu";
+import { ApplicationsMenu } from "@/components/site/applications-menu";
 import { ProductsMenu } from "@/components/site/products-menu";
 import { CartHeaderLink } from "@/components/cart/cart-header-link";
 
@@ -22,7 +23,7 @@ export function SiteHeaderClient({
   products: readonly PublicProduct[];
   dinoAiEnabled: boolean;
 }) {
-  const primaryNav = primaryNavForDino(dinoAiEnabled);
+  const primaryNav = primaryNavForDino(dinoAiEnabled).filter(link => link.href !== "/dino-ai");
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const headerRef = useRef<HTMLElement>(null);
@@ -67,6 +68,7 @@ export function SiteHeaderClient({
               className="hidden items-center gap-1 lg:order-1 lg:flex"
             >
               <ProductsMenu isActive={isActive} products={products} />
+              <ApplicationsMenu isActive={isActive} />
               {primaryNav.map((link) => (
                 <Link
                   key={link.href}

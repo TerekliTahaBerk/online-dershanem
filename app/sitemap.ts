@@ -28,6 +28,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Paket kurucu — navbar'ın birincil CTA'sı ve indexlenebilir; sitemap'te
     // yoktu.
     { url: `${siteUrl}/paketler`, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${siteUrl}/uygulamalar/mobil`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${siteUrl}/uygulamalar/bilgin`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${siteUrl}/dino-ai`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${siteUrl}/online-ozel-ders`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteUrl}/blog`, changeFrequency: "weekly", priority: 0.6 },

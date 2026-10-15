@@ -61,7 +61,10 @@ test.describe("masaüstü navigasyon", () => {
     const header = page.locator("header");
     const nav = page.getByRole("navigation", { name: "Ana menü" });
 
-    await expect(nav.getByRole("link", { name: /^Dino AI · (Yakında|Pilot)$/ })).toBeVisible();
+    await nav.getByRole("button", { name: "Uygulamalar", exact: true }).click();
+    await expect(nav.getByRole("link", { name: /^onlinedershanem Mobil/ })).toBeVisible();
+    await expect(nav.getByRole("link", { name: /^Bilgin Yakında/ })).toBeVisible();
+    await expect(nav.getByRole("link", { name: /^Dino AI Yakında/ })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Hakkımızda", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Blog", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Paketler", exact: true })).toHaveCount(0);
@@ -89,7 +92,7 @@ test.describe("mobil navigasyon", () => {
     for (const product of PRODUCTS) {
       await expect(menu.getByRole("link", { name: product.name, exact: true })).toBeVisible();
     }
-    await expect(menu.getByRole("link", { name: /^Dino AI · (Yakında|Pilot)$/ })).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Dino AI Yakında", exact: true })).toBeVisible();
     await expect(menu.getByRole("link", { name: "Hakkımızda", exact: true })).toBeVisible();
     await expect(menu.getByRole("link", { name: "Blog", exact: true })).toBeVisible();
     await expect(menu.getByRole("link", { name: "Paketler", exact: true })).toHaveCount(0);
@@ -167,10 +170,12 @@ test.describe("ürün sayfaları ve footer", () => {
   });
 
   test("Dino AI yayında olmayan bir yeteneği çalışıyormuş gibi anlatmaz", async ({ page }) => {
-    await page.goto("/dino-ai", { waitUntil: "domcontentloaded" });
+    await gotoHydrated(page, "/dino-ai");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Aralarındaki bağ: Dino.");
     await expect(page.getByRole("main")).toContainText(/Ayrı satılan bir ürün değildir\./i);
-    const navLink = page.getByRole("navigation", { name: "Ana menü" }).getByRole("link", { name: /^Dino AI ·/ });
+    const nav = page.getByRole("navigation", { name: "Ana menü" });
+    await nav.getByRole("button", { name: "Uygulamalar", exact: true }).click();
+    const navLink = nav.getByRole("link", { name: /^Dino AI Yakında/ });
     if ((await navLink.textContent())?.includes("Yakında")) {
       await expect(page.getByRole("main")).toContainText("henüz yayında değil");
       await expect(page.getByRole("main")).toContainText("pilot hazırlıkları sürüyor");

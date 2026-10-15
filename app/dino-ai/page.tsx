@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ApplicationNav } from "@/components/applications/application-nav";
 import { ArrowDown, ArrowRight } from "lucide-react";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
@@ -6,7 +7,6 @@ import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 import { getDinoMarketingCopy } from "@/lib/dino-marketing";
-import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import styles from "./dino.module.css";
 
 export const metadata = buildMarketingMetadata({
@@ -47,12 +47,13 @@ const surfaces = [
 ] as const;
 
 export default function DinoAiPage() {
-  const copy = getDinoMarketingCopy(getPanelFeatureFlags().dinoAi);
+  const copy = getDinoMarketingCopy(false);
   return (
     <div className="site-scope">
       <SiteHeader />
       <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Dino AI", url: "/dino-ai" }])} />
       <main id="main-content" tabIndex={-1} className={styles.page}>
+        <ApplicationNav active="/dino-ai" />
         <section className={styles.hero} aria-labelledby="dino-title">
           <div className={`site-container ${styles.heroContent}`}>
             <div className={styles.intro}>

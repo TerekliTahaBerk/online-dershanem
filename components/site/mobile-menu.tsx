@@ -1,5 +1,6 @@
 "use client";
 
+import { applicationProducts } from "@/lib/application-products";
 import { yonBrand } from "@/lib/yon-brand";
 
 import { useEffect, useRef } from "react";
@@ -40,7 +41,7 @@ export function MobileMenu({
   products,
   dinoAiEnabled,
 }: MobileMenuProps) {
-  const primaryNav = primaryNavForDino(dinoAiEnabled);
+  const primaryNav = primaryNavForDino(dinoAiEnabled).filter(link => link.href !== "/dino-ai");
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -159,6 +160,16 @@ export function MobileMenu({
                 </span>
               </li>
             ))}
+          </ul>
+        </div>
+        <div className="border-b border-(--site-line) py-5">
+          <h2 className="dc-eyebrow">Uygulamalar</h2>
+          <ul className="mt-4 flex flex-col gap-4">
+            {applicationProducts.map(product => <li key={product.href}>
+              <Link href={product.href} onClick={onClose} aria-current={isActive(product.href) ? "page" : undefined} className="flex min-h-11 items-center justify-between gap-3 text-[17px] font-semibold text-(--site-ink)">
+                {product.name}<span className="text-xs font-medium text-(--site-muted)">{product.status}</span>
+              </Link>
+            </li>)}
           </ul>
         </div>
         {primaryNav.map((link) => (
