@@ -231,3 +231,18 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
     sectionBreakdown: normalizeSectionBreakdown(attempt.score.sectionBreakdown, new Map(attempt.version.sections.map((section) => [section.id, section.code]))),
   };
 }
+
+/**
+ * Çözücünün soru listesi ve oturum planı ATTEMPT'İN sürümünden gelir (P1-8):
+ * deneme sonradan yeni sürüme geçse de öğrenci başladığı sorularla devam eder;
+ * cevap ucu da aynı sürümü doğrular.
+ */
+export async function loadAttemptRunnerVersion(versionId: string) {
+  return prisma.odkExamVersion.findUnique({
+    where: { id: versionId },
+    select: {
+      settings: true,
+      sections: { orderBy: { position: "asc" }, select: { code: true, title: true, questions: { where: { isActive: true }, orderBy: { position: "asc" }, select: { id: true, questionNumber: true, position: true, bookletPage: true } } } },
+    },
+  });
+}

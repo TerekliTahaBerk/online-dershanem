@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { requireProductRole } from "@/lib/auth/guards";
-import { getStudentExam } from "@/lib/odk/student-exam-server";
+import { getStudentExam, loadAttemptRunnerVersion } from "@/lib/odk/student-exam-server";
 import { StudentExamRunner } from "@/components/odk/student-exam-runner";
 import { loadAttemptSessionState } from "@/lib/odk/attempt-sessions-server";
 import { sessionForSection } from "@/lib/odk/exam-sessions";
@@ -18,14 +18,16 @@ export default async function OdkStudentExamRunnerPage({
   if (!data?.exam.currentVersion) notFound();
   if (!data.attempt || data.attempt.status !== "IN_PROGRESS")
     redirect(`/panel/odk/ogrenci/denemeler/${id}`);
+  const version = await loadAttemptRunnerVersion(data.attempt.versionId);
+  if (!version) notFound();
   // Oturumlu sınav (LGS): açık oturum, kilitli oturumlar ve ara durumu sunucuda hesaplanır.
   const sessionState = await loadAttemptSessionState({
     id: data.attempt.id,
     startedAt: data.attempt.startedAt,
     deadlineAt: data.attempt.deadlineAt,
-    settings: data.exam.currentVersion.settings,
+    settings: version.settings,
   });
-  const questions = data.exam.currentVersion.sections.flatMap((section) =>
+  const questions = version.sections.flatMap((section) =>
     section.questions.map((question) => ({
       id: question.id,
       questionNumber: question.questionNumber,

@@ -376,6 +376,28 @@ integration("P1-6 soru editörü: araya giren kayıt bayat revizyonla ezilemez; 
   });
 });
 
+integration("P1-8 puanlama attempt'in kendi sürümüyle yapılır; güncel sürüm değişse de geçmiş attempt etkilenmez", async () => {
+  const run = randomUUID().slice(0, 8);
+  await withFixture({ run, students: 2, sections: [{ code: "MAT", key: ["A", "A"] }] }, async (fixture) => {
+    await fixture.answer(0, "MAT", ["A", "A"]);
+    // Yeni sürüm (v2) farklı soru kimlikleri ve anahtarla güncel sürüm olur; 2. öğrenci v2'de çözer.
+    const v2 = await db.odkExamVersion.create({ data: { examId: fixture.exam.id, versionNumber: 2, durationMinutes: 120, scoringPolicyId: fixture.policy.id, createdById: fixture.admin.id, status: "LOCKED" } });
+    const section = await db.odkExamSection.create({ data: { versionId: v2.id, code: "MAT", title: "MAT", position: 0, questionCount: 2 } });
+    const v2Questions = await Promise.all([1, 2].map((number) => db.odkExamQuestion.create({ data: { sectionId: section.id, questionNumber: number, position: number - 1, correctOption: "B" } })));
+    await db.odkExam.update({ where: { id: fixture.exam.id }, data: { currentVersionId: v2.id } });
+    await db.odkExamAttempt.update({ where: { id: fixture.attempts[1].id }, data: { versionId: v2.id } });
+    await db.odkAttemptAnswer.createMany({ data: v2Questions.map((question) => ({ attemptId: fixture.attempts[1].id, questionId: question.id, selectedOption: "B" as const })) });
+
+    const scored = await scoreOdkExam(fixture.exam.id, fixture.admin.id);
+    assert.ok(scored.ok, JSON.stringify(scored));
+    assert.equal(await netOf(fixture, 0), 2); // v1 anahtarı (A,A)
+    assert.equal(await netOf(fixture, 1), 2); // v2 anahtarı (B,B)
+    const v1Results = await db.odkAttemptQuestionResult.findMany({ where: { attemptId: fixture.attempts[0].id } });
+    assert.deepEqual(v1Results.map((row) => row.questionId).sort(), fixture.sections[0].questions.map((question) => question.id).sort());
+    await db.odkExamAttempt.deleteMany({ where: { examId: fixture.exam.id } });
+  });
+});
+
 /** Sınav ailesine bağlı küçük bir müfredat kataloğu (ders → ünite → kazanım). */
 async function createOutcomeCatalog(run: string, familyCode: "LGS" | "TYT" | "AYT", subjects: Array<{ subject: string; unit: string; codes: string[] }>) {
   const family = await db.examFamily.findFirstOrThrow({ where: { code: familyCode } });
