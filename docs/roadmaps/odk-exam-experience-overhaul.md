@@ -253,7 +253,7 @@ gereksinimi veya ciddi UX açığı; **P2** = iyileştirme.
 | 5 | P1-1/2/3/13 | Oturum kitapçığı (migration 0116), PDF sayfa navigasyonu, gerçek çözücü önizlemesi, iki sekme | ✅ `6dcacfb`, `a8ce5b9`, `4031d81` |
 | 6 | P1-8, P2-3, revizyon UI | Attempt sürümüne bağlı puanlama, revizyon arayüzü, ham net/kanıt düzeyi, rapor alt testleri | ✅ `b92a69a`, `8fc208f`, `3170d56`, `e1b9835` (P1-9 Faz 8’de uygulandı) |
 | 7 | P0-12 | Ölçek testi + toplu puanlama yazımı, süre duyurusu, klavye ve cihaz matrisi E2E | ✅ `4adf8e5`, `6f5e7a9` |
-| 8 | P1-9 | Çoklu kitapçık A–E (migration 0117), K09 onayı | ✅ `91d0279f`, `4ce33a24`, `4121a8b2` |
+| 8 | P1-9 | Çoklu kitapçık A–E (migration 0117/0118), K09 onayı, risk giderimi | ✅ `91d0279f`, `4ce33a24`, `4121a8b2`, `7d960433`, `587ecd40`, `aa646b96` |
 
 ### Migration ve geri alma ilkesi
 
@@ -676,8 +676,8 @@ etki önizlemesi ve yükleme dahildir.)
 **Ürün kararları** (kullanıcı onayı: "Sınav çözme yalnız webde onaylıyorum. Çoklu kitapçık olsun.")
 - K09 / E1 istisnası onaylandı: sınav çözme ve yönetici çözücü önizlemesi yalnız web'de.
 - A kitapçığı kanoniktir; B–E kitapçıkları her bölümde A sorularının permütasyonudur.
-- Kitapçık öğrenciye deneme başında `examId + studentUserId` üzerinden deterministik ve dengeli
-  atanır (yarış yok, yeniden başlatmada değişmez); `odk_exam_attempts.booklet_code`'a yazılır.
+- Kitapçık öğrenciye deneme başında atanır (yönetici seçimi → en az kullanılan kitapçık; yeniden
+  girişte değişmez); `odk_exam_attempts.booklet_code`'a yazılır.
 - Öğrenci kendi kitapçığının sırası, numarası ve PDF'iyle çözer; yönetici raporları kanonik (A)
   numarayla kalır. Cevaplar/puanlar kanonik soru kimliğiyle saklandığı için puanlama değişmez.
 - Cevap anahtarı herhangi bir kitapçığa göre girilebilir; kanoniğe çevrilir, başka kitapçıktan
@@ -713,15 +713,29 @@ etki önizlemesi ve yükleme dahildir.)
 - `lint:api-validation`, `lint:mobile-parity`, `lint:hygiene`, `eslint .`, `tsc` → temiz;
   `data:pii-inventory` yeniden üretildi.
 
-**Kalan riskler**
-- Kitapçık sırası yalnız taslakta değiştirilebilir; canlı sınavda hatalı sıra yeni sürüm gerektirir.
-- Öğrenci sonuç ekranı kitapçık numarasını gösterir; öğretmen/veli raporları kanonik numarayı
-  gösterir (raporda kitapçık sütunu yok).
-- Kitapçık atamasını yönetici elle değiştiremez (bilinçli: dengeli ve denetlenebilir).
+**Faz 8 sonrası risk giderimi** (`7d960433`, `587ecd40`, `aa646b96`)
+
+| Risk | Çözüm | Test |
+| --- | --- | --- |
+| Karma tabanlı atama küçük sınıfta dengesiz (ör. 4 öğrencinin 3'ü A) | Başlatma, deneme başına danışma kilidi altında sürümde en az öğrenciye verilmiş kitapçığı seçer; eşitlikte sıra öğrenciye göre döner; yeniden girişte önceki kitapçık korunur | birim (2–12 öğrencide fark ≤ 1), integration |
+| Yönetici kitapçığı değiştiremiyor | Katılımcılar sekmesinde "Kitapçık atamaları": öğrenci başlamadan önce kitapçık seçilir (migration 0118, `odk_exam_assignments.booklet_code`, nullable); başlamış öğrencide 409 `ATTEMPT_STARTED`; seçim ile başlatma aynı kilitte | integration, E2E |
+| Yanlış B–E sırası canlı/bitmiş sınavda düzeltilemiyor | "Kitapçık türleri" paneli kilitli denemede düzeltme moduna geçer: etki önizlemesi (deneme/cevap sayısı, yeniden puanlama), gerekçe, yayınlanmış sonuç etkileniyorsa onay; cevaplar ve soru süreleri kitapçık konumuna göre doğru soruya taşınır (tek transaction), puanlanmışsa yeniden puanlanır. Süren deneme varken (`BOOKLET_ATTEMPTS_IN_PROGRESS`) ve kitapçık ekleme/çıkarmada (`BOOKLET_SET_LOCKED`) reddedilir. Önceki/yeni sıra audit'te (`odk.booklet_orders_corrected`) — taşıma bu ikisinden yeniden üretilip geri alınabilir. Yetki `odk:key:revise` + yakın kimlik doğrulama | birim, integration (taşıma, rescore, onay, bayatlık, süren deneme), E2E |
+| Öğrenci B numarası, öğretmen A numarasıyla konuşuyor | Öğrenci sonuç dökümünde her soru "3 (A: 7)" biçiminde; bölüm açıklaması kitapçığı belirtir. Öğretmen/veli raporları soru numarası göstermez (bölüm/kazanım düzeyinde) | birim (`bookletResultNumbering`) |
+| B öğrencisine A sıralı cevap anahtarı PDF'i | Cevap anahtarı PDF'i kitapçık türüyle yüklenir; B–E öğrencisi yalnız kendi anahtarını alır, yoksa düğme gizlenir (anahtar sonuç tablosunda kendi numarasıyla) | birim |
+| Başlatmada atamanın gerçek uçla test edilmemesi | Atama `chooseAttemptBooklet`'e taşındı, başlatma ucu aynı fonksiyonu transaction içinde çağırır; integration doğrudan bu fonksiyonla gerçek DB'de koşar | integration |
+
+**Sonuçlar**: birim 1107/1107 (+kitapçık 11), ODK+mobil integration 71/71, E2E `odk-multi-booklet` 3/3 +
+ODK/mobil ODK grubu 23/23, `odk-product-quality` 8/8 (yeniden seed sonrası), lint/eslint/tsc temiz,
+PII envanteri yeniden üretildi.
+
+**Kalan (bilinçli) sınırlar**
+- Olay günlüğündeki (`odk_attempt_events`) eski `questionId` değerleri düzeltmede taşınmaz: tarihsel
+  kayıttır; audit'teki önceki/yeni sıra ile yorumlanır.
+- Kâğıt optik form okuma kapsam dışı.
 
 ### Dağıtım notları (birleştirmeden önce okuyun)
 - `vercel.json` derleme komutu `npm run prisma:deploy:ci` çalıştırır: dal birleştirilip
-  dağıtıldığında **migration `0116_odk_session_booklets` ve `0117_odk_multi_booklets` otomatik uygulanır** (eklemeli; geri alma
+  dağıtıldığında **migration `0116_odk_session_booklets`, `0117_odk_multi_booklets` ve `0118_odk_assignment_booklet` otomatik uygulanır** (eklemeli; geri alma
   adımları migration dosyasında). Bu çalışma sırasında üretimde hiçbir migration, puanlama ya da
   yeniden puanlama çalıştırılmadı.
 - Mevcut LGS denemeleri tek birleşik kitapçıkla uyarı vererek çalışır; Sözel/Sayısal ayrımı için
