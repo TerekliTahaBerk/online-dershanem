@@ -455,7 +455,7 @@ async function ExamReportTab({ examId, assignedCount, attempts }: { examId: stri
       <Section title="Bölüm ortalamaları">
         {summary.sectionAverages.length ? (
           <PanelTable caption="Bölüm ortalamaları" columns={["Bölüm", "Ortalama net", "Doğruluk"]}>
-            {summary.sectionAverages.map((section) => (
+            {summary.sectionAverages.flatMap((section) => [
               <PanelTableRow key={section.code}>
                 <PanelTableCell>{section.title}</PanelTableCell>
                 <PanelTableCell>
@@ -464,8 +464,28 @@ async function ExamReportTab({ examId, assignedCount, attempts }: { examId: stri
                 <PanelTableCell>
                   <span className="tabular-nums">{section.averageAccuracy === null ? "—" : `%${Math.round(section.averageAccuracy)}`}</span>
                 </PanelTableCell>
-              </PanelTableRow>
-            ))}
+              </PanelTableRow>,
+              // Alt test ortalamaları (Faz 6): ders satırının altında, ham net.
+              ...summary.subtestAverages
+                .filter((subtest) => subtest.sectionCode === section.code)
+                .map((subtest) => (
+                  <PanelTableRow key={`${section.code}:${subtest.code}`}>
+                    <PanelTableCell>
+                      <span className="pl-4 text-pn-text-secondary">
+                        <span aria-hidden="true">↳ </span>
+                        {subtest.title}
+                        <span className="sr-only"> ({section.title} alt testi)</span>
+                      </span>
+                    </PanelTableCell>
+                    <PanelTableCell>
+                      <span className="tabular-nums text-pn-text-secondary">{net(subtest.averageNet)}</span>
+                    </PanelTableCell>
+                    <PanelTableCell>
+                      <span className="tabular-nums text-pn-text-secondary">{subtest.averageAccuracy === null ? "—" : `%${Math.round(subtest.averageAccuracy)}`}</span>
+                    </PanelTableCell>
+                  </PanelTableRow>
+                )),
+            ])}
           </PanelTable>
         ) : (
           <p className="text-[14px] text-pn-text-muted">Puanlanmış teslim olunca bölüm ortalamaları burada görünür.</p>
