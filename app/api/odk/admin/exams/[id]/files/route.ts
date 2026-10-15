@@ -32,7 +32,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { file, type } = parsed.data;
   // Oturum yalnız kitapçık için anlamlıdır; cevap anahtarı PDF'i her zaman tüm denemeye aittir.
   const sessionKey = type === "BOOKLET_PDF" ? parsed.data.sessionKey : "";
-  const bookletCode = type === "BOOKLET_PDF" ? parsed.data.bookletCode : "";
+  // Kitapçık türü hem öğrenci kitapçığı hem cevap anahtarı PDF'i için geçerlidir (B anahtarı B sırasıyla basılır).
+  const bookletCode = parsed.data.bookletCode;
   if (!file.size || file.size > MAX_PDF_SIZE) return NextResponse.json({ error: "PDF en fazla 30 MB olabilir." }, { status: 413 });
   const routeParams = idParamsSchema.safeParse(await context.params);
   if (!routeParams.success) return invalidApiInput();

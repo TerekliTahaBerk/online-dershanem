@@ -35,6 +35,17 @@ export function resolveBookletFile(allFiles: readonly BookletFileRef[], timeline
   return whole ? { ok: true, fileId: whole.id, scope: "EXAM" } : { ok: false, code: "BOOKLET_MISSING", status: 404 };
 }
 
+/**
+ * Cevap anahtarı PDF'i kitapçığa göre: A türden bağımsız ("") dosyaya düşebilir;
+ * B–E yalnız kendi PDF'ini alır — A sırasıyla basılmış anahtar B öğrencisini
+ * yanıltır. Yoksa öğrenci anahtarı sonuç tablosundan (kendi numaralarıyla) görür.
+ */
+export function resolveAnswerKeyFile<F extends { bookletCode?: string | null }>(files: readonly F[], bookletCode = "A"): F | null {
+  const own = files.find((file) => (file.bookletCode ?? "") === bookletCode);
+  if (own) return own;
+  return bookletCode === "A" ? (files.find((file) => (file.bookletCode ?? "") === "") ?? null) : null;
+}
+
 export type BookletReadinessIssue = { level: "error" | "warning"; code: string; message: string };
 
 /** Hazırlık: oturumlu sınavda her oturumun kitapçığı var mı; yalnız birleşik kitapçık uyarıdır. */

@@ -5,6 +5,7 @@ import { requireApiProductRole } from "@/lib/auth/api-guards";
 import { getActiveOdkExamGrant } from "@/lib/odk/product-contract-server";
 import { contractAnswerKeyAvailable } from "@/lib/odk/product-contract";
 import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
+import { resolveAnswerKeyFile } from "@/lib/odk/booklet-access";
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("ODK", "STUDENT"); if (!auth.ok) return auth.response;
@@ -14,9 +15,10 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const { id } = params.data;
   const grant = await getActiveOdkExamGrant(auth.session.userId, id);
   if (!grant || !grant.contract.policy.rights.studentReports) return NextResponse.json({ error: "Cevap anahtarı henüz erişime açık değil." }, { status: 404 });
-  const exam = await prisma.odkExam.findFirst({ where: { id, status: "RELEASED", attempts: { some: { studentUserId: auth.session.userId, score: { isNot: null } } } }, select: { status: true, resultsReleasedAt: true, answerKeyReleasedAt: true, currentVersion: { select: { files: { where: { type: "ANSWER_KEY_PDF" }, take: 1, select: { blobPathname: true, fileName: true, mimeType: true } } } } } });
+  const exam = await prisma.odkExam.findFirst({ where: { id, status: "RELEASED", attempts: { some: { studentUserId: auth.session.userId, score: { isNot: null } } } }, select: { status: true, resultsReleasedAt: true, answerKeyReleasedAt: true, attempts: { where: { studentUserId: auth.session.userId, score: { isNot: null } }, orderBy: { attemptNumber: "desc" }, take: 1, select: { bookletCode: true } }, currentVersion: { select: { files: { where: { type: "ANSWER_KEY_PDF" }, select: { blobPathname: true, fileName: true, mimeType: true, bookletCode: true } } } } } });
   if (!exam || !contractAnswerKeyAvailable(grant.exam, exam)) return NextResponse.json({ error: "Cevap anahtarı henüz erişime açık değil." }, { status: 404 });
-  const file = exam?.currentVersion?.files[0];
+  // Çoklu kitapçık: öğrenci yalnız kendi kitapçığının anahtarını alır (B'ye A sıralı anahtar verilmez).
+  const file = resolveAnswerKeyFile(exam.currentVersion?.files ?? [], exam.attempts[0]?.bookletCode ?? "A");
   if (!file) return NextResponse.json({ error: "Cevap anahtarı PDF'i bulunamadı." }, { status: 404 });
   const result = await get(file.blobPathname, { access: "private", ifNoneMatch: request.headers.get("if-none-match") || undefined });
   if (!result) return NextResponse.json({ error: "Cevap anahtarı dosyası bulunamadı." }, { status: 404 });

@@ -331,8 +331,9 @@ export default async function OdkStudentResultPage({
         <Section
           id="sorular"
           title="Soru cevap dökümü"
+          description={data.bookletCode ? `${data.bookletCode} kitapçığının numaralarıyla; parantez içinde A kitapçığındaki karşılığı.` : undefined}
           actions={
-            answerKeyAvailable && exam.currentVersion?.files.length ? (
+            answerKeyAvailable && data.answerKeyPdfAvailable ? (
               <a href={`/api/odk/student/exams/${id}/answer-key`} target="_blank" rel="noreferrer" className={buttonClass("secondary", "sm")}>
                 <FileText size={14} aria-hidden="true" /> Cevap anahtarı PDF
               </a>
@@ -355,7 +356,10 @@ export default async function OdkStudentResultPage({
                 const ms = data.attempt.timings.find((timing) => timing.questionId === item.questionId)?.activeDurationMs;
                 return (
                   <PanelTableRow key={item.questionId}>
-                    <PanelTableCell><span className="tabular-nums">{item.question.questionNumber}</span></PanelTableCell>
+                    <PanelTableCell>
+                      <span className="tabular-nums">{item.question.questionNumber}</span>
+                      {data.canonicalNumbers?.[item.questionId] != null ? <span className="ml-1.5 text-[12px] text-pn-text-muted tabular-nums">(A: {data.canonicalNumbers[item.questionId]})</span> : null}
+                    </PanelTableCell>
                     <PanelTableCell>{item.question.section.title}</PanelTableCell>
                     <PanelTableCell>{item.question.outcomes.map((outcome) => outcome.outcome.code).join(", ") || "—"}</PanelTableCell>
                     <PanelTableCell>

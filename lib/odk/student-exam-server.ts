@@ -1,6 +1,8 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { resolveAnswerKeyFile } from "@/lib/odk/booklet-access";
+import { bookletResultNumbering } from "@/lib/odk/booklets";
 import { attemptHasExpired, decideAttemptStart } from "@/lib/odk/attempt-domain";
 import { getActiveOdkExamGrant, listActiveOdkContracts } from "@/lib/odk/product-contract-server";
 import { contractAnswerKeyAvailable, contractExamSchedule, contractResultAvailable } from "@/lib/odk/product-contract";
@@ -109,7 +111,7 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
     where: { id: examId, status: "RELEASED" },
     select: {
       id: true, title: true, family: true, examFamilyRefId: true, examFamilyRef: { select: { code: true } }, status: true, resultsReleasedAt: true, answerKeyReleasedAt: true,
-      currentVersion: { select: { files: { where: { type: "ANSWER_KEY_PDF" }, take: 1, select: { id: true } } } },
+      currentVersion: { select: { files: { where: { type: "ANSWER_KEY_PDF" }, select: { id: true, bookletCode: true } } } },
       attempts: {
         where: { studentUserId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, score: { is: { publicationStatus: "PUBLISHED" } } }, orderBy: { attemptNumber: "desc" }, take: 1,
         select: {
@@ -147,13 +149,14 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
   const attempt = exam?.attempts[0];
   if (!attempt?.score) return null;
   // Çoklu kitapçık: öğrenci soruları kendi kitapçığının numarası ve sırasıyla görür (puan kanonik).
+  // A karşılığı da döner: öğretmenle "A kitapçığında kaçıncı soru" diye konuşulabilsin.
+  let canonicalNumbers: Record<string, number> | null = null;
   if (attempt.bookletCode !== "A") {
     const orders = await prisma.odkBookletQuestionOrder.findMany({ where: { versionId: attempt.versionId, bookletCode: attempt.bookletCode }, select: { questionId: true, bookletQuestionNumber: true } });
-    if (orders.length) {
-      const numberById = new Map(orders.map((row) => [row.questionId, row.bookletQuestionNumber]));
-      const sectionOrder = [...new Set(attempt.score.questionResults.map((item) => item.question.section.code))];
-      for (const item of attempt.score.questionResults) item.question.questionNumber = numberById.get(item.questionId) ?? item.question.questionNumber;
-      attempt.score.questionResults.sort((a, b) => sectionOrder.indexOf(a.question.section.code) - sectionOrder.indexOf(b.question.section.code) || a.question.questionNumber - b.question.questionNumber);
+    const numbered = bookletResultNumbering(attempt.score.questionResults, orders);
+    if (numbered) {
+      attempt.score.questionResults = numbered.rows;
+      canonicalNumbers = numbered.canonicalNumbers;
     }
   }
   const attempts = await prisma.odkExamAttempt.findMany({
@@ -232,6 +235,9 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
     exam,
     attempt,
     score: attempt.score,
+    bookletCode: canonicalNumbers ? attempt.bookletCode : null,
+    answerKeyPdfAvailable: Boolean(resolveAnswerKeyFile(exam.currentVersion?.files ?? [], attempt.bookletCode)),
+    canonicalNumbers,
     answerKeyAvailable: contractAnswerKeyAvailable(grant.exam, exam),
     outcomeTrends,
     weakOutcomeSignals,

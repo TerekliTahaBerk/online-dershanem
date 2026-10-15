@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { resolveBookletFile, sessionBookletIssues } from "./booklet-access";
+import { resolveBookletFile, sessionBookletIssues, resolveAnswerKeyFile } from "./booklet-access";
 
 const whole = { id: "f-all", sessionKey: "" };
 const sozel = { id: "f-sozel", sessionKey: "SOZEL" };
@@ -65,4 +65,13 @@ test("hazırlık: çoklu kitapçıkta her kitapçığın (ve oturumun) PDF'i ger
   assert.deepEqual(bookletFileIssues(["A", "B"], [], [{ sessionKey: "", bookletCode: "" }, { sessionKey: "", bookletCode: "B" }]), []);
   assert.deepEqual(bookletFileIssues(["A", "B"], [], [{ sessionKey: "", bookletCode: "" }]).map((issue) => issue.code), ["BOOKLET_TYPE_PDF_MISSING"]);
   assert.deepEqual(bookletFileIssues(["A", "B"], ["SOZEL", "SAYISAL"], [{ sessionKey: "SOZEL", bookletCode: "A" }, { sessionKey: "SAYISAL", bookletCode: "A" }, { sessionKey: "SOZEL", bookletCode: "B" }]).map((issue) => issue.message), ["B kitapçığının SAYISAL oturumu PDF'i yüklenmedi."]);
+});
+
+test("cevap anahtarı PDF'i: A ortak dosyaya düşer, B yalnız kendi PDF'ini alır", () => {
+  const common = { id: "ortak", bookletCode: "" };
+  const b = { id: "b", bookletCode: "B" };
+  assert.equal(resolveAnswerKeyFile([common], "A")?.id, "ortak");
+  assert.equal(resolveAnswerKeyFile([common], "B"), null);
+  assert.equal(resolveAnswerKeyFile([common, b], "B")?.id, "b");
+  assert.equal(resolveAnswerKeyFile([{ id: "a", bookletCode: "A" }, common], "A")?.id, "a");
 });
