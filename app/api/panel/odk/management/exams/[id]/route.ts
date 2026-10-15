@@ -12,6 +12,9 @@ import { ODK_EXAM_COMMAND_PERMISSION, ODK_EXAM_STEP_UP_OPERATIONS, odkExamComman
 import { GroupMutationError } from "@/lib/panel/group-mutation-core";
 import { guardMutation } from "@/lib/security/mutation-guard";
 
+/** Puanla / yeniden puanla komutları kalabalık sınıfta birkaç saniye sürer (Faz 7 ölçek testi). */
+export const maxDuration = 60;
+
 /**
  * K03 · Deneme çalışma alanı — web `app/panel/odk/yonetim/sinavlar/[id]` ile
  * AYNI yükleyici (`loadOdkExamWorkspace`) ve sekme izinleri.

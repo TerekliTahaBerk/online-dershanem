@@ -1,5 +1,6 @@
 import type { OdkAnswerOption, OdkExamFamily, OdkExamStatus, OdkExamFileType } from "@prisma/client";
-import { getExamTemplate, type ExamTemplate } from "@/lib/odk/exam-templates";
+import { bookletFileIssues, sessionBookletIssues } from "@/lib/odk/booklet-access";
+import { getExamTemplate, type ExamTemplateMode, type TemplateSnapshot } from "@/lib/odk/exam-templates";
 
 export type ReadinessIssue = { level: "error" | "warning"; code: string; message: string; sectionCode?: string; questionNumber?: number };
 
@@ -9,8 +10,16 @@ export type VersionReadinessInput = {
   durationMinutes: number;
   scoringPolicyCode: string;
   files: OdkExamFileType[];
+  /** Oturumlu sınavın oturum anahtarları ve yüklenen kitapçıkların oturumları ("" = tüm deneme). */
+  sessionKeys?: string[];
+  bookletSessionKeys?: string[];
+  /** Çoklu kitapçık: kullanılabilir kitapçık türleri ve yüklenen kitapçık dosyaları. */
+  bookletCodes?: string[];
+  bookletFiles?: Array<{ sessionKey: string; bookletCode: string }>;
   structureMode?: "MATH_ONLY" | "FULL_TEMPLATE";
   templateCode?: string | null;
+  /** Sürüm ayarlarındaki şablon görüntüsü; varsa güncel şablon yerine bu kullanılır (Faz 3). */
+  templateSnapshot?: TemplateSnapshot | null;
   requireOutcomes?: boolean;
   requireBookletPdf?: boolean;
   sections: Array<{
@@ -69,11 +78,20 @@ export function isCriticalFieldLocked(status: OdkExamStatus): boolean {
   return ["LIVE", "ENDED", "SCORED", "RELEASED", "ARCHIVED"].includes(status);
 }
 
-function resolveExpectedTemplate(input: VersionReadinessInput): ExamTemplate | null {
-  if (input.templateCode) return getExamTemplate(input.templateCode);
-  if (!input.family) return null;
-  const mode = input.structureMode || "MATH_ONLY";
-  return getExamTemplate(mode === "MATH_ONLY" ? `${input.family}_MATH` : `${input.family}_FULL`);
+type ExpectedStructure = { label: string; mode: ExamTemplateMode; scoringPolicyCode: string; sections: Array<{ code: string; title: string; questionCount: number }> };
+
+/** Beklenen yapı: önce sürümün kendi şablon görüntüsü (tarihsel kararlılık), yoksa güncel şablon. */
+function resolveExpectedTemplate(input: VersionReadinessInput): ExpectedStructure | null {
+  if (input.templateSnapshot) {
+    const registry = getExamTemplate(input.templateSnapshot.code);
+    return { label: registry?.label ?? input.templateSnapshot.code, mode: input.templateSnapshot.mode, scoringPolicyCode: input.templateSnapshot.scoringPolicyCode, sections: input.templateSnapshot.sections };
+  }
+  const template = input.templateCode
+    ? getExamTemplate(input.templateCode)
+    : input.family
+      ? getExamTemplate((input.structureMode || "MATH_ONLY") === "MATH_ONLY" ? `${input.family}_MATH` : `${input.family}_FULL`)
+      : null;
+  return template ? { label: template.label, mode: template.mode, scoringPolicyCode: template.scoringPolicyCode, sections: template.sections } : null;
 }
 
 export function validateVersionReadiness(input: VersionReadinessInput): ReadinessIssue[] {
@@ -92,6 +110,10 @@ export function validateVersionReadiness(input: VersionReadinessInput): Readines
 
   if (requireBooklet && !input.files.includes("BOOKLET_PDF")) {
     issues.push({ level: "error", code: "BOOKLET_MISSING", message: "Öğrenci kitapçığı PDF'i yüklenmelidir." });
+  } else if (requireBooklet) {
+    issues.push(...((input.bookletCodes?.length ?? 0) > 1
+      ? bookletFileIssues(input.bookletCodes!, input.sessionKeys ?? [], input.bookletFiles ?? [])
+      : sessionBookletIssues(input.sessionKeys ?? [], input.bookletSessionKeys ?? [])));
   }
 
   if (!input.sections.length) {
@@ -111,8 +133,9 @@ export function validateVersionReadiness(input: VersionReadinessInput): Readines
     for (const expected of template.sections) {
       const actual = input.sections.find((section) => section.code === expected.code);
       if (actual && actual.questionCount !== expected.questionCount) {
+        // Resmî biçimde standart dışı soru sayısı yayını engeller; özel/branş denemesinde uyarıdır.
         issues.push({
-          level: "warning",
+          level: template.mode === "OFFICIAL" ? "error" : "warning",
           code: "SECTION_QUESTION_COUNT_NONSTANDARD",
           message: `${expected.title} için standart ${expected.questionCount} soru yerine ${actual.questionCount} tanımlandı.`,
           sectionCode: expected.code,

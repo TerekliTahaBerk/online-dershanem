@@ -5,7 +5,7 @@ import type { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { educationTransactionClient, transactionalAudit } from "@/lib/panel/education-write";
 import { createExamSchema, createSeriesSchema } from "./admin-schemas";
-import { resolveTemplateForCreate, withSectionRanges } from "./exam-templates";
+import { buildTemplateSnapshot, resolveTemplateForCreate, withSectionRanges } from "./exam-templates";
 import { DEFAULT_EXAM_SETTINGS } from "./exam-domain";
 import { asLegacyOdkExamFamily } from "./exam-family";
 
@@ -25,7 +25,7 @@ export async function createOdkExam(input: z.output<typeof createExamSchema>, ac
     let template = null;
     if (legacyFamily) {
       try {
-        template = resolveTemplateForCreate({ family: legacyFamily, structureMode: input.structureMode, templateCode: input.templateCode });
+        template = resolveTemplateForCreate({ family: legacyFamily, structureMode: input.structureMode, templateCode: input.templateCode, academicYear: input.academicYear || new Date().getFullYear() });
       } catch (error) {
         return NextResponse.json({ error: error instanceof Error ? error.message : "Şablon çözümlenemedi." }, { status: 400 });
       }
@@ -50,6 +50,7 @@ export async function createOdkExam(input: z.output<typeof createExamSchema>, ac
           return section;
         })
       : registrySubjects.map((subject, position) => ({ code: subject.code, title: subject.name, position, questionCount: 2, questionStart: position * 2 + 1, questionEnd: position * 2 + 2 }));
+    const templateSnapshot = template ? buildTemplateSnapshot(template, Object.fromEntries(sections.map((section) => [section.code, section.questionCount]))) : null;
     const durationMinutes = input.durationMinutes || template?.durationMinutes || 60;
     const scoringPolicyCode = template?.scoringPolicyCode ?? "ODK_GENERIC_FOUR_WRONG_V1";
     const policy = await db.odkScoringPolicy.findUnique({ where: { code: scoringPolicyCode }, select: { id: true } });
@@ -80,8 +81,13 @@ export async function createOdkExam(input: z.output<typeof createExamSchema>, ac
           durationMinutes,
           scoringPolicyId: policy.id,
           createdById: actorId,
-          // Oturumlu şablon (LGS tam deneme) sürüm ayarlarına oturum planını taşır.
-          settings: template?.sessions ? { ...DEFAULT_EXAM_SETTINGS, sessions: template.sessions } : DEFAULT_EXAM_SETTINGS,
+          // Oturumlu şablon (LGS tam deneme) sürüm ayarlarına oturum planını taşır; şablon
+          // anlık görüntüsü (sürüm, mod, alt test aralıkları, alanlar) tarihsel kararlılık için yazılır.
+          settings: {
+            ...DEFAULT_EXAM_SETTINGS,
+            ...(template?.sessions ? { sessions: template.sessions } : {}),
+            ...(templateSnapshot ? { template: templateSnapshot } : {}),
+          },
           autoSubmit: true,
         },
       });
@@ -121,7 +127,7 @@ export async function createOdkExam(input: z.output<typeof createExamSchema>, ac
       entityId: exam.id,
       action: "odk.exam_created",
       summary: `${familyCode} denemesi taslağı oluşturuldu (${template?.code ?? "CUSTOM"})`,
-      payload: { questionCount: totalQuestions, version: 1, templateCode: template?.code ?? null, structureMode: template?.structureMode ?? "FULL_TEMPLATE" },
+      payload: { questionCount: totalQuestions, version: 1, templateCode: template?.code ?? null, templateVersion: template?.templateVersion ?? null, templateMode: template?.mode ?? null, structureMode: template?.structureMode ?? "FULL_TEMPLATE" },
     });
     return NextResponse.json({ exam: { id: exam.id, templateCode: template?.code ?? null } }, { status: 201 });
   }, { isolationLevel: "Serializable", timeout: 30000 });

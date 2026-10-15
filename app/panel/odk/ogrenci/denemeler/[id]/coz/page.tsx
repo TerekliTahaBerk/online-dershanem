@@ -1,9 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import { requireProductRole } from "@/lib/auth/guards";
-import { getStudentExam } from "@/lib/odk/student-exam-server";
+import { getStudentExam, loadAttemptRunnerVersion } from "@/lib/odk/student-exam-server";
 import { StudentExamRunner } from "@/components/odk/student-exam-runner";
 import { loadAttemptSessionState } from "@/lib/odk/attempt-sessions-server";
 import { sessionForSection } from "@/lib/odk/exam-sessions";
+import { orderQuestionsForBooklet } from "@/lib/odk/booklets";
 
 export const dynamic = "force-dynamic";
 
@@ -18,21 +19,26 @@ export default async function OdkStudentExamRunnerPage({
   if (!data?.exam.currentVersion) notFound();
   if (!data.attempt || data.attempt.status !== "IN_PROGRESS")
     redirect(`/panel/odk/ogrenci/denemeler/${id}`);
+  const version = await loadAttemptRunnerVersion(data.attempt.versionId, data.attempt.bookletCode);
+  if (!version) notFound();
   // Oturumlu sınav (LGS): açık oturum, kilitli oturumlar ve ara durumu sunucuda hesaplanır.
   const sessionState = await loadAttemptSessionState({
     id: data.attempt.id,
     startedAt: data.attempt.startedAt,
     deadlineAt: data.attempt.deadlineAt,
-    settings: data.exam.currentVersion.settings,
+    settings: version.settings,
   });
-  const questions = data.exam.currentVersion.sections.flatMap((section) =>
-    section.questions.map((question) => ({
-      id: question.id,
-      questionNumber: question.questionNumber,
-      sectionTitle: section.title,
-      sessionKey: sessionState ? sessionForSection(sessionState.plan, section.code)?.key ?? null : null,
-    })),
+  // Sorular öğrencinin kitapçık sırası ve numarasıyla; cevaplar kanonik soru kimliğiyle yazılır.
+  const canonical = version.sections.flatMap((section) =>
+    section.questions.map((question) => ({ id: question.id, sectionId: section.id, sectionCode: section.code, sectionTitle: section.title, questionNumber: question.questionNumber, bookletPage: question.bookletPage })),
   );
+  const questions = orderQuestionsForBooklet(canonical, version.bookletOrders, data.attempt.bookletCode).map((question) => ({
+    id: question.id,
+    questionNumber: question.displayNumber,
+    sectionTitle: question.sectionTitle,
+    bookletPage: question.bookletPage,
+    sessionKey: sessionState ? sessionForSection(sessionState.plan, question.sectionCode)?.key ?? null : null,
+  }));
   const timeline = sessionState?.timeline ?? null;
   const runnerSession =
     timeline && timeline.phase !== "FINISHED" && timeline.current
@@ -63,6 +69,7 @@ export default async function OdkStudentExamRunnerPage({
       deadlineAt={data.attempt.deadlineAt.toISOString()}
       serverNow={data.serverNow.toISOString()}
       questions={questions}
+      bookletCode={version._count.bookletOrders ? data.attempt.bookletCode : null}
       initialAnswers={initialAnswers}
       session={runnerSession}
     />

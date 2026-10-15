@@ -38,7 +38,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | Alan | Rota | Tam | Kısmi | Eksik | İstisna | Yönl. |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1. Yönetim (`/panel/yonetim`) | 28 | 27 | 0 | 0 | 0 | 1 |
-| 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 8 | 8 | 0 | 0 | 0 | 0 |
+| 2. Deneme Ligi yönetimi (`/panel/odk/yonetim`) | 9 | 8 | 0 | 0 | 1 | 0 |
 | 3. Öğretmen + Yön koçu (`/panel/ogretmen`) | 20 | 19 | 1 | 0 | 0 | 0 |
 | 4. Deneme Ligi öğretmen (`/panel/odk/ogretmen`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 5. Öğrenci (`/panel/ogrenci`) | 18 | 16 | 0 | 1 | 0 | 1 |
@@ -46,7 +46,7 @@ Bu belge, [full-parity-roadmap](./full-parity-roadmap.md) Faz 1–6'nın **kabul
 | 7. Veli (`/panel/veli`) | 12 | 8 | 0 | 1 | 1 | 2 |
 | 8. Deneme Ligi veli (`/panel/odk/veli`) | 2 | 2 | 0 | 0 | 0 | 0 |
 | 9. Ortak / hesap / yönlendirme | 11 | 8 | 1 | 0 | 0 | 2 |
-| **Toplam** | **106** | **94** | **2** | **2** | **2** | **6** |
+| **Toplam** | **107** | **94** | **2** | **2** | **3** | **6** |
 
 Hedef (Faz 6 çıkışı): Eksik = 0, Kısmi = 0; İstisna yalnız onaylı satırlar.
 
@@ -109,6 +109,7 @@ Mobil karşılık: `odk-management-*` ekranları ADMIN ve yetkili ODK personeli;
 | K06 | `/panel/odk/yonetim/raporlar` | `odk-reports` | O: kitle bazlı sonuç raporları | `odk/reporting-server.ts`, `odk/report-table-server.ts` | Ortak GET projeksiyonu | `odk-management-reports` | Tam | P4 | Genel rapor yalnız `odk:report:read_all`; ilişkili öğretmen ayrı |
 | K07 | `/panel/odk/yonetim/paketler` | `odk-packages` | O: ticari paket sözleşmesi | `odk/product-contract` (RSC) | Ortak GET projeksiyonu | `odk-management-packages` | Tam | P4 | Salt okuma |
 | K08 | `/panel/odk/yonetim/pilot` | `odk-pilot` | O: pilot koşuları · Y: koşu oluştur/güncelle | `odk/pilot-commands-server.ts`, `odk/pilot-workspace-server.ts` | Ortak GET/POST + sürüm/receipt | `odk-management-pilot` | Tam | P4 | Yalnız ADMIN; mevcut aktivasyon/kabul kapıları |
+| K09 | `/panel/odk/yonetim/sinavlar/[id]/onizleme/cozucu` | — | O: öğrencinin göreceği çözücünün yönetici önizlemesi (oturum oturum); attempt yaratmaz, yazma yok | Hazır (`components/odk/student-exam-runner.tsx` `preview` modu) | — | İstisna | — | E1: sınav çözme ve çözücü önizlemesi web'de; mobil K03 önizleme sekmesi metin önizlemesini sunar |
 
 ## 3. Öğretmen ve Yön koçu — `/panel/ogretmen` (TEACHER; OD / Yön çalışma alanı)
 
@@ -227,7 +228,7 @@ Karar tarihi: 11 Ekim 2026 (ürün sahibi).
 
 | Kimlik | Konu | Karar | Gerekçe / uygulama | Etkilenen satırlar |
 | --- | --- | --- | --- | --- |
-| E1 | Deneme/sınav çözme | **İstisna (onaylı)** | Ürün kararı; bütünlük izleme web'de | S23, S21 "Başlat" |
+| E1 | Deneme/sınav çözme | **İstisna (onaylı)** | Ürün kararı; bütünlük izleme web'de | S23, S21 "Başlat", K09 (yönetici çözücü önizlemesi) |
 | E2 | Yönetici önizlemesi (View As) | **Kapsamda — native** | ADMIN, öğrenci/veli/öğretmen panelini mobilde görüntüler. Önizleme salt okumadır: sunucu önizleme açıkken mutasyonu reddeder (`docs/admin-panel-preview.md`), mobil yazma düğmelerini gizler. Çerez yerine Bearer oturumuna bağlı imzalı önizleme belirteci uygulandı; native menü + kişi detayı girişleri var. Gerçek HTTP/iPhone kabulü bekliyor (P2.9) | Ortak kabuk; Y08, Y10 giriş noktaları |
 | E3 | Meta/Instagram hesap bağlantısının kurulumu | **İstisna (onaylı)** — mobilde yok | Bağlantı kurulumu webde kalır; mobilde entegrasyon **durumu** (salt okuma) ve Instagram mesaj gönderme kapsamda | Y27 (entegrasyonlar bölümü) |
 | E4 | Toplu kullanıcı içe aktarma | **İstisna (onaylı)** — mobilde yok | `users/bulk` webde kalır; tekil kullanıcı oluşturma/düzenleme kapsamda | Y06, Y07 |

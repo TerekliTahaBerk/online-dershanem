@@ -4,6 +4,9 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 import { rescoreSchema } from "@/lib/odk/admin-schemas";
 import { rescoreOdkExamCommand } from "@/lib/odk/exam-results-commands";
 
+/** Kalabalık sınıfta (yüzlerce öğrenci × 160 soru) puanlama/yeniden puanlama birkaç saniye sürer (Faz 7 ölçek testi). */
+export const maxDuration = 60;
+
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiRecentStaffStepUp("odk:key:revise"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "odk.exam.rescore", requireSameOrigin: true, headers: request.headers, rateLimitKey: `odk:rescore:${auth.session.userId}`, rateLimit: { max: 10, windowMs: 15 * 60 * 1000 } });

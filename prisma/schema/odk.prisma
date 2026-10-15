@@ -512,6 +512,7 @@ model OdkExamVersion {
   attempts           OdkExamAttempt[]
   answerKeyRevisions OdkAnswerKeyRevision[]
   importAudits       OdkImportAudit[]
+  bookletOrders      OdkBookletQuestionOrder[]
 
   @@unique([examId, versionNumber])
   @@index([examId, status])
@@ -574,6 +575,7 @@ model OdkExamQuestion {
   outcomes                OdkQuestionOutcome[]
   attemptAnswers          OdkAttemptAnswer[]
   attemptResults          OdkAttemptQuestionResult[]
+  bookletOrders           OdkBookletQuestionOrder[]
   events                  OdkAttemptEvent[]
   timings                 OdkAttemptQuestionTiming[]
 
@@ -582,6 +584,25 @@ model OdkExamQuestion {
   @@index([sectionId, position])
   @@index([sectionId, bookletCode, bookletQuestionNumber])
   @@map("odk_exam_questions")
+}
+
+/// Çoklu kitapçık (B–E) soru sırası: kanonik soru (A kitapçığı numarası) → o kitapçıktaki
+/// bölüm içi numara ve PDF sayfası. A kitapçığı kanoniktir ve burada satırı yoktur.
+/// Cevaplar kanonik soru kimliğiyle saklanır; kitapçık yalnız sırayı ve PDF'i değiştirir.
+model OdkBookletQuestionOrder {
+  id                    String          @id @default(cuid())
+  versionId             String          @map("version_id")
+  bookletCode           String          @map("booklet_code")
+  questionId            String          @map("question_id")
+  sectionId             String          @map("section_id")
+  bookletQuestionNumber Int             @map("booklet_question_number")
+  bookletPage           Int?            @map("booklet_page")
+  version               OdkExamVersion  @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  question              OdkExamQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([versionId, bookletCode, questionId])
+  @@unique([versionId, bookletCode, sectionId, bookletQuestionNumber])
+  @@map("odk_booklet_question_orders")
 }
 
 model OdkQuestionOutcome {
@@ -601,6 +622,10 @@ model OdkExamFile {
   id           String          @id @default(cuid())
   versionId    String          @map("version_id")
   type         OdkExamFileType
+  /// Oturumlu sınavda (LGS) kitapçığın ait olduğu oturum anahtarı; "" = tüm deneme.
+  sessionKey   String          @default("") @map("session_key")
+  /// Çoklu kitapçıkta PDF'in kitapçık türü (A–E); "" = kitapçık türünden bağımsız (tek kitapçık).
+  bookletCode  String          @default("") @map("booklet_code")
   blobPathname String          @map("blob_pathname")
   fileName     String          @map("file_name")
   mimeType     String          @map("mime_type")
@@ -611,7 +636,7 @@ model OdkExamFile {
   version      OdkExamVersion  @relation(fields: [versionId], references: [id], onDelete: Cascade)
   uploadedBy   User            @relation("OdkExamFileUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
 
-  @@unique([versionId, type])
+  @@unique([versionId, type, sessionKey, bookletCode])
   @@index([uploadedById, createdAt])
   @@map("odk_exam_files")
 }
@@ -791,6 +816,8 @@ model OdkExamAssignment {
   assignedById  String              @map("assigned_by_id")
   assignedAt    DateTime            @default(now()) @map("assigned_at") @db.Timestamptz(3)
   revokedAt     DateTime?           @map("revoked_at") @db.Timestamptz(3)
+  /// Çoklu kitapçık: yöneticinin bu öğrenci için seçtiği kitapçık (null = otomatik dengeli atama).
+  bookletCode   String?             @map("booklet_code")
   exam          OdkExam             @relation(fields: [examId], references: [id], onDelete: Cascade)
   student       User                @relation("OdkExamAssignmentStudent", fields: [studentUserId], references: [id], onDelete: Restrict)
   assignedBy    User                @relation("OdkExamAssignmentAssigner", fields: [assignedById], references: [id], onDelete: Restrict)

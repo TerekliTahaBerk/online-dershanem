@@ -25,6 +25,8 @@ export type ExamResultsSummary = {
   integrityReviewCount: number;
   scoringErrors: number;
   sectionAverages: Array<{ code: string; title: string; averageNet: number | null; averageAccuracy: number | null }>;
+  /** Alt test ortalamaları (Faz 6): yalnız şablon görüntüsüyle puanlanmış denemelerde dolu. */
+  subtestAverages: Array<{ sectionCode: string; code: string; title: string; averageNet: number | null; averageAccuracy: number | null }>;
   rows: AttemptResultRow[];
 };
 
@@ -35,7 +37,16 @@ function median(values: number[]): number | null {
   return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
 }
 
-export type SectionBreakdownRow = { code?: string; sectionId?: string; title: string; net?: number; accuracy?: number; correct?: number; questionCount?: number };
+export type SectionBreakdownRow = {
+  code?: string;
+  sectionId?: string;
+  title: string;
+  net?: number;
+  accuracy?: number;
+  correct?: number;
+  questionCount?: number;
+  subtests?: Array<{ code: string; title: string; questionCount: number; correct: number; net: number }>;
+};
 
 export function buildExamResultsSummary(input: {
   assignmentCount: number;
@@ -77,6 +88,22 @@ export function buildExamResultsSummary(input: {
     }
   }
 
+  const subtestBuckets = new Map<string, { sectionCode: string; code: string; title: string; nets: number[]; accuracies: number[] }>();
+  for (const attempt of submitted) {
+    for (const section of attempt.score?.sectionBreakdown || []) {
+      const sectionCode = section.code ?? section.sectionId;
+      if (!sectionCode) continue;
+      for (const subtest of section.subtests ?? []) {
+        const key = `${sectionCode}:${subtest.code}`;
+        const bucket = subtestBuckets.get(key) || { sectionCode, code: subtest.code, title: subtest.title, nets: [], accuracies: [] };
+        bucket.nets.push(subtest.net);
+        if (subtest.questionCount) bucket.accuracies.push((subtest.correct / subtest.questionCount) * 100);
+        subtestBuckets.set(key, bucket);
+      }
+    }
+  }
+  const mean = (values: number[]) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : null);
+
   return {
     participation: input.attempts.length,
     submitted: submitted.length,
@@ -91,6 +118,7 @@ export function buildExamResultsSummary(input: {
       averageNet: bucket.nets.length ? bucket.nets.reduce((a, b) => a + b, 0) / bucket.nets.length : null,
       averageAccuracy: bucket.accuracies.length ? bucket.accuracies.reduce((a, b) => a + b, 0) / bucket.accuracies.length : null,
     })),
+    subtestAverages: [...subtestBuckets.values()].map((bucket) => ({ sectionCode: bucket.sectionCode, code: bucket.code, title: bucket.title, averageNet: mean(bucket.nets), averageAccuracy: mean(bucket.accuracies) })),
     rows: input.attempts.map((attempt) => ({
       attemptId: attempt.id,
       studentName: attempt.studentName,

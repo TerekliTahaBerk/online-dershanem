@@ -11,5 +11,5 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   const parsed = updateQuestionsSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "Soru alanlarını kontrol edin." }, { status: 400 });
   const { id } = await context.params;
-  return updateOdkExamQuestions(id, parsed.data.questions, auth.session.userId);
+  return updateOdkExamQuestions(id, parsed.data.questions, auth.session.userId, undefined, { expectedRevision: parsed.data.expectedRevision });
 }

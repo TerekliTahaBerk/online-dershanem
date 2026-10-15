@@ -10,7 +10,7 @@ import type { releaseCommitSchema, rescoreSchema } from "@/lib/odk/admin-schemas
 import { createCoachSuggestionsFromReleasedExam } from "@/lib/odk/coach-bridge";
 import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 import { previewRescoreImpact, previewResultPublication } from "@/lib/odk/result-publication";
-import { scoreOdkExam } from "@/lib/odk/scoring-service";
+import { previewOdkRescore, scoreOdkExam, type RescorePreview } from "@/lib/odk/scoring-service";
 import { odkAttemptBand } from "@/lib/odk/telemetry";
 import { recordPanelProductEvent } from "@/lib/panel-product-events";
 
@@ -67,40 +67,69 @@ export async function scoreOdkExamCommand(id: string, actor: Actor, db: Db = pri
 export async function rescoreOdkExamCommand(id: string, input: z.output<typeof rescoreSchema> | null, actor: Actor, db: Db = prisma) {
   const exam = await db.odkExam.findUnique({
     where: { id },
-    select: { status: true, resultsReleasedAt: true, currentVersionId: true, attempts: { where: { status: { in: [...RELEASE_CANDIDATE_STATUSES] } }, select: { id: true } } },
+    select: { status: true, resultsReleasedAt: true, currentVersionId: true },
   });
   if (!exam?.currentVersionId) return NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 });
   if (!["ENDED", "SCORED", "RELEASED"].includes(exam.status)) {
     return NextResponse.json({ error: "Yeniden puanlama yalnız kapalı/puanlanmış/yayınlanmış denemelerde yapılabilir." }, { status: 409 });
   }
-  const impact = previewRescoreImpact({ attemptCount: exam.attempts.length, changedQuestionCount: 1, hasPublishedResults: Boolean(exam.resultsReleasedAt) || exam.status === "RELEASED" });
+  // Gerçek etki (P0-3): saklı anahtar ↔ güncel anahtar farkı ve öğrenci başı net değişimi (kuru çalıştırma).
+  const dryRun = await previewOdkRescore(id, undefined, db);
+  if (!dryRun.ok) return NextResponse.json({ error: dryRun.error }, { status: 400 });
+  const impact = rescoreImpactFrom(dryRun.preview, Boolean(exam.resultsReleasedAt) || exam.status === "RELEASED");
   if (impact.publishedResultsWillChange && !input?.confirmPublishedChange) {
-    return NextResponse.json({ error: "Yayınlanmış sonuçlar değişecek. confirmPublishedChange=true ile onaylayın.", preview: { message: `${impact.attemptCount} öğrenci yeniden puanlanacak.`, ...impact } }, { status: 409 });
+    return NextResponse.json({ error: "Yayınlanmış sonuçlar değişecek. confirmPublishedChange=true ile onaylayın.", preview: { message: `${impact.changedAttemptCount} öğrencinin neti değişecek (${impact.publishedChangedCount} yayınlanmış).`, ...impact } }, { status: 409 });
   }
-  // Yayınlanmış netler yeniden puanlamadan önce: yalnız neti DEĞİŞEN öğrenci ve veli bilgilendirilir.
-  const publishedBefore = exam.status === "RELEASED"
-    ? await db.odkAttemptScore.findMany({ where: { attempt: { examId: id }, publicationStatus: "PUBLISHED" }, select: { attemptId: true, totalNet: true } })
-    : [];
+  // Önceki puanlar audit için saklanır (yeniden puanlama skor satırlarını yeniden yazar).
+  const previousScores = await db.odkAttemptScore.findMany({ where: { attempt: { examId: id } }, select: { attemptId: true, totalNet: true, answerKeyHash: true, publicationStatus: true } });
   const result = await scoreOdkExam(id, actor.userId, { rescore: true }, db);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
-  if (publishedBefore.length) {
-    const previous = new Map(publishedBefore.map((row) => [row.attemptId, row.totalNet.toString()]));
-    const after = await db.odkAttemptScore.findMany({ where: { attemptId: { in: [...previous.keys()] }, publicationStatus: "PUBLISHED" }, select: { attemptId: true, totalNet: true, attempt: { select: { studentUserId: true } } } });
-    const studentUserIds = [...new Set(after.filter((row) => previous.get(row.attemptId) !== row.totalNet.toString()).map((row) => row.attempt.studentUserId))];
+  // Yalnız yayınlanmış neti DEĞİŞEN öğrenci ve veli bilgilendirilir.
+  const studentUserIds = [...new Set(dryRun.preview.changedAttempts.filter((row) => row.published).map((row) => row.studentUserId))];
+  if (studentUserIds.length) {
     const version = new Date().toISOString();
-    if (studentUserIds.length) {
-      await afterEducationCommit(db, () => afterResponse("odk.exam_rescore.notification_failed", async () => {
-        const { notifyOdkResultsUpdated } = await import("@/lib/odk/student-notifications");
-        await notifyOdkResultsUpdated({ examId: id, studentUserIds, version });
-      }, { examId: id }));
-    }
+    await afterEducationCommit(db, () => afterResponse("odk.exam_rescore.notification_failed", async () => {
+      const { notifyOdkResultsUpdated } = await import("@/lib/odk/student-notifications");
+      await notifyOdkResultsUpdated({ examId: id, studentUserIds, version });
+    }, { examId: id }));
   }
-  const last = await db.odkAnswerKeyRevision.findFirst({ where: { versionId: exam.currentVersionId }, orderBy: { revisionNumber: "desc" } });
-  if (last && !last.rescoreCompletedAt) {
-    await db.odkAnswerKeyRevision.update({ where: { id: last.id }, data: { rescoreRequestedAt: new Date(), rescoreCompletedAt: new Date() } });
+  const pending = await db.odkAnswerKeyRevision.findMany({ where: { versionId: exam.currentVersionId, rescoreCompletedAt: null }, select: { id: true } });
+  if (pending.length) {
+    const completedAt = new Date();
+    await db.odkAnswerKeyRevision.updateMany({ where: { id: { in: pending.map((row) => row.id) } }, data: { rescoreCompletedAt: completedAt } });
+    await db.odkAnswerKeyRevision.updateMany({ where: { id: { in: pending.map((row) => row.id) }, rescoreRequestedAt: null }, data: { rescoreRequestedAt: completedAt } });
   }
-  await transactionalAudit(db)({ actorUserId: actor.userId, entityType: "OdkExam", entityId: id, action: "odk.exam_rescored", summary: "Deneme yeniden puanlandı", payload: { scoredCount: result.scoredCount, reason: input?.reason ?? null } });
+  await transactionalAudit(db)({
+    actorUserId: actor.userId,
+    entityType: "OdkExam",
+    entityId: id,
+    action: "odk.exam_rescored",
+    summary: "Deneme yeniden puanlandı",
+    payload: {
+      scoredCount: result.scoredCount,
+      reason: input?.reason ?? null,
+      answerKeyHash: result.answerKeyHash,
+      changedQuestionIds: dryRun.preview.changedQuestionIds,
+      cancelledQuestionIds: dryRun.preview.cancelledQuestionIds,
+      changedAttemptCount: impact.changedAttemptCount,
+      completedRevisionIds: pending.map((row) => row.id),
+      previousScores: previousScores.map((row) => ({ attemptId: row.attemptId, totalNet: row.totalNet.toString(), answerKeyHash: row.answerKeyHash, publicationStatus: row.publicationStatus })),
+    },
+  });
   return NextResponse.json({ ok: true, scoredCount: result.scoredCount, impact });
+}
+
+/** Mevcut `impact` sözleşmesi (attemptCount, changedQuestions, publishedResultsWillChange) + ek alanlar. */
+export function rescoreImpactFrom(preview: RescorePreview, hasPublishedResults: boolean) {
+  const changedQuestionCount = preview.changedQuestionIds.length + preview.cancelledQuestionIds.length + preview.restoredQuestionIds.length;
+  return {
+    ...previewRescoreImpact({ attemptCount: preview.scoredAttemptCount, changedQuestionCount, hasPublishedResults }),
+    publishedResultsWillChange: hasPublishedResults && preview.publishedChangedCount > 0,
+    changedQuestionIds: preview.changedQuestionIds,
+    cancelledQuestionIds: preview.cancelledQuestionIds,
+    changedAttemptCount: preview.changedAttempts.length,
+    publishedChangedCount: preview.publishedChangedCount,
+  };
 }
 
 export async function previewOdkRelease(id: string, excludeReviewRequired: boolean, db: Db = prisma) {

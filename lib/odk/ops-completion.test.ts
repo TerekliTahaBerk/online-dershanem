@@ -97,3 +97,20 @@ test("koçum önerileri zayıf kazanımlardan üretilir, publish etmez", () => {
   assert.equal(suggestions[0].cta, "ADD_TO_WEEKLY_PLAN");
   assert.ok(suggestions[0].label.includes("Problemler"));
 });
+
+test("rapor özeti alt test ortalamalarını ayrı listede verir (bölüm ortalamaları ve mobil biçim değişmez)", () => {
+  const base = { status: "SUBMITTED", integrityLevel: "NORMAL" as const, startedAt: new Date(0), submittedAt: new Date(1000) };
+  const fen = (fizik: number, kimya: number) => ({
+    correctCount: 0, wrongCount: 0, blankCount: 0, totalNet: fizik + kimya, publicationStatus: "HIDDEN" as const,
+    sectionBreakdown: [{ code: "FEN", sectionId: "s-fen", title: "Fen", net: fizik + kimya, correct: fizik + kimya, questionCount: 14, subtests: [
+      { code: "FIZIK", title: "Fizik", questionCount: 7, correct: fizik, wrong: 0, blank: 7 - fizik, net: fizik },
+      { code: "KIMYA", title: "Kimya", questionCount: 7, correct: kimya, wrong: 0, blank: 7 - kimya, net: kimya },
+    ] }],
+  });
+  const summary = buildExamResultsSummary({ assignmentCount: 2, attempts: [{ ...base, id: "1", studentName: "A", score: fen(6, 2) }, { ...base, id: "2", studentName: "B", score: fen(4, 4) }] });
+  assert.deepEqual(summary.subtestAverages.map((row) => ({ ...row, averageAccuracy: Math.round(row.averageAccuracy! * 100) / 100 })), [
+    { sectionCode: "FEN", code: "FIZIK", title: "Fizik", averageNet: 5, averageAccuracy: 71.43 },
+    { sectionCode: "FEN", code: "KIMYA", title: "Kimya", averageNet: 3, averageAccuracy: 42.86 },
+  ]);
+  assert.deepEqual(Object.keys(summary.sectionAverages[0]).sort(), ["averageAccuracy", "averageNet", "code", "title"]);
+});

@@ -18,6 +18,12 @@ import { AdminPreviewPanel } from "@/components/odk/admin-preview-panel";
 import { AdminIntegrityReviewPanel } from "@/components/odk/admin-integrity-review-panel";
 import { AdminResultsReviewPanel } from "@/components/odk/admin-results-review-panel";
 import { AdminSessionPlan } from "@/components/odk/admin-session-plan";
+import { AdminAnswerKeyRevisionPanel } from "@/components/odk/admin-answer-key-revision-panel";
+import { AdminBookletPanel } from "@/components/odk/admin-booklet-panel";
+import { AdminBookletAssignmentPanel } from "@/components/odk/admin-booklet-assignment-panel";
+import { bookletOrdersHash, loadBookletSetup } from "@/lib/odk/booklet-server";
+import { prisma } from "@/lib/prisma";
+import { loadAnswerKeyRevisionPanel } from "@/lib/odk/answer-key-revision-server";
 import { AnchorTabRedirect } from "@/components/panel/anchor-tab-redirect";
 import {
   EmptyState,
@@ -73,13 +79,16 @@ export default async function OdkAdminExamDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ sekme?: string; filtre?: string }>;
+  searchParams: Promise<{ sekme?: string; filtre?: string; bolum?: string }>;
 }) {
   const session = await requireAnyStaffPermission(ODK_EXAM_LIST_PERMISSIONS);
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const workspace = await loadOdkExamWorkspace(session.userId, id, query);
   if (!workspace) notFound();
-  const { caps, exam, version, issues, familyCode, sessionPlan, tabs, tab, questionFilter, windowEnded, outcomes, attempts, assignedCount, questions, submittedCount, scoredCount, reviewCount, security, readiness, primary, draftEditable } = workspace;
+  // Çoklu kitapçık kurulumu: İçerik (sıra, PDF, anahtar) ve Önizleme sekmelerinde gerekir.
+  const bookletSetup = workspace.tab === "icerik" || workspace.tab === "onizleme" ? await loadBookletSetup(prisma, id) : null;
+  const bookletCodes = bookletSetup?.codes ?? ["A"];
+  const { caps, exam, version, issues, familyCode, sessionPlan, tabs, tab, questionFilter, windowEnded, outcomes, attempts, assignedCount, questions, questionsRevision, submittedCount, scoredCount, reviewCount, security, readiness, primary, draftEditable } = workspace;
   const now = new Date();
   const status = examStatusPresentation[exam.status];
   const tabHref = (next: string, extra?: string) => `/panel/odk/yonetim/sinavlar/${exam.id}?sekme=${next}${extra ?? ""}`;
@@ -97,9 +106,12 @@ export default async function OdkAdminExamDetailPage({
     meetUrl: exam.meetUrl || "",
     versionStatus: version.status,
     durationMinutes: version.durationMinutes,
-    files: version.files.map((file) => ({ id: file.id, type: file.type, fileName: file.fileName })),
+    files: version.files.map((file) => ({ id: file.id, type: file.type, fileName: file.fileName, sessionKey: file.sessionKey, bookletCode: file.bookletCode })),
+    sessions: sessionPlan?.map((item) => ({ key: item.key, title: item.title })),
+    booklets: bookletCodes,
     // Cevap anahtarı yalnız içerik editörüne gider (EXAM_EDITOR / ADMIN).
     questions: caps.edit ? questions : [],
+    questionsRevision: caps.edit ? questionsRevision : undefined,
     security: { ...security, autoSubmit: version.autoSubmit },
   };
   const editorCapabilities = { edit: caps.edit, schedule: caps.schedule, score: caps.score, rescore: caps.rescore };
@@ -119,6 +131,7 @@ export default async function OdkAdminExamDetailPage({
       resultStats={resultStats}
       sections={sections}
       questionFilter={questionFilter}
+      initialSection={typeof query.bolum === "string" ? query.bolum : null}
     />
   );
 
@@ -218,7 +231,18 @@ export default async function OdkAdminExamDetailPage({
 
           {tab === "icerik" ? (
             <>
-              <div id="adim-json">{draftEditable || version.status === "DRAFT" ? <AdminJsonImportPanel examId={exam.id} /> : null}</div>
+              {bookletSetup && (caps.edit || (caps.rescore && bookletSetup.codes.length > 1)) ? (
+                <AdminBookletPanel
+                  examId={exam.id}
+                  sections={version.sections.map((section) => ({ code: section.code, title: section.title }))}
+                  booklets={bookletSetup.codes.map((code) => ({ code, questionCount: code === "A" ? bookletSetup.questions.length : bookletSetup.orders.filter((row) => row.bookletCode === code).length }))}
+                  currentHash={bookletOrdersHash(bookletSetup.orders)}
+                  editable={caps.edit && draftEditable}
+                  correctable={caps.rescore && !draftEditable && version.status !== "DRAFT" && bookletSetup.codes.length > 1}
+                  totalQuestions={bookletSetup.questions.length}
+                />
+              ) : null}
+              <div id="adim-json">{draftEditable || version.status === "DRAFT" ? <AdminJsonImportPanel examId={exam.id} sections={version.sections.map((section) => ({ code: section.code, title: section.title }))} bookletCodes={bookletCodes} /> : null}</div>
               {editor(["files"])}
             </>
           ) : null}
@@ -259,9 +283,38 @@ export default async function OdkAdminExamDetailPage({
 
           {tab === "zamanlama" ? editor(["plan", "security", "publish"]) : null}
 
-          {tab === "katilimcilar" ? <AdminAssignmentPanel examId={exam.id} canEdit={exam.status !== "ARCHIVED"} /> : null}
+          {tab === "katilimcilar" ? (
+            <>
+              <AdminAssignmentPanel examId={exam.id} canEdit={exam.status !== "ARCHIVED"} />
+              <AdminBookletAssignmentPanel examId={exam.id} canEdit={!["ENDED", "SCORED", "RELEASED", "ARCHIVED"].includes(exam.status)} />
+            </>
+          ) : null}
 
-          {tab === "onizleme" ? <AdminPreviewPanel examId={exam.id} /> : null}
+          {tab === "onizleme" ? (
+            <>
+              {caps.edit ? (
+                <Section title="Öğrenci çözüm ekranı" description="Öğrencinin göreceği çözücünün aynısı. Deneme başlatılmaz, cevaplar kaydedilmez." divider={false}>
+                  <div className="flex flex-wrap gap-2">
+                    {(sessionPlan ?? [null]).flatMap((item) =>
+                      bookletCodes.map((code) => {
+                        const params = new URLSearchParams();
+                        if (item) params.set("oturum", item.key);
+                        if (bookletCodes.length > 1) params.set("kitapcik", code);
+                        const qs = params.toString();
+                        const label = `${item ? `${item.title} oturumunu` : "Çözücüyü"} önizle${bookletCodes.length > 1 ? ` (${code})` : ""}`;
+                        return (
+                          <Link key={`${item?.key ?? "tek"}-${code}`} href={`/panel/odk/yonetim/sinavlar/${exam.id}/onizleme/cozucu${qs ? `?${qs}` : ""}`} className={buttonClass("secondary", "md")}>
+                            {label}
+                          </Link>
+                        );
+                      }),
+                    )}
+                  </div>
+                </Section>
+              ) : null}
+              <AdminPreviewPanel examId={exam.id} />
+            </>
+          ) : null}
 
           {tab === "canli" ? (
             <Section title="Canlı durum" divider={false}>
@@ -295,6 +348,9 @@ export default async function OdkAdminExamDetailPage({
             <>
               {editor(["scoring"])}
               {caps.score ? <AdminResultsReviewPanel examId={exam.id} examStatus={exam.status} /> : null}
+              {caps.rescore && ["LIVE", "ENDED", "SCORED", "RELEASED"].includes(exam.status) ? (
+                <RevisionTab examId={exam.id} studentNames={Object.fromEntries(attempts.map((attempt) => [attempt.id, attempt.student.fullName || attempt.student.email]))} />
+              ) : null}
             </>
           ) : null}
 
@@ -353,6 +409,12 @@ export default async function OdkAdminExamDetailPage({
       </div>
     </PanelShell>
   );
+}
+
+async function RevisionTab({ examId, studentNames }: { examId: string; studentNames: Record<string, string> }) {
+  const panel = await loadAnswerKeyRevisionPanel(examId);
+  if (!panel) return null;
+  return <AdminAnswerKeyRevisionPanel examId={examId} questions={panel.questions} revisions={panel.revisions} studentNames={studentNames} />;
 }
 
 async function ExamHistoryTab({ exam }: { exam: Parameters<typeof loadExamHistory>[0] }) {
@@ -422,7 +484,7 @@ async function ExamReportTab({ examId, assignedCount, attempts }: { examId: stri
       <Section title="Bölüm ortalamaları">
         {summary.sectionAverages.length ? (
           <PanelTable caption="Bölüm ortalamaları" columns={["Bölüm", "Ortalama net", "Doğruluk"]}>
-            {summary.sectionAverages.map((section) => (
+            {summary.sectionAverages.flatMap((section) => [
               <PanelTableRow key={section.code}>
                 <PanelTableCell>{section.title}</PanelTableCell>
                 <PanelTableCell>
@@ -431,8 +493,28 @@ async function ExamReportTab({ examId, assignedCount, attempts }: { examId: stri
                 <PanelTableCell>
                   <span className="tabular-nums">{section.averageAccuracy === null ? "—" : `%${Math.round(section.averageAccuracy)}`}</span>
                 </PanelTableCell>
-              </PanelTableRow>
-            ))}
+              </PanelTableRow>,
+              // Alt test ortalamaları (Faz 6): ders satırının altında, ham net.
+              ...summary.subtestAverages
+                .filter((subtest) => subtest.sectionCode === section.code)
+                .map((subtest) => (
+                  <PanelTableRow key={`${section.code}:${subtest.code}`}>
+                    <PanelTableCell>
+                      <span className="pl-4 text-pn-text-secondary">
+                        <span aria-hidden="true">↳ </span>
+                        {subtest.title}
+                        <span className="sr-only"> ({section.title} alt testi)</span>
+                      </span>
+                    </PanelTableCell>
+                    <PanelTableCell>
+                      <span className="tabular-nums text-pn-text-secondary">{net(subtest.averageNet)}</span>
+                    </PanelTableCell>
+                    <PanelTableCell>
+                      <span className="tabular-nums text-pn-text-secondary">{subtest.averageAccuracy === null ? "—" : `%${Math.round(subtest.averageAccuracy)}`}</span>
+                    </PanelTableCell>
+                  </PanelTableRow>
+                )),
+            ])}
           </PanelTable>
         ) : (
           <p className="text-[14px] text-pn-text-muted">Puanlanmış teslim olunca bölüm ortalamaları burada görünür.</p>

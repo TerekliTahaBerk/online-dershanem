@@ -5,6 +5,8 @@
  * `resultAvailable` kararını yorumlar; yetki kararı vermez.
  */
 
+import { ODK_EXAM_TEMPLATES, templateTrackSections } from "@/lib/odk/exam-templates";
+
 export type StudentExamStateKey =
   | "IN_PROGRESS"
   | "AVAILABLE"
@@ -74,16 +76,11 @@ export function releasedResultsWithDelta(rows: ReleasedResultRow[]): Array<Relea
   return withDelta.reverse();
 }
 
-/** AYT alanı → bölüm kodları (roadmap §11.5). DIL ve bilinmeyen alan için null: tüm bölümler. */
-const AYT_TRACK_SECTIONS: Record<string, readonly string[]> = {
-  SAY: ["MAT", "FEN"],
-  EA: ["MAT", "EDB_SOS1"],
-  SOZ: ["EDB_SOS1", "SOS2"],
-};
+/** AYT alanı → bölüm kodları (roadmap §11.5). Kaynak: AYT şablonunun `tracks` tanımı (tek yer). DIL ve bilinmeyen alan için null: tüm bölümler. */
+const AYT_TRACKS = ODK_EXAM_TEMPLATES.AYT_FULL.tracks ?? {};
 
-export const AYT_TRACK_LABEL: Record<string, string> = { SAY: "Sayısal", EA: "Eşit ağırlık", SOZ: "Sözel" };
+export const AYT_TRACK_LABEL: Record<string, string> = Object.fromEntries(Object.entries(AYT_TRACKS).map(([key, track]) => [key, track.label]));
 
 export function aytTrackSections(fieldTrack: string | null | undefined): readonly string[] | null {
-  if (!fieldTrack) return null;
-  return AYT_TRACK_SECTIONS[fieldTrack.toUpperCase()] ?? null;
+  return templateTrackSections(ODK_EXAM_TEMPLATES.AYT_FULL, fieldTrack);
 }

@@ -239,6 +239,10 @@ export function AdminExamCreate({
             {template ? (
               <p className="rounded-md bg-pn-surface-subtle px-3 py-2 text-[13px] text-pn-text-secondary">
                 <span className="font-semibold text-pn-text">{template.label}</span> · {templateTotalQuestions(template)} soru · {sectionPreview}
+                <span className="mt-1 block text-[12px] text-pn-text-muted">
+                  {template.mode === "OFFICIAL" ? "Resmî biçim: soru sayısı standarttan sapamaz" : "Özel / branş denemesi: soru sayısı değiştirilebilir"} · şablon {template.templateVersion} · {template.source}
+                  {template.validToYear ? ` · ${template.validFromYear}–${template.validToYear} için doğrulandı` : ""}
+                </span>
               </p>
             ) : !isLegacyFamily ? (
               <p className="rounded-md bg-pn-surface-subtle px-3 py-2 text-[13px] text-pn-text-secondary">

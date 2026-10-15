@@ -76,10 +76,16 @@ const question = z.object({
   primaryOutcomeId: z.string().min(1).nullable(),
 }).refine((value) => !value.primaryOutcomeId || value.outcomeIds.includes(value.primaryOutcomeId), { message: "Ana kazanım, bağlı kazanımlar içinde olmalıdır." });
 
-export const updateQuestionsSchema = z.object({ questions: z.array(question).min(1).max(200) });
+export const updateQuestionsSchema = z.object({
+  questions: z.array(question).min(1).max(200),
+  /** Editörün açtığı andaki soru içerik revizyonu; verilirse başkasının araya giren kaydı 409 ile reddedilir (P1-6). */
+  expectedRevision: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+});
 
 export const jsonImportPreviewSchema = z.object({
   payload: z.unknown(),
+  /** Cevap anahtarı hangi kitapçığın numarasıyla girildi (A kanonik; B–E sıra tablosuyla çevrilir). */
+  bookletCode: z.string().regex(/^[A-E]$/).optional(),
 });
 
 export const jsonImportCommitSchema = z.object({
@@ -135,4 +141,42 @@ export const releasePreviewSchema = z.object({
 export const rescoreSchema = z.object({
   confirmPublishedChange: z.boolean().optional(),
   reason: z.string().trim().min(3).max(500).optional(),
+});
+
+/** Kilitli denemede cevap anahtarı revizyonu (P0-2): önizleme ve onaylı commit. */
+const answerKeyChangeSchema = z.discriminatedUnion("action", [
+  z.object({ questionId: z.string().min(1).max(64), action: z.literal("SET_ANSWER"), correctOption: z.enum(["A", "B", "C", "D", "E"]) }),
+  z.object({ questionId: z.string().min(1).max(64), action: z.literal("CANCEL") }),
+]);
+
+export const answerKeyRevisionPreviewSchema = z.object({
+  changes: z.array(answerKeyChangeSchema).min(1).max(200),
+});
+
+export const answerKeyRevisionCommitSchema = answerKeyRevisionPreviewSchema.extend({
+  reason: z.string().trim().min(10).max(1000),
+  /** Önizlemedeki anahtar hash'i; arada başka revizyon yazıldıysa commit reddedilir. */
+  expectedAnswerKeyHash: z.string().regex(/^[a-f0-9]{64}$/),
+  confirmPublishedChange: z.boolean().optional(),
+});
+
+/** Çoklu kitapçık sıra tablosu (B–E): önizleme ve hash korumalı kayıt. */
+const bookletOrderRow = z.object({
+  bookletCode: z.string().trim().regex(/^[A-E]$/),
+  sectionCode: z.string().trim().min(1).max(32),
+  bookletQuestionNumber: z.number().int().min(1).max(200),
+  canonicalQuestionNumber: z.number().int().min(1).max(200),
+  bookletPage: z.number().int().min(1).max(1000).nullable(),
+});
+export const bookletOrdersPreviewSchema = z.object({ rows: z.array(bookletOrderRow).max(800) });
+export const bookletOrdersCommitSchema = bookletOrdersPreviewSchema.extend({ expectedHash: z.string().regex(/^[a-f0-9]{64}$/) });
+/** Kilitli/canlı/bitmiş denemede kitapçık sırası düzeltmesi (cevaplar konuma göre taşınır). */
+export const bookletCorrectionCommitSchema = bookletOrdersCommitSchema.extend({
+  reason: z.string().trim().min(5).max(500),
+  confirmPublishedChange: z.boolean().optional(),
+});
+/** Yöneticinin öğrenci başına kitapçık seçimi (null = otomatik). */
+export const bookletAssignmentSchema = z.object({
+  studentUserId: z.string().trim().min(1).max(64),
+  bookletCode: z.string().regex(/^[A-E]$/).nullable(),
 });
