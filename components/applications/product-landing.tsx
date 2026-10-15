@@ -5,7 +5,6 @@ import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
-import { ApplicationNav } from "./application-nav";
 import { MobilePreview } from "./mobile-preview";
 import { BilginExercise, ProductExplorer } from "./product-explorer";
 import styles from "./applications.module.css";
@@ -13,7 +12,7 @@ import styles from "./applications.module.css";
 export function ProductLanding({ product }: { product: "mobil" | "bilgin" }) {
  const bilgin=product==="bilgin"; const href=`/uygulamalar/${product}`;
  return <div className="site-scope"><SiteHeader/><SchemaJsonLd schema={breadcrumbJsonLd([{name:"Ana sayfa",url:"/"},{name:bilgin?"Bilgin":"onlinedershanem Mobil",url:href}])}/>
- <main id="main-content" tabIndex={-1} className={styles.page}><ApplicationNav active={href}/>
+ <main id="main-content" tabIndex={-1} className={styles.page} data-product={product}>
  <section className={`${styles.hero} ${bilgin?styles.bilginHero:""}`} aria-labelledby="application-title"><div className={`site-container ${styles.heroGrid}`}>
  <div className={styles.intro}><h1 id="application-title">{bilgin?<>Bir soru daha.<br/>Bir <span className={styles.marker}>adım ileri.</span></>:<>Dersin. Planın.<br/>Denemen.<br/><span className={styles.marker}>Hepsi cebinde.</span></>}</h1>
  <p className={styles.lede}>{bilgin?"YKS ve LGS hazırlığının en renkli molası. Kısa egzersizlerle öğren, XP kazan, günlük serini büyüt. Her gün küçük bir adımla kendini geliştir.":"onlinedershanem, Yön Koçluk ve Deneme Ligi. Derslerini takip et, planını uygula, gelişimini gör. Hedefine giden üç yol, tek mobil uygulamada."}</p>

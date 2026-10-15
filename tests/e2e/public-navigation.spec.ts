@@ -63,8 +63,8 @@ test.describe("masaüstü navigasyon", () => {
 
     await nav.getByRole("button", { name: "Uygulamalar", exact: true }).click();
     await expect(nav.getByRole("link", { name: /^onlinedershanem Mobil/ })).toBeVisible();
-    await expect(nav.getByRole("link", { name: /^Bilgin Yakında/ })).toBeVisible();
-    await expect(nav.getByRole("link", { name: /^Dino AI Yakında/ })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Bilgin", exact: true })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Dino AI", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Hakkımızda", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Blog", exact: true })).toBeVisible();
     await expect(nav.getByRole("link", { name: "Paketler", exact: true })).toHaveCount(0);
@@ -92,7 +92,7 @@ test.describe("mobil navigasyon", () => {
     for (const product of PRODUCTS) {
       await expect(menu.getByRole("link", { name: product.name, exact: true })).toBeVisible();
     }
-    await expect(menu.getByRole("link", { name: "Dino AI Yakında", exact: true })).toBeVisible();
+    await expect(menu.getByRole("link", { name: "Dino AI", exact: true })).toBeVisible();
     await expect(menu.getByRole("link", { name: "Hakkımızda", exact: true })).toBeVisible();
     await expect(menu.getByRole("link", { name: "Blog", exact: true })).toBeVisible();
     await expect(menu.getByRole("link", { name: "Paketler", exact: true })).toHaveCount(0);
@@ -175,7 +175,7 @@ test.describe("ürün sayfaları ve footer", () => {
     await expect(page.getByRole("main")).toContainText(/Ayrı satılan bir ürün değildir\./i);
     const nav = page.getByRole("navigation", { name: "Ana menü" });
     await nav.getByRole("button", { name: "Uygulamalar", exact: true }).click();
-    const navLink = nav.getByRole("link", { name: /^Dino AI Yakında/ });
+    const navLink = nav.getByRole("link", { name: "Dino AI", exact: true });
     if ((await navLink.textContent())?.includes("Yakında")) {
       await expect(page.getByRole("main")).toContainText("henüz yayında değil");
       await expect(page.getByRole("main")).toContainText("pilot hazırlıkları sürüyor");

@@ -1,0 +1,13 @@
+.panel { transform-origin: top left; animation: menuEnter 160ms ease-out; }
+.item { --accent: #183d30; --tint: #edf3ec; padding: 10px 12px; border-radius: 12px; transition: background 160ms ease; }
+.item[data-tone="bilgin"] { --accent: #087347; --tint: #edf8ee; }
+.item[data-tone="dino"] { --accent: #544283; --tint: #f2eff9; }
+.item:hover, .item:focus-within, .item[data-active] { background: var(--tint); }
+.link { display: flex; gap: 10px; align-items: center; min-height: 44px; color: var(--accent); font-size: 14px; font-weight: 750; border-radius: 4px; }
+.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.icon { display: grid; place-items: center; width: 34px; height: 34px; flex-shrink: 0; }
+.icon img { border-radius: 9px; }
+.badge { margin-left: auto; border: 1px solid currentColor; padding: 3px 6px; border-radius: 30px; font-size: 9px; font-weight: 600; }
+.summary { margin-top: 3px; font-size: 13px; line-height: 1.5; color: var(--dc-ink-muted); }
+@keyframes menuEnter { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .panel { animation: none; } .item { transition: none; } }

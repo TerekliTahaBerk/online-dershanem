@@ -67,3 +67,48 @@
 }
 @media (max-width: 399px) { .actions { flex-direction: column; } .actions a { width: 100%; } }
 @media (prefers-reduced-motion: reduce) { .primary, .secondary { transition: none; } }
+
+/* Dino's quieter, deeper palette distinguishes the upcoming AI experience. */
+.hero { background: radial-gradient(ellipse at 50% -15%, #365d4d 0, #183d30 52%, #123126 100%); color: #fcfaf4; border-color: #365d4d; }
+.heroContent { padding-top: 76px; }
+.identity > span:first-child { color: #b9d4a9; }
+.identity .status { border-color: #668571; color: #e3ebd9; background: #ffffff08; }
+.headline { color: #fcfaf4; }
+.marker { color: #183d30; }
+.marker::before { inset-block-start: 12%; }
+.lede { color: #d6e2d5; }
+.availability { color: #b6cbb9; }
+.primary { background: #fdd81d; border-color: #fdd81d; color: #183d30; }
+.primary:hover { background: #f0cc12; }
+.secondary { border-color: #6b8773; color: #f4f7ef; }
+.secondary:hover { background: #ffffff0d; }
+.principles { padding-top: 34px; padding-bottom: 48px; }
+.principles dd { color: #bdcfbc; }
+.principles > div + div { border-color: #54705b; }
+.hero a:focus-visible { outline-color: #fdd81d; }
+.explainer { background: #fff; }
+.story { border-radius: 0 0 18px 18px; transition: transform 220ms ease; }
+.story blockquote { border-radius: 0 14px 14px 0; }
+.example { font-size: 10px; }
+.intro { animation: dinoEnter 700ms ease-out both; }
+.principles > div { animation: dinoEnter 600ms 120ms ease-out both; }
+.principles > div:nth-child(2) { animation-delay: 200ms; }
+.principles > div:nth-child(3) { animation-delay: 280ms; }
+.identity .status { animation: dinoStatus 1800ms 500ms ease-in-out 2; }
+.story a svg { transition: transform 180ms ease; }
+@media (hover: hover) { .story:hover { transform: translateY(-4px); } .story a:hover svg { transform: translateX(4px); } }
+@keyframes dinoEnter { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes dinoStatus { 0%, 100% { box-shadow: 0 0 0 0 #c7ddaf00; } 50% { box-shadow: 0 0 0 5px #c7ddaf18; } }
+@media (max-width: 767px) {
+  .heroContent { padding-top: 42px; }
+  .headline { font-size: clamp(30px, 7.5vw, 49px); }
+  .principles > div + div { border-top-color: #54705b; }
+  .principles { padding-top: 24px; padding-bottom: 32px; }
+  .principles dt { font-size: 14px; }
+  .principles dd { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro, .principles > div, .identity .status { animation: none; }
+  .story, .story a svg { transition: none; }
+  .story:hover { transform: none; }
+}

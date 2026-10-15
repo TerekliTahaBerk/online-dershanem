@@ -3,6 +3,7 @@ import { useId, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Check, ArrowRight } from "lucide-react";
+import { AnswerCelebration } from "./answer-celebration";
 import { AppScreen } from "./mobile-preview";
 import styles from "./applications.module.css";
 const products = [
@@ -26,7 +27,7 @@ export function ProductExplorer() {
         ))}
       </div>
       <div className={styles.explorerMedia}>
-        <AppScreen product={item.id} />
+        <div key={item.id} className={styles.screenTransition}><AppScreen product={item.id} /></div>
         <span className={styles.screenCaption}>{item.name} · Gerçek uygulama ekranı</span>
       </div>
       <div id={panelId} className={styles.explorerContent}>
@@ -47,8 +48,8 @@ const questions = {
 };
 export function BilginExercise() {
  const [exam,setExam]=useState<keyof typeof questions>("YKS"); const [answer,setAnswer]=useState<number|null>(null); const [checked,setChecked]=useState(false); const q=questions[exam]; const correct=answer===q.correct;
- return <div className={styles.quiz}><div className={styles.quizTop}><div role="group" aria-label="Örnek sınav seçimi">{(["YKS","LGS"] as const).map(e=><button type="button" aria-pressed={exam===e} key={e} onClick={()=>{setExam(e);setAnswer(null);setChecked(false);}}>{e}</button>)}</div><span>Örnek egzersiz</span></div>
- <fieldset><legend><span>{q.subject}</span>{q.question}</legend><div className={styles.answers}>{q.answers.map((a,i)=><label key={`${exam}-${a}`} data-result={checked && i===q.correct ? "correct" : checked && answer===i ? "incorrect" : undefined}><input type="radio" name="bilgin-answer" value={i} checked={answer===i} disabled={checked} onChange={()=>setAnswer(i)}/><span>{"ABCD"[i]}</span>{a}</label>)}</div></fieldset>
+ return <div className={styles.quiz} data-result={checked ? correct ? "correct" : "incorrect" : undefined}>{checked && correct && <AnswerCelebration />}<div className={styles.quizTop}><div role="group" aria-label="Örnek sınav seçimi">{(["YKS","LGS"] as const).map(e=><button type="button" aria-pressed={exam===e} key={e} onClick={()=>{setExam(e);setAnswer(null);setChecked(false);}}>{e}</button>)}</div><span>Örnek egzersiz</span></div>
+ <fieldset key={exam}><legend><span>{q.subject}</span>{q.question}</legend><div className={styles.answers}>{q.answers.map((a,i)=><label key={`${exam}-${a}`} data-result={checked && i===q.correct ? "correct" : checked && answer===i ? "incorrect" : undefined}><input type="radio" name="bilgin-answer" value={i} checked={answer===i} disabled={checked} onChange={()=>setAnswer(i)}/><span>{"ABCD"[i]}</span>{a}</label>)}</div></fieldset>
  <div className={styles.feedback} role="status" aria-live="polite" aria-atomic="true">{checked && <p><strong>{correct?"Tam isabet!":"Birlikte bakalım."}</strong> Doğru cevap: {q.answers[q.correct]}. {q.explanation}</p>}</div>
  <button className={styles.quizSubmit} type="button" disabled={answer===null} onClick={()=>checked ? (setAnswer(null),setChecked(false)) : setChecked(true)}>{checked?"Yeniden dene":"Cevabını kontrol et"}<ArrowRight size={18} aria-hidden="true"/></button><p className={styles.quizNote}>Bu, Bilgin deneyimine küçük bir ön bakış. İlerlemen kaydedilmez.</p>
  </div>;

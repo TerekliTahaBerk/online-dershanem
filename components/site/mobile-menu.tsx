@@ -1,5 +1,6 @@
 "use client";
 
+import { ApplicationMenuItem } from "./application-menu-item";
 import { applicationProducts } from "@/lib/application-products";
 import { yonBrand } from "@/lib/yon-brand";
 
@@ -166,9 +167,7 @@ export function MobileMenu({
           <h2 className="dc-eyebrow">Uygulamalar</h2>
           <ul className="mt-4 flex flex-col gap-4">
             {applicationProducts.map(product => <li key={product.href}>
-              <Link href={product.href} onClick={onClose} aria-current={isActive(product.href) ? "page" : undefined} className="flex min-h-11 items-center justify-between gap-3 text-[17px] font-semibold text-(--site-ink)">
-                {product.name}<span className="text-xs font-medium text-(--site-muted)">{product.status}</span>
-              </Link>
+              <ApplicationMenuItem product={product} active={isActive(product.href)} onNavigate={onClose} />
             </li>)}
           </ul>
         </div>

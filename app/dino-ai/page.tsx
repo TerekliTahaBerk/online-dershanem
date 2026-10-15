@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ApplicationNav } from "@/components/applications/application-nav";
 import { ArrowDown, ArrowRight } from "lucide-react";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
@@ -53,7 +52,6 @@ export default function DinoAiPage() {
       <SiteHeader />
       <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Dino AI", url: "/dino-ai" }])} />
       <main id="main-content" tabIndex={-1} className={styles.page}>
-        <ApplicationNav active="/dino-ai" />
         <section className={styles.hero} aria-labelledby="dino-title">
           <div className={`site-container ${styles.heroContent}`}>
             <div className={styles.intro}>

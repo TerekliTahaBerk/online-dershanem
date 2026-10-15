@@ -1,10 +1,10 @@
 .page{color:#183d30;background:#fcfaf4}
-.switcher{background:#fcfaf4;border-bottom:1px solid #e5e7da}
-.switcherInner{display:flex;justify-content:center;gap:42px}
-.switcher a{position:relative;display:flex;align-items:center;min-height:62px;padding:14px 3px;color:#627066;font-size:13px;font-weight:600;text-align:center}
-.switcher a[aria-current=page]{color:#183d30;font-weight:800}
-.switcher a[aria-current=page]::after{content:"";position:absolute;bottom:-1px;left:0;right:0;height:3px;background:#0c7c57}
-.switcher a:hover{color:#0c7c57}
+
+
+
+
+
+
 
 .hero{overflow:hidden}
 .heroGrid{display:grid;grid-template-columns:1fr 1.12fr;align-items:center;gap:42px;padding-block:78px 60px;min-height:670px}
@@ -137,7 +137,7 @@
 .closingWords span:nth-child(2){color:#fdd81d}
 .closingWords span:last-child{color:#fcfaf4}
 .closingArt{width:310px;height:auto;justify-self:center;border-radius:120px 120px 25px 25px}
-.page :is(a,button,summary):focus-visible,.switcher a:focus-visible{outline:3px solid #0754c9;outline-offset:5px}
+.page :is(a,button,summary):focus-visible { outline: 3px solid #0754c9; outline-offset: 5px; }
 .closing a:focus-visible{outline-color:#fdd81d}
 
 @media(max-width:1100px){.heroGrid{gap:24px;padding-block:60px}
@@ -157,8 +157,8 @@
 .faq{gap:45px}
 }
 
-@media(max-width:767px){.switcherInner{gap:0;justify-content:space-between}
-.switcher a{min-height:56px;font-size:11px}
+@media(max-width:767px){
+
 .heroGrid,.bilginHero .heroGrid{grid-template-columns:1fr;gap:35px;padding-block:42px 28px;min-height:0}
 .intro{text-align:center}
 .intro h1{font-size:clamp(37px,9.5vw,58px)}
@@ -415,7 +415,7 @@
 }
 
 @media (max-width: 359px) {
-  .switcher a { font-size: 10px; }
+
 
   .productSelectors button { font-size: 10px; }
 
@@ -431,3 +431,41 @@
 
 }
 
+
+/* A shared palette, with a warmer green identity for Bilgin. */
+.page[data-product="bilgin"] { background: #fffcf5; }
+.page[data-product="bilgin"] .hero { background: radial-gradient(ellipse at 80% 38%, #e5f3df 0, transparent 55%), #fffcf5; }
+.page[data-product="bilgin"] .practice { background: #eaf4e7; }
+.page[data-product="bilgin"] .closing { background: #123f30; }
+.page[data-product="mobil"] .hero { background: radial-gradient(ellipse at 85% 45%, #e7eee3 0, transparent 52%), #fcfaf4; }
+.hero .intro { animation: applicationEnter 650ms cubic-bezier(.2,.7,.3,1) both; }
+.preview, .bilginArt { animation: applicationEnter 750ms 100ms cubic-bezier(.2,.7,.3,1) both; }
+.phoneTrio .frontPhone .device { animation: deviceSettle 2200ms 700ms ease-in-out 2; }
+.bilginArt .artCaption { animation: applicationEnter 600ms 240ms ease-out both; }
+.screenTransition { animation: screenEnter 280ms ease-out both; }
+.quiz { position: relative; isolation: isolate; transition: border-color 200ms ease, box-shadow 200ms ease; }
+.quiz[data-result="correct"] { border-color: #74b58a; box-shadow: 0 10px 0 #cfe7cf; }
+.quiz[data-result="correct"] .feedback { color: #07653d; }
+.quiz[data-result="correct"] .feedback strong { display: inline-block; animation: answerPop 400ms ease-out; }
+.quiz fieldset { animation: screenEnter 240ms ease-out both; }
+.confetti { position: absolute; inset: -35px -20px 0; overflow: hidden; z-index: 5; pointer-events: none; border-radius: 30px; }
+.confetti span { position: absolute; left: 50%; top: 45%; width: 8px; height: 13px; border-radius: 2px; opacity: 0; animation: confettiBurst 1500ms var(--burst-delay) cubic-bezier(.15,.65,.45,1) both; }
+.confetti span:nth-child(3n) { width: 9px; height: 9px; border-radius: 50%; }
+.primary svg, .secondary svg { transition: transform 180ms ease; }
+@media (hover: hover) { .primary:hover svg, .secondary:hover svg { transform: translate(2px, -2px); } }
+@keyframes applicationEnter { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes screenEnter { from { opacity: .3; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes deviceSettle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@keyframes answerPop { 0% { transform: scale(.92); } 55% { transform: scale(1.06); } 100% { transform: scale(1); } }
+@keyframes confettiBurst {
+  0% { opacity: 0; transform: translate(0, 20px) rotate(0); }
+  12% { opacity: 1; }
+  48% { opacity: 1; transform: translate(var(--burst-x), var(--burst-y)) rotate(var(--burst-turn)); }
+  100% { opacity: 0; transform: translate(calc(var(--burst-x) * 1.2), 150px) rotate(calc(var(--burst-turn) * 2)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero .intro, .preview, .bilginArt, .bilginArt .artCaption, .phoneTrio .frontPhone .device,
+  .screenTransition, .quiz fieldset, .quiz[data-result="correct"] .feedback strong { animation: none; }
+  .confetti { display: none; }
+  .quiz, .primary svg, .secondary svg { transition: none; }
+}
