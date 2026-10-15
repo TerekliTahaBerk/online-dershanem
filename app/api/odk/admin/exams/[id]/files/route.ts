@@ -8,6 +8,7 @@ import { requireApiStaffPermission } from "@/lib/auth/api-guards";
 import { guardMutation } from "@/lib/security/mutation-guard";
 import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 import { readSessionPlan } from "@/lib/odk/exam-sessions";
+import { bookletCodesOf } from "@/lib/odk/booklets";
 
 const MAX_PDF_SIZE = 30 * 1024 * 1024;
 const uploadSchema = z.object({
@@ -15,6 +16,8 @@ const uploadSchema = z.object({
   type: z.enum(["BOOKLET_PDF", "ANSWER_KEY_PDF"]),
   /** Oturumlu sınavda kitapçığın oturumu (LGS: SOZEL / SAYISAL); boş = tüm deneme. */
   sessionKey: z.string().trim().max(40).regex(/^[A-Z0-9_]*$/).optional().default(""),
+  /** Çoklu kitapçıkta kitapçık türü (A–E); boş = türden bağımsız. */
+  bookletCode: z.string().trim().regex(/^[A-E]?$/).optional().default(""),
 });
 function cleanName(name: string) { return name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0, 100) || "deneme.pdf"; }
 
@@ -24,32 +27,36 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   if (!process.env.BLOB_READ_WRITE_TOKEN) return NextResponse.json({ error: "Private dosya deposu yapılandırılmamış." }, { status: 503 });
   const form = await request.formData().catch(() => null);
-  const parsed = uploadSchema.safeParse({ file: form?.get("file"), type: form?.get("type"), sessionKey: form?.get("sessionKey") || undefined });
+  const parsed = uploadSchema.safeParse({ file: form?.get("file"), type: form?.get("type"), sessionKey: form?.get("sessionKey") || undefined, bookletCode: form?.get("bookletCode") || undefined });
   if (!parsed.success || parsed.data.file.type !== "application/pdf") return NextResponse.json({ error: "Geçerli bir PDF ve dosya türü seçin." }, { status: 400 });
   const { file, type } = parsed.data;
   // Oturum yalnız kitapçık için anlamlıdır; cevap anahtarı PDF'i her zaman tüm denemeye aittir.
   const sessionKey = type === "BOOKLET_PDF" ? parsed.data.sessionKey : "";
+  const bookletCode = type === "BOOKLET_PDF" ? parsed.data.bookletCode : "";
   if (!file.size || file.size > MAX_PDF_SIZE) return NextResponse.json({ error: "PDF en fazla 30 MB olabilir." }, { status: 413 });
   const routeParams = idParamsSchema.safeParse(await context.params);
   if (!routeParams.success) return invalidApiInput();
   const { id } = routeParams.data;
-  const exam = await prisma.odkExam.findFirst({ where: { id, status: "DRAFT", currentVersion: { status: "DRAFT" } }, select: { currentVersionId: true, currentVersion: { select: { settings: true } } } });
+  const exam = await prisma.odkExam.findFirst({ where: { id, status: "DRAFT", currentVersion: { status: "DRAFT" } }, select: { currentVersionId: true, currentVersion: { select: { settings: true, bookletOrders: { select: { bookletCode: true } } } } } });
   if (!exam?.currentVersionId) return NextResponse.json({ error: "Yalnız taslak sürüme PDF yüklenebilir." }, { status: 409 });
   if (sessionKey) {
     const plan = readSessionPlan(exam.currentVersion?.settings);
     if (!plan?.some((item) => item.key === sessionKey)) return NextResponse.json({ error: "Oturum kitapçığı yalnız bu denemenin oturum planındaki oturum için yüklenebilir." }, { status: 400 });
   }
-  const fileKey = { versionId_type_sessionKey: { versionId: exam.currentVersionId, type, sessionKey } };
+  if (bookletCode && !bookletCodesOf(exam.currentVersion?.bookletOrders ?? []).includes(bookletCode)) {
+    return NextResponse.json({ error: `${bookletCode} kitapçığının soru sırası tanımlı değil; önce kitapçık sırasını yükleyin.` }, { status: 400 });
+  }
+  const fileKey = { versionId_type_sessionKey_bookletCode: { versionId: exam.currentVersionId, type, sessionKey, bookletCode } };
   const bytes = Buffer.from(await file.arrayBuffer());
   if (bytes.subarray(0, 5).toString("ascii") !== "%PDF-") return NextResponse.json({ error: "Dosya içeriği PDF biçiminde değil." }, { status: 415 });
   const blob = await put(`odk-exams/${id}/${exam.currentVersionId}/${cleanName(file.name)}`, bytes, { access: "private", addRandomSuffix: true, contentType: "application/pdf" });
   const existing = await prisma.odkExamFile.findUnique({ where: fileKey, select: { blobPathname: true } });
   try {
-    await prisma.odkExamFile.upsert({ where: fileKey, create: { versionId: exam.currentVersionId, type, sessionKey, blobPathname: blob.pathname, fileName: file.name.slice(0, 255), mimeType: file.type, byteSize: file.size, checksum: createHash("sha256").update(bytes).digest("hex"), uploadedById: auth.session.userId }, update: { blobPathname: blob.pathname, fileName: file.name.slice(0, 255), mimeType: file.type, byteSize: file.size, checksum: createHash("sha256").update(bytes).digest("hex"), uploadedById: auth.session.userId, createdAt: new Date() } });
+    await prisma.odkExamFile.upsert({ where: fileKey, create: { versionId: exam.currentVersionId, type, sessionKey, bookletCode, blobPathname: blob.pathname, fileName: file.name.slice(0, 255), mimeType: file.type, byteSize: file.size, checksum: createHash("sha256").update(bytes).digest("hex"), uploadedById: auth.session.userId }, update: { blobPathname: blob.pathname, fileName: file.name.slice(0, 255), mimeType: file.type, byteSize: file.size, checksum: createHash("sha256").update(bytes).digest("hex"), uploadedById: auth.session.userId, createdAt: new Date() } });
   } catch (error) {
     await del(blob.url).catch(() => undefined); throw error;
   }
   if (existing?.blobPathname) await del(existing.blobPathname).catch(() => undefined);
-  await logAudit({ actorUserId: auth.session.userId, entityType: "OdkExam", entityId: id, action: "odk.exam_file_uploaded", summary: `${type}${sessionKey ? ` (${sessionKey})` : ""} private PDF yüklendi`, payload: { type, sessionKey, byteSize: file.size } });
+  await logAudit({ actorUserId: auth.session.userId, entityType: "OdkExam", entityId: id, action: "odk.exam_file_uploaded", summary: `${type}${sessionKey ? ` (${sessionKey})` : ""}${bookletCode ? ` [${bookletCode}]` : ""} private PDF yüklendi`, payload: { type, sessionKey, bookletCode, byteSize: file.size } });
   return NextResponse.json({ ok: true });
 }

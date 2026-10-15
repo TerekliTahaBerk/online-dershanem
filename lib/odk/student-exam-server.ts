@@ -113,7 +113,7 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
       attempts: {
         where: { studentUserId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, score: { is: { publicationStatus: "PUBLISHED" } } }, orderBy: { attemptNumber: "desc" }, take: 1,
         select: {
-          id: true, submittedAt: true, startedAt: true,
+          id: true, submittedAt: true, startedAt: true, bookletCode: true, versionId: true,
           // Eski puan satırlarında eksik bölüm kodunu tamamlamak için (P0-11).
           version: { select: { sections: { select: { id: true, code: true } } } },
           timings: { select: { questionId: true, activeDurationMs: true } },
@@ -146,6 +146,16 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
   if (!exam || !contractResultAvailable(grant.exam, exam)) return null;
   const attempt = exam?.attempts[0];
   if (!attempt?.score) return null;
+  // Çoklu kitapçık: öğrenci soruları kendi kitapçığının numarası ve sırasıyla görür (puan kanonik).
+  if (attempt.bookletCode !== "A") {
+    const orders = await prisma.odkBookletQuestionOrder.findMany({ where: { versionId: attempt.versionId, bookletCode: attempt.bookletCode }, select: { questionId: true, bookletQuestionNumber: true } });
+    if (orders.length) {
+      const numberById = new Map(orders.map((row) => [row.questionId, row.bookletQuestionNumber]));
+      const sectionOrder = [...new Set(attempt.score.questionResults.map((item) => item.question.section.code))];
+      for (const item of attempt.score.questionResults) item.question.questionNumber = numberById.get(item.questionId) ?? item.question.questionNumber;
+      attempt.score.questionResults.sort((a, b) => sectionOrder.indexOf(a.question.section.code) - sectionOrder.indexOf(b.question.section.code) || a.question.questionNumber - b.question.questionNumber);
+    }
+  }
   const attempts = await prisma.odkExamAttempt.findMany({
     where: { studentUserId, status: { in: ["SUBMITTED", "AUTO_SUBMITTED"] }, exam: { status: "RELEASED", examFamilyRefId: exam.examFamilyRefId }, score: { is: { publicationStatus: "PUBLISHED" } } },
     orderBy: [{ exam: { startsAt: "desc" } }, { submittedAt: "desc" }, { attemptNumber: "desc" }],
@@ -237,12 +247,15 @@ export async function getReleasedStudentResult(examId: string, studentUserId: st
  * deneme sonradan yeni sürüme geçse de öğrenci başladığı sorularla devam eder;
  * cevap ucu da aynı sürümü doğrular.
  */
-export async function loadAttemptRunnerVersion(versionId: string) {
+export async function loadAttemptRunnerVersion(versionId: string, bookletCode = "A") {
   return prisma.odkExamVersion.findUnique({
     where: { id: versionId },
     select: {
       settings: true,
-      sections: { orderBy: { position: "asc" }, select: { code: true, title: true, questions: { where: { isActive: true }, orderBy: { position: "asc" }, select: { id: true, questionNumber: true, position: true, bookletPage: true } } } },
+      _count: { select: { bookletOrders: true } },
+      // Çoklu kitapçık: öğrencinin kitapçığının soru sırası (A kanonik, satırı yok).
+      bookletOrders: { where: { bookletCode }, select: { bookletCode: true, questionId: true, sectionId: true, bookletQuestionNumber: true, bookletPage: true } },
+      sections: { orderBy: { position: "asc" }, select: { id: true, code: true, title: true, questions: { where: { isActive: true }, orderBy: { position: "asc" }, select: { id: true, questionNumber: true, position: true, bookletPage: true } } } },
     },
   });
 }

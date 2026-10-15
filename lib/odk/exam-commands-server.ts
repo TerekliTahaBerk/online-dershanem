@@ -17,6 +17,7 @@ import { DEFAULT_EXAM_SECURITY_POLICY, mergeExamSettings, parseExamSecurityPolic
 import { applySessionPlanEdits, readSessionPlan, sessionPlanWorkingMinutes } from "@/lib/odk/exam-sessions";
 import { importTargetStateHash, previewOutcomeImport, type OutcomeCatalogHit } from "@/lib/odk/outcome-import";
 import { questionsRevision } from "@/lib/odk/question-revision";
+import { canonicalizeBookletAnswerKey } from "@/lib/odk/booklets";
 
 /**
  * DENEME HAZIRLIK KOMUTLARI (K03b) — web `/api/odk/admin/exams/[id]/**` uçları
@@ -171,11 +172,11 @@ async function loadImportQuestions(db: Db, examId: string) {
     where: { id: examId },
     include: {
       examFamilyRef: { select: { code: true } },
-      currentVersion: { include: { sections: { orderBy: { position: "asc" }, include: { questions: { where: { isActive: true }, orderBy: { position: "asc" }, select: { id: true, questionNumber: true, correctOption: true, outcomes: { select: { outcomeId: true, isPrimary: true } } } } } } } },
+      currentVersion: { include: { bookletOrders: { select: { bookletCode: true, questionId: true, sectionId: true, bookletQuestionNumber: true, bookletPage: true } }, sections: { orderBy: { position: "asc" }, include: { questions: { where: { isActive: true }, orderBy: { position: "asc" }, select: { id: true, questionNumber: true, correctOption: true, outcomes: { select: { outcomeId: true, isPrimary: true } } } } } } } },
     },
   });
   if (!exam?.currentVersion) return null;
-  const questions = exam.currentVersion.sections.flatMap((section) => section.questions.map((question) => ({ ...question, sectionCode: section.code })));
+  const questions = exam.currentVersion.sections.flatMap((section) => section.questions.map((question) => ({ ...question, sectionId: section.id, sectionCode: section.code })));
   return { exam, version: exam.currentVersion, questions };
 }
 
@@ -202,7 +203,7 @@ async function familyOutcomeCatalog(db: Db, familyCode: string): Promise<Outcome
 }
 
 /** JSON içe aktarma önizlemesi (cevap anahtarı / kazanım): `PREVIEW` audit kaydı açar. */
-export async function previewOdkImport(kind: ImportKind, id: string, payload: unknown, actorId: string, db: Db = prisma) {
+export async function previewOdkImport(kind: ImportKind, id: string, payload: unknown, actorId: string, db: Db = prisma, options: { bookletCode?: string } = {}) {
   const loaded = await loadImportQuestions(db, id);
   if (!loaded) return NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 });
   const payloadHash = createHash("sha256").update(JSON.stringify(payload)).digest("hex");
@@ -210,10 +211,26 @@ export async function previewOdkImport(kind: ImportKind, id: string, payload: un
   const slots = loaded.questions.map(({ sectionCode, questionNumber }) => ({ sectionCode, questionNumber }));
   if (kind === "answer-key") {
     if (!loaded.exam.family) return NextResponse.json({ error: "Katalog tabanlı sınavlarda doğrudan soru düzenleme API'sini kullanın." }, { status: 400 });
-    const preview = previewAnswerKeyImport(payload, slots, loaded.exam.family);
-    const summary = summarizeAnswerKeyPreview(preview);
+    // Çoklu kitapçık: B–E numarasıyla girilen anahtar kanonik (A) numaraya çevrilir.
+    const bookletCode = options.bookletCode ?? "A";
+    const canonical = canonicalizeBookletAnswerKey(payload, bookletCode, loaded.questions, loaded.version.bookletOrders);
+    if (!canonical.ok) return NextResponse.json({ error: canonical.error, code: "BOOKLET_ORDER_MISSING" }, { status: 400 });
+    const preview = previewAnswerKeyImport(canonical.document, slots, loaded.exam.family);
+    if (bookletCode !== "A") {
+      // B–E anahtarı mevcut (başka kitapçıktan girilmiş) anahtarla çelişirse sessizce ezmez.
+      const byKey = new Map(loaded.questions.map((question) => [`${question.sectionCode}:${question.questionNumber}`, question]));
+      const order = new Map(loaded.version.bookletOrders.filter((row) => row.bookletCode === bookletCode).map((row) => [row.questionId, row.bookletQuestionNumber]));
+      for (const mapping of preview.mappings) {
+        const existing = byKey.get(`${mapping.sectionCode}:${mapping.questionNumber}`);
+        if (existing?.correctOption && existing.correctOption !== mapping.correctOption) {
+          preview.issues.push({ level: "error", code: "KEY_CONFLICT_ACROSS_BOOKLETS", message: `${bookletCode} kitapçığı ${order.get(existing.id)}. soru (A ${mapping.questionNumber}) mevcut anahtarla çelişiyor: ${existing.correctOption} ≠ ${mapping.correctOption}.`, sectionCode: mapping.sectionCode, questionNumber: mapping.questionNumber });
+        }
+      }
+      if (preview.issues.some((issue) => issue.level === "error")) preview.mappings = [];
+    }
+    const summary = summarizeAnswerKeyPreview({ ...preview, validAnswers: preview.mappings.length });
     const audit = await db.odkImportAudit.create({
-      data: { examId: id, versionId: loaded.version.id, kind: "ANSWER_KEY", schemaVersion: preview.schemaVersion, status: "PREVIEW", payloadHash, rawPayload: payload as object, previewSummary: { ...summary, issues: preview.issues, mappings: preview.mappings, targetStateHash }, errorCount: summary.errors, createdById: actorId },
+      data: { examId: id, versionId: loaded.version.id, kind: "ANSWER_KEY", schemaVersion: preview.schemaVersion, status: "PREVIEW", payloadHash, rawPayload: payload as object, previewSummary: { ...summary, issues: preview.issues, mappings: preview.mappings, targetStateHash, bookletCode }, errorCount: summary.errors, createdById: actorId },
     });
     return NextResponse.json({ importId: audit.id, summary: { message: `${summary.found} soru bulundu. ${summary.valid} geçerli. ${summary.errors} hata.`, ...summary }, issues: preview.issues });
   }

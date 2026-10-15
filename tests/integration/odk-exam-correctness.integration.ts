@@ -6,6 +6,9 @@ import { previewOdkRescore, scoreOdkExam } from "@/lib/odk/scoring-service";
 import { commitAnswerKeyRevision, previewAnswerKeyRevision } from "@/lib/odk/answer-key-revision-server";
 import { rescoreOdkExamCommand } from "@/lib/odk/exam-results-commands";
 import { commitOdkImport, loadQuestionsRevision, previewOdkImport, updateOdkExamQuestions } from "@/lib/odk/exam-commands-server";
+import { previewBookletOrders, replaceBookletOrders } from "@/lib/odk/booklet-server";
+import { getOdkExamReadiness } from "@/lib/odk/admin-exam-server";
+import { loadStudentBookletFile } from "@/lib/odk/student-booklet-server";
 import { integration } from "./integration-utils";
 
 /**
@@ -395,6 +398,56 @@ integration("P1-8 puanlama attempt'in kendi sürümüyle yapılır; güncel sür
     const v1Results = await db.odkAttemptQuestionResult.findMany({ where: { attemptId: fixture.attempts[0].id } });
     assert.deepEqual(v1Results.map((row) => row.questionId).sort(), fixture.sections[0].questions.map((question) => question.id).sort());
     await db.odkExamAttempt.deleteMany({ where: { examId: fixture.exam.id } });
+  });
+});
+
+integration("Çoklu kitapçık: sıra tablosu hash korumalı, B anahtarı kanoniğe çevrilir, çelişki yakalanır, PDF ve hazırlık kitapçığa göre", async () => {
+  const run = randomUUID().slice(0, 8);
+  await withFixture({ run, status: "DRAFT", sections: [{ code: "MAT", key: [null, null, null] }] }, async (fixture) => {
+    const reversed = [1, 2, 3].map((number) => ({ bookletCode: "B", sectionCode: "MAT", bookletQuestionNumber: number, canonicalQuestionNumber: 4 - number, bookletPage: null }));
+    const preview = await bodyOf(await previewBookletOrders(fixture.exam.id, reversed));
+    assert.equal(preview.body.ok, true, JSON.stringify(preview.body));
+    const wrongHash = await bodyOf(await replaceBookletOrders(fixture.exam.id, { rows: reversed, expectedHash: "0".repeat(64) }, fixture.admin.id));
+    assert.deepEqual([wrongHash.status, wrongHash.body.code], [409, "BOOKLET_STALE"]);
+    const saved = await bodyOf(await replaceBookletOrders(fixture.exam.id, { rows: reversed, expectedHash: preview.body.currentHash }, fixture.admin.id));
+    assert.equal(saved.status, 200, JSON.stringify(saved.body));
+    assert.deepEqual(saved.body.booklets.map((row: { code: string }) => row.code), ["A", "B"]);
+    // Aynı önizleme hash'iyle ikinci kayıt bayattır.
+    assert.equal((await replaceBookletOrders(fixture.exam.id, { rows: reversed, expectedHash: preview.body.currentHash }, fixture.admin.id)).status, 409);
+
+    // B kitapçığına göre anahtar: B1=C, B2=B, B3=A → kanonik A1=A, A2=B, A3=C.
+    const keyPreview = await bodyOf(await previewOdkImport("answer-key", fixture.exam.id, { sections: [{ code: "MAT", answers: { "1": "C", "2": "B", "3": "A" } }] }, fixture.admin.id, undefined, { bookletCode: "B" }));
+    assert.equal(keyPreview.status, 200, JSON.stringify(keyPreview.body));
+    assert.equal((await commitOdkImport("answer-key", fixture.exam.id, keyPreview.body.importId, fixture.admin.id)).status, 200);
+    const keys = await db.odkExamQuestion.findMany({ where: { sectionId: fixture.sections[0].id }, orderBy: { questionNumber: "asc" } });
+    assert.deepEqual(keys.map((row) => row.correctOption), ["A", "B", "C"]);
+    // Çelişen B anahtarı sessizce ezilmez.
+    const conflict = await bodyOf(await previewOdkImport("answer-key", fixture.exam.id, { sections: [{ code: "MAT", answers: { "1": "D", "2": "B", "3": "A" } }] }, fixture.admin.id, undefined, { bookletCode: "B" }));
+    assert.equal(conflict.body.issues.find((issue: { code: string }) => issue.code === "KEY_CONFLICT_ACROSS_BOOKLETS")?.questionNumber, 3);
+    // Tanımsız kitapçık.
+    assert.equal((await previewOdkImport("answer-key", fixture.exam.id, { sections: [{ code: "MAT", answers: { "1": "A" } }] }, fixture.admin.id, undefined, { bookletCode: "C" })).status, 400);
+
+    // Hazırlık: yalnız A/ortak PDF varken B kitapçığı PDF'i eksik.
+    const file = (bookletCode: string) => db.odkExamFile.create({ data: { versionId: fixture.version.id, type: "BOOKLET_PDF", bookletCode, blobPathname: `test/${run}/${bookletCode || "ortak"}.pdf`, fileName: `${bookletCode || "ortak"}.pdf`, mimeType: "application/pdf", byteSize: 10, uploadedById: fixture.admin.id } });
+    const common = await file("");
+    await db.odkExamQuestion.updateMany({ where: { sectionId: fixture.sections[0].id }, data: { contentType: "BOOKLET_PDF" } });
+    assert.ok((await getOdkExamReadiness(fixture.exam.id)).issues.some((issue) => issue.code === "BOOKLET_TYPE_PDF_MISSING"));
+    const bFile = await file("B");
+    assert.equal((await getOdkExamReadiness(fixture.exam.id)).issues.some((issue) => issue.code === "BOOKLET_TYPE_PDF_MISSING"), false);
+
+    // Öğrenci: B kitapçıklı attempt yalnız B PDF'ini, A kitapçıklı attempt ortak PDF'i alır.
+    const now = Date.now();
+    await db.odkExam.update({ where: { id: fixture.exam.id }, data: { status: "LIVE", startsAt: new Date(now - 600_000), endsAt: new Date(now + 3_600_000) } });
+    const student = await db.user.create({ data: { email: `p0-bk-${run}@example.com`, role: "STUDENT", status: "ACTIVE", passwordHash: "unused" } });
+    try {
+      const attempt = await db.odkExamAttempt.create({ data: { examId: fixture.exam.id, versionId: fixture.version.id, studentUserId: student.id, attemptNumber: 1, status: "IN_PROGRESS", bookletCode: "B", startedAt: new Date(now - 60_000), deadlineAt: new Date(now + 1_800_000) } });
+      assert.deepEqual(await loadStudentBookletFile(fixture.exam.id, student.id).then((r) => (r.ok ? r.file.id : r.code)), bFile.id);
+      await db.odkExamAttempt.update({ where: { id: attempt.id }, data: { bookletCode: "A" } });
+      assert.deepEqual(await loadStudentBookletFile(fixture.exam.id, student.id).then((r) => (r.ok ? r.file.id : r.code)), common.id);
+    } finally {
+      await db.odkExamAttempt.deleteMany({ where: { studentUserId: student.id } });
+      await db.user.deleteMany({ where: { id: student.id } });
+    }
   });
 });
 

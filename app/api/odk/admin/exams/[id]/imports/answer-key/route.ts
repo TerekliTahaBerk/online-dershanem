@@ -12,7 +12,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { id } = await context.params;
   const parsed = jsonImportPreviewSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "JSON gövdesi gerekli." }, { status: 400 });
-  return previewOdkImport("answer-key", id, parsed.data.payload, auth.session.userId);
+  return previewOdkImport("answer-key", id, parsed.data.payload, auth.session.userId, undefined, { bookletCode: parsed.data.bookletCode });
 }
 
 export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {

@@ -12,6 +12,7 @@ import { getActiveOdkExamGrant } from "@/lib/odk/product-contract-server";
 import { contractExamSchedule } from "@/lib/odk/product-contract";
 import { getOdkExamFamilyCode } from "@/lib/odk/exam-family";
 import { readSessionPlan, sessionPlanTotalMinutes } from "@/lib/odk/exam-sessions";
+import { assignBookletCode, bookletCodesOf } from "@/lib/odk/booklets";
 
 const schema = z.object({ meetAcknowledged: z.boolean().default(false) });
 
@@ -26,7 +27,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!grant) {
     return NextResponse.json({ error: "Bu deneme için aktif paket erişiminiz yok." }, { status: 403 });
   }
-  const exam = await prisma.odkExam.findFirst({ where: { id, publishedAt: { not: null } }, select: { id: true, family: true, examFamilyRef: { select: { code: true } }, status: true, startsAt: true, endsAt: true, lateEntryMinutes: true, attemptLimit: true, meetRequired: true, currentVersion: { select: { id: true, status: true, durationMinutes: true, settings: true } } } });
+  const exam = await prisma.odkExam.findFirst({ where: { id, publishedAt: { not: null } }, select: { id: true, family: true, examFamilyRef: { select: { code: true } }, status: true, startsAt: true, endsAt: true, lateEntryMinutes: true, attemptLimit: true, meetRequired: true, currentVersion: { select: { id: true, status: true, durationMinutes: true, settings: true, bookletOrders: { select: { bookletCode: true }, distinct: ["bookletCode"] } } } } });
   if (!exam?.currentVersion || exam.currentVersion.status !== "LOCKED") return NextResponse.json({ error: "Sınav sürümü kullanıma hazır değil." }, { status: 409 });
   const familyCode = getOdkExamFamilyCode(exam);
   const existing = await prisma.odkExamAttempt.findFirst({ where: { examId: id, studentUserId: auth.session.userId, status: "IN_PROGRESS" }, orderBy: { attemptNumber: "desc" } });
@@ -46,16 +47,18 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const deadlineAt = sessionPlan
     ? new Date(Math.min(now.getTime() + sessionPlanTotalMinutes(sessionPlan) * 60_000, windowEnd ? windowEnd.getTime() : Number.POSITIVE_INFINITY))
     : decision.deadlineAt;
+  // Çoklu kitapçık: deneme + öğrenci kimliğinden deterministik ve dengeli atama (tek kitapçıkta "A").
+  const bookletCode = assignBookletCode(id, auth.session.userId, bookletCodesOf(exam.currentVersion.bookletOrders));
   let attempt;
   try {
-    attempt = await prisma.odkExamAttempt.create({ data: { examId: id, versionId: exam.currentVersion.id, studentUserId: auth.session.userId, attemptNumber: (previous._max.attemptNumber || 0) + 1, meetAcknowledgedAt: meetRequired ? now : null, startedAt: now, deadlineAt, lastActivityAt: now } });
+    attempt = await prisma.odkExamAttempt.create({ data: { examId: id, versionId: exam.currentVersion.id, studentUserId: auth.session.userId, bookletCode, attemptNumber: (previous._max.attemptNumber || 0) + 1, meetAcknowledgedAt: meetRequired ? now : null, startedAt: now, deadlineAt, lastActivityAt: now } });
   } catch (error) {
     if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") throw error;
     const concurrent = await prisma.odkExamAttempt.findFirst({ where: { examId: id, studentUserId: auth.session.userId, status: "IN_PROGRESS", deadlineAt: { gt: now } }, orderBy: { attemptNumber: "desc" } });
     if (!concurrent) throw error;
     return NextResponse.json({ attemptId: concurrent.id, resumed: true });
   }
-  await logAudit({ actorUserId: auth.session.userId, entityType: "OdkExamAttempt", entityId: attempt.id, action: "odk.attempt_started", summary: "Öğrenci deneme oturumunu başlattı", payload: { examId: id, attemptNumber: attempt.attemptNumber } });
+  await logAudit({ actorUserId: auth.session.userId, entityType: "OdkExamAttempt", entityId: attempt.id, action: "odk.attempt_started", summary: "Öğrenci deneme oturumunu başlattı", payload: { examId: id, attemptNumber: attempt.attemptNumber, bookletCode } });
   await recordPanelProductEvent({ name: "odk_attempt_started", properties: { family: familyCode, resumed: false, lateEntryBand: odkLateEntryBand(exam.startsAt, now) } }, "STUDENT");
   return NextResponse.json({ attemptId: attempt.id, resumed: false });
 }

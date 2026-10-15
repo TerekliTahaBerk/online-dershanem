@@ -16,9 +16,10 @@ export async function loadStudentBookletFile(examId: string, studentUserId: stri
     orderBy: { attemptNumber: "desc" },
     select: {
       id: true,
+      bookletCode: true,
       startedAt: true,
       deadlineAt: true,
-      version: { select: { settings: true, files: { where: { type: "BOOKLET_PDF" }, select: { id: true, sessionKey: true, blobPathname: true, fileName: true, mimeType: true } } } },
+      version: { select: { settings: true, files: { where: { type: "BOOKLET_PDF" }, select: { id: true, sessionKey: true, bookletCode: true, blobPathname: true, fileName: true, mimeType: true } } } },
     },
   });
   if (!attempt) return { ok: false as const, code: "NO_ACTIVE_ATTEMPT", status: 404 as const };
@@ -26,6 +27,7 @@ export async function loadStudentBookletFile(examId: string, studentUserId: stri
   const decision = resolveBookletFile(
     attempt.version.files,
     state ? { phase: state.timeline.phase, currentKey: state.timeline.current?.key ?? null } : null,
+    attempt.bookletCode,
   );
   if (!decision.ok) return decision;
   const file = attempt.version.files.find((item) => item.id === decision.fileId)!;

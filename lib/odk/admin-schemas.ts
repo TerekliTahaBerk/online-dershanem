@@ -84,6 +84,8 @@ export const updateQuestionsSchema = z.object({
 
 export const jsonImportPreviewSchema = z.object({
   payload: z.unknown(),
+  /** Cevap anahtarı hangi kitapçığın numarasıyla girildi (A kanonik; B–E sıra tablosuyla çevrilir). */
+  bookletCode: z.string().regex(/^[A-E]$/).optional(),
 });
 
 export const jsonImportCommitSchema = z.object({
@@ -157,3 +159,14 @@ export const answerKeyRevisionCommitSchema = answerKeyRevisionPreviewSchema.exte
   expectedAnswerKeyHash: z.string().regex(/^[a-f0-9]{64}$/),
   confirmPublishedChange: z.boolean().optional(),
 });
+
+/** Çoklu kitapçık sıra tablosu (B–E): önizleme ve hash korumalı kayıt. */
+const bookletOrderRow = z.object({
+  bookletCode: z.string().trim().regex(/^[A-E]$/),
+  sectionCode: z.string().trim().min(1).max(32),
+  bookletQuestionNumber: z.number().int().min(1).max(200),
+  canonicalQuestionNumber: z.number().int().min(1).max(200),
+  bookletPage: z.number().int().min(1).max(1000).nullable(),
+});
+export const bookletOrdersPreviewSchema = z.object({ rows: z.array(bookletOrderRow).max(800) });
+export const bookletOrdersCommitSchema = bookletOrdersPreviewSchema.extend({ expectedHash: z.string().regex(/^[a-f0-9]{64}$/) });
