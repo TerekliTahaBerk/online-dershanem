@@ -150,3 +150,50 @@ export async function commitAnswerKeyRevision(examId: string, input: z.output<ty
 }
 
 class RevisionStaleError extends Error {}
+
+/**
+ * Revizyon paneli verisi (yalnız `odk:key:revise` sahibine çizilir): güncel
+ * sürümün tüm soruları (iptaller dahil) ve revizyon geçmişi.
+ */
+export async function loadAnswerKeyRevisionPanel(examId: string, db: Db = prisma) {
+  const exam = await db.odkExam.findUnique({
+    where: { id: examId },
+    select: {
+      status: true,
+      currentVersion: {
+        select: {
+          id: true,
+          sections: { orderBy: { position: "asc" }, select: { code: true, title: true, questions: { orderBy: { position: "asc" }, select: { id: true, questionNumber: true, correctOption: true, isActive: true } } } },
+          answerKeyRevisions: {
+            orderBy: { revisionNumber: "desc" },
+            take: 50,
+            select: { id: true, revisionNumber: true, reason: true, previousAnswers: true, nextAnswers: true, createdAt: true, rescoreRequestedAt: true, rescoreCompletedAt: true, changedBy: { select: { fullName: true, email: true } } },
+          },
+        },
+      },
+    },
+  });
+  if (!exam?.currentVersion) return null;
+  const questions = exam.currentVersion.sections.flatMap((section) =>
+    section.questions.map((question) => ({ id: question.id, sectionCode: section.code, sectionTitle: section.title, questionNumber: question.questionNumber, correctOption: question.correctOption, isActive: question.isActive })),
+  );
+  const labelById = new Map(questions.map((question) => [question.id, `${question.sectionCode} ${question.questionNumber}`]));
+  const asRecord = (value: unknown) => (value && typeof value === "object" ? (value as Record<string, string | null>) : {});
+  return {
+    status: exam.status,
+    questions,
+    revisions: exam.currentVersion.answerKeyRevisions.map((revision) => {
+      const previous = asRecord(revision.previousAnswers);
+      const next = asRecord(revision.nextAnswers);
+      return {
+        id: revision.id,
+        revisionNumber: revision.revisionNumber,
+        reason: revision.reason,
+        actor: revision.changedBy.fullName || revision.changedBy.email,
+        createdAt: revision.createdAt.toISOString(),
+        rescore: revision.rescoreCompletedAt ? "COMPLETED" as const : revision.rescoreRequestedAt ? "PENDING" as const : "NOT_NEEDED" as const,
+        changes: Object.keys(next).map((questionId) => ({ label: labelById.get(questionId) ?? questionId, previous: previous[questionId] ?? null, next: next[questionId] ?? null })),
+      };
+    }),
+  };
+}

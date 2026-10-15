@@ -18,6 +18,8 @@ import { AdminPreviewPanel } from "@/components/odk/admin-preview-panel";
 import { AdminIntegrityReviewPanel } from "@/components/odk/admin-integrity-review-panel";
 import { AdminResultsReviewPanel } from "@/components/odk/admin-results-review-panel";
 import { AdminSessionPlan } from "@/components/odk/admin-session-plan";
+import { AdminAnswerKeyRevisionPanel } from "@/components/odk/admin-answer-key-revision-panel";
+import { loadAnswerKeyRevisionPanel } from "@/lib/odk/answer-key-revision-server";
 import { AnchorTabRedirect } from "@/components/panel/anchor-tab-redirect";
 import {
   EmptyState,
@@ -317,6 +319,9 @@ export default async function OdkAdminExamDetailPage({
             <>
               {editor(["scoring"])}
               {caps.score ? <AdminResultsReviewPanel examId={exam.id} examStatus={exam.status} /> : null}
+              {caps.rescore && ["LIVE", "ENDED", "SCORED", "RELEASED"].includes(exam.status) ? (
+                <RevisionTab examId={exam.id} studentNames={Object.fromEntries(attempts.map((attempt) => [attempt.id, attempt.student.fullName || attempt.student.email]))} />
+              ) : null}
             </>
           ) : null}
 
@@ -375,6 +380,12 @@ export default async function OdkAdminExamDetailPage({
       </div>
     </PanelShell>
   );
+}
+
+async function RevisionTab({ examId, studentNames }: { examId: string; studentNames: Record<string, string> }) {
+  const panel = await loadAnswerKeyRevisionPanel(examId);
+  if (!panel) return null;
+  return <AdminAnswerKeyRevisionPanel examId={examId} questions={panel.questions} revisions={panel.revisions} studentNames={studentNames} />;
 }
 
 async function ExamHistoryTab({ exam }: { exam: Parameters<typeof loadExamHistory>[0] }) {
