@@ -1,6 +1,6 @@
 # ODK Deneme Deneyimi — Production-Grade Revizyon Yol Haritası
 
-Durum: **Faz 1 (denetim) · Faz 2 (P0 doğruluk) · Faz 3 (şablon/alt test) · Faz 4 (yönetici deneyimi) · Faz 5 (öğrenci çözücü) tamam**
+Durum: **Faz 1 (denetim) · Faz 2 (P0 doğruluk) · Faz 3 (şablon/alt test) · Faz 4 (yönetici deneyimi) · Faz 5 (öğrenci çözücü) · Faz 6 (sonuç/rescore/yayın) tamam**
 Kapsam: Deneme Ligi (ODK) çevrim içi sınav motoru — yönetici oluşturma, cevap
 anahtarı/kazanım, öğrenci çözücü, puanlama, revizyon, yayın ve raporlama.
 
@@ -245,7 +245,7 @@ gereksinimi veya ciddi UX açığı; **P2** = iyileştirme.
 | 3 | P1-4/7, P0-11 | Şablon sürümü/modu/geçerliliği, anlık görüntü, alt testler, alan bazlı D/Y/B | ✅ `ca85472`, `ef3ffe8` |
 | 4 | P1-6/10, P2-2 | Soru içerik revizyonu + çakışma UI, tablo/CSV/dosya import, optik giriş, bölüm sekmesi/arama/toplu işlem | ✅ `3cc7dac`, `e612b79`, `0aaa011` |
 | 5 | P1-1/2/3/13 | Oturum kitapçığı (migration 0116), PDF sayfa navigasyonu, gerçek çözücü önizlemesi, iki sekme | ✅ `6dcacfb`, `a8ce5b9`, `4031d81` |
-| 6 | P1-5/8/9, P2-3 | Rapor, attempt sürümüne bağlı puanlama, çoklu kitapçık | sonraki |
+| 6 | P1-8, P2-3, revizyon UI | Attempt sürümüne bağlı puanlama, revizyon arayüzü, ham net/kanıt düzeyi, rapor alt testleri | ✅ `b92a69a`, `8fc208f`, `3170d56`, `e1b9835` (P1-9 tasarım, uygulama bekliyor) |
 | 7 | — | E2E (mobil + masaüstü), erişilebilirlik, performans | sonraki |
 
 ### Migration ve geri alma ilkesi
@@ -533,3 +533,75 @@ soru → PDF sayfası navigasyonu (P1-2), gerçek çözücü önizlemesi (P1-3),
 **Sonraki faz:** Faz 6 — sonuç, rescore ve yayın: revizyon yönetici arayüzü, puanlama ve
 çözücünün attempt sürümüne bağlanması (P1-8), çoklu kitapçık eşlemesi (P1-9), ham net /
 tahmini puan ayrımı ve veri güvenilirliği (P2-3), öğretmen/veli raporlarında alt testler.
+
+### Faz 6 — Sonuç, yeniden puanlama ve yayın (2026-10-15)
+
+**Bulgu / gereksinim (doğrulandı)**
+- P1-8: puanlama, kuru rescore önizlemesi ve çözücü sayfası `exam.currentVersion`'ı
+  kullanıyordu. Test: v1'de çözen öğrencinin denemesi güncel sürüm v2 olunca **net 0**
+  (tüm cevaplar boş) puanlandı. Cevap ucu ise attempt sürümünü doğruluyordu → çözücü ile
+  kayıt ucu farklı soru kümesi görebiliyordu.
+- Faz 2'de eklenen revizyon akışının yönetici arayüzü yoktu (yalnız API).
+- Sonuç özeti her ailede yalnız "Net" diyordu; tek soruyla ölçülen kazanım %100 ile
+  "güçlü" listesinin başına çıkabiliyordu.
+- Yönetici raporunda alt testler (Faz 3 verisi) görünmüyordu.
+
+**Dokunulan dosyalar**
+- `lib/odk/scoring-service.ts` (sürüm bazlı puanlama planı), `lib/odk/student-exam-server.ts`
+  (`loadAttemptRunnerVersion`), `app/panel/odk/ogrenci/denemeler/[id]/coz/page.tsx`
+- `lib/odk/answer-key-revision-server.ts` (`loadAnswerKeyRevisionPanel`),
+  `components/odk/admin-answer-key-revision-panel.tsx`, `app/panel/odk/yonetim/sinavlar/[id]/page.tsx`
+- `lib/odk/student-result-view.ts`, `app/panel/odk/ogrenci/denemeler/[id]/sonuc/page.tsx`
+- `lib/odk/results-ops.ts`
+
+**Neden güvenli**
+- Bugün her denemenin tek sürümü olduğu için P1-8 düzeltmesi mevcut sonuçları değiştirmez;
+  yalnız yeni sürüm üretilirse eski attempt'lerin yanlış puanlanmasını önler. Her puanın
+  `answerKeyHash`'i kendi sürümünden; kullanılan herhangi bir sürümün anahtarı eksikse
+  puanlama sürüm numarasıyla reddedilir.
+- Revizyon paneli yalnız `odk:key:revise` sahibine ve canlı/sonrası durumda çizilir; uygula
+  adımı Faz 2'deki step-up, hash ve onay kurallarından geçer.
+- Mobil sözleşmeler değişmedi: `classifyOutcome` yine strong/improve döner; alt test
+  ortalamaları `sectionAverages` yerine ayrı `subtestAverages` alanında.
+- Hiçbir yerde tahmini/resmî puan hesaplanmaz; metinler bunu açıkça söyler.
+
+**Eklenen testler**
+- Integration: P1-8 — v1/v2 iki sürüm, iki öğrenci; her biri kendi anahtarıyla net 2, soru
+  sonuçları kendi sürümünün sorularında (eski kodda kırmızı: net 0).
+- Unit: `student-result-view.test.ts` (kanıt düzeyi, güçlü alan sıralaması),
+  `ops-completion.test.ts` (alt test ortalamaları, `sectionAverages` biçimi değişmez).
+- E2E: `odk-admin-answer-key-revision.spec.ts` — API ile puanla (0,67) → panelde MAT 2 A→B →
+  önizleme "1 öğrencinin neti değişecek", tablo 2,00 → uygula → DB net 2, revizyon kaydı
+  (önceki/yeni), geçmiş "yeniden puanlandı"; panel axe taraması (ilk koşuda etiket içine
+  gömülü `<select>`'lerin belirsiz erişilebilir adı yakalandı, `aria-label` eklendi).
+
+**Komutlar ve gerçek sonuçlar**
+- typecheck, `npx eslint .` → temiz · `npm run test:unit` → 1094/1094
+- `tests/integration/odk-*.integration.ts` → 25/25
+- `lint:api-validation`, `lint:mobile-parity`, `lint:hygiene`, `data:pii-inventory:check` → temiz
+- `next build` + E2E: yönetici editörü + çözücü önizlemesi + revizyon + ODK kalite + mobil ODK ×4
+  → 16/16; ODK akışı + LGS oturumları + runner görsel → 11/11 (her grup taze seed)
+
+**P1-9 çoklu kitapçık (A/B/C/D) — tasarım, uygulama bekliyor**
+Ürün kararı gerektirdiği için kodlanmadı. Önerilen model:
+- Cevaplar zaten soru kimliğiyle (kanonik soru) saklanıyor; kitapçık yalnız SIRA ve PDF'i değiştirir.
+  Bu yüzden puanlama değişmez.
+- Additive tablo `odk_booklet_question_orders(version_id, booklet_code, question_id,
+  booklet_question_number, booklet_page)` + kitapçık başına PDF (`odk_exam_files.booklet_code`).
+- Attempt başlangıcında kitapçık ataması (`odk_exam_attempts.booklet_code` mevcut): politika
+  (rastgele / sıra ile / öğretmen ataması) ürün kararıdır.
+- Çözücü, kitapçık sırasını ve numarasını gösterir; cevap ucu kanonik soru kimliğini yazar.
+- Cevap anahtarı içe aktarma kitapçık kodu kabul eder ve kanonik soruya çevirir; tutarsız
+  eşleme (iki kitapçıkta farklı anahtar) önizleme hatasıdır.
+- Açık sorular: atama politikası, sonuç raporunda soru numarasının hangi kitapçığa göre
+  gösterileceği, kâğıt optik formlarla uyum.
+
+**Kalan riskler**
+- Öğretmen/veli raporları bölüm/alt test kırılımı göstermiyor (yalnız toplam net ve kazanım);
+  eklemek mobil rapor sözleşmesi değişikliği gerektirir.
+- Yeni sürüm üretme akışı hâlâ yok; P1-8 ileride bu akış eklendiğinde devreye girecek koruma.
+- Ek süre / muafiyet (P1-12) ve çoklu kitapçık (P1-9) açık.
+
+**Sonraki faz:** Faz 7 — E2E, erişilebilirlik ve performans doğrulaması: mobil cihaz matrisi
+(`e2e:odk`), 160 soruluk AYT ve 90 soruluk LGS ile uçtan uca senaryo, çözücü klavye/ekran
+okuyucu denetimi, büyük sınıfta puanlama süresi ölçümü.
