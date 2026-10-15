@@ -59,6 +59,8 @@ export function evaluateCronHeartbeats(rows: CronHeartbeatSnapshot[], now = new 
 }
 
 export function safeErrorCode(error: unknown) {
-  const raw = error instanceof Error ? error.name : "UNKNOWN";
+  // Prisma hata kodu (P1017, P5006…) teşhisin kendisidir; sınıf adına eklenir.
+  const prismaCode = typeof (error as { code?: unknown } | null)?.code === "string" && /^P\d{4}$/.test((error as { code: string }).code) ? `_${(error as { code: string }).code}` : "";
+  const raw = error instanceof Error ? `${error.name}${prismaCode}` : "UNKNOWN";
   return raw.replace(/[^A-Z0-9_]/gi, "_").toUpperCase().slice(0, 80) || "UNKNOWN";
 }

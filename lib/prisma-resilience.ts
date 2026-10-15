@@ -2,11 +2,27 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import { prisma, prismaDirect } from "@/lib/prisma";
 
 const TRANSIENT_PRISMA_CODES = new Set([
+  "P1001", // Can't reach database server
+  "P1002", // Database server reached but timed out
+  "P1008", // Operation timed out
+  "P1017", // Server has closed the connection (soğumuş havuz bağlantısı)
+  "P2024", // Bağlantı havuzundan bağlantı alınamadı (zaman aşımı)
   "P5006", // Accelerate / server-side transport failure
   "P6000", // Accelerate generic server error (often 530 unreachable)
   "P6008", // Accelerate connection / engine start error
   "P5011", // Accelerate rate limit — short backoff may help
 ]);
+
+/** Kod taşımayan (ör. PrismaClientUnknownRequestError) geçici bağlantı hataları. */
+const TRANSIENT_MESSAGES = [
+  "P6000",
+  "Query Engine instance was unreachable",
+  "Server has closed the connection",
+  "Can't reach database server",
+  "Connection terminated",
+  "ECONNRESET",
+  "Timed out fetching a new connection",
+];
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -19,7 +35,7 @@ export function isTransientPrismaError(error: unknown): boolean {
 
   if (!(error instanceof Error)) return false;
   const message = error.message;
-  return message.includes("P6000") || message.includes("Query Engine instance was unreachable");
+  return TRANSIENT_MESSAGES.some((needle) => message.includes(needle));
 }
 
 /**

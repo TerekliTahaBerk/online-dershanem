@@ -27,3 +27,10 @@ test("isTransientPrismaError tanır: mesajda 530 unreachable", () => {
   );
   assert.equal(isTransientPrismaError(error), true);
 });
+
+test("isTransientPrismaError tanır: kapanmış bağlantı (P1017 ve kodsuz mesaj)", () => {
+  const coded = new Prisma.PrismaClientKnownRequestError("Server has closed the connection.", { code: "P1017", clientVersion: "6.19.3" });
+  assert.equal(isTransientPrismaError(coded), true);
+  assert.equal(isTransientPrismaError(new Error("Invalid `prisma.cronHeartbeat.upsert()` invocation:\n\nServer has closed the connection.")), true);
+  assert.equal(isTransientPrismaError(new Error("Unique constraint failed")), false);
+});

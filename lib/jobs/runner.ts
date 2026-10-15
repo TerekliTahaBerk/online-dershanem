@@ -1,8 +1,9 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { failCronRun, startCronRun, succeedCronRun, type CronRunMetrics } from "./heartbeat";
-import type { CriticalCronName } from "./health";
 import { reportOperationalAlert } from "@/lib/error-capture";
+import { log } from "@/lib/logger";
+import { safeErrorCode, type CriticalCronName } from "./health";
 
 type RunJobOptions<T> = {
   metrics?: (result: T) => CronRunMetrics;
@@ -32,21 +33,32 @@ export async function runJob<T>(
   let run: Awaited<ReturnType<typeof startCronRun>>;
   try {
     run = await startCronRun(name);
-  } catch {
+  } catch (error) {
+    // Yeniden denemeler ve yedek istemci de başarısız: veritabanı gerçekten erişilemez.
+    // Asıl neden loga yazılır (önceden yutuluyordu, alarm teşhis edilemiyordu).
+    const errorCode = safeErrorCode(error);
+    log.error("cron.heartbeat.persistence_failed", error, { job: name, errorCode });
     await reportOperationalAlert({
       event: "cron.heartbeat.persistence_failed",
       severity: "critical",
-      summary: `${name} heartbeat kaydı başlatılamadı`,
-      context: { job: name },
+      summary: `${name} heartbeat kaydı başlatılamadı (${errorCode})`,
+      context: { job: name, errorCode },
     });
     return NextResponse.json({ ok: false, job: name, error: "HEARTBEAT_UNAVAILABLE" }, { status: 503 });
   }
+  let result: T;
   try {
-    const result = await job();
-    await succeedCronRun(name, run.runId, run.startedAt, options.metrics?.(result) ?? {});
-    return NextResponse.json({ ok: true, job: name, result });
+    result = await job();
   } catch (error) {
-    await failCronRun(name, run.runId, run.startedAt, error).catch(() => undefined);
+    await failCronRun(name, run.runId, run.startedAt, error).catch((heartbeatError) => log.error("cron.heartbeat.fail_write_failed", heartbeatError, { job: name }));
     return NextResponse.json({ ok: false, job: name, error: "JOB_FAILED" }, { status: 500 });
   }
+  // İş başarılı; başarı kaydı yazılamazsa iş "başarısız" sayılmaz (önceden JOB_FAILED dönüyordu).
+  // Kayıt eksik kalırsa sağlık kontrolü bir sonraki başarılı çalışmaya kadar gecikme gösterir.
+  try {
+    await succeedCronRun(name, run.runId, run.startedAt, options.metrics?.(result) ?? {});
+  } catch (error) {
+    log.error("cron.heartbeat.success_write_failed", error, { job: name, errorCode: safeErrorCode(error) });
+  }
+  return NextResponse.json({ ok: true, job: name, result });
 }

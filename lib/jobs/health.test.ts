@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CRITICAL_CRON_DEFINITIONS, evaluateCronHeartbeats } from "./health";
+import { CRITICAL_CRON_DEFINITIONS, evaluateCronHeartbeats, safeErrorCode } from "./health";
 
 const now = new Date("2026-08-11T12:00:00.000Z");
 const row = (name: string, succeededMinutesAgo: number) => ({
@@ -36,4 +36,11 @@ test("eksik kritik işler ayrı ayrı missing raporlanır", () => {
   // Sabit sayı yazmak, yeni kritik cron eklendiğinde testi bayatlatıyordu.
   assert.equal(report.jobs.length, CRITICAL_CRON_DEFINITIONS.length);
   assert.equal(report.jobs.every((job) => job.status === "missing"), true);
+});
+
+test("safeErrorCode Prisma hata kodunu taşır, serbest metni taşımaz", () => {
+  const prismaLike = Object.assign(new Error("Server has closed the connection."), { name: "PrismaClientKnownRequestError", code: "P1017" });
+  assert.equal(safeErrorCode(prismaLike), "PRISMACLIENTKNOWNREQUESTERROR_P1017");
+  assert.equal(safeErrorCode(Object.assign(new Error("x"), { code: "ECONNRESET" })), "ERROR");
+  assert.equal(safeErrorCode("boom"), "UNKNOWN");
 });
