@@ -80,7 +80,7 @@
 .bilginHero .primary{background:#0c7c57;border-color:#0c7c57;color:white}
 .bilginHero .primary:hover{background:#096747}
 .bilginArt{position:relative;min-width:0}
-.bilginArt img{display:block;width:112%;max-width:none;height:auto;margin-left:-5%;mix-blend-mode:multiply}
+.bilginArt img{display:block;width:112%;max-width:none;height:auto;margin-left:-5%}
 .artCaption{display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:#0c7c57;margin-top:12px;font-weight:650}
 .practice{margin-top:80px;padding-block:64px;background:#edf3e8;scroll-margin-top:75px}
 .practiceGrid{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:80px}
