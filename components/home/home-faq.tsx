@@ -40,7 +40,7 @@ export function getHomePageFaqs() {
     },
     {
       q: "Telefondan nasıl kolayca erişebilirim?",
-      a: "Platformu mobil tarayıcıdan açıp ana ekranına ekleyebilirsin. iPhone'da Safari'nin Paylaş menüsünden, Android'de tarayıcı menüsünden Ana ekrana ekle seçeneğini kullan.",
+      a: "Paneline telefonundan veya bilgisayarından tarayıcıyla erişebilirsin. onlinedershanem mobil uygulaması da yakında App Store ve Google Play’de yerini alacak.",
     },
   ];
 }
