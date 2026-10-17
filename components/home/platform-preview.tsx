@@ -1,5 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
-import { Check, Play, Smartphone } from "lucide-react";
+import { Check } from "lucide-react";
 import { AppScreen } from "@/components/applications/mobile-preview";
 
 /**
@@ -54,9 +55,9 @@ export function PlatformPreview() {
             </Link>
           </div>
           <div role="group" aria-label="Mobil uygulama mağazaları — yakında" className="mt-6 grid max-w-[340px] grid-cols-2 gap-3">
-            {[{ name: "App Store", Icon: Smartphone }, { name: "Google Play", Icon: Play }].map(({ name, Icon }) => (
+            {[{ name: "App Store", icon: "/stores/app-store-current.webp" }, { name: "Google Play", icon: "/stores/google-play-current.svg" }].map(({ name, icon }) => (
               <div key={name} className="flex min-w-0 items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-3 py-3 text-white sm:gap-3 sm:px-4">
-                <Icon size={22} strokeWidth={1.6} aria-hidden="true" className="flex-none text-[#DCEAE4]" />
+                <Image src={icon} alt="" width={28} height={28} className="h-7 w-7 flex-none object-contain" aria-hidden="true" />
                 <div>
                   <span className="block text-[13px] font-semibold leading-tight sm:text-[15px]">{name}</span>
                   <span className="mt-1 block text-[11.5px] font-medium text-[#7FD3AF]">Yakında</span>
