@@ -23,7 +23,7 @@ export default async function InvitePage({
     return (
       <AuthCard title="Panel şu anda kapalı" googleLabel="Google ile giriş yap">
         <p className="text-center text-[13px] text-dc-ink-muted">
-          Daveti tamamlamak için panelin açık olduğu bir zamanda tekrar deneyin.
+          Panel şu an kısa bir süreliğine kapalı; daveti tamamlamak için biraz sonra tekrar deneyebilirsiniz.
         </p>
       </AuthCard>
     );
@@ -38,8 +38,8 @@ export default async function InvitePage({
         googleLabel="Google ile giriş yap"
       >
         <p className="text-center text-[13px] text-dc-ink-muted">
-          Geçerli bir davet bağlantısı açın veya yöneticinizden yeni davet
-          isteyin.
+          Davet bağlantısı eksik görünüyor. Size gönderilen bağlantıyı yeniden açabilir ya da bizden yeni bir davet
+          isteyebilirsiniz 🤝
         </p>
         <Link
           href="/giris"
@@ -53,11 +53,11 @@ export default async function InvitePage({
 
   return (
     <AuthCard
-      title="Hesabınızı etkinleştirin"
+      title="Aramıza hoş geldiniz! 🎉"
       googleLabel="Google ile giriş yap"
     >
       <p className="mb-4 text-center text-[13px] text-dc-ink-muted">
-        Daveti tamamlamak için kendi parolanızı belirleyin.
+        Daveti tamamlamak için size özel bir parola belirlemeniz yeterli.
       </p>
       <InviteAcceptForm token={token} />
     </AuthCard>

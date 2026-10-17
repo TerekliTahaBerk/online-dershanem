@@ -71,16 +71,16 @@ export default async function StudentMaterialsPage() {
           <Library size={15} /> Kaynaklarım
         </p>
         <h1 className={PAGE_TITLE_CLASS}>
-          İhtiyacın olan her şey burada.
+          İhtiyacın olan her şey burada 📚
         </h1>
         {lowDataMode ? (
           <p className={PAGE_DESCRIPTION_CLASS}>
             Düşük veri açık: metin dökümleri ve bağlantılar önce; büyük dosyalar
-            yalnız siz açarsanız yüklenir.
+            yalnızca sen açarsan yüklenir.
           </p>
         ) : preference?.captionsPreferred || preference?.transcriptPreferred ? (
           <p className={PAGE_DESCRIPTION_CLASS}>
-            Altyazı ve metin tercihinle eşleşen kaynaklar önce gösterilir.
+            Altyazı ve metin tercihine uygun kaynakları önce gösteriyoruz 😊
           </p>
         ) : null}
       </header>
@@ -112,7 +112,7 @@ export default async function StudentMaterialsPage() {
                   {material.group.name} · {material.group.subject}
                 </p>
                 <p className="mt-1.5 text-[14px] leading-[1.6] text-pn-text-secondary">
-                  {material.description || "Öğretmeninin paylaştığı çalışma kaynağı."}
+                  {material.description || "Öğretmeninin seninle paylaştığı çalışma kaynağı 📎"}
                 </p>
                 {material.transcript ? (
                   <details open={lowDataMode || undefined} className="mt-2">
@@ -142,8 +142,8 @@ export default async function StudentMaterialsPage() {
         {!ordered.length ? (
           <EmptyState
             className="mt-4"
-            title="Henüz paylaşılmış kaynak yok."
-            body="Öğretmenin ders kaynağı paylaştığında burada görünecek."
+            title="Henüz paylaşılan bir kaynak yok 📂"
+            body="Öğretmenin bir ders kaynağı paylaştığında burada görünecek."
           />
         ) : null}
       </div>

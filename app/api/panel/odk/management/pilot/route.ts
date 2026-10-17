@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   try {
     const result = await runEducationMutation({ lockName: 'odk-pilot-write', key, digest, actorId, kind: 'odk-pilot', targetKind: 'odk-pilot', action: `odk.native.pilot.${command.operation}`, execute: async (db) => {
       if (command.operation === "create") { if ((await loadOdkPilotWorkspace(db)).revision !== control.data.revision) throw new GroupMutationError("ODK_CONFLICT", "Pilot adayları veya koşular değişti. Seçimi kontrol edin."); }
-      else { const run = await db.odkPilotRun.findUnique({ where: { id: command.id }, include: { members: { orderBy: { userId: "asc" }, select: { role: true, userId: true } } } }); if (!run) throw new GroupMutationError("NOT_FOUND", "Pilot koşusu bulunamadı.", 404); if (operationDigest(run) !== control.data.revision) throw new GroupMutationError("ODK_CONFLICT", "Pilot değişti. Güncel durumu kontrol edin."); }
+      else { const run = await db.odkPilotRun.findUnique({ where: { id: command.id }, include: { members: { orderBy: { userId: "asc" }, select: { role: true, userId: true } } } }); if (!run) throw new GroupMutationError("NOT_FOUND", "Pilot koşusu bulunamadı; kaldırılmış ya da değişmiş olabilir.", 404); if (operationDigest(run) !== control.data.revision) throw new GroupMutationError("ODK_CONFLICT", "Pilot değişti. Güncel durumu kontrol edin."); }
       const response = command.operation === "create" ? await createOdkPilot({ name: command.name, userIds: command.userIds, requestKey: control.data.key }, actorId, db) : await transitionOdkPilot(command.id, command.input, actorId, db);
       const body = await response.json(); if (!response.ok) throw new GroupMutationError("ODK_PILOT_REJECTED", body.error, response.status);
       return Response.json({ ok: true, id: body.run.id });
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     if (typeof error === "object" && error && "code" in error && ["P2002", "P2034", "P2025"].includes(String(error.code))) {
       const receipt = await prisma.auditLog.findUnique({ where: { idempotencyKey: key } });
       if (receipt) { try { return staffJson({ ...(readGroupReceipt(receipt.payload, digest).body as object), replayed: true }); } catch (conflict) { if (conflict instanceof GroupMutationError) return NextResponse.json({ error: conflict.message, code: conflict.code }, { status: conflict.status, headers: PRIVATE_NO_STORE }); throw conflict; } }
-      return NextResponse.json({ error: "Pilot durumu çakıştı. Güncel görünümü kontrol edin.", code: "ODK_CONFLICT" }, { status: 409, headers: PRIVATE_NO_STORE });
+      return NextResponse.json({ error: "Pilot durumu çakıştı. Güncel hâline göz atıp tekrar deneyebilirsiniz.", code: "ODK_CONFLICT" }, { status: 409, headers: PRIVATE_NO_STORE });
     }
     throw error;
   }

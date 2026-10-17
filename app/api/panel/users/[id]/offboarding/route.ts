@@ -20,7 +20,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   });
   if (!guard.ok) {
     return NextResponse.json(
-      { error: guard.code === "RATE_LIMIT" ? "Çok fazla işlem. Biraz sonra tekrar deneyin." : guard.message },
+      { error: guard.code === "RATE_LIMIT" ? "Kısa sürede çok fazla işlem yapıldı. Biraz bekleyip tekrar dener misiniz?" : guard.message },
       { status: guard.code === "RATE_LIMIT" ? 429 : 403 },
     );
   }
@@ -30,7 +30,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const { id } = routeParams.data;
   const snapshot = await loadOffboardingSnapshot(id, new Date());
   if (!snapshot) {
-    return NextResponse.json({ error: "Öğretmen bulunamadı." }, { status: 404 });
+    return NextResponse.json({ error: "Öğretmeni bulamadık." }, { status: 404 });
   }
 
   const [teacherTransfers, coachTransfers, interventionOwners] = await Promise.all([
@@ -112,14 +112,14 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   });
   if (!guard.ok) {
     return NextResponse.json(
-      { error: guard.code === "RATE_LIMIT" ? "Çok fazla işlem. Biraz sonra tekrar deneyin." : guard.message },
+      { error: guard.code === "RATE_LIMIT" ? "Kısa sürede çok fazla işlem yapıldı. Biraz bekleyip tekrar dener misiniz?" : guard.message },
       { status: guard.code === "RATE_LIMIT" ? 429 : 403 },
     );
   }
 
   const parsed = offboardingSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Devretme bilgilerini kontrol edin." }, { status: 400 });
+    return NextResponse.json({ error: "Lütfen devretme bilgilerini bir kez daha kontrol eder misiniz?" }, { status: 400 });
   }
 
   const routeParams = idParamsSchema.safeParse(await context.params);
@@ -132,7 +132,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const now = new Date();
   const snapshot = await loadOffboardingSnapshot(id, now);
   if (!snapshot) {
-    return NextResponse.json({ error: "Öğretmen bulunamadı." }, { status: 404 });
+    return NextResponse.json({ error: "Öğretmeni bulamadık." }, { status: 404 });
   }
   if (!snapshot.teacher.profile) {
     return NextResponse.json({ error: "Öğretmen profili eksik." }, { status: 409 });
@@ -175,7 +175,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   ]);
 
   if (!targetTeacher) {
-    return NextResponse.json({ error: "Devralacak aktif öğretmen bulunamadı." }, { status: 404 });
+    return NextResponse.json({ error: "Devralacak aktif öğretmen şu an görünmüyor." }, { status: 404 });
   }
   if (snapshot.counts.coachAssignments > 0 && !targetCoachTeacher?.teacherProfile?.id) {
     return NextResponse.json(

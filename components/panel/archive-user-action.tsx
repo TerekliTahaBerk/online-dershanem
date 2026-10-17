@@ -25,7 +25,7 @@ export function ArchiveUserAction({
       .then(async (response) => {
         const data = await response.json();
         if (!response.ok)
-          throw new Error(data.error || "Etki analizi alınamadı.");
+          throw new Error(data.error || "Etki analizi şu an alınamadı. Lütfen tekrar dener misiniz?");
         setImpact(data as ArchiveImpactSummary);
       })
       .catch((err: Error) => setError(err.message))
@@ -45,14 +45,14 @@ export function ArchiveUserAction({
         error?: string;
       };
       if (!response.ok) {
-        setError(data.error ?? "Arşivleme başarısız.");
+        setError(data.error ?? "Arşivleme şu an tamamlanamadı. Lütfen tekrar dener misiniz?");
         setPending(false);
         return;
       }
       router.refresh();
       setOpen(false);
     } catch {
-      setError("Arşivleme başarısız.");
+      setError("Arşivleme şu an tamamlanamadı. Lütfen tekrar dener misiniz?");
     } finally {
       setPending(false);
     }

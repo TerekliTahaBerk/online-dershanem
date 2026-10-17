@@ -22,15 +22,15 @@ export function StaffHomeScreen() {
   const unread = bootstrap.workspace?.unreadNotifications ?? 0;
   return (
     <Screen testID={`staff-home-${role}`}>
-      <PageHeader title={firstName ? `Merhaba ${firstName}` : 'Merhaba'} context={<Text tone="muted" variant="meta">{ROLE_LABEL[role]}</Text>} />
-      <Banner tone="info" title="Çalışma alanı bulunamadı">
-        {role === 'ADMIN' ? 'Etkin bir panel seçili değil. Menüden bir panel seçince yönetim ekranları açılır.' : 'Hesabına bağlı etkin bir öğretmen çalışma alanı yok. Web panelinden devam edebilirsin.'}
+      <PageHeader title={firstName ? `Merhaba ${firstName} 👋` : 'Merhaba 👋'} context={<Text tone="muted" variant="meta">{ROLE_LABEL[role]}</Text>} />
+      <Banner tone="info" title="Henüz bir çalışma alanı seçili değil">
+        {role === 'ADMIN' ? 'Menüden bir panel seçtiğinizde yönetim ekranları açılacak.' : 'Hesabına bağlı etkin bir öğretmen çalışma alanı görünmüyor. Bu arada web panelinden devam edebilirsin.'}
       </Banner>
       <Section title="Şimdilik">
         <Row title="Bildirimler" meta={unread > 0 ? `${unread} okunmamış` : null} onPress={() => router.push('/notifications')} />
         <Row title="Hesap ve ayarlar" onPress={() => router.push('/account')} />
       </Section>
-      <Button label="Web panelini aç" variant="secondary" onPress={() => void openOnWeb(home)} accessibilityHint="Tarayıcıda açılır; web oturumuyla giriş yapmanız gerekebilir." />
+      <Button label="Web panelini aç" variant="secondary" onPress={() => void openOnWeb(home)} accessibilityHint="Tarayıcıda açılır; web oturumuyla giriş yapman gerekebilir." />
     </Screen>
   );
 }

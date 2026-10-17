@@ -101,7 +101,7 @@ export function SalesFunnelBoard({
           ? "Kaybedildi aşaması için kayıp nedeni zorunlu."
           : result.error === "SAME_STAGE"
             ? null
-            : "Aşama güncellenemedi.",
+            : "Aşama şu an güncellenemedi. Lütfen tekrar dener misiniz?",
       );
       if (result.error === "LOST_REASON_REQUIRED") {
         const from = previous.find((l) => l.id === leadId)?.stage ?? "NEW";

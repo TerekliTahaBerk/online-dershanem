@@ -29,7 +29,7 @@ export function EmailRetryButton({ id }: { id: string }) {
               const body = (await response.json().catch(() => null)) as {
                 error?: string;
               } | null;
-              throw new Error(body?.error || "Yeniden deneme başlatılamadı.");
+              throw new Error(body?.error || "Yeniden deneme şu an başlatılamadı. Lütfen tekrar dener misiniz?");
             }
             setQueued(true);
             setBusy(false);
@@ -38,7 +38,7 @@ export function EmailRetryButton({ id }: { id: string }) {
             setError(
               requestError instanceof Error
                 ? requestError.message
-                : "Yeniden deneme başlatılamadı.",
+                : "Yeniden deneme şu an başlatılamadı. Lütfen tekrar dener misiniz?",
             );
             setBusy(false);
           }

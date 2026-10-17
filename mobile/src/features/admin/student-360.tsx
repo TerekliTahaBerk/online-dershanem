@@ -160,7 +160,7 @@ function ManageLinks({ studentProfileId, manage }: { studentProfileId: string; m
       setNotice({ tone: 'info', text: success });
       return true;
     } catch (cause) {
-      setNotice({ tone: 'critical', text: adminErrorText(cause) ?? 'İşlem kaydedilemedi.' });
+      setNotice({ tone: 'critical', text: adminErrorText(cause) ?? 'İşlemi şu an kaydedemedik. Lütfen tekrar dener misiniz?' });
       return false;
     }
   };

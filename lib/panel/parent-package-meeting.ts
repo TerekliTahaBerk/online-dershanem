@@ -17,7 +17,7 @@ import { CommandError, runWithReceipt } from "@/lib/panel/command-receipt";
 export async function requestParentPackageMeeting(actor: { userId: string; email: string }, studentId: string, idempotencyKey?: string) {
   const children = await listParentVisibleChildren(actor.userId, "account");
   const selected = children.find((child) => child.id === studentId);
-  if (!selected) throw new CommandError(404, "NOT_FOUND", "Öğrenci bulunamadı.");
+  if (!selected) throw new CommandError(404, "NOT_FOUND", "Bu öğrenciyi bulamadık.");
   return runWithReceipt<{ ok: true; message: string }>({
     actorUserId: actor.userId,
     namespace: "parent-package-meeting",
@@ -48,7 +48,7 @@ export async function requestParentPackageMeeting(actor: { userId: string; email
         entityId: selected.id,
         action: "parent.package.meeting.requested",
         summary: `Veli ${selected.name} için paket görüşmesi talep etti`,
-        result: { ok: true, message: "Görüşme talebiniz alındı. Ekibimiz sizinle iletişime geçecek." },
+        result: { ok: true, message: "Görüşme talebiniz bize ulaştı 🤝 Ekibimiz en kısa sürede sizinle iletişime geçecek." },
       };
     },
   });

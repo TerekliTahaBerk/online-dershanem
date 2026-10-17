@@ -114,7 +114,7 @@ test("boş bağlam yedek yanıtı dürüstçe veri yok der", () => {
     questionLabel: "Hangi konuları tekrar etmeliyim?",
     sources: [],
   });
-  assert.match(fallback.text, /yeterli dayanak yok/i);
+  assert.match(fallback.text, /henüz yeterli veri yok/i);
   assert.deepEqual(fallback.citations, ["NO_DATA"]);
 });
 

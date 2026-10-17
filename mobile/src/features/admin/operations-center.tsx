@@ -76,7 +76,7 @@ function Body({ center, group, onGroup }: { center: MobileOperationsCenter; grou
             );
           })
         ) : (
-          <EmptyState title="Bu alanda açık iş yok" />
+          <EmptyState title="Bu alanda açık iş yok ✅" />
         )}
       </Section>
       <Section title="Bugün">

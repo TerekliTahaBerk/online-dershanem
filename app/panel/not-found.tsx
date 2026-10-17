@@ -32,8 +32,8 @@ export default function PanelNotFound() {
           Sayfa bulunamadı
         </h1>
         <p className="mt-2.5 text-[14.5px] leading-[1.6] text-dc-ink-muted">
-          Aradığınız sayfa taşınmış ya da kaldırılmış olabilir. Yanlışlık
-          olduğunu düşünüyorsanız yöneticinize iletin.
+          Aradığınız sayfa taşınmış ya da kaldırılmış olabilir 🔍 Bir yanlışlık
+          olduğunu düşünüyorsanız bize haber vermeniz yeterli.
         </p>
         <Link
           href="/panel"

@@ -29,7 +29,7 @@ describe('P5.4 personel push', () => {
     expect(await h.screen.findByTestId('account-sessions', {}, WAIT)).toBeTruthy();
     expect(h.screen.queryByTestId('account-notifications')).toBeNull();
     await go('/account/notifications');
-    expect(await h.screen.findByText('Bildirim ayarları bu hesap için mobilde açık değil.', {}, WAIT)).toBeTruthy();
+    expect(await h.screen.findByText('Bildirim ayarları bu hesap için mobilde henüz açık değil.', {}, WAIT)).toBeTruthy();
     expect(h.server.called('GET', '/api/panel/notifications/preferences')).toHaveLength(0);
   });
 });

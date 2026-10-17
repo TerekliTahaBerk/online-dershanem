@@ -44,11 +44,11 @@ export function TeacherHelpRequests({ rows }: { rows: Row[] }) {
       data = await response.json().catch(() => ({}));
     } catch {
       setBusy(null);
-      return setMessage("Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.");
+      return setMessage("Bağlantı kurulamadı. İnternetini kontrol edip tekrar dener misin?");
     }
     if (!response.ok) {
       setBusy(null);
-      return setMessage(data.error || "Yanıt kaydedilemedi.");
+      return setMessage(data.error || "Yanıt şu an kaydedilemedi. Lütfen tekrar dener misiniz?");
     }
 
     setItems((current) =>
@@ -156,7 +156,7 @@ export function TeacherHelpRequests({ rows }: { rows: Row[] }) {
         </div>
       ) : (
         <div className="rounded-[14px] border border-dc-line border-dashed bg-white p-6 text-sm text-dc-ink-muted">
-          Yanıt bekleyen yardım isteği yok.
+          Yanıt bekleyen yardım isteği yok 🌟
         </div>
       )}
     </div>

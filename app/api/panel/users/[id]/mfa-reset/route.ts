@@ -21,7 +21,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { id } = await context.params;
   if (id === auth.session.userId) return NextResponse.json({ error: "Kendi MFA'nızı sıfırlayamazsınız." }, { status: 400 });
   const target = await prisma.user.findFirst({ where: { id, role: "ADMIN", status: "ACTIVE" }, select: { id: true } });
-  if (!target) return NextResponse.json({ error: "Aktif yönetici bulunamadı." }, { status: 404 });
+  if (!target) return NextResponse.json({ error: "Aktif yönetici şu an görünmüyor." }, { status: 404 });
   const row = await prisma.$transaction(async (tx) => {
     await tx.mfaResetRequest.updateMany({ where: { targetUserId: id, status: "PENDING" }, data: { status: "EXPIRED" } });
     const created = await tx.mfaResetRequest.create({ data: { targetUserId: id, requestedById: auth.session.userId, reason: parsed.data.reason, expiresAt: new Date(Date.now() + 30 * 60_000) } });

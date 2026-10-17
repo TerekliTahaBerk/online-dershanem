@@ -89,9 +89,9 @@ export async function flushNotificationDeliveries(now = new Date()) {
     const valid: typeof rows = [];
     for (const item of rows) if ((!preference || preference[item.preferenceKey as NotificationPreferenceKey]) && await currentSource(tx, item, now)) valid.push(item);
     const id = notificationKey(row.userId, "SUMMARY", formatIstanbulDateInput(now), "DAILY");
-    const body = valid.slice(0, 12).map((item) => `${item.title}: ${item.body}`).join("\n") + (valid.length > 12 ? `\n${valid.length - 12} gelişme daha var.` : "");
-    const result = valid.length ? await tx.notification.createMany({ data: [{ id, userId: row.userId, type: "SYSTEM", title: "Günün gelişmeleri", body, href: "/panel/bildirimler", inAppVisible: preference?.inAppEnabled ?? true }], skipDuplicates: true }) : { count: 0 };
-    if (result.count && preference?.emailEnabled) await queueCustomerInformationEmail({ id: `reminder-email:${id}`, to: user.email, title: "Günün gelişmeleri", body }, tx);
+    const body = valid.slice(0, 12).map((item) => `${item.title}: ${item.body}`).join("\n") + (valid.length > 12 ? `\n…ve ${valid.length - 12} gelişme daha.` : "");
+    const result = valid.length ? await tx.notification.createMany({ data: [{ id, userId: row.userId, type: "SYSTEM", title: "Günün özeti hazır ☀️", body, href: "/panel/bildirimler", inAppVisible: preference?.inAppEnabled ?? true }], skipDuplicates: true }) : { count: 0 };
+    if (result.count && preference?.emailEnabled) await queueCustomerInformationEmail({ id: `reminder-email:${id}`, to: user.email, title: "Günün özeti hazır ☀️", body }, tx);
     // A late cron retry cannot send a second summary on the same local day.
     if (!result.count && valid.length) {
       const next = notificationDeliveryAt(now, { ...timing(preference ?? null), dailyDigest: true, dailyDigestMinute: preference?.dailyDigestMinute ?? 0 });

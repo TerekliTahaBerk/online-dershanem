@@ -38,7 +38,7 @@ export async function resolveLessonTargetGroup(input: {
   const createIfMissing = input.createIfMissing !== false;
 
   if (targetType === "GROUP") {
-    if (!input.groupId) return { error: "Grup seçin." as const, group: null };
+    if (!input.groupId) return { error: "Lütfen grup seçin." as const, group: null };
     const group = await prisma.group.findFirst({
       where: {
         id: input.groupId,
@@ -47,20 +47,20 @@ export async function resolveLessonTargetGroup(input: {
       },
       include: groupInclude,
     });
-    if (!group) return { error: "Aktif grup bulunamadı." as const, group: null };
+    if (!group) return { error: "Aktif grup şu an görünmüyor." as const, group: null };
     return { error: null, group };
   }
 
-  if (!input.studentId) return { error: "Öğrenci seçin." as const, group: null };
+  if (!input.studentId) return { error: "Lütfen öğrenci seçin." as const, group: null };
   const teacherId =
     input.actorRole === "TEACHER" ? input.actorUserId : input.teacherId || null;
-  if (!teacherId) return { error: "Öğretmen seçin." as const, group: null };
+  if (!teacherId) return { error: "Lütfen öğretmen seçin." as const, group: null };
   if (input.actorRole === "TEACHER" && teacherId !== input.actorUserId) {
     return { error: "Yalnız kendi öğrencileriniz için ders planlayabilirsiniz." as const, group: null };
   }
 
   const teacher = await prisma.user.findFirst({ where: { id: teacherId, role: "TEACHER", status: "ACTIVE" }, select: { id: true } });
-  if (!teacher) return { error: "Aktif öğretmen bulunamadı." as const, group: null };
+  if (!teacher) return { error: "Aktif öğretmen şu an görünmüyor." as const, group: null };
   const student = await prisma.studentProfile.findFirst({
     where: { id: input.studentId, user: { status: "ACTIVE", role: "STUDENT" } },
     select: {
@@ -70,7 +70,7 @@ export async function resolveLessonTargetGroup(input: {
       parents: { where: { active: true, endedAt: null, canViewAcademic: true }, select: { parentId: true } },
     },
   });
-  if (!student) return { error: "Öğrenci bulunamadı." as const, group: null };
+  if (!student) return { error: "Öğrenciyi bulamadık." as const, group: null };
 
   if (input.actorRole === "TEACHER") {
     const allowed = await prisma.studentTeacherAssignment.findFirst({

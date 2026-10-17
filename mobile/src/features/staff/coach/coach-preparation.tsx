@@ -39,7 +39,7 @@ function PreparationBody({ data, path }: { data: CoachPreparation; path: string 
     if (!online || mutation.isPending) return;
     if ((command.action === 'template' || command.action === 'summary' && command.payload?.publish || command.action === 'record') && !await confirmAction({ title: command.action === 'template' ? 'Şablonu uygula' : command.action === 'record' ? 'Görüşmeyi tamamla' : 'Özeti yayımla', message: command.action === 'template' ? 'Bu haftanın taslak görevleri seçtiğiniz şablonla değişecek. Yayındaki plana uygulanamaz.' : command.action === 'record' ? 'Paylaşılan not öğrenci ve veliye açıktır. Özel not ayrı saklanır. İlk planlı görüşme tamamlanır; sonraki görüşme oluşturulabilir.' : 'Öğrenci ve veli yalnız kendilerine ayrılan metni görecek.', confirmLabel: 'Onayla' })) return;
     setState(null);
-    try { await mutation.mutateAsync(command); pending.current = null; setAction(null); setState({ tone: 'success', message: 'İşlem kaydedildi.' }); await invalidate(); }
+    try { await mutation.mutateAsync(command); pending.current = null; setAction(null); setState({ tone: 'success', message: 'İşlem kaydedildi ✅' }); await invalidate(); }
     catch (error) { if (!(error instanceof ApiError) || !error.transient && error.kind !== 'invalid_response') pending.current = null; setState(writeError(error, 'Hazırlık verileri değişti. Güncel veriyi kontrol edin.')); if (error instanceof ApiError && error.kind === 'conflict') await invalidate(); }
   }
   return <><OfflineWriteNotice online={online} /><WriteBanner state={state} />

@@ -4,7 +4,7 @@ import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 import { getStudentExam } from "@/lib/odk/student-exam-server";
 import { toMobileOdkExamDetail } from "@/lib/mobile/odk-views";
 
-const NOT_FOUND = { error: "Deneme bulunamadı.", code: "NOT_FOUND" };
+const NOT_FOUND = { error: "Denemeyi bulamadık.", code: "NOT_FOUND" };
 
 /**
  * Deneme ayrıntısı (başlamadan önceki bilgi). Yetki: ODK öğrencisi + bu

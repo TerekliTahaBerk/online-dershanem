@@ -86,46 +86,58 @@ export function classifyNotification(row: ClassifiableNotification, recipient: P
   return null;
 }
 
-/** Kilit ekranında görünecek GENEL metin (kişisel veri yok). */
+/** Kilit ekranında görünecek GENEL metin (kişisel veri yok). Öğrenci ağzıyla (sen). */
 export const PUSH_COPY: Record<PushCategory, { title: string; body: string }> = {
-  LESSON: { title: "Online Dershanem", body: "Ders hatırlatman hazır." },
-  ASSIGNMENT: { title: "Online Dershanem", body: "Yeni bir çalışman var." },
-  ABSENCE: { title: "Online Dershanem", body: "Devamsızlıkla ilgili yeni bir bildirimin var." },
-  COACHING: { title: "Yön Koçluk", body: "Koçluk görüşmenle ilgili bir güncelleme var." },
-  PLAN: { title: "Yön Koçluk", body: "Koçluk planında bir güncelleme var." },
-  DIGEST: { title: "Online Dershanem", body: "Günün gelişmeleri hazır." },
-  EXAM: { title: "Deneme Ligi", body: "Denemenle ilgili yeni bir bildirimin var." },
-  GENERAL: { title: "Online Dershanem", body: "Yeni bir bildirimin var." },
-  STAFF: { title: "Online Dershanem", body: "Panelde yeni bir iş bildirimin var." },
+  LESSON: { title: "Online Dershanem", body: "Dersin yaklaşıyor ⏰ Hazırsan seni bekliyoruz!" },
+  ASSIGNMENT: { title: "Online Dershanem", body: "Seni bekleyen yeni bir çalışma var 📚" },
+  ABSENCE: { title: "Online Dershanem", body: "Kaçırdığın bir dersle ilgili bilgilendirme var 📋" },
+  COACHING: { title: "Yön Koçluk", body: "Koçluk görüşmenle ilgili bir güncelleme var 🤝" },
+  PLAN: { title: "Yön Koçluk", body: "Planında yeni bir gelişme var 🗓️" },
+  DIGEST: { title: "Online Dershanem", body: "Günün özeti hazır ☀️ Bir bakışta neler olduğunu gör." },
+  EXAM: { title: "Deneme Ligi", body: "Denemenle ilgili yeni bir haber var 📝" },
+  GENERAL: { title: "Online Dershanem", body: "Senin için yeni bir bildirim var 🔔" },
+  STAFF: { title: "Online Dershanem", body: "Panelde ilgilenmeniz gereken yeni bir iş var 📌" },
+};
+
+/** Veli ağzıyla (siz) genel metin; tanımsız kategori öğrenci metnine düşmez, genel veli metnine düşer. */
+const PARENT_PUSH_COPY: Partial<Record<PushCategory, { title: string; body: string }>> = {
+  LESSON: { title: "Online Dershanem", body: "Çocuğunuzun dersi yaklaşıyor ⏰" },
+  ASSIGNMENT: { title: "Online Dershanem", body: "Çocuğunuzun çalışmalarıyla ilgili yeni bir gelişme var 📚" },
+  ABSENCE: { title: "Online Dershanem", body: "Çocuğunuzun devam durumuyla ilgili bir bilgilendirme var 📋" },
+  COACHING: { title: "Yön Koçluk", body: "Koçluk görüşmesiyle ilgili bir güncelleme var 🤝" },
+  PLAN: { title: "Yön Koçluk", body: "Çocuğunuzun planında yeni bir gelişme var 🗓️" },
+  DIGEST: { title: "Online Dershanem", body: "Günün özeti hazır ☀️" },
+  EXAM: { title: "Deneme Ligi", body: "Denemelerle ilgili yeni bir gelişme var 📝" },
+  GENERAL: { title: "Online Dershanem", body: "Sizin için yeni bir bildirim var 🔔" },
 };
 
 /** Deneme Ligi olay türüne göre daha belirli ama yine kişisel veri içermeyen metin. */
 /** Ödev / plan görevi olayları (`lib/panel/study-notifications.ts`); alıcı rolünden bağımsız, kişisel veri yok. */
 const STUDY_COPY: Record<string, string> = {
-  "ASSIGNMENT:NEW": "Yeni bir ödev eklendi.",
-  "ASSIGNMENT:DONE": "Bir ödev tamamlandı.",
-  "ASSIGNMENT:SUBMITTED": "Değerlendirme bekleyen bir ödev var.",
-  "ASSIGNMENT:REVIEWED": "Bir ödev değerlendirildi.",
-  "PLAN_TASK:DONE": "Plandaki bir görevde ilerleme var.",
-  "PLAN_TASK:ADDED": "Plana yeni bir görev eklendi.",
-  "PLAN:PUBLISHED": "Haftalık plan yayınlandı.",
+  "ASSIGNMENT:NEW": "Yeni bir ödev eklendi 📚",
+  "ASSIGNMENT:DONE": "Bir ödev tamamlandı ✅",
+  "ASSIGNMENT:SUBMITTED": "Değerlendirilmeyi bekleyen bir ödev var 📥",
+  "ASSIGNMENT:REVIEWED": "Bir ödev değerlendirildi, geri bildirim hazır 💬",
+  "PLAN_TASK:DONE": "Plandaki bir görevde güzel bir ilerleme var 🌱",
+  "PLAN_TASK:ADDED": "Plana yeni bir görev eklendi 🗓️",
+  "PLAN:PUBLISHED": "Haftalık plan yayında 🗓️",
 };
 
 /** Veli / personel Deneme Ligi ve kurum denemesi olayları (ikinci kişi ağzıyla değil, genel). */
 const AUDIENCE_EXAM_COPY: Record<string, string> = {
-  DAY_BEFORE: "Yarın bir deneme var.",
+  DAY_BEFORE: "Yarın bir deneme var 📝",
   MISSED: "Bir denemeye katılım görünmüyor.",
-  SUBMITTED: "Bir deneme tamamlandı.",
-  RESULT: "Deneme sonucu açıklandı.",
-  TEACHER_RESULT: "Deneme sonuçları açıklandı.",
-  COACH_RESULT: "Öğrencinin deneme sonucu açıklandı.",
-  RESULT_UPDATED: "Deneme sonucu güncellendi.",
-  ASSIGNED: "Yeni bir deneme eklendi.",
-  "MOCK:ENTERED": "Yeni bir deneme sonucu eklendi.",
-  "MOCK:NEXT_ACTION": "Deneme için sonraki adım hazır.",
+  SUBMITTED: "Bir deneme tamamlandı ✅",
+  RESULT: "Deneme sonucu açıklandı 📊",
+  TEACHER_RESULT: "Deneme sonuçları açıklandı 📊",
+  COACH_RESULT: "Öğrencinin deneme sonucu açıklandı 📊",
+  RESULT_UPDATED: "Deneme sonucu güncellendi 🔄",
+  ASSIGNED: "Yeni bir deneme eklendi 📝",
+  "MOCK:ENTERED": "Yeni bir deneme sonucu eklendi 📊",
+  "MOCK:NEXT_ACTION": "Deneme için sonraki adım hazır 🎯",
 };
 
-export function pushCopyFor(cls: PushClass, row: Pick<ClassifiableNotification, "category"> & { sourceType?: string | null }) {
+export function pushCopyFor(cls: PushClass, row: Pick<ClassifiableNotification, "category"> & { sourceType?: string | null }, role?: string | null) {
   if ((row.sourceType === "ODK_AUDIENCE" || row.sourceType === "MOCK_EXAM") && (cls.category === "EXAM" || cls.category === "STAFF")) {
     const kind = row.sourceType === "MOCK_EXAM" ? row.category?.split(":").slice(0, 2).join(":") : row.category?.split(":")[0];
     const body = kind ? AUDIENCE_EXAM_COPY[kind] : undefined;
@@ -134,13 +146,13 @@ export function pushCopyFor(cls: PushClass, row: Pick<ClassifiableNotification, 
   if ((cls.category === "ASSIGNMENT" || cls.category === "STAFF") && row.category && STUDY_COPY[row.category]) return { title: "Online Dershanem", body: STUDY_COPY[row.category] };
   if (cls.category === "EXAM") {
     const kind = row.category?.split(":")[0];
-    if (kind === "RESULT") return { title: "Deneme Ligi", body: "Deneme sonucun açıklandı." };
-    if (kind === "ANSWER_KEY") return { title: "Deneme Ligi", body: "Deneme cevap anahtarı yayınlandı." };
-    if (kind === "OPEN") return { title: "Deneme Ligi", body: "Denemen başladı." };
-    if (kind === "REMINDER") return { title: "Deneme Ligi", body: "Denemen yakında başlıyor." };
-    if (kind === "DAY_BEFORE") return { title: "Deneme Ligi", body: "Yarın denemen var." };
-    if (kind === "MISSED") return { title: "Deneme Ligi", body: "Bir denemeyi kaçırdın." };
-    if (kind === "RESULT_UPDATED") return { title: "Deneme Ligi", body: "Deneme sonucun güncellendi." };
+    if (kind === "RESULT") return { title: "Deneme Ligi", body: "Deneme sonucun açıklandı 🎉 Hemen göz at!" };
+    if (kind === "ANSWER_KEY") return { title: "Deneme Ligi", body: "Cevap anahtarı yayında 🔑 Yanlışlarından öğrenme zamanı." };
+    if (kind === "OPEN") return { title: "Deneme Ligi", body: "Denemen başladı 🚀 Başarılar dileriz!" };
+    if (kind === "REMINDER") return { title: "Deneme Ligi", body: "Denemen birazdan başlıyor ⏰ Hazır mısın?" };
+    if (kind === "DAY_BEFORE") return { title: "Deneme Ligi", body: "Yarın denemen var 📝 Erken dinlenmeyi unutma." };
+    if (kind === "MISSED") return { title: "Deneme Ligi", body: "Bir denemeyi kaçırdın, dert etme 💪 Sıradakine birlikte hazırlanalım." };
+    if (kind === "RESULT_UPDATED") return { title: "Deneme Ligi", body: "Deneme sonucun güncellendi 🔄" };
   }
-  return PUSH_COPY[cls.category];
+  return (role === "PARENT" && PARENT_PUSH_COPY[cls.category]) || PUSH_COPY[cls.category];
 }

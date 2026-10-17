@@ -44,7 +44,7 @@ function assignmentServer(options: { evidence?: boolean } = {}) {
       const input = body as { textEvidence: string; idempotencyKey: string };
       const replay = state.submissions.findIndex((item) => item.key === input.idempotencyKey);
       if (replay >= 0) return jsonResponse(200, { id: `s-${replay + 1}`, attemptNumber: replay + 1, replayed: true });
-      if (state.submissions.length) return jsonResponse(409, { error: 'Gönderimin öğretmen değerlendirmesinde.' });
+      if (state.submissions.length) return jsonResponse(409, { error: 'Gönderimin öğretmeninde, değerlendirme sürüyor ⏳' });
       state.submissions.push({ key: input.idempotencyKey, text: input.textEvidence });
       return jsonResponse(200, { id: 's-1', attemptNumber: 1, replayed: false });
     },
@@ -81,7 +81,7 @@ describe('M2.2 Çalışmalar', () => {
     const detail = await openDetail(h);
     const before = h.server.called('GET', '/api/panel/assignments').length;
     await press(h, await detail.findByTestId('progress-DONE', {}, WAIT));
-    expect(await detail.findByText('Çalışma tamamlandı olarak kaydedildi.', {}, WAIT)).toBeTruthy();
+    expect(await detail.findByText('Harika, çalışmayı tamamladın! 🎉', {}, WAIT)).toBeTruthy();
     const patch = h.server.called('PATCH', '/api/panel/assignments/a-1/progress')[0];
     expect(patch.body).toMatchObject({ status: 'DONE', expectedVersion: 1 });
     expect((patch.body as { mutationKey: string }).mutationKey).toMatch(UUID);
@@ -101,7 +101,7 @@ describe('M2.2 Çalışmalar', () => {
     server.state.status = 'IN_PROGRESS';
     const before = h.server.called('GET', '/api/panel/assignments').length;
     await press(h, detail.getByTestId('progress-DONE'));
-    expect(await detail.findByText(/başka bir yerde \(ör\. web panelinde\) değişti/, {}, WAIT)).toBeTruthy();
+    expect(await detail.findByText(/başka bir yerde \(ör\. web panelinde\) değişmiş/, {}, WAIT)).toBeTruthy();
     expect(server.state.status).toBe('IN_PROGRESS');
     expect(h.screen.queryByTestId('celebration')).toBeNull();
     await waitFor(() => expect(h.server.called('GET', '/api/panel/assignments').length).toBeGreaterThan(before), WAIT);
@@ -115,11 +115,11 @@ describe('M2.2 Çalışmalar', () => {
     await detail.findByTestId('progress-IN_PROGRESS', {}, WAIT);
     h.server.override('PATCH /api/panel/assignments/a-1/progress', () => Promise.reject(new TypeError('Network request failed')));
     await press(h, detail.getByTestId('progress-IN_PROGRESS'));
-    expect(await detail.findByText('Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edin.', {}, WAIT)).toBeTruthy();
+    expect(await detail.findByText('Sunucuya ulaşamadık 📡 İnternet bağlantınızı kontrol edip tekrar dener misiniz?', {}, WAIT)).toBeTruthy();
     expect(h.server.called('PATCH', '/api/panel/assignments/a-1/progress')).toHaveLength(1);
     h.server.override('PATCH /api/panel/assignments/a-1/progress', null);
     await press(h, detail.getByTestId('progress-IN_PROGRESS'));
-    expect(await detail.findByText('İlerlemen kaydedildi.', {}, WAIT)).toBeTruthy();
+    expect(await detail.findByText('İlerlemen kaydedildi, böyle devam! 💪', {}, WAIT)).toBeTruthy();
     const [first, second] = h.server.called('PATCH', '/api/panel/assignments/a-1/progress');
     expect((second.body as { mutationKey: string }).mutationKey).toBe((first.body as { mutationKey: string }).mutationKey);
     expect(server.state.version).toBe(2);
@@ -137,15 +137,15 @@ describe('M2.2 Çalışmalar', () => {
     fireEvent.changeText(input, text);
     h.server.override('POST /api/panel/assignments/a-1/submissions', () => Promise.reject(new TypeError('Network request failed')));
     await press(h, detail.getByTestId('evidence-submit'));
-    expect(await detail.findByText('Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edin.', {}, WAIT)).toBeTruthy();
+    expect(await detail.findByText('Sunucuya ulaşamadık 📡 İnternet bağlantınızı kontrol edip tekrar dener misiniz?', {}, WAIT)).toBeTruthy();
     h.server.override('POST /api/panel/assignments/a-1/submissions', null);
     await press(h, detail.getByTestId('evidence-submit'));
-    expect(await detail.findByText('Kanıtın öğretmen değerlendirmesine gönderildi.', {}, WAIT)).toBeTruthy();
+    expect(await detail.findByText('Kanıtın öğretmenine ulaştı 📨 Değerlendirme sonucunu sana haber vereceğiz.', {}, WAIT)).toBeTruthy();
     const [first, second] = h.server.called('POST', '/api/panel/assignments/a-1/submissions');
     expect((first.body as { idempotencyKey: string }).idempotencyKey).toMatch(UUID);
     expect((second.body as { idempotencyKey: string }).idempotencyKey).toBe((first.body as { idempotencyKey: string }).idempotencyKey);
     expect(server.state.submissions).toHaveLength(1);
-    expect(await detail.findByText('Gönderimin öğretmen değerlendirmesinde.', {}, WAIT)).toBeTruthy();
+    expect(await detail.findByText('Gönderimin öğretmeninde, değerlendirme sürüyor ⏳', {}, WAIT)).toBeTruthy();
   });
 
   it('sunucu doğrulama hatası olduğu gibi gösterilir; başarılı sayılmaz', async () => {
@@ -159,7 +159,7 @@ describe('M2.2 Çalışmalar', () => {
     const detail = await openDetail(h);
     await press(h, await detail.findByTestId('progress-DONE', {}, WAIT));
     expect(await detail.findByText('Bu çalışma öğretmen onayından sonra tamamlanır; önce kanıtını gönder.', {}, WAIT)).toBeTruthy();
-    expect(detail.queryByText('Çalışma tamamlandı olarak kaydedildi.')).toBeNull();
+    expect(detail.queryByText('Harika, çalışmayı tamamladın! 🎉')).toBeNull();
   });
 
   it('Yön çalışma alanında OD çalışma detayı (derin bağlantı) açılmaz; OD ucu çağrılmaz', async () => {
@@ -167,7 +167,7 @@ describe('M2.2 Çalışmalar', () => {
     await signIn(h, 'yon@example.com');
     await h.screen.findByTestId('yon-today', {}, WAIT);
     await go('/od/assignment/a-1');
-    expect(await h.screen.findByText('Bu bölüm bu çalışma alanında yok', {}, WAIT)).toBeTruthy();
+    expect(await h.screen.findByText('Bu bölümü bu çalışma alanında bulamadık 🔍', {}, WAIT)).toBeTruthy();
     expect(h.server.called('GET', '/api/panel/assignments')).toHaveLength(0);
   });
 });

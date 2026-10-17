@@ -39,7 +39,7 @@ async function patch(url: string, body: unknown) {
     body: JSON.stringify(body),
   });
   const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(result.error || "İşlem tamamlanamadı.");
+  if (!response.ok) throw new Error(result.error || "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?");
 }
 
 /** Sunucu (UTC) ve tarayıcı aynı İstanbul saatini üretir; hidrasyonda saat kaymaz. */
@@ -83,7 +83,7 @@ export function EducationManagement({
       router.refresh();
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "İşlem tamamlanamadı.",
+        error instanceof Error ? error.message : "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?",
       );
     } finally {
       setBusy(null);
@@ -154,7 +154,7 @@ export function EducationManagement({
                         subject: data.get("subject"),
                         level: data.get("level"),
                       }),
-                    "Grup bilgileri güncellendi.",
+                    "Grup bilgileri güncellendi ✅",
                   );
                 }}
               >
@@ -331,7 +331,7 @@ export function EducationManagement({
                         meetingUrl: data.get("meetingUrl"),
                       });
                     },
-                    "Ders güncellendi.",
+                    "Ders güncellendi ✅",
                   );
                 }}
               >

@@ -262,7 +262,7 @@ export function buildTeacherWorkspace(input: TeacherWorkspaceSourceData): Teache
 
   return {
     generatedAt: input.now.toISOString(),
-    summary: summaryParts.join(" · ") || "Bugün planlanmış iş yok.",
+    summary: summaryParts.join(" · ") || "Bugün planlanmış bir iş yok ☕",
     todayLessons,
     pending,
     riskyStudents,

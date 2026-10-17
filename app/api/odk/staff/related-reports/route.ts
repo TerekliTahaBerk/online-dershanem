@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     : [];
   const profileByUser = new Map(profiles.map((profile) => [profile.userId, profile.id]));
   const parsed = query.safeParse({ studentId: new URL(request.url).searchParams.get("studentId") ?? undefined });
-  if (!parsed.success) return NextResponse.json({ error: "Öğrenci seçimi geçersiz." }, { status: 400, headers: PRIVATE_NO_STORE });
+  if (!parsed.success) return NextResponse.json({ error: "Öğrenci seçimi geçerli görünmüyor; lütfen listeden yeniden seçin." }, { status: 400, headers: PRIVATE_NO_STORE });
   const requested = parsed.data.studentId;
 
   if (!requested) {
@@ -43,7 +43,7 @@ export async function GET(request: Request) {
     });
   }
   const userId = profiles.find((profile) => profile.id === requested)?.userId;
-  if (!userId) return staffNotFound("Öğrenci bulunamadı.");
+  if (!userId) return staffNotFound("Öğrenciyi bulamadık.");
   const report = await getOdkAudienceStudentReport(viewer, userId);
   const name = related.find((item) => item.userId === userId)?.name ?? "";
   if (!report) {

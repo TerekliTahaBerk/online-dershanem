@@ -52,7 +52,7 @@ describe('C09 doğrulayıcı kurulumu', () => {
     fireEvent.changeText(await h.screen.findByTestId('totp-code', {}, WAIT), '654321');
     await press(h, h.screen.getByTestId('totp-confirm'));
     await press(h, await h.screen.findByTestId('totp-done', {}, WAIT));
-    expect(await h.screen.findByText('Doğrulayıcı uygulama kaydedildi.', {}, WAIT)).toBeTruthy();
+    expect(await h.screen.findByText('Doğrulayıcı uygulaman kaydedildi, hesabın artık daha güvende 🔐', {}, WAIT)).toBeTruthy();
     expect(h.server.called('POST', '/api/auth/mfa/totp/enroll')[0].body).toEqual({ code: '654321' });
   });
 });
@@ -77,7 +77,7 @@ describe('P5.3 hesap silme talebi', () => {
     expect(await h.screen.findByText('Parola doğrulanamadı.', {}, WAIT)).toBeTruthy();
     fireEvent.changeText(h.screen.getByTestId('deletion-password'), 'dogru');
     await press(h, h.screen.getByTestId('deletion-submit'));
-    expect(await h.screen.findByText('Hesap silme talebiniz alındı. Sonuç size e-postayla bildirilecek.', {}, WAIT)).toBeTruthy();
+    expect(await h.screen.findByText('Hesap silme talebiniz bize ulaştı. Süreç tamamlandığında size e-postayla bilgi vereceğiz.', {}, WAIT)).toBeTruthy();
     expect(await h.screen.findByText('Açık talebiniz var', {}, WAIT)).toBeTruthy();
     const calls = h.server.called('POST', '/api/panel/me/deletion-request');
     expect(calls[1].body).toEqual({ password: 'dogru', idempotencyKey: expect.stringMatching(/^[0-9a-f-]{36}$/) });

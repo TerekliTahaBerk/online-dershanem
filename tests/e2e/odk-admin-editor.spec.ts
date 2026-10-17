@@ -57,7 +57,7 @@ test.describe("ODK yönetici soru çalışma alanı", () => {
     await expect(page.getByRole("radiogroup", { name: "Soru FEN 1 doğru cevap (optik)" })).toBeFocused();
     await expect(page.getByText("Kaydedilmemiş değişiklikler var.")).toBeVisible();
     await page.getByRole("button", { name: "Soruları kaydet" }).click();
-    await expect(page.getByText("Cevaplar ve kazanımlar kaydedildi.")).toBeVisible();
+    await expect(page.getByText("Cevaplar ve kazanımlar kaydedildi ✅")).toBeVisible();
     const saved = await prisma.odkExamQuestion.findMany({ where: { section: { versionId } }, orderBy: [{ section: { position: "asc" } }, { position: "asc" }] });
     expect(saved.map((row) => row.correctOption)).toEqual(["A", "C", "B", null, null]);
 

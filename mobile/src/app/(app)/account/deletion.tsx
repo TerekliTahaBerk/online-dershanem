@@ -41,16 +41,16 @@ export default function AccountDeletionScreen() {
   });
   async function submit() {
     if (mutation.isPending || !password) return;
-    const ok = await confirmAction({ title: 'Hesap silme talebi', message: 'Talebiniz destek ekibine iletilir. Hesabınız doğrulama ve saklama değerlendirmesinden sonra silinir veya anonimleştirilir.', confirmLabel: 'Talebi gönder', destructive: true });
+    const ok = await confirmAction({ title: 'Hesap silme talebi', message: 'Talebiniz destek ekibimize iletilecek. Hesabınız, doğrulama ve yasal saklama değerlendirmesinin ardından silinir ya da anonimleştirilir.', confirmLabel: 'Talebi gönder', destructive: true });
     if (!ok) return;
     setState(null);
     try {
       const result = await mutation.mutateAsync(password);
       setPassword('');
-      setState({ tone: 'success', message: result.alreadyRequested ? `Açık bir talebiniz zaten var (${formatShortDateTime(result.requestedAt)}).` : 'Hesap silme talebiniz alındı. Sonuç size e-postayla bildirilecek.' });
+      setState({ tone: 'success', message: result.alreadyRequested ? `Zaten açık bir talebiniz bulunuyor (${formatShortDateTime(result.requestedAt)}).` : 'Hesap silme talebiniz bize ulaştı. Süreç tamamlandığında size e-postayla bilgi vereceğiz.' });
       await client.invalidateQueries({ queryKey });
     } catch (error) {
-      setState({ tone: error instanceof ApiError && error.kind === 'conflict' ? 'warning' : 'critical', message: error instanceof ApiError ? error.message : 'Talep gönderilemedi. Tekrar deneyin.' });
+      setState({ tone: error instanceof ApiError && error.kind === 'conflict' ? 'warning' : 'critical', message: error instanceof ApiError ? error.message : 'Talebinizi şu an gönderemedik. Lütfen tekrar dener misiniz?' });
     }
   }
   async function mail() {
@@ -64,19 +64,19 @@ export default function AccountDeletionScreen() {
     <Screen testID="account-deletion">
       <PageHeader title="Hesabımı sil" description="Hesabınızın ve ilişkili kişisel verilerinizin silinmesini buradan talep edebilirsiniz." />
       <Section first title="Süreç">
-        <Text>Talep hesabınızı hemen kapatmaz. Kimliğiniz ve varsa veli–öğrenci ilişkileri doğrulanır; eğitim ve mali kayıtların saklama yükümlülükleri değerlendirilir. Saklanan kayıtlar ve sonuç size bildirilir.</Text>
+        <Text>Talebiniz hesabınızı hemen kapatmaz. Önce kimliğiniz ve varsa veli–öğrenci bağlantıları doğrulanır; ardından eğitim ve mali kayıtlara ilişkin yasal saklama yükümlülükleri değerlendirilir. Saklanan kayıtlar ve sürecin sonucu hakkında size bilgi verilir.</Text>
       </Section>
       <QueryView query={query}>
         {(data) => (
           <Section title="Talep">
             {state ? <Banner tone={state.tone}>{state.message}</Banner> : null}
             {data.processing ? (
-              <Banner tone="info" title="Talebiniz işleniyor">Hesap silme işlemi destek ekibi tarafından başlatıldı.</Banner>
+              <Banner tone="info" title="Talebiniz işleniyor">Hesap silme işleminiz destek ekibimiz tarafından başlatıldı.</Banner>
             ) : data.requestedAt ? (
-              <Banner tone="info" title="Açık talebiniz var">{`${formatShortDateTime(data.requestedAt)} tarihinde talep oluşturdunuz. Ekibimiz sizinle iletişime geçecek.`}</Banner>
+              <Banner tone="info" title="Açık talebiniz var">{`${formatShortDateTime(data.requestedAt)} tarihinde bir talep oluşturdunuz. Ekibimiz en kısa sürede sizinle iletişime geçecek.`}</Banner>
             ) : (
               <>
-                <TextField label="Parolanız" hint="Kimliğinizi doğrulamak için gerekir; saklanmaz." value={password} onChangeText={setPassword} secureTextEntry secureToggle autoComplete="current-password" textContentType="password" maxLength={200} testID="deletion-password" />
+                <TextField label="Parolanız" hint="Yalnızca kimliğinizi doğrulamak için gerekir; saklanmaz." value={password} onChangeText={setPassword} secureTextEntry secureToggle autoComplete="current-password" textContentType="password" maxLength={200} testID="deletion-password" />
                 <Button mutation label="Hesap silme talebi gönder" variant="secondary" loading={mutation.isPending} disabled={!online || !password || mutation.isPending} onPress={() => void submit()} testID="deletion-submit" />
               </>
             )}
@@ -84,8 +84,8 @@ export default function AccountDeletionScreen() {
         )}
       </QueryView>
       <Section title="Diğer kanal">
-        <Text tone="secondary">Uygulamaya erişemiyorsanız kayıtlı e-posta adresinizden iletisim@onlinedershanem.com adresine yazabilirsiniz. Parolanızı veya doğrulama kodunuzu paylaşmayın.</Text>
-        {mailError ? <Banner tone="critical">E-posta uygulaması açılamadı.</Banner> : null}
+        <Text tone="secondary">Uygulamaya erişemiyorsanız kayıtlı e-posta adresinizden iletisim@onlinedershanem.com adresine yazabilirsiniz. Güvenliğiniz için parolanızı ya da doğrulama kodunuzu kimseyle paylaşmayın.</Text>
+        {mailError ? <Banner tone="critical">E-posta uygulamasını açamadık.</Banner> : null}
         <Button label="E-posta ile talep et" variant="quiet" onPress={() => void mail()} />
       </Section>
     </Screen>

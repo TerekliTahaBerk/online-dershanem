@@ -37,13 +37,13 @@ async function transact<T>(job: (tx: Prisma.TransactionClient) => Promise<T>) {
 }
 export async function createCoachingSession(actor: CoachingActor, raw: unknown) {
   const input = coachingCreateSchema.parse(raw);
-  if (actor.role !== "TEACHER") throw new CoachingExperienceError(404, "Görüşme bulunamadı.");
+  if (actor.role !== "TEACHER") throw new CoachingExperienceError(404, "Görüşmeyi bulamadık.");
   return transact(async (tx) => {
     const assignment = await tx.coachAssignment.findFirst({ where: { ...coachingAssignmentScope(actor), studentId: input.studentId }, select: { id: true } });
-    if (!assignment) throw new CoachingExperienceError(404, "Koç ataması bulunamadı.");
+    if (!assignment) throw new CoachingExperienceError(404, "Koç ataması bulunamadı; kaldırılmış ya da değişmiş olabilir.");
     const op = operation(actor, input, assignment.id);
     const prior = await replay(tx, op); if (prior) return prior;
-    if (new Date(input.scheduledAt) <= new Date()) throw new CoachingExperienceError(400, "Gelecekteki bir görüşme saatini seçin.");
+    if (new Date(input.scheduledAt) <= new Date()) throw new CoachingExperienceError(400, "Lütfen gelecekteki bir görüşme saatini seçin.");
     const created = await tx.coachingSession.create({ data: { assignmentId: assignment.id, scheduledAt: new Date(input.scheduledAt), meetingUrl: input.meetingUrl }, select: { id: true, version: true } });
     return audited(tx, actor, op, "CREATE", created);
   });
@@ -52,7 +52,7 @@ export async function mutateCoachingSession(actor: CoachingActor, id: string, ra
   const input = coachingMutationSchema.parse(raw);
   return transact(async (tx) => {
     const session = await tx.coachingSession.findFirst({ where: { id, assignment: coachingAssignmentScope(actor) }, include: { assignment: { select: { studentId: true, coach: { select: { userId: true } }, student: { select: { userId: true } } } } } });
-    if (!session || ((input.action === "SAVE" || input.action === "COMPLETE") && actor.role !== "TEACHER") || (input.action === "REQUEST" && actor.role === "TEACHER") || (input.action === "ACCEPT" && actor.role !== "STUDENT")) throw new CoachingExperienceError(404, "Görüşme bulunamadı.");
+    if (!session || ((input.action === "SAVE" || input.action === "COMPLETE") && actor.role !== "TEACHER") || (input.action === "REQUEST" && actor.role === "TEACHER") || (input.action === "ACCEPT" && actor.role !== "STUDENT")) throw new CoachingExperienceError(404, "Görüşmeyi bulamadık.");
     const op = operation(actor, input, id); const prior = await replay(tx, op); if (prior) return prior;
     if (session.status !== "PLANNED" || session.version !== input.expectedVersion) throw new CoachingExperienceError(409, "Görüşme değişti. Güncel bilgiyi kontrol edin.");
     let data: Prisma.CoachingSessionUpdateManyMutationInput;
@@ -60,10 +60,10 @@ export async function mutateCoachingSession(actor: CoachingActor, id: string, ra
       if (session.rescheduleRequestedAt) throw new CoachingExperienceError(409, "Saat değişikliği talebiniz zaten alındı.");
       data = { rescheduleRequestedAt: new Date(), rescheduleReason: input.reason };
     } else if (input.action === "SAVE") {
-      if (new Date(input.scheduledAt) <= new Date()) throw new CoachingExperienceError(400, "Gelecekteki bir görüşme saatini seçin.");
+      if (new Date(input.scheduledAt) <= new Date()) throw new CoachingExperienceError(400, "Lütfen gelecekteki bir görüşme saatini seçin.");
       data = session.rescheduleRequestedAt ? { proposedAt: new Date(input.scheduledAt), proposedMeetingUrl: input.meetingUrl } : { scheduledAt: new Date(input.scheduledAt), meetingUrl: input.meetingUrl };
     } else if (input.action === "ACCEPT") {
-      if (!session.rescheduleRequestedAt || !session.proposedAt || session.proposedAt <= new Date()) throw new CoachingExperienceError(409, "Güncel bir saat önerisi bulunamadı.");
+      if (!session.rescheduleRequestedAt || !session.proposedAt || session.proposedAt <= new Date()) throw new CoachingExperienceError(409, "Güncel bir saat önerisi bulunamadı; kaldırılmış ya da değişmiş olabilir.");
       data = { scheduledAt: session.proposedAt, meetingUrl: session.proposedMeetingUrl, rescheduleRequestedAt: null, rescheduleReason: null, proposedAt: null, proposedMeetingUrl: null };
     } else {
       data = { status: "COMPLETED", completedAt: new Date(), focus: input.focus || null, sharedNote: input.sharedNote || null, privateNote: input.privateNote || null };
@@ -73,7 +73,7 @@ export async function mutateCoachingSession(actor: CoachingActor, id: string, ra
         if (input.decisions.some((decision) => istanbulWeekStart(new Date(decision.scheduledFor)).getTime() !== weekStart.getTime())) throw new CoachingExperienceError(400, "Kararları bu haftanın günlerine yerleştirin.");
         const product = await tx.product.findUniqueOrThrow({ where: { code: "OK" }, select: { id: true } });
         let plan = await tx.weeklyPlan.findUnique({ where: { studentId_weekStart: { studentId: session.assignment.studentId, weekStart } } });
-        if (plan && (plan.productRefId !== product.id || plan.status === "ARCHIVED")) throw new CoachingExperienceError(409, "Bu haftanın planını önce koçluk ekranından kontrol edin.");
+        if (plan && (plan.productRefId !== product.id || plan.status === "ARCHIVED")) throw new CoachingExperienceError(409, "Bu haftanın planına önce koçluk ekranından göz atmanızı rica ederiz.");
         if (!plan) plan = await tx.weeklyPlan.create({ data: { studentId: session.assignment.studentId, productRefId: product.id, weekStart, capacityMinutes: 0, createdById: actor.userId } });
         let position = (await tx.weeklyPlanTask.aggregate({ where: { planId: plan.id }, _max: { position: true } }))._max.position ?? 0;
         for (const decision of input.decisions) await tx.weeklyPlanTask.create({ data: { planId: plan.id, title: decision.title, scheduledFor: istanbulDayStart(new Date(decision.scheduledFor)), durationMinutes: decision.durationMinutes, position: ++position, sourceType: "MANUAL_COACH", sourceReferenceId: id, reasonCode: "CAPACITY_BALANCE" } });
@@ -88,7 +88,7 @@ export async function mutateCoachingSession(actor: CoachingActor, id: string, ra
     const result = { id, version: input.expectedVersion + 1 };
     if (input.action === "REQUEST" || (input.action === "SAVE" && session.rescheduleRequestedAt)) {
       const userId = input.action === "REQUEST" ? session.assignment.coach.userId : session.assignment.student.userId;
-      await queueReminderNotification(tx, { id: `${userId}:COACHING:${id}:${input.action}:${result.version}`, userId, type: "SYSTEM", title: input.action === "REQUEST" ? "Görüşme saati için talep var" : "Koçun yeni bir saat önerdi", body: input.action === "REQUEST" ? "Öğrencinizin saat değişikliği talebini görüşme kartından inceleyebilirsiniz." : "Yeni görüşme saatini koçluk ekranından kontrol edip onaylayabilirsin.", href: input.action === "REQUEST" ? `/panel/ogretmen/hazirlik/${session.assignment.studentId}` : "/panel/ogrenci/kocluk" }, "lessonSummary");
+      await queueReminderNotification(tx, { id: `${userId}:COACHING:${id}:${input.action}:${result.version}`, userId, type: "SYSTEM", title: input.action === "REQUEST" ? "Öğrenciniz görüşme saatini değiştirmek istiyor 🗓️" : "Koçun yeni bir saat önerdi 🗓️", body: input.action === "REQUEST" ? "Saat değişikliği talebini görüşme kartından inceleyebilirsiniz." : "Yeni görüşme saatine koçluk ekranından göz atıp uygunsa onaylayabilirsin 😊", href: input.action === "REQUEST" ? `/panel/ogretmen/hazirlik/${session.assignment.studentId}` : "/panel/ogrenci/kocluk" }, "lessonSummary");
     }
     return audited(tx, actor, op, input.action, result);
   });

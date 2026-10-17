@@ -52,12 +52,12 @@ const DAY = 86_400_000;
 export async function createInterventionRecord(input: unknown, actor: Actor, db: PrismaClient = prisma) {
   const parsed = interventionCreateSchema.safeParse(input);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Müdahale kaydı geçersiz." }, { status: 400 });
+    return NextResponse.json({ error: "Müdahale kaydı geçerli görünmüyor." }, { status: 400 });
   }
 
   const followUpStart = parseIstanbulDateInput(parsed.data.followUpDate);
   if (!followUpStart) {
-    return NextResponse.json({ error: "Takip tarihi geçersiz." }, { status: 400 });
+    return NextResponse.json({ error: "Takip tarihi geçerli görünmüyor." }, { status: 400 });
   }
   const now = new Date();
   if (followUpStart.getTime() < istanbulDayStart(now).getTime()) {
@@ -83,7 +83,7 @@ export async function createInterventionRecord(input: unknown, actor: Actor, db:
     select: { id: true },
   });
   if (!student) {
-    return NextResponse.json({ error: "Öğrenci bulunamadı." }, { status: 404 });
+    return NextResponse.json({ error: "Öğrenciyi bulamadık." }, { status: 404 });
   }
 
   const nonce = randomUUID();
@@ -138,7 +138,7 @@ export async function createInterventionRecord(input: unknown, actor: Actor, db:
 
 export async function updateInterventionRecord(id: string, input: unknown, actor: Actor, db: PrismaClient = prisma) {
   const parsed = interventionUpdateSchema.safeParse(input);
-  if (!parsed.success) return NextResponse.json({ error: "Müdahale işlemi geçersiz." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Müdahale işlemi geçerli görünmüyor." }, { status: 400 });
   const item = await db.interventionCase.findFirst({
     where: {
       id,
@@ -149,7 +149,7 @@ export async function updateInterventionRecord(id: string, input: unknown, actor
     },
     select: { id: true, status: true, version: true, ownerId: true, reasonCode: true, createdAt: true, firstActionAt: true },
   });
-  if (!item) return NextResponse.json({ error: "Müdahale kaydı bulunamadı." }, { status: 404 });
+  if (!item) return NextResponse.json({ error: "Müdahale kaydı bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
   if (item.version !== parsed.data.expectedVersion) return NextResponse.json({ error: "Kayıt başka bir sekmede değişti." }, { status: 409 });
 
   const value = parsed.data;

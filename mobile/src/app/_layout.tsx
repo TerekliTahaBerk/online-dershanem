@@ -85,8 +85,8 @@ export default function RootLayout() {
 export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
   useEffect(() => { void SplashScreen.hideAsync().catch(() => undefined); }, []);
   return <View style={{ flex: 1, justifyContent: 'center', padding: 24, gap: 16, backgroundColor: color.canvas }}>
-    <NativeText accessibilityRole="header">Bu ekran açılamadı</NativeText>
-    <NativeText>Tekrar deneyin. Sorun sürerse uygulamayı yeniden açın.</NativeText>
+    <NativeText accessibilityRole="header">Bu ekranı şu an açamadık 😕</NativeText>
+    <NativeText>Lütfen tekrar dener misiniz? Sorun devam ederse uygulamayı kapatıp yeniden açmanız yeterli olacaktır.</NativeText>
     <Button title="Tekrar dene" onPress={() => { void retry().catch(() => undefined); }} />
   </View>;
 }

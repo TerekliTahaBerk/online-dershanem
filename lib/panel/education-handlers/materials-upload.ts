@@ -46,14 +46,14 @@ export async function POST(request: Request, _context: { params: Promise<{ id: s
     captionsAvailable: form?.get("captionsAvailable") === "on",
     transcript: form?.get("transcript") ?? "",
   });
-  if (!parsed.success) return NextResponse.json({ error: "Dosya ve materyal alanlarını kontrol edin." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Lütfen dosya ve materyal alanlarını bir kez daha kontrol eder misiniz?" }, { status: 400 });
   const { file, groupId, title, description, captionsAvailable, transcript } = parsed.data;
   const kind = ALLOWED_TYPES.get(file.type);
   if (!kind) return NextResponse.json({ error: "Yalnızca PDF veya MP4 dosyası yükleyebilirsiniz." }, { status: 415 });
   if (!file.size || file.size > MAX_FILE_SIZE) return NextResponse.json({ error: "Dosya boyutu en fazla 4 MB olabilir." }, { status: 413 });
 
   const group = await prisma.group.findFirst({ where: { id: groupId, isActive: true, ...(auth.session.role === "TEACHER" ? { teacherId: auth.session.userId } : {}) }, include: { enrollments: { where: { endedAt: null }, include: { student: { select: { userId: true, parents: { where: { active: true, endedAt: null, canViewAcademic: true }, select: { parentId: true } } } } } } } });
-  if (!group) return NextResponse.json({ error: "Yetkili olduğunuz grup bulunamadı." }, { status: 404 });
+  if (!group) return NextResponse.json({ error: "Yetkili olduğunuz grup şu an görünmüyor." }, { status: 404 });
 
   const blob = await put(`panel-materials/${group.id}/${cleanFileName(file.name)}`, file, { access: "private", addRandomSuffix: true, contentType: file.type });
   onEducationRollback(prisma, () => del(blob.url));
@@ -67,7 +67,7 @@ export async function POST(request: Request, _context: { params: Promise<{ id: s
 
   const students = [...new Set(group.enrollments.map((item) => item.student.userId))];
   const parents = [...new Set(group.enrollments.flatMap((item) => item.student.parents.map((link) => link.parentId)))];
-  const rawRows = [...students.map((userId) => ({ userId, type: "SYSTEM" as const, title: "Yeni ders materyali", body: material.title, href: "/panel/ogrenci/materyaller" })), ...parents.map((userId) => ({ userId, type: "SYSTEM" as const, title: "Yeni ders materyali", body: material.title, href: "/panel/veli/takip" }))];
+  const rawRows = [...students.map((userId) => ({ userId, type: "SYSTEM" as const, title: "Yeni bir ders materyali eklendi 📎", body: material.title, href: "/panel/ogrenci/materyaller" })), ...parents.map((userId) => ({ userId, type: "SYSTEM" as const, title: "Yeni bir ders materyali eklendi 📎", body: material.title, href: "/panel/veli/takip" }))];
   const rows = await filterNotificationRows(rawRows);
   if (rows.length) await prisma.notification.createMany({ data: rows });
   await queuePanelNotificationEmails(rawRows);

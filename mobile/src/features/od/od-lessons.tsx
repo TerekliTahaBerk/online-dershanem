@@ -36,12 +36,12 @@ export default function OdLessonsScreen() {
       />
       <QueryView query={query}>
         {(data) => {
-          if (!data.profile) return <EmptyState title="Profilin hazırlanıyor." body="Öğrenci profilin tamamlandığında ders takvimin burada görünecek." />;
+          if (!data.profile) return <EmptyState title="Profilin hazırlanıyor ⏳" body="Öğrenci profilin tamamlandığında ders takvimin burada görünecek 🗓️" />;
           if (!data.lessons.length) {
             return filter === 'yaklasan' ? (
-              <EmptyState title="Yaklaşan ders yok." body="Yeni dersin planlandığında burada görünecek." />
+              <EmptyState title="Şu an yaklaşan bir dersin yok 📚" body="Yeni dersin planlandığında burada belirecek." />
             ) : (
-              <EmptyState title="Tamamlanmış ders yok." body="Derslerin işlendikçe burada listelenir." />
+              <EmptyState title="Henüz tamamlanmış bir ders yok" body="Derslerini tamamladıkça burada birikecekler 🌱" />
             );
           }
           return data.lessons.map((lesson) => <LessonRow key={lesson.id} lesson={lesson} />);

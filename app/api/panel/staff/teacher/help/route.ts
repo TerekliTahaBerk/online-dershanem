@@ -19,7 +19,7 @@ import { requireStaffApi, staffFeatureDisabled, staffJson } from "@/lib/panel/st
 export async function GET() {
   const auth = await requireStaffApi("OD", "od:lesson:teach");
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().studentCheckIn) return staffFeatureDisabled("Yardım kutusu henüz açık değil.");
+  if (!getPanelFeatureFlags().studentCheckIn) return staffFeatureDisabled("Yardım kutusu şu an kullanıma kapalı, çok yakında açılacak.");
   const [items, canRespond] = await Promise.all([loadTeacherHelpInbox(auth.session.userId), hasProductAccess(auth.session.userId, auth.session.role, "OD")]);
   return staffJson({
     contractVersion: MOBILE_STAFF_CONTRACT_VERSION,

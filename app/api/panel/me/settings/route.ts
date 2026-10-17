@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   if (!parsed.success) return json({ error: firstIssueMessage(parsed.error), code: "INVALID_INPUT" }, { status: 400 });
   const { command, idempotencyKey, expectedRevision } = parsed.data;
   if (/^Bearer\s+/i.test(request.headers.get("authorization") ?? "") && (!idempotencyKey || (SETTINGS_REVISIONED.has(command.type) && !expectedRevision))) {
-    return json({ error: "Güvenli işlem bilgisi eksik. Görünümü yenileyin.", code: "PRECONDITION_REQUIRED" }, { status: 400 });
+    return json({ error: "Güvenli işlem bilgisi eksik görünüyor. Sayfayı yenileyip tekrar dener misiniz?", code: "PRECONDITION_REQUIRED" }, { status: 400 });
   }
   try {
     const { result, replayed } = await runSettingsCommand(auth.session, command, { idempotencyKey, expectedRevision });

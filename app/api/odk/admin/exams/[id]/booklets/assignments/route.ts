@@ -11,7 +11,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   const params = idParamsSchema.safeParse(await context.params);
   if (!params.success) return invalidApiInput();
   const data = await loadBookletAssignments(params.data.id);
-  return data ? NextResponse.json(data) : NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 });
+  return data ? NextResponse.json(data) : NextResponse.json({ error: "Denemeyi bulamadık." }, { status: 404 });
 }
 
 export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {

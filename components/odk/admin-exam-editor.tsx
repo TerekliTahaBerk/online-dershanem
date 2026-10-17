@@ -176,7 +176,7 @@ export function AdminExamEditor({
       const result = await response.json().catch(() => ({}));
       if (!response.ok) {
         setMessage({
-          text: result.error || "İşlem tamamlanamadı.",
+          text: result.error || "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?",
           error: true,
         });
         return null;
@@ -207,16 +207,16 @@ export function AdminExamEditor({
       const result = await response.json().catch(() => ({}));
       if (response.status === 409 && result.code === "QUESTIONS_STALE") {
         setConflict(true);
-        setMessage({ text: result.error || "Sorular başka biri tarafından değiştirildi.", error: true });
+        setMessage({ text: result.error || "Sorular bu arada başka biri tarafından değiştirilmiş; güncel hâline göz atmanızı rica ederiz.", error: true });
         return;
       }
       if (!response.ok) {
-        setMessage({ text: result.error || "İşlem tamamlanamadı.", error: true });
+        setMessage({ text: result.error || "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?", error: true });
         return;
       }
       if (typeof result.revision === "string") setQuestionsRevision(result.revision);
       setDirty(false);
-      setMessage({ text: "Cevaplar ve kazanımlar kaydedildi.", error: false });
+      setMessage({ text: "Cevaplar ve kazanımlar kaydedildi ✅", error: false });
       router.refresh();
     } catch {
       setMessage({ text: "Bağlantı kurulamadı. Değişiklik kaydedilmedi; tekrar deneyin.", error: true });
@@ -275,7 +275,7 @@ export function AdminExamEditor({
       const result = await response.json().catch(() => ({}));
       if (!response.ok)
         return setMessage({
-          text: result.error || "PDF yüklenemedi.",
+          text: result.error || "PDF şu an yüklenemedi. Lütfen tekrar dener misiniz?",
           error: true,
         });
       form.reset();
@@ -525,7 +525,7 @@ export function AdminExamEditor({
                 meetRequired: data.get("meetRequired") === "on",
                 meetUrl: data.get("meetUrl") || null,
               },
-              "Planlama bilgileri kaydedildi.",
+              "Planlama bilgileri kaydedildi ✅",
             );
           }}
         >
@@ -639,7 +639,7 @@ export function AdminExamEditor({
                   autoSubmit: data.get("autoSubmit") === "on",
                 },
               },
-              "Güvenlik politikası kaydedildi.",
+              "Güvenlik politikası kaydedildi ✅",
             );
           }}
         >
@@ -1194,7 +1194,7 @@ export function AdminExamEditor({
                     `/api/odk/admin/exams/${exam.id}/schedule`,
                     "POST",
                     undefined,
-                    "Deneme planlandı.",
+                    "Deneme planlandı ✅",
                   );
               }}
               className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]"
@@ -1270,7 +1270,7 @@ export function AdminExamEditor({
                       confirmPublishedChange: exam.status === "RELEASED",
                       reason: "Admin rescore",
                     },
-                    "Yeniden puanlama tamamlandı.",
+                    "Yeniden puanlama tamamlandı ✅",
                   );
               }}
               className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px]"

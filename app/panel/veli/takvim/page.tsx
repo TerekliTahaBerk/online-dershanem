@@ -57,8 +57,8 @@ export default async function ParentLessonsPage({
       <>
         <PanelHeading title="Dersler" />
         <PanelEmpty
-          title="Henüz bağlı öğrenci yok."
-          body="Hesabınız öğrencinizle eşleştirildiğinde ders takvimi burada görünür."
+          title="Henüz bağlı bir öğrenci yok"
+          body="Hesabınız öğrencinizle eşleştirildiğinde ders takvimi burada görünecek 🗓️"
         />
       </>,
     );
@@ -69,8 +69,8 @@ export default async function ParentLessonsPage({
       <>
         <PanelHeading title="Dersler" metadata={childContext} />
         <PanelEmpty
-          title="Bu hesapta canlı ders ürünü bulunmuyor."
-          body="onlinedershanem. eklendiğinde ders takvimi ve katılım burada görünür."
+          title="Bu hesap için canlı dersler henüz açık değil"
+          body="onlinedershanem. eklendiğinde ders takvimi ve katılım bilgisi burada görünecek."
         />
       </>,
     );
@@ -87,8 +87,8 @@ export default async function ParentLessonsPage({
 
       {lessons.length === 0 ? (
         <PanelEmpty
-          title="Henüz ders kaydı yok."
-          body="Dersler planlandıkça tarih, öğretmen ve katılım bilgisi burada listelenir."
+          title="Henüz bir ders kaydı yok 📚"
+          body="Dersler planlandıkça tarih, öğretmen ve katılım bilgisi burada listelenecek."
         />
       ) : (
         <>
@@ -125,7 +125,7 @@ export default async function ParentLessonsPage({
             </h2>
             <p className="mt-2 text-[14.5px] leading-[1.65] text-(--pd-ink-3)">
               {lastSummary ||
-                "Öğretmen henüz ders özeti eklemedi. Eklendiğinde burada görünecek."}
+                "Öğretmen henüz ders özetini eklemedi. Eklendiğinde burada görünecek 📝"}
             </p>
             <p className="mt-2.5 text-[12.5px] text-dc-ink-faint">
               Öğretmenin öğrenciye özel notları veliyle paylaşılmaz.

@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     body = await req.json();
   } catch {
     return NextResponse.json(
-      { ok: false, error: "Geçersiz istek gövdesi." },
+      { ok: false, error: "İstek içeriği geçerli görünmüyor. Lütfen tekrar deneyin." },
       { status: 400 },
     );
   }
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
 
   if (!consentValue(d.kvkkConsent) || !consentValue(d.paymentConsent) || !consentValue(d.placementConsent)) {
     return NextResponse.json(
-      { ok: false, error: "KVKK ve ön bilgilendirme onaylarını işaretleyin." },
+      { ok: false, error: "Devam etmek için KVKK ve ön bilgilendirme onaylarını işaretlemeniz yeterli." },
       { status: 400 },
     );
   }

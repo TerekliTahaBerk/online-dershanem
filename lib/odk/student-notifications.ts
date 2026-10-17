@@ -112,7 +112,7 @@ export async function syncOdkStudentNotifications(now = new Date()) {
         const untilStart = schedule.startsAt.getTime() - now.getTime();
         if (untilStart > DAY_BEFORE_MIN_MS && untilStart <= DAY_BEFORE_MAX_MS) {
           const version = schedule.startsAt.toISOString();
-          candidates.push({ userId, examId: exam.id, kind: "DAY_BEFORE", version, title: "Yarın denemen var", body: `${exam.title} · ${WHEN.format(schedule.startsAt)}`, href: `${BASE}/${exam.id}` });
+          candidates.push({ userId, examId: exam.id, kind: "DAY_BEFORE", version, title: "Yarın denemen var 📝", body: `${exam.title} · ${WHEN.format(schedule.startsAt)}. Bu akşam erken dinlenmeyi unutma, başarılar! 🍀`, href: `${BASE}/${exam.id}` });
           audience.push({ ...audienceBase, kind: "DAY_BEFORE", version });
         }
       }
@@ -121,7 +121,7 @@ export async function syncOdkStudentNotifications(now = new Date()) {
         const sinceClose = now.getTime() - entryClosedAt;
         if (sinceClose > 0 && sinceClose <= RECENT_MS) {
           const version = schedule.startsAt.toISOString();
-          candidates.push({ userId, examId: exam.id, kind: "MISSED", version, title: "Denemeyi kaçırdın", body: `${exam.title} için giriş süresi doldu. Sıradaki denemeleri takviminden takip edebilirsin.`, href: `${BASE}/${exam.id}` });
+          candidates.push({ userId, examId: exam.id, kind: "MISSED", version, title: "Bu denemeyi kaçırdın, dert etme 💪", body: `${exam.title} için giriş süresi doldu. Sıradaki denemeler takviminde seni bekliyor.`, href: `${BASE}/${exam.id}` });
           audience.push({ ...audienceBase, kind: "MISSED", version });
         }
       }
@@ -132,10 +132,10 @@ export async function syncOdkStudentNotifications(now = new Date()) {
         const version = schedule.startsAt.toISOString();
         const untilStart = schedule.startsAt.getTime() - now.getTime();
         if (untilStart > 0 && untilStart <= REMINDER_LEAD_MS) {
-          candidates.push({ userId, examId: exam.id, kind: "REMINDER", version, title: "Denemen yakında başlıyor", body: `${exam.title} kısa süre sonra açılıyor.`, href: `${BASE}/${exam.id}` });
+          candidates.push({ userId, examId: exam.id, kind: "REMINDER", version, title: "Denemen birazdan başlıyor ⏰", body: `${exam.title} kısa süre sonra açılıyor. Su şişeni ve kalemini hazırla! ✏️`, href: `${BASE}/${exam.id}` });
         } else if (untilStart <= 0 && -untilStart <= OPEN_GRACE_MS && exam.currentVersion) {
           const decision = decideAttemptStart({ status: exam.status, ...schedule, durationMinutes: exam.currentVersion.durationMinutes }, now);
-          if (decision.ok) candidates.push({ userId, examId: exam.id, kind: "OPEN", version, title: "Denemen başladı", body: `${exam.title} şu anda açık.`, href: `${BASE}/${exam.id}` });
+          if (decision.ok) candidates.push({ userId, examId: exam.id, kind: "OPEN", version, title: "Denemen başladı 🚀", body: `${exam.title} şu anda açık. Sakin ol, kendine güven; başarılar! 🍀`, href: `${BASE}/${exam.id}` });
         }
       }
       // C / D — sonuç ve cevap anahtarı: rapor hakkı + kendi teslim edilmiş denemesi.
@@ -146,11 +146,11 @@ export async function syncOdkStudentNotifications(now = new Date()) {
       }
       if (!grant.studentReports || !submitted || exam.status !== "RELEASED") continue;
       if (attempt.score?.publicationStatus === "PUBLISHED" && contractResultAvailable(grant.exam, exam, now) && releasedAt && now.getTime() - releasedAt.getTime() <= RELEASE_LOOKBACK_MS) {
-        candidates.push({ userId, examId: exam.id, kind: "RESULT", version: releasedAt.toISOString(), title: "Deneme sonucun açıklandı", body: `${exam.title} sonucunu görebilirsin.`, href: `${BASE}/${exam.id}/sonuc` });
+        candidates.push({ userId, examId: exam.id, kind: "RESULT", version: releasedAt.toISOString(), title: "Deneme sonucun açıklandı 🎉", body: `${exam.title} sonucun hazır, hemen göz at!`, href: `${BASE}/${exam.id}/sonuc` });
       }
       const keyAt = answerKeyReleasedAt(grant.exam, exam);
       if (grant.exam.answerKeyReleaseMode !== "WITH_RESULTS" && attempt.score && contractAnswerKeyAvailable(grant.exam, exam, now) && keyAt && now.getTime() - keyAt.getTime() <= RELEASE_LOOKBACK_MS) {
-        candidates.push({ userId, examId: exam.id, kind: "ANSWER_KEY", version: keyAt.toISOString(), title: "Cevap anahtarı yayınlandı", body: `${exam.title} cevap anahtarı açıldı.`, href: `${BASE}/${exam.id}/sonuc` });
+        candidates.push({ userId, examId: exam.id, kind: "ANSWER_KEY", version: keyAt.toISOString(), title: "Cevap anahtarı yayında 🔑", body: `${exam.title} cevap anahtarı açıldı. Yanlışlarından öğrenmek için harika bir zaman!`, href: `${BASE}/${exam.id}/sonuc` });
       }
     }
   }
@@ -218,11 +218,11 @@ export async function notifyOdkResultsUpdated(input: { examId: string; studentUs
     const name = profile.user.fullName?.trim() || "Öğrenci";
     if (rights.studentReports) {
       const category = `RESULT_UPDATED:${input.version}`;
-      rows.push({ id: notificationKey(profile.userId, "ODK_EXAM", exam.id, category), userId: profile.userId, type: "SYSTEM", title: "Deneme sonucun güncellendi", body: `${exam.title} · cevap anahtarı düzeltildi, netin değişti.`, href: `${BASE}/${exam.id}/sonuc`, sourceType: "ODK_EXAM", sourceId: exam.id, sourceVersion: input.version, category, preferenceKey: "examUpdates" });
+      rows.push({ id: notificationKey(profile.userId, "ODK_EXAM", exam.id, category), userId: profile.userId, type: "SYSTEM", title: "Deneme sonucun güncellendi 🔄", body: `${exam.title} · cevap anahtarında bir düzeltme yapıldı ve netin güncellendi.`, href: `${BASE}/${exam.id}/sonuc`, sourceType: "ODK_EXAM", sourceId: exam.id, sourceVersion: input.version, category, preferenceKey: "examUpdates" });
     }
     if (rights.parentReports) {
       const category = `RESULT_UPDATED:${profile.id}:${input.version}`;
-      for (const { parentId } of profile.parents) rows.push({ id: notificationKey(parentId, "ODK_AUDIENCE", exam.id, category), userId: parentId, type: "SYSTEM", title: "Deneme sonucu güncellendi", body: `${name} · ${exam.title} yeniden puanlandı; güncel sonuç raporlarda.`, href: `${PARENT_REPORTS}?studentId=${encodeURIComponent(profile.id)}`, sourceType: "ODK_AUDIENCE", sourceId: exam.id, sourceVersion: input.version, category, preferenceKey: "examUpdates" });
+      for (const { parentId } of profile.parents) rows.push({ id: notificationKey(parentId, "ODK_AUDIENCE", exam.id, category), userId: parentId, type: "SYSTEM", title: "Deneme sonucu güncellendi 🔄", body: `${name} · ${exam.title} yeniden puanlandı; güncel sonucu raporlarda görebilirsiniz.`, href: `${PARENT_REPORTS}?studentId=${encodeURIComponent(profile.id)}`, sourceType: "ODK_AUDIENCE", sourceId: exam.id, sourceVersion: input.version, category, preferenceKey: "examUpdates" });
     }
   }
   if (!rows.length) return 0;
@@ -263,18 +263,18 @@ async function resolveAudienceRows(events: AudienceEvent[]) {
     const scoped = (path: string) => `${path}?studentId=${encodeURIComponent(profile.id)}`;
     const category = `${event.kind}:${profile.id}:${event.version}`;
     for (const { parentId } of profile.parents) {
-      if (event.kind === "DAY_BEFORE") push(parentId, event.examId, category, event.version, "Yarın deneme var", `${name} · ${event.examTitle}${event.startsAt ? ` · ${WHEN.format(event.startsAt)}` : ""}`, scoped(PARENT_HOME));
-      if (event.kind === "MISSED") push(parentId, event.examId, category, event.version, "Çocuğunuz denemeye katılmadı", `${name} · ${event.examTitle} için giriş süresi doldu.`, scoped(PARENT_HOME));
-      if (event.kind === "SUBMITTED") push(parentId, event.examId, category, event.version, "Çocuğunuz denemeyi tamamladı", `${name} · ${event.examTitle}. Sonuç açıklanınca haber vereceğiz.`, scoped(PARENT_HOME));
-      if (event.kind === "RESULT" && event.parentReports) push(parentId, event.examId, category, event.version, "Deneme sonucu açıklandı", `${name} · ${event.examTitle} sonucu raporlarda.`, scoped(PARENT_REPORTS));
+      if (event.kind === "DAY_BEFORE") push(parentId, event.examId, category, event.version, "Yarın deneme var 📝", `${name} · ${event.examTitle}${event.startsAt ? ` · ${WHEN.format(event.startsAt)}` : ""}`, scoped(PARENT_HOME));
+      if (event.kind === "MISSED") push(parentId, event.examId, category, event.version, "Çocuğunuz denemeye katılamadı", `${name} · ${event.examTitle} için giriş süresi doldu. Sıradaki denemeler takvimde yer alıyor.`, scoped(PARENT_HOME));
+      if (event.kind === "SUBMITTED") push(parentId, event.examId, category, event.version, "Çocuğunuz denemeyi tamamladı ✅", `${name} · ${event.examTitle}. Sonuç açıklanınca size hemen haber vereceğiz.`, scoped(PARENT_HOME));
+      if (event.kind === "RESULT" && event.parentReports) push(parentId, event.examId, category, event.version, "Deneme sonucu açıklandı 📊", `${name} · ${event.examTitle} sonucunu raporlarda görebilirsiniz.`, scoped(PARENT_REPORTS));
     }
     if (event.kind === "RESULT" && event.teacherReports) {
       const teachers = new Set(profile.enrollments.map((item) => item.group.teacherId));
       // Deneme başına tek satır: kimlik öğrenciden bağımsız.
-      for (const teacherId of teachers) if (await canReadReports(teacherId)) push(teacherId, event.examId, "TEACHER_RESULT", event.version, "Deneme sonuçları açıklandı", `${event.examTitle} · öğrencilerinin sonuçlarını raporlardan inceleyebilirsin.`, TEACHER_REPORTS);
+      for (const teacherId of teachers) if (await canReadReports(teacherId)) push(teacherId, event.examId, "TEACHER_RESULT", event.version, "Deneme sonuçları açıklandı 📊", `${event.examTitle} · öğrencilerinin sonuçlarını raporlardan inceleyebilirsin.`, TEACHER_REPORTS);
       for (const coachId of new Set(profile.coachAssignments.map((item) => item.coach.userId))) {
         if (teachers.has(coachId) || !(await canReadReports(coachId))) continue;
-        push(coachId, event.examId, `COACH_RESULT:${profile.id}`, event.version, "Öğrencinin deneme sonucu açıklandı", `${name} · ${event.examTitle} sonucu raporlarda.`, `${TEACHER_REPORTS}?ogrenci=${encodeURIComponent(profile.userId)}`);
+        push(coachId, event.examId, `COACH_RESULT:${profile.id}`, event.version, "Öğrencinin deneme sonucu açıklandı 📊", `${name} · ${event.examTitle} sonucunu raporlardan inceleyebilirsin.`, `${TEACHER_REPORTS}?ogrenci=${encodeURIComponent(profile.userId)}`);
       }
     }
   }

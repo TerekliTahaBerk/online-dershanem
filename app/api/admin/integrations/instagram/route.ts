@@ -17,9 +17,9 @@ export async function PATCH(request: Request) {
   const guard = await guardMutation({ action: "business.instagram.settings", userId: access.session.userId, headers: request.headers, requireSameOrigin: true, rateLimit: { max: 30, windowMs: 60_000 } });
   if (!guard.ok) return apiError(guard.code === "ORIGIN" ? 403 : 429, guard.code === "ORIGIN" ? API_ERROR_CODES.FORBIDDEN : API_ERROR_CODES.RATE_LIMITED, guard.message);
   const parsed = z.object({ accountId: z.string().cuid(), aiMode: z.enum(["OFF", "SUGGESTION", "AUTO_SAFE", "AUTO"]), isActive: z.boolean() }).safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return apiError(400, API_ERROR_CODES.VALIDATION_ERROR, "Geçersiz veri.");
+  if (!parsed.success) return apiError(400, API_ERROR_CODES.VALIDATION_ERROR, "Veri geçerli görünmüyor.");
   const updated = await prisma.instagramAccount.updateMany({ where: { id: parsed.data.accountId, businessUnitId: { in: access.units.map((unit) => unit.id) } }, data: { aiMode: parsed.data.aiMode, isActive: parsed.data.isActive } });
-  if (!updated.count) return apiError(404, API_ERROR_CODES.NOT_FOUND, "Hesap bulunamadı.");
+  if (!updated.count) return apiError(404, API_ERROR_CODES.NOT_FOUND, "Hesap bulunamadı; kaldırılmış ya da değişmiş olabilir.");
   queueAudit({ actorUserId: access.session.userId, entityType: "InstagramAccount", entityId: parsed.data.accountId, action: "INSTAGRAM_SETTINGS_UPDATED", payload: { aiMode: parsed.data.aiMode, isActive: parsed.data.isActive } });
   return apiSuccess({ ok: true });
 }

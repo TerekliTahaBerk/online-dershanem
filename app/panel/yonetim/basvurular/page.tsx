@@ -262,7 +262,7 @@ async function PendingChildren() {
 
   if (!sorted.length) {
     return (
-      <EmptyState className="mt-5" title="Bekleyen çocuk yok." body="Velilerin bildirdiği bütün çocukların hesabı açılmış." />
+      <EmptyState className="mt-5" title="Bekleyen çocuk yok ✅" body="Velilerin bildirdiği bütün çocukların hesabı açılmış." />
     );
   }
 

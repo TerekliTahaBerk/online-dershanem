@@ -38,7 +38,7 @@ export default async function OdkStudentExamDetailPage({
       ? `${dateFormatter.format(exam.startsAt)} · ${dateFormatter.format(exam.endsAt)}`
       : exam.startsAt
         ? `${dateFormatter.format(exam.startsAt)}`
-        : "Başlama saati bekleniyor";
+        : "Başlama saati yakında belli olacak";
 
   const state = studentExamState({ id: exam.id, attempts: attempt ? [{ status: attempt.status }] : [], startDecision, resultAvailable });
   const questionCount = version.sections.reduce((sum, section) => sum + section.questions.length, 0);
@@ -79,10 +79,10 @@ export default async function OdkStudentExamDetailPage({
 
         <Section id="kurallar" title="Kurallar">
           <ul className="list-disc space-y-1 pl-5 text-[14px] text-pn-text-secondary">
-            <li>Süre sunucuda tutulur; sayfayı kapatmak süreyi durdurmaz.</li>
-            <li>Her cevap seçtiğin anda kaydedilir; bağlantı koparsa geri gelince kayıt sürer.</li>
-            <li>Bekleyen kayıt varken teslim kapanır; süre bitince deneme otomatik teslim edilir.</li>
-            {exam.meetRequired ? <li>Deneme boyunca Meet görüşmesinde kalman gerekir.</li> : null}
+            <li>Süren sunucuda tutulur; sayfayı kapatmak süreyi durdurmaz ⏱️</li>
+            <li>Her cevabın seçtiğin anda kaydedilir; bağlantı koparsa merak etme, geri geldiğinde kayıt kaldığı yerden sürer ✅</li>
+            <li>Bekleyen kayıt varken teslim butonu kapalı kalır; süre bitince denemen otomatik teslim edilir.</li>
+            {exam.meetRequired ? <li>Deneme boyunca Meet görüşmesinde kalman gerekiyor 🎥</li> : null}
             {sessionPlan ? (
               <li>
                 Oturumlar sırayla açılır. Bir oturumu bitirince (ya da süresi dolunca) cevapları kilitlenir; aradan sonra sıradaki
@@ -96,10 +96,10 @@ export default async function OdkStudentExamDetailPage({
           {completed ? (
             <div className="rounded-md border border-pn-border p-4">
               <p className="text-[15px] font-semibold text-pn-text">
-                {submittedAwaitingResult ? "Denemen tamamlandı." : "Denemen teslim edildi."}
+                {submittedAwaitingResult ? "Denemeni tamamladın, emeğine sağlık! 🎉" : "Denemen teslim edildi."}
               </p>
               <p className="mt-1 text-[14px] text-pn-text-secondary">
-                {resultAvailable ? "Sonucun ve kazanım analizin açıklandı." : "Sonucun açıklandığında burada görebileceksin."}
+                {resultAvailable ? "Sonucun ve kazanım analizin açıklandı 📊" : "Sonucun açıklandığında burada görebileceksin ⏳"}
               </p>
               {resultAvailable ? (
                 <Link href={`/panel/odk/ogrenci/denemeler/${exam.id}/sonuc`} className={buttonClass("primary", "md", "mt-3")}>

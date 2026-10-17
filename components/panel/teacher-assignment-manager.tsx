@@ -67,7 +67,7 @@ async function request(url: string, method: "POST" | "PATCH", body: unknown) {
     body: JSON.stringify(body),
   });
   const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(result.error || "İşlem tamamlanamadı.");
+  if (!response.ok) throw new Error(result.error || "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?");
 }
 
 function AssignmentOutcomeBackfill({
@@ -128,7 +128,7 @@ function AssignmentOutcomeBackfill({
               .then(onSaved)
               .catch((caught) =>
                 setError(
-                  caught instanceof Error ? caught.message : "Kaydedilemedi.",
+                  caught instanceof Error ? caught.message : "Şu an kaydedilemedi. Lütfen tekrar dener misiniz?",
                 ),
               )
               .finally(() => setBusy(false));
@@ -184,7 +184,7 @@ function SubmissionReview({
     );
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setMessage(body.error || "Değerlendirme kaydedilemedi.");
+      setMessage(body.error || "Değerlendirme şu an kaydedilemedi. Lütfen tekrar dener misiniz?");
       setBusy(false);
       return;
     }
@@ -330,7 +330,7 @@ export function TeacherAssignmentManager({
       return true;
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "İşlem tamamlanamadı.",
+        error instanceof Error ? error.message : "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?",
       );
       return false;
     } finally {
@@ -349,7 +349,7 @@ export function TeacherAssignmentManager({
           const data = new FormData(formElement);
           const dueAt = parseIstanbulDateTimeInput(data.get("dueAt"));
           if (!dueAt) {
-            setMessage("Geçerli bir teslim tarihi ve saati girin.");
+            setMessage("Lütfen geçerli bir teslim tarihi ve saati girin.");
             return;
           }
           void run(
@@ -366,7 +366,7 @@ export function TeacherAssignmentManager({
                 evidenceRequired,
                 rubricCriteria: evidenceRequired ? criteria : [],
               }),
-            "Ödev öğrencilere gönderildi.",
+            "Ödev öğrencilere gönderildi ✅",
           ).then((ok) => {
             if (!ok) return;
             // Grup seçimi korunur; aynı ödev ikinci kez gönderilmesin diye
@@ -580,7 +580,7 @@ export function TeacherAssignmentManager({
                       {assignment.title}
                     </h3>
                     <p className="mt-1 text-xs leading-5 text-(--site-body)">
-                      {assignment.description || "Açıklama eklenmedi."}
+                      {assignment.description || "Henüz açıklama eklenmedi."}
                     </p>
                     {assignment.outcomes?.length ? (
                       <div className="mt-2 flex flex-wrap gap-1">
@@ -651,7 +651,7 @@ export function TeacherAssignmentManager({
                                   isActive: false,
                                 },
                               ),
-                            "Ödev arşivlendi.",
+                            "Ödev arşivlendi ✅",
                           )
                         }
                         className="mt-3 inline-flex items-center gap-1 text-[10.5px] font-bold text-(--site-muted) hover:text-rose-700"
@@ -670,7 +670,7 @@ export function TeacherAssignmentManager({
           })}
           {!items.length ? (
             <p className="rounded-[14px] border border-dashed border-(--site-line) p-8 text-center text-sm text-(--site-muted)">
-              Henüz ödev oluşturmadınız.
+              Henüz bir ödev oluşturmadınız. İlk ödevinizi yukarıdan ekleyebilirsiniz 📚
             </p>
           ) : null}
         </div>

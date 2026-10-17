@@ -54,7 +54,7 @@ export async function POST(request: Request) {
   }
 
   const parsed = dinoRequestSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Soru seçimini kontrol edin." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Lütfen soru seçimini bir kez daha kontrol eder misiniz?" }, { status: 400 });
 
   if (parsed.data.audience !== auth.session.role) {
     return NextResponse.json({ error: "Bu soru bu rol için tanımlı değil." }, { status: 403 });
@@ -107,7 +107,7 @@ export async function POST(request: Request) {
         select: { student: { select: { id: true, user: { select: { fullName: true } } } } },
       });
       if (!enrollment) {
-        return NextResponse.json({ error: "Yetkili olduğunuz öğrenci bulunamadı." }, { status: 404 });
+        return NextResponse.json({ error: "Yetkili olduğunuz öğrenci şu an görünmüyor." }, { status: 404 });
       }
       studentProfileId = enrollment.student.id;
       knownNames = enrollment.student.user.fullName ? [enrollment.student.user.fullName] : [];
@@ -128,7 +128,7 @@ export async function POST(request: Request) {
   }
 
   if (needsStudent && !studentProfileId) {
-    return NextResponse.json({ error: "Öğrenci kaydı bulunamadı." }, { status: 404 });
+    return NextResponse.json({ error: "Öğrenci kaydı bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
   }
 
   // ÜRÜN KAPSAMI KAPISI: yalnız KPSS bağlamındaki bir kullanıcı, K-12'ye özgü

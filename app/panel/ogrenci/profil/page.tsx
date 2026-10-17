@@ -105,7 +105,7 @@ export default async function StudentProfilePage() {
                   ? profile.parents
                       .map((p) => p.parent.fullName || p.parent.email)
                       .join(", ")
-                  : "Bağlı veli yok"
+                  : "Henüz bağlı bir velin yok"
               }
             />
           </dl>
@@ -115,8 +115,8 @@ export default async function StudentProfilePage() {
           <PanelCardTitle>Paketin</PanelCardTitle>
           {active.length === 0 ? (
             <p className="mt-3 text-[14px] leading-[1.6] text-dc-ink-muted">
-              Şu anda aktif bir ürün paketin görünmüyor. Paket bilgin
-              güncellenmediyse eğitim koordinatörünle görüşebilirsin.
+              Şu an aktif bir ürün paketin görünmüyor. Bir eksiklik olduğunu
+              düşünüyorsan eğitim koordinatörün sana memnuniyetle yardımcı olur 🤝
             </p>
           ) : (
             <ul className="mt-3 flex flex-col gap-2.5">
@@ -137,7 +137,7 @@ export default async function StudentProfilePage() {
             </ul>
           )}
           <p className="mt-3.5 text-[13px] text-dc-ink-faint">
-            Paket değişikliği için eğitim koordinatörünle görüşebilirsin.
+            Paket değişikliği için eğitim koordinatörünle dilediğin zaman görüşebilirsin.
           </p>
         </PanelCard>
 

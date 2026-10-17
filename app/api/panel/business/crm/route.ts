@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     return response;
   }
   if (/^Bearer\s+/i.test(request.headers.get("authorization") ?? "") && (!idempotencyKey || (CRM_REVISIONED.has(command.type) && !expectedRevision))) {
-    return businessJson({ error: "Güvenli işlem bilgisi eksik. Görünümü yenileyin.", code: "PRECONDITION_REQUIRED" }, { status: 400 });
+    return businessJson({ error: "Güvenli işlem bilgisi eksik görünüyor. Sayfayı yenileyip tekrar dener misiniz?", code: "PRECONDITION_REQUIRED" }, { status: 400 });
   }
   try {
     return businessJson(await runCrmCommand(auth.access, command, { idempotencyKey, expectedRevision }));

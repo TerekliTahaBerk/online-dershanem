@@ -24,10 +24,10 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   const guard = await guardMutation({ action: "panel.users.products.update", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:user-products:${auth.session.userId}`, rateLimit: { max: 60, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "En az bir geçerli ürün seçin." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Lütfen en az bir geçerli ürün seçin." }, { status: 400 });
   const { id } = await context.params;
   const user = await prisma.user.findUnique({ where: { id }, select: { id: true, role: true } });
-  if (!user) return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
+  if (!user) return NextResponse.json({ error: "Kullanıcıyı bulamadık." }, { status: 404 });
   if (user.role === "ADMIN" || user.role === "TEACHER") return NextResponse.json({ error: "Yönetici ve öğretmenler üç ürüne de erişir." }, { status: 400 });
 
   const plan = await applyAdminProductAccessChange({ userId: id, actorUserId: auth.session.userId, requested: parsed.data.products });

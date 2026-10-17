@@ -32,19 +32,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ us
 
   const { userId } = await params;
   const target = z.string().min(1).max(64).safeParse(userId);
-  if (!target.success) return NextResponse.json({ error: "Kayıt bulunamadı." }, { status: 404 });
+  if (!target.success) return NextResponse.json({ error: "Aradığınız kaydı bulamadık." }, { status: 404 });
 
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
+    return NextResponse.json({ error: "İstek geçerli görünmüyor. Lütfen bilgileri kontrol edip tekrar deneyin." }, { status: 400 });
   }
   const parsed = bodySchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz durum." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Durum geçerli görünmüyor." }, { status: 400 });
 
   const user = await prisma.user.findUnique({ where: { id: target.data }, select: { id: true, role: true } });
-  if (!user || (user.role !== "STUDENT" && user.role !== "PARENT")) return NextResponse.json({ error: "Kayıt bulunamadı." }, { status: 404 });
+  if (!user || (user.role !== "STUDENT" && user.role !== "PARENT")) return NextResponse.json({ error: "Aradığınız kaydı bulamadık." }, { status: 404 });
 
   const now = new Date();
   const data = {

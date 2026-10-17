@@ -16,10 +16,10 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const guard = await guardMutation({ action: "panel.assignments.update", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:assignments:update:${auth.session.userId}`, rateLimit: { max: 100, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Ödev bilgilerini kontrol edin." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Lütfen ödev bilgilerini bir kez daha kontrol eder misiniz?" }, { status: 400 });
   const { id } = await context.params;
   const assignment = await prisma.assignment.findFirst({ where: { id, ...(auth.session.role === "TEACHER" ? { group: { teacherId: auth.session.userId } } : {}) }, select: { id: true } });
-  if (!assignment) return NextResponse.json({ error: "Ödev bulunamadı." }, { status: 404 });
+  if (!assignment) return NextResponse.json({ error: "Ödev bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
   const outcomeIds = parsed.data.outcomeIds === undefined ? undefined : [...new Set(parsed.data.outcomeIds)];
   if (getPanelFeatureFlags().learningOutcomes && outcomeIds !== undefined) {
     if (!outcomeIds.length && !parsed.data.outcomeSkipReason) return NextResponse.json({ error: "Kazanım seçin veya erteleme nedenini belirtin." }, { status: 400 });

@@ -41,7 +41,7 @@ export function StudentParentLinkForm({
         });
         const result = await response.json().catch(() => ({}));
         if (!response.ok) {
-          setError(result.error || "Veli bağlantısı kurulamadı.");
+          setError(result.error || "Veli bağlantısı şu an kurulamadı. Lütfen tekrar dener misiniz?");
           setBusy(false);
           return;
         }

@@ -31,7 +31,7 @@ export default function WorkspaceSelectScreen() {
     try {
       await selectWorkspace(code);
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : 'Çalışma alanı seçilemedi.');
+      setError(cause instanceof ApiError ? cause.message : 'Çalışma alanını şu an seçemedik 😕 Lütfen tekrar dener misin?');
     } finally {
       choosing.current = false;
       setPending(null);
@@ -55,13 +55,13 @@ export default function WorkspaceSelectScreen() {
 
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']} footer={<Button label="Çıkış yap" variant="quiet" onPress={() => void signOut()} disabled={pending !== null} />}>
-      <View style={styles.identity}><ProductLogo size={32} /><Text variant="bodyStrong" style={{ flex: 1 }}>{bootstrap?.user.fullName ?? 'Hoş geldin'}</Text></View>
-      <PageHeader title="Hangi panele girmek istiyorsun?" description="Bugünkü yolculuğunu seç. Hizmetler arasında istediğin zaman geçiş yapabilirsin." />
+      <View style={styles.identity}><ProductLogo size={32} /><Text variant="bodyStrong" style={{ flex: 1 }}>{bootstrap?.user.fullName ?? 'Hoş geldin 👋'}</Text></View>
+      <PageHeader title="Hangi panele girmek istiyorsun?" description="Bugünkü yolculuğunu seç ✨ Hizmetler arasında dilediğin zaman geçiş yapabilirsin." />
       {error ? <Banner tone="critical">{error}</Banner> : null}
       {hasActive || isStaff ? null : (
         <EmptyState
-          title="Aktif çalışma alanın yok"
-          body={products.some((product) => product.state === 'PREPARING') ? 'Öğrenci hesabı açıldığında çalışma alanın burada aktif olacak.' : 'Hesabında aktif bir ürün bulunmuyor. Sorun olduğunu düşünüyorsan ekibimizle iletişime geç.'}
+          title="Henüz aktif bir çalışma alanın yok"
+          body={products.some((product) => product.state === 'PREPARING') ? 'Öğrenci hesabı açılır açılmaz çalışma alanın burada aktif olacak ⏳' : 'Hesabında henüz aktif bir ürün görünmüyor. Bir sorun olduğunu düşünüyorsan ekibimiz sana yardımcı olmaktan mutluluk duyar 🤝'}
         />
       )}
       <View style={styles.services}>

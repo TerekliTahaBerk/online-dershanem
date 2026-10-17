@@ -37,7 +37,7 @@ export default function OdkExamsScreen() {
   const counts = query.data?.counts;
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="odk-exams">
-      <PageHeader title="Denemelerim" description="Devam eden denemen, başlayabileceğin ve yaklaşan denemeler, açıklanan sonuçların." />
+      <PageHeader title="Denemelerim" description="Devam eden, başlayabileceğin ve yaklaşan denemelerin ile açıklanan sonuçların burada 📝" />
       <SegmentedTabs label="Deneme görünümü" value={view} onChange={setView} options={VIEWS.map((item) => ({ ...item, count: counts?.[item.value] }))} />
       <QueryView query={query}>
         {(data) => (
@@ -46,7 +46,7 @@ export default function OdkExamsScreen() {
               <View style={styles.active} accessibilityRole="summary" testID="odk-active">
                 <Text variant="bodyStrong">{`${data.active.title} devam ediyor`}</Text>
                 <Text tone="secondary" variant="secondary">
-                  {`${data.active.deadlineAt ? `Bitiş ${formatShortDateTime(data.active.deadlineAt)}. ` : ''}Süre sunucuda işliyor; denemeye web sınav ekranından devam edilir.`}
+                  {`${data.active.deadlineAt ? `Bitiş ${formatShortDateTime(data.active.deadlineAt)}. ` : ''}Süren işliyor; denemene web sınav ekranından devam edebilirsin 💻`}
                 </Text>
                 {examHref(data.active.id) ? <Button label="Ayrıntı ve devam" variant="secondary" onPress={() => router.push(examHref(data.active!.id) as Href)} /> : null}
               </View>
@@ -55,8 +55,8 @@ export default function OdkExamsScreen() {
               data.exams.map((exam) => <OdkExamRow key={exam.id} exam={exam} />)
             ) : (
               <EmptyState
-                title={data.counts.tumu ? 'Bu görünümde deneme yok.' : 'Henüz yayınlanmış bir denemen yok.'}
-                body={data.counts.tumu ? undefined : 'Yeni deneme açıldığında burada görünecek.'}
+                title={data.counts.tumu ? 'Bu görünümde şimdilik bir deneme yok.' : 'Henüz yayınlanmış bir denemen yok 📝'}
+                body={data.counts.tumu ? undefined : 'Yeni bir deneme açıldığında burada görünecek. Şimdiden başarılar! 🍀'}
               />
             )}
             {data.truncated ? <OlderExams key={`${view}:${data.generatedAt}`} first={data} view={view} /> : null}
@@ -94,7 +94,7 @@ function OlderExams({ first, view }: { first: MobileOdkExamList; view: OdkListVi
       {last.nextCursor ? (
         <Button label="Daha eski denemeleri yükle" variant="secondary" loading={loading} disabled={loading} onPress={() => void loadMore()} testID="odk-exams-older" />
       ) : last.truncated ? (
-        <Banner tone="info">{`Yalnız en yeni ${first.limit} deneme gösteriliyor. Daha eski denemeler için web panelini kullanabilirsin.`}</Banner>
+        <Banner tone="info">{`Şimdilik en yeni ${first.limit} deneme gösteriliyor. Daha eski denemelerin için web panelini kullanabilirsin.`}</Banner>
       ) : null}
     </>
   );

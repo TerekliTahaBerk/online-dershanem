@@ -115,10 +115,10 @@ export default async function ProductSelectorPage() {
           <h1 className="mt-10 text-[26px] font-extrabold tracking-[-0.02em] text-dc-ink sm:text-[30px]">Hangi panele girmek istiyorsun?</h1>
           <p className="mt-2 max-w-2xl text-[14.5px] leading-[1.6] text-dc-ink-muted">
             {anyActive
-              ? "Panelini seç; istediğin zaman menüdeki “Panel değiştir” ile diğerine geçebilirsin."
+              ? "Bugünkü yolculuğunu seç ✨ Dilediğin zaman menüdeki “Panel değiştir” ile diğerine geçebilirsin."
               : isFamily
-                ? "Henüz aktif bir paketin yok. Paket satın aldığında ilgili panel otomatik açılır; öğretmen ataması için seninle iletişime geçeriz."
-                : "Hesabınız için açık bir ürün paneli yok."}
+                ? "Henüz aktif bir paketin yok. Paketini aldığında ilgili panel otomatik açılır; öğretmen ataması için de seninle hemen iletişime geçeriz 🤝"
+                : "Hesabınız için henüz açık bir ürün paneli bulunmuyor."}
           </p>
 
           <div className="mt-6">

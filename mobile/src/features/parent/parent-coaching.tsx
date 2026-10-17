@@ -36,18 +36,18 @@ export default function ParentCoachingScreen() {
 }
 
 function CoachingBody({ data }: { data: MobileParentCoaching }) {
-  if (!data.available) return <EmptyState title="Bu öğrencide Yön Koçluk bulunmuyor" body="Koçluk eklendiğinde haftalık plan, tamamlanma oranı ve koç özeti burada görünür." />;
+  if (!data.available) return <EmptyState title="Bu öğrenci için Yön Koçluk henüz açık değil" body="Koçluk eklendiğinde haftalık plan, tamamlanma oranı ve koç özeti burada görünecek." />;
   return (
     <>
       {data.coach ? (
         <Section title="Koç" first>
           <Row title="Koçu" meta={data.coach.name} />
-          <Row title="Sonraki görüşme" meta={data.coach.awaitingNewTime ? 'Yeni saat bekleniyor' : data.coach.nextScheduledAt ? formatShortDateTime(data.coach.nextScheduledAt) : 'Planlanmadı'} />
+          <Row title="Sonraki görüşme" meta={data.coach.awaitingNewTime ? 'Yeni saat bekleniyor' : data.coach.nextScheduledAt ? formatShortDateTime(data.coach.nextScheduledAt) : 'Henüz planlanmadı'} />
           {data.coach.focus ? <Row title="Haftanın odağı" subtitle={data.coach.focus} /> : null}
           {data.coach.sharedNote ? <View style={parentStyles.card}><Text tone="secondary">{data.coach.sharedNote}</Text></View> : null}
         </Section>
       ) : (
-        <Section title="Koç" first><Text tone="secondary">Koç ataması tamamlandığında burada görünür.</Text></Section>
+        <Section title="Koç" first><Text tone="secondary">Koç ataması tamamlandığında koç bilgileri burada görünecek 🤝</Text></Section>
       )}
 
       {data.sessions.length ? (
@@ -60,11 +60,11 @@ function CoachingBody({ data }: { data: MobileParentCoaching }) {
         {data.week ? (
           <>
             <Text tone="muted" variant="meta">{`${formatDayMonth(data.week.start)} – ${formatDayMonth(data.week.end)}`}</Text>
-            <Text variant="bodyStrong">{data.week.planCompletionPct === null ? 'Plan tamamlanma bilgisi henüz yok.' : `Planın %${data.week.planCompletionPct}'i tamamlandı.`}</Text>
+            <Text variant="bodyStrong">{data.week.planCompletionPct === null ? 'Plan tamamlanma bilgisi henüz oluşmadı.' : `Bu haftanın planının %${data.week.planCompletionPct}'i tamamlandı 🌱`}</Text>
             {data.week.lines.map((line, index) => <Text key={`${index}-${line}`} tone="secondary">{line}</Text>)}
           </>
         ) : (
-          <EmptyState title="Bu hafta için plan yayınlanmadı" body="Koç haftalık planı yayınladığında tamamlanma özeti burada görünür." />
+          <EmptyState title="Bu haftanın planı henüz yayınlanmadı" body="Koç haftalık planı yayınladığında tamamlanma özeti burada görünecek 🗓️" />
         )}
       </Section>
 
@@ -85,7 +85,7 @@ function CoachingBody({ data }: { data: MobileParentCoaching }) {
 
       {data.goals.length ? (
         <Section title="Hedefler">
-          {data.goals.map((goal) => <Row key={goal.id} title={goal.label} meta={goal.percent === null ? 'ölçüm yok' : `%${Math.round(goal.percent)} ilerleme`} />)}
+          {data.goals.map((goal) => <Row key={goal.id} title={goal.label} meta={goal.percent === null ? 'henüz ölçüm yok' : `%${Math.round(goal.percent)} ilerleme`} />)}
         </Section>
       ) : null}
 
@@ -126,12 +126,12 @@ function SessionRow({ session, studentId }: { session: Session; studentId: strin
     try {
       await mutation.mutateAsync({ reason, version: session.version });
       setOpen(false);
-      setFeedback({ tone: 'success', message: 'Saat değişikliği talebiniz koça iletildi.' });
+      setFeedback({ tone: 'success', message: 'Saat değişikliği talebiniz koça iletildi 📨 En kısa sürede dönüş yapılacaktır.' });
       await refresh();
     } catch (error) {
       const conflict = error instanceof ApiError && error.kind === 'conflict';
       if (conflict) await refresh();
-      setFeedback({ tone: conflict ? 'warning' : 'critical', message: error instanceof ApiError ? error.message : 'Talep iletilemedi. Tekrar deneyin.' });
+      setFeedback({ tone: conflict ? 'warning' : 'critical', message: error instanceof ApiError ? error.message : 'Talebinizi şu an iletemedik. Lütfen birazdan tekrar dener misiniz?' });
     }
   }
   const past = Date.parse(session.scheduledAt) < Date.now();
@@ -140,7 +140,7 @@ function SessionRow({ session, studentId }: { session: Session; studentId: strin
     <View style={styles.session} testID={`parent-session-${session.id}`}>
       <Row
         title={formatShortDateTime(session.scheduledAt)}
-        subtitle={session.proposedAt ? `Önerilen yeni saat: ${formatShortDateTime(session.proposedAt)}` : session.rescheduleRequested ? 'Saat değişikliği talebi alındı' : null}
+        subtitle={session.proposedAt ? `Önerilen yeni saat: ${formatShortDateTime(session.proposedAt)}` : session.rescheduleRequested ? 'Saat değişikliği talebiniz alındı' : null}
       />
       {feedback ? <Banner tone={feedback.tone}>{feedback.message}</Banner> : null}
       <View style={styles.actions}>

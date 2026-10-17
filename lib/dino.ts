@@ -323,8 +323,8 @@ export function dinoFallbackAnswer(source: SafeDinoSource): DinoAnswerContent {
   const listed = rows.map((r) => `${r.label}: ${r.text}`).join(" · ");
   return {
     text: listed
-      ? `Dino açıklamayı şu anda hazırlayamadı. Dayanakları yine de görebilirsin: ${listed}`
-      : "Bu konuda açıklama yapmak için yeterli dayanak yok.",
+      ? `Dino açıklamayı şu an hazırlayamadı 🦕 Dayanaklarına yine de göz atabilirsin: ${listed}`
+      : "Bu konuda açıklama yapabilmek için henüz yeterli veri yok.",
     citations: rows.length ? rows.map((r) => r.id) : ["NO_DATA"],
   };
 }

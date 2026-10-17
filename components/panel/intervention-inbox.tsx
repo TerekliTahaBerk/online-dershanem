@@ -87,7 +87,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
     });
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setMessage(body.error || "Sinyaller yenilenemedi.");
+      setMessage(body.error || "Sinyaller şu an yenilenemedi. Lütfen tekrar dener misiniz?");
       setBusy(null);
       return;
     }
@@ -111,7 +111,7 @@ export function InterventionInbox({ rows }: { rows: Row[] }) {
     });
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setMessage(body.error || "İşlem kaydedilemedi.");
+      setMessage(body.error || "İşlem şu an kaydedilemedi. Lütfen tekrar dener misiniz?");
       setBusy(null);
       return;
     }

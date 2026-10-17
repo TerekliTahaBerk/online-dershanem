@@ -26,7 +26,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const parsedAction = groupActionSchema.safeParse(payload);
   const parsedLegacy = parsedAction.success ? null : legacyGroupSchema.safeParse(payload);
   if (!parsedAction.success && !parsedLegacy?.success) {
-    return NextResponse.json({ error: "Grup bilgilerini kontrol edin." }, { status: 400 });
+    return NextResponse.json({ error: "Lütfen grup bilgilerini bir kez daha kontrol eder misiniz?" }, { status: 400 });
   }
   const legacyData = parsedLegacy && parsedLegacy.success ? parsedLegacy.data : null;
   const action = parsedAction.success

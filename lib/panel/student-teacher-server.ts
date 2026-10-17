@@ -78,8 +78,8 @@ export async function linkStudentTeacher(input: {
       select: { id: true },
     }),
   ]);
-  if (!student) throw new StudentTeacherLinkError("STUDENT_INACTIVE", "Öğrenci bulunamadı.");
-  if (!teacher) throw new StudentTeacherLinkError("TEACHER_INACTIVE", "Aktif öğretmen bulunamadı.");
+  if (!student) throw new StudentTeacherLinkError("STUDENT_INACTIVE", "Öğrenciyi bulamadık.");
+  if (!teacher) throw new StudentTeacherLinkError("TEACHER_INACTIVE", "Aktif öğretmen şu an görünmüyor.");
 
   const existing = await prisma.studentTeacherAssignment.findUnique({
     where: {
@@ -139,7 +139,7 @@ export async function unlinkStudentTeacher(input: {
     where: { id: input.linkId },
   });
   if (!link || !link.active) {
-    throw new StudentTeacherLinkError("NOT_FOUND", "Bağlantı bulunamadı.");
+    throw new StudentTeacherLinkError("NOT_FOUND", "Bağlantı bulunamadı; kaldırılmış ya da değişmiş olabilir.");
   }
 
   const updated = await prisma.studentTeacherAssignment.update({

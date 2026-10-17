@@ -19,12 +19,12 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const actor = await requireApiAccountRole("ADMIN", "TEACHER");
   if (!actor.ok) return actor.response;
   const auth = actor.session.role === "ADMIN" ? actor : await requireStaffApi("OD", "od:lesson:teach"); if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().assignmentEvidence) return NextResponse.json({ error: "Kanıtlı teslim henüz açık değil." }, { status: 404 });
+  if (!getPanelFeatureFlags().assignmentEvidence) return NextResponse.json({ error: "Kanıtlı teslim şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.assignment-evidence.review", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:assignment-review:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } }); if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
-  const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Rubric ve geri bildirim alanlarını kontrol edin." }, { status: 400 }); const { id } = await context.params;
+  const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Lütfen rubric ve geri bildirim alanlarını bir kez daha kontrol eder misiniz?" }, { status: 400 }); const { id } = await context.params;
   const submission = await prisma.assignmentSubmission.findFirst({ where: { id, status: "SUBMITTED", assignment: { isActive: true, group: { ...(auth.session.role === "ADMIN" ? {} : { teacherId: auth.session.userId }), isActive: true } } }, include: { assignment: { include: { rubricCriteria: { orderBy: { position: "asc" } } } }, student: { include: { user: { select: { id: true } } } } } });
-  if (!submission) return NextResponse.json({ error: "Değerlendirilecek teslim bulunamadı." }, { status: 404 });
-  const enrollment = await prisma.enrollment.findFirst({ where: { groupId: submission.assignment.groupId, studentId: submission.studentId, endedAt: null }, select: { id: true } }); if (!enrollment) return NextResponse.json({ error: "Değerlendirilecek teslim bulunamadı." }, { status: 404 });
+  if (!submission) return NextResponse.json({ error: "Değerlendirilecek teslim şu an görünmüyor." }, { status: 404 });
+  const enrollment = await prisma.enrollment.findFirst({ where: { groupId: submission.assignment.groupId, studentId: submission.studentId, endedAt: null }, select: { id: true } }); if (!enrollment) return NextResponse.json({ error: "Değerlendirilecek teslim şu an görünmüyor." }, { status: 404 });
   const expectedIds = submission.assignment.rubricCriteria.map((item) => item.id).sort(); const scoreIds = [...new Set(parsed.data.scores.map((item) => item.criterionId))].sort();
   if (expectedIds.length !== scoreIds.length || expectedIds.some((value, index) => value !== scoreIds[index])) return NextResponse.json({ error: "Her rubric ölçütü tam bir kez değerlendirilmelidir." }, { status: 400 });
   const status = parsed.data.decision === "APPROVE" ? "APPROVED" : "CHANGES_REQUESTED"; const now = new Date();

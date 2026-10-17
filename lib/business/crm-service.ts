@@ -35,10 +35,10 @@ const CrmError = BusinessCommandError;
 
 export type CrmResult = { entityId: string; lead?: { id: string; stage: string; lostReasonCode: string | null; lostReason: string | null; wonAt: string | null; lostAt: string | null } };
 
-const NOT_FOUND = { conversation: "Konuşma bulunamadı.", lead: "Aday bulunamadı.", task: "Görev bulunamadı.", order: "Sipariş bulunamadı." } as const;
+const NOT_FOUND = { conversation: "Konuşma bulunamadı; kaldırılmış ya da değişmiş olabilir.", lead: "Aday bulunamadı; kaldırılmış ya da değişmiş olabilir.", task: "Görev bulunamadı; kaldırılmış ya da değişmiş olabilir.", order: "Siparişi bulamadık." } as const;
 const STAGE_ERRORS: Record<string, string> = {
   LOST_REASON_REQUIRED: "Kaybedildi aşaması için kayıp nedeni seçilmelidir.",
-  INVALID_STAGE: "Geçersiz aşama.",
+  INVALID_STAGE: "Aşama geçerli görünmüyor.",
   SAME_STAGE: "Aday zaten bu aşamada.",
 };
 
@@ -49,7 +49,7 @@ export const crmRevision = (row: { updatedAt: Date }) => row.updatedAt.toISOStri
 
 function checkRevision(command: CrmCommand, row: { updatedAt: Date }, expected: string | undefined) {
   if (expected !== undefined && CRM_REVISIONED.has(command.type) && crmRevision(row) !== expected) {
-    throw new CrmError(409, "CRM_CONFLICT", "Kayıt başka bir yerde güncellendi. Görünümü yenileyin.");
+    throw new CrmError(409, "CRM_CONFLICT", "Kayıt başka bir yerde güncellendi. Sayfayı yenileyip tekrar deneyebilirsiniz.");
   }
 }
 

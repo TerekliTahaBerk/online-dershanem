@@ -19,7 +19,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   if (!params.success) return invalidApiInput();
   const { id } = params.data;
   const session = await loadCoachSessionDetail(auth.session.userId, id);
-  if (!session) return staffNotFound("Görüşme bulunamadı.");
+  if (!session) return staffNotFound("Görüşmeyi bulamadık.");
   return staffJson({
     contractVersion: MOBILE_STAFF_CONTRACT_VERSION,
     id: session.id,

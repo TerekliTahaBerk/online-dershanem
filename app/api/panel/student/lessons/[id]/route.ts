@@ -16,6 +16,6 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   const params = idParamsSchema.safeParse(await context.params);
   if (!params.success) return invalidApiInput();
   const detail = await loadStudentLessonDetail({ studentUserId: auth.session.userId, lessonId: params.data.id });
-  if (!detail) return NextResponse.json({ error: "Ders bulunamadı." }, { status: 404 });
+  if (!detail) return NextResponse.json({ error: "Dersi bulamadık." }, { status: 404 });
   return NextResponse.json(toMobileLessonDetail(detail), { headers: { "Cache-Control": "private, no-store" } });
 }

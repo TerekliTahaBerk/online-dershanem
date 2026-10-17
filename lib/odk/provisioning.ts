@@ -67,7 +67,7 @@ export async function provisionOdkOrder(
   });
   if (claim.count === 0) {
     const order = await prisma.odkOrder.findUnique({ where: { id: orderId }, select: { status: true, provisioningStatus: true, studentUserId: true } });
-    if (!order) throw new OdkProvisioningError("Sipariş bulunamadı.", "ORDER_NOT_FOUND");
+    if (!order) throw new OdkProvisioningError("Siparişi bulamadık.", "ORDER_NOT_FOUND");
     if (order.status !== "PAID") throw new OdkProvisioningError("Yalnız ödenmiş sipariş provision edilebilir.", "ORDER_NOT_PAID");
     if (order.provisioningStatus === "SUCCEEDED") return { userId: order.studentUserId!, alreadyProvisioned: true };
     return waitForConcurrentProvisioning(orderId);
@@ -131,7 +131,7 @@ export async function provisionOdkOrder(
     let user = studentUserId
       ? await prisma.user.findUnique({ where: { id: studentUserId }, select: { id: true, role: true } })
       : await prisma.user.findUnique({ where: { email }, select: { id: true, role: true } });
-    if (studentUserId && !user) throw new OdkProvisioningError("Seçilen öğrenci hesabı bulunamadı.", "FORCED_STUDENT_MISSING");
+    if (studentUserId && !user) throw new OdkProvisioningError("Seçilen öğrenci hesabı bulunamadı; kaldırılmış ya da değişmiş olabilir.", "FORCED_STUDENT_MISSING");
     if (user && user.role !== "STUDENT") {
       throw new OdkProvisioningError("Bu e-posta öğrenci olmayan bir hesaba bağlı.", "IDENTITY_ROLE_CONFLICT");
     }

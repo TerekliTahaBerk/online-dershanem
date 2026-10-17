@@ -12,7 +12,7 @@ import { loadStudentReviewQueue } from "@/lib/panel/student-review-recovery-serv
 export async function GET() {
   const auth = await requireApiOdRole("STUDENT");
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().reviewQueue) return NextResponse.json({ error: "Tekrar kuyruğu henüz açık değil.", code: "FEATURE_DISABLED" }, { status: 404 });
+  if (!getPanelFeatureFlags().reviewQueue) return NextResponse.json({ error: "Tekrar kuyruğu şu an kullanıma kapalı, çok yakında açılacak.", code: "FEATURE_DISABLED" }, { status: 404 });
   const queue = await loadStudentReviewQueue({ studentUserId: auth.session.userId });
   return NextResponse.json(toMobileReviewQueue(queue), { headers: { "Cache-Control": "private, no-store" } });
 }

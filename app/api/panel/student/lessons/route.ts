@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const query = querySchema.safeParse(Object.fromEntries(url.searchParams));
-  if (!query.success) return NextResponse.json({ error: "Geçersiz ders filtresi." }, { status: 400 });
+  if (!query.success) return NextResponse.json({ error: "Ders filtresi geçerli görünmüyor." }, { status: 400 });
   const filter = query.data.durum;
 
   const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId } });

@@ -20,7 +20,7 @@ test('reduced motion keeps confirmation and announcement without confetti or hap
   const timing = jest.spyOn(Animated, 'timing');
   const screen = render(<CelebrationProvider><Actions /></CelebrationProvider>);
   fireEvent.press(screen.getByText('Complete'));
-  expect(screen.getByText('Bir adım daha ileri!')).toBeTruthy();
+  expect(screen.getByText('Bir adım daha ileri! 🎉')).toBeTruthy();
   expect(screen.queryByTestId('celebration-confetti')).toBeNull();
   expect(Haptics.notificationAsync).not.toHaveBeenCalled();
   expect(timing).not.toHaveBeenCalled();
@@ -36,8 +36,8 @@ test('one completed task celebrates once per workspace session, even after dismi
   fireEvent.press(screen.getByText('Complete'));
   expect(screen.queryByTestId('celebration')).toBeNull();
   fireEvent.press(screen.getByText('Submit'));
-  expect(screen.getByText('Emeğin yola çıktı!')).toBeTruthy();
-  expect(screen.queryByText('Bir adım daha ileri!')).toBeNull();
+  expect(screen.getByText('Emeğin yola çıktı! 🚀')).toBeTruthy();
+  expect(screen.queryByText('Bir adım daha ileri! 🎉')).toBeNull();
 });
 
 test('preview and non-student layouts never show celebrations', () => {

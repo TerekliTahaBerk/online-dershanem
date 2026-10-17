@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   if (!auth.ok) return auth.response;
   const url = new URL(request.url);
   const parsed = querySchema.safeParse({ range: url.searchParams.get("range") || undefined });
-  if (!parsed.success) return NextResponse.json({ error: "Rapor aralığı geçersiz." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Rapor aralığı geçerli görünmüyor." }, { status: 400 });
 
   const days = Number(parsed.data.range);
   const since = new Date(Date.now() - days * 86400000);

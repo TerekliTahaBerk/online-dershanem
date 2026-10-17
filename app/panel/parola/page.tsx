@@ -34,8 +34,8 @@ export default async function ChangePasswordPage() {
 
         <p className={PAGE_DESCRIPTION_CLASS}>
           {forced
-            ? "Devam etmeden önce yalnızca sizin bildiğiniz bir parola belirleyin."
-            : "Yeni parolanızı belirledikten sonra diğer cihazlardaki oturumlarınız kapanır."}
+            ? "Hoş geldiniz! 🎉 Devam etmeden önce yalnızca sizin bildiğiniz bir parola belirlemeniz yeterli."
+            : "Güvenliğiniz için yeni parolanızı belirledikten sonra diğer cihazlardaki oturumlarınız kapatılır 🔐"}
         </p>
 
         <div className="mt-8 rounded-[14px] border border-(--site-line) bg-white p-6">
@@ -44,7 +44,7 @@ export default async function ChangePasswordPage() {
 
         <p className="mt-5 text-[12.5px] leading-6 text-(--site-muted)">
           Parolanızı kaydettiğinizde bu hesaba açık olan diğer oturumlar
-          güvenlik için kapatılır.
+          güvenliğiniz için kapatılır 🔐
         </p>
       </div>
     </PanelShell>

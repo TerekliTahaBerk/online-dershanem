@@ -40,7 +40,7 @@ export function NetworkPreferencesForm({ initial }: { initial: Preference }) {
     const body = await response.json().catch(() => ({}));
     setBusy(false);
     if (!response.ok)
-      return setMessage(body.error || "Tercihler kaydedilemedi.");
+      return setMessage(body.error || "Tercihlerinizi şu an kaydedemedik. Lütfen tekrar dener misiniz?");
     document.documentElement.dataset.panelLowData = preference.lowDataMode
       ? "true"
       : "false";
@@ -50,7 +50,7 @@ export function NetworkPreferencesForm({ initial }: { initial: Preference }) {
     );
     if (!preference.offlineWritesEnabled) await offline.clearDeviceQueue();
     setPreference((current) => ({ ...current, version: body.version }));
-    setMessage("Veri kullanımı tercihleri kaydedildi.");
+    setMessage("Veri kullanımı tercihleriniz kaydedildi ✅");
     router.refresh();
   }
 
@@ -102,7 +102,7 @@ export function NetworkPreferencesForm({ initial }: { initial: Preference }) {
               </span>
               <span className="mt-1 block text-xs leading-5 text-(--site-body)">
                 Ders kapanışı ve ödev durumu en fazla 24 saat bu tarayıcıda
-                bekler. Yalnız kişisel cihazda açın.
+                güvenle bekler. Yalnızca kişisel cihazınızda açmanızı öneririz.
               </span>
             </span>
             <span className="ml-auto text-xs font-bold">
@@ -133,7 +133,7 @@ export function NetworkPreferencesForm({ initial }: { initial: Preference }) {
         <p className="mt-2 text-sm leading-6 text-(--site-body)">
           {offline.online
             ? "Bağlantı var."
-            : "Bağlantı yok; izin verilen işlemler cihazda bekleyebilir."}{" "}
+            : "Şu an çevrimdışısınız 📡 İzin verilen işlemler cihazınızda güvenle bekleyebilir."}{" "}
           İçerik burada gösterilmez.
         </p>
         <dl className="mt-5 grid grid-cols-2 gap-3">

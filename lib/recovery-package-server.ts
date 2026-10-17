@@ -70,7 +70,7 @@ export async function publishRecoveryPackage(input: {
     if (input.expectedVersion !== undefined && (!item.publishedAt || item.version !== input.expectedVersion + 1)) return { kind: "CONFLICT" };
     return { kind: "REPLAYED", itemCount: item.items.length, publishDelayMs };
   }
-  const rawRows = [{ userId: item.student.user.id, type: "ABSENCE" as const, title: "Kaçırdığın ders için küçük telafi hazır", body: "Özet, kaynak ve mini kontrol tek sırada hazır.", href: "/panel/ogrenci/telafi" }];
+  const rawRows = [{ userId: item.student.user.id, type: "ABSENCE" as const, title: "Kaçırdığın ders için telafi paketin hazır 🧩", body: "Özet, kaynak ve mini kontrol tek bir sırada seni bekliyor. Hiç dert etme, birlikte yetişeceğiz! 💪", href: "/panel/ogrenci/telafi" }];
   const rows = await filterNotificationRows(rawRows, "absence", prisma);
   const changed = await prisma.$transaction(async (tx) => {
     const where = input.expectedVersion === undefined

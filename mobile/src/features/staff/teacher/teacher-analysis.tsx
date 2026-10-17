@@ -21,9 +21,9 @@ function AnalysisBody({ data }: { data: TeacherAnalysis }) {
   return <>
     <PageHeader title="Grup gidişatı" description={data.periodLabel} />
     {data.narrative.map((sentence, index) => <Text key={index} tone="secondary">{sentence}</Text>)}
-    {!data.studentCount ? <EmptyState title="Kapsamda öğrenci yok" body="Aktif gruplarınıza öğrenci kaydı olduğunda gidişat özeti burada açılır." /> : <>
+    {!data.studentCount ? <EmptyState title="Henüz kapsamda bir öğrenci yok" body="Aktif gruplarınıza öğrenci kaydı yapıldığında gidişat özeti burada açılacak." /> : <>
       <Section title="Grup ortalamaları"><Row title="Ortalama katılım" subtitle={percent(data.averages.attendancePercent)} /><Row title="Ortalama çalışma" subtitle={percent(data.averages.assignmentPercent)} /><Row title="Ortalama plan" subtitle={percent(data.averages.planPercent)} /><Row title="Medyan net değişim" subtitle={delta(data.averages.medianNetDelta)} /></Section>
-      <Section title="Düşen gidişat">{data.rows.some((row) => row.declining) ? data.rows.filter((row) => row.declining).map(studentRow) : <Text tone="secondary">Şu an düşen gidişat listesinde öğrenci yok.</Text>}</Section>
+      <Section title="Düşen gidişat">{data.rows.some((row) => row.declining) ? data.rows.filter((row) => row.declining).map(studentRow) : <Text tone="secondary">Şu an gidişatı düşen bir öğrenci görünmüyor 🌱</Text>}</Section>
       <Section title={`Tüm öğrenciler (${data.studentCount})`}>{data.rows.map(studentRow)}</Section>
     </>}
   </>;

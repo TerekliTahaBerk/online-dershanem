@@ -62,22 +62,22 @@ export function CalmDigestCard({
     );
     setMessage(
       response.ok
-        ? "Geri bildirimin kaydedildi."
-        : "Geri bildirim kaydedilemedi.",
+        ? viewerRole === "PARENT" ? "Geri bildiriminiz için teşekkür ederiz 💛" : "Geri bildirimin için teşekkürler 💛"
+        : viewerRole === "PARENT" ? "Geri bildiriminizi şu an kaydedemedik. Lütfen tekrar dener misiniz?" : "Geri bildirimini şu an kaydedemedik 😕 Lütfen tekrar dener misin?",
     );
   }
 
   const goodTitle =
-    viewerRole === "PARENT" ? "Neler iyi gidiyor?" : "İyi giden noktalar";
+    viewerRole === "PARENT" ? "Neler iyi gidiyor? 🌟" : "İyi giden noktaların 🌟";
   const supportTitle =
     viewerRole === "PARENT"
-      ? "Nerede destek gerekiyor?"
-      : "Destek gereken tek küçük alan";
+      ? "Nerede destek olabiliriz? 🤝"
+      : "Birlikte geliştirebileceğimiz küçük bir alan 🌱";
   const nextTitle =
     viewerRole === "PARENT"
       ? "Önümüzdeki hafta ne var?"
       : viewerRole === "STUDENT"
-        ? "Ailenle paylaşabileceğin soru"
+        ? "Ailenle konuşabileceğin bir soru 💬"
         : "Evde sorulabilecek bir soru";
 
   return (
@@ -88,8 +88,8 @@ export function CalmDigestCard({
         </p>
         <h2 className="mt-3 text-2xl font-semibold tracking-[-.04em]">
           {viewerRole === "PARENT"
-            ? "Öğretmenin yayınladığı haftalık özet"
-            : "İki iyi giden nokta, bir küçük destek."}
+            ? "Öğretmenin hazırladığı haftalık özet 🌟"
+            : "İki iyi giden nokta, bir küçük destek ✨"}
         </h2>
         <p className="mt-2 text-xs text-(--site-muted)">
           Veriler{" "}
@@ -98,7 +98,7 @@ export function CalmDigestCard({
             dateStyle: "medium",
             timeStyle: "short",
           }).format(new Date(digest.dataThrough))}{" "}
-          tarihine kadar güncel. Tek bir gün üzerinden kesin yargı kurulmaz.
+          tarihine kadar güncel. Tek bir güne bakarak kesin bir yargıya varmıyoruz.
         </p>
       </div>
       <div className="grid gap-4 p-5 sm:p-7 md:grid-cols-2">

@@ -36,7 +36,7 @@ export function TotpEnrollment({ onDone, replacing = false, variant = 'panel' }:
       setStep({ kind: 'secret', ...started });
       setCode('');
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : 'Kurulum başlatılamadı.');
+      setError(cause instanceof ApiError ? cause.message : 'Kurulumu şu an başlatamadık. Lütfen tekrar dener misin?');
     } finally {
       setBusy(false);
     }
@@ -52,9 +52,9 @@ export function TotpEnrollment({ onDone, replacing = false, variant = 'panel' }:
       // 410: bekleyen anahtarın süresi doldu (veya önceki deneme tamamlandı) → yeniden başlatılır.
       if (cause instanceof ApiError && cause.status === 410) {
         setStep({ kind: 'intro' });
-        setError('Kurulum süresi doldu veya kurulum zaten tamamlandı. Durumu kontrol edin ya da yeniden başlatın.');
+        setError('Kurulum süresi dolmuş ya da kurulum zaten tamamlanmış olabilir. Durumu kontrol edebilir ya da kurulumu yeniden başlatabilirsin.');
       } else {
-        setError(cause instanceof ApiError ? cause.message : 'Kod doğrulanamadı.');
+        setError(cause instanceof ApiError ? cause.message : 'Kodu doğrulayamadık. Lütfen kontrol edip tekrar dener misin?');
       }
     } finally {
       setBusy(false);
@@ -93,7 +93,7 @@ export function TotpEnrollment({ onDone, replacing = false, variant = 'panel' }:
           <Text variant="label" tone="muted">Kurulum anahtarı</Text>
           <Text selectable variant="bodyStrong" testID="totp-secret">{step.secret.replace(/(.{4})/g, '$1 ').trim()}</Text>
         </View>
-        {canOpen ? <Button label="Doğrulayıcı uygulamada aç" variant="secondary" onPress={() => void openAuthenticator(step.otpauthUri)} testID="totp-open" /> : <Text tone="muted" variant="meta">Doğrulayıcı uygulama açılamadı; anahtarı elle ekleyin.</Text>}
+        {canOpen ? <Button label="Doğrulayıcı uygulamada aç" variant="secondary" onPress={() => void openAuthenticator(step.otpauthUri)} testID="totp-open" /> : <Text tone="muted" variant="meta">Doğrulayıcı uygulamayı açamadık; anahtarı elle ekleyebilirsin.</Text>}
         <TextField
           variant={variant}
           label="Doğrulama kodu"
@@ -112,7 +112,7 @@ export function TotpEnrollment({ onDone, replacing = false, variant = 'panel' }:
 
   return (
     <View style={styles.block}>
-      <Banner tone="warning" title="Kurtarma kodlarını şimdi kaydet">Bu kodlar yalnız bir kez gösterilir. Telefonunu kaybedersen hesabına bu kodlarla girebilirsin; her kod bir kez kullanılır.</Banner>
+      <Banner tone="warning" title="Kurtarma kodlarını şimdi kaydet">Bu kodlar yalnızca bir kez gösterilir. Telefonunu kaybedersen hesabına bu kodlarla girebilirsin; her kod bir kez kullanılır. Güvenli bir yere not etmeyi unutma 🔐</Banner>
       <View style={styles.secret} testID="totp-recovery-codes">
         {step.codes.map((item) => <Text key={item} selectable variant="bodyStrong">{item}</Text>)}
       </View>

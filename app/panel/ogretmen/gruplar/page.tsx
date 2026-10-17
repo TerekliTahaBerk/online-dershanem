@@ -89,12 +89,12 @@ export default async function TeacherStudentsPage({
             className="mt-5"
             title={
               roster.totalCount === 0
-                ? "Sana atanmış aktif öğrenci yok."
-                : "Bu filtrede öğrenci yok."
+                ? "Sana atanmış aktif bir öğrenci henüz yok"
+                : "Bu filtrede öğrenci görünmüyor"
             }
             body={
               roster.totalCount === 0
-                ? "Gruplarına öğrenci eklendiğinde risk, plan ve ders özeti burada listelenir."
+                ? "Gruplarına öğrenci eklendiğinde risk, plan ve ders özetleri burada listelenecek."
                 : "Filtreyi temizleyip tüm öğrencileri görebilirsin."
             }
           />
@@ -124,7 +124,7 @@ export default async function TeacherStudentsPage({
                 </PanelTableCell>
                 <PanelTableCell>{row.planLabel ?? "—"}</PanelTableCell>
                 <PanelTableCell>{row.examDeltaLabel != null ? `${row.examDeltaLabel} net` : "—"}</PanelTableCell>
-                <PanelTableCell>{row.riskReason || "Aksiyon gerektiren sinyal yok"}</PanelTableCell>
+                <PanelTableCell>{row.riskReason || "Her şey yolunda görünüyor 🌱"}</PanelTableCell>
                 <PanelTableCell>
                   <span className="flex flex-wrap gap-1.5">
                     <Link href={`/panel/ogretmen/ogrenci/${row.studentId}`} className={buttonClass("secondary", "sm")}>

@@ -60,7 +60,7 @@ export default async function TeacherHelpPage() {
       <div className="max-w-[1040px]">
         <PanelPageHeader
           title="Yardım İsteyenler"
-          description="Öğrencinin açıkça paylaştığı yardım taleplerini gör, küçük destek adımını seç."
+          description="Öğrencilerinin paylaştığı yardım taleplerini gör ve küçük bir destek adımı seç 🤝"
         />
 
         <PanelCard className="mt-6">

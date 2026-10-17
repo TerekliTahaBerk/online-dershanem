@@ -12,7 +12,7 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 export async function GET() {
   const auth = await requireStaffApi("OD", "od:lesson:teach");
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().recoveryPackage) return staffFeatureDisabled("Telafi paketi henüz açık değil.");
+  if (!getPanelFeatureFlags().recoveryPackage) return staffFeatureDisabled("Telafi paketi şu an kullanıma kapalı, çok yakında açılacak.");
   return staffJson({ contractVersion: 1, rows: await loadTeacherRecovery(auth.session.userId) });
 }
 
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   const auth = await requireStaffApi("OD", "od:lesson:teach");
   if (!auth.ok) return auth.response;
   const flags = getPanelFeatureFlags();
-  if (!flags.recoveryPackage) return staffFeatureDisabled("Telafi paketi henüz açık değil.");
+  if (!flags.recoveryPackage) return staffFeatureDisabled("Telafi paketi şu an kullanıma kapalı, çok yakında açılacak.");
   const guard = await guardMutation({ action: "panel.teacher.recovery", requireSameOrigin: true, headers: request.headers, rateLimitKey: `teacher:recovery:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { headers: PRIVATE_NO_STORE, status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = command.safeParse(await request.json().catch(() => null));
@@ -30,24 +30,24 @@ export async function POST(request: Request) {
   if (!parsed.success || !control.success) return NextResponse.json({ error: "İşlem, anahtar veya sürüm geçersiz." }, { headers: PRIVATE_NO_STORE, status: 400 });
   // Re-check ownership before receipt replay: an ended enrollment must revoke reads and writes.
   const allowed = (await loadTeacherRecovery(auth.session.userId)).some((row) => row.attendanceId === parsed.data.attendanceId);
-  if (!allowed) return NextResponse.json({ error: "Kayıt bulunamadı." }, { headers: PRIVATE_NO_STORE, status: 404 });
+  if (!allowed) return NextResponse.json({ error: "Aradığınız kaydı bulamadık." }, { headers: PRIVATE_NO_STORE, status: 404 });
   const digest = operationDigest({ command: parsed.data, revision: control.data.revision });
   const key = `teacher-recovery:${auth.session.userId}:${control.data.key}`;
   try {
     const result = await runEducationMutation({ kind: "recovery", targetKind: "student", key, actorId: auth.session.userId, action: `recovery.${parsed.data.action}`, digest, execute: async (db) => {
       const row = (await loadTeacherRecovery(auth.session.userId, db)).find((item) => item.attendanceId === parsed.data.attendanceId);
-      if (!row) throw new GroupMutationError("NOT_FOUND", "Kayıt bulunamadı.", 404);
-      if (row.revision !== control.data.revision) throw new GroupMutationError("RECOVERY_CONFLICT", "Telafi kaydı değişti. Güncel görünümü kontrol edin.");
+      if (!row) throw new GroupMutationError("NOT_FOUND", "Aradığınız kaydı bulamadık.", 404);
+      if (row.revision !== control.data.revision) throw new GroupMutationError("RECOVERY_CONFLICT", "Telafi kaydı değişti. Güncel hâline göz atıp tekrar deneyebilirsiniz.");
       if (parsed.data.action === "generate") {
         if (row.package && row.package.status !== "DRAFT") throw new GroupMutationError("RECOVERY_CONFLICT", "Yayınlanmış paket yenilenemez.");
         const generated = await generateRecoveryPackage(row.attendanceId, auth.session.userId, db);
-        if (!generated) throw new GroupMutationError("NOT_FOUND", "Kayıt bulunamadı.", 404);
+        if (!generated) throw new GroupMutationError("NOT_FOUND", "Aradığınız kaydı bulamadık.", 404);
         return NextResponse.json({ id: generated.package.id, generated: true });
       }
       if (!row.package) throw new GroupMutationError("RECOVERY_CONFLICT", "Önce telafi taslağını hazırlayın.");
       const published = await publishRecoveryPackage({ packageId: row.package.id, teacherId: auth.session.userId, expectedVersion: row.package.version, rebalancePlan: flags.adaptivePlan }, db);
-      if (published.kind === "NOT_FOUND") throw new GroupMutationError("NOT_FOUND", "Kayıt bulunamadı.", 404);
-      if (published.kind === "CONFLICT") throw new GroupMutationError("RECOVERY_CONFLICT", "Paket değişti. Güncel görünümü kontrol edin.");
+      if (published.kind === "NOT_FOUND") throw new GroupMutationError("NOT_FOUND", "Aradığınız kaydı bulamadık.", 404);
+      if (published.kind === "CONFLICT") throw new GroupMutationError("RECOVERY_CONFLICT", "Paket değişti. Güncel hâline göz atıp tekrar deneyebilirsiniz.");
       return NextResponse.json({ published: true });
     } });
     return staffJson({ ...(result.body as object), replayed: result.replayed });
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
           throw conflict;
         }
       }
-      return NextResponse.json({ error: "Kayıt değişti. Güncel görünümü kontrol edin.", code: "RECOVERY_CONFLICT" }, { headers: PRIVATE_NO_STORE, status: 409 });
+      return NextResponse.json({ error: "Kayıt bu arada güncellenmiş. Güncel hâline göz atıp tekrar deneyebilirsiniz.", code: "RECOVERY_CONFLICT" }, { headers: PRIVATE_NO_STORE, status: 409 });
     }
     throw error;
   }

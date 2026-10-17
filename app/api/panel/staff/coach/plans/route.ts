@@ -9,7 +9,7 @@ import { requireStaffApi, staffFeatureDisabled, staffJson } from "@/lib/panel/st
 export async function GET() {
   const auth = await requireStaffApi("OK", "ok:coaching:write");
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().adaptivePlan) return staffFeatureDisabled("Haftalık plan henüz açık değil.");
+  if (!getPanelFeatureFlags().adaptivePlan) return staffFeatureDisabled("Haftalık plan şu an kullanıma kapalı, çok yakında açılacak.");
   const { weekStart, plans, suggestions } = await loadCoachPlans(auth.session.userId);
   return staffJson({
     contractVersion: MOBILE_STAFF_CONTRACT_VERSION,

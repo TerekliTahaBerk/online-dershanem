@@ -36,7 +36,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const auth = await requireApiProductRole("OK", "STUDENT");
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().adaptivePlan) {
-    return NextResponse.json({ error: "Haftalık plan henüz açık değil." }, { status: 404 });
+    return NextResponse.json({ error: "Haftalık plan şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   }
 
   const guard = await guardMutation({
@@ -54,7 +54,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const json = await request.json().catch(() => null);
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
+    return NextResponse.json({ error: "İstek geçerli görünmüyor. Lütfen bilgileri kontrol edip tekrar deneyin." }, { status: 400 });
   }
 
   const validationError = validateTaskCompletion(parsed.data);
@@ -64,7 +64,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   const task = await loadPlanTaskForStudentMutation(id, auth.session.userId);
   if (!task) {
-    return NextResponse.json({ error: "Plan görevi bulunamadı." }, { status: 404 });
+    return NextResponse.json({ error: "Plan görevini bulamadık." }, { status: 404 });
   }
 
   const previousStatus = task.status as KocumTaskStatus;
@@ -131,7 +131,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   if (!claimed) {
     return NextResponse.json(
-      { error: "Görev başka bir yerden güncellendi. Sayfayı yenileyin." },
+      { error: "Görev başka bir yerden güncellendi. Sayfayı yenileyip tekrar deneyebilirsiniz." },
       { status: 409 },
     );
   }

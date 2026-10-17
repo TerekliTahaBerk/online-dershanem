@@ -57,7 +57,7 @@ export function ParentCalmHomeView({ home, childContext }: { home: ParentCalmHom
             ))}
           </List>
         ) : (
-          <p className="text-[14px] text-pn-text-muted">Şu an sizden beklenen bir işlem yok. Düzenli takibe devam etmeniz yeterli.</p>
+          <p className="text-[14px] text-pn-text-muted">Şu an sizden beklenen bir işlem yok 🌿 Her şey yolunda; düzenli takibe devam etmeniz yeterli.</p>
         )}
       </Section>
 
@@ -70,7 +70,7 @@ export function ParentCalmHomeView({ home, childContext }: { home: ParentCalmHom
           {home.thisWeek.assignmentsLabel ? <PropertyRow label="Ödevler">{home.thisWeek.assignmentsLabel}</PropertyRow> : null}
         </PropertyList>
         {!home.thisWeek.planLabel && !home.thisWeek.attendanceLabel && !home.thisWeek.assignmentsLabel ? (
-          <p className="mt-2 text-[13.5px] text-pn-text-muted">Bu hafta için henüz kayıt oluşmadı.</p>
+          <p className="mt-2 text-[13.5px] text-pn-text-muted">Bu hafta için henüz bir kayıt oluşmadı.</p>
         ) : null}
         {home.thisWeek.upcoming.length ? (
           <div className="mt-4">
@@ -81,7 +81,7 @@ export function ParentCalmHomeView({ home, childContext }: { home: ParentCalmHom
             </List>
           </div>
         ) : (
-          <p className="mt-3 text-[13.5px] text-pn-text-muted">Yaklaşan önemli bir ders, görüşme veya deneme görünmüyor.</p>
+          <p className="mt-3 text-[13.5px] text-pn-text-muted">Yakın zamanda önemli bir ders, görüşme ya da deneme görünmüyor.</p>
         )}
         {home.dinoEnabled ? (
           <DinoExplanationAction
@@ -111,12 +111,12 @@ export function ParentCalmHomeView({ home, childContext }: { home: ParentCalmHom
             ))}
           </ul>
         ) : (
-          <p className="mt-2 text-[14px] text-pn-text-muted">Ders bazlı eğilim için henüz yeterli deneme yok.</p>
+          <p className="mt-2 text-[14px] text-pn-text-muted">Ders bazlı eğilim için birkaç deneme daha gerekiyor 📈</p>
         )}
         {home.academic.strengths.length || home.academic.supportAreas.length ? (
           <PropertyList className="mt-3">
-            <PropertyRow label="Güçlü alanlar">{home.academic.strengths.join(", ") || "Henüz belirgin güçlü alan yok."}</PropertyRow>
-            <PropertyRow label="Destek gereken">{home.academic.supportAreas.join(", ") || "Şu an ek destek alanı görünmüyor."}</PropertyRow>
+            <PropertyRow label="Güçlü alanlar">{home.academic.strengths.join(", ") || "Güçlü alanlar ölçümler biriktikçe belirginleşecek 🌱"}</PropertyRow>
+            <PropertyRow label="Destek gereken">{home.academic.supportAreas.join(", ") || "Şu an ek destek gerektiren bir alan görünmüyor 🎉"}</PropertyRow>
           </PropertyList>
         ) : null}
         {home.dinoEnabled ? (
@@ -151,14 +151,14 @@ export function ParentCalmHomeView({ home, childContext }: { home: ParentCalmHom
           }
         >
           <PropertyList>
-            <PropertyRow label="Haftalık hedef">{home.coaching.weeklyGoal || "Henüz paylaşılmadı."}</PropertyRow>
+            <PropertyRow label="Haftalık hedef">{home.coaching.weeklyGoal || "Henüz paylaşılmadı"}</PropertyRow>
             {home.coaching.planRealization ? <PropertyRow label="Plan">{home.coaching.planRealization}</PropertyRow> : null}
             {home.coaching.coachName ? <PropertyRow label="Koç">{home.coaching.coachName}</PropertyRow> : null}
           </PropertyList>
           {home.coaching.sharedNote ? (
             <p className="mt-3 border-l-2 border-pn-border-strong pl-3 text-[14px] leading-[1.65] text-pn-text">{home.coaching.sharedNote}</p>
           ) : (
-            <p className="mt-3 text-[13px] text-pn-text-muted">Koçun paylaştığı bir özet yok. Birebir görüşme notları veliye açılmaz.</p>
+            <p className="mt-3 text-[13px] text-pn-text-muted">Koç henüz bir özet paylaşmadı. Birebir görüşme notları gizlilik gereği veliyle paylaşılmaz.</p>
           )}
         </Section>
       ) : null}
@@ -167,7 +167,7 @@ export function ParentCalmHomeView({ home, childContext }: { home: ParentCalmHom
         <p className="mt-6 text-[13px] text-pn-text-muted">
           {home.digest.published && home.digest.preview
             ? `Öğretmenin yayınladığı özet: ${home.digest.preview.slice(0, 120)}${home.digest.preview.length > 120 ? "…" : ""}`
-            : "Öğretmen haftalık özeti yayınladığında ayrıntılı bakış burada açılır."}{" "}
+            : "Öğretmen haftalık özeti yayınladığında ayrıntılı bakış burada açılacak 🌟"}{" "}
           <Link href={home.digest.href} className="font-medium text-pn-text underline underline-offset-2">
             Haftalık özeti gör
           </Link>

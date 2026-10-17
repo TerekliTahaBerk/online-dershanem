@@ -50,8 +50,8 @@ export async function consumeNotificationOrchestrator(event: CrossProductEventOu
         {
           userId: student.userId,
           type: "SYSTEM" as NotificationType,
-          title: "Plan yayınlandı",
-          body: `plan:${payload.planId} · Bu haftanın çalışma planı koçun tarafından yayınlandı.`,
+          title: "Bu haftanın planı hazır 🗓️",
+          body: `plan:${payload.planId} · Koçun bu haftanın çalışma planını senin için hazırladı. Hadi göz atalım! ✨`,
           href: "/panel/ogrenci/plan",
         },
       ],
@@ -80,8 +80,8 @@ export async function consumeNotificationOrchestrator(event: CrossProductEventOu
         {
           userId: student.userId,
           type: "SYSTEM" as NotificationType,
-          title: "Yaklaşan deneme",
-          body: `${dedupKey} · ${exam?.title ?? "Deneme"} takvimine eklendi.`,
+          title: "Takvimine yeni bir deneme eklendi 📝",
+          body: `${dedupKey} · ${exam?.title ?? "Deneme"} takvimine eklendi. Şimdiden başarılar! 🍀`,
           // Bu bildirim ÖĞRENCİYE gidiyor. Eski hedef bir yönetici sınav
           // yolunu gösteriyordu ve o yol hiç var olmadı: öğrenci bildirime
           // tıklayınca 404 görüyordu.

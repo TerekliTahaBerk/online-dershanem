@@ -6,7 +6,7 @@ import type { GovernanceCommand } from "./governance-commands";
 import type { OpsResult } from "./ops-service";
 import { dryRunAutomationRule } from "@/lib/automation/engine";
 
-const fail = (status: 404 | 409 | 422, code: string) => new BusinessCommandError(status, code, status === 409 ? "Kayıt değişmiş veya işlem mevcut duruma uygun değil. Görünümü yenileyin." : status === 404 ? "Kayıt bulunamadı." : "İşlem alanlarını kontrol edin.");
+const fail = (status: 404 | 409 | 422, code: string) => new BusinessCommandError(status, code, status === 409 ? "Kayıt değişmiş veya işlem mevcut duruma uygun değil. Sayfayı yenileyip tekrar deneyebilirsiniz." : status === 404 ? "Aradığınız kaydı bulamadık." : "İşlem alanlarını kontrol edin.");
 function checkRevision(row: { updatedAt: Date }, expected?: string) {
   if (expected && row.updatedAt.toISOString() !== expected) throw fail(409, "REVISION_CONFLICT");
 }

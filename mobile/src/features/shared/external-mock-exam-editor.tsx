@@ -54,13 +54,13 @@ export default function ExternalMockExamEditor() {
   }, onSuccess: invalidate, onError: (error) => { if (error instanceof ApiError && error.kind === 'conflict') void invalidate(); } });
 
   return <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="external-mock-exam-editor">
-    <PageHeader title="Dış denemelerim" description="Okulda, kursta veya başka bir platformda çözdüğün deneme sonuçları." />
-    {!allowed ? <EmptyState title="Bu bölüm bu çalışma alanında yok" /> : <QueryView query={query} disabledTitle="Deneme analizi şu anda açık değil.">{(data) => <>
+    <PageHeader title="Dış denemelerim" description="Okulda, kursta ya da başka bir platformda çözdüğün denemelerin sonuçları 📊" />
+    {!allowed ? <EmptyState title="Bu bölüm bu çalışma alanında yer almıyor" /> : <QueryView query={query} disabledTitle="Deneme analizi şu an kullanıma kapalı.">{(data) => <>
       {notice ? <Banner tone="success">{notice}</Banner> : null}
-      {!online ? <Banner tone="warning">Kaydetmek için bağlantı gerekiyor. Yazdıkların bu ekranda kalır.</Banner> : null}
-      {data.studentId ? <MockExamEntryForm key={data.studentId} data={data} studentId={data.studentId} onSaved={setNotice} save={save} staff={false} /> : <EmptyState title="Profilin hazırlanıyor" />}
+      {!online ? <Banner tone="warning">Kaydetmek için internet bağlantısı gerekiyor. Merak etme, yazdıkların bu ekranda duruyor 😊</Banner> : null}
+      {data.studentId ? <MockExamEntryForm key={data.studentId} data={data} studentId={data.studentId} onSaved={setNotice} save={save} staff={false} /> : <EmptyState title="Profilin hazırlanıyor ⏳" />}
       <Section title="Kişisel hata eğilimi">
-        {data.trend.heatmap.map((item) => <Row key={item.key} title={item.subject} subtitle={item.counts.map((count, index) => count ? `${data.errorCategories[index].label}: ${count}` : null).filter(Boolean).join(' · ') || 'İşaret yok'} />)}
+        {data.trend.heatmap.map((item) => <Row key={item.key} title={item.subject} subtitle={item.counts.map((count, index) => count ? `${data.errorCategories[index].label}: ${count}` : null).filter(Boolean).join(' · ') || 'Henüz işaret yok'} />)}
         {data.trend.recurring ? <Banner tone="info">{data.trend.recurring.action}</Banner> : null}
         <Text tone="muted" variant="meta">Karşılaştırma yalnızca kendi geçmiş denemelerinle yapılır.</Text>
       </Section>
@@ -70,9 +70,9 @@ export default function ExternalMockExamEditor() {
           {exam.sections.map((section) => <Row key={section.id} title={section.subjectName} meta={`${section.net} net`} subtitle={`${section.correct} doğru · ${section.incorrect} yanlış · ${section.blank} boş`} />)}
           {exam.nextAction ? <Banner tone="info" title="Öğretmen onaylı adım">{exam.nextAction}</Banner> : null}
           <Button label="Hata nedenlerini gözden geçir" variant="secondary" onPress={() => setEditing(exam)} testID={`mock-reasons-${exam.id}`} />
-        </Section>) : <EmptyState title="Henüz dış deneme sonucun yok" />}
+        </Section>) : <EmptyState title="Henüz dış deneme sonucun yok 📝" />}
       </Section>
-      {editing ? <MockExamReasonSheet key={editing.id} exam={editing} categories={data.errorCategories} revise={revision} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); setNotice('Hata nedenleri kaydedildi.'); }} /> : null}
+      {editing ? <MockExamReasonSheet key={editing.id} exam={editing} categories={data.errorCategories} revise={revision} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); setNotice('Hata nedenlerin kaydedildi ✅ Bu farkındalık çok değerli!'); }} /> : null}
     </>}</QueryView>}
   </Screen>;
 }

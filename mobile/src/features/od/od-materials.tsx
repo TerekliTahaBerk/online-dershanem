@@ -22,11 +22,11 @@ export default function OdMaterialsScreen() {
   const refresh = usePullToRefresh(() => query.refetch());
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="od-materials">
-      <PageHeader title="Kaynaklar" description="Öğretmenlerinin paylaştığı PDF, video ve bağlantılar." />
+      <PageHeader title="Kaynaklar" description="Öğretmenlerinin seninle paylaştığı PDF, video ve bağlantılar 📎" />
       <QueryView query={query}>
         {(data) => {
-          if (!data.profile) return <EmptyState title="Profilin hazırlanıyor." body="Öğrenci profilin tamamlandığında kaynakların burada listelenir." />;
-          if (!data.materials.length) return <EmptyState title="Henüz paylaşılan kaynak yok." body="Öğretmenin bir kaynak paylaştığında burada görünecek." />;
+          if (!data.profile) return <EmptyState title="Profilin hazırlanıyor ⏳" body="Öğrenci profilin tamamlandığında kaynakların burada listelenecek." />;
+          if (!data.materials.length) return <EmptyState title="Henüz paylaşılan bir kaynak yok 📂" body="Öğretmenin bir kaynak paylaştığında burada görünecek." />;
           return (
             <>
               {data.lowDataMode ? <Banner tone="info">Düşük veri modu açık: metin dökümü olan kaynaklar önde.</Banner> : null}

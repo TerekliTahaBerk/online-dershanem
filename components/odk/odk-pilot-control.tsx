@@ -102,7 +102,7 @@ export function OdkPilotControl({
       const body = await response.json().catch(() => ({}));
       if (!response.ok)
         return setMessage({
-          text: body.error || "Deneme Ligi pilot taslağı oluşturulamadı.",
+          text: body.error || "Deneme Ligi pilot taslağı şu an oluşturulamadı. Lütfen tekrar dener misiniz?",
           error: true,
         });
       const run = body.run;
@@ -171,7 +171,7 @@ export function OdkPilotControl({
       const body = await response.json().catch(() => ({}));
       if (!response.ok)
         return setMessage({
-          text: body.error || "Pilot durumu güncellenemedi.",
+          text: body.error || "Pilot durumu şu an güncellenemedi. Lütfen tekrar dener misiniz?",
           error: true,
         });
       setRows((current) =>
@@ -184,7 +184,7 @@ export function OdkPilotControl({
       setMessage({
         text:
           action === "ACTIVATE" || action === "RESUME"
-            ? "Deneme Ligi pilot erişimi açıldı."
+            ? "Deneme Ligi pilot erişimi açıldı ✅"
             : action === "COMPLETE"
               ? "Pilot tamamlandı; audit kayıtları korundu."
               : "Deneme Ligi pilot erişimi durduruldu; sınav verileri korundu.",

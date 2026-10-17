@@ -28,9 +28,9 @@ export default function ParentOdkReportsScreen() {
 
 function ReportBody({ data }: { data: MobileParentOdkReport }) {
   if (!data.available) {
-    return <EmptyState title="Bu öğrenci için yayınlanmış Deneme Ligi raporu yok" body="Sonuçlar yayınlandığında ve paket veli raporunu içerdiğinde burada görünür." />;
+    return <EmptyState title="Henüz yayınlanmış bir Deneme Ligi raporu yok" body="Sonuçlar yayınlandığında ve paketiniz veli raporunu içerdiğinde burada görünecek 🏆" />;
   }
-  if (!data.exams.length) return <EmptyState title="Henüz yayınlanmış sonuç yok" body="Deneme sonuçları açıklandığında burada görünür." />;
+  if (!data.exams.length) return <EmptyState title="Henüz açıklanmış bir sonuç yok" body="Deneme sonuçları açıklandığında burada görünecek 📊" />;
   const weak = data.outcomes.filter((outcome) => outcome.latestAccuracy < data.weakThreshold).length;
   return (
     <>
@@ -50,7 +50,7 @@ function ReportBody({ data }: { data: MobileParentOdkReport }) {
       </Section>
       {data.outcomes.length ? (
         <Section title="Kazanımlar">
-          <Text tone="muted" variant="meta">{`Yüzde, bağlı sorulardaki doğru oranıdır; az sorulu ölçümlerde yeni kanıt bekleyin.${weak ? ` ${weak} kazanım %${data.weakThreshold} altında.` : ''}`}</Text>
+          <Text tone="muted" variant="meta">{`Yüzde, ilgili sorulardaki doğru oranını gösterir; az sorulu ölçümlerde yeni denemeleri beklemenizi öneririz.${weak ? ` ${weak} kazanım %${data.weakThreshold} altında.` : ''}`}</Text>
           {data.outcomes.map((outcome) => (
             <Row
               key={outcome.id}

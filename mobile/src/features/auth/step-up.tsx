@@ -63,7 +63,7 @@ export function StepUpProvider({ children }: PropsWithChildren) {
       // Pencere bitişini (`stepUpExpiresAt`) güncellemek için; sonucu beklenmez.
       void refreshBootstrap().catch(() => undefined);
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : 'Kod doğrulanamadı.');
+      setError(cause instanceof ApiError ? cause.message : 'Kodu doğrulayamadık. Lütfen kontrol edip tekrar dener misin?');
     } finally {
       setBusy(false);
     }
@@ -78,7 +78,7 @@ export function StepUpProvider({ children }: PropsWithChildren) {
       <BottomSheet visible={visible} title="Kimliğini doğrula" onClose={() => settle(false)}>
         {totp ? (
           <>
-            <Text tone="secondary">Bu işlem hassas. Devam etmek için doğrulayıcı uygulamadaki 6 haneli kodu gir. Doğrulama 10 dakika geçerli kalır.</Text>
+            <Text tone="secondary">Güvenliğin için bu işlemden önce kısa bir doğrulama yapalım 🔐 Doğrulayıcı uygulamandaki 6 haneli kodu girmen yeterli; doğrulama 10 dakika geçerli kalır.</Text>
             {error ? <Banner tone="critical">{error}</Banner> : null}
             <TextField
               label="Doğrulama kodu"
@@ -99,11 +99,11 @@ export function StepUpProvider({ children }: PropsWithChildren) {
           <>
             <Banner tone="warning" title={security?.mfa.passkey ? 'Geçiş anahtarı mobilde henüz desteklenmiyor' : 'İkinci faktör kurulu değil'}>
               {security?.mfa.passkey
-                ? 'Hesabın yalnız geçiş anahtarıyla doğrulanıyor. Güvenlik sayfasından bir doğrulayıcı uygulama ekleyince bu işlemi mobilde yapabilirsin.'
-                : 'Hassas işlemler için önce bir doğrulayıcı uygulama kurman gerekiyor.'}
+                ? 'Hesabın yalnızca geçiş anahtarıyla doğrulanıyor. Güvenlik sayfasından bir doğrulayıcı uygulama eklediğinde bu işlemi mobilde de yapabilirsin.'
+                : 'Hassas işlemler için önce bir doğrulayıcı uygulama kurman gerekiyor; birkaç dakikanı alır 😊'}
             </Banner>
             {security?.mfa.passkey ? (
-              <Button label="Güvenlik sayfasını aç" variant="secondary" onPress={() => void openOnWeb('/panel/guvenlik')} accessibilityHint="Tarayıcıda açılır; web oturumuyla giriş yapmanız gerekebilir." />
+              <Button label="Güvenlik sayfasını aç" variant="secondary" onPress={() => void openOnWeb('/panel/guvenlik')} accessibilityHint="Tarayıcıda açılır; web oturumuyla giriş yapman gerekebilir." />
             ) : (
               <Button label="Doğrulayıcı uygulamayı kur" variant="secondary" onPress={() => { settle(false); router.push('/account/security' as Href); }} testID="step-up-enroll" />
             )}

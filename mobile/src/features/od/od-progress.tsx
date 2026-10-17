@@ -36,12 +36,12 @@ export default function OdProgressScreen() {
   const refresh = usePullToRefresh(() => query.refetch());
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="od-progress">
-      <QueryView query={query} disabledTitle="Gidişat analizi şu anda açık değil.">
+      <QueryView query={query} disabledTitle="Gidişat analizi şu an kullanıma kapalı.">
         {(data) =>
           data.state === 'NO_PROFILE' ? (
             <>
               <PageHeader title="Gidişatın" />
-              <EmptyState title="Profilin hazırlanıyor." body="Öğrenci profilin tamamlandığında analiz özetin burada açılır." />
+              <EmptyState title="Profilin hazırlanıyor ⏳" body="Öğrenci profilin tamamlandığında analiz özetin burada açılacak." />
             </>
           ) : (
             <InsightsBody data={data} />
@@ -66,7 +66,7 @@ function InsightsBody({ data }: { data: MobileInsightsReady }) {
       </View>
       <WeeklyGoal goal={data.weeklyGoal} />
       {data.isEmpty ? (
-        <EmptyState title="Henüz gösterilecek veri yok." body="Derslerin işlendikçe, çalışmaların tamamlandıkça ve denemelerin girildikçe gidişatın burada birikir." />
+        <EmptyState title="Gidişatın burada şekillenecek 🌱" body="Derslerin işlendikçe, çalışmaların tamamlandıkça ve denemelerin girildikçe ilerlemeni burada göreceksin." />
       ) : (
         <>
           <Section title="Akademik">
@@ -133,10 +133,10 @@ function WeeklyGoal({ goal }: { goal: string | null }) {
     try {
       await mutation.mutateAsync(draft.trim());
       setEditing(false);
-      setMessage({ tone: 'success', text: 'Hedefin kaydedildi.' });
+      setMessage({ tone: 'success', text: 'Hedefin kaydedildi 🎯 Başarılar!' });
       await invalidate();
     } catch (error) {
-      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Hedef kaydedilemedi.' });
+      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Hedefini şu an kaydedemedik 😕 Lütfen tekrar dener misin?' });
     }
   }
 
@@ -163,7 +163,7 @@ function WeeklyGoal({ goal }: { goal: string | null }) {
         </>
       ) : (
         <>
-          <Text variant="bodyStrong">{goal ?? 'Henüz bu hafta için bir hedef yazmadın.'}</Text>
+          <Text variant="bodyStrong">{goal ?? 'Bu hafta için henüz bir hedef yazmadın. Küçük bir hedefle başlamaya ne dersin? 🎯'}</Text>
           <Button mutation
             testID="weekly-goal-edit"
             label={goal ? 'Hedefi düzenle' : 'Hedef yaz'}

@@ -36,7 +36,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   });
   if (!guard.ok) {
     return NextResponse.json(
-      { error: guard.code === "RATE_LIMIT" ? "Çok fazla işlem. Biraz sonra tekrar deneyin." : guard.message },
+      { error: guard.code === "RATE_LIMIT" ? "Kısa sürede çok fazla işlem yapıldı. Biraz bekleyip tekrar dener misiniz?" : guard.message },
       { status: guard.code === "RATE_LIMIT" ? 429 : 403 },
     );
   }
@@ -46,7 +46,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { id } = routeParams.data;
   const target = await prisma.user.findUnique({ where: { id } });
   if (!target) {
-    return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
+    return NextResponse.json({ error: "Kullanıcıyı bulamadık." }, { status: 404 });
   }
   if (target.status !== "ACTIVE") {
     return NextResponse.json(

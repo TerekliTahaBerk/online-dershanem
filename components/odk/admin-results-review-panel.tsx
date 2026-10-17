@@ -90,14 +90,14 @@ export function AdminResultsReviewPanel({
       const preview = await previewResponse.json().catch(() => ({}));
       if (!previewResponse.ok) {
         setMessage({
-          text: preview.error || "Önizleme alınamadı.",
+          text: preview.error || "Önizleme şu an alınamadı. Lütfen tekrar dener misiniz?",
           error: true,
         });
         return;
       }
       setPending(preview);
     } catch {
-      setMessage({ text: "Bağlantı kurulamadı.", error: true });
+      setMessage({ text: "Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?", error: true });
     } finally {
       setBusy("");
     }
@@ -117,7 +117,7 @@ export function AdminResultsReviewPanel({
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setMessage({ text: result.error || "Yayın başarısız.", error: true });
+        setMessage({ text: result.error || "Yayın şu an tamamlanamadı. Lütfen tekrar dener misiniz?", error: true });
         return;
       }
       setPending(null);
@@ -128,7 +128,7 @@ export function AdminResultsReviewPanel({
       await load();
       router.refresh();
     } catch {
-      setMessage({ text: "Bağlantı kurulamadı.", error: true });
+      setMessage({ text: "Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?", error: true });
     } finally {
       setBusy("");
     }

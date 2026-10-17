@@ -72,13 +72,13 @@ export function UserRowActions({
         error?: string;
       };
       if (!r.ok || !d.invite) {
-        setError(d.error ?? "Davet yenilenemedi.");
+        setError(d.error ?? "Davet şu an yenilenemedi. Lütfen tekrar dener misiniz?");
       } else {
         setInvite(d.invite);
         router.refresh();
       }
     } catch {
-      setError("Bağlantı kurulamadı.");
+      setError("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?");
     }
     setPending(null);
   }
@@ -107,13 +107,13 @@ export function UserRowActions({
         body: JSON.stringify({ status: next }),
       });
       const d = (await r.json()) as { error?: string };
-      if (!r.ok) setError(d.error ?? "Durum değiştirilemedi.");
+      if (!r.ok) setError(d.error ?? "Durum şu an değiştirilemedi. Lütfen tekrar dener misiniz?");
       else {
         setCurrentStatus(next);
         router.refresh();
       }
     } catch {
-      setError("Bağlantı kurulamadı.");
+      setError("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?");
     }
     setPending(null);
   }
@@ -125,13 +125,13 @@ export function UserRowActions({
       const r = await fetch(`/api/panel/users/${userId}`, { method: "DELETE" });
       const d = (await r.json().catch(() => null)) as { error?: string } | null;
       if (!r.ok) {
-        setError(d?.error ?? "Hesap silinemedi.");
+        setError(d?.error ?? "Hesap şu an silinemedi. Lütfen tekrar dener misiniz?");
         return;
       }
       setDeleteConfirmOpen(false);
       router.refresh();
     } catch {
-      setError("Bağlantı kurulamadı.");
+      setError("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?");
     } finally {
       setPending(null);
     }
@@ -146,13 +146,13 @@ export function UserRowActions({
         | { error?: string }
         | null;
       if (!r.ok || !d || !("canDelete" in d)) {
-        setError((d && "error" in d && d.error) || "Silme etkisi okunamadı.");
+        setError((d && "error" in d && d.error) || "Silme etkisi şu an okunamadı. Lütfen tekrar dener misiniz?");
         setDeletePreview(null);
         return;
       }
       setDeletePreview(d);
     } catch {
-      setError("Silme etkisi okunamadı.");
+      setError("Silme etkisi şu an okunamadı. Lütfen tekrar dener misiniz?");
       setDeletePreview(null);
     } finally {
       setLoadingDeletePreview(false);

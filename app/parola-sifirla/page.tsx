@@ -20,7 +20,7 @@ export default function ResetPasswordPage() {
               <ShieldCheck size={19} aria-hidden="true" />
             </span>
             <h1 className="mt-5 font-display text-[clamp(2rem,4vw,2.6rem)] leading-[1.1] text-(--site-ink)">
-              Yeni parolanızı belirleyin.
+              Yeni parolanızı belirleyin 🔐
             </h1>
             <p className="mt-3 text-[15px] leading-7 text-(--site-body)">
               Başarılı yenilemeden sonra güvenliğiniz için tüm açık

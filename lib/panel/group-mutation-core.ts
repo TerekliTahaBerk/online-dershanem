@@ -21,7 +21,7 @@ export function operationDigest(value: unknown): string {
 }
 
 export function assertGroupRevision(actual: string, expected: string | undefined) {
-  if (expected !== undefined && actual !== expected) throw new GroupMutationError("GROUP_CONFLICT", "Grup veya üyeleri değişti. Güncel görünümü kontrol edin.");
+  if (expected !== undefined && actual !== expected) throw new GroupMutationError("GROUP_CONFLICT", "Grup veya üyeleri değişti. Güncel hâline göz atıp tekrar deneyebilirsiniz.");
 }
 
 export function mutationReceiptKey(actorId: string, key: string) { return `group-mutation:${actorId}:${key}`; }

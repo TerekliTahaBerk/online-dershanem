@@ -29,14 +29,14 @@ export default function UpgradeScreen() {
   }
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']}>
-      <PageHeader title="Güncelleme gerekli" />
-      <Banner tone="warning">Uygulamanın bu sürümü artık desteklenmiyor. Devam etmek için uygulamayı mağazadan güncelle.</Banner>
+      <PageHeader title="Yeni bir sürüm seni bekliyor ✨" />
+      <Banner tone="warning">Uygulamanın bu sürümü artık desteklenmiyor. Mağazadan güncelleyerek yeni özelliklerle kaldığın yerden devam edebilirsin.</Banner>
       <Text tone="secondary">
         Yüklü sürüm: {APP_VERSION ?? 'bilinmiyor'}
         {minimum ? ` · Gereken en düşük sürüm: ${minimum}` : ''}
       </Text>
       {STORE_URLS ? <Button label="Mağazada güncelle" onPress={() => void openStore()} testID="upgrade-store" /> : null}
-      {storeError ? <Text tone="secondary">Mağaza açılamadı. Uygulama mağazasında “Online Dershanem” araması yapabilirsin.</Text> : null}
+      {storeError ? <Text tone="secondary">Mağazayı açamadık 😕 Uygulama mağazasında “Online Dershanem” diye aratarak kolayca bulabilirsin.</Text> : null}
       <Button label="Tekrar kontrol et" variant="secondary" onPress={() => void refreshBootstrap()} />
       <Button label="Çıkış yap" variant="quiet" onPress={() => void signOut()} />
     </Screen>

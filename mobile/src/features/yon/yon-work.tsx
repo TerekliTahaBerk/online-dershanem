@@ -31,12 +31,12 @@ export default function YonWorkScreen() {
   const [tab, setTab] = useState<Tab>('open');
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="yon-work">
-      <PageHeader title="Çalışmalarım" description="Bu haftanın Yön Koçluk plan görevleri. Okul ödevlerin onlinedershanem. çalışma alanında." />
-      <QueryView query={query} disabledTitle="Koçunla belirlediğiniz çalışmalar hazır olduğunda burada görünecek.">
+      <PageHeader title="Çalışmalarım" description="Bu haftanın Yön Koçluk görevleri burada 📋 Ders ödevlerini onlinedershanem. çalışma alanında bulabilirsin." />
+      <QueryView query={query} disabledTitle="Koçunla belirlediğiniz çalışmalar hazır olduğunda burada görünecek ✨">
         {(data) => {
-          if (data.state === 'NO_PROFILE') return <EmptyState title="Profilin hazırlanıyor." />;
+          if (data.state === 'NO_PROFILE') return <EmptyState title="Profilin hazırlanıyor ⏳" />;
           const plan = data.plan;
-          if (!plan || plan.tasks.length === 0) return <EmptyState title="Bu hafta için yayında bir çalışma yok." body="Koçun planı yayınladığında görevlerin burada görünecek." />;
+          if (!plan || plan.tasks.length === 0) return <EmptyState title="Bu haftanın çalışmaları yolda 🗓️" body="Koçun planı yayınladığında görevlerin burada belirecek." />;
           const groups: Record<Tab, MobileYonTask[]> = { open: [], done: [], missed: [] };
           for (const task of plan.tasks) {
             const key = tabOf(task);
@@ -45,7 +45,7 @@ export default function YonWorkScreen() {
           return (
             <>
               <SegmentedTabs label="Çalışma durumu" value={tab} onChange={setTab} options={(Object.keys(TAB_LABEL) as Tab[]).map((value) => ({ value, label: TAB_LABEL[value], count: groups[value].length }))} />
-              {groups[tab].length ? groups[tab].map((task) => <YonTaskRow key={task.id} task={task} canOpen={plan.canComplete} showDate />) : <Text tone="secondary">Bu bölümde görev yok.</Text>}
+              {groups[tab].length ? groups[tab].map((task) => <YonTaskRow key={task.id} task={task} canOpen={plan.canComplete} showDate />) : <Text tone="secondary">Bu bölümde şimdilik bir görev yok.</Text>}
             </>
           );
         }}

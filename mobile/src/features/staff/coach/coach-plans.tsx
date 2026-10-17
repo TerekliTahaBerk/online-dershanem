@@ -20,7 +20,7 @@ export default function CoachPlansScreen() {
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="coach-plans">
       <PageHeader title="Planlar" description="Planı yeniden oluşturma ve kapasite ayarı web panelinden yapılır." />
-      <QueryView query={query} disabledTitle="Haftalık planlar şu anda açık değil.">{(data) => <Body data={data} refetch={() => query.refetch()} />}</QueryView>
+      <QueryView query={query} disabledTitle="Haftalık planlar şu an kullanıma kapalı.">{(data) => <Body data={data} refetch={() => query.refetch()} />}</QueryView>
     </Screen>
   );
 }
@@ -40,7 +40,7 @@ function Body({ data, refetch }: { data: MobileCoachPlans; refetch: () => Promis
     setState(null);
     try {
       await mutation.mutateAsync({ id, decision });
-      setState({ tone: 'success', message: decision === 'ACCEPTED' ? 'Öneri kabul edildi.' : 'Öneri reddedildi.' });
+      setState({ tone: 'success', message: decision === 'ACCEPTED' ? 'Öneri kabul edildi ✅' : 'Öneri reddedildi.' });
       await invalidate();
     } catch (error) {
       const next = writeError(error, 'Bu öneri zaten incelenmiş. Liste yenilendi.');
@@ -57,7 +57,7 @@ function Body({ data, refetch }: { data: MobileCoachPlans; refetch: () => Promis
         {data.plans.length ? (
           data.plans.map((plan) => <Row key={plan.id} testID={`coach-plan-${plan.id}`} title={plan.studentName} subtitle={`${plan.doneCount}/${plan.taskCount} görev`} trailing={<StatusBadge label={plan.statusLabel} tone={PLAN_TONE[plan.status]} />} onPress={() => router.push(`/coach/plan/${encodeURIComponent(plan.id)}` as Href)} />)
         ) : (
-          <EmptyState title="Bu hafta için plan yok" />
+          <EmptyState title="Bu hafta için henüz bir plan yok" />
         )}
       </Section>
       {data.suggestions.length ? (

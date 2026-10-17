@@ -44,7 +44,7 @@ export async function GET(request: Request) {
   const auth = await requireApiOdRole("STUDENT");
   if (!auth.ok) return auth.response;
   const query = listQuerySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
-  if (!query.success) return NextResponse.json({ error: "Geçersiz çalışma alanı kapsamı." }, { status: 400 });
+  if (!query.success) return NextResponse.json({ error: "Çalışma alanı kapsamı geçerli görünmüyor." }, { status: 400 });
   const odOnly = query.data.scope === "OD";
 
   const evidenceEnabled = getPanelFeatureFlags().assignmentEvidence;
@@ -125,13 +125,13 @@ export async function POST(request: Request, _context: { params: Promise<{ id: s
   const guard = await guardMutation({ action: "panel.assignments.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:assignments:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Ödev bilgilerini kontrol edin." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Lütfen ödev bilgilerini bir kez daha kontrol eder misiniz?" }, { status: 400 });
 
   const group = await prisma.group.findFirst({
     where: { id: parsed.data.groupId, isActive: true, ...(auth.session.role === "TEACHER" ? { teacherId: auth.session.userId } : {}) },
     include: { enrollments: { where: { endedAt: null }, include: { student: { select: { id: true, userId: true, parents: { where: { active: true, endedAt: null, canViewAcademic: true }, select: { parentId: true } } } } } } },
   });
-  if (!group) return NextResponse.json({ error: "Yetkili olduğunuz aktif grup bulunamadı." }, { status: 404 });
+  if (!group) return NextResponse.json({ error: "Yetkili olduğunuz aktif grup şu an görünmüyor." }, { status: 404 });
   const flags = getPanelFeatureFlags();
   const evidenceRequired = flags.assignmentEvidence && parsed.data.evidenceRequired;
   const rubricCriteria = [...new Set(parsed.data.rubricCriteria.map((item) => item.trim()))];

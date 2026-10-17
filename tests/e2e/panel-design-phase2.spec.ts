@@ -114,7 +114,7 @@ test.describe("Design Phase 2 — onlinedershanem. sayfaları", () => {
     await page.goto("/panel/ogretmen/analiz");
     const main = page.getByRole("main");
     await expect(main.getByRole("heading", { name: "Grup gidişatı", level: 1 })).toBeVisible();
-    if (await main.getByText("Kapsamda öğrenci yok.").count()) return;
+    if (await main.getByText("Henüz kapsamda bir öğrenci yok").count()) return;
     await expect(main.getByRole("heading", { name: "Grup ortalamaları", level: 2 })).toBeVisible();
     await expect(main.getByText("Ortalama katılım", { exact: true })).toBeVisible();
     await expect(main.getByRole("table")).toBeVisible();

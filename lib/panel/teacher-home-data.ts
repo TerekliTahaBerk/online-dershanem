@@ -132,7 +132,7 @@ export function buildTeacherHomeSnapshot(input: TeacherHomeSourceData): TeacherH
   return {
     schemaVersion: 1,
     generatedAt: now.toISOString(),
-    summary: summary || "Bugün planlanmış ders yok.",
+    summary: summary || "Bugün planlanmış bir ders yok ☕",
     counts: {
       todayLessons: todayLessons.length,
       awaitingNotes: awaitingNotes.length,

@@ -11,15 +11,15 @@ const schema = z.object({ response: z.enum(["WRONG", "UNSURE", "CORRECT"]), idem
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireApiOdRole("STUDENT"); if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().reviewQueue) return NextResponse.json({ error: "Tekrar kuyruğu henüz açık değil." }, { status: 404 });
+  if (!getPanelFeatureFlags().reviewQueue) return NextResponse.json({ error: "Tekrar kuyruğu şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.review_item.respond", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:review-response:${auth.session.userId}`, rateLimit: { max: 100, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
-  const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Yanıtı kontrol edin." }, { status: 400 }); const { id } = await params;
+  const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Lütfen yanıtı bir kez daha kontrol eder misiniz?" }, { status: 400 }); const { id } = await params;
   const existing = await prisma.reviewAttempt.findUnique({ where: { reviewItemId_idempotencyKey: { reviewItemId: id, idempotencyKey: parsed.data.idempotencyKey } }, select: { nextDueAt: true, stageAfter: true, reviewItem: { select: { status: true } } } });
   if (existing) return NextResponse.json({ nextDueAt: existing.nextDueAt?.toISOString() || null, stage: existing.stageAfter, status: existing.reviewItem.status, replayed: true });
   const now = new Date();
   const item = await prisma.reviewItem.findFirst({ where: { id, student: { userId: auth.session.userId }, status: "ACTIVE" }, select: { id: true, stage: true, dueAt: true, createdAt: true } });
-  if (!item) return NextResponse.json({ error: "Tekrar öğesi bulunamadı." }, { status: 404 });
+  if (!item) return NextResponse.json({ error: "Tekrar öğesi bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
   if (item.dueAt > now) return NextResponse.json({ error: "Bu tekrar henüz bugünün listesinde değil." }, { status: 409 });
   const schedule = scheduleReview(item.stage, parsed.data.response, now);
   await prisma.$transaction(async (tx) => {

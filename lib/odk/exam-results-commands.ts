@@ -69,7 +69,7 @@ export async function rescoreOdkExamCommand(id: string, input: z.output<typeof r
     where: { id },
     select: { status: true, resultsReleasedAt: true, currentVersionId: true },
   });
-  if (!exam?.currentVersionId) return NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 });
+  if (!exam?.currentVersionId) return NextResponse.json({ error: "Denemeyi bulamadık." }, { status: 404 });
   if (!["ENDED", "SCORED", "RELEASED"].includes(exam.status)) {
     return NextResponse.json({ error: "Yeniden puanlama yalnız kapalı/puanlanmış/yayınlanmış denemelerde yapılabilir." }, { status: 409 });
   }
@@ -134,7 +134,7 @@ export function rescoreImpactFrom(preview: RescorePreview, hasPublishedResults: 
 
 export async function previewOdkRelease(id: string, excludeReviewRequired: boolean, db: Db = prisma) {
   const exam = await releaseCandidates(db, id);
-  if (!exam) return NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 });
+  if (!exam) return NextResponse.json({ error: "Denemeyi bulamadık." }, { status: 404 });
   if (exam.status !== "SCORED") return NextResponse.json({ error: "Yalnız puanlanmış deneme için yayın önizlemesi alınabilir." }, { status: 409 });
   const preview = releasePreviewFor(exam.attempts, excludeReviewRequired);
   return NextResponse.json({ message: `${preview.publishable} öğrencinin sonucu yayınlanacak.`, ...preview });

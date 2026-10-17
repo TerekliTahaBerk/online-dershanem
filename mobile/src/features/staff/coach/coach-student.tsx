@@ -50,7 +50,7 @@ function Body({ data }: { data: MobileCoachStudentDetail }) {
         {data.plan ? (
           <Row title={`${formatDayMonth(data.plan.weekStart)} haftası`} subtitle={`${data.plan.doneCount}/${data.plan.taskCount} görev tamamlandı`} onPress={() => router.push(`/coach/plan/${encodeURIComponent(data.plan!.id)}` as Href)} />
         ) : (
-          <EmptyState title="Bu hafta için plan yok" />
+          <EmptyState title="Bu hafta için henüz bir plan yok" />
         )}
       </Section>
       {data.recentSessions.length ? (
@@ -87,7 +87,7 @@ function NewSession({ studentId, online }: { studentId: string; online: boolean 
       await mutation.mutateAsync({ studentId, scheduledAt, meetingUrl: urlValue, idempotencyKey });
       stable.settle();
       setOpen(false);
-      setState({ tone: 'success', message: 'Görüşme planlandı.' });
+      setState({ tone: 'success', message: 'Görüşme planlandı 🤝' });
       await invalidate();
     } catch (error) {
       stable.settle(error);
@@ -131,7 +131,7 @@ function Notes({ data, online }: { data: MobileCoachStudentDetail; online: boole
       setState({ tone: 'success', message: 'Not kaydedildi.' });
       await invalidate();
     } catch (error) {
-      setState(writeError(error, 'Not kaydedilemedi. Tekrar deneyin.'));
+      setState(writeError(error, 'Notu şu an kaydedemedik. Lütfen tekrar dener misiniz?'));
     }
   }
   return (
@@ -147,7 +147,7 @@ function Notes({ data, online }: { data: MobileCoachStudentDetail; online: boole
       {data.notes.length ? (
         data.notes.map((note) => <Row key={note.id} title={note.body} subtitle={`${note.own ? 'Sen' : note.authorName} · ${formatShortDateTime(note.createdAt)}`} trailing={<StatusBadge label={VISIBILITY_LABEL[note.visibility]} tone={note.visibility === 'INTERNAL' ? 'neutral' : 'info'} />} />)
       ) : (
-        <EmptyState title="Henüz not yok" />
+        <EmptyState title="Henüz bir not yok" />
       )}
     </Section>
   );

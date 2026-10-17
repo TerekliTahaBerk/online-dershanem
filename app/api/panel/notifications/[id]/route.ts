@@ -17,7 +17,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     where: { id: params.data.id, userId: auth.session.userId, inAppVisible: true },
     select: { id: true, type: true, title: true, body: true, href: true, readAt: true, createdAt: true },
   });
-  if (!item) return NextResponse.json({ error: "Bildirim bulunamadı." }, { status: 404 });
+  if (!item) return NextResponse.json({ error: "Bildirim bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
   return NextResponse.json(
     { id: item.id, type: item.type, title: item.title, body: item.body, href: item.href, read: Boolean(item.readAt), createdAt: item.createdAt },
     { headers: { "Cache-Control": "private, no-store" } },

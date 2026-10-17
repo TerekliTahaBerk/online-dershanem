@@ -47,14 +47,14 @@ async function requireApiAuthorizedRole(roles: UserRole[], requireMfa = true, ac
   if (!PANEL_ENABLED) {
     return {
       ok: false,
-      response: NextResponse.json({ error: "Panel şu anda kapalı.", code: "PANEL_DISABLED" }, { status: 503 }),
+      response: NextResponse.json({ error: "Panel şu an kullanıma kapalı, çok yakında yeniden açılacak.", code: "PANEL_DISABLED" }, { status: 503 }),
     };
   }
 
   const session = await getSession();
   if (!session) {
     const response = NextResponse.json(
-      { error: "Oturumunuz sona ermiş. Tekrar giriş yapın.", code: "UNAUTHENTICATED" },
+      { error: "Güvenliğiniz için oturumunuz sona erdi. Lütfen tekrar giriş yapın 🔐", code: "UNAUTHENTICATED" },
       { status: 401, headers: { "Cache-Control": "no-store" } },
     );
     response.cookies.delete(SESSION_COOKIE_NAME);
@@ -72,7 +72,7 @@ async function requireApiAuthorizedRole(roles: UserRole[], requireMfa = true, ac
     return {
       ok: false,
       response: NextResponse.json(
-        { error: "Devam etmeden önce parolanızı değiştirmeniz gerekiyor.", code: "PASSWORD_CHANGE_REQUIRED" },
+        { error: "Devam etmeden önce parolanızı yenilemeniz gerekiyor 🔐", code: "PASSWORD_CHANGE_REQUIRED" },
         { status: 403 },
       ),
     };
@@ -81,7 +81,7 @@ async function requireApiAuthorizedRole(roles: UserRole[], requireMfa = true, ac
   // Yönetici girişinde MFA aranmaz; ayrıcalıklı ürün personelinde aranır.
   // Hassas yönetici mutasyonları requireApiRecentAdminStepUp ile ayrıca korunur.
   if (requireMfa && !session.mfaVerifiedAt && (await userRequiresLoginMfa(session.userId, session.role))) {
-    return { ok: false, response: NextResponse.json({ error: "Bu hesap için ikinci faktörü doğrulayın.", code: "MFA_REQUIRED", redirect: "/giris/mfa" }, { status: 403 }) };
+    return { ok: false, response: NextResponse.json({ error: "Hesabınızın güvenliği için lütfen ikinci doğrulama adımını tamamlayın.", code: "MFA_REQUIRED", redirect: "/giris/mfa" }, { status: 403 }) };
   }
 
   // Mobile overlays take precedence over broad [ADMIN, TEACHER, ...] guards.
@@ -120,13 +120,13 @@ async function requireApiAuthorizedRole(roles: UserRole[], requireMfa = true, ac
   // Sayfalarda 404 veriyoruz; API'de 403 yeterli — burada rota keşfi diye bir şey yok.
   return {
     ok: false,
-    response: NextResponse.json({ error: "Bu işlem için yetkiniz yok.", code: "FORBIDDEN" }, { status: 403 }),
+    response: NextResponse.json({ error: "Bu işlem için yetkiniz bulunmuyor.", code: "FORBIDDEN" }, { status: 403 }),
   };
 }
 
 function invalidOverlay(): ApiAuth {
   return { ok: false, response: NextResponse.json(
-    { error: "Panel modu sona erdi veya geçersiz. Yönetim paneline dönün.", code: "ADMIN_OVERLAY_INVALID" },
+    { error: "Panel modunun süresi doldu. Yönetim paneline dönerek devam edebilirsiniz.", code: "ADMIN_OVERLAY_INVALID" },
     { status: 403, headers: { "Cache-Control": "no-store, private" } },
   ) };
 }
@@ -139,13 +139,13 @@ export async function requireApiActorSession(...roles: UserRole[]): Promise<ApiA
   if (!actor) {
     return {
       ok: false,
-      response: NextResponse.json({ error: "Oturumunuz sona ermiş. Tekrar giriş yapın." }, { status: 401 }),
+      response: NextResponse.json({ error: "Güvenliğiniz için oturumunuz sona erdi. Lütfen tekrar giriş yapın 🔐" }, { status: 401 }),
     };
   }
   if (!roles.includes(actor.role)) {
     return {
       ok: false,
-      response: NextResponse.json({ error: "Bu işlem için yetkiniz yok.", code: "FORBIDDEN" }, { status: 403 }),
+      response: NextResponse.json({ error: "Bu işlem için yetkiniz bulunmuyor.", code: "FORBIDDEN" }, { status: 403 }),
     };
   }
   return { ok: true, session: actor };
@@ -155,7 +155,7 @@ export async function requireApiRecentAdminStepUp(): Promise<ApiAuth> {
   const auth = await requireApiAccountRole("ADMIN");
   if (!auth.ok) return auth;
   if (!hasFreshStepUp(auth.session.stepUpAt)) {
-    return { ok: false, response: NextResponse.json({ error: "Bu hassas işlem için kimliğinizi yeniden doğrulayın.", code: "STEP_UP_REQUIRED", redirect: "/panel/guvenlik" }, { status: 428 }) };
+    return { ok: false, response: NextResponse.json({ error: "Güvenliğiniz için bu işlemden önce kimliğinizi yeniden doğrulamanızı rica ederiz.", code: "STEP_UP_REQUIRED", redirect: "/panel/guvenlik" }, { status: 428 }) };
   }
   return auth;
 }
@@ -178,14 +178,14 @@ export async function requireApiProductPilot(auth: { ok: true; session: SessionU
  */
 export async function requireApiSessionBeforeGates(): Promise<ApiAuth> {
   if (!PANEL_ENABLED) {
-    return { ok: false, response: NextResponse.json({ error: "Panel şu anda kapalı.", code: "PANEL_DISABLED" }, { status: 503 }) };
+    return { ok: false, response: NextResponse.json({ error: "Panel şu an kullanıma kapalı, çok yakında yeniden açılacak.", code: "PANEL_DISABLED" }, { status: 503 }) };
   }
   const session = await getSession();
   if (!session) {
     return {
       ok: false,
       response: NextResponse.json(
-        { error: "Oturumunuz sona ermiş. Tekrar giriş yapın.", code: "UNAUTHENTICATED" },
+        { error: "Güvenliğiniz için oturumunuz sona erdi. Lütfen tekrar giriş yapın 🔐", code: "UNAUTHENTICATED" },
         { status: 401, headers: { "Cache-Control": "no-store" } },
       ),
     };
@@ -217,7 +217,7 @@ export async function requireApiPrimaryMfaUser(): Promise<ApiAuth> {
   const auth = await requireApiAuthorizedRole(["ADMIN", "TEACHER"], false);
   if (!auth.ok) return auth;
   if (!(await userRequiresMfa(auth.session.userId, auth.session.role))) {
-    return { ok: false, response: NextResponse.json({ error: "Bu işlem için yetkiniz yok.", code: "FORBIDDEN" }, { status: 403 }) };
+    return { ok: false, response: NextResponse.json({ error: "Bu işlem için yetkiniz bulunmuyor.", code: "FORBIDDEN" }, { status: 403 }) };
   }
   return auth;
 }
@@ -232,7 +232,7 @@ export async function requireApiStaffPermission(permission: StaffPermission): Pr
   auth = await requireApiProductPilot(auth, staffPermissionProduct(permission));
   if (!auth.ok) return auth;
   if (!(await hasStaffPermission(auth.session.userId, permission))) {
-    return { ok: false, response: NextResponse.json({ error: "Bu işlem için yetkiniz yok.", code: "FORBIDDEN" }, { status: 403 }) };
+    return { ok: false, response: NextResponse.json({ error: "Bu işlem için yetkiniz bulunmuyor.", code: "FORBIDDEN" }, { status: 403 }) };
   }
   return auth;
 }
@@ -242,7 +242,7 @@ export async function requireApiRecentStaffStepUp(permission: StaffPermission): 
   const auth = await requireApiStaffPermission(permission);
   if (!auth.ok) return auth;
   if (!hasFreshStepUp(auth.session.stepUpAt)) {
-    return { ok: false, response: NextResponse.json({ error: "Bu hassas işlem için kimliğinizi yeniden doğrulayın.", code: "STEP_UP_REQUIRED", redirect: "/panel/guvenlik" }, { status: 428 }) };
+    return { ok: false, response: NextResponse.json({ error: "Güvenliğiniz için bu işlemden önce kimliğinizi yeniden doğrulamanızı rica ederiz.", code: "STEP_UP_REQUIRED", redirect: "/panel/guvenlik" }, { status: 428 }) };
   }
   return auth;
 }
@@ -254,7 +254,7 @@ export async function requireApiProductRole(product: ProductCode, ...roles: User
   auth = await requireApiProductPilot(auth, product);
   if (!auth.ok) return auth;
   if (!(await hasProductAccess(auth.session.userId, auth.session.role, product))) {
-    return { ok: false, response: NextResponse.json({ error: "Bu ürün için aktif erişiminiz yok.", code: "PRODUCT_ACCESS_REQUIRED" }, { status: 404 }) };
+    return { ok: false, response: NextResponse.json({ error: "Bu ürün için henüz aktif bir erişiminiz bulunmuyor.", code: "PRODUCT_ACCESS_REQUIRED" }, { status: 404 }) };
   }
   return auth;
 }
@@ -276,7 +276,7 @@ export async function requireApiProductCodeRole(code: string, ...roles: UserRole
   const auth = await requireApiAuthorizedRole(roles);
   if (!auth.ok) return auth;
   if (!(await hasProductCodeAccess(auth.session.userId, auth.session.role, code))) {
-    return { ok: false, response: NextResponse.json({ error: "Bu ürün için aktif erişiminiz yok.", code: "PRODUCT_ACCESS_REQUIRED" }, { status: 404 }) };
+    return { ok: false, response: NextResponse.json({ error: "Bu ürün için henüz aktif bir erişiminiz bulunmuyor.", code: "PRODUCT_ACCESS_REQUIRED" }, { status: 404 }) };
   }
   return auth;
 }
@@ -294,7 +294,7 @@ export async function requireApiAnyProductRole(products: readonly ProductCode[],
       return requireApiProductPilot(auth, product);
     }
   }
-  return { ok: false, response: NextResponse.json({ error: "Bu ürün için aktif erişiminiz yok.", code: "PRODUCT_ACCESS_REQUIRED" }, { status: 404 }) };
+  return { ok: false, response: NextResponse.json({ error: "Bu ürün için henüz aktif bir erişiminiz bulunmuyor.", code: "PRODUCT_ACCESS_REQUIRED" }, { status: 404 }) };
 }
 
 /** Online Dershanem'e ait legacy route'lar için açık ürün adı taşıyan kısayol. */

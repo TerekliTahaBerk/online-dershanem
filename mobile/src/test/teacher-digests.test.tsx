@@ -26,7 +26,7 @@ it('draft retry keeps the key; exact preview is published only after human confi
   await press(h, h.screen.getByTestId('digest-publish-s1')); expect(alert).toHaveBeenCalled(); expect(h.server.called('POST', path)).toHaveLength(2);
   alert.mockImplementation((_title, _body, buttons) => buttons?.find((button) => button.text === 'Yayımla')?.onPress?.());
   await press(h, h.screen.getByTestId('digest-publish-s1'));
-  expect(await h.screen.findByText('Haftalık özet öğrenci ve veliye açıldı.', {}, WAIT)).toBeTruthy();
+  expect(await h.screen.findByText('Haftalık özet öğrenci ve veliyle paylaşıldı 🌟', {}, WAIT)).toBeTruthy();
   await waitFor(() => expect(h.screen.queryByTestId('digest-publish-s1')).toBeNull(), WAIT);
 }, 30000);
 it('recipient or draft conflict refreshes preview and blocks silent overwrite', async () => {

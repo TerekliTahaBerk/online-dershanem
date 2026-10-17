@@ -20,10 +20,10 @@ export default function ForgotPasswordPage() {
               <KeyRound size={19} aria-hidden="true" />
             </span>
             <h1 className="mt-5 font-display text-[clamp(2rem,4vw,2.6rem)] leading-[1.1] text-(--site-ink)">
-              Parolanızı yenileyin.
+              Parolanızı yenileyelim 🔐
             </h1>
             <p className="mt-3 text-[15px] leading-7 text-(--site-body)">
-              Hesabınızda kullandığınız e-postayı yazın. Kayıtlıysa size güvenli
+              Merak etmeyin, hemen halledelim. Hesabınızda kullandığınız e-postayı yazın; kayıtlıysa size güvenli
               bir yenileme bağlantısı göndereceğiz.
             </p>
             <div className="mt-8 rounded-od-xl border border-(--site-line) bg-white p-6 sm:p-8">

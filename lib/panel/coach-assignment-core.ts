@@ -6,7 +6,7 @@ export function coachAssignmentRevision(assignment: { id: string; coachId: strin
 }
 
 export class CoachAssignmentConflict extends Error {
-  constructor(public code = "COACH_ASSIGNMENT_CONFLICT", message = "Koç ataması değişti. Görünümü yenileyin.") { super(message); }
+  constructor(public code = "COACH_ASSIGNMENT_CONFLICT", message = "Koç ataması değişti. Sayfayı yenileyip tekrar deneyebilirsiniz.") { super(message); }
 }
 
 export function readCoachReceipt(payload: unknown, digest: string): { ok: true; replayed: boolean } {

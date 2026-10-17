@@ -28,7 +28,7 @@ export default async function NetworkPreferencesPage() {
           <WifiOff size={15} /> Bağlantıya dayanıklı panel
         </p>
         <h1 className={PAGE_TITLE_CLASS}>
-          Az veriyle çalışın; kayıt kaybolmasın.
+          Az veriyle rahatça çalışın, kayıtlarınız güvende kalsın 📶
         </h1>
         <p className={PAGE_DESCRIPTION_CLASS}>
           Düşük veri görünümünü ve bu cihazdaki sınırlı çevrimdışı yazma iznini

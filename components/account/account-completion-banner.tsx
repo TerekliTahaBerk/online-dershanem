@@ -25,7 +25,7 @@ export async function AccountCompletionBanner({ userId, role }: { userId: string
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
           <p className="flex items-center gap-2 text-[13.5px] font-semibold text-amber-900">
             <ClipboardList size={16} aria-hidden="true" />
-            Sana ulaşabilmemiz için kısa iletişim formunu doldur.
+            Seni daha iyi tanıyabilmemiz için kısa iletişim formunu doldurmaya ne dersin? 😊
           </p>
           <Link href={CONTACT_FORM_PATH} className="rounded-xl bg-amber-600 px-3.5 py-2 text-[13px] font-bold text-white hover:bg-amber-700">
             Formu doldur

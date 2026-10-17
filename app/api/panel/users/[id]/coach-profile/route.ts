@@ -29,7 +29,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   if (!params.success || !body.success) return NextResponse.json({ error: "Geçerli bir kapasite girin (1–500) ya da boş bırakın." }, { status: 400 });
 
   const user = await prisma.user.findUnique({ where: { id: params.data.id }, select: { role: true, teacherProfile: { select: { coachCapacity: true } } } });
-  if (!user || user.role !== "TEACHER") return NextResponse.json({ error: "Personel hesabı bulunamadı." }, { status: 404 });
+  if (!user || user.role !== "TEACHER") return NextResponse.json({ error: "Personel hesabı şu an görünmüyor." }, { status: 404 });
 
   await prisma.teacherProfile.upsert({
     where: { userId: params.data.id },

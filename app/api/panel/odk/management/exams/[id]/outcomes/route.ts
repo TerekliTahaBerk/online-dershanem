@@ -16,8 +16,8 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const auth = await requireApiStaffPermission("odk:exam:edit"); if (!auth.ok) return auth.response;
   const params = idParamsSchema.safeParse(await context.params); if (!params.success) return invalidApiInput();
   const query = querySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
-  if (!query.success) return NextResponse.json({ error: "Arama geçersiz." }, { status: 400, headers: PRIVATE_NO_STORE });
+  if (!query.success) return NextResponse.json({ error: "Arama geçerli görünmüyor." }, { status: 400, headers: PRIVATE_NO_STORE });
   const options = await searchOdkExamOutcomes(params.data.id, query.data.q);
-  if (!options) return NextResponse.json({ error: "Deneme bulunamadı.", code: "NOT_FOUND" }, { status: 404, headers: PRIVATE_NO_STORE });
+  if (!options) return NextResponse.json({ error: "Denemeyi bulamadık.", code: "NOT_FOUND" }, { status: 404, headers: PRIVATE_NO_STORE });
   return staffJson({ options });
 }

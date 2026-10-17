@@ -14,6 +14,6 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   const params = paramsSchema.safeParse(await context.params); if (!params.success) return invalidApiInput();
   const now = new Date();
   const attempt = await loadOdkOpsAttempt(params.data.attemptId, now, { examId: params.data.id });
-  if (!attempt) return NextResponse.json({ error: "Kayıt bulunamadı.", code: "NOT_FOUND" }, { status: 404, headers: PRIVATE_NO_STORE });
+  if (!attempt) return NextResponse.json({ error: "Aradığınız kaydı bulamadık.", code: "NOT_FOUND" }, { status: 404, headers: PRIVATE_NO_STORE });
   return staffJson(toMobileOdkOpsAttempt({ attempt, revision: attemptReviewRevision(attempt), canReview: true, now }));
 }

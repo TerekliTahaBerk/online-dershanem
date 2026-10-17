@@ -22,7 +22,7 @@ test("boş günde workspace sade özet üretir", () => {
     riskyStudents: [],
     upcoming: [],
   });
-  assert.equal(workspace.summary, "Bugün planlanmış iş yok.");
+  assert.equal(workspace.summary, "Bugün planlanmış bir iş yok ☕");
   assert.equal(workspace.todayLessons.length, 0);
   assert.equal(workspace.pending.length, 0);
 });

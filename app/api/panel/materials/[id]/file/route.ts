@@ -18,10 +18,10 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     logResourceAccessDenied({ actorUserId: auth.session.userId, role: auth.session.role, resourceType: "LearningMaterial", resourceId: id, reason: material ? "missing_blob" : "outside_scope" });
     return NextResponse.json({ error: "Dosya bulunamadı veya erişim yetkiniz yok." }, { status: 404 });
   }
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return NextResponse.json({ error: "Dosya deposu kullanılamıyor." }, { status: 503 });
+  if (!process.env.BLOB_READ_WRITE_TOKEN) return NextResponse.json({ error: "Dosya deposuna şu an ulaşılamıyor. Lütfen biraz sonra tekrar deneyin." }, { status: 503 });
 
   const result = await get(material.blobPathname, { access: "private", ifNoneMatch: request.headers.get("if-none-match") || undefined });
-  if (!result) return NextResponse.json({ error: "Dosya depoda bulunamadı." }, { status: 404 });
+  if (!result) return NextResponse.json({ error: "Dosya depoda bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
   if (result.statusCode === 304) return new NextResponse(null, { status: 304, headers: { ETag: result.blob.etag } });
   logPrivateMaterialAccessed({ actorUserId: auth.session.userId, role: auth.session.role, materialId: id });
   const originalName = (material.fileName || "materyal").replace(/[\r\n"]/g, "_");

@@ -127,7 +127,7 @@ export function AdminOperationsCenterView({
       ) : (
         <EmptyState
           className="mt-5"
-          title={group === "tumu" ? "Bekleyen aksiyon yok." : "Bu alanda bekleyen aksiyon yok."}
+          title={group === "tumu" ? "Bekleyen aksiyon yok ✅" : "Bu alanda bekleyen aksiyon yok ✅"}
           body="Erişim açılışı, koçluk, deneme, güvenlik ve sistem sinyalleri şu anda temiz."
           action={
             <Link href="/panel/yonetim/isler" className={buttonClass("secondary", "sm")}>

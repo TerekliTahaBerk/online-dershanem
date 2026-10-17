@@ -24,7 +24,7 @@ export function buildRecoveryDraft(input: {
   assignments: { id: string; title: string }[];
 }) {
   const summaryTopic = input.sharedTopic?.trim() || input.lessonTitle.trim();
-  const summaryNextStep = input.sharedNextGoal?.trim() || input.sharedHomework?.trim() || "Ortak ders özetini inceleyip mini kontrolü tamamla.";
+  const summaryNextStep = input.sharedNextGoal?.trim() || input.sharedHomework?.trim() || "Ders özetine göz at, ardından mini kontrolü tamamla; birlikte yetişeceğiz 💪";
   const items: RecoveryDraftItem[] = [
     ...input.materials.slice(0, 3).map((item) => ({ kind: "MATERIAL" as const, title: item.title, materialId: item.id })),
     ...input.assignments.slice(0, 2).map((item) => ({ kind: "ASSIGNMENT" as const, title: item.title, assignmentId: item.id })),

@@ -15,7 +15,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   if (!params.success) return invalidApiInput();
   const { id } = params.data;
   const detail = await loadCoachStudentDetail(auth.session.userId, id);
-  if (!detail) return staffNotFound("Öğrenci bulunamadı.");
+  if (!detail) return staffNotFound("Öğrenciyi bulamadık.");
   return staffJson({
     contractVersion: MOBILE_STAFF_CONTRACT_VERSION,
     studentId: detail.studentId,

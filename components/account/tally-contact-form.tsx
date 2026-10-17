@@ -33,12 +33,12 @@ export function TallyContactForm({ src, alreadySubmitted }: { src: string; alrea
         body: JSON.stringify({ action }),
       });
       const data = (await response.json().catch(() => ({}))) as { redirect?: string; error?: string };
-      if (!response.ok) throw new Error(data.error ?? "İşlem tamamlanamadı.");
+      if (!response.ok) throw new Error(data.error ?? "İşlemi şu an tamamlayamadık. Lütfen tekrar dener misin?");
       window.location.assign(data.redirect ?? PRODUCT_SELECTOR_PATH);
     } catch (caught) {
       sent.current = false;
       setBusy(null);
-      setError(caught instanceof Error ? caught.message : "Bağlantı kurulamadı.");
+      setError(caught instanceof Error ? caught.message : "Bağlantı kurulamadı. İnternetini kontrol edip tekrar dener misin?");
     }
   }
 
@@ -57,9 +57,9 @@ export function TallyContactForm({ src, alreadySubmitted }: { src: string; alrea
         <div className="flex items-center gap-3">
           <Image src="/design/od-logo.png" alt="" width={1254} height={1254} sizes="36px" className="h-9 w-9 rounded-od object-cover" />
           <div>
-            <h1 className="text-[15px] font-extrabold text-dc-ink">Sana ulaşabilmemiz için birkaç soru</h1>
+            <h1 className="text-[15px] font-extrabold text-dc-ink">Seni daha iyi tanımak için birkaç kısa soru 😊</h1>
             <p className="text-[12.5px] text-dc-ink-muted">
-              {alreadySubmitted ? "Formu daha önce doldurdun; istersen güncelleyebilirsin." : "Yaklaşık 2 dakika sürer. İstersen sonra da doldurabilirsin."}
+              {alreadySubmitted ? "Formu daha önce doldurdun, teşekkürler 💛 İstersen güncelleyebilirsin." : "Yaklaşık 2 dakika sürer. İstersen sonra da doldurabilirsin."}
             </p>
           </div>
         </div>

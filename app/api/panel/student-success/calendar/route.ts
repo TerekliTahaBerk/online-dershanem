@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz parametreler." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Parametreler geçerli görünmüyor." }, { status: 400 });
 
   const requestedStudentId = url.searchParams.get("studentId");
   let studentId: string;
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     // karar: yanlış kimlik açıkça reddedilir, yoksa kullanıcı başkasının verisine
     // baktığını sanabilir.
     if (requestedStudentId && requestedStudentId !== profile.id) {
-      return NextResponse.json({ error: "Öğrenci bulunamadı." }, { status: 404 });
+      return NextResponse.json({ error: "Öğrenciyi bulamadık." }, { status: 404 });
     }
     studentId = profile.id;
     studentUserId = auth.session.userId;
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
       auth.session.role,
       auth.session.userId,
     );
-    if (!scoped) return NextResponse.json({ error: "Öğrenci bulunamadı." }, { status: 404 });
+    if (!scoped) return NextResponse.json({ error: "Öğrenciyi bulamadık." }, { status: 404 });
     studentId = scoped.id;
     studentUserId = scoped.userId;
   } else {

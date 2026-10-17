@@ -53,7 +53,7 @@ function HomeBody({ home }: { home: MobileTeacherHome }) {
             />
           ))
         ) : (
-          <EmptyState title="Bugün planlanmış dersin yok" />
+          <EmptyState title="Bugün planlanmış bir dersin yok ☕" />
         )}
       </Section>
       <Section title="Bekleyen işler">
@@ -74,7 +74,7 @@ function HomeBody({ home }: { home: MobileTeacherHome }) {
             );
           })
         ) : (
-          <Text tone="secondary">Şu an bekleyen bir işin yok.</Text>
+          <Text tone="secondary">Şu an bekleyen bir işin yok, harika! ✅</Text>
         )}
       </Section>
       {home.attention.length ? (

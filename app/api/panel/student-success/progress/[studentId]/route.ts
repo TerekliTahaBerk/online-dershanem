@@ -34,7 +34,7 @@ export async function GET(request: Request, context: { params: Promise<{ student
 
   const url = new URL(request.url);
   const query = querySchema.safeParse(Object.fromEntries(url.searchParams));
-  if (!query.success) return invalidApiInput("Geçersiz ilerleme görünümü.");
+  if (!query.success) return invalidApiInput("İlerleme görünümü geçerli görünmüyor.");
   const view = query.data.view;
   const role = auth.session.role as ViewerRole;
   const now = new Date();

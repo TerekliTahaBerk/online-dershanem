@@ -34,7 +34,7 @@ export function TeacherRecoveryManager({ rows }: { rows: Row[] }) {
     });
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setMessage(body.error || "Paket hazırlanamadı.");
+      setMessage(body.error || "Paket şu an hazırlanamadı. Lütfen tekrar dener misiniz?");
       setBusy(null);
       return;
     }
@@ -54,14 +54,14 @@ export function TeacherRecoveryManager({ rows }: { rows: Row[] }) {
     );
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setMessage(body.error || "Paket yayınlanamadı.");
+      setMessage(body.error || "Paket şu an yayınlanamadı. Lütfen tekrar dener misiniz?");
       setBusy(null);
       return;
     }
     setMessage(
       body.planRebalanced
-        ? "Paket yayınlandı; onaylı haftalık plan kapasite sınırlarıyla yeniden dengelendi."
-        : "Paket öğrenciye yayınlandı.",
+        ? "Paket yayınlandı 🧩 Onaylı haftalık plan, kapasite sınırlarıyla yeniden dengelendi."
+        : "Paket öğrenciye yayınlandı ✅",
     );
     window.location.reload();
   }
@@ -160,7 +160,7 @@ export function TeacherRecoveryManager({ rows }: { rows: Row[] }) {
           <div className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-9 text-center">
             <PackageCheck className="mx-auto text-(--site-muted)" />
             <p className="mt-3 text-sm font-bold">
-              Son 30 günde telafi paketi bekleyen devamsızlık yok.
+              Son 30 günde telafi paketi bekleyen bir devamsızlık yok ✅
             </p>
           </div>
         ) : null}

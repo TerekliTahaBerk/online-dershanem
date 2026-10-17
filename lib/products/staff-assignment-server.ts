@@ -29,7 +29,7 @@ const LAST_HOLDER_WARNING_ROLES: readonly StaffRoleName[] = ["RESULT_PUBLISHER",
 
 async function productIdFor(code: StaffProductCode) {
   const product = await prisma.product.findUnique({ where: { code }, select: { id: true } });
-  if (!product) throw new StaffAssignmentError("Ürün kaydı bulunamadı.", 404);
+  if (!product) throw new StaffAssignmentError("Ürün kaydı bulunamadı; kaldırılmış ya da değişmiş olabilir.", 404);
   return product.id;
 }
 
@@ -45,7 +45,7 @@ export async function grantStaffRole(input: {
     throw new StaffAssignmentError("Bu rol bu üründe geçerli değil.", 400);
   }
   const user = await prisma.user.findUnique({ where: { id: input.userId }, select: { id: true, role: true, status: true } });
-  if (!user) throw new StaffAssignmentError("Kullanıcı bulunamadı.", 404);
+  if (!user) throw new StaffAssignmentError("Kullanıcıyı bulamadık.", 404);
   if (user.role === "ADMIN") throw new StaffAssignmentError("Yönetici tüm ürün yetkilerine zaten sahiptir.", 400);
   if (user.role !== "TEACHER") throw new StaffAssignmentError("Ürün sorumluluğu yalnız personel (öğretmen) hesaplarına verilir.", 400);
   if (user.status === "ARCHIVED") throw new StaffAssignmentError("Arşivlenmiş hesaba yetki verilemez.", 409);
@@ -103,7 +103,7 @@ export async function revokeStaffRole(input: { assignmentId: string; userId: str
     where: { id: input.assignmentId, userId: input.userId },
     select: { id: true, role: true, revokedAt: true, productId: true, product: { select: { code: true } } },
   });
-  if (!row) throw new StaffAssignmentError("Atama bulunamadı.", 404);
+  if (!row) throw new StaffAssignmentError("Atama bulunamadı; kaldırılmış ya da değişmiş olabilir.", 404);
   if (row.revokedAt) return { revoked: false, lastHolderWarning: false };
 
   const now = new Date();

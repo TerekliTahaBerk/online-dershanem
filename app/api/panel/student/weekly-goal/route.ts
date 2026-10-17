@@ -15,7 +15,7 @@ export async function PATCH(request: Request) {
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Hedef 3–180 karakter arasında olmalı." }, { status: 400 });
   const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId }, select: { id: true } });
-  if (!profile) return NextResponse.json({ error: "Öğrenci profili bulunamadı." }, { status: 404 });
+  if (!profile) return NextResponse.json({ error: "Öğrenci profilini bulamadık." }, { status: 404 });
   await prisma.studentProfile.update({ where: { id: profile.id }, data: { weeklyGoal: parsed.data.goal, weeklyGoalUpdatedAt: new Date() } });
   await logAudit({ actorUserId: auth.session.userId, entityType: "StudentProfile", entityId: profile.id, action: "student.weekly_goal_updated", summary: "Haftalık hedef güncellendi" });
   return NextResponse.json({ goal: parsed.data.goal });

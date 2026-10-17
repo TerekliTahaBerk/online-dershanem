@@ -43,10 +43,10 @@ export function StudentWeeklyGoal({ initial }: { initial: string }) {
             const body = await response.json().catch(() => ({}));
             setBusy(false);
             if (!response.ok)
-              return setMessage(body.error || "Hedef kaydedilemedi.");
+              return setMessage(body.error || "Hedefini şu an kaydedemedik 😕 Lütfen tekrar dener misin?");
             setGoal(body.goal);
             setEditing(false);
-            setMessage("Hedefin kaydedildi.");
+            setMessage("Hedefin kaydedildi 🎯 Başarılar!");
           }}
         >
           <textarea

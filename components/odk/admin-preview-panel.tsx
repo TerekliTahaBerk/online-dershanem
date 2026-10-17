@@ -48,12 +48,12 @@ export function AdminPreviewPanel({ examId }: { examId: string }) {
       );
       const result = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setError(result.error || "Önizleme alınamadı.");
+        setError(result.error || "Önizleme şu an alınamadı. Lütfen tekrar dener misiniz?");
         return;
       }
       setPreview(result.preview);
     } catch {
-      setError("Bağlantı kurulamadı.");
+      setError("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?");
     } finally {
       setBusy(false);
     }

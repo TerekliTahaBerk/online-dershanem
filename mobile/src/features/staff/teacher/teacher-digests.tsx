@@ -35,11 +35,11 @@ function DigestBody({ data }: { data: TeacherDigests }) {
   async function submit(input: Command) {
     if (input.action === 'publish' && !await confirmAction({ title: 'Haftalık özeti yayımla', message: 'Önizlemedeki aynı metin öğrenciye ve bağlı aktif velilere açılacak; bildirim gönderilecek.', confirmLabel: 'Yayımla' })) return;
     setState(null);
-    try { await mutation.mutateAsync(input); stable.settle(); setState({ tone: 'success', message: input.action === 'generate' ? 'Özet taslağı hazır. Yayımlamadan önce kontrol edin.' : 'Haftalık özet öğrenci ve veliye açıldı.' }); await invalidate(); }
+    try { await mutation.mutateAsync(input); stable.settle(); setState({ tone: 'success', message: input.action === 'generate' ? 'Özet taslağı hazır ✨ Yayımlamadan önce kontrol etmenizi rica ederiz.' : 'Haftalık özet öğrenci ve veliyle paylaşıldı 🌟' }); await invalidate(); }
     catch (error) { stable.settle(error); setState(writeError(error, 'Özet veya alıcılar değişti. Liste yenilendi; yayımlamadan önce kontrol edin.')); if (error instanceof ApiError && error.kind === 'conflict') await invalidate(); }
   }
   return <><OfflineWriteNotice online={online} /><WriteBanner state={state} />
-    {!data.rows.length && <EmptyState title="Bu hafta için öğrenci yok" body="Aktif gruplarındaki öğrenciler burada görünür." />}
+    {!data.rows.length && <EmptyState title="Bu hafta için öğrenci görünmüyor" body="Aktif gruplarınızdaki öğrenciler burada görünecek." />}
     {data.rows.map((row) => <Section key={row.studentId} title={row.name}>
       <StatusBadge label={!row.digest ? 'Bu hafta taslak yok' : row.digest.status === 'DRAFT' ? 'Önizleme hazır' : 'Yayımlandı'} />
       {row.digest && <><Text variant="label">Öğrenci ve velinin göreceği aynı metin</Text>

@@ -11,7 +11,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const auth = await requireApiProductRole("OK", "ADMIN", "TEACHER");
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().adaptivePlan) {
-    return NextResponse.json({ error: "Haftalık plan henüz açık değil." }, { status: 404 });
+    return NextResponse.json({ error: "Haftalık plan şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   }
 
   const guard = await guardMutation({
@@ -28,21 +28,21 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { id } = await context.params;
   const parsed = coachCopySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
+    return NextResponse.json({ error: "İstek geçerli görünmüyor. Lütfen bilgileri kontrol edip tekrar deneyin." }, { status: 400 });
   }
 
   const source = await prisma.weeklyPlan.findUnique({
     where: { id },
     include: { tasks: { orderBy: [{ scheduledFor: "asc" }, { position: "asc" }] } },
   });
-  if (!source) return NextResponse.json({ error: "Plan bulunamadı." }, { status: 404 });
+  if (!source) return NextResponse.json({ error: "Planı bulamadık." }, { status: 404 });
 
   const allowed = await assertAssignedCoach({
     role: auth.session.role as "ADMIN" | "TEACHER",
     userId: auth.session.userId,
     studentProfileId: source.studentId,
   });
-  if (!allowed) return NextResponse.json({ error: "Bu öğrenci için yetkiniz yok." }, { status: 403 });
+  if (!allowed) return NextResponse.json({ error: "Bu öğrenci için yetkiniz bulunmuyor." }, { status: 403 });
 
   return copyCoachPlan(parsed.data, auth.session.userId, auth.session.fullName || "Koç", prisma, id);
 }

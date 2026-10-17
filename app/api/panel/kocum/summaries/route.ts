@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
   const parsed = coachSummarySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Geçersiz özet." }, { status: 400 });
+    return NextResponse.json({ error: "Özet geçerli görünmüyor." }, { status: 400 });
   }
 
   const allowed = await assertAssignedCoach({
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     userId: auth.session.userId,
     studentProfileId: parsed.data.studentId,
   });
-  if (!allowed) return NextResponse.json({ error: "Bu öğrenci için yetkiniz yok." }, { status: 403 });
+  if (!allowed) return NextResponse.json({ error: "Bu öğrenci için yetkiniz bulunmuyor." }, { status: 403 });
 
   return saveCoachSummary(parsed.data, auth.session.userId, auth.session.fullName || "Koç");
 }

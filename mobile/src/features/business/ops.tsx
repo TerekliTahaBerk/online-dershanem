@@ -39,7 +39,7 @@ function useOpsRunner() {
       setNotice({ tone: 'info', text: success(outcome) });
       return true;
     } catch (cause) {
-      setNotice({ tone: 'critical', text: adminErrorText(cause) ?? 'İşlem kaydedilemedi.' });
+      setNotice({ tone: 'critical', text: adminErrorText(cause) ?? 'İşlemi şu an kaydedemedik. Lütfen tekrar dener misiniz?' });
       return false;
     }
   }

@@ -222,7 +222,7 @@ export async function loadParentCalmHome(input: {
     const first = examNets[0]!;
     const last = examNets[examNets.length - 1]!;
     if (last > first + 1) {
-      examTrendSentence = "Son denemelerde toplam net yükseliyor.";
+      examTrendSentence = "Son denemelerde toplam net yükseliyor 🌱";
     } else if (last < first - 1) {
       examTrendSentence = "Son denemelerde toplam nette geri çekilme görünüyor; kısa bir tekrar faydalı olabilir.";
     } else {
@@ -339,17 +339,17 @@ export async function loadParentCalmHome(input: {
         hasOK && planPct !== null
           ? `Planın %${planPct}'si tamamlandı (${planDone}/${planTotal})`
           : hasOK
-            ? "Bu hafta için plan henüz yok"
+            ? "Bu haftanın planı henüz hazırlanmadı"
             : null,
       attendanceLabel: hasOD
         ? weekAttendance.length
           ? `Ders katılımı ${attended}/${weekAttendance.length}`
-          : "Bu hafta ders kaydı henüz yok"
+          : "Bu hafta henüz bir ders kaydı yok"
         : null,
       assignmentsLabel: hasOD
         ? assignments.length
           ? `Tamamlanan çalışmalar ${doneAssignments}/${assignments.length}`
-          : "Yaklaşan çalışma kaydı yok"
+          : "Yaklaşan bir çalışma görünmüyor"
         : null,
       upcoming: upcoming.slice(0, 3),
     },
@@ -361,7 +361,7 @@ export async function loadParentCalmHome(input: {
           ? strengths
           : status.code === "LIMITED_DATA"
             ? []
-            : ["Görünen kayıtlarda düzenli ilerleme sinyalleri var."],
+            : ["Görünen kayıtlarda düzenli ilerleme sinyalleri var 🌿"],
       supportAreas,
     },
     coaching: hasOK
@@ -371,7 +371,7 @@ export async function loadParentCalmHome(input: {
           planRealization:
             planPct !== null
               ? `Plan gerçekleşme: %${planPct}`
-              : "Plan yayınlandığında gerçekleşme burada görünür.",
+              : "Plan yayınlandığında gerçekleşme oranı burada görünecek.",
           sharedNote: coaching?.sharedNote ?? null,
           coachName: coaching?.coachName ?? null,
           href: withParentStudentContext("/panel/veli/kocluk", selected.id),

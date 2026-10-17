@@ -51,7 +51,7 @@ export function ReasonEditor({
       return setMessage(
         mockExamErrorText(
           await response.json().catch(() => ({})),
-          "Nedenler kaydedilemedi.",
+          "Nedenler şu an kaydedilemedi. Lütfen tekrar dener misiniz?",
         ),
       );
     onSaved(
@@ -60,7 +60,7 @@ export function ReasonEditor({
         errors: values[section.id],
       })),
     );
-    setMessage("Hata nedenleri kaydedildi; değişiklik audit izine alındı.");
+    setMessage("Hata nedenlerin kaydedildi ✅ Bu farkındalık çok değerli!");
   }
   return (
     <details className="mt-3 border-t border-pn-border pt-3">

@@ -20,14 +20,14 @@ export default function ParentLessonsScreen() {
         <ParentQueryView query={query} child={child}>
           {(data) =>
             !data.available ? (
-              <EmptyState title="Bu öğrencide canlı ders ürünü yok" body="onlinedershanem. eklendiğinde ders takvimi ve katılım burada görünür." />
+              <EmptyState title="Bu öğrencinin canlı dersleri henüz açık değil" body="onlinedershanem. eklendiğinde ders takvimi ve katılım bilgisi burada görünecek." />
             ) : !data.lessons.length ? (
-              <EmptyState title="Henüz ders kaydı yok" body="Dersler planlandıkça tarih, öğretmen ve katılım bilgisi burada listelenir." />
+              <EmptyState title="Henüz bir ders kaydı yok 📚" body="Dersler planlandıkça tarih, öğretmen ve katılım bilgisi burada listelenecek." />
             ) : (
               <>
                 <CalendarExport key={child.studentId} studentId={child.studentId} />
                 <Section title="Son ders özeti" first>
-                  <Text tone="secondary">{data.lastSummary ?? 'Öğretmen henüz ders özeti eklemedi. Eklendiğinde burada görünecek.'}</Text>
+                  <Text tone="secondary">{data.lastSummary ?? 'Öğretmen henüz ders özetini eklemedi. Eklendiğinde burada görünecek 📝'}</Text>
                   <Text tone="muted" variant="meta">Öğretmenin öğrenciye özel notları veliyle paylaşılmaz.</Text>
                 </Section>
                 <Section title="Ders listesi">

@@ -15,7 +15,7 @@ it('tekrar oluşturma ağ hatasından sonra aynı anahtar ve öğrenci sürümü
   await press(h, h.screen.getByTestId('review-create'));
   await waitFor(() => expect(attempts).toBe(1), WAIT);
   await press(h, h.screen.getByTestId('review-create'));
-  expect(await h.screen.findByText('Kaynak yarının küçük tekrarlarına eklendi.', {}, WAIT)).toBeTruthy();
+  expect(await h.screen.findByText('Kaynak yarının küçük tekrarlarına eklendi 🔁', {}, WAIT)).toBeTruthy();
   expect(keys).toHaveLength(2); expect(keys[0]).toBe(keys[1]);
   expect(h.server.called('POST', '/api/panel/review-queue')[1].body).toEqual({ studentId: 's1', title: 'Köklü sayılar', sourceReference: 'Föy 2, soru 3' });
 });

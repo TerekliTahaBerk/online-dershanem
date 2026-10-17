@@ -15,7 +15,7 @@ const querySchema = z.object({ ogrenci: z.string().trim().min(1).max(191).option
 export async function GET(request: Request) {
   const auth = await requireAdminApi();
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().mockExamAnalysis) return adminJson({ error: "Deneme analizi henüz açık değil.", code: "FEATURE_DISABLED" }, { status: 404 });
+  if (!getPanelFeatureFlags().mockExamAnalysis) return adminJson({ error: "Deneme analizi şu an kullanıma kapalı, çok yakında açılacak.", code: "FEATURE_DISABLED" }, { status: 404 });
   const query = querySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
   if (!query.success) return invalidApiInput();
   return adminJson(toMobileMockExams(await loadAdminMockExams(), query.data.ogrenci ?? null));

@@ -28,7 +28,7 @@ export async function POST(request: Request, _context: { params: Promise<{ id: s
   const guard = await guardMutation({ action: "panel.setup.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:setup:${auth.session.userId}`, rateLimit: { max: 20, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) { await recordFinished("rejected"); return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 }); }
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) { await recordFinished("validation"); return NextResponse.json({ error: "Kurulum alanlarını kontrol edin." }, { status: 400 }); }
+  if (!parsed.success) { await recordFinished("validation"); return NextResponse.json({ error: "Lütfen kurulum alanlarını bir kez daha kontrol eder misiniz?" }, { status: 400 }); }
   const data = parsed.data; const studentIds = [...new Set(data.studentIds)]; const parentIds = [...new Set(data.parentLinks.map((item) => item.parentId))];
   const counts = { studentCount: studentIds.length, parentLinkCount: data.parentLinks.length, lessonCount: data.repeatWeeks };
   if (data.parentLinks.some((link) => !studentIds.includes(link.studentId))) { await recordFinished("validation", counts); return NextResponse.json({ error: "Veli bağlantısı seçili bir öğrenciye ait değil." }, { status: 400 }); }
@@ -37,7 +37,7 @@ export async function POST(request: Request, _context: { params: Promise<{ id: s
     prisma.studentProfile.findMany({ where: { id: { in: studentIds }, user: { status: "ACTIVE" } }, select: { id: true } }),
     prisma.user.findMany({ where: { id: { in: parentIds }, role: "PARENT", status: "ACTIVE" }, select: { id: true } }),
   ]);
-  if (!teacher || students.length !== studentIds.length || parents.length !== parentIds.length) { await recordFinished("validation", counts); return NextResponse.json({ error: "Öğretmen, öğrenci veya veli seçimini kontrol edin." }, { status: 400 }); }
+  if (!teacher || students.length !== studentIds.length || parents.length !== parentIds.length) { await recordFinished("validation", counts); return NextResponse.json({ error: "Lütfen öğretmen, öğrenci veya veli seçimini bir kez daha kontrol eder misiniz?" }, { status: 400 }); }
   const start = new Date(data.startsAt);
   let group;
   try {

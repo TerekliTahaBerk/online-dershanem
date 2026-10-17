@@ -16,7 +16,7 @@ const DATE = new Intl.DateTimeFormat("tr-TR", {
 });
 
 /** Gecikmiş plan görevi hatırlatmasının başlığı — soğuma süresi buna bakar. */
-const PLAN_OVERDUE_TITLE = "Geciken plan görevi";
+const PLAN_OVERDUE_TITLE = "Yarım kalan bir görevin var 💪";
 
 /**
  * Bu kadar gün geciken görev için bildirim üretilmez. Süresi geçmiş bir
@@ -24,7 +24,7 @@ const PLAN_OVERDUE_TITLE = "Geciken plan görevi";
  * noktadan sonrası koçun yeniden planlama işidir.
  */
 const PLAN_OVERDUE_GIVE_UP_DAYS = OVERDUE_GIVE_UP_DAYS;
-const ASSIGNMENT_OVERDUE_TITLE = "Geciken çalışma hatırlatması";
+const ASSIGNMENT_OVERDUE_TITLE = "Bir ödevin seni bekliyor 📚";
 
 export async function GET(request: Request) {
   return runJob("panel-reminders", request, async () => {
@@ -45,7 +45,7 @@ export async function GET(request: Request) {
     // Veli gecikmeleri yalnız mevcut, onaylanıp yayımlanan haftalık özette görür.
     const rawRows: NotificationRow[] = overdue.map((item) => ({
       userId: item.student.userId, type: "ASSIGNMENT", title: ASSIGNMENT_OVERDUE_TITLE,
-      body: `${item.assignment.title} · son tarih ${DATE.format(item.assignment.dueAt)}. Uygun bir küçük adımla devam edebilirsin.`,
+      body: `${item.assignment.title} · son tarih ${DATE.format(item.assignment.dueAt)} idi. Küçük bir adımla kaldığın yerden devam edebilirsin, yanındayız 🌱`,
       href: "/panel/ogrenci/odevler",
     }));
 
@@ -93,7 +93,7 @@ export async function GET(request: Request) {
           );
           if (overdueDays > PLAN_OVERDUE_GIVE_UP_DAYS) continue;
           planOverdueCount += 1;
-          const body = `${task.title} · planlanan ${DATE.format(task.scheduledFor)}`;
+          const body = `${task.title} · ${DATE.format(task.scheduledFor)} için planlanmıştı. Kısa bir adımla başlamak bile yeter ✨`;
           rawRows.push({
             userId: student.userId,
             type: "SYSTEM",
@@ -103,11 +103,12 @@ export async function GET(request: Request) {
           });
         } else if (key === todayKey || key === formatIstanbulDateInput(addIstanbulCalendarDays(todayStart, 1))) {
           upcomingCount += 1;
-          const body = `${task.title} · ${DATE.format(task.scheduledFor)}`;
+          const today = key === todayKey;
+          const body = `${task.title} · ${DATE.format(task.scheduledFor)}. ${today ? "Hazır olduğunda planın seni bekliyor 🌟" : "Şimdiden aklında olsun, yarın birlikte halledeceğiz 💫"}`;
           rawRows.push({
             userId: student.userId,
             type: "SYSTEM",
-            title: "Yaklaşan plan görevi",
+            title: today ? "Bugünün planında seni bekleyen bir görev var 🎯" : "Yarının planına küçük bir göz at 🗓️",
             body,
             href: "/panel/ogrenci/plan",
           });

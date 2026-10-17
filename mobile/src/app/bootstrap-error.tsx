@@ -10,7 +10,7 @@ export default function BootstrapErrorScreen() {
   const error = state.status === 'BOOTSTRAP_ERROR' ? state.error : null;
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']}>
-      <ErrorState title="Hesap bilgileri yüklenemedi" error={error} onRetry={() => void refreshBootstrap()} />
+      <ErrorState title="Hesap bilgilerini şu an yükleyemedik 😕" error={error} onRetry={() => void refreshBootstrap()} />
       {overlayActive ? <Button label="Yönetim paneline dön" onPress={() => void exitAdminOverlay().catch(() => undefined)} /> : null}
       <Button label="Çıkış yap" variant="quiet" onPress={() => void signOut()} />
     </Screen>

@@ -125,7 +125,7 @@ export function AdminExamCreate({
         body: JSON.stringify(body),
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok) return setMessage({ text: result.error || "Kayıt oluşturulamadı.", error: true });
+      if (!response.ok) return setMessage({ text: result.error || "Kayıt şu an oluşturulamadı. Lütfen tekrar dener misiniz?", error: true });
       if (kind === "exam") {
         router.push(`/panel/odk/yonetim/sinavlar/${result.exam.id}`);
         return;

@@ -26,7 +26,7 @@ export async function runCoachingReminders(now: Date) {
     const recipients = new Map([[session.assignment.student.userId, "/panel/ogrenci/kocluk"]]);
     for (const link of session.assignment.student.parents) recipients.set(link.parentId, `/panel/veli/kocluk?studentId=${session.assignment.studentId}`);
     let count = 0;
-    for (const [userId, href] of recipients) count += await queueReminderNotification(tx, { id: `${userId}:COACHING:${session.id}:T24:${session.scheduledAt.toISOString()}`, userId, type: "SYSTEM", title: "Yarınki koçluk görüşmeniz", body: `${DATE.format(session.scheduledAt)}. Katılım bilgisini koçluk ekranından kontrol edebilirsiniz.`, href }, "lessonSummary");
+    for (const [userId, href] of recipients) count += await queueReminderNotification(tx, { id: `${userId}:COACHING:${session.id}:T24:${session.scheduledAt.toISOString()}`, userId, type: "SYSTEM", title: href.startsWith("/panel/veli/") ? "Yarın koçluk görüşmesi var 🤝" : "Yarın koçunla görüşüyorsun 🤝", body: href.startsWith("/panel/veli/") ? `${DATE.format(session.scheduledAt)}. Katılım bilgisini koçluk ekranından görebilirsiniz.` : `${DATE.format(session.scheduledAt)}. Konuşmak istediklerini aklının bir köşesine not etmeye ne dersin? ✍️`, href }, "lessonSummary");
     return count;
   });
   return { processed: sessions.length, notifications };
@@ -40,7 +40,7 @@ export async function runCoachPlanApprovalReminders(now = new Date()) {
   for (const candidate of assignments) notifications += await prisma.$transaction(async (tx) => {
     const assignment = await tx.coachAssignment.findFirst({ where: { ...scope, id: candidate.id }, select: { id: true, studentId: true, coach: { select: { userId: true } } } });
     if (!assignment) return 0;
-    return queueReminderNotification(tx, { id: `${assignment.coach.userId}:PLAN:${assignment.id}:APPROVAL:${formatIstanbulDateInput(weekStart)}`, userId: assignment.coach.userId, type: "SYSTEM", title: "Haftalık plan onay bekliyor", body: "Bu haftanın planını kontrol edip öğrenciyle paylaşabilirsiniz.", href: `/panel/ogretmen/hazirlik/${assignment.studentId}` }, "weeklyDigest");
+    return queueReminderNotification(tx, { id: `${assignment.coach.userId}:PLAN:${assignment.id}:APPROVAL:${formatIstanbulDateInput(weekStart)}`, userId: assignment.coach.userId, type: "SYSTEM", title: "Haftalık plan onayınızı bekliyor 🗓️", body: "Bu haftanın planına kısaca göz atıp öğrencinizle paylaşabilirsiniz.", href: `/panel/ogretmen/hazirlik/${assignment.studentId}` }, "weeklyDigest");
   });
   return { processed: assignments.length, notifications };
 }

@@ -25,7 +25,7 @@ export async function generateCalmDigest(studentId: string, generatedById: strin
   const content = buildCalmWeeklyDigest({ currentAttendance: summarize(weekStart, weekEnd), previousAttendance: summarize(previousStart, weekStart), completedTaskCount: completedTasks, overdueAssignmentCount, evidenceTitles: evidence.map((item) => item.outcome.title), reviewTitle: review?.title, dataThrough: now });
   if (existing) {
     const changed = await db.weeklyDigest.updateMany({ where: { id: existing.id, status: "DRAFT", version: existing.version }, data: { ruleVersion: CALM_DIGEST_RULE_VERSION, generatedById, ...content, version: { increment: 1 } } });
-    if (changed.count !== 1) throw new GroupMutationError("DIGEST_CONFLICT", "Özet değişti. Güncel görünümü kontrol edin.");
+    if (changed.count !== 1) throw new GroupMutationError("DIGEST_CONFLICT", "Özet bu arada güncellenmiş. Güncel hâline göz atmanızı rica ederiz.");
   }
   const digest = existing
     ? await db.weeklyDigest.findUniqueOrThrow({ where: { id: existing.id } })

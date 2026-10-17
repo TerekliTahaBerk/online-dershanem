@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz bildirim filtreleri." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Bildirim filtreleri geçerli görünmüyor." }, { status: 400 });
   const selectedType: NotificationType | null = parsed.data.type ?? null;
   const selectedStatus = parsed.data.status;
   const page = parsed.data.page;

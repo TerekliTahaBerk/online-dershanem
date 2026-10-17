@@ -13,12 +13,12 @@ import { requireStaffApi, staffFeatureDisabled, staffJson, staffNotFound } from 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireStaffApi("OD", "od:lesson:teach");
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().assignmentEvidence) return staffFeatureDisabled("Kanıtlı teslim henüz açık değil.");
+  if (!getPanelFeatureFlags().assignmentEvidence) return staffFeatureDisabled("Kanıtlı teslim şu an kullanıma kapalı, çok yakında açılacak.");
   const params = idParamsSchema.safeParse(await context.params);
   if (!params.success) return invalidApiInput();
   const { id } = params.data;
   const row = await loadTeacherSubmission(auth.session.userId, id);
-  if (!row) return staffNotFound("Teslim bulunamadı.");
+  if (!row) return staffNotFound("Teslim bulunamadı; kaldırılmış ya da değişmiş olabilir.");
   return staffJson({
     contractVersion: MOBILE_STAFF_CONTRACT_VERSION,
     id: row.id,

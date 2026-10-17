@@ -37,7 +37,7 @@ export default async function StudentDinoPage() {
       <div className="max-w-[880px]">
         <PanelHeading
           title="Dino AI"
-          description="Panelindeki kendi kayıtlarını sade bir dille açıklar. Yeni bilgi üretmez; dayanakları gösterir."
+          description="Panelindeki kayıtlarını sade ve anlaşılır bir dille açıklar 🦕 Yeni bilgi uydurmaz; her açıklamanın dayanağını gösterir."
         />
         {questions.length ? (
           <div className="mt-6">
@@ -45,8 +45,8 @@ export default async function StudentDinoPage() {
           </div>
         ) : (
           <PanelEmpty
-            title="Dino için hazır bir soru yok."
-            body="Ürün erişimin tanımlandığında Dino'nun açıklayabileceği sorular burada görünür."
+            title="Dino'nun şimdilik açıklayacağı bir soru yok 🦕"
+            body="Ürün erişimin tanımlandığında Dino'ya sorabileceğin sorular burada görünecek."
           />
         )}
       </div>

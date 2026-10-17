@@ -87,7 +87,7 @@ export function OdkStaffHome({
               ))}
             </List>
           ) : (
-            <EmptyState title="Şu an sorumluluğunuzda bekleyen iş yok." body="Hazırlık, puanlama, yayın ve bütünlük işleri burada sıralanır." />
+            <EmptyState title="Şu an sorumluluğunuzda bekleyen iş yok ✅" body="Hazırlık, puanlama, yayın ve bütünlük işleri burada sıralanır." />
           )}
         </Section>
 

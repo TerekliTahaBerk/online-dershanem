@@ -39,13 +39,13 @@ export function SuggestionReviewButtons({
         setError(
           typeof body?.error === "string" && body.error
             ? body.error
-            : "İşlem kaydedilemedi. Lütfen tekrar dene.",
+            : "İşlemi şu an kaydedemedik. Lütfen tekrar dener misin?",
         );
         return;
       }
       router.refresh();
     } catch {
-      setError("Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.");
+      setError("Bağlantı kurulamadı. İnternetini kontrol edip tekrar dener misin?");
     } finally {
       setBusy(null);
     }

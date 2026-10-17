@@ -177,7 +177,7 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
     page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: "Denemeyi teslim et" }).click();
     await page.waitForURL(new RegExp(`/panel/odk/ogrenci/denemeler/${examId}$`));
-    await expect(page.getByText("Denemen tamamlandı.")).toBeVisible();
+    await expect(page.getByText("Denemeni tamamladın, emeğine sağlık! 🎉")).toBeVisible();
     expect((await page.request.get(`/api/odk/student/exams/${examId}/answer-key`)).status()).toBe(404);
     await page.goto(`/panel/odk/ogrenci/denemeler/${examId}/sonuc`);
     await expect(page.getByRole("heading", { name: "Sayfa bulunamadı" })).toBeVisible();
@@ -238,7 +238,7 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
     await page.getByRole("button", { name: "E", exact: true }).click();
     await expect.poll(async () => (await prisma.odkAttemptAnswer.findUniqueOrThrow({ where: { attemptId_questionId: { attemptId, questionId: question1 } } })).selectedOption, { timeout: 15_000 }).toBe("E");
     // Masaüstünde başlıkta, mobilde cevap panelinde gösterilir; görünen kopya yeterli.
-    await expect(page.getByText("Tüm cevaplar kaydedildi").filter({ visible: true }).first()).toBeVisible();
+    await expect(page.getByText("Tüm cevapların kaydedildi ✅").filter({ visible: true }).first()).toBeVisible();
 
     page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: "Denemeyi teslim et" }).click();
@@ -319,7 +319,7 @@ test.describe("@odk-critical ODK zorunlu sınav matrisi", () => {
     await login(page);
     await page.goto(`/panel/odk/ogrenci/denemeler/${examId}/coz`);
     await page.waitForURL(new RegExp(`/panel/odk/ogrenci/denemeler/${examId}$`), { timeout: 20_000 });
-    await expect(page.getByText("Denemen tamamlandı.")).toBeVisible();
+    await expect(page.getByText("Denemeni tamamladın, emeğine sağlık! 🎉")).toBeVisible();
     const attempt = await prisma.odkExamAttempt.findUniqueOrThrow({ where: { id: attemptId } });
     expect(attempt.status).toBe("AUTO_SUBMITTED");
   });

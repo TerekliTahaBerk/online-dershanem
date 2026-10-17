@@ -25,7 +25,7 @@ export async function reviewAttemptIntegrity(actorUserId: string, attemptId: str
     digestOf: { attemptId, input, expectedRevision: control.expectedRevision ?? null },
     transactional: async (tx) => {
       const attempt = await tx.odkExamAttempt.findUnique({ where: { id: attemptId }, select: { id: true, examId: true, status: true, integrityLevel: true, integrityReviewedAt: true } });
-      if (!attempt) throw new CommandError(404, "NOT_FOUND", "Oturum bulunamadı.");
+      if (!attempt) throw new CommandError(404, "NOT_FOUND", "Oturumu bulamadık.");
       if (control.expectedRevision && attemptReviewRevision(attempt) !== control.expectedRevision) {
         throw new CommandError(409, "STALE_REVISION", "Kayıt başka bir işlemde değişti. Güncel durumu kontrol edin.");
       }

@@ -20,11 +20,11 @@ export default function TeacherStudentsScreen() {
     <QueryView query={query}>{(data) => <>
       <FilterChips label="Öğrenci görünümü" value={data.filter} onChange={setFilter} options={data.filters.map((item) => ({ value: item.id, label: item.label }))} />
       {data.rows.length ? <Section title={`${data.totalCount} öğrenci`} first>{data.rows.map((item) => <Row
-        key={item.studentId} title={item.name} subtitle={`${item.groupName} · ${item.riskReason ?? 'Aksiyon gerektiren sinyal yok'}`}
+        key={item.studentId} title={item.name} subtitle={`${item.groupName} · ${item.riskReason ?? 'Her şey yolunda görünüyor 🌱'}`}
         meta={[item.lastLessonAt ? `Son ders: ${formatShortDateTime(item.lastLessonAt)}${item.lastLessonTitle ? ` · ${item.lastLessonTitle}` : ''}` : null, item.planLabel, item.examDeltaLabel ? `${item.examDeltaLabel} net` : null].filter(Boolean).join(' · ')}
         trailing={<StatusBadge {...risk[item.riskLevel]} />}
         onPress={() => router.push(`/teacher/student/${encodeURIComponent(item.studentId)}` as Href)}
-      />)}</Section> : <EmptyState title={data.totalCount ? 'Bu filtrede öğrenci yok' : 'Sana atanmış aktif öğrenci yok'} />}
+      />)}</Section> : <EmptyState title={data.totalCount ? 'Bu filtrede öğrenci görünmüyor' : 'Sana atanmış aktif bir öğrenci henüz yok'} />}
     </>}</QueryView>
   </Screen>;
 }

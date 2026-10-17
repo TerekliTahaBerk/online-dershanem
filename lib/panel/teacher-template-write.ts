@@ -20,7 +20,7 @@ export async function writeTeacherTemplate(request: Request, id?: string) {
   const guard = await guardMutation({ action: `panel.teacher.templates.${request.method.toLowerCase()}`, requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:teacher-template:${teacherId}`, rateLimit: { max: 40, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return json({ error: guard.message }, guard.code === "RATE_LIMIT" ? 429 : 403);
   const input = request.method === "DELETE" ? null : fields.safeParse(await request.json().catch(() => null));
-  if (input && !input.success) return json({ error: "Şablon alanlarını kontrol edin." }, 400);
+  if (input && !input.success) return json({ error: "Lütfen şablon alanlarını bir kez daha kontrol eder misiniz?" }, 400);
   const control = controls.safeParse({ key: request.headers.get("X-Od-Idempotency-Key") ?? undefined, revision: request.headers.get("X-Od-Expected-Revision") ?? undefined });
   if (!control.success || (/^Bearer\s+/i.test(request.headers.get("authorization") ?? "") && (!control.data.key || (id && !control.data.revision)))) return json({ error: "İşlem anahtarı ve güncel şablon sürümü gerekli." }, 400);
   const { key, revision } = control.data;
@@ -34,8 +34,8 @@ export async function writeTeacherTemplate(request: Request, id?: string) {
         if (receipt) return readGroupReceipt(receipt.payload, digest);
       }
       const existing = id ? await tx.teacherNoteTemplate.findFirst({ where: { id, teacherId }, select }) : null;
-      if (id && !existing) throw new GroupMutationError("NOT_FOUND", "Şablon bulunamadı.", 404);
-      if (existing && revision && operationDigest(existing) !== revision) throw new GroupMutationError("TEMPLATE_CONFLICT", "Şablon değişti. Güncel kaydı kontrol edin.");
+      if (id && !existing) throw new GroupMutationError("NOT_FOUND", "Şablon bulunamadı; kaldırılmış ya da değişmiş olabilir.", 404);
+      if (existing && revision && operationDigest(existing) !== revision) throw new GroupMutationError("TEMPLATE_CONFLICT", "Şablon bu arada güncellenmiş; güncel hâline göz atıp tekrar deneyebilirsiniz.");
       if (!id && await tx.teacherNoteTemplate.count({ where: { teacherId } }) >= 20) throw new GroupMutationError("TEMPLATE_LIMIT", "En fazla 20 kişisel şablon kaydedebilirsiniz.", 400);
       let output: Record<string, unknown>;
       if (request.method === "DELETE") {
@@ -52,7 +52,7 @@ export async function writeTeacherTemplate(request: Request, id?: string) {
     return json(result);
   } catch (error) {
     if (error instanceof GroupMutationError) return json({ error: error.message, code: error.code }, error.status);
-    if (error && typeof error === "object" && "code" in error && ["P2034", "P2002"].includes(String(error.code))) return json({ error: "Şablon değişti. Tekrar deneyin.", code: "TEMPLATE_CONFLICT" }, 409);
+    if (error && typeof error === "object" && "code" in error && ["P2034", "P2002"].includes(String(error.code))) return json({ error: "Şablon bu arada güncellenmiş; lütfen tekrar dener misiniz?", code: "TEMPLATE_CONFLICT" }, 409);
     throw error;
   }
 }

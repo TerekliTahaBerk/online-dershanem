@@ -52,7 +52,7 @@ export default async function ParentAssignmentsPage({
 
   if (!selected) {
     return shell(
-      <EmptyState title="Bağlı öğrenci yok." body="Ödev özeti öğrenci eşleşince açılır." />,
+      <EmptyState title="Henüz bağlı bir öğrenci yok" body="Öğrenci eşleştirmesi tamamlandığında ödev özeti burada açılacak." />,
     );
   }
 
@@ -68,11 +68,11 @@ export default async function ParentAssignmentsPage({
     <>
       <PageHeader
         title={PANEL_DOMAIN.odev}
-        description={`Aktif ${active.length} · geciken ${late.length}. Ödev içerikleri öğretmen tarafından yönetilir; burada yalnız izlenir.`}
+        description={`Aktif ${active.length} · geciken ${late.length}. Ödevleri öğretmen yönetir; siz buradan rahatça takip edebilirsiniz 📚`}
         metadata={<ChildContext options={children} selectedId={selected.id} basePath="/panel/veli/odevler" />}
       />
       {rows.length === 0 ? (
-        <EmptyState className="mt-5" title="Aktif ödev yok." body="Öğretmenden ödev geldiğinde burada görünür." />
+        <EmptyState className="mt-5" title="Şu an aktif bir ödev yok 🎈" body="Öğretmenden yeni bir ödev geldiğinde burada görünecek." />
       ) : (
         <PanelTable caption={`${selected.name} · ödevler`} columns={["Ödev", "Öğretmen", "Son tarih", "Durum"]}>
           {rows.map(({ assignment, status }) => (

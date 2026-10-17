@@ -28,14 +28,14 @@ export function ForgotPasswordForm() {
         error?: string;
       };
       if (!response.ok || !data.message) {
-        setError(data.error ?? "İstek tamamlanamadı. Lütfen tekrar deneyin.");
+        setError(data.error ?? "İsteğinizi şu an tamamlayamadık. Lütfen tekrar dener misiniz?");
         setPending(false);
         return;
       }
       setMessage(data.message);
     } catch {
       setError(
-        "Bağlantı kurulamadı. İnternetinizi kontrol edip tekrar deneyin.",
+        "Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?",
       );
       setPending(false);
     }
@@ -54,7 +54,7 @@ export function ForgotPasswordForm() {
         </p>
         <p className="mt-2 text-[13px] leading-6 text-(--site-muted)">
           E-postadaki bağlantı 60 dakika geçerlidir. Gelen kutunuzda yoksa spam
-          klasörünü de kontrol edin.
+          klasörüne de bir göz atmanızı öneririz 📬
         </p>
         {/*
           Dürüst çıkış yolu: hesaplar ödeme sonrası otomatik açıldığı için
@@ -62,8 +62,8 @@ export function ForgotPasswordForm() {
           admin de sıfırlayabiliyor; o kanalı burada açıkça söylüyoruz.
         */}
         <p className="mt-4 rounded-[12px] border border-(--site-line) bg-(--site-bg-warm) px-4 py-3 text-[13px] leading-6 text-(--site-body)">
-          Birkaç dakika içinde e-posta ulaşmazsa bize yazın; hesabınızı
-          doğrulayıp parolanızı biz sıfırlayalım.
+          Birkaç dakika içinde e-posta ulaşmazsa bize yazmanız yeterli; hesabınızı
+          doğrulayıp parolanızı hemen sıfırlayalım 🤝
         </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
           <Link href="/giris" className="items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px] inline-flex">

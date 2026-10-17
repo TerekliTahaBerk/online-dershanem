@@ -36,10 +36,10 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "İstek okunamadı." }, { status: 400 });
+    return NextResponse.json({ error: "İsteği okuyamadık. Lütfen tekrar dener misiniz?" }, { status: 400 });
   }
   const parsed = bodySchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz ürün." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Ürün geçerli görünmüyor." }, { status: 400 });
   const { product } = parsed.data;
 
   // Gerçek oturum (preview overlay'siz): seçim aktörün oturumuna yazılır.
@@ -48,14 +48,14 @@ export async function POST(request: Request) {
 
   const products = await getAccessibleProducts(actor.userId, actor.role);
   if (!products.includes(product)) {
-    return NextResponse.json({ error: "Bu ürüne erişiminiz yok.", code: "PRODUCT_ACCESS_REQUIRED" }, { status: 403 });
+    return NextResponse.json({ error: "Bu ürüne henüz erişiminiz bulunmuyor.", code: "PRODUCT_ACCESS_REQUIRED" }, { status: 403 });
   }
   if (!(await checkProductPanelPilot(actor.userId, actor.role, product))) {
-    return NextResponse.json({ error: "Bu panel şu anda erişime kapalı.", code: "PILOT_UNAVAILABLE" }, { status: 403 });
+    return NextResponse.json({ error: "Bu panel şu an erişime kapalı, çok yakında yeniden açılacak.", code: "PILOT_UNAVAILABLE" }, { status: 403 });
   }
 
   const entry = await resolveProductEntryPath(actor, product);
-  if (!entry) return NextResponse.json({ error: "Bu ürüne erişiminiz yok.", code: "PRODUCT_ACCESS_REQUIRED" }, { status: 403 });
+  if (!entry) return NextResponse.json({ error: "Bu ürüne henüz erişiminiz bulunmuyor.", code: "PRODUCT_ACCESS_REQUIRED" }, { status: 403 });
 
   await prisma.session.update({ where: { id: actor.sessionId }, data: { activeProduct: product } });
   return NextResponse.json({ redirect: withWorkspace(entry, product) });

@@ -14,7 +14,7 @@ import { featureDisabled, parentJson, requireParentChild } from "@/lib/panel/par
 export async function GET(request: Request) {
   const scope = await requireParentChild(request);
   if (!scope.ok) return scope.response;
-  if (!getPanelFeatureFlags().parentWeeklyDigest) return featureDisabled("Haftalık özet henüz açık değil.");
+  if (!getPanelFeatureFlags().parentWeeklyDigest) return featureDisabled("Haftalık özet şu an kullanıma kapalı, çok yakında açılacak.");
   const session = scope.auth.session;
   const [{ digest, upcoming }, feedbackAvailable] = await Promise.all([
     loadParentDigest(session.userId, scope.child),

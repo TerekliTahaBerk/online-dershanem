@@ -59,7 +59,7 @@ export async function loadBookletAssignments(examId: string, db: Db = prisma) {
 
 export async function setBookletAssignment(examId: string, input: { studentUserId: string; bookletCode: string | null }, actorId: string, db: Db = prisma) {
   const exam = await db.odkExam.findUnique({ where: { id: examId }, select: { status: true, currentVersion: { select: { id: true, bookletOrders: { select: { bookletCode: true }, distinct: ["bookletCode"] } } } } });
-  if (!exam?.currentVersion) return NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 });
+  if (!exam?.currentVersion) return NextResponse.json({ error: "Denemeyi bulamadık." }, { status: 404 });
   if (["ENDED", "SCORED", "RELEASED", "ARCHIVED"].includes(exam.status)) return NextResponse.json({ error: "Sınav bittikten sonra kitapçık seçimi değiştirilemez." }, { status: 409 });
   const codes = bookletCodesOf(exam.currentVersion.bookletOrders);
   if (input.bookletCode && !codes.includes(input.bookletCode)) return NextResponse.json({ error: `${input.bookletCode} kitapçığı bu denemede tanımlı değil.`, code: "BOOKLET_NOT_DEFINED" }, { status: 400 });

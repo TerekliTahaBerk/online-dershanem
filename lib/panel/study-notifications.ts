@@ -53,8 +53,8 @@ export async function notifyAssignmentCreated(db: Db, assignmentId: string) {
   const teacher = assignment.group.teacher.fullName?.trim();
   const event = `ASSIGNMENT:${assignment.id}:NEW`;
   const rows = assignment.group.enrollments.flatMap(({ student }) => [
-    row(student.userId, event, "ASSIGNMENT:NEW", "Yeni ödev", `${assignment.title} · ${assignment.group.name}${teacher ? ` · ${teacher}` : ""} · son tarih ${due}`, "/panel/ogrenci/odevler"),
-    ...student.parents.map((link) => row(link.parentId, `${event}:${student.id}`, "ASSIGNMENT:NEW", "Çocuğunuza yeni ödev verildi", `${studentName(student)} · ${assignment.title} · son tarih ${due}`, parentHref("/panel/veli/odevler", student.id))),
+    row(student.userId, event, "ASSIGNMENT:NEW", "Yeni bir ödevin var 📚", `${assignment.title} · ${assignment.group.name}${teacher ? ` · ${teacher}` : ""} · son tarih ${due}. Kendi temponda başlayabilirsin 🌱`, "/panel/ogrenci/odevler"),
+    ...student.parents.map((link) => row(link.parentId, `${event}:${student.id}`, "ASSIGNMENT:NEW", "Çocuğunuza yeni bir ödev verildi 📚", `${studentName(student)} · ${assignment.title} · son tarih ${due}`, parentHref("/panel/veli/odevler", student.id))),
   ]);
   return deliver(db, rows);
 }
@@ -69,8 +69,8 @@ export async function notifyAssignmentCompleted(db: Db, input: { assignmentId: s
   const name = studentName(student);
   const event = `ASSIGNMENT:${assignment.id}:${student.id}:DONE`;
   return deliver(db, [
-    row(assignment.group.teacherId, event, "ASSIGNMENT:DONE", "Ödev tamamlandı", `${name} · ${assignment.title} (${assignment.group.name}) ödevini tamamladı.`, "/panel/ogretmen/odevler"),
-    ...student.parents.map((link) => row(link.parentId, event, "ASSIGNMENT:DONE", "Çocuğunuz ödevini tamamladı", `${name} · ${assignment.title} ödevini tamamladı.`, parentHref("/panel/veli/odevler", student.id))),
+    row(assignment.group.teacherId, event, "ASSIGNMENT:DONE", "Bir ödev tamamlandı ✅", `${name} · ${assignment.title} (${assignment.group.name}) ödevini tamamladı.`, "/panel/ogretmen/odevler"),
+    ...student.parents.map((link) => row(link.parentId, event, "ASSIGNMENT:DONE", "Çocuğunuz ödevini tamamladı 🎉", `${name} · ${assignment.title} ödevini tamamladı. Küçük bir tebrik ona iyi gelebilir 💛`, parentHref("/panel/veli/odevler", student.id))),
   ]);
 }
 
@@ -83,7 +83,7 @@ export async function notifyAssignmentSubmitted(db: Db, input: { submissionId: s
   if (!submission) return 0;
   const retry = submission.attemptNumber > 1 ? ` (${submission.attemptNumber}. deneme)` : "";
   return deliver(db, [
-    row(submission.assignment.group.teacherId, `SUBMISSION:${submission.id}`, "ASSIGNMENT:SUBMITTED", "Değerlendirme bekleyen ödev", `${studentName(submission.student)} · ${submission.assignment.title}${retry} teslim etti.`, "/panel/ogretmen/odevler"),
+    row(submission.assignment.group.teacherId, `SUBMISSION:${submission.id}`, "ASSIGNMENT:SUBMITTED", "Değerlendirmenizi bekleyen bir ödev var 📥", `${studentName(submission.student)} · ${submission.assignment.title}${retry} teslim etti.`, "/panel/ogretmen/odevler"),
   ]);
 }
 
@@ -99,9 +99,9 @@ export async function notifyAssignmentReviewed(db: Db, input: { submissionId: st
   const title = submission.assignment.title;
   return deliver(db, [
     input.approved
-      ? row(student.userId, event, "ASSIGNMENT:REVIEWED", "Ödevin onaylandı", `${title} · öğretmeninin geri bildirimi hazır.`, "/panel/ogrenci/odevler")
-      : row(student.userId, event, "ASSIGNMENT:REVIEWED", "Ödevin için yeniden deneme hazır", `${title} · geri bildirimi inceleyip yeni bir deneme gönderebilirsin.`, "/panel/ogrenci/odevler"),
-    ...student.parents.map((link) => row(link.parentId, event, "ASSIGNMENT:REVIEWED", input.approved ? "Ödev onaylandı" : "Ödev için düzeltme istendi", `${studentName(student)} · ${title} ${input.approved ? "öğretmen tarafından onaylandı." : "için öğretmen yeni bir deneme istedi."}`, parentHref("/panel/veli/odevler", student.id))),
+      ? row(student.userId, event, "ASSIGNMENT:REVIEWED", "Ödevin onaylandı, tebrikler! 🎉", `${title} · öğretmeninin geri bildirimi seni bekliyor.`, "/panel/ogrenci/odevler")
+      : row(student.userId, event, "ASSIGNMENT:REVIEWED", "Ödevin için küçük bir dokunuş kaldı ✍️", `${title} · öğretmeninin notlarına göz atıp yeni bir deneme gönderebilirsin. Çok az kaldı! 💪`, "/panel/ogrenci/odevler"),
+    ...student.parents.map((link) => row(link.parentId, event, "ASSIGNMENT:REVIEWED", input.approved ? "Ödev onaylandı 🎉" : "Ödev için küçük bir düzeltme istendi ✍️", `${studentName(student)} · ${title} ${input.approved ? "öğretmen tarafından onaylandı." : "için öğretmen küçük bir düzeltme ve yeni bir deneme istedi."}`, parentHref("/panel/veli/odevler", student.id))),
   ]);
 }
 
@@ -132,8 +132,8 @@ export async function notifyPlanTaskCompleted(db: Db, input: { taskId: string; s
   const progress = `günün görevleri: ${done}/${dayTasks.length} tamamlandı`;
   const body = `${name} · "${task.title}" görevini ${verb}. (${progress})`;
   const event = `PLAN_TASK:${task.id}:${input.status}`;
-  const coachTitle = dayFinished ? "Öğrencin günün planını bitirdi" : input.status === "COULD_NOT" ? "Öğrencin bir görevi yapamadı" : "Plan görevi tamamlandı";
-  const parentTitle = dayFinished ? "Çocuğunuz günün planını bitirdi" : input.status === "COULD_NOT" ? "Çocuğunuz bir görevi yapamadı" : "Çocuğunuz bir görevi tamamladı";
+  const coachTitle = dayFinished ? "Öğrencin günün planını bitirdi 🎉" : input.status === "COULD_NOT" ? "Öğrencin bir görevde desteğe ihtiyaç duyabilir 🤝" : "Bir plan görevi tamamlandı ✅";
+  const parentTitle = dayFinished ? "Çocuğunuz günün planını bitirdi 🎉" : input.status === "COULD_NOT" ? "Çocuğunuz bir görevde zorlandı 🤝" : "Çocuğunuz bir görevi tamamladı ✅";
   const coaches = [...new Set(student.coachAssignments.map((item) => item.coach.userId))];
   return deliver(db, [
     ...coaches.map((userId) => row(userId, event, "PLAN_TASK:DONE", coachTitle, body, `/panel/ogretmen/hazirlik/${student.id}`)),
@@ -152,8 +152,8 @@ export async function notifyPlanTaskAdded(db: Db, input: { taskId: string }) {
   const day = DATE.format(task.scheduledFor);
   const event = `PLAN_TASK:${task.id}:ADDED`;
   return deliver(db, [
-    row(student.userId, event, "PLAN_TASK:ADDED", "Planına yeni görev eklendi", `${task.title} · ${day}`, "/panel/ogrenci/plan"),
-    ...student.parents.map((link) => row(link.parentId, event, "PLAN_TASK:ADDED", "Koç plana yeni görev ekledi", `${studentName(student)} · ${task.title} · ${day}`, parentHref("/panel/veli/kocluk", student.id))),
+    row(student.userId, event, "PLAN_TASK:ADDED", "Planına yeni bir görev eklendi 🗓️", `${task.title} · ${day}`, "/panel/ogrenci/plan"),
+    ...student.parents.map((link) => row(link.parentId, event, "PLAN_TASK:ADDED", "Koç plana yeni bir görev ekledi 🗓️", `${studentName(student)} · ${task.title} · ${day}`, parentHref("/panel/veli/kocluk", student.id))),
   ]);
 }
 
@@ -166,5 +166,5 @@ export async function notifyPlanPublishedToParents(db: Db, input: { planId: stri
   if (!plan) return 0;
   const { student } = plan;
   const event = `PLAN:${plan.id}:PUBLISHED`;
-  return deliver(db, student.parents.map((link) => row(link.parentId, event, "PLAN:PUBLISHED", "Haftalık plan yayınlandı", `${studentName(student)} · ${DATE.format(plan.weekStart)} haftası · ${plan._count.tasks} görev`, parentHref("/panel/veli/kocluk", student.id))));
+  return deliver(db, student.parents.map((link) => row(link.parentId, event, "PLAN:PUBLISHED", "Haftalık plan hazır 🗓️", `${studentName(student)} · ${DATE.format(plan.weekStart)} haftası · ${plan._count.tasks} görev`, parentHref("/panel/veli/kocluk", student.id))));
 }

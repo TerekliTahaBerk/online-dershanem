@@ -114,7 +114,7 @@ export function OverviewPanel(props: OverviewPanelProps) {
                 </p>
               ))
             ) : (
-              <EmptyLine text="Açık müdahale yok." />
+              <EmptyLine text="Açık müdahale yok ✅" />
             )}
           </div>
         </PanelCard>

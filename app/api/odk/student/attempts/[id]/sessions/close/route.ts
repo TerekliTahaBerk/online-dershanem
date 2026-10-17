@@ -42,9 +42,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     where: { id, studentUserId: auth.session.userId },
     select: { id: true, status: true, startedAt: true, deadlineAt: true, version: { select: { settings: true } } },
   });
-  if (!attempt) return NextResponse.json({ error: "Sınav oturumu bulunamadı." }, { status: 404 });
+  if (!attempt) return NextResponse.json({ error: "Sınav oturumunu bulamadık." }, { status: 404 });
   if (attempt.status !== "IN_PROGRESS" || now >= attempt.deadlineAt) {
-    return NextResponse.json({ error: "Sınav süresi sona erdi.", code: "ATTEMPT_CLOSED" }, { status: 409 });
+    return NextResponse.json({ error: "Sınav süresi doldu.", code: "ATTEMPT_CLOSED" }, { status: 409 });
   }
   const state = await loadAttemptSessionState(
     { id: attempt.id, startedAt: attempt.startedAt, deadlineAt: attempt.deadlineAt, settings: attempt.version.settings },

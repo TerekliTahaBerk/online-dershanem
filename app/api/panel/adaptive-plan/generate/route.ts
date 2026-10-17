@@ -53,7 +53,7 @@ export async function POST(request: Request) {
   }
   if (!auth.ok) return auth.response;
 
-  if (!getPanelFeatureFlags().adaptivePlan) return NextResponse.json({ error: "Haftalık plan henüz açık değil." }, { status: 404 });
+  if (!getPanelFeatureFlags().adaptivePlan) return NextResponse.json({ error: "Haftalık plan şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.adaptive_plan.generate", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:plan-generate:${auth.session.userId}`, rateLimit: { max: 12, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const raw = await request.text().catch(() => "");
@@ -62,17 +62,17 @@ export async function POST(request: Request) {
     let json: unknown = null;
     try { json = JSON.parse(raw); } catch { json = null; }
     const parsed = bodySchema.safeParse(json);
-    if (!parsed.success) return NextResponse.json({ error: "Plan isteği geçersiz.", code: "INVALID_INPUT" }, { status: 400 });
+    if (!parsed.success) return NextResponse.json({ error: "Plan isteği geçerli görünmüyor.", code: "INVALID_INPUT" }, { status: 400 });
     parsedBody = parsed.data;
   }
   if (/^Bearer\s+/i.test(request.headers.get("authorization") ?? "") && !parsedBody) {
-    return NextResponse.json({ error: "Plan sürümü eksik. Görünümü yenileyin.", code: "PRECONDITION_REQUIRED" }, { status: 400 });
+    return NextResponse.json({ error: "Plan sürümü eksik. Sayfayı yenileyip tekrar deneyebilirsiniz.", code: "PRECONDITION_REQUIRED" }, { status: 400 });
   }
   const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId }, include: { planPreference: true } });
-  if (!profile) return NextResponse.json({ error: "Öğrenci profili bulunamadı." }, { status: 404 });
+  if (!profile) return NextResponse.json({ error: "Öğrenci profilini bulamadık." }, { status: 404 });
   const preference = profile.planPreference;
-  if (!preference) return NextResponse.json({ error: "Önce uygun gün ve çalışma sürenizi seçin." }, { status: 400 });
-  if (!preference.planningEnabled) return NextResponse.json({ error: "Haftalık plan tercihiniz kapalı." }, { status: 400 });
+  if (!preference) return NextResponse.json({ error: "Önce uygun günlerini ve çalışma süreni seçmen yeterli 😊" }, { status: 400 });
+  if (!preference.planningEnabled) return NextResponse.json({ error: "Haftalık plan tercihiniz şu an kapalı." }, { status: 400 });
   const now = new Date();
   const weekStart = planningWeekStart(now);
   const weekEnd = addIstanbulCalendarDays(weekStart, 7);
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
    * dengeleyemezdi.
    */
   if (parsedBody && (existing?.version ?? 0) !== parsedBody.expectedVersion) {
-    return NextResponse.json({ error: "Planın başka bir yerde güncellendi. Güncel planı kontrol edin.", code: "STALE_VERSION" }, { status: 409 });
+    return NextResponse.json({ error: "Planın başka bir yerde güncellenmiş. Güncel planına göz atıp tekrar deneyebilirsin.", code: "STALE_VERSION" }, { status: 409 });
   }
   if (existing && !canRegeneratePlan(existing)) {
     return NextResponse.json({ error: "Onaylı plan kilitli. Önce değişiklik isteyin." }, { status: 409 });

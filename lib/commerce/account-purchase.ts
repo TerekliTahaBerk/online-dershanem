@@ -72,7 +72,7 @@ export async function resolvePurchaseContext(beneficiary: BeneficiaryInput): Pro
     where: { id: beneficiary.id, parentUserId: account.id, status: "PENDING" },
     select: { id: true, fullName: true },
   });
-  if (!child) return { ok: false, status: 404, error: "Seçilen çocuk kaydı bulunamadı." };
+  if (!child) return { ok: false, status: 404, error: "Seçilen çocuk kaydı bulunamadı; kaldırılmış ya da değişmiş olabilir." };
   return { ok: true, context: { kind: "parent-pending", buyer, pendingChildId: child.id, childName: child.fullName } };
 }
 

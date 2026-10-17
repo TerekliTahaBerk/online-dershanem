@@ -19,7 +19,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const params = idParamsSchema.safeParse(await context.params);
   if (!params.success) return invalidApiInput();
   const parsed = answerKeyRevisionPreviewSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Revizyon değişiklikleri geçersiz." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Revizyon değişiklikleri geçerli görünmüyor." }, { status: 400 });
   return previewAnswerKeyRevision(params.data.id, parsed.data);
 }
 

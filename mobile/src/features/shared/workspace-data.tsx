@@ -112,25 +112,25 @@ type QueryViewProps<T> = {
  * erişim yok, bilinmeyen sunucu / sözleşme hatası (tekrar dene).
  * Oturum süresi dolması (401) merkezi olarak oturumu kapatır.
  */
-export function QueryView<T>({ query, children, rows = 5, disabledTitle = 'Bu bölüm şu anda kullanıma açık değil.' }: QueryViewProps<T>) {
+export function QueryView<T>({ query, children, rows = 5, disabledTitle = 'Bu bölüm şu an kullanıma kapalı, çok yakında burada olacak 🌱' }: QueryViewProps<T>) {
   const online = useOnline();
   const error = query.error;
   // A confirmed access/feature revocation must hide previously cached rows and forms.
   // Only transient refresh failures may keep showing the last authorized response.
   if (error instanceof ApiError && error.kind === 'feature_disabled') return <EmptyState title={disabledTitle} />;
   if (error instanceof ApiError && (['product_access', 'forbidden', 'pilot_unavailable', 'not_found', 'unauthenticated', 'mfa_required', 'password_change_required', 'step_up_required', 'upgrade_required'].includes(error.kind) || error.code === 'PILOT_PAUSED' || error.code === 'PANEL_DISABLED')) {
-    return <EmptyState title="Bu bölüme erişimin yok" body={error.message} />;
+    return <EmptyState title="Bu bölüm sana henüz açık değil" body={error.message} />;
   }
   if (query.data !== undefined) {
     return (
       <>
         {!online ? (
-          <Banner tone="warning" title="Çevrimdışısın">
-            Gösterilen bilgiler son bağlantıdaki hâli. Bağlantı gelince yenilenir.
+          <Banner tone="warning" title="Çevrimdışısın 📡">
+            Gösterilen bilgiler son bağlantındaki hâli. Bağlantın gelince otomatik yenilenecek.
           </Banner>
         ) : error ? (
-          <Banner tone="warning" title="Güncellenemedi">
-            {error instanceof ApiError ? error.message : 'Son bilgiler gösteriliyor.'}
+          <Banner tone="warning" title="Şu an güncelleyemedik">
+            {error instanceof ApiError ? error.message : 'Elimizdeki son bilgileri gösteriyoruz.'}
           </Banner>
         ) : null}
         {children(query.data)}
@@ -139,7 +139,7 @@ export function QueryView<T>({ query, children, rows = 5, disabledTitle = 'Bu b�
   }
   if (error) return <ErrorState error={error} onRetry={() => void query.refetch()} />;
   if (!online && query.fetchStatus === 'paused') {
-    return <EmptyState title="Çevrimdışısın" body="Bağlantı geldiğinde bu bölüm otomatik yüklenecek." />;
+    return <EmptyState title="Çevrimdışısın 📡" body="Bağlantın geldiğinde bu bölüm otomatik olarak yüklenecek." />;
   }
   return <Skeleton rows={rows} />;
 }
@@ -154,7 +154,7 @@ export function WorkspaceRouteGate({ product, navId, children }: { product: Work
   const bootstrap = useReadyBootstrap();
   const allowed = bootstrap.workspace?.activeProduct === product && hasNavItem(bootstrap.workspace.navigation, navId);
   if (!allowed) {
-    return <EmptyState title="Bu bölüm bu çalışma alanında yok" body="Bağlantı başka bir çalışma alanına ait olabilir veya erişimin değişmiş olabilir." />;
+    return <EmptyState title="Bu bölümü bu çalışma alanında bulamadık 🔍" body="Bağlantı başka bir çalışma alanına ait olabilir ya da erişimin değişmiş olabilir." />;
   }
   return <>{children}</>;
 }

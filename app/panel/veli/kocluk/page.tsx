@@ -60,8 +60,8 @@ export default async function ParentCoachingPage({
         <PageHeader title="Yön Koçluk" />
         <EmptyState
           className="mt-6"
-          title="Henüz bağlı öğrenci yok."
-          body="Hesabınız öğrencinizle eşleştirildiğinde koçluk özeti burada açılır."
+          title="Henüz bağlı bir öğrenci yok"
+          body="Hesabınız öğrencinizle eşleştirildiğinde koçluk özeti burada açılacak 🤝"
         />
       </>,
     );
@@ -73,8 +73,8 @@ export default async function ParentCoachingPage({
         <PageHeader title="Yön Koçluk" metadata={childContext} />
         <EmptyState
           className="mt-6"
-          title="Bu hesapta Yön Koçluk bulunmuyor."
-          body="Koçluk eklendiğinde haftalık plan, tamamlanma oranı ve koç özeti burada görünür."
+          title="Bu hesap için Yön Koçluk henüz açık değil"
+          body="Koçluk eklendiğinde haftalık plan, tamamlanma oranı ve koç özeti burada görünecek."
         />
       </>,
     );
@@ -125,11 +125,11 @@ export default async function ParentCoachingPage({
   ) : null;
 
   const goalsBlock = goals.length ? (
-    <Section id="hedefler" title="Hedefler" description="Koçla belirlenen hedefler; yalnız görüntüleme.">
+    <Section id="hedefler" title="Hedefler" description="Koçla birlikte belirlenen hedefler 🎯">
       <PropertyList>
         {goals.slice(0, 5).map((goal) => (
           <PropertyRow key={goal.id} label={goal.label}>
-            {goal.percent != null ? `%${goal.percent} ilerleme` : "ölçüm yok"}
+            {goal.percent != null ? `%${goal.percent} ilerleme` : "henüz ölçüm yok"}
           </PropertyRow>
         ))}
       </PropertyList>
@@ -144,8 +144,8 @@ export default async function ParentCoachingPage({
         {sessionsBlock}
         <Section id="bu-hafta" title="Bu hafta">
           <EmptyState
-            title="Bu hafta için plan yayınlanmadı."
-            body="Koç haftalık planı yayınladığında tamamlanma özeti burada görünür."
+            title="Bu haftanın planı henüz yayınlanmadı"
+            body="Koç haftalık planı yayınladığında tamamlanma özeti burada görünecek 🗓️"
           />
         </Section>
         {notesBlock}
@@ -197,7 +197,7 @@ export default async function ParentCoachingPage({
       {goalsBlock}
 
       <p className="mt-8 text-[12.5px] leading-[1.6] text-pn-text-muted">
-        Bu ekran sakin bir özet sunar. İç koç notları, ham check-in ayrıntıları
+        Bu ekran size sakin bir özet sunar ☕ Gizlilik gereği iç koç notları, check-in ayrıntıları
         ve diğer öğrencilerin verisi paylaşılmaz.
       </p>
     </>,

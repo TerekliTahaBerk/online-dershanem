@@ -34,18 +34,18 @@ export default function ExternalMockExamsScreen() {
 
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="external-mock-exams">
-      <PageHeader title="Dış denemelerim" description="Okulda, kursta veya başka bir platformda çözdüğün deneme sonuçları." />
+      <PageHeader title="Dış denemelerim" description="Okulda, kursta ya da başka bir platformda çözdüğün denemelerin sonuçları 📊" />
       {!allowed ? (
-        <EmptyState title="Bu bölüm bu çalışma alanında yok" />
+        <EmptyState title="Bu bölüm bu çalışma alanında yer almıyor" />
       ) : (
-        <QueryView query={query} disabledTitle="Deneme analizi şu anda açık değil.">
+        <QueryView query={query} disabledTitle="Deneme analizi şu an kullanıma kapalı.">
           {(data) => {
-            if (!data.profile) return <EmptyState title="Profilin hazırlanıyor." />;
+            if (!data.profile) return <EmptyState title="Profilin hazırlanıyor ⏳" />;
             if (!data.exams.length) {
               return (
                 <EmptyState
-                  title="Henüz dış deneme sonucun yok."
-                  body="Deneme sonucunu ekleyerek kendi geçmişine göre gelişimini takip edebilirsin."
+                  title="Henüz dış deneme sonucun yok 📝"
+                  body="Deneme sonuçlarını ekleyerek kendi gelişimini adım adım takip edebilirsin 📈"
                   action={<Button label="Deneme ekle" variant="secondary" onPress={openEditor} />}
                 />
               );
@@ -58,7 +58,7 @@ export default function ExternalMockExamsScreen() {
                     <Row
                       title="Toplam net"
                       meta={current.total.toLocaleString('tr-TR')}
-                      subtitle={current.delta === null ? 'Karşılaştırma için önceki deneme yok' : `Önceki denemene göre ${current.delta >= 0 ? '+' : ''}${current.delta.toLocaleString('tr-TR')}`}
+                      subtitle={current.delta === null ? 'Karşılaştırma için önceki bir deneme henüz yok' : `Önceki denemene göre ${current.delta >= 0 ? '+' : ''}${current.delta.toLocaleString('tr-TR')}`}
                     />
                     {current.sections.map((section) => (
                       <Row key={section.id} title={section.subjectName} meta={`${section.net.toLocaleString('tr-TR')} net`} subtitle={`${section.correctCount} doğru · ${section.incorrectCount} yanlış`} />

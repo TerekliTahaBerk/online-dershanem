@@ -14,11 +14,11 @@ export async function POST(request: Request) {
   const guard = await guardMutation({ action: "auth.mfa.code.verify", requireSameOrigin: true, headers: request.headers, rateLimitKey: `mfa:code:${auth.session.userId}`, rateLimit: { max: 10, windowMs: 15 * 60_000 } });
   if (!guard.ok) return mutationGuardResponse(guard);
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success || (parsed.data.method === "RECOVERY" && parsed.data.purpose === "STEP_UP")) return NextResponse.json({ error: "Geçersiz doğrulama isteği." }, { status: 400 });
+  if (!parsed.success || (parsed.data.method === "RECOVERY" && parsed.data.purpose === "STEP_UP")) return NextResponse.json({ error: "Doğrulama isteği geçerli görünmüyor." }, { status: 400 });
   const verified = parsed.data.method === "TOTP" ? await verifyTotpOnce(auth.session.userId, parsed.data.code) : await consumeRecoveryCode(auth.session.userId, parsed.data.code);
   if (!verified) {
     await logAudit({ actorUserId: auth.session.userId, entityType: "Session", entityId: auth.session.sessionId, action: "auth.mfa.code_failed", summary: "İkinci faktör kodu reddedildi", payload: { method: parsed.data.method } });
-    return NextResponse.json({ error: "Kod geçersiz, kullanılmış veya süresi dolmuş." }, { status: 400 });
+    return NextResponse.json({ error: "Kod geçersiz, daha önce kullanılmış ya da süresi dolmuş olabilir. Lütfen yeni bir kod dener misiniz?" }, { status: 400 });
   }
   const verifiedAt = new Date();
   if (parsed.data.purpose === "STEP_UP") await markSessionStepUp(auth.session.sessionId); else await markSessionMfaVerified(auth.session.sessionId);

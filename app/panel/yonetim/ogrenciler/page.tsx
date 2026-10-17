@@ -249,7 +249,7 @@ export default async function StudentsPage({
 
         {students.length === 0 ? (
           <PanelEmpty
-            title="Bu filtrelerle öğrenci bulunamadı."
+            title="Bu filtrelerle eşleşen bir öğrenci bulunamadı 🔍"
             body="Aramayı değiştirebilir ya da filtreleri temizleyebilirsin."
           />
         ) : (

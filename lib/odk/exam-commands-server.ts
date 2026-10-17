@@ -124,14 +124,14 @@ export async function updateOdkExamSessions(id: string, sessions: Array<{ key: s
 
 export async function assignOdkExam(id: string, input: AssignmentInput, actorId: string, db: Db = prisma) {
   const exam = await db.odkExam.findUnique({ where: { id }, select: { id: true, status: true, startsAt: true } });
-  if (!exam) return NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 });
+  if (!exam) return NextResponse.json({ error: "Denemeyi bulamadık." }, { status: 404 });
   if (["ARCHIVED"].includes(exam.status)) return NextResponse.json({ error: "Arşivlenmiş denemeye atama yapılamaz." }, { status: 409 });
   const resolved = await resolveAssignmentStudents(input);
   const studentIds = resolved.studentUserIds;
-  if (!studentIds.length) return NextResponse.json({ error: "Seçilen kaynakta aktif öğrenci bulunamadı." }, { status: 400 });
+  if (!studentIds.length) return NextResponse.json({ error: "Seçilen kaynakta aktif öğrenci bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 400 });
   const { source, sourceRefId } = resolved;
   const students = await db.user.findMany({ where: { id: { in: studentIds }, role: "STUDENT", status: "ACTIVE" }, select: { id: true, fullName: true, email: true } });
-  if (!students.length) return NextResponse.json({ error: "Aktif öğrenci bulunamadı." }, { status: 400 });
+  if (!students.length) return NextResponse.json({ error: "Aktif öğrenci şu an görünmüyor." }, { status: 400 });
   let created = 0;
   let updated = 0;
   await db.$transaction(async (tx) => {
@@ -205,7 +205,7 @@ async function familyOutcomeCatalog(db: Db, familyCode: string): Promise<Outcome
 /** JSON içe aktarma önizlemesi (cevap anahtarı / kazanım): `PREVIEW` audit kaydı açar. */
 export async function previewOdkImport(kind: ImportKind, id: string, payload: unknown, actorId: string, db: Db = prisma, options: { bookletCode?: string } = {}) {
   const loaded = await loadImportQuestions(db, id);
-  if (!loaded) return NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 });
+  if (!loaded) return NextResponse.json({ error: "Denemeyi bulamadık." }, { status: 404 });
   const payloadHash = createHash("sha256").update(JSON.stringify(payload)).digest("hex");
   const targetStateHash = importStateHash(kind, loaded.questions);
   const slots = loaded.questions.map(({ sectionCode, questionNumber }) => ({ sectionCode, questionNumber }));
@@ -264,9 +264,9 @@ class ImportStaleError extends Error {}
  */
 export async function commitOdkImport(kind: ImportKind, id: string, importId: string, actorId: string, db: Db = prisma) {
   const loaded = await loadImportQuestions(db, id);
-  if (!loaded) return NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 });
+  if (!loaded) return NextResponse.json({ error: "Denemeyi bulamadık." }, { status: 404 });
   const audit = await db.odkImportAudit.findFirst({ where: { id: importId, examId: id, kind: kind === "answer-key" ? "ANSWER_KEY" : "OUTCOME" } });
-  if (!audit) return NextResponse.json({ error: "Onaylanacak önizleme bulunamadı." }, { status: 404 });
+  if (!audit) return NextResponse.json({ error: "Onaylanacak önizleme bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
   const summary = audit.previewSummary as { targetStateHash?: string; mappings?: unknown[] };
   if (audit.status === "COMMITTED") return NextResponse.json({ committed: true, idempotent: true, count: summary.mappings?.length ?? 0 });
   if (audit.status !== "PREVIEW") return NextResponse.json({ error: "Bu önizleme artık geçerli değil. Yeniden önizleyin.", code: "IMPORT_STALE" }, { status: 409 });

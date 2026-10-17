@@ -7,7 +7,7 @@ export async function patchGroup(groupId: string, body: unknown) {
     body: JSON.stringify(body),
   });
   const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(result.error || "İşlem tamamlanamadı.");
+  if (!response.ok) throw new Error(result.error || "İşlemi şu an tamamlayamadık. Lütfen tekrar dener misiniz?");
   return result;
 }
 
@@ -18,6 +18,6 @@ export async function postMembers(groupId: string, body: unknown) {
     body: JSON.stringify(body),
   });
   const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(result.error || "İşlem tamamlanamadı.");
+  if (!response.ok) throw new Error(result.error || "İşlemi şu an tamamlayamadık. Lütfen tekrar dener misiniz?");
   return result;
 }

@@ -57,7 +57,7 @@ export function ChildAccountForm({
         provisioning?: Created["provisioning"];
       };
       if (!response.ok || !data.student) {
-        setError({ message: data.error ?? "Hesap açılamadı.", stepUp: data.code === "STEP_UP_REQUIRED" });
+        setError({ message: data.error ?? "Hesap şu an açılamadı. Lütfen tekrar dener misiniz?", stepUp: data.code === "STEP_UP_REQUIRED" });
         return;
       }
       setCreated({
@@ -69,7 +69,7 @@ export function ChildAccountForm({
         studentId: data.student.id,
       });
     } catch {
-      setError({ message: "Bağlantı kurulamadı." });
+      setError({ message: "Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?" });
     } finally {
       setPending(false);
     }

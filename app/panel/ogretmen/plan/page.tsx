@@ -188,8 +188,8 @@ export default async function TeacherPlanPage({
           ) : (
             <EmptyState
               icon={ListChecks}
-              title="Bu hafta için plan yok."
-              body="Öğrenci plan oluşturduğunda veya öğrenci çalışma alanında şablon uyguladığınızda burada görünür."
+              title="Bu hafta için henüz bir plan yok"
+              body="Öğrenci plan oluşturduğunda ya da öğrenci çalışma alanında şablon uyguladığınızda burada görünecek."
             />
           )}
         </Section>

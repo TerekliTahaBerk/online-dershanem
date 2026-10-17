@@ -38,7 +38,7 @@ export async function GET(request: Request) {
   const auth = await requireApiAnyProductRole(["OD", "OK"], "STUDENT");
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().mockExamAnalysis) {
-    return NextResponse.json({ error: "Deneme analizi henüz açık değil." }, { status: 404 });
+    return NextResponse.json({ error: "Deneme analizi şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   }
 
   const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId } });
@@ -55,7 +55,7 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const query = listQuerySchema.safeParse(Object.fromEntries(url.searchParams));
-  if (!query.success) return NextResponse.json({ error: "Geçersiz deneme filtresi." }, { status: 400 });
+  if (!query.success) return NextResponse.json({ error: "Deneme filtresi geçerli görünmüyor." }, { status: 400 });
   const requested = query.data.deneme;
   const currentIndex = requested ? exams.findIndex((e) => e.id === requested) : 0;
   const current = exams[currentIndex >= 0 ? currentIndex : 0] ?? null;
@@ -92,14 +92,14 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const auth = await requireApiAnyProductRole(["OD", "OK"], "ADMIN", "TEACHER", "STUDENT");
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().mockExamAnalysis) return NextResponse.json({ error: "Deneme analizi henüz açık değil." }, { status: 404 });
+  if (!getPanelFeatureFlags().mockExamAnalysis) return NextResponse.json({ error: "Deneme analizi şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   // Yönetici yazmaları (web + mobil) taze step-up ister; öğretmen / öğrenci akışı değişmez.
   if (auth.session.role === "ADMIN" && !hasFreshStepUp(auth.session.stepUpAt)) return stepUpRequired();
   const guard = await guardMutation({ action: "panel.mock_exam.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:mock-exam:${auth.session.userId}`, rateLimit: { max: 40, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Deneme bilgilerini kontrol edin." }, { status: 400 });
-  if (isBearerRequest(request) && !parsed.data.idempotencyKey) return NextResponse.json({ error: "Güvenli işlem bilgisi eksik. Görünümü yenileyin.", code: "PRECONDITION_REQUIRED" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Lütfen deneme bilgilerini bir kez daha kontrol eder misiniz?" }, { status: 400 });
+  if (isBearerRequest(request) && !parsed.data.idempotencyKey) return NextResponse.json({ error: "Güvenli işlem bilgisi eksik görünüyor. Sayfayı yenileyip tekrar dener misiniz?", code: "PRECONDITION_REQUIRED" }, { status: 400 });
   try {
     const result = await createMockExamService({ userId: auth.session.userId, role: auth.session.role }, parsed.data);
     return NextResponse.json(result);

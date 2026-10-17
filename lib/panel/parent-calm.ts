@@ -101,7 +101,7 @@ export function buildSubjectTrendSentence(subject: string, nets: number[]): Pare
     return {
       subject,
       direction,
-      sentence: `${subject} performansı yükseliyor.`,
+      sentence: `${subject} performansı yükseliyor 🌱`,
     };
   }
   if (direction === "down") {
@@ -133,7 +133,7 @@ export function buildParentWeekSummary(input: {
   if (input.hasPlan && planPct !== null) {
     parts.push(`Bu hafta planın %${planPct}'si tamamlandı.`);
   } else if (input.hasPlan) {
-    parts.push("Bu hafta için plan henüz yayınlanmadı.");
+    parts.push("Bu haftanın planı henüz yayınlanmadı.");
   }
 
   const rising = input.subjectTrends.filter((item) => item.direction === "up").slice(0, 1);
@@ -146,7 +146,7 @@ export function buildParentWeekSummary(input: {
     if (attendancePct !== null && attendancePct >= 80) {
       parts.push("Ders katılımı düzenli görünüyor.");
     } else if (attendancePct !== null && attendancePct < 70) {
-      parts.push("Son iki haftada çalışma düzeninde düşüş var.");
+      parts.push("Son iki haftada çalışma düzeninde küçük bir düşüş var.");
     } else {
       parts.push("Katılım ritmi oluşmaya devam ediyor.");
     }
@@ -205,9 +205,9 @@ export function buildParentCalmStatus(input: {
     return { code: "NEEDS_SUPPORT", label: "Biraz destek", sentence };
   }
 
-  let sentence = "Bu hafta görünen sinyaller dengeli ilerliyor.";
+  let sentence = "Bu hafta görünen sinyaller dengeli ilerliyor 🌿";
   if (hasAttendanceData && hasPlanData) {
-    sentence = "Ders katılımı ve haftalık plan düzenli ilerliyor.";
+    sentence = "Ders katılımı ve haftalık plan düzenli ilerliyor 👏";
   } else if (hasAttendanceData) {
     sentence = "Ders katılımı düzenli görünüyor.";
   } else if (hasPlanData) {
@@ -231,8 +231,8 @@ export function buildParentActions(input: {
     actions.push({
       id: "package-renewal",
       kind: "PACKAGE_RENEWAL",
-      title: "Paket yenileme zamanı yaklaşıyor",
-      body: `${input.packageExpiring.productLabel} erişimi yaklaşık ${input.packageExpiring.daysLeft} gün içinde sona erecek. Devam için hesap sayfasından görüşme talep edebilirsiniz.`,
+      title: "Paket yenileme zamanı yaklaşıyor 🗓️",
+      body: `${input.packageExpiring.productLabel} erişimi yaklaşık ${input.packageExpiring.daysLeft} gün içinde sona erecek. Kesintisiz devam için hesap sayfasından kolayca görüşme talep edebilirsiniz.`,
       href: `/panel/veli/hesap?studentId=${encodeURIComponent(input.studentId)}`,
       ctaLabel: "Hesap ve paketi aç",
     });
@@ -242,8 +242,8 @@ export function buildParentActions(input: {
     actions.push({
       id: "contact-update",
       kind: "CONTACT_UPDATE",
-      title: "İletişim bilginizi güncelleyin",
-      body: "Telefon numaranız kayıtlı değil. Önemli duyurularda size ulaşabilmemiz için güncellemeniz yeterli.",
+      title: "İletişim bilginizi güncellemenizi rica ederiz",
+      body: "Telefon numaranız henüz kayıtlı değil. Önemli duyurularda size ulaşabilmemiz için eklemeniz yeterli 📞",
       href: "/panel/veli/hesap",
       ctaLabel: "Hesabı aç",
     });
@@ -253,8 +253,8 @@ export function buildParentActions(input: {
     actions.push({
       id: "digest-review",
       kind: "DIGEST_REVIEW",
-      title: "Yayınlanan haftalık özeti inceleyin",
-      body: "Öğretmen bu haftanın sakin özetini yayınladı. Aynı metni öğrenciyle birlikte görebilirsiniz.",
+      title: "Haftalık özet sizi bekliyor 🌟",
+      body: "Öğretmen bu haftanın sakin özetini yayınladı. Aynı metni öğrencinizle birlikte okuyabilirsiniz.",
       href: `/panel/veli/haftalik?studentId=${encodeURIComponent(input.studentId)}`,
       ctaLabel: "Haftalık özeti aç",
     });
@@ -264,7 +264,7 @@ export function buildParentActions(input: {
     actions.push({
       id: "important-notice",
       kind: "IMPORTANT_NOTICE",
-      title: "Önemli duyuru",
+      title: "Önemli bir duyuru var 📣",
       body: input.importantNotice.title,
       href: input.importantNotice.href,
       ctaLabel: "Duyuruyu aç",

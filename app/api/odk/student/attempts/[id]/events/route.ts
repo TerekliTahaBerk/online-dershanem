@@ -28,13 +28,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!guard.ok) return mutationGuardResponse(guard);
 
   const parsed = examEventBatchSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Event batch geçersiz." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Event batch geçerli görünmüyor." }, { status: 400 });
   const { id } = await context.params;
   const attempt = await prisma.odkExamAttempt.findFirst({
     where: { id, studentUserId: auth.session.userId },
     select: { id: true, status: true, events: { select: { type: true, metadata: true }, take: 500, orderBy: { sequence: "desc" } } },
   });
-  if (!attempt) return NextResponse.json({ error: "Oturum bulunamadı." }, { status: 404 });
+  if (!attempt) return NextResponse.json({ error: "Oturumu bulamadık." }, { status: 404 });
   if (!["IN_PROGRESS", "SUBMITTED", "AUTO_SUBMITTED"].includes(attempt.status)) {
     return NextResponse.json({ error: "Oturum event kabul etmiyor." }, { status: 409 });
   }

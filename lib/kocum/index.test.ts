@@ -57,7 +57,7 @@ test("kısmi tamamlanma ve soru tutarlılığı doğrulanır", () => {
       actualIncorrect: 3,
       actualBlank: 1,
     }) || "",
-    /aşamaz/,
+    /aşmamalı/,
   );
 });
 

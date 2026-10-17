@@ -30,7 +30,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   });
   if (!guard.ok) {
     return NextResponse.json(
-      { error: guard.code === "RATE_LIMIT" ? "Çok fazla işlem. Biraz sonra tekrar deneyin." : guard.message },
+      { error: guard.code === "RATE_LIMIT" ? "Kısa sürede çok fazla işlem yapıldı. Biraz bekleyip tekrar dener misiniz?" : guard.message },
       { status: guard.code === "RATE_LIMIT" ? 429 : 403 },
     );
   }
@@ -39,12 +39,12 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
+    return NextResponse.json({ error: "İstek geçerli görünmüyor. Lütfen bilgileri kontrol edip tekrar deneyin." }, { status: 400 });
   }
 
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
+    return NextResponse.json({ error: "İstek geçerli görünmüyor. Lütfen bilgileri kontrol edip tekrar deneyin." }, { status: 400 });
   }
 
   const { id } = await context.params;
@@ -60,7 +60,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   const target = await prisma.user.findUnique({ where: { id } });
   if (!target) {
-    return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
+    return NextResponse.json({ error: "Kullanıcıyı bulamadık." }, { status: 404 });
   }
 
   const currentStatus = target.status;

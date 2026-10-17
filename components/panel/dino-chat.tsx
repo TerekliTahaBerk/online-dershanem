@@ -25,15 +25,15 @@ type Turn = {
 
 const FALLBACK_NOTE: Record<string, string> = {
   PROVIDER_DISABLED:
-    "Dino açıklamayı şu anda hazırlayamadı. Dayanakları yine de görebilirsin.",
+    "Dino açıklamayı şu an hazırlayamadı 🦕 Dayanaklarına yine de göz atabilirsin.",
   EXTERNAL_TRANSFER_NOT_READY:
-    "Dino açıklamayı şu anda hazırlayamadı. Dayanakları yine de görebilirsin.",
+    "Dino açıklamayı şu an hazırlayamadı 🦕 Dayanaklarına yine de göz atabilirsin.",
   COST_CONFIG_MISSING:
-    "Dino açıklama yapılandırması eksik. Dayanakları yine de görebilirsin.",
-  DAILY_QUOTA: "Bugünkü Dino açıklama hakkını kullandın.",
-  NO_SOURCE_DATA: "Bu konuda açıklama yapmak için yeterli dayanak yok.",
+    "Dino şu an açıklama yapamıyor 🦕 Dayanaklarına yine de göz atabilirsin.",
+  DAILY_QUOTA: "Bugünlük Dino açıklama hakkını kullandın 🦕 Yarın yine buradayız!",
+  NO_SOURCE_DATA: "Bu konuda açıklama yapabilmek için henüz yeterli veri yok.",
   PROMPT_INJECTION:
-    "Kayıtlarda beklenmedik bir içerik bulundu; güvenlik için yorum üretilmedi.",
+    "Kayıtlarda beklenmedik bir içerik fark ettik; güvenliğin için yorum yapmadık.",
 };
 
 export function DinoChat({
@@ -71,7 +71,7 @@ export function DinoChat({
       } | null;
 
       if (!response.ok || !payload?.answer) {
-        setError(payload?.error || "Dino açıklamayı şu anda hazırlayamadı.");
+        setError(payload?.error || "Dino açıklamayı şu an hazırlayamadı 🦕 Biraz sonra tekrar dener misin?");
         return;
       }
 
@@ -96,7 +96,7 @@ export function DinoChat({
         },
       ]);
     } catch {
-      setError("Dino açıklamayı şu anda hazırlayamadı.");
+      setError("Dino açıklamayı şu an hazırlayamadı 🦕 Biraz sonra tekrar dener misin?");
     } finally {
       setBusy(null);
     }
@@ -157,7 +157,7 @@ export function DinoChat({
         {turns.length === 0 ? (
           <p className="text-[13.5px] text-dc-ink-muted">
             Yukarıdaki sorulardan birini seçtiğinde Dino, panelindeki kendi
-            kayıtlarını özetler. Yalnız bu sorular sorulabilir; Dino serbest
+            kayıtlarını senin için özetler 🦕 Şimdilik yalnızca bu sorular sorulabilir; Dino serbest
             sohbet yapmaz.
           </p>
         ) : null}

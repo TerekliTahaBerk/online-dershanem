@@ -44,10 +44,10 @@ export async function StudentDenemeLigiHome({ session }: { session: SessionUser 
     if (next.state.key === "IN_PROGRESS") {
       const deadline = next.exam.attempts[0]?.deadlineAt;
       const minutes = deadline ? Math.max(0, Math.round((deadline.getTime() - now.getTime()) / 60000)) : null;
-      return minutes != null ? `Devam ediyor — ${minutes} dk kaldı` : "Devam ediyor";
+      return minutes != null ? `Devam ediyor · ${minutes} dk kaldı ⏱️` : "Devam ediyor";
     }
-    if (next.state.key === "AVAILABLE") return "Şimdi başlayabilirsin";
-    return next.exam.startsAt ? `${DATE_TIME.format(next.exam.startsAt)}'da açılır` : "Saat bekleniyor";
+    if (next.state.key === "AVAILABLE") return "Şimdi başlayabilirsin 🚀";
+    return next.exam.startsAt ? `${DATE_TIME.format(next.exam.startsAt)}' itibarıyla açılacak` : "Saat bekleniyor";
   })();
 
   return (
@@ -55,7 +55,7 @@ export async function StudentDenemeLigiHome({ session }: { session: SessionUser 
       <div className="max-w-[920px]">
         <PageHeader
           title="Bugün"
-          description="Sıradaki denemen, açıklanan sonuçların ve odaklanman gereken konular."
+          description="Sıradaki denemen, sonuçların ve odaklanman gereken konular tek yerde 🏆"
           actions={
             <Link href="/panel/odk/ogrenci/denemeler" className={buttonClass("secondary", "md")}>
               Tüm denemeler
@@ -84,7 +84,7 @@ export async function StudentDenemeLigiHome({ session }: { session: SessionUser 
               </Link>
             </div>
           ) : (
-            <EmptyState title="Henüz planlanmış bir denemen yok." body="Yeni deneme açıldığında burada görünecek." />
+            <EmptyState title="Henüz planlanmış bir denemen yok 📝" body="Yeni bir deneme açıldığında burada görünecek." />
           )}
         </Section>
 
@@ -130,7 +130,7 @@ export async function StudentDenemeLigiHome({ session }: { session: SessionUser 
               ))}
             </PanelTable>
           ) : (
-            <p className="text-[14px] text-pn-text-muted">Açıklanan sonuç olduğunda burada görünecek.</p>
+            <p className="text-[14px] text-pn-text-muted">Sonuçların açıklandığında burada görünecek 📊</p>
           )}
         </Section>
 
@@ -153,7 +153,7 @@ export async function StudentDenemeLigiHome({ session }: { session: SessionUser 
           <Section
             id="odak"
             title="Odak konular"
-            description={`${latest.title} sonucuna göre en çok gelişim bekleyen kazanımlar.`}
+            description={`${latest.title} sonucuna göre biraz daha ilgi bekleyen kazanımlar 🎯`}
             actions={
               <Link href={`/panel/odk/ogrenci/denemeler/${latest.examId}/sonuc`} className={buttonClass("ghost", "sm")}>
                 Sonraki adımlar

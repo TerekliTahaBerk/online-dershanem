@@ -25,8 +25,8 @@ export async function POST(request: Request) {
   const guard = await guardMutation({ action: "coaching.assign", userId: auth.session.userId, requireSameOrigin: true, headers: request.headers, rateLimit: { max: 60, windowMs: 60_000 } });
   if (!guard.ok) { const response = mutationGuardResponse(guard); response.headers.set("Cache-Control", PRIVATE_NO_STORE["Cache-Control"]); return response; }
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Öğrenci ve koç seçin.", code: "VALIDATION" }, { status: 400, headers: PRIVATE_NO_STORE });
-  if (/^Bearer\s+/i.test(request.headers.get("authorization") ?? "") && (!parsed.data.idempotencyKey || !parsed.data.expectedRevision)) return adminJson({ error: "Güvenli işlem bilgisi eksik. Görünümü yenileyin.", code: "PRECONDITION_REQUIRED" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Lütfen öğrenci ve koç seçin.", code: "VALIDATION" }, { status: 400, headers: PRIVATE_NO_STORE });
+  if (/^Bearer\s+/i.test(request.headers.get("authorization") ?? "") && (!parsed.data.idempotencyKey || !parsed.data.expectedRevision)) return adminJson({ error: "Güvenli işlem bilgisi eksik görünüyor. Sayfayı yenileyip tekrar dener misiniz?", code: "PRECONDITION_REQUIRED" }, { status: 400 });
   try {
     const result = await assignCoachService({ actorUserId: auth.session.userId, ...parsed.data });
     if (!result.ok) return NextResponse.json({ error: ASSIGN_COACH_ERROR_MESSAGE[result.code], code: result.code.toUpperCase() }, { status: 422, headers: PRIVATE_NO_STORE });

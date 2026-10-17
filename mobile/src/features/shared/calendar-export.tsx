@@ -16,10 +16,10 @@ export function CalendarExport({ studentId }: { studentId?: string }) {
     let file: Awaited<ReturnType<typeof downloadMaterialFile>> | undefined;
     try {
       if (!api.baseUrl) throw new Error('Sunucu adresi yapılandırılmamış.');
-      if (!await Sharing.isAvailableAsync()) throw new Error('Bu cihazda takvim paylaşımı kullanılamıyor.');
+      if (!await Sharing.isAvailableAsync()) throw new Error('Bu cihazda takvim paylaşımı kullanılamıyor 😕');
       file = await downloadMaterialFile({ baseUrl: api.baseUrl, path: `/api/panel/calendar/export${studentId ? `?studentId=${encodeURIComponent(studentId)}` : ''}`, headers: api.authHeaders(), userId: bootstrap.user.id, material: { id: `calendar-${studentId ?? 'self'}`, kind: 'LINK', fileName: 'ders-takvimi.ics', mimeType: 'text/calendar' } });
       await Sharing.shareAsync(file.uri, { mimeType: 'text/calendar', dialogTitle: 'Takvime ekle' });
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Takvim indirilemedi. Tekrar deneyin.'); }
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Takvimi şu an indiremedik 😕 Lütfen tekrar dener misiniz?'); }
     finally {
       try { if (file?.exists) file.delete(); } finally { setBusy(false); }
     }

@@ -92,7 +92,7 @@ export async function validateCoupon(input: ValidateInput): Promise<ValidateResu
   });
 
   if (!coupon || !coupon.isActive) {
-    return { ok: false, reason: "not_found", userMessage: "Geçersiz indirim kodu." };
+    return { ok: false, reason: "not_found", userMessage: "İndirim kodu geçerli görünmüyor." };
   }
   const now = new Date();
   if (coupon.startsAt && coupon.startsAt > now) {

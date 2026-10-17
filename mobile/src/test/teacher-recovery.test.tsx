@@ -34,7 +34,7 @@ it('taslak ağ hatasından sonra aynı işlem anahtarıyla hazırlanır; yayın 
   expect(alert).toHaveBeenCalled(); expect(h.server.called('POST', '/api/panel/staff/teacher/recovery')).toHaveLength(2);
   alert.mockImplementation((_title, _body, buttons) => buttons?.find((button) => button.text === 'Yayımla')?.onPress?.());
   await press(h, h.screen.getByTestId('recovery-publish-a1'));
-  expect(await h.screen.findByText('Telafi paketi yayımlandı.', {}, WAIT)).toBeTruthy();
+  expect(await h.screen.findByText('Telafi paketi yayımlandı 🧩 Öğrenciniz artık kaldığı yerden yetişebilir.', {}, WAIT)).toBeTruthy();
   await waitFor(() => expect(h.screen.queryByTestId('recovery-publish-a1')).toBeNull(), WAIT);
 }, 30000);
 

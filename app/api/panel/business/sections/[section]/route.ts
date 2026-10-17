@@ -22,7 +22,7 @@ const querySchema = z
  */
 export async function GET(request: Request, context: { params: Promise<{ section: string }> }) {
   const { section } = await context.params;
-  if (!isBusinessSection(section)) return businessJson({ error: "Bölüm bulunamadı.", code: "NOT_FOUND" }, { status: 404 });
+  if (!isBusinessSection(section)) return businessJson({ error: "Bölüm bulunamadı; kaldırılmış ya da değişmiş olabilir.", code: "NOT_FOUND" }, { status: 404 });
   const auth = await requireBusinessApi(SECTION_PERMISSIONS[section], { finance: FINANCE_SECTIONS.includes(section) });
   if (!auth.ok) return auth.response;
   const query = querySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));

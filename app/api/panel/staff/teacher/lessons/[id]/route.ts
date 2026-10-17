@@ -20,7 +20,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   const { id } = params.data;
   const flags = getPanelFeatureFlags();
   const data = await loadTeacherLessonWorkspaceData(auth.session.userId, id, flags.learningOutcomes);
-  if (!data) return staffNotFound("Ders bulunamadı.");
+  if (!data) return staffNotFound("Dersi bulamadık.");
   const { lesson, previous, outcomes } = data;
   const common = lesson.notes.find((note) => note.studentId === null);
   const previousNote = previous?.notes[0] ?? null;

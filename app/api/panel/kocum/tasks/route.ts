@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   const auth = await requireApiProductRole("OK", "ADMIN", "TEACHER");
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().adaptivePlan) {
-    return NextResponse.json({ error: "Haftalık plan henüz açık değil." }, { status: 404 });
+    return NextResponse.json({ error: "Haftalık plan şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   }
 
   const guard = await guardMutation({
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
 
   const parsed = coachTaskSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Geçersiz görev." }, { status: 400 });
+    return NextResponse.json({ error: "Görev geçerli görünmüyor." }, { status: 400 });
   }
 
   const allowed = await assertAssignedCoach({
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     userId: auth.session.userId,
     studentProfileId: parsed.data.studentId,
   });
-  if (!allowed) return NextResponse.json({ error: "Bu öğrenci için yetkiniz yok." }, { status: 403 });
+  if (!allowed) return NextResponse.json({ error: "Bu öğrenci için yetkiniz bulunmuyor." }, { status: 403 });
 
   return createCoachTask(parsed.data, auth.session.userId, auth.session.fullName || "Koç");
 }

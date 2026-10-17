@@ -25,13 +25,13 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const auth = await requireApiProductRole("ODK", "ADMIN", "TEACHER"); if (!auth.ok) return auth.response;
   const params = idParamsSchema.safeParse(await context.params); if (!params.success) return invalidApiInput();
   const query = querySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
-  if (!query.success) return NextResponse.json({ error: "Sekme geçersiz." }, { status: 400, headers: PRIVATE_NO_STORE });
+  if (!query.success) return NextResponse.json({ error: "Sekme geçerli görünmüyor." }, { status: 400, headers: PRIVATE_NO_STORE });
   // İzin, pahalı okumalardan önce (web: requireAnyStaffPermission(ODK_EXAM_LIST_PERMISSIONS)).
   const viewer = await loadStaffViewer(auth.session.userId);
-  if (!ODK_EXAM_LIST_PERMISSIONS.some((permission) => viewer.permissions.has(permission))) return NextResponse.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403, headers: PRIVATE_NO_STORE });
+  if (!ODK_EXAM_LIST_PERMISSIONS.some((permission) => viewer.permissions.has(permission))) return NextResponse.json({ error: "Bu işlem için yetkiniz bulunmuyor." }, { status: 403, headers: PRIVATE_NO_STORE });
   const now = new Date();
   const ws = await loadOdkExamWorkspace(auth.session.userId, params.data.id, query.data, now, { includeOutcomeOptions: false });
-  if (!ws) return NextResponse.json({ error: "Deneme bulunamadı.", code: "NOT_FOUND" }, { status: 404, headers: PRIVATE_NO_STORE });
+  if (!ws) return NextResponse.json({ error: "Denemeyi bulamadık.", code: "NOT_FOUND" }, { status: 404, headers: PRIVATE_NO_STORE });
   const [report, history, assignments] = await Promise.all([
     ws.tab === "raporlar" ? loadOdkExamReport(ws.exam.id, ws.assignedCount, ws.attempts) : Promise.resolve(null),
     ws.tab === "gecmis" ? loadExamHistory(ws.exam) : Promise.resolve(null),

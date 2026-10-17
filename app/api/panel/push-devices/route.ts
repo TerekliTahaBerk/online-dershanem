@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   const checked = await guard(request, auth.session.userId, "panel.push_devices.register");
   if (!checked.ok) return NextResponse.json({ error: checked.message }, { status: checked.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = registerSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Cihaz bilgisi geçersiz." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Cihaz bilgisi geçerli görünmüyor." }, { status: 400 });
   const device = await registerPushDevice({
     userId: auth.session.userId,
     sessionId: auth.session.sessionId,
@@ -81,7 +81,7 @@ export async function DELETE(request: Request) {
   const checked = await guard(request, auth.session.userId, "panel.push_devices.unregister");
   if (!checked.ok) return NextResponse.json({ error: checked.message }, { status: checked.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = unregisterSchema.safeParse(await request.json().catch(() => ({})));
-  if (!parsed.success) return NextResponse.json({ error: "Cihaz bilgisi geçersiz." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Cihaz bilgisi geçerli görünmüyor." }, { status: 400 });
   const revoked = await revokePushDevices({ userId: auth.session.userId, sessionId: auth.session.sessionId, token: parsed.data.token ?? null, reason: "USER_UNREGISTERED" });
   return NextResponse.json({ revoked }, { headers: { "Cache-Control": "private, no-store" } });
 }

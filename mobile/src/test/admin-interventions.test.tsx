@@ -119,6 +119,6 @@ describe('Faz 2.1 müdahale kutusu', () => {
 
   it('bayrak kapalı (404 FEATURE_DISABLED): ekran açıkça kapalı der, sahte veri yok', async () => {
     const h = await openInbox({ 'GET /api/panel/admin/interventions': () => jsonResponse(404, { error: 'Müdahale kutusu henüz açık değil.', code: 'FEATURE_DISABLED' }) });
-    expect(await h.screen.findByText('Müdahale kutusu şu anda açık değil.', {}, WAIT)).toBeTruthy();
+    expect(await h.screen.findByText('Müdahale kutusu şu an kullanıma kapalı.', {}, WAIT)).toBeTruthy();
   });
 });

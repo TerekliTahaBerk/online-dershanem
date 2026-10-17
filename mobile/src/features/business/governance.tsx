@@ -27,7 +27,7 @@ export function GovernanceActions({ data }: { data: Data }) {
       setNotice({ tone: 'info', text: command.type === 'automation.dry_run' ? `Deneme: ${outcome.result.summary?.failed ? 'başarısız' : 'tamamlandı'} · ${outcome.result.summary?.matched ? 'eşleşti' : 'eşleşmedi'} · ${outcome.result.summary?.planned ?? 0} planlanan işlem.` : 'İşlem kaydedildi.' });
       return true;
     } catch (error) {
-      setNotice({ tone: 'critical', text: adminErrorText(error) ?? 'İşlem kaydedilemedi.' });
+      setNotice({ tone: 'critical', text: adminErrorText(error) ?? 'İşlemi şu an kaydedemedik. Lütfen tekrar dener misiniz?' });
       return false;
     }
   };

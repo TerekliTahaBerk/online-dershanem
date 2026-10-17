@@ -49,7 +49,7 @@ export function NotificationPreferences({
     if (response.ok) {
       setUnread(0);
       router.refresh();
-    } else setMessage("Bildirimler güncellenemedi.");
+    } else setMessage("Bildirim tercihlerinizi şu an güncelleyemedik. Lütfen tekrar dener misiniz?");
     setBusy(null);
   }
   async function save() {
@@ -61,7 +61,7 @@ export function NotificationPreferences({
       headers: { "content-type": "application/json" },
       body: JSON.stringify(prefs),
     });
-    setMessage(response.ok ? "Tercihler kaydedildi." : "Kaydedilemedi.");
+    setMessage(response.ok ? "Tercihleriniz kaydedildi ✅" : "Şu an kaydedemedik. Lütfen tekrar dener misiniz?");
     setBusy(null);
     if (response.ok) router.refresh();
   }
@@ -71,7 +71,7 @@ export function NotificationPreferences({
         Bildirim tercihleri
       </h2>
       <p className="mt-1 text-xs leading-5 text-(--site-muted)">
-        Panel içi ve e-posta bildirimleri kullanıma hazırdır. WhatsApp izni
+        Panel içi ve e-posta bildirimleri kullanıma hazır 🔔 WhatsApp izniniz
         saklanır; kurumsal WhatsApp sağlayıcısı bağlandığında aynı tercihler
         kullanılacaktır.
       </p>
@@ -105,14 +105,14 @@ export function NotificationPreferences({
       </div>
       <fieldset className="mt-4 space-y-3 border-t border-(--site-line) pt-4" disabled={!ready || busy !== null}>
         <legend className="text-xs font-bold">Sessiz saatler · İstanbul saati</legend>
-        <p className="text-xs leading-5 text-(--site-muted)">Ders ve koçluk hatırlatmaları bu saatler bittikten sonra iletilir. Bu tercih yeni hatırlatmalarda kullanılır; hesap ve ödeme e-postaları kendi akışını izler.</p>
+        <p className="text-xs leading-5 text-(--site-muted)">Bu saatlerde sizi rahatsız etmeyiz 🌙 Ders ve koçluk hatırlatmaları sessiz saatler bittikten sonra iletilir. Bu tercih yeni hatırlatmalarda kullanılır; hesap ve ödeme e-postaları kendi akışını izler.</p>
         <div className="grid grid-cols-2 gap-3">
           {([{ key: "quietStartMinute", label: "Başlangıç saati" }, { key: "quietEndMinute", label: "Bitiş saati" }] as const).map(({ key, label }) => (
             <label key={key} className="text-xs font-bold">{label}<input type="time" className="mt-1 block w-full rounded-lg border p-2" value={toTime(prefs[key])} onChange={(event) => setPrefs((current) => ({ ...current, [key]: toMinute(event.target.value) }))} /></label>
           ))}
         </div>
         <button type="button" className="text-xs underline" onClick={() => setPrefs((current) => ({ ...current, quietStartMinute: null, quietEndMinute: null }))}>Sessiz saatleri kaldır</button>
-        <label className="flex items-center gap-2 text-xs font-bold"><input type="checkbox" checked={prefs.dailyDigest} onChange={() => toggle("dailyDigest")} />Günde tek özet al</label>
+        <label className="flex items-center gap-2 text-xs font-bold"><input type="checkbox" checked={prefs.dailyDigest} onChange={() => toggle("dailyDigest")} />Günde tek bir özet al ☀️</label>
         {prefs.dailyDigest && <label className="block text-xs font-bold">Günlük özet saati<input type="time" required className="mt-1 block w-full rounded-lg border p-2" value={toTime(prefs.dailyDigestMinute)} onChange={(event) => setPrefs((current) => ({ ...current, dailyDigestMinute: toMinute(event.target.value) }))} /></label>}
       </fieldset>
       <div className="mt-4 grid grid-cols-2 gap-2">

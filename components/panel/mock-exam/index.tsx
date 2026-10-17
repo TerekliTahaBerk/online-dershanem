@@ -85,7 +85,7 @@ export function MockExamWorkspace({
       return setStatus(
         mockExamErrorText(
           await response.json().catch(() => ({})),
-          "Eylem onaylanamadı.",
+          "Eylemi şu an onaylayamadık. Lütfen tekrar dener misiniz?",
         ),
       );
     setExams((current) =>
@@ -93,7 +93,7 @@ export function MockExamWorkspace({
         exam.id === examId ? { ...exam, nextAction: action } : exam,
       ),
     );
-    setStatus("Sonraki küçük eylem öğretmen tarafından onaylandı.");
+    setStatus("Sonraki küçük adım onaylandı ✅");
   }
 
   return (

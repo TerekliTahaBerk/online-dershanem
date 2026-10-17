@@ -114,8 +114,8 @@ export default async function TeacherCalendarPage({
 
         {lessons.length === 0 ? (
           <PanelEmpty
-            title="Bu hafta planlanmış ders yok."
-            body="Ders planlandığında haftalık ızgarada saatiyle birlikte görünecek."
+            title="Bu hafta planlanmış bir ders yok ☕"
+            body="Ders planlandığında haftalık takvimde saatiyle birlikte görünecek."
           />
         ) : (
           <div className="mt-5 overflow-x-auto rounded-[14px] border border-dc-line bg-white">

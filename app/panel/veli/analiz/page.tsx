@@ -57,12 +57,12 @@ export default async function ParentAnalizPage({
           title="Analiz"
           periodLabel="Gidişat"
           sentences={[
-            "Hesabınız öğrencinizle eşleştirildiğinde gidişat özeti burada açılır.",
+            "Hesabınız öğrencinizle eşleştirildiğinde gidişat özeti burada açılacak 🤝",
           ]}
         />
         <PanelEmpty
-          title="Henüz bağlı öğrenci yok."
-          body="Hesabınız öğrencinizle eşleştirildiğinde gelişim özeti burada açılır."
+          title="Henüz bağlı bir öğrenci yok"
+          body="Hesabınız öğrencinizle eşleştirildiğinde gelişim özeti burada açılacak 🤝"
         />
       </>,
     );
@@ -80,8 +80,8 @@ export default async function ParentAnalizPage({
   if (!parentBundle) {
     return shell(
       <PanelEmpty
-        title="Özet hazırlanıyor."
-        body="Öğrenci verileri göründüğünde analiz burada açılır."
+        title="Özet hazırlanıyor ⏳"
+        body="Öğrenci verileri oluştukça analiz burada açılacak."
       />,
     );
   }
@@ -98,23 +98,23 @@ export default async function ParentAnalizPage({
       {!hasExamAccess ? (
         <EmptyState
           className="mt-6 max-w-[760px]"
-          title="Deneme eğilimi için deneme kaydı gerekir"
-          body="Bu hesapta deneme ürünü yok. Aşağıda ders katılımı ve çalışma tamamlama görünüyor."
+          title="Deneme eğilimi için deneme kaydı gerekiyor"
+          body="Bu hesapta henüz deneme ürünü bulunmuyor. Ders katılımını ve çalışma tamamlama bilgisini aşağıda görebilirsiniz."
         />
       ) : null}
 
       {parentBundle.isEmpty ? (
         <PanelEmpty
-          title="Henüz gösterilecek veri yok."
-          body="Ders katılımı, çalışmalar ve denemeler biriktikçe gidişat burada oluşur."
+          title="Gidişat burada şekillenecek 🌱"
+          body="Ders katılımı, çalışmalar ve denemeler biriktikçe gelişim tablosu burada oluşacak."
         />
       ) : (
         <>
           {hasExamAccess ? (
             <AcademicBlock
               academic={parentBundle.academic}
-              emptyTitle="Grafik için en az iki deneme gerekiyor."
-              emptyBody="İkinci deneme sonucu girildiğinde gelişim eğrisi burada açılır."
+              emptyTitle="Grafik için bir deneme daha yeterli 📈"
+              emptyBody="İkinci deneme sonucu girildiğinde gelişim eğrisi burada belirecek."
             />
           ) : null}
           <BehavioralBlock behavioral={parentBundle.behavioral} />

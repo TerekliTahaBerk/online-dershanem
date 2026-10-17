@@ -258,7 +258,7 @@ export default async function CoachPrepPage({
                 ))}
               </PanelTable>
             ) : (
-              <EmptyState title="Bu öğrenci için girilmiş deneme sonucu yok." />
+              <EmptyState title="Bu öğrenci için henüz girilmiş bir deneme sonucu yok." />
             )}
           </Section>
         ) : null}
@@ -312,7 +312,7 @@ async function OzetTab(props: {
                   ) : null}
                 </span>
               ) : (
-                "Planlanmış görüşme yok"
+                "Henüz planlanmış bir görüşme yok"
               )}
             </PropertyRow>
           ) : null}
@@ -324,7 +324,7 @@ async function OzetTab(props: {
                 {props.currentPct != null ? <span className="text-pn-text-muted">%{props.currentPct} tamamlandı</span> : null}
               </span>
             ) : (
-              "Henüz plan taslağı yok"
+              "Henüz bir plan taslağı yok"
             )}
           </PropertyRow>
           {props.isCoach && lastCheckIn ? (
@@ -383,13 +383,13 @@ async function OzetTab(props: {
       {props.isCoach ? (
         <Section id="hedefler" title="Hedefler">
           {goals.length === 0 ? (
-            <p className="text-[14px] text-pn-text-muted">Bu öğrenci için henüz hedef belirlenmedi.</p>
+            <p className="text-[14px] text-pn-text-muted">Bu öğrenci için henüz bir hedef belirlenmedi.</p>
           ) : (
             <PropertyList>
               {goals.map((g) => (
                 <PropertyRow key={g.id} label={g.label}>
                   {g.current === null
-                    ? "ölçüm yok"
+                    ? "henüz ölçüm yok"
                     : g.kind === "PLAN_COMPLETION"
                       ? `şimdi %${g.current}`
                       : `şimdi ${g.current.toFixed(2).replace(".", ",")}`}
@@ -547,7 +547,7 @@ async function PlanTab({
           </div>
         ) : (
           <p className="text-[14px] text-pn-text-muted">
-            Bu hafta için henüz plan taslağı yok. Aşağıdan görev ekleyebilir veya şablon uygulayabilirsin.
+            Bu hafta için henüz bir plan taslağı yok. Aşağıdan görev ekleyebilir ya da şablon uygulayabilirsin.
           </p>
         )}
       </Section>
@@ -584,7 +584,7 @@ async function GorusmelerTab({ assignmentId, studentId, userId, nextAt }: { assi
         description={
           nextAt
             ? `Sıradaki: ${DATE_TIME.format(nextAt)}. Tamamlarken öğrenciyle paylaşılan not ile yalnız koç ve yönetimin gördüğü özel not ayrı alanlardır.`
-            : "Planlanmış görüşme yok; aşağıdan yeni görüşme planlayabilirsin."
+            : "Henüz planlanmış bir görüşme yok; aşağıdan kolayca yeni bir görüşme planlayabilirsin 🤝"
         }
       >
         <CoachingSessions actor={{ userId, role: "TEACHER" }} studentId={studentId} />
@@ -607,7 +607,7 @@ async function GorusmelerTab({ assignmentId, studentId, userId, nextAt }: { assi
             ))}
           </PanelTable>
         ) : (
-          <p className="text-[14px] text-pn-text-muted">Henüz tamamlanmış görüşme yok.</p>
+          <p className="text-[14px] text-pn-text-muted">Henüz tamamlanmış bir görüşme yok.</p>
         )}
       </Section>
     </>
@@ -648,7 +648,7 @@ async function NotlarTab({ studentId, studentName, canReadPrivate }: { studentId
                   ))}
                 </ul>
               ) : (
-                <p className="mt-2 text-[13px] text-pn-text-muted">Bu şeritte not yok.</p>
+                <p className="mt-2 text-[13px] text-pn-text-muted">Bu şeritte henüz not yok.</p>
               )}
             </section>
           );
@@ -700,7 +700,7 @@ async function YardimTab({ assignmentId }: { assignmentId: string }) {
           ))}
         </List>
       ) : (
-        <EmptyState title="Bu öğrenciden yardım isteği yok." />
+        <EmptyState title="Bu öğrenciden gelen bir yardım isteği yok 🌿" />
       )}
     </Section>
   );

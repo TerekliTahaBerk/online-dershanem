@@ -14,12 +14,12 @@ const commandSchema = z.discriminatedUnion("operation", [
 const controls = z.object({ key: z.string().uuid(), revision: z.string().regex(/^[a-f0-9]{64}$/) });
 export async function GET() {
   const auth = await requireStaffApi("OD", "od:lesson:teach"); if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().teacherAiDrafts) return staffFeatureDisabled("AI taslak pilotu henüz açık değil.");
+  if (!getPanelFeatureFlags().teacherAiDrafts) return staffFeatureDisabled("AI taslak pilotu şu an kullanıma kapalı, çok yakında açılacak.");
   return staffJson(await loadTeacherAiDrafts(auth.session.userId));
 }
 export async function POST(request: Request) {
   const auth = await requireStaffApi("OD", "od:lesson:teach"); if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().teacherAiDrafts) return staffFeatureDisabled("AI taslak pilotu henüz açık değil.");
+  if (!getPanelFeatureFlags().teacherAiDrafts) return staffFeatureDisabled("AI taslak pilotu şu an kullanıma kapalı, çok yakında açılacak.");
   const guard = await guardMutation({ action: "panel.teacher.ai_drafts", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:ai-draft:${auth.session.userId}`, rateLimit: { max: 20, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { headers: PRIVATE_NO_STORE, status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = commandSchema.safeParse(await request.json().catch(() => null));
@@ -37,8 +37,8 @@ export async function POST(request: Request) {
     const result = await runEducationMutation({ lockName: `teacher-ai-mutation:${actorId}`, isolationLevel: "ReadCommitted", key, digest, kind: "ai-draft", targetKind: "ai-draft", actorId, action: `teacher.ai.${command.operation}`, execute: async (db) => {
       const data = await loadTeacherAiDrafts(actorId, db);
       const row = command.operation === "create" ? data.lessons.find((l) => l.id === command.lessonId) : data.drafts.find((d) => d.id === command.id);
-      if (!row) throw new GroupMutationError("NOT_FOUND", "Kayıt bulunamadı.", 404);
-      if (row.revision !== control.data.revision) throw new GroupMutationError("AI_CONFLICT", "Kaynak veya taslak değişti. Güncel görünümü kontrol edin.");
+      if (!row) throw new GroupMutationError("NOT_FOUND", "Aradığınız kaydı bulamadık.", 404);
+      if (row.revision !== control.data.revision) throw new GroupMutationError("AI_CONFLICT", "Kaynak veya taslak değişti. Güncel hâline göz atıp tekrar deneyebilirsiniz.");
       const response = command.operation === "create" ? await createTeacherAiDraft({ lessonId: command.lessonId, taskType: command.taskType, requestKey: control.data.key }, actorId, db) : await reviewTeacherAiDraft(command.id, command.input, actorId, db);
       const body = await response.json(); if (!response.ok) throw new GroupMutationError("AI_CONFLICT", body.error, response.status);
       // Receipts/audit contain only identifiers: never copy prompts or draft content.
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     if (typeof error === "object" && error && "code" in error && ["P2002", "P2034", "P2025"].includes(String(error.code))) {
       const receipt = await prisma.auditLog.findUnique({ where: { idempotencyKey: key } });
       if (receipt) { try { return staffJson({ ...(readGroupReceipt(receipt.payload, digest).body as object), replayed: true }); } catch (conflict) { if (conflict instanceof GroupMutationError) return NextResponse.json({ error: conflict.message, code: conflict.code }, { headers: PRIVATE_NO_STORE, status: conflict.status }); throw conflict; } }
-      return NextResponse.json({ error: "Taslak değişti. Listeyi yenileyin.", code: "AI_CONFLICT" }, { headers: PRIVATE_NO_STORE, status: 409 });
+      return NextResponse.json({ error: "Taslak değişti. Listeyi yenileyip tekrar deneyebilirsiniz.", code: "AI_CONFLICT" }, { headers: PRIVATE_NO_STORE, status: 409 });
     }
     throw error;
   }

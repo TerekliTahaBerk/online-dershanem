@@ -61,9 +61,9 @@ export function TeacherMaterialManager({
       if (response.ok) {
         setArchivedIds((current) => new Set([...current, id]));
         router.refresh();
-      } else setMessage("Materyal arşivlenemedi.");
+      } else setMessage("Materyal şu an arşivlenemedi. Lütfen tekrar dener misiniz?");
     } catch {
-      setMessage("Materyal arşivlenemedi. Bağlantını kontrol et.");
+      setMessage("Materyali şu an arşivleyemedik. İnternet bağlantını kontrol edip tekrar dener misin?");
     } finally {
       setArchiveBusy(null);
     }
@@ -104,13 +104,13 @@ export function TeacherMaterialManager({
             if (response.ok) {
               // Yeni kayıt sunucudan (korumalı dosya bağlantısıyla) gelir.
               formElement.reset();
-              setMessage("Materyal öğrencilere açıldı.");
+              setMessage("Materyal öğrencilere açıldı ✅");
               router.refresh();
             } else {
               setMessage(result.error || "Paylaşılamadı.");
             }
           } catch {
-            setMessage("Bağlantı kurulamadı. Tekrar deneyin.");
+            setMessage("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?");
           } finally {
             setBusy(false);
           }
@@ -248,7 +248,7 @@ export function TeacherMaterialManager({
                       {material.title}
                     </h3>
                     <p className="mt-1 text-xs leading-5 text-(--site-body)">
-                      {material.description || "Açıklama eklenmedi."}
+                      {material.description || "Henüz açıklama eklenmedi."}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1">
                       {material.captionsAvailable ? (
@@ -290,7 +290,7 @@ export function TeacherMaterialManager({
           })}
           {!items.length ? (
             <p className="text-sm text-(--site-muted)">
-              Henüz materyal paylaşılmadı.
+              Henüz bir materyal paylaşılmadı.
             </p>
           ) : null}
         </div>

@@ -51,7 +51,7 @@ export default async function ParentDinoPage({
         <PanelHeading
           metadata={childContext}
           title="Dino AI"
-          description="Çocuğunun panelde gördüğün kayıtlarını açıklar. Öğretmen notları ve özel görüşme notları aktarılmaz."
+          description="Çocuğunuzun panelde gördüğünüz kayıtlarını sade bir dille açıklar 🦕 Öğretmen notları ve özel görüşme notları paylaşılmaz."
         />
         {selected ? (
           <div className="mt-6">
@@ -67,8 +67,8 @@ export default async function ParentDinoPage({
           </div>
         ) : (
           <PanelEmpty
-            title="Öğrenci bağlantın hazırlanıyor."
-            body="Bağlantı kurulduğunda Dino özetleri burada açılır."
+            title="Öğrenci bağlantınız hazırlanıyor ⏳"
+            body="Bağlantı kurulduğunda Dino özetleri burada açılacak."
           />
         )}
       </div>

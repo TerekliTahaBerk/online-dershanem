@@ -71,11 +71,11 @@ export function InterventionCreateForm({
     });
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setMessage(body.error || "Müdahale oluşturulamadı.");
+      setMessage(body.error || "Müdahale şu an oluşturulamadı. Lütfen tekrar dener misiniz?");
       setBusy(false);
       return;
     }
-    setMessage("Müdahale kaydı oluşturuldu.");
+    setMessage("Müdahale kaydı oluşturuldu ✅");
     setExplanation("");
     setSuggestedAction("");
     setBusy(false);

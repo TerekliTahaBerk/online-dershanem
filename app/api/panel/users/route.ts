@@ -49,7 +49,7 @@ export async function POST(request: Request) {
   });
   if (!guard.ok) {
     return NextResponse.json(
-      { error: guard.code === "RATE_LIMIT" ? "Çok fazla işlem. Biraz sonra tekrar deneyin." : guard.message },
+      { error: guard.code === "RATE_LIMIT" ? "Kısa sürede çok fazla işlem yapıldı. Biraz bekleyip tekrar dener misiniz?" : guard.message },
       { status: guard.code === "RATE_LIMIT" ? 429 : 403 },
     );
   }
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
+    return NextResponse.json({ error: "İstek geçerli görünmüyor. Lütfen bilgileri kontrol edip tekrar deneyin." }, { status: 400 });
   }
 
   const parsed = createUserSchema.safeParse(body);
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 
   const email = normalizeEmail(parsed.data.email);
   if (!isPlausibleEmail(email)) {
-    return NextResponse.json({ error: "E-posta adresi geçerli görünmüyor." }, { status: 400 });
+    return NextResponse.json({ error: "E-posta adresi geçerli görünmüyor; bir kez daha kontrol eder misiniz?" }, { status: 400 });
   }
 
   const existing = await prisma.user.findUnique({ where: { email } });

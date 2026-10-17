@@ -35,7 +35,7 @@ describe('Çalışmalar sunum modeli', () => {
   });
 
   it('durum rozeti: süresi geçti / tamamlandı / kanıt durumları', () => {
-    expect(statusPresentation(makeAssignment({ dueAt: '2026-10-01T00:00:00.000Z' }), false, now)).toEqual({ label: 'Süresi geçti', tone: 'critical' });
+    expect(statusPresentation(makeAssignment({ dueAt: '2026-10-01T00:00:00.000Z' }), false, now)).toEqual({ label: 'Teslim tarihi geçti', tone: 'critical' });
     expect(statusPresentation(makeAssignment({ status: 'DONE', dueAt: '2026-10-01T00:00:00.000Z' }), false, now)).toEqual({ label: 'Tamamlandı', tone: 'success' });
     expect(statusPresentation(makeAssignment({ status: 'IN_PROGRESS' }), false, now).label).toBe('Çalışıyorum');
     const evidence = makeAssignment({ evidenceRequired: true, submissions: [submission('SUBMITTED')] });

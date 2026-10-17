@@ -63,7 +63,7 @@ it('kaynak bulunamadığında grup verisi gösterilmez', async () => {
 
 it('hatalı eğitim sözleşmesi başarı görünümü oluşturmaz', async () => {
   const h = await openEducation(200, { ...education, contractVersion: 2 });
-  expect(await h.screen.findByText('Sunucudan beklenmeyen bir yanıt alındı.', {}, WAIT)).toBeTruthy();
+  expect(await h.screen.findByText('Sunucudan beklenmedik bir yanıt aldık. Lütfen tekrar dener misiniz?', {}, WAIT)).toBeTruthy();
   expect(h.screen.queryByTestId('education-group-g1')).toBeNull();
 });
 

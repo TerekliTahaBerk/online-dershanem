@@ -18,7 +18,7 @@ export async function POST(request: Request, _context: { params: Promise<{ id: s
   const guard = await guardMutation({ action: "panel.curriculum.version.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:curriculum:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Müfredat sürümü alanlarını kontrol edin." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Lütfen müfredat sürümü alanlarını bir kez daha kontrol eder misiniz?" }, { status: 400 });
   const normalizedCode = parsed.data.code.toUpperCase();
   const exists = await prisma.curriculumVersion.findUnique({ where: { code: normalizedCode }, select: { id: true } });
   if (exists) return NextResponse.json({ error: "Bu sürüm kodu zaten kullanılıyor." }, { status: 409 });

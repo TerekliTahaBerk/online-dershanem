@@ -38,7 +38,7 @@ async function patch(url: string, body: unknown) {
     body: JSON.stringify(body),
   });
   const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(result.error || "İşlem tamamlanamadı.");
+  if (!response.ok) throw new Error(result.error || "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?");
 }
 
 export function GroupManagementDetail({
@@ -82,7 +82,7 @@ export function GroupManagementDetail({
       router.refresh();
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "İşlem tamamlanamadı.",
+        error instanceof Error ? error.message : "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?",
       );
     } finally {
       setBusy(null);
@@ -96,7 +96,7 @@ export function GroupManagementDetail({
       `/api/panel/groups/${group.id}/students?${params.toString()}`,
     );
     const body = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(body.error || "Öğrenciler getirilemedi.");
+    if (!response.ok) throw new Error(body.error || "Öğrenciler şu an getirilemedi. Lütfen tekrar dener misiniz?");
     setCandidates(Array.isArray(body.students) ? body.students : []);
   }
 
@@ -120,7 +120,7 @@ export function GroupManagementDetail({
                   subject: data.get("subject"),
                   level: data.get("level"),
                 }),
-              "Grup bilgileri güncellendi.",
+              "Grup bilgileri güncellendi ✅",
             );
           }}
         >
@@ -165,7 +165,7 @@ export function GroupManagementDetail({
                   action: "CHANGE_TEACHER",
                   teacherId: data.get("teacherId"),
                 }),
-              "Öğretmen değiştirildi.",
+              "Öğretmen değiştirildi ✅",
             );
           }}
         >
@@ -202,7 +202,7 @@ export function GroupManagementDetail({
                   action: "SET_ACTIVE",
                   isActive: nextState,
                 }),
-              nextState ? "Grup tekrar açıldı." : "Grup kapatıldı.",
+              nextState ? "Grup tekrar açıldı ✅" : "Grup kapatıldı.",
             );
           }}
         >
@@ -241,7 +241,7 @@ export function GroupManagementDetail({
                 void run(
                   "search",
                   () => searchStudents(query),
-                  "Arama güncellendi.",
+                  "Arama güncellendi ✅",
                 )
               }
               disabled={busy === "search"}

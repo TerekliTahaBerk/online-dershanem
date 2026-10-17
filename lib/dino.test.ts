@@ -115,7 +115,7 @@ test("yedek yanıt yorum uydurmaz, kaynakları olduğu gibi listeler", () => {
     sources,
   };
   const fallback = dinoFallbackAnswer(safe);
-  assert.match(fallback.text, /açıklamayı şu anda hazırlayamadı/i);
+  assert.match(fallback.text, /açıklamayı şu an hazırlayamadı/i);
   assert.ok(fallback.text.includes("6 dersin 5 tanesine katıldı."));
   assert.deepEqual(fallback.citations, ["ATTENDANCE", "PLAN_TASKS"]);
 });
@@ -127,5 +127,5 @@ test("kaynak yokken yedek yanıt veri olmadığını söyler", () => {
     questionLabel: "Çocuğum bu hafta nasıl gitti?",
     sources: [],
   });
-  assert.match(fallback.text, /yeterli dayanak yok/i);
+  assert.match(fallback.text, /henüz yeterli veri yok/i);
 });

@@ -35,7 +35,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
     );
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setMessage(body.error || "Adım kaydedilemedi.");
+      setMessage(body.error || "Bu adımı şu an kaydedemedik 😕 Lütfen tekrar dener misin?");
       setBusy(null);
       return;
     }
@@ -56,7 +56,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
     );
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setMessage(body.error || "Mini kontrol kaydedilemedi.");
+      setMessage(body.error || "Mini kontrolünü şu an kaydedemedik 😕 Lütfen tekrar dener misin?");
       setBusy(null);
       return;
     }
@@ -98,8 +98,8 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                   className={`rounded-full px-3 py-1 text-[11px] font-extrabold ${row.status === "COMPLETED" ? "bg-emerald-100 text-emerald-800" : "bg-[#fff4cc] text-amber-900"}`}
                 >
                   {row.status === "COMPLETED"
-                    ? "Telafi tamamlandı"
-                    : "Küçük adımlar hazır"}
+                    ? "Telafiyi tamamladın 🎉"
+                    : "Küçük adımların hazır 🧩"}
                 </span>
               </div>
 
@@ -163,7 +163,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
                     </div>
                   ) : (
                     <p className="mt-2 text-sm text-(--site-muted)">
-                      Bu ders için aktif materyal yok.
+                      Bu ders için aktif bir materyal yok.
                     </p>
                   )}
                 </section>
@@ -269,7 +269,7 @@ export function StudentRecoveryPackages({ rows }: { rows: Row[] }) {
           <div className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-10 text-center">
             <PackageCheck className="mx-auto text-(--site-muted)" />
             <p className="mt-3 text-sm font-bold">
-              Yayınlanmış telafi paketin yok.
+              Bekleyen bir telafi paketin yok 🎈
             </p>
           </div>
         ) : null}

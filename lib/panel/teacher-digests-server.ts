@@ -27,7 +27,7 @@ export async function loadTeacherDigests(teacherId: string, db: PrismaClient = p
   });
 }
 export async function generateTeacherDigest(studentId: string, teacherId: string, db: PrismaClient = prisma) {
-  if (!await db.studentProfile.findFirst({ where: { id: studentId, ...teacherDigestStudentScope(teacherId) }, select: { id: true } })) throw new GroupMutationError("NOT_FOUND", "Öğrenci bulunamadı.", 404);
+  if (!await db.studentProfile.findFirst({ where: { id: studentId, ...teacherDigestStudentScope(teacherId) }, select: { id: true } })) throw new GroupMutationError("NOT_FOUND", "Öğrenciyi bulamadık.", 404);
   const result = await generateCalmDigest(studentId, teacherId, db);
   await afterEducationCommit(db, () => recordPanelProductEvent({ name: "weekly_digest_generated", properties: { ruleVersion: "calm-digest-v2", trendBand: result.digest.trendBand as "IMPROVING" | "STEADY" | "BUILDING" | "LIMITED_DATA", reused: result.reused } }, "TEACHER"));
   return result;
@@ -35,11 +35,11 @@ export async function generateTeacherDigest(studentId: string, teacherId: string
 export async function publishTeacherDigest(id: string, expectedVersion: number, teacherId: string, db: PrismaClient = prisma) {
   const result = await db.$transaction(async (tx) => {
     const digest = await tx.weeklyDigest.findFirst({ where: { id, status: "DRAFT", student: teacherDigestStudentScope(teacherId) }, include: { student: { select: { userId: true, parents: { where: { parent: { status: "ACTIVE" } }, select: { parentId: true } } } } } });
-    if (!digest) throw new GroupMutationError("NOT_FOUND", "Özet bulunamadı.", 404);
+    if (!digest) throw new GroupMutationError("NOT_FOUND", "Özet bulunamadı; kaldırılmış ya da değişmiş olabilir.", 404);
     const changed = await tx.weeklyDigest.updateMany({ where: { id, status: "DRAFT", version: expectedVersion, student: teacherDigestStudentScope(teacherId) }, data: { status: "PUBLISHED", publishedById: teacherId, publishedAt: new Date(), version: { increment: 1 } } });
-    if (changed.count !== 1) throw new GroupMutationError("DIGEST_CONFLICT", "Özet başka bir sekmede değişti.");
+    if (changed.count !== 1) throw new GroupMutationError("DIGEST_CONFLICT", "Özet başka bir sekmede güncellenmiş; sayfayı yenileyip tekrar deneyebilirsiniz.");
     const recipients = [...new Set([digest.student.userId, ...digest.student.parents.map((link) => link.parentId)])];
-    const rawRows = recipients.map((userId) => ({ userId, type: "LESSON_SUMMARY" as const, title: "Haftalık özet hazır", body: "İki iyi giden nokta ve bir küçük destek önerisi hazır.", href: userId === digest.student.userId ? "/panel/ogrenci/haftalik" : `/panel/veli/haftalik?studentId=${digest.studentId}` }));
+    const rawRows = recipients.map((userId) => ({ userId, type: "LESSON_SUMMARY" as const, title: "Haftalık özet hazır 🌟", body: "Bu hafta iyi giden iki nokta ve küçük bir destek önerisi sizi bekliyor.", href: userId === digest.student.userId ? "/panel/ogrenci/haftalik" : `/panel/veli/haftalik?studentId=${digest.studentId}` }));
     const rows = await filterNotificationRows(rawRows, "weeklyDigest", tx);
     if (rows.length) await tx.notification.createMany({ data: rows });
     await queuePanelNotificationEmails(rawRows, "weeklyDigest", tx);

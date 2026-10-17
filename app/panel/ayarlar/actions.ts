@@ -74,13 +74,13 @@ export async function saveBillingSettings(_state: SettingsActionState, formData:
 }
 
 export async function saveConsentSettings(_state: SettingsActionState, formData: FormData): Promise<SettingsActionState> {
-  return runAction("consents", "account.settings.consents", formData, { invalid: "Onaylar okunamadı." });
+  return runAction("consents", "account.settings.consents", formData, { invalid: "Onayları şu an okuyamadık. Lütfen tekrar dener misiniz?" });
 }
 
 export async function addPendingChild(_state: SettingsActionState, formData: FormData): Promise<SettingsActionState> {
-  return runAction("addChild", "account.settings.add_child", formData, { fallback: "Çocuğun ad soyad, sınıf ve hedef sınav bilgisi zorunlu." });
+  return runAction("addChild", "account.settings.add_child", formData, { fallback: "Lütfen çocuğunuzun ad soyad, sınıf ve hedef sınav bilgisini ekleyin." });
 }
 
 export async function cancelPendingChild(_state: SettingsActionState, formData: FormData): Promise<SettingsActionState> {
-  return runAction("cancelChild", "account.settings.cancel_child", formData, { invalid: "Kayıt bulunamadı." });
+  return runAction("cancelChild", "account.settings.cancel_child", formData, { invalid: "Aradığınız kaydı bulamadık." });
 }

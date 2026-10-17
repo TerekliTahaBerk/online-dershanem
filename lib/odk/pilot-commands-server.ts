@@ -37,8 +37,8 @@ export async function transitionOdkPilot(id: string, input: z.output<typeof tran
     const db = educationTransactionClient(tx);
     await db.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended('odk-pilot-write', 0))::text`;
     const run = await db.odkPilotRun.findUnique({ where: { id }, include: { members: { orderBy: { userId: "asc" }, select: { role: true, userId: true } } } });
-    if (!run) return NextResponse.json({ error: "ODK pilot koşusu bulunamadı." }, { status: 404 });
-    if (run.version !== input.expectedVersion) return NextResponse.json({ error: "Pilot başka bir yönetici tarafından güncellendi. Sayfayı yenileyin." }, { status: 409 });
+    if (!run) return NextResponse.json({ error: "ODK pilot koşusu bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
+    if (run.version !== input.expectedVersion) return NextResponse.json({ error: "Pilot başka bir yönetici tarafından güncellendi. Sayfayı yenileyip tekrar deneyebilirsiniz." }, { status: 409 });
     if (!odkPilotTransitionAllowed(run.status, input.action)) return NextResponse.json({ error: "Bu pilot durumunda seçilen geçiş yapılamaz." }, { status: 409 });
     if (["PAUSE", "ROLLBACK"].includes(input.action) && !input.stopReason) return NextResponse.json({ error: "Durdurma nedeni seçilmelidir." }, { status: 400 });
     const readiness = await getOdkPilotReadiness(run.members, run.startedAt, db);
@@ -47,7 +47,7 @@ export async function transitionOdkPilot(id: string, input: z.output<typeof tran
     const status = input.action === "ACTIVATE" || input.action === "RESUME" ? "ACTIVE" : input.action === "PAUSE" ? "PAUSED" : input.action === "COMPLETE" ? "COMPLETED" : "ROLLED_BACK";
     const now = new Date(), stopReason = input.action === "COMPLETE" ? "MANUAL_COMPLETION" : input.stopReason;
     const updatedCount = await db.odkPilotRun.updateMany({ where: { id, version: run.version, status: run.status }, data: { status, version: { increment: 1 }, startedAt: input.action === "ACTIVATE" ? now : undefined, stoppedAt: ["PAUSE", "COMPLETE", "ROLLBACK"].includes(input.action) ? now : input.action === "RESUME" ? null : undefined, stopReason: ["PAUSE", "COMPLETE", "ROLLBACK"].includes(input.action) ? stopReason : input.action === "RESUME" ? null : undefined } });
-    if (!updatedCount.count) return NextResponse.json({ error: "Pilot durumu çakıştı. Sayfayı yenileyin." }, { status: 409 });
+    if (!updatedCount.count) return NextResponse.json({ error: "Pilot durumu çakıştı. Sayfayı yenileyip tekrar deneyebilirsiniz." }, { status: 409 });
     const updated = await db.odkPilotRun.findUniqueOrThrow({ where: { id } });
     await transactionalAudit(db)({ actorUserId: actorId, entityType: "OdkPilotRun", entityId: id, action: `odk.pilot_${input.action.toLowerCase()}`, summary: `ODK pilot durumu ${status} olarak güncellendi`, payload: { from: run.status, to: status, stopReason: stopReason || null, version: updated.version, readiness: readiness.canExpand ? "PASS" : readiness.canActivate ? "WAIT" : "BLOCK" } });
     return NextResponse.json({ run: updated, readiness });

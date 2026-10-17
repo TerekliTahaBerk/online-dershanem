@@ -20,7 +20,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const params = idParamsSchema.safeParse(await context.params);
   if (!params.success) return invalidApiInput();
   const exists = await prisma.studentProfile.findUnique({ where: { id: params.data.id }, select: { id: true } });
-  if (!exists) return NextResponse.json({ error: "Öğrenci bulunamadı.", code: "NOT_FOUND" }, { status: 404, headers: PRIVATE_NO_STORE });
+  if (!exists) return NextResponse.json({ error: "Öğrenciyi bulamadık.", code: "NOT_FOUND" }, { status: 404, headers: PRIVATE_NO_STORE });
   const url = new URL(request.url);
   const query = querySchema.safeParse({ sekme: url.searchParams.get("sekme") ?? undefined, gorunum: url.searchParams.get("gorunum") ?? undefined });
   const bundle = await loadStudent360Bundle({

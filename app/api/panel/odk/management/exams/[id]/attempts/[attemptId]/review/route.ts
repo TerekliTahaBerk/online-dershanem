@@ -20,7 +20,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const params = paramsSchema.safeParse(await context.params); if (!params.success) return invalidApiInput();
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "İnceleme işlemi, anahtar veya sürüm geçersiz.", code: "INVALID_INPUT" }, { status: 400, headers: PRIVATE_NO_STORE });
-  if (!(await loadOdkOpsAttempt(params.data.attemptId, new Date(), { examId: params.data.id }))) return NextResponse.json({ error: "Kayıt bulunamadı.", code: "NOT_FOUND" }, { status: 404, headers: PRIVATE_NO_STORE });
+  if (!(await loadOdkOpsAttempt(params.data.attemptId, new Date(), { examId: params.data.id }))) return NextResponse.json({ error: "Aradığınız kaydı bulamadık.", code: "NOT_FOUND" }, { status: 404, headers: PRIVATE_NO_STORE });
   const { idempotencyKey, expectedRevision, ...input } = parsed.data;
   try {
     const { result, replayed } = await reviewAttemptIntegrity(auth.session.userId, params.data.attemptId, input, { idempotencyKey, expectedRevision });

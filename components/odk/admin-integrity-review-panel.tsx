@@ -88,13 +88,13 @@ export function AdminIntegrityReviewPanel({
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setMessage(result.error || "İşlem başarısız.");
+        setMessage(result.error || "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?");
         return;
       }
-      setMessage("İnceleme kaydedildi.");
+      setMessage("İnceleme kaydedildi ✅");
       router.refresh();
     } catch {
-      setMessage("Bağlantı kurulamadı.");
+      setMessage("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?");
     } finally {
       setBusy(false);
     }

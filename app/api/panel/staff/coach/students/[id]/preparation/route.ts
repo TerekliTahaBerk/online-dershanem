@@ -23,14 +23,14 @@ const controls = z.object({ key: z.string().uuid(), revision: z.string().regex(/
 type Context = { params: Promise<{ id: string }> };
 export async function GET(_request: Request, context: Context) {
   const auth = await requireStaffApi("OK", "ok:coaching:write"); if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().adaptivePlan) return staffFeatureDisabled("Koç hazırlığı henüz açık değil.");
+  if (!getPanelFeatureFlags().adaptivePlan) return staffFeatureDisabled("Koç hazırlığı şu an kullanıma kapalı, çok yakında açılacak.");
   const params = idParamsSchema.safeParse(await context.params); if (!params.success) return invalidApiInput();
   const data = await loadCoachPreparation(auth.session.userId, params.data.id);
   return data ? staffJson(data) : staffNotFound();
 }
 export async function POST(request: Request, context: Context) {
   const auth = await requireStaffApi("OK", "ok:coaching:write"); if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().adaptivePlan) return staffFeatureDisabled("Koç hazırlığı henüz açık değil.");
+  if (!getPanelFeatureFlags().adaptivePlan) return staffFeatureDisabled("Koç hazırlığı şu an kullanıma kapalı, çok yakında açılacak.");
   const params = idParamsSchema.safeParse(await context.params); if (!params.success) return invalidApiInput();
   const guard = await guardMutation({ action: "panel.coach.preparation", requireSameOrigin: true, headers: request.headers, rateLimitKey: `coach:preparation:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { headers: PRIVATE_NO_STORE, status: guard.code === "RATE_LIMIT" ? 429 : 403 });
@@ -43,16 +43,16 @@ export async function POST(request: Request, context: Context) {
   try {
     const result = await runEducationMutation({ kind: "coaching", targetKind: "student", key, actorId, action: `coach.preparation.${parsed.data.action}`, digest, execute: async (db) => {
       const data = await loadCoachPreparation(actorId, studentId, db);
-      if (!data) throw new GroupMutationError("NOT_FOUND", "Öğrenci bulunamadı.", 404);
-      if (data.revision !== control.data.revision) throw new GroupMutationError("COACH_CONFLICT", "Hazırlık verileri değişti. Güncel görünümü kontrol edin.");
+      if (!data) throw new GroupMutationError("NOT_FOUND", "Öğrenciyi bulamadık.", 404);
+      if (data.revision !== control.data.revision) throw new GroupMutationError("COACH_CONFLICT", "Hazırlık verileri değişti. Güncel hâline göz atıp tekrar deneyebilirsiniz.");
       const command = parsed.data; let response: Response;
       if (command.action === "record") return Response.json(await recordCoachSession({ ...command.payload, studentId }, actorId, db));
       if (command.action === "goal") {
-        if (command.payload.studentId !== studentId) throw new GroupMutationError("NOT_FOUND", "Öğrenci bulunamadı.", 404);
+        if (command.payload.studentId !== studentId) throw new GroupMutationError("NOT_FOUND", "Öğrenciyi bulamadık.", 404);
         return Response.json(await setCoachGoal(command.payload, actorId, db));
       }
       if (command.action === "template") {
-        if (!data.templates.some((t) => t.id === command.templateId)) throw new GroupMutationError("NOT_FOUND", "Şablon bulunamadı.", 404);
+        if (!data.templates.some((t) => t.id === command.templateId)) throw new GroupMutationError("NOT_FOUND", "Şablon bulunamadı; kaldırılmış ya da değişmiş olabilir.", 404);
         const result = await applyTemplateToStudentWeek({ templateId: command.templateId, studentId, weekStart: new Date(data.weekStart), actorUserId: actorId }, db);
         if (!result.ok) throw new GroupMutationError("COACH_CONFLICT", result.error);
         return Response.json({ ok: true, id: result.planId });
@@ -62,7 +62,7 @@ export async function POST(request: Request, context: Context) {
         if (day < week || day >= week + 7 * 86400000) throw new GroupMutationError("INVALID_DATE", "Görev plan haftası içinde olmalı.", 400);
         response = await createCoachTask(coachTaskSchema.parse({ ...command.payload, studentId, weekStart: data.weekStart }), actorId, auth.session.fullName || "Koç", db);
       } else if (command.action === "copy") {
-        if (!data.plans.some((p) => p.id === command.planId)) throw new GroupMutationError("NOT_FOUND", "Plan bulunamadı.", 404);
+        if (!data.plans.some((p) => p.id === command.planId)) throw new GroupMutationError("NOT_FOUND", "Planı bulamadık.", 404);
         response = await copyCoachPlan(command.payload, actorId, auth.session.fullName || "Koç", db, command.planId);
       } else response = await saveCoachSummary({ ...command.payload, studentId, weekStart: data.weekStart }, actorId, auth.session.fullName || "Koç", db);
       const body = await response.json();
@@ -78,7 +78,7 @@ export async function POST(request: Request, context: Context) {
         try { return staffJson({ ...(readGroupReceipt(receipt.payload, digest).body as object), replayed: true }); }
         catch (conflict) { if (conflict instanceof GroupMutationError) return NextResponse.json({ error: conflict.message, code: conflict.code }, { headers: PRIVATE_NO_STORE, status: conflict.status }); throw conflict; }
       }
-      return NextResponse.json({ error: "Kayıt değişti. Görünümü yenileyin.", code: "COACH_CONFLICT" }, { headers: PRIVATE_NO_STORE, status: 409 });
+      return NextResponse.json({ error: "Kayıt değişti. Sayfayı yenileyip tekrar deneyebilirsiniz.", code: "COACH_CONFLICT" }, { headers: PRIVATE_NO_STORE, status: 409 });
     }
     throw error;
   }

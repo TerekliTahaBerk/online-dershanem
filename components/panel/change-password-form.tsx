@@ -19,7 +19,7 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
 
     // Tekrar alanı yalnızca client'ta anlamlı — sunucuya gönderilmez.
     if (newPassword !== repeat) {
-      setError("Yeni parolalar birbiriyle eşleşmiyor.");
+      setError("Yeni parolalar birbiriyle eşleşmiyor; bir kez daha kontrol eder misiniz?");
       return;
     }
 
@@ -36,7 +36,7 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
       };
 
       if (!response.ok || !data.redirect) {
-        setError(data.error ?? "Parola değiştirilemedi.");
+        setError(data.error ?? "Parolanızı şu an değiştiremedik. Lütfen tekrar dener misiniz?");
         setPending(false);
         return;
       }
@@ -44,7 +44,7 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
       router.replace(data.redirect);
       router.refresh();
     } catch {
-      setError("Bağlantı kurulamadı. Tekrar deneyin.");
+      setError("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?");
       setPending(false);
     }
   }

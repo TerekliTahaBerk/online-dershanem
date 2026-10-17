@@ -115,7 +115,7 @@ export default async function CoachSessionsPage() {
               ))}
             </PanelTable>
           ) : (
-            <EmptyState title="Planlı görüşmen yok." body="Öğrenci çalışma alanının Görüşmeler sekmesinden yeni görüşme planlayabilirsin." />
+            <EmptyState title="Planlı bir görüşmen yok ☕" body="Öğrenci çalışma alanının Görüşmeler sekmesinden yeni görüşme planlayabilirsin." />
           )}
         </Section>
 
@@ -140,7 +140,7 @@ export default async function CoachSessionsPage() {
               ))}
             </PanelTable>
           ) : (
-            <p className="text-[14px] text-pn-text-muted">Son 30 günde görüşme kaydı yok.</p>
+            <p className="text-[14px] text-pn-text-muted">Son 30 günde görüşme kaydı görünmüyor.</p>
           )}
         </Section>
       </div>

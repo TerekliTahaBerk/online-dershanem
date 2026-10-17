@@ -40,7 +40,7 @@ export function validatePasswordStrength(
   context: { email?: string; fullName?: string | null } = {},
 ): PasswordCheck {
   if (password.length < PASSWORD_MIN_LENGTH) {
-    return { ok: false, error: `Parola en az ${PASSWORD_MIN_LENGTH} karakter olmalı.` };
+    return { ok: false, error: `Parolanız en az ${PASSWORD_MIN_LENGTH} karakter olmalı.` };
   }
   if (password.length > PASSWORD_MAX_LENGTH) {
     return { ok: false, error: `Parola en fazla ${PASSWORD_MAX_LENGTH} karakter olabilir.` };
@@ -51,21 +51,21 @@ export function validatePasswordStrength(
 
   const lower = password.toLowerCase();
   if (COMMON_PASSWORDS.has(lower)) {
-    return { ok: false, error: "Bu parola çok yaygın. Başka bir parola seçin." };
+    return { ok: false, error: "Bu parola çok yaygın kullanılıyor; güvenliğiniz için başka bir parola seçmenizi öneririz." };
   }
 
   const email = context.email?.trim().toLowerCase();
   if (email) {
-    if (lower === email) return { ok: false, error: "Parola e-posta adresinizle aynı olamaz." };
+    if (lower === email) return { ok: false, error: "Parolanız e-posta adresinizle aynı olmamalı." };
     const localPart = email.split("@")[0];
     if (localPart.length >= 4 && lower === localPart) {
-      return { ok: false, error: "Parola e-posta adresinizden türetilmiş olamaz." };
+      return { ok: false, error: "Parolanız e-posta adresinizden türetilmiş olmamalı." };
     }
   }
 
   const name = context.fullName?.trim().toLowerCase();
   if (name && name.length >= 4 && lower === name) {
-    return { ok: false, error: "Parola adınızla aynı olamaz." };
+    return { ok: false, error: "Parolanız adınızla aynı olmamalı." };
   }
 
   return { ok: true };

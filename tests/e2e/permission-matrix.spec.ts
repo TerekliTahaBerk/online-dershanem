@@ -99,12 +99,12 @@ type ProbeResult = { status: number; error: string | null };
  * yetmiyor: ürün erişimi reddi de 404, "kayıt yok" da 404.
  */
 const AUTH_DENIED_ERRORS = [
-  "Oturumunuz sona ermiş. Tekrar giriş yapın.",
-  "Bu işlem için yetkiniz yok.",
-  "Bu ürün için aktif erişiminiz yok.",
+  "Güvenliğiniz için oturumunuz sona erdi. Lütfen tekrar giriş yapın 🔐",
+  "Bu işlem için yetkiniz bulunmuyor.",
+  "Bu ürün için henüz aktif bir erişiminiz bulunmuyor.",
   "Bu pilot erişimi etkin değil.",
-  "Panel şu anda kapalı.",
-  "Devam etmeden önce parolanızı değiştirmeniz gerekiyor.",
+  "Panel şu an kullanıma kapalı, çok yakında yeniden açılacak.",
+  "Devam etmeden önce parolanızı yenilemeniz gerekiyor 🔐",
 ];
 
 function isAuthDenied(result: ProbeResult): boolean {

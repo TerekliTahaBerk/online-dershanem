@@ -24,12 +24,12 @@ export function PanelErrorState({
           <AlertTriangle size={20} aria-hidden="true" />
         </span>
         <h1 className="mt-4 text-[20px] font-bold tracking-[-0.015em] text-dc-ink">
-          Bu bölüm şu an açılamadı
+          Bu bölümü şu an açamadık 😕
         </h1>
         <p className="mt-2 text-[14px] leading-[1.6] text-dc-ink-body">
-          Bilgileriniz güvende. Bağlantı kısa süreli kesilmiş olabilir; sayfayı
-          yeniden deneyebilirsiniz. Sorun sürerse destek ekibine aşağıdaki kodu
-          iletin.
+          Merak etmeyin, bilgileriniz güvende. Bağlantı kısa süreliğine kesilmiş
+          olabilir; sayfayı yeniden deneyebilirsiniz. Sorun devam ederse destek
+          ekibimize aşağıdaki kodu iletmeniz yeterli, hemen yardımcı oluruz 🤝
         </p>
         <div className="mt-5 flex flex-wrap items-center gap-2">
           <button

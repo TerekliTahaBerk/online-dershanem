@@ -24,7 +24,7 @@ export function TeacherSubmissionScreen({ submissionId }: { submissionId: string
   const refresh = usePullToRefresh(() => query.refetch());
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="teacher-submission">
-      <QueryView query={query} disabledTitle="Kanıtlı teslim şu anda açık değil.">{(data) => <Review key={`${data.id}:${data.version}`} data={data} refetch={() => query.refetch()} />}</QueryView>
+      <QueryView query={query} disabledTitle="Kanıtlı teslim şu an kullanıma kapalı.">{(data) => <Review key={`${data.id}:${data.version}`} data={data} refetch={() => query.refetch()} />}</QueryView>
     </Screen>
   );
 }
@@ -49,7 +49,7 @@ function Review({ data, refetch }: { data: MobileSubmissionDetail; refetch: () =
     setState(null);
     try {
       const result = await mutation.mutateAsync(decision);
-      setState({ tone: 'success', message: result.status === 'APPROVED' ? 'Teslim onaylandı.' : 'Yeniden deneme isteği gönderildi.' });
+      setState({ tone: 'success', message: result.status === 'APPROVED' ? 'Teslim onaylandı ✅ Öğrencinize bildirim gönderildi.' : 'Yeniden deneme isteği öğrencinize iletildi ✍️' });
       await invalidate();
     } catch (error) {
       // Değerlendirilmiş teslim kuyruktan çıkar: mevcut uç ikinci denemede 404 döner.
@@ -80,7 +80,7 @@ function Review({ data, refetch }: { data: MobileSubmissionDetail; refetch: () =
       {!reviewable ? (
         <EmptyState title={data.status === 'APPROVED' ? 'Bu teslim onaylandı' : 'Bu teslim için yeniden deneme istendi'} body="Değerlendirilmiş teslim tekrar değerlendirilemez." />
       ) : data.criteria.length < 2 ? (
-        <EmptyState title="Bu ödevin rubric ölçütleri eksik" body="Değerlendirme için web panelini kullanın." />
+        <EmptyState title="Bu ödevin değerlendirme ölçütleri eksik" body="Değerlendirmeyi web panelinden tamamlayabilirsiniz." />
       ) : (
         <>
           <Section title="Rubric">

@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const guard = await guardMutation({ action: "odk.exam.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `odk:exam-create:${auth.session.userId}`, rateLimit: { max: 30, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = createExamSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "Deneme bilgilerini kontrol edin." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "Lütfen deneme bilgilerini bir kez daha kontrol eder misiniz?" }, { status: 400 });
   try { return await createOdkExam(parsed.data, auth.session.userId); }
   catch (error) {
     if (typeof error === "object" && error && "code" in error && ["P2002", "P2034"].includes(String(error.code))) return NextResponse.json({ error: "Adres zaten kullanılıyor veya kayıt değişti." }, { status: 409 });

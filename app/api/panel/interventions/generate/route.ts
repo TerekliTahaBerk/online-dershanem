@@ -9,7 +9,7 @@ import { recordPanelProductEvent } from "@/lib/panel-product-events";
 export async function POST(request: Request) {
   const auth = await requireApiOdRole("ADMIN", "TEACHER");
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().interventionInbox) return NextResponse.json({ error: "Müdahale kutusu henüz açık değil." }, { status: 404 });
+  if (!getPanelFeatureFlags().interventionInbox) return NextResponse.json({ error: "Müdahale kutusu şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.interventions.generate", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:interventions-generate:${auth.session.userId}`, rateLimit: { max: 20, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const result = await generateInterventionEpisodes(auth.session.role === "TEACHER" ? { teacherId: auth.session.userId } : {});

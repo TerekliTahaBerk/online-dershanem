@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   if (!auth.ok) return auth.response;
   const url = new URL(request.url);
   const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz takvim filtresi." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Takvim filtresi geçerli görünmüyor." }, { status: 400 });
   const now = Date.now();
   const range = { gte: new Date(now - 30 * 86400000), lte: new Date(now + 180 * 86400000) };
   let where: Prisma.LessonWhereInput = { startsAt: range };
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId }, select: { id: true, userId: true } });
     studentProfileId = profile?.id ?? null;
     studentUserId = profile?.userId ?? null;
-    if (parsed.data.studentId && parsed.data.studentId !== studentProfileId) return NextResponse.json({ error: "Öğrenci bulunamadı." }, { status: 404 });
+    if (parsed.data.studentId && parsed.data.studentId !== studentProfileId) return NextResponse.json({ error: "Öğrenciyi bulamadık." }, { status: 404 });
     where = profile ? { startsAt: range, group: { isActive: true, enrollments: { some: { studentId: profile.id, endedAt: null } } } } : { id: "__missing_student_profile__" };
   }
   if (auth.session.role === "PARENT") {
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
     const links = linkRows.filter((_, index) => visibility[index]);
     const requested = parsed.data.studentId;
     const selected = requested ? links.find((item) => item.studentId === requested) : links[0];
-    if (!selected) return NextResponse.json({ error: "Bağlı öğrenci bulunamadı." }, { status: 404 });
+    if (!selected) return NextResponse.json({ error: "Bağlı öğrenci şu an görünmüyor." }, { status: 404 });
     studentProfileId = selected.studentId;
     studentUserId = selected.student.userId;
     where = { startsAt: range, group: { isActive: true, enrollments: { some: { studentId: selected.studentId, endedAt: null } } } };

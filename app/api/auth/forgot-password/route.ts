@@ -18,14 +18,14 @@ function delay(ms: number): Promise<void> {
 }
 
 export async function POST(request: Request) {
-  if (!PANEL_ENABLED) return NextResponse.json({ error: "Panel şu anda kapalı." }, { status: 503 });
+  if (!PANEL_ENABLED) return NextResponse.json({ error: "Panel şu an kullanıma kapalı, çok yakında yeniden açılacak." }, { status: 503 });
 
   const ipGuard = await guardMutation({
     action: "auth.forgot_password",
     requireSameOrigin: true,
     headers: request.headers,
     rateLimitKey: getRateLimitKeyFromIp(request.headers, "auth.forgot-password"),
-    rateLimit: { max: 5, windowMs: 60 * 60_000, message: "Çok fazla istek. Bir süre sonra tekrar deneyin." },
+    rateLimit: { max: 5, windowMs: 60 * 60_000, message: "Kısa sürede çok fazla istek gönderildi. Biraz bekleyip tekrar dener misiniz?" },
   });
   if (!ipGuard.ok) return mutationGuardResponse(ipGuard);
 
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
   const emailGuard = await guardMutation({
     action: "auth.forgot_password.email",
     rateLimitKey: `auth:forgot-password:email:${emailKey}`,
-    rateLimit: { max: 3, windowMs: 60 * 60_000, message: "Çok fazla istek. Bir süre sonra tekrar deneyin." },
+    rateLimit: { max: 3, windowMs: 60 * 60_000, message: "Kısa sürede çok fazla istek gönderildi. Biraz bekleyip tekrar dener misiniz?" },
   });
   if (!emailGuard.ok) {
     await responseFloor;

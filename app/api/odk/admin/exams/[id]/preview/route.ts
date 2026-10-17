@@ -13,7 +13,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const auth = await requireApiStaffPermission("odk:exam:edit"); if (!auth.ok) return auth.response;
   const routeParams = idParamsSchema.safeParse(await context.params);
   const query = previewQuerySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
-  if (!routeParams.success || !query.success) return invalidApiInput("Geçersiz önizleme parametreleri.");
+  if (!routeParams.success || !query.success) return invalidApiInput("Önizleme parametreleri geçerli görünmüyor.");
   const { id } = routeParams.data;
   const kindParam: AdminPreviewKind = query.data.kind;
 
@@ -33,7 +33,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
       },
     },
   });
-  if (!exam?.currentVersion) return NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 });
+  if (!exam?.currentVersion) return NextResponse.json({ error: "Denemeyi bulamadık." }, { status: 404 });
 
   const preview = buildAdminPreview({
     kind: kindParam,

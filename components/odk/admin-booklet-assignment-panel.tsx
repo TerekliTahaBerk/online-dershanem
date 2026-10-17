@@ -43,10 +43,10 @@ export function AdminBookletAssignmentPanel({ examId, canEdit }: { examId: strin
         body: JSON.stringify({ studentUserId: row.studentUserId, bookletCode: value || null }),
       });
       const result = await response.json().catch(() => ({}));
-      setMessage(response.ok ? { text: `${row.studentName || row.studentEmail}: ${value ? `${value} kitapçığı` : "otomatik atama"}.`, error: false } : { text: result.error || "Kaydedilemedi.", error: true });
+      setMessage(response.ok ? { text: `${row.studentName || row.studentEmail}: ${value ? `${value} kitapçığı` : "otomatik atama"}.`, error: false } : { text: result.error || "Şu an kaydedilemedi. Lütfen tekrar dener misiniz?", error: true });
       await load();
     } catch {
-      setMessage({ text: "Bağlantı kurulamadı.", error: true });
+      setMessage({ text: "Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?", error: true });
     } finally {
       setBusy(null);
     }

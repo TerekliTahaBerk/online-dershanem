@@ -89,7 +89,7 @@ export default async function ParentAccountPage({
             role="status"
             className="mt-4 rounded-od border border-dc-brand-soft-line bg-dc-brand-soft px-4 py-3 text-[13.5px] font-semibold text-dc-brand-hover"
           >
-            Görüşme talebin alındı. Eğitim koordinatörü seninle iletişime
+            Görüşme talebiniz bize ulaştı 🤝 Eğitim koordinatörümüz en kısa sürede sizinle iletişime
             geçecek.
           </p>
         ) : null}
@@ -98,8 +98,8 @@ export default async function ParentAccountPage({
           <PanelCardTitle>Bağlı öğrenciler</PanelCardTitle>
           {children.length === 0 ? (
             <p className="mt-3 text-[14px] leading-[1.6] text-dc-ink-muted">
-              Hesabına bağlı öğrenci görünmüyor. Bağlantı eksikse eğitim
-              koordinatörünle görüşebilirsin.
+              Hesabınıza bağlı bir öğrenci görünmüyor. Bir eksiklik olduğunu düşünüyorsanız eğitim
+              koordinatörünüz size memnuniyetle yardımcı olur.
             </p>
           ) : (
             <ul className="mt-3 flex flex-col gap-3">
@@ -112,7 +112,7 @@ export default async function ParentAccountPage({
                   <span className="text-dc-ink-muted">
                     {child.products.length
                       ? child.products.map(productLabel).join(" · ")
-                      : "Aktif ürün yok"}
+                      : "Henüz aktif bir ürün yok"}
                   </span>
                 </li>
               ))}
@@ -124,7 +124,7 @@ export default async function ParentAccountPage({
           <PanelCardTitle>Ödemeler</PanelCardTitle>
           {orders.length === 0 ? (
             <p className="mt-3 text-[14px] leading-[1.6] text-dc-ink-muted">
-              Bu hesapta kayıtlı bir sipariş görünmüyor.
+              Bu hesapta henüz kayıtlı bir sipariş görünmüyor.
             </p>
           ) : (
             <ul className="mt-3 flex flex-col gap-2.5">
@@ -152,8 +152,8 @@ export default async function ParentAccountPage({
           <PanelCard className="mt-4">
             <PanelCardTitle>Paket değişikliği</PanelCardTitle>
             <p className="mt-2 text-[14.5px] leading-[1.65] text-dc-ink-body">
-              Bir öğrenci için ürün eklemek veya paketi değiştirmek istersen
-              görüşme talebi oluşturabilirsin. Paket fiyatı, ürünleri ayrı
+              Bir öğrenci için ürün eklemek ya da paketi değiştirmek isterseniz
+              kolayca görüşme talebi oluşturabilirsiniz. Paket fiyatı, ürünleri ayrı ayrı
               almaktan daha düşük olur.
             </p>
             <form

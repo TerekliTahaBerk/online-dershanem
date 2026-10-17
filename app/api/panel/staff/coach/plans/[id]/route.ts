@@ -15,12 +15,12 @@ import { requireStaffApi, staffFeatureDisabled, staffJson, staffNotFound } from 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireStaffApi("OK", "ok:coaching:write");
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().adaptivePlan) return staffFeatureDisabled("Haftalık plan henüz açık değil.");
+  if (!getPanelFeatureFlags().adaptivePlan) return staffFeatureDisabled("Haftalık plan şu an kullanıma kapalı, çok yakında açılacak.");
   const params = idParamsSchema.safeParse(await context.params);
   if (!params.success) return invalidApiInput();
   const { id } = params.data;
   const plan = await loadCoachPlanDetail(auth.session.userId, id);
-  if (!plan) return staffNotFound("Plan bulunamadı.");
+  if (!plan) return staffNotFound("Planı bulamadık.");
   return staffJson({
     contractVersion: MOBILE_STAFF_CONTRACT_VERSION,
     id: plan.id,

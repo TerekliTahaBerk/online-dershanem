@@ -25,7 +25,7 @@ async function mutate(url: string, method: "POST" | "PATCH", body: unknown) {
     body: JSON.stringify(body),
   });
   const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(result.error || "İşlem tamamlanamadı.");
+  if (!response.ok) throw new Error(result.error || "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?");
 }
 
 export function CurriculumManager({
@@ -51,7 +51,7 @@ export function CurriculumManager({
       router.refresh();
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "İşlem tamamlanamadı.",
+        error instanceof Error ? error.message : "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?",
       );
     } finally {
       setBusy(false);
@@ -95,7 +95,7 @@ export function CurriculumManager({
                         "PATCH",
                         { status: event.target.value },
                       ),
-                    "Sürüm durumu güncellendi.",
+                    "Sürüm durumu güncellendi ✅",
                   )
                 }
                 className="rounded-md border border-pn-border-strong bg-white px-3 py-2 text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 w-auto text-[13px]"
@@ -131,7 +131,7 @@ export function CurriculumManager({
                   academicYear: Number(data.get("academicYear")),
                   sourceUrl: data.get("sourceUrl"),
                 }),
-              "Müfredat sürümü oluşturuldu.",
+              "Müfredat sürümü oluşturuldu ✅",
             );
           }}
         >
@@ -195,7 +195,7 @@ export function CurriculumManager({
                     .map((item) => item.trim())
                     .filter(Boolean),
                 }),
-              "Kazanım kataloğa eklendi.",
+              "Kazanım kataloğa eklendi ✅",
             );
           }}
         >

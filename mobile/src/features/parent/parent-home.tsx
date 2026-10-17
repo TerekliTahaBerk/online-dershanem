@@ -38,14 +38,14 @@ function HomeBody({ home }: { home: MobileParentHome }) {
       </Section>
 
       {home.academic.supportAreas.length || home.digest.supportArea ? (
-        <Section title="Dikkat edilmesi gereken">
+        <Section title="Birlikte destek olabileceğimiz alanlar">
           {home.academic.supportAreas.map((line, index) => <Text key={`${index}-${line}`} tone="secondary">{line}</Text>)}
           {home.digest.supportArea ? <Text tone="secondary">{`Öğretmen özeti: ${home.digest.supportArea}`}</Text> : null}
         </Section>
       ) : null}
 
       {home.actions.length ? (
-        <Section title="Sizden beklenen">
+        <Section title="Sizi bekleyenler">
           {home.actions.map((action) => {
             const href = nav.hrefFor(action.navId);
             return (
@@ -67,7 +67,7 @@ function HomeBody({ home }: { home: MobileParentHome }) {
           <Row key={item.id} title={item.title} subtitle={item.detail} onPress={nav.hrefFor(item.navId) ? () => nav.open(item.navId) : undefined} />
         ))}
         {!home.thisWeek.attendanceLabel && !home.thisWeek.assignmentsLabel && !home.thisWeek.planLabel && !home.thisWeek.upcoming.length ? (
-          <Text tone="secondary">Bu hafta için gösterilecek kayıt henüz yok.</Text>
+          <Text tone="secondary">Bu hafta için henüz gösterilecek bir kayıt yok.</Text>
         ) : null}
       </Section>
 
@@ -93,7 +93,7 @@ function HomeBody({ home }: { home: MobileParentHome }) {
 
       {home.digest.available ? (
         <Section title="Haftalık özet">
-          <Text tone="secondary">{home.digest.published && home.digest.preview ? home.digest.preview : 'Öğretmen haftalık özeti yayınladığında burada görünür.'}</Text>
+          <Text tone="secondary">{home.digest.published && home.digest.preview ? home.digest.preview : 'Öğretmen haftalık özeti yayınladığında burada görünecek 🌟'}</Text>
           <NavButton navId="weekly-digest" label="Haftalık özeti aç" />
         </Section>
       ) : null}

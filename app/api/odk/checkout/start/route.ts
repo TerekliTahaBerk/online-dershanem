@@ -67,13 +67,13 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return unavailable("Geçersiz istek gövdesi.", 400);
+    return unavailable("İstek içeriği geçerli görünmüyor. Lütfen tekrar deneyin.", 400);
   }
   const parsed = InputSchema.safeParse(body);
   if (!parsed.success) return unavailable(parsed.error.issues[0]?.message || "Form bilgileri eksik veya hatalı.", 400);
   const data = parsed.data;
   if (!asBool(data.kvkkConsent) || !asBool(data.paymentConsent)) {
-    return unavailable("KVKK ve ön bilgilendirme onaylarını işaretleyin.", 400);
+    return unavailable("Devam etmek için KVKK ve ön bilgilendirme onaylarını işaretlemeniz yeterli.", 400);
   }
 
   // Giriş yapmış öğrenci/veli: erişimin kime açılacağı sipariş anında sabitlenir.

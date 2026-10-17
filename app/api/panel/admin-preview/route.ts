@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
   const parsed = startSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success || !isPreviewableRole(parsed.data.previewRole)) {
-    return NextResponse.json({ error: "Önizleme isteği geçersiz." }, { status: 400 });
+    return NextResponse.json({ error: "Önizleme isteği geçerli görünmüyor." }, { status: 400 });
   }
 
   const result = await startAdminPreview({

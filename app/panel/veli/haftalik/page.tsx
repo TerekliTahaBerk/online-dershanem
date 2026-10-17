@@ -65,8 +65,8 @@ export default async function ParentWeeklyDigestPage({
         <PanelHeading title="Haftalık özet" />
         <EmptyState
           className="mt-6"
-          title="Öğrenci bağlantın hazırlanıyor."
-          body="Bağlantı kurulduğunda haftalık özet burada görünür."
+          title="Öğrenci bağlantınız hazırlanıyor ⏳"
+          body="Bağlantı kurulduğunda haftalık özet burada görünecek."
         />
       </>,
     );
@@ -86,7 +86,7 @@ export default async function ParentWeeklyDigestPage({
         </List>
       ) : (
         <p className="text-[14px] text-pn-text-muted">
-          Önümüzdeki iki hafta için planlanmış ders veya görüşme görünmüyor.
+          Önümüzdeki iki hafta için planlanmış bir ders ya da görüşme görünmüyor.
         </p>
       )}
     </Section>
@@ -97,16 +97,16 @@ export default async function ParentWeeklyDigestPage({
       <>
         <PanelHeading
           title="Haftalık özet"
-          description="Haftada bir sakin bakış"
+          description="Haftada bir, sakin ve kısa bir bakış ☕"
           metadata={childContext}
         />
         <EmptyState
           className="mt-6"
-          title="Haftalık özet henüz yayınlanmadı."
-          body="Öğretmen önizlemeyi tamamladığında öğrenciyle aynı anda burada açılır."
+          title="Haftalık özet çok yakında 🌟"
+          body="Öğretmen özeti tamamladığında öğrencinizle aynı anda burada açılacak."
         />
         {systemUpcoming.length
-          ? upcomingSection("Bu liste otomatik kayıtlardan gelir; öğretmen özeti değildir.")
+          ? upcomingSection("Bu liste otomatik kayıtlardan oluşur; öğretmen özetinden ayrıdır.")
           : null}
       </>,
     );
@@ -137,7 +137,7 @@ export default async function ParentWeeklyDigestPage({
     <>
       <PanelHeading
         title="Haftalık özet"
-        description="Haftada bir sakin bakış"
+        description="Haftada bir, sakin ve kısa bir bakış ☕"
         metadata={childContext}
       />
       <div className="mt-7">
@@ -161,7 +161,7 @@ export default async function ParentWeeklyDigestPage({
         />
       </div>
       {upcomingSection(
-        "Otomatik takvim ve koçluk kayıtlarıdır; öğretmen/koç özetinden ayrı tutulur.",
+        "Bunlar otomatik takvim ve koçluk kayıtlarıdır; öğretmen ve koç özetinden ayrı tutulur.",
       )}
     </>,
   );

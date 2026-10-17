@@ -6,8 +6,8 @@ export const notificationTimingSchema = z.object({
   dailyDigest: z.boolean().default(false),
   dailyDigestMinute: z.number().int().min(0).max(1439).nullable().default(null),
 }).superRefine((value, ctx) => {
-  if ((value.quietStartMinute === null) !== (value.quietEndMinute === null) || (value.quietStartMinute !== null && value.quietStartMinute === value.quietEndMinute)) ctx.addIssue({ code: "custom", message: "Sessiz saat başlangıç ve bitişini kontrol edin." });
-  if (value.dailyDigest && value.dailyDigestMinute === null) ctx.addIssue({ code: "custom", message: "Günlük özet saatini seçin." });
+  if ((value.quietStartMinute === null) !== (value.quietEndMinute === null) || (value.quietStartMinute !== null && value.quietStartMinute === value.quietEndMinute)) ctx.addIssue({ code: "custom", message: "Lütfen sessiz saat başlangıç ve bitişini bir kez daha kontrol eder misiniz?" });
+  if (value.dailyDigest && value.dailyDigestMinute === null) ctx.addIssue({ code: "custom", message: "Lütfen günlük özet saatini seçin." });
 });
 export type NotificationTiming = z.infer<typeof notificationTimingSchema>;
 export function afterQuietHours(now: Date, timing: Pick<NotificationTiming, "quietStartMinute" | "quietEndMinute">): Date {

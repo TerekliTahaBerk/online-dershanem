@@ -7,8 +7,8 @@ export const lessonCreationSchema = lessonSeriesRequestSchema.extend({
   endsAt: z.string().datetime().optional(), meetingUrl: z.string().url().max(500).optional().or(z.literal("")),
   description: z.string().trim().max(2000).optional().or(z.literal("")),
 }).superRefine((value, ctx) => {
-  if (value.targetType === "GROUP" && !value.groupId) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Grup seçin.", path: ["groupId"] });
-  if (value.targetType === "STUDENT" && !value.studentId) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Öğrenci seçin.", path: ["studentId"] });
+  if (value.targetType === "GROUP" && !value.groupId) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Lütfen grup seçin.", path: ["groupId"] });
+  if (value.targetType === "STUDENT" && !value.studentId) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Lütfen öğrenci seçin.", path: ["studentId"] });
   if (value.mode === "SERIES" && !value.weekdays?.length && (value.repeatWeeks ?? 1) < 2 && !value.totalOccurrences) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Ders serisi için en az 2 hafta veya haftanın günlerini seçin.", path: ["repeatWeeks"] });
   }

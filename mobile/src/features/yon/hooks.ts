@@ -43,24 +43,24 @@ export function useTaskCompletion(task: MobileYonTask | undefined) {
         tone: 'success',
         message:
           result.status === 'DONE'
-            ? 'Harika — görev tamamlandı.'
+            ? 'Harika, görevi tamamladın! 🎉 Emeğine sağlık.'
             : result.status === 'PARTIAL'
-              ? 'Kısmi tamamlanma kaydedildi.'
+              ? 'İlerlemen kaydedildi 👏 Her adım değerli!'
               : result.status === 'IN_PROGRESS'
-                ? 'Göreve başladın.'
-                : 'Durum kaydedildi.',
+                ? 'Göreve başladın, kolay gelsin! 💪'
+                : 'Bildirdiğin için teşekkürler 💛 Durumun kaydedildi.',
       });
       if (result.status === 'DONE' && !result.repeated && task.status !== 'DONE') celebrate({ key: `yon:${task.id}`, kind: 'task' });
       await invalidate({ alsoOd: task.linkedAssignment });
       return true;
     } catch (error) {
       if (error instanceof ApiError && error.kind === 'conflict') {
-        setFeedback({ tone: 'warning', message: `${error.message} Görevin son durumu yüklendi.` });
+        setFeedback({ tone: 'warning', message: `${error.message} Görevin en güncel hâlini senin için yükledik.` });
         await invalidate({ alsoOd: task.linkedAssignment });
         return false;
       }
       if (error instanceof ApiError && error.kind === 'not_found') await invalidate();
-      setFeedback({ tone: 'critical', message: messageOf(error, 'Görev güncellenemedi. Tekrar dene.') });
+      setFeedback({ tone: 'critical', message: messageOf(error, 'Görevi şu an güncelleyemedik 😕 Lütfen birazdan tekrar dener misin?') });
       return false;
     }
   }
@@ -86,12 +86,12 @@ export function usePlanChangeRequest(plan: { id: string; version: number } | nul
     setFeedback(null);
     try {
       await mutation.mutateAsync(option);
-      setFeedback({ tone: 'success', message: 'Değişiklik talebin koçuna iletildi.' });
+      setFeedback({ tone: 'success', message: 'Talebin koçuna ulaştı 📨 En kısa sürede birlikte bakacaksınız.' });
       await invalidate();
       return true;
     } catch (error) {
       if (error instanceof ApiError && error.kind === 'conflict') await invalidate();
-      setFeedback({ tone: error instanceof ApiError && error.kind === 'conflict' ? 'warning' : 'critical', message: messageOf(error, 'Talep iletilemedi.') });
+      setFeedback({ tone: error instanceof ApiError && error.kind === 'conflict' ? 'warning' : 'critical', message: messageOf(error, 'Talebini şu an iletemedik 😕 Lütfen tekrar dener misin?') });
       return false;
     }
   }
@@ -115,13 +115,13 @@ export function usePlanGenerate(expectedVersion: number) {
     setFeedback(null);
     try {
       const result = await mutation.mutateAsync();
-      setFeedback({ tone: 'success', message: `${result.rebalanced ? 'Haftan yeniden dengelendi' : 'Planın oluşturuldu'} (${result.taskCount} çalışma).${result.requiresApproval ? ' Koçun onayladığında görevler açılır.' : ''}` });
+      setFeedback({ tone: 'success', message: `${result.rebalanced ? 'Haftan yeniden dengelendi ⚖️' : 'Planın hazır 🎉'} (${result.taskCount} çalışma).${result.requiresApproval ? ' Koçun onayladığında görevlerin açılacak.' : ''}` });
       await invalidate();
       return true;
     } catch (error) {
       const conflict = error instanceof ApiError && error.kind === 'conflict';
       if (conflict) await invalidate();
-      setFeedback({ tone: conflict ? 'warning' : 'critical', message: messageOf(error, 'Plan oluşturulamadı.') });
+      setFeedback({ tone: conflict ? 'warning' : 'critical', message: messageOf(error, 'Planı şu an oluşturamadık 😕 Lütfen biraz sonra tekrar dener misin?') });
       return false;
     }
   }
@@ -141,11 +141,11 @@ export function usePreferenceSave() {
     setFeedback(null);
     try {
       await mutation.mutateAsync(preference);
-      setFeedback({ tone: 'success', message: 'Tercihlerin kaydedildi.' });
+      setFeedback({ tone: 'success', message: 'Tercihlerin kaydedildi ✅' });
       await invalidate();
       return true;
     } catch (error) {
-      setFeedback({ tone: 'critical', message: messageOf(error, 'Tercihler kaydedilemedi.') });
+      setFeedback({ tone: 'critical', message: messageOf(error, 'Tercihlerini şu an kaydedemedik 😕 Lütfen tekrar dener misin?') });
       return false;
     }
   }
@@ -178,7 +178,7 @@ export function useRescheduleRequest(session: MobileCoachingSession) {
     try {
       await mutation.mutateAsync({ reason, key: write.key });
       pending.current = null;
-      setFeedback({ tone: 'success', message: 'Saat değişikliği talebin koçuna iletildi.' });
+      setFeedback({ tone: 'success', message: 'Saat değişikliği talebin koçuna ulaştı 📨' });
       await invalidate();
       return true;
     } catch (error) {
@@ -189,7 +189,7 @@ export function useRescheduleRequest(session: MobileCoachingSession) {
         setFeedback({ tone: 'warning', message: `${error.message}` });
         return false;
       }
-      setFeedback({ tone: 'critical', message: messageOf(error, 'Talep iletilemedi. Tekrar dene.') });
+      setFeedback({ tone: 'critical', message: messageOf(error, 'Talebini şu an iletemedik 😕 Lütfen tekrar dener misin?') });
       return false;
     }
   }
@@ -212,14 +212,14 @@ export function useAcceptSessionProposal(session: MobileCoachingSession) {
     try {
       await mutation.mutateAsync(write.key);
       pending.current = null;
-      setFeedback({ tone: 'success', message: 'Yeni görüşme saatin onaylandı.' });
+      setFeedback({ tone: 'success', message: 'Yeni görüşme saatin onaylandı, görüşmek üzere! 🤝' });
       await invalidate();
       return true;
     } catch (error) {
       const transient = error instanceof ApiError && (error.transient || error.kind === 'invalid_response');
       if (!transient) pending.current = null;
       if (error instanceof ApiError && error.kind === 'conflict') await invalidate();
-      setFeedback({ tone: error instanceof ApiError && error.kind === 'conflict' ? 'warning' : 'critical', message: messageOf(error, 'Saat onaylanamadı. Tekrar dene.') });
+      setFeedback({ tone: error instanceof ApiError && error.kind === 'conflict' ? 'warning' : 'critical', message: messageOf(error, 'Saati şu an onaylayamadık 😕 Lütfen tekrar dener misin?') });
       return false;
     }
   }

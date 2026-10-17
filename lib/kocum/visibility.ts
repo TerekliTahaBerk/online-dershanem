@@ -101,9 +101,9 @@ export function buildParentKocumSummary(input: {
   let studyRhythm: string | null = null;
   if (input.plannedMinutes != null && input.completedMinutes != null && input.plannedMinutes > 0) {
     const ratio = input.completedMinutes / input.plannedMinutes;
-    if (ratio >= 0.9) studyRhythm = "Çalışma düzeni plana yakın.";
+    if (ratio >= 0.9) studyRhythm = "Çalışma düzeni plana yakın ilerliyor 🌱";
     else if (ratio >= 0.6) studyRhythm = "Çalışma düzeni kısmen sürüyor.";
-    else studyRhythm = "Bu hafta planlanan sürenin altında kalındı.";
+    else studyRhythm = "Bu hafta planlanan sürenin biraz altında kalındı.";
   }
 
   let overdueTrend: string | null = null;
@@ -111,16 +111,16 @@ export function buildParentKocumSummary(input: {
     if (input.previousOverdueCount == null) {
       overdueTrend =
         input.overdueCount === 0
-          ? "Geciken görev yok."
+          ? "Geciken görev yok ✅"
           : `${input.overdueCount} görev gecikti.`;
     } else if (input.overdueCount < input.previousOverdueCount) {
-      overdueTrend = "Gecikmeler geçen haftaya göre azaldı.";
+      overdueTrend = "Gecikmeler geçen haftaya göre azaldı 👏";
     } else if (input.overdueCount > input.previousOverdueCount) {
       overdueTrend = "Gecikmeler geçen haftaya göre arttı.";
     } else {
       overdueTrend =
         input.overdueCount === 0
-          ? "Geciken görev yok."
+          ? "Geciken görev yok ✅"
           : "Gecikme sayısı geçen haftayla aynı.";
     }
   }

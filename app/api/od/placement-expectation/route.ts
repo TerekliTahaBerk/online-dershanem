@@ -9,7 +9,7 @@ const querySchema = z.object({ category: z.enum(["LGS", "YKS", "TYT", "AYT"]).op
 
 export async function GET(request: Request) {
   const parsed = querySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz kategori." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Kategori geçerli görünmüyor." }, { status: 400 });
   const expectation = await getOdPlacementExpectation(parsed.data.category ?? null);
   return NextResponse.json(expectation, { headers: { "cache-control": "private, no-store" } });
 }

@@ -49,8 +49,8 @@ export function TeacherReviewMonitor({ students }: { students: StudentRow[] }) {
     });
     const body = await response.json().catch(() => ({}));
     if (!response.ok)
-      return setMessage(body.error || "Tekrar öğesi oluşturulamadı.");
-    setMessage("Kaynak referansı yarının küçük tekrarlarına eklendi.");
+      return setMessage(body.error || "Tekrar öğesi şu an oluşturulamadı. Lütfen tekrar dener misiniz?");
+    setMessage("Kaynak referansı yarının küçük tekrarlarına eklendi ✅");
     setTitle("");
     setSourceReference("");
   }
@@ -160,7 +160,7 @@ export function TeacherReviewMonitor({ students }: { students: StudentRow[] }) {
           })}
           {!students.length ? (
             <p className="p-8 text-center text-sm text-(--site-muted)">
-              Aktif öğrenciniz bulunmuyor.
+              Şu an aktif bir öğrenciniz görünmüyor.
             </p>
           ) : null}
         </div>

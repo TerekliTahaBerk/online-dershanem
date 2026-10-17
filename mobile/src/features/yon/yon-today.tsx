@@ -8,7 +8,7 @@ import { useDesign } from '@/design/theme';
 import { color, radius, space } from '@/design/tokens';
 import { fetchYonToday } from '@/lib/api/yon';
 import { useReadyBootstrap } from '@/lib/auth/session-provider';
-import { formatDayMonth, formatLongDate, formatShortDateTime, greetingFor } from '@/lib/format/istanbul';
+import { formatDayMonth, formatLongDate, formatShortDateTime, greetingEmojiFor, greetingFor } from '@/lib/format/istanbul';
 import { isSafeExternalUrl } from '@/lib/links';
 import { expoHrefFor, targetForNavId } from '@/navigation/route-map';
 
@@ -42,13 +42,13 @@ export default function YonTodayScreen() {
   const data = query.data;
   const description =
     data?.state === 'READY'
-      ? [data.hasPlan ? (data.openToday > 0 ? `${data.openToday} görev` : 'Haftanın kalanına aşağıdan göz atabilirsin.') : null, data.hasPlan && data.remainingMinutesToday ? `~${minutesLabel(data.remainingMinutesToday)}` : null, data.nextSession ? `${formatShortDateTime(data.nextSession.scheduledAt)} koç görüşmesi` : null]
+      ? [data.hasPlan ? (data.openToday > 0 ? `Bugün seni ${data.openToday} görev bekliyor 🎯` : 'Bugün hafif bir gün 🌿 Haftanın kalanına aşağıdan göz atabilirsin.') : null, data.hasPlan && data.remainingMinutesToday ? `~${minutesLabel(data.remainingMinutesToday)}` : null, data.nextSession ? `${formatShortDateTime(data.nextSession.scheduledAt)} koç görüşmesi` : null]
           .filter(Boolean)
-          .join(' · ') || 'Yön Koçluk planın, koçun ve hedeflerin.'
+          .join(' · ') || 'Planın, koçun ve hedeflerin burada seni bekliyor ✨'
       : undefined;
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="yon-today">
-      <PageHeader title={`${greetingFor(now)}${name ? `, ${name}` : ''}.`} context={<Text tone="muted" variant="meta">{formatLongDate(now)}</Text>} description={description} />
+      <PageHeader title={`${greetingFor(now)}${name ? `, ${name}` : ''} ${greetingEmojiFor(now)}`} context={<Text tone="muted" variant="meta">{formatLongDate(now)}</Text>} description={description} />
       <QueryView query={query}>{(home) => <YonTodayBody home={home} />}</QueryView>
     </Screen>
   );
@@ -56,7 +56,7 @@ export default function YonTodayScreen() {
 
 function YonTodayBody({ home }: { home: MobileYonToday }) {
   if (home.state === 'NO_PROFILE') {
-    return <EmptyState title="Profilin hazırlanıyor." body="Öğrenci profilin tamamlandığında Yön Koçluk planın burada görünecek." />;
+    return <EmptyState title="Profilin hazırlanıyor ⏳" body="Öğrenci profilin tamamlanır tamamlanmaz Yön Koçluk planın burada seni karşılayacak." />;
   }
   const nowTask = home.nowTaskId ? [...home.today, ...home.overdue].find((task) => task.id === home.nowTaskId) ?? null : null;
   return (
@@ -65,17 +65,17 @@ function YonTodayBody({ home }: { home: MobileYonToday }) {
       {home.hasPlan && home.today.length > 0 && home.today.every((task) => task.status === 'DONE') && home.overdueTotal === 0 ? <DayComplete /> : null}
       <Section title="Bugünün planı" first>
         {!home.hasPlan ? (
-          <EmptyState title="Bu hafta için yayında bir plan yok." body="Koçun planı hazırlayıp yayınladığında bugünün görevleri burada görünecek." />
+          <EmptyState title="Bu haftanın planı yolda 🗓️" body="Koçun planını hazırlayıp yayınladığında bugünün görevleri burada belirecek." />
         ) : home.today.length === 0 ? (
-          <Text tone="secondary">Bugüne planlanmış görev yok. Haftanın kalanına göz atabilirsin.</Text>
+          <Text tone="secondary">Bugün için planlanmış bir görevin yok, keyfini çıkar 🌿 Dilersen haftanın kalanına göz atabilirsin.</Text>
         ) : (
           home.today.map((task) => <YonTaskRow key={task.id} task={task} canOpen={home.canComplete} />)
         )}
       </Section>
       {home.overdueTotal ? (
-        <Section title="Öncelikli gecikenler">
+        <Section title="Biraz bekleyenler">
           <Text tone="secondary" variant="secondary">
-            {home.overdueTotal > home.overdue.length ? `${home.overdueTotal} görev gecikti; en eski ${home.overdue.length} tanesi aşağıda.` : 'Tarihi geçen görevler. Bugüne sığmıyorsa koçuna bildir.'}
+            {home.overdueTotal > home.overdue.length ? `${home.overdueTotal} görev seni bekliyor; en eski ${home.overdue.length} tanesini aşağıda bulabilirsin. Adım adım halledeceğiz 💪` : 'Tarihi geçen birkaç görevin var. Bugüne sığmıyorsa koçuna haber vermen yeterli, birlikte yeniden planlarız 🤝'}
           </Text>
           {home.overdue.map((task) => <YonTaskRow key={task.id} task={task} canOpen={home.canComplete} showDate />)}
         </Section>
@@ -89,7 +89,7 @@ function YonTodayBody({ home }: { home: MobileYonToday }) {
             {home.coachNote.at ? <Text tone="muted" variant="meta">{formatDayMonth(home.coachNote.at)}</Text> : null}
           </View>
         ) : (
-          <Text tone="secondary">Henüz paylaşılan bir koç notu yok.</Text>
+          <Text tone="secondary">Koçun henüz bir not paylaşmadı. İlk not geldiğinde burada göreceksin 💌</Text>
         )}
       </Section>
       <GoalsSection home={home} />
@@ -105,10 +105,10 @@ function NowBlock({ title, meta, taskId, overdue }: { title: string; meta: strin
     <View style={styles.now} testID="yon-now">
       <Text variant="caption" tone="muted">Şimdi</Text>
       <Text variant="sectionTitle" accessibilityRole="header">{title}</Text>
-      <Text tone="secondary">{`${meta} · ${overdue ? 'Dünden kalan bir plan görevi var.' : 'Bugünkü planında yer alıyor.'}`}</Text>
+      <Text tone="secondary">{`${meta} · ${overdue ? 'Dünden kalan bir görev, şimdi tam zamanı! 💪' : 'Bugünkü planında seni bekliyor ✨'}`}</Text>
       {href ? (
         <View style={styles.actions}>
-          <Button label="Göreve Başla" onPress={() => router.push(href as Href)} testID="yon-now-cta" />
+          <Button label="Hadi başlayalım" onPress={() => router.push(href as Href)} testID="yon-now-cta" />
         </View>
       ) : null}
     </View>
@@ -123,7 +123,7 @@ function WeekSection({ home }: { home: Extract<MobileYonToday, { state: 'READY' 
     <Section title="Bu hafta" action={plan ? <Button label="Planım" variant="quiet" onPress={() => nav.push(plan)} /> : undefined}>
       {home.hasPlan ? (
         <>
-          <Text tone="secondary">{`${home.week.done}/${home.week.total} görev · ${minutesLabel(home.week.doneMinutes)} / ${minutesLabel(home.week.plannedMinutes)}${home.week.remaining ? ` · ${home.week.remaining} iş kaldı` : ''}`}</Text>
+          <Text tone="secondary">{`${home.week.done}/${home.week.total} görev · ${minutesLabel(home.week.doneMinutes)} / ${minutesLabel(home.week.plannedMinutes)}${home.week.remaining ? ` · ${home.week.remaining} görev kaldı` : ''}`}</Text>
           <LearningProgress done={home.week.done} total={home.week.total} label="Haftalık görev ilerlemesi" />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.days} accessibilityLabel="Haftanın günleri">
             {home.week.days.map((day) => (
@@ -141,7 +141,7 @@ function WeekSection({ home }: { home: Extract<MobileYonToday, { state: 'READY' 
           </ScrollView>
         </>
       ) : (
-        <Text tone="secondary">Plan yayınlandığında haftalık ilerlemen burada görünür.</Text>
+        <Text tone="secondary">Plan yayınlandığında haftalık ilerlemeni burada takip edebileceksin 📈</Text>
       )}
     </Section>
   );
@@ -153,7 +153,7 @@ function SessionSection({ home }: { home: Extract<MobileYonToday, { state: 'READ
   if (!home.coach) {
     return (
       <Section title="Sıradaki görüşme">
-        <Text tone="secondary">Henüz atanmış koç görünmüyor. Koç ataması yapıldığında görüşmelerin burada açılır.</Text>
+        <Text tone="secondary">Koçun çok yakında belli olacak 🤝 Atama yapıldığında görüşmelerin burada görünecek.</Text>
       </Section>
     );
   }
@@ -164,7 +164,7 @@ function SessionSection({ home }: { home: Extract<MobileYonToday, { state: 'READ
       <Row title="Koç" meta={home.coach.name} />
       <Row
         title="Zaman"
-        meta={session ? formatShortDateTime(session.scheduledAt) : home.coach.overdue ? 'Yeni saat bekleniyor' : 'Planlanmadı'}
+        meta={session ? formatShortDateTime(session.scheduledAt) : home.coach.overdue ? 'Yeni saat bekleniyor' : 'Henüz planlanmadı'}
         trailing={session?.rescheduleRequested ? <StatusBadge label="Yeni saat istendi" tone="info" /> : undefined}
       />
       {session?.focus || home.coach.focus ? <Row title="Odak" subtitle={session?.focus || home.coach.focus} /> : null}
@@ -187,12 +187,12 @@ function GoalsSection({ home }: { home: Extract<MobileYonToday, { state: 'READY'
           <Row
             key={goal.id}
             title={goal.label}
-            subtitle={goal.current === null ? 'Ölçülmedi' : goal.isPercent ? `Şu an %${NUM.format(goal.current)}` : `Şu an ${NUM.format(goal.current)}`}
+            subtitle={goal.current === null ? 'Henüz ölçülmedi' : goal.isPercent ? `Şu an %${NUM.format(goal.current)}` : `Şu an ${NUM.format(goal.current)}`}
             meta={`${NUM.format(goal.target)}${goal.isPercent ? '%' : ''}`}
           />
         ))
       ) : (
-        <Text tone="secondary">Henüz hedef belirlenmedi. Görüşmede koçunla birlikte belirleyebilirsin.</Text>
+        <Text tone="secondary">Henüz bir hedefin yok. Bir sonraki görüşmende koçunla birlikte belirleyebilirsiniz 🎯</Text>
       )}
     </Section>
   );
@@ -203,7 +203,7 @@ function CheckInSection({ checkIn }: { checkIn: NonNullable<Extract<MobileYonTod
   const href = nav.navigation && nav.has('check-in') ? expoHrefFor(targetForNavId(nav.navigation, 'check-in')) : null;
   return (
     <Section title="Check-in">
-      <Text>{checkIn.submittedThisWeek && checkIn.lastAt ? `Bu haftanın check-in'i gönderildi · ${formatDayMonth(checkIn.lastAt)}` : "Bu haftanın check-in'i bekliyor."}</Text>
+      <Text>{checkIn.submittedThisWeek && checkIn.lastAt ? `Bu haftanın check-in'ini gönderdin, teşekkürler! 💛 · ${formatDayMonth(checkIn.lastAt)}` : "Bu haftanın check-in'i seni bekliyor. Nasıl gittiğini merak ediyoruz 😊"}</Text>
       {href ? <Button label={checkIn.submittedThisWeek ? "Check-in'e git" : 'Check-in yap'} variant={checkIn.submittedThisWeek ? 'quiet' : 'secondary'} onPress={() => nav.push(href)} /> : null}
     </Section>
   );

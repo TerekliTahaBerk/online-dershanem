@@ -28,8 +28,8 @@ export default function SessionsScreen() {
 
   return (
     <Screen refreshing={query.isRefetching} onRefresh={() => void query.refetch()}>
-      <PageHeader title="Oturumlar" description="Tanımadığın bir cihaz görürsen oturumu kapat ve parolanı değiştir." />
-      {failure ? <Banner tone="critical">{failure instanceof ApiError ? failure.message : 'Oturum kapatılamadı.'}</Banner> : null}
+      <PageHeader title="Oturumlar" description="Tanımadığın bir cihaz görürsen oturumu kapatıp parolanı değiştirmeni öneririz 🔐" />
+      {failure ? <Banner tone="critical">{failure instanceof ApiError ? failure.message : 'Oturumu şu an kapatamadık. Lütfen tekrar dener misin?'}</Banner> : null}
       {query.isPending ? <Skeleton rows={3} /> : null}
       {query.isError ? <ErrorState error={query.error} onRetry={() => void query.refetch()} /> : null}
       {query.isSuccess ? (

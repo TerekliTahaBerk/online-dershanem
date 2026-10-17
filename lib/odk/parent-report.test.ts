@@ -29,7 +29,7 @@ test("özet cümleleri düz dil ve yargısız", () => {
   assert.equal(up[2], "1 kazanımda daha fazla çalışma faydalı olabilir; 1 kazanımda belirgin ilerleme var.");
   const down = reportSummarySentences([exam("A", "LGS", 1, 40), exam("B", "TYT", 9, 38)], [{ latestAccuracy: 90, delta: 15, questionCount: 3 }]);
   assert.equal(down[1], "Bu, bir önceki denemesine göre 2 net daha düşük.");
-  assert.equal(down[2], "1 kazanımda belirgin ilerleme var.");
+  assert.equal(down[2], "1 kazanımda belirgin ilerleme var 🌱");
   const flat = reportSummarySentences([exam("A", "LGS", 1, 40), exam("B", "LGS", 9, 40.2)], []);
   assert.equal(flat[1], "Bu, aynı türdeki bir önceki denemesine göre benzer bir düzey.");
   assert.equal(flat.length, 2);

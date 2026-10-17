@@ -42,7 +42,7 @@ export function rejectAssignmentProgressTransition(input: {
   if (input.latestSubmissionStatus === "SUBMITTED") {
     return {
       code: "UNDER_REVIEW",
-      message: "Çalışman değerlendirmede; sonuçlanana kadar durumu değiştiremezsin.",
+      message: "Çalışman şu an öğretmeninde değerlendiriliyor ⏳ Sonuçlanana kadar durumu değiştiremezsin.",
     };
   }
 

@@ -9,7 +9,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const guard = await guardMutation({ action: "odk.exam.update", requireSameOrigin: true, headers: request.headers, rateLimitKey: `odk:exam-update:${auth.session.userId}`, rateLimit: { max: 90, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = updateExamScheduleSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "Planlama alanlarını kontrol edin." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "Lütfen planlama alanlarını bir kez daha kontrol eder misiniz?" }, { status: 400 });
   const { id } = await context.params;
   return updateOdkExamSchedule(id, parsed.data, auth.session.userId);
 }

@@ -44,7 +44,7 @@ export function TeacherPlanReview({ plans: initial }: { plans: Plan[] }) {
     try {
       await approveRequest(plan);
     } catch {
-      setMessage("Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.");
+      setMessage("Bağlantı kurulamadı. İnternetini kontrol edip tekrar dener misin?");
     } finally {
       setBusyId(null);
     }
@@ -59,7 +59,7 @@ export function TeacherPlanReview({ plans: initial }: { plans: Plan[] }) {
       },
     );
     const body = await response.json().catch(() => ({}));
-    if (!response.ok) return setMessage(body.error || "Plan onaylanamadı.");
+    if (!response.ok) return setMessage(body.error || "Plan şu an onaylanamadı. Lütfen tekrar dener misiniz?");
     setPlans((current) =>
       current.map((item) =>
         item.id === plan.id
@@ -78,15 +78,15 @@ export function TeacherPlanReview({ plans: initial }: { plans: Plan[] }) {
         approved: true,
       },
     });
-    setMessage(`${plan.studentName} için plan onaylandı ve kilitlendi.`);
+    setMessage(`${plan.studentName} için plan onaylandı ve kilitlendi ✅`);
   }
   if (!plans.length)
     return (
       <div className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-8 text-center">
         <ListChecks className="mx-auto text-(--site-muted)" />
-        <h2 className="mt-3 font-extrabold">İncelenecek plan yok.</h2>
+        <h2 className="mt-3 font-extrabold">İncelenecek plan yok, her şey güncel ✅</h2>
         <p className="mt-1 text-sm text-(--site-muted)">
-          Öğrenci öneri oluşturduğunda burada görünür.
+          Öğrenci öneri oluşturduğunda burada görünecek.
         </p>
       </div>
     );

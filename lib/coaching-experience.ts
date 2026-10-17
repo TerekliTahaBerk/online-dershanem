@@ -4,7 +4,7 @@ export const COACHING_RESCHEDULE_REASONS = {
   FAMILY_SCHEDULE: "Aile programımızla çakışıyor",
   TECH_ACCESS: "Katılım için teknik desteğe ihtiyacım var",
 } as const;
-const meetingUrl = z.string().trim().url().max(2000).refine((value) => new URL(value).protocol === "https:", "HTTPS bağlantısı gerekli.").nullable();
+const meetingUrl = z.string().trim().url().max(2000).refine((value) => new URL(value).protocol === "https:", "Lütfen https:// ile başlayan bir bağlantı girin.").nullable();
 const common = { expectedVersion: z.number().int().min(1), idempotencyKey: z.string().min(8).max(100) };
 export const coachingCreateSchema = z.object({ studentId: z.string().min(1), scheduledAt: z.string().datetime({ offset: true }), meetingUrl, idempotencyKey: common.idempotencyKey }).strict();
 export const coachingMutationSchema = z.discriminatedUnion("action", [

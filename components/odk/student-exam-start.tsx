@@ -62,11 +62,11 @@ export function StudentExamStart({
         body: JSON.stringify({ meetAcknowledged: acknowledged }),
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok) return setError(result.error || "Sınav oturumu başlatılamadı.");
+      if (!response.ok) return setError(result.error || "Sınav oturumunu şu an başlatamadık. Lütfen tekrar dener misin?");
       router.push(`/panel/odk/ogrenci/denemeler/${examId}/coz`);
       router.refresh();
     } catch {
-      setError("Bağlantı kurulamadı. Sınav oturumu başlatılmadı; tekrar deneyin.");
+      setError("Bağlantı kurulamadığı için oturum başlatılmadı; tekrar deneyebilirsin.");
     } finally {
       setBusy(false);
     }
@@ -113,7 +113,7 @@ export function StudentExamStart({
         <div>
           <h3 className="text-[13.5px] font-semibold text-pn-text">Meet gözetim odası</h3>
           <p className="mt-1 text-[14px] text-pn-text-secondary">
-            Sınav boyunca görüşmede kalman gerekiyor. Tarayıcı bağlantı sinyali Meet katılımının yerine geçmez.
+            Sınav boyunca görüşmede kalman gerekiyor 🎥 Tarayıcıdaki bağlantı sinyali Meet katılımının yerine geçmiyor.
           </p>
           {meetUrl ? (
             <a href={meetUrl} target="_blank" rel="noreferrer" className={buttonClass("secondary", "md", "mt-2")}>
@@ -121,7 +121,7 @@ export function StudentExamStart({
             </a>
           ) : (
             <p role="alert" className="mt-2 rounded-md bg-(--pn-tone-critical-soft) px-3 py-2 text-[13px] font-medium text-(--pn-tone-critical)">
-              Meet bağlantısı henüz tanımlanmadı.
+              Meet bağlantısı henüz tanımlanmadı; birazdan tekrar kontrol edebilirsin.
             </p>
           )}
           <label className="mt-3 flex min-h-[44px] cursor-pointer items-start gap-3 rounded-md border border-pn-border p-3 text-[14px] text-pn-text">
@@ -138,7 +138,7 @@ export function StudentExamStart({
 
       <div className="sticky bottom-0 -mx-1 bg-white px-1 py-3 sm:static sm:p-0">
         {activeAttempt ? (
-          <p className="mb-2 text-[14px] text-pn-text-secondary">Devam eden oturumun ve kalan süren korunuyor.</p>
+          <p className="mb-2 text-[14px] text-pn-text-secondary">Devam eden oturumun ve kalan süren korunuyor, kaldığın yerden devam edebilirsin ✅</p>
         ) : null}
         {!activeAttempt && confirming ? (
           <div role="group" aria-label="Başlatma onayı" className="rounded-md border border-pn-border p-3">

@@ -42,7 +42,7 @@ export default async function ParentTeachersPage({
 
   if (!selected) {
     return shell(
-      <EmptyState title="Bağlı öğrenci yok." body="Yönetim eşleştirmesi tamamlanınca öğretmenler burada görünür." />,
+      <EmptyState title="Henüz bağlı bir öğrenci yok" body="Eşleştirme tamamlandığında öğretmenler burada görünecek." />,
     );
   }
 
@@ -52,11 +52,11 @@ export default async function ParentTeachersPage({
     <>
       <PageHeader
         title={PANEL_DOMAIN.ogretmenler}
-        description="Aktif öğretmenler ve branşları. İletişim bilgisi ve iç notlar paylaşılmaz."
+        description="Çocuğunuzla çalışan öğretmenler ve branşları 👩‍🏫 Gizlilik gereği iletişim bilgileri ve iç notlar paylaşılmaz."
         metadata={<ChildContext options={children} selectedId={selected.id} basePath="/panel/veli/ogretmenler" />}
       />
       {teachers.length === 0 ? (
-        <EmptyState className="mt-5" title="Henüz öğretmen bağlantısı yok." body="Öğretmen atandığında branş bilgisi burada listelenir." />
+        <EmptyState className="mt-5" title="Henüz bir öğretmen ataması yok" body="Öğretmen atandığında branş bilgisi burada listelenecek." />
       ) : (
         <PanelTable caption={`${selected.name} · öğretmenler`} columns={["Branş", "Öğretmen", "Hakkında"]}>
           {teachers.map((teacher) => (

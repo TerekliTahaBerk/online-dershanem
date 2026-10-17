@@ -39,11 +39,11 @@ export function planStatusLabel(
   status: StudentPlanStatus,
   options: { autoApproved?: boolean } = {},
 ): string {
-  if (status === "APPROVED" && options.autoApproved) return "Planın hazır";
+  if (status === "APPROVED" && options.autoApproved) return "Planın hazır 🎉";
   return {
     APPROVED: "Koçun tarafından onaylandı",
-    CHANGE_REQUESTED: "Değişiklik talebin koçuna iletildi",
-    DRAFT: "Plan hazırlanıyor",
+    CHANGE_REQUESTED: "Değişiklik talebin koçuna iletildi 📨",
+    DRAFT: "Planın hazırlanıyor ⏳",
     ARCHIVED: "Bu plan arşivde",
   }[status];
 }
@@ -89,7 +89,7 @@ export function buildTodayFocus(todayPending: StudentPlanTask[]) {
   const summary = buildTodaySummary(todayPending, []);
   if (!summary.totalTasks && !todayPending.length) {
     return {
-      headline: "Bugün planında çalışma görünmüyor.",
+      headline: "Bugün planında bir çalışma yok, keyfini çıkar 🌿",
       detail: null as string | null,
     };
   }
@@ -99,7 +99,7 @@ export function buildTodayFocus(todayPending: StudentPlanTask[]) {
   const totalMinutes = durations.reduce((sum, minutes) => sum + minutes, 0);
 
   return {
-    headline: todayPending.length === 1 ? "Bugün 1 çalışman var." : `Bugün ${todayPending.length} çalışman var.`,
+    headline: todayPending.length === 1 ? "Bugün seni 1 çalışma bekliyor ✨" : `Bugün seni ${todayPending.length} çalışma bekliyor ✨`,
     detail: hasCompleteDuration ? `${totalMinutes} dk` : null,
   };
 }

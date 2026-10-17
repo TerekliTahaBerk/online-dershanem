@@ -40,7 +40,7 @@ export function TeacherOffboardingForm({ teacherId }: { teacherId: string }) {
       const result = await response.json().catch(() => null);
       if (!response.ok || !result) {
         if (!cancelled) {
-          setError("Offboarding verisi okunamadı.");
+          setError("Offboarding verisi şu an okunamadı. Lütfen tekrar dener misiniz?");
           setLoading(false);
         }
         return;
@@ -81,7 +81,7 @@ export function TeacherOffboardingForm({ teacherId }: { teacherId: string }) {
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setError(result.error || "Offboarding tamamlanamadı.");
+      setError(result.error || "Offboarding şu an tamamlanamadı. Lütfen tekrar dener misiniz?");
       setBusy(false);
       return;
     }
@@ -98,7 +98,7 @@ export function TeacherOffboardingForm({ teacherId }: { teacherId: string }) {
   if (!preview)
     return (
       <p className="text-[12.5px] text-[#C2493D]">
-        {error || "Offboarding verisi bulunamadı."}
+        {error || "Offboarding verisi şu an bulunamadı. Lütfen tekrar dener misiniz?"}
       </p>
     );
 

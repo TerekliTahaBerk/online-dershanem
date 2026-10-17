@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   const auth = await requireStaffApi("OD", "od:lesson:teach");
   if (!auth.ok) return auth.response;
   const parsed = query.safeParse({ aralik: new URL(request.url).searchParams.get("aralik") ?? undefined });
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz aralık." }, { status: 400, headers: PRIVATE_NO_STORE });
+  if (!parsed.success) return NextResponse.json({ error: "Aralık geçerli görünmüyor." }, { status: 400, headers: PRIVATE_NO_STORE });
   const raw = parsed.data.aralik;
   const lessons = await loadTeacherLessons(auth.session.userId, raw);
   return staffJson({

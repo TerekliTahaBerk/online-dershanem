@@ -21,7 +21,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   const guard = await guardMutation({ action: "odk.exam.sessions.update", requireSameOrigin: true, headers: request.headers, rateLimitKey: `odk:sessions:${auth.session.userId}`, rateLimit: { max: 60, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "Oturum alanlarını kontrol edin." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "Lütfen oturum alanlarını bir kez daha kontrol eder misiniz?" }, { status: 400 });
   const { id } = await context.params;
   return updateOdkExamSessions(id, parsed.data.sessions, auth.session.userId);
 }

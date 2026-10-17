@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   const guard = await guardMutation({ action: "panel.notifications.read", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:notifications:read:${auth.session.userId}`, rateLimit: { max: 60, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });
   const parsed = schema.safeParse(await request.json().catch(() => ({})));
-  if (!parsed.success) return NextResponse.json({ error: "Bildirim bilgisi geçersiz." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Bildirim bilgisi geçerli görünmüyor." }, { status: 400 });
   const result = await prisma.notification.updateMany({
     where: { userId: auth.session.userId, readAt: null, inAppVisible: true, ...(parsed.data.id ? { id: parsed.data.id } : {}) },
     data: { readAt: new Date() },

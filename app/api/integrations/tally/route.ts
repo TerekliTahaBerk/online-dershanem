@@ -25,19 +25,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Entegrasyon kapalı." }, { status: 503 });
   }
   const contentLength = Number(request.headers.get("content-length") ?? 0);
-  if (contentLength > 500_000) return NextResponse.json({ error: "İstek çok büyük." }, { status: 413 });
+  if (contentLength > 500_000) return NextResponse.json({ error: "Gönderilen içerik çok büyük; lütfen biraz kısaltıp tekrar deneyin." }, { status: 413 });
   const raw = await request.text();
-  if (raw.length > 500_000) return NextResponse.json({ error: "İstek çok büyük." }, { status: 413 });
+  if (raw.length > 500_000) return NextResponse.json({ error: "Gönderilen içerik çok büyük; lütfen biraz kısaltıp tekrar deneyin." }, { status: 413 });
 
   if (!verifyTallySignature(raw, request.headers.get("tally-signature"))) {
-    return NextResponse.json({ error: "Geçersiz imza." }, { status: 401 });
+    return NextResponse.json({ error: "İmza geçerli görünmüyor." }, { status: 401 });
   }
 
   let json: unknown;
   try {
     json = JSON.parse(raw);
   } catch {
-    return NextResponse.json({ error: "Geçersiz JSON." }, { status: 400 });
+    return NextResponse.json({ error: "JSON geçerli görünmüyor." }, { status: 400 });
   }
   const parsed = tallyWebhookSchema.safeParse(json);
   if (!parsed.success) return NextResponse.json({ error: "Beklenmeyen yük." }, { status: 400 });

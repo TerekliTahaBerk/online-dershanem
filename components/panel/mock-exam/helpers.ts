@@ -29,5 +29,5 @@ export function countBand(count: number) {
  */
 export function mockExamErrorText(body: { error?: string; code?: string }, fallback: string) {
   const text = body.error || fallback;
-  return body.code === "STEP_UP_REQUIRED" ? `${text} Güvenlik sayfasından (/panel/guvenlik) doğrulayıp tekrar deneyin.` : text;
+  return body.code === "STEP_UP_REQUIRED" ? `${text} Güvenlik sayfasından (/panel/guvenlik) doğrulayıp tekrar deneyebilirsiniz.` : text;
 }

@@ -13,6 +13,6 @@ export async function GET(
   if (!routeParams.success) return invalidApiInput();
   const { id } = routeParams.data;
   const impact = await buildUserArchiveImpact(id);
-  if (!impact) return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
+  if (!impact) return NextResponse.json({ error: "Kullanıcıyı bulamadık." }, { status: 404 });
   return NextResponse.json(impact);
 }

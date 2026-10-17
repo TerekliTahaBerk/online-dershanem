@@ -36,7 +36,7 @@ const GENERIC_ERROR = "E-posta veya parola hatalı.";
 
 export async function POST(request: Request) {
   if (!PANEL_ENABLED) {
-    return NextResponse.json({ error: "Panel şu anda kapalı." }, { status: 503 });
+    return NextResponse.json({ error: "Panel şu an kullanıma kapalı, çok yakında yeniden açılacak." }, { status: 503 });
   }
 
   // Desteklenmeyen mobil sürüm parolayı göndermeden önce durdurulur. Web
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
   const version = evaluateClientVersion(request.headers, process.env.MOBILE_MIN_SUPPORTED_VERSION);
   if (!version.ok) {
     return NextResponse.json(
-      { error: "Uygulamanın bu sürümü artık desteklenmiyor. Lütfen güncelleyin.", code: version.code, minSupportedVersion: version.minSupportedVersion },
+      { error: "Uygulamanın bu sürümü artık desteklenmiyor. Yeni sürümü yükleyerek kaldığınız yerden devam edebilirsiniz ✨", code: version.code, minSupportedVersion: version.minSupportedVersion },
       { status: 426, headers: { "Cache-Control": "no-store" } },
     );
   }

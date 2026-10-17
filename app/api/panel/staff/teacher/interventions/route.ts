@@ -13,7 +13,7 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 export async function GET() {
   const auth = await requireStaffApi("OD", "od:lesson:teach");
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().interventionInbox) return staffFeatureDisabled("Müdahale kutusu henüz açık değil.");
+  if (!getPanelFeatureFlags().interventionInbox) return staffFeatureDisabled("Müdahale kutusu şu an kullanıma kapalı, çok yakında açılacak.");
   return staffJson(await loadTeacherInterventions(auth.session.userId));
 }
 const command = z.discriminatedUnion("operation", [
@@ -26,7 +26,7 @@ const failure = (error: GroupMutationError) => NextResponse.json({ error: error.
 export async function POST(request: Request) {
   const auth = await requireStaffApi("OD", "od:lesson:teach");
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().interventionInbox) return staffFeatureDisabled("Müdahale kutusu henüz açık değil.");
+  if (!getPanelFeatureFlags().interventionInbox) return staffFeatureDisabled("Müdahale kutusu şu an kullanıma kapalı, çok yakında açılacak.");
   const guard = await guardMutation({ action: "panel.teacher.interventions", requireSameOrigin: true, headers: request.headers, rateLimitKey: `teacher:interventions:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { headers: PRIVATE_NO_STORE, status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = command.safeParse(await request.json().catch(() => null));
@@ -34,14 +34,14 @@ export async function POST(request: Request) {
   if (!parsed.success || !control.success) return NextResponse.json({ error: "İşlem, anahtar veya sürüm geçersiz." }, { headers: PRIVATE_NO_STORE, status: 400 });
   const input = parsed.data;
   // Authorization precedes receipt replay, including ended enrollments and transferred ownership.
-  if (!await canWriteTeacherIntervention(auth.session.userId, input)) return failure(new GroupMutationError("NOT_FOUND", "Kayıt bulunamadı.", 404));
+  if (!await canWriteTeacherIntervention(auth.session.userId, input)) return failure(new GroupMutationError("NOT_FOUND", "Aradığınız kaydı bulamadık.", 404));
   const digest = operationDigest({ command: input, revision: control.data.revision });
   const key = `teacher-intervention:${auth.session.userId}:${control.data.key}`;
   try {
     const result = await runEducationMutation({ kind: "intervention", targetKind: "student", key, digest, actorId: auth.session.userId, action: `intervention.${input.operation}`, execute: async (db) => {
-      if (!await canWriteTeacherIntervention(auth.session.userId, input, db)) throw new GroupMutationError("NOT_FOUND", "Kayıt bulunamadı.", 404);
+      if (!await canWriteTeacherIntervention(auth.session.userId, input, db)) throw new GroupMutationError("NOT_FOUND", "Aradığınız kaydı bulamadık.", 404);
       const current = await loadTeacherInterventions(auth.session.userId, db);
-      if (current.revision !== control.data.revision) throw new GroupMutationError("INTERVENTION_CONFLICT", "Kayıtlar veya öğrenci kapsamı değişti. Güncel görünümü kontrol edin.");
+      if (current.revision !== control.data.revision) throw new GroupMutationError("INTERVENTION_CONFLICT", "Kayıtlar veya öğrenci kapsamı değişti. Güncel hâline göz atıp tekrar deneyebilirsiniz.");
       const actor = { role: "TEACHER" as const, userId: auth.session.userId };
       let response: Response;
       if (input.operation === "create") response = await createInterventionRecord(input.input, actor, db);
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
         try { const replay = readGroupReceipt(receipt.payload, digest); return staffJson({ ...(replay.body as object), replayed: true }); }
         catch (conflict) { if (conflict instanceof GroupMutationError) return failure(conflict); throw conflict; }
       }
-      return failure(new GroupMutationError("INTERVENTION_CONFLICT", "Kayıt değişti. Güncel görünümü kontrol edin."));
+      return failure(new GroupMutationError("INTERVENTION_CONFLICT", "Kayıt bu arada güncellenmiş. Güncel hâline göz atıp tekrar deneyebilirsiniz."));
     }
     throw error;
   }

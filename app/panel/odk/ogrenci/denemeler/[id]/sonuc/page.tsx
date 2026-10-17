@@ -189,7 +189,7 @@ export default async function OdkStudentResultPage({
         <PageHeader
           eyebrow={`${familyCode || "Deneme Ligi"} · ${exam.title}`}
           title="Deneme Sonucun"
-          description={`${exam.resultsReleasedAt ? `${DAY.format(exam.resultsReleasedAt)} · ` : ""}Sonucun yalnız kendi cevapların ve denemenin kilitli cevap anahtarı kullanılarak hesaplandı.`}
+          description={`${exam.resultsReleasedAt ? `${DAY.format(exam.resultsReleasedAt)} · ` : ""}Sonucun yalnızca senin cevapların ve denemenin kilitli cevap anahtarıyla hesaplandı 📊`}
         />
 
         <section aria-label="Sonuç özeti" className="mt-6 flex flex-wrap items-end gap-x-8 gap-y-3 border-y border-pn-border py-4">
@@ -268,8 +268,8 @@ export default async function OdkStudentResultPage({
         <Section id="analiz" title="Analiz" description={`${weak.length} gelişim alanı · kazanım doğruluğu ve kanıt sayısı`}>
           <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
             {[
-              { title: "Güçlü alanlar", rows: strong, empty: "Bu denemede belirgin güçlü kazanım yok." },
-              { title: "Geliştirilecek alanlar", rows: improve, empty: "Geliştirilecek kazanım görünmüyor." },
+              { title: "Güçlü alanlar", rows: strong, empty: "Bu denemede henüz belirgin bir güçlü kazanım çıkmadı; bir sonrakinde görüşürüz 🌱" },
+              { title: "Geliştirilecek alanlar", rows: improve, empty: "Geliştirilecek bir kazanım görünmüyor, harika! 🎉" },
             ].map((column) => (
               <div key={column.title}>
                 <h3 className="text-[13.5px] font-semibold text-pn-text">{column.title}</h3>
@@ -319,7 +319,7 @@ export default async function OdkStudentResultPage({
                 ))}
             </PanelTable>
           ) : (
-            <p className="text-[14px] text-pn-text-muted">Süre verisi yok.</p>
+            <p className="text-[14px] text-pn-text-muted">Süre verisi henüz yok.</p>
           )}
           {timeAnalysis.fastWrongs.length ? (
             <p className="mt-3 text-[13px] text-pn-text-muted">
@@ -386,7 +386,7 @@ export default async function OdkStudentResultPage({
               })}
             </PanelTable>
           ) : (
-            <p className="mt-3 text-[14px] text-pn-text-muted">Bu filtrede soru yok.</p>
+            <p className="mt-3 text-[14px] text-pn-text-muted">Bu filtrede soru görünmüyor.</p>
           )}
         </Section>
 
@@ -445,8 +445,8 @@ export default async function OdkStudentResultPage({
             </ul>
           ) : (
             <EmptyState
-              title="Şu an net bir çalışma önerisi üretilemedi."
-              body="Yeni ölçümle sinyal netleştiğinde bir sonraki adım burada görünür."
+              title="Şimdilik net bir çalışma önerimiz yok"
+              body="Yeni denemelerle tablo netleştiğinde sıradaki adımın burada görünecek 🌱"
             />
           )}
           {topSignal ? (

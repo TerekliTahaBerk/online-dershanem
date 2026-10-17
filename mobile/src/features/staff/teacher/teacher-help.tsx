@@ -26,7 +26,7 @@ export default function TeacherHelpScreen() {
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="teacher-help">
       <PageHeader title="Yardım isteyenler" description="Öğrencinin seçtiği engel gösterilir; check-in yanıtlarının tamamı paylaşılmaz." />
-      <QueryView query={query} disabledTitle="Yardım kutusu şu anda açık değil.">{(data) => <Inbox data={data} product={product} refetch={() => query.refetch()} />}</QueryView>
+      <QueryView query={query} disabledTitle="Yardım kutusu şu an kullanıma kapalı.">{(data) => <Inbox data={data} product={product} refetch={() => query.refetch()} />}</QueryView>
     </Screen>
   );
 }
@@ -47,7 +47,7 @@ function Inbox({ data, refetch, product }: { data: MobileHelpInbox; refetch: () 
     try {
       await mutation.mutateAsync({ item: selected, action });
       setSelected(null);
-      setState({ tone: 'success', message: 'Yanıtın öğrenciye iletildi.' });
+      setState({ tone: 'success', message: 'Yanıtın öğrenciye iletildi 💬 Desteğin için teşekkürler!' });
       await invalidate();
     } catch (error) {
       setSelected(null);
@@ -75,7 +75,7 @@ function Inbox({ data, refetch, product }: { data: MobileHelpInbox; refetch: () 
             />
           ))
         ) : (
-          <EmptyState title="Yanıt bekleyen yardım isteği yok" />
+          <EmptyState title="Yanıt bekleyen yardım isteği yok 🌟" />
         )}
       </Section>
       {responded.length ? (

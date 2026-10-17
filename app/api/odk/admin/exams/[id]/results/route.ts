@@ -46,7 +46,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
       },
     },
   });
-  if (!exam) return NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 });
+  if (!exam) return NextResponse.json({ error: "Denemeyi bulamadık." }, { status: 404 });
 
   const summary = buildExamResultsSummary({
     assignmentCount: exam._count.assignments,

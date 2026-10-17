@@ -27,7 +27,7 @@ const BULK_LIMIT = 500;
 export async function POST(request: Request) {
   const payload = bulkUserOperationSchema.safeParse(await request.json().catch(() => null));
   if (!payload.success) {
-    return NextResponse.json({ error: "Toplu işlem isteğini kontrol edin." }, { status: 400 });
+    return NextResponse.json({ error: "Lütfen toplu işlem isteğini bir kez daha kontrol eder misiniz?" }, { status: 400 });
   }
   const auth =
     payload.data.mode === "PREVIEW"
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
   });
   if (!guard.ok) {
     return NextResponse.json(
-      { error: guard.code === "RATE_LIMIT" ? "Çok fazla işlem. Biraz sonra tekrar deneyin." : guard.message },
+      { error: guard.code === "RATE_LIMIT" ? "Kısa sürede çok fazla işlem yapıldı. Biraz bekleyip tekrar dener misiniz?" : guard.message },
       { status: guard.code === "RATE_LIMIT" ? 429 : 403 },
     );
   }
@@ -103,10 +103,10 @@ export async function POST(request: Request) {
   }
 
   if (payload.data.action === "TRANSFER_STUDENTS_TO_GROUP" && !payload.data.options?.targetGroupId) {
-    return NextResponse.json({ error: "Hedef grup seçin." }, { status: 400 });
+    return NextResponse.json({ error: "Lütfen hedef grup seçin." }, { status: 400 });
   }
   if (payload.data.action === "OFFBOARD_TEACHERS" && !payload.data.options?.transferTeacherId) {
-    return NextResponse.json({ error: "Devralacak öğretmen seçin." }, { status: 400 });
+    return NextResponse.json({ error: "Lütfen devralacak öğretmen seçin." }, { status: 400 });
   }
 
   const origin = resolveAppOrigin(new URL(request.url).origin);
@@ -148,7 +148,7 @@ export async function POST(request: Request) {
       : [null, null, null];
 
   if (payload.data.action === "OFFBOARD_TEACHERS" && !targetTeacher) {
-    return NextResponse.json({ error: "Devralacak aktif öğretmen bulunamadı." }, { status: 404 });
+    return NextResponse.json({ error: "Devralacak aktif öğretmen şu an görünmüyor." }, { status: 404 });
   }
 
   for (const user of users) {
@@ -192,12 +192,12 @@ export async function POST(request: Request) {
 
       if (payload.data.action === "TRANSFER_STUDENTS_TO_GROUP") {
         if (!user.studentProfile?.id) {
-          errors.push({ id: user.id, email: user.email, reason: "Öğrenci profili bulunamadı." });
+          errors.push({ id: user.id, email: user.email, reason: "Öğrenci profilini bulamadık." });
           continue;
         }
         const sourceGroupId = user.studentProfile.enrollments[0]?.groupId;
         if (!sourceGroupId) {
-          errors.push({ id: user.id, email: user.email, reason: "Aktif grup kaydı bulunamadı." });
+          errors.push({ id: user.id, email: user.email, reason: "Aktif grup kaydı şu an görünmüyor." });
           continue;
         }
         if (sourceGroupId === targetGroupId) {
@@ -218,7 +218,7 @@ export async function POST(request: Request) {
 
       const teacher = await loadBulkTeacherSnapshot(user.id);
       if (!teacher) {
-        errors.push({ id: user.id, email: user.email, reason: "Öğretmen bulunamadı." });
+        errors.push({ id: user.id, email: user.email, reason: "Öğretmeni bulamadık." });
         continue;
       }
       if (teacher.status !== "ACTIVE") {

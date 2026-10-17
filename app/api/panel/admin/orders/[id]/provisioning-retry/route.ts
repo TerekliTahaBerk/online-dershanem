@@ -23,7 +23,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!body.success) return invalidApiInput();
   try {
     const result = await retryOrderProvisioningService({ actorUserId: auth.session.userId, orderId: params.data.id, ...body.data });
-    if (!result.found) return NextResponse.json({ error: "Sipariş bulunamadı.", code: "NOT_FOUND" }, { status: 404, headers: PRIVATE_NO_STORE });
+    if (!result.found) return NextResponse.json({ error: "Siparişi bulamadık.", code: "NOT_FOUND" }, { status: 404, headers: PRIVATE_NO_STORE });
     return adminJson({ ok: true, outcome: result.outcome, ...describeProvisioningOutcome(result.outcome) });
   } catch (error) {
     if (error instanceof OrderRetryConflict) return adminJson({ error: error.message, code: error.code }, { status: 409 });
@@ -37,5 +37,5 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   const params = idParamsSchema.safeParse(await context.params); if (!params.success) return invalidApiInput();
   const select = { id: true, updatedAt: true };
   const [od, odk] = await Promise.all([prisma.odOrder.findUnique({ where: { id: params.data.id }, select }), prisma.odkOrder.findUnique({ where: { id: params.data.id }, select })]);
-  return od || odk ? adminJson({ revision: orderRetryRevision((od ?? odk)!) }) : adminJson({ error: "Sipariş bulunamadı.", code: "NOT_FOUND" }, { status: 404 });
+  return od || odk ? adminJson({ revision: orderRetryRevision((od ?? odk)!) }) : adminJson({ error: "Siparişi bulamadık.", code: "NOT_FOUND" }, { status: 404 });
 }

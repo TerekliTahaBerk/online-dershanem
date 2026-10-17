@@ -61,7 +61,7 @@ export default async function AdminEducatorsPage() {
 
         {teachers.length === 0 ? (
           <PanelEmpty
-            title="Kayıtlı öğretmen yok."
+            title="Henüz kayıtlı bir öğretmen yok."
             body="Öğretmen hesabı açıldığında ders alanı, grupları ve doluluğu burada listelenir."
           />
         ) : (

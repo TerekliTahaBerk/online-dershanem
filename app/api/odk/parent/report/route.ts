@@ -26,7 +26,7 @@ export async function GET(request: Request) {
   const auth = await requireApiProductRole("ODK", "PARENT");
   if (!auth.ok) return auth.response;
   const parsed = query.safeParse({ studentId: new URL(request.url).searchParams.get("studentId") ?? undefined });
-  if (!parsed.success) return NextResponse.json({ error: "Öğrenci seçimi geçersiz.", code: "VALIDATION" }, { status: 400, headers: PRIVATE_NO_STORE });
+  if (!parsed.success) return NextResponse.json({ error: "Öğrenci seçimi geçerli görünmüyor; lütfen listeden yeniden seçin.", code: "VALIDATION" }, { status: 400, headers: PRIVATE_NO_STORE });
   const child = (await listParentVisibleChildren(auth.session.userId, "academic")).find((item) => item.id === parsed.data.studentId);
   if (!child) return childNotFound();
   const report = child.products.includes("ODK") ? await getOdkAudienceStudentReport({ userId: auth.session.userId, role: "PARENT" }, child.userId) : null;

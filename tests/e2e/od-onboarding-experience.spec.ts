@@ -66,7 +66,7 @@ test.describe.serial("ödeme sonrası başlangıç deneyimi", () => {
       await expect(page.getByRole("region", { name: "Başlangıç" })).toContainText("Hesabınız hazır");
       await db.productMembership.create({ data: { userId: student.id, product: "OD" } });
       await page.reload();
-      await expect(page.getByRole("region", { name: "Başlangıç" })).toContainText("Başlangıç zamanını ekibimiz sizinle paylaşacak.");
+      await expect(page.getByRole("region", { name: "Başlangıç" })).toContainText("Başlangıç zamanını ekibimiz en kısa sürede sizinle paylaşacak 🤝");
       await expect(page.getByText("Profiliniz hazırlanıyor.", { exact: true })).toHaveCount(0);
     } finally { await db.user.delete({ where: { id: student.id } }); }
     const parent = await db.user.create({ data: { email: `od-empty-parent-${crypto.randomUUID()}@example.com`, role: "PARENT", passwordHash: seed.passwordHash, mustChangePassword: false, inviteAcceptedAt: new Date() } });

@@ -38,7 +38,7 @@ function useSubmit() {
         status?: string;
       } | null;
       if (!res.ok) {
-        setError(json?.error ?? "İşlem tamamlanamadı.");
+        setError(json?.error ?? "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?");
         return false;
       }
       setDone(
@@ -49,7 +49,7 @@ function useSubmit() {
       router.refresh();
       return true;
     } catch {
-      setError("Bağlantı kurulamadı.");
+      setError("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?");
       return false;
     } finally {
       setPending(false);

@@ -29,7 +29,7 @@ export type ParentChildAuth =
   | { ok: false; response: Response };
 
 export function childNotFound(): Response {
-  return NextResponse.json({ error: "Öğrenci bulunamadı veya bu öğrenci için erişiminiz yok.", code: "CHILD_NOT_FOUND" }, { status: 404, headers: PRIVATE_NO_STORE });
+  return NextResponse.json({ error: "Bu öğrenciyi bulamadık ya da bu öğrenci için erişiminiz bulunmuyor.", code: "CHILD_NOT_FOUND" }, { status: 404, headers: PRIVATE_NO_STORE });
 }
 
 export function featureDisabled(message: string): Response {
@@ -45,7 +45,7 @@ export async function requireParentChild(request: Request): Promise<ParentChildA
   if (!auth.ok) return auth;
   const parsed = query.safeParse({ studentId: new URL(request.url).searchParams.get("studentId") ?? undefined });
   if (!parsed.success) {
-    return { ok: false, response: NextResponse.json({ error: "Öğrenci seçimi geçersiz.", code: "VALIDATION" }, { status: 400, headers: PRIVATE_NO_STORE }) };
+    return { ok: false, response: NextResponse.json({ error: "Öğrenci seçimi geçerli görünmüyor; lütfen listeden yeniden seçin.", code: "VALIDATION" }, { status: 400, headers: PRIVATE_NO_STORE }) };
   }
   const children = await listParentVisibleChildren(auth.session.userId, "academic");
   const child = children.find((item) => item.id === parsed.data.studentId);

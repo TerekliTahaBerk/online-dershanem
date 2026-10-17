@@ -28,7 +28,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const auth = await requireApiProductRole("OK", "ADMIN", "TEACHER");
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().adaptivePlan) {
-    return NextResponse.json({ error: "Haftalık plan henüz açık değil." }, { status: 404 });
+    return NextResponse.json({ error: "Haftalık plan şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   }
 
   const guard = await guardMutation({
@@ -45,12 +45,12 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { id } = await context.params;
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Geçersiz karar." }, { status: 400 });
+    return NextResponse.json({ error: "Karar geçerli görünmüyor." }, { status: 400 });
   }
 
   const suggestion = await prisma.weeklyPlanSuggestion.findUnique({ where: { id } });
   if (!suggestion || suggestion.status !== "PENDING") {
-    return NextResponse.json({ error: "Öneri bulunamadı." }, { status: 404 });
+    return NextResponse.json({ error: "Öneri bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
   }
 
   const allowed = await assertAssignedCoach({
@@ -58,7 +58,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     userId: auth.session.userId,
     studentProfileId: suggestion.studentId,
   });
-  if (!allowed) return NextResponse.json({ error: "Bu öğrenci için yetkiniz yok." }, { status: 403 });
+  if (!allowed) return NextResponse.json({ error: "Bu öğrenci için yetkiniz bulunmuyor." }, { status: 403 });
 
   /*
    * ÖNCE KARARI KAP, SONRA GÖREVİ ÜRET.

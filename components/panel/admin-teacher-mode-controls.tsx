@@ -21,7 +21,7 @@ export function AdminTeacherModeBanner() {
         error?: string;
       } | null;
       if (!response.ok) {
-        setError(body?.error || "Yönetim paneline dönülemedi.");
+        setError(body?.error || "Yönetim paneline şu an dönülemedi. Lütfen tekrar dener misiniz?");
         return;
       }
       router.replace(body?.returnPath || "/panel/yonetim");
@@ -84,7 +84,7 @@ export function AdminTeacherModeSwitchButton({
         error?: string;
       } | null;
       if (!response.ok) {
-        setError(body?.error || "Öğretmen paneline geçilemedi.");
+        setError(body?.error || "Öğretmen paneline şu an geçilemedi. Lütfen tekrar dener misiniz?");
         return;
       }
       router.push(body?.homePath || "/panel/ogretmen");

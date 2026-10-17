@@ -19,7 +19,7 @@ export async function POST(request: Request) {
 
   const body = await request.json().catch(() => null);
   const parsed = groupCreateSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Grup bilgilerini kontrol edin." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Lütfen grup bilgilerini bir kez daha kontrol eder misiniz?" }, { status: 400 });
   try {
     const envelope = parseGroupMutationEnvelope(request.headers, body, { create: true });
     return NextResponse.json(await createManagedGroup(auth.session.userId, parsed.data, envelope), { headers: { "Cache-Control": "private, no-store" } });

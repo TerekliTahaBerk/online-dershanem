@@ -35,7 +35,7 @@ export function AdminPreviewBanner({
         error?: string;
       } | null;
       if (!response.ok) {
-        setError(body?.error || "Önizlemeden çıkılamadı.");
+        setError(body?.error || "Önizlemeden şu an çıkılamadı. Lütfen tekrar dener misiniz?");
         return;
       }
       router.replace(body?.returnPath || "/panel/yonetim");

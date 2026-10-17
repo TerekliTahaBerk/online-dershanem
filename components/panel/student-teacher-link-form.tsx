@@ -41,7 +41,7 @@ export function StudentTeacherLinkForm({
         error?: string;
       };
       if (!response.ok) {
-        setError(data.error ?? "Bağlantı kurulamadı.");
+        setError(data.error ?? "Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?");
         setPending(false);
         return;
       }
@@ -51,7 +51,7 @@ export function StudentTeacherLinkForm({
       setPending(false);
       router.refresh();
     } catch {
-      setError("Bağlantı kurulamadı.");
+      setError("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?");
       setPending(false);
     }
   }

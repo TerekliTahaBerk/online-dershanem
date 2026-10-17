@@ -74,8 +74,8 @@ function LessonWorkspace({ lesson, refetch }: { lesson: MobileTeacherLessonDetai
   const favoriteMutation = useMutation({ mutationFn: (input: { outcomeId: string; favorite: boolean }) => api.request('/api/panel/teacher/outcome-favorites', { method: 'POST', body: input }) });
   async function favorite(outcomeId: string, value: boolean) {
     if (!online || favoriteMutation.isPending) return;
-    try { await favoriteMutation.mutateAsync({ outcomeId, favorite: value }); setState({ tone: 'success', message: value ? 'Kazanım favorilere eklendi.' : 'Kazanım favorilerden çıkarıldı.' }); await invalidate(); }
-    catch (error) { setState(writeError(error, 'Favori kaydedilemedi. Tekrar deneyin.')); }
+    try { await favoriteMutation.mutateAsync({ outcomeId, favorite: value }); setState({ tone: 'success', message: value ? 'Kazanım favorilere eklendi ⭐' : 'Kazanım favorilerden çıkarıldı.' }); await invalidate(); }
+    catch (error) { setState(writeError(error, 'Favoriyi şu an kaydedemedik. Lütfen tekrar dener misiniz?')); }
   }
   const catalog = searchTerm !== null ? searchQuery.data?.outcomes ?? [] : lesson.outcomes.catalog;
   const cancelled = lesson.status === 'CANCELLED';
@@ -103,7 +103,7 @@ function LessonWorkspace({ lesson, refetch }: { lesson: MobileTeacherLessonDetai
   async function submit(complete: boolean) {
     if (mutation.isPending || !online || cancelled) return;
     if (complete && lesson.flags.learningOutcomes && !outcomeCount && !form.skipReason) {
-      setState({ tone: 'warning', message: 'Kapanış için en az bir kazanım seçin veya neden belirtin.' });
+      setState({ tone: 'warning', message: 'Dersi kapatmak için en az bir kazanım seçmeniz ya da bir neden belirtmeniz yeterli.' });
       setTab('kapanis');
       return;
     }
@@ -121,11 +121,11 @@ function LessonWorkspace({ lesson, refetch }: { lesson: MobileTeacherLessonDetai
       const result = await mutation.mutateAsync(payload(complete));
       stable.settle();
       setConflict(false);
-      setState({ tone: 'success', message: result.replayed ? 'Bu kapanış zaten kaydedilmişti.' : complete ? 'Ders kapatıldı ve kaydedildi.' : 'Taslak kaydedildi.' });
+      setState({ tone: 'success', message: result.replayed ? 'Bu kapanış zaten kaydedilmişti.' : complete ? 'Ders kapatıldı ve kaydedildi ✅ Emeğinize sağlık!' : 'Taslak kaydedildi ✅' });
       await invalidate();
     } catch (error) {
       stable.settle(error);
-      const next = writeError(error, 'Bu ders başka bir yerde (ör. web panelinde) güncellendi. Son kayıt yüklendi; girdiğiniz bilgiler korunuyor. İnceleyip bilinçli olarak tekrar kaydedin.');
+      const next = writeError(error, 'Bu ders başka bir yerde (ör. web panelinde) güncellenmiş. En güncel kaydı yükledik; girdiğiniz bilgiler korunuyor. İnceledikten sonra tekrar kaydedebilirsiniz.');
       setState(next);
       if (next?.tone === 'warning' && !next.stepUp) {
         setConflict(true);
@@ -216,7 +216,7 @@ function LessonWorkspace({ lesson, refetch }: { lesson: MobileTeacherLessonDetai
               {searchTerm !== null ? <Button label="İlk kazanım listesine dön" variant="quiet" onPress={() => setSearchTerm(null)} /> : null}
               {searchTerm !== null && searchQuery.isPending ? <Text>Kazanımlar yükleniyor…</Text> : null}
               {searchTerm !== null && searchQuery.isError ? <Button label="Aramayı yeniden dene" onPress={() => void searchQuery.refetch()} /> : null}
-              {searchTerm !== null && searchQuery.isSuccess && !catalog.length ? <EmptyState title="Kazanım bulunamadı" /> : null}
+              {searchTerm !== null && searchQuery.isSuccess && !catalog.length ? <EmptyState title="Bu aramayla eşleşen bir kazanım bulamadık 🔍" /> : null}
               {catalog.map((outcome) => {
                 const selected = form.outcomes[outcome.id];
                 return (

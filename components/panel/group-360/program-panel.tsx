@@ -68,7 +68,7 @@ export function ProgramPanel({
             ))}
           </div>
         ) : (
-          <EmptyState title="Açık çakışma yok." />
+          <EmptyState title="Açık çakışma yok ✅" />
         )}
       </Section>
     </>
