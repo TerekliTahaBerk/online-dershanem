@@ -32,7 +32,7 @@ function PilotBody({ data }: { data: OdkManagementPilot }) {
     if (!online || mutation.isPending) return;
     if (command.operation === 'transition' && !await confirmAction({ title: actions[command.input.action], message: ['ACTIVATE', 'RESUME'].includes(command.input.action) ? 'Seçili katılımcıların pilot erişimi açılır. Sunucu tüm aktivasyon kapılarını yeniden kontrol eder.' : command.input.action === 'COMPLETE' ? 'Koşu kapanır. İki gerçek deneme ve kabul kanıtları tamamlanmış olmalıdır.' : 'Seçili koşunun pilot erişimi kesilir. Sınav verisi silinmez; admin kurtarma erişimi korunur.', confirmLabel: actions[command.input.action] })) return;
     setState(null);
-    try { await mutation.mutateAsync({ command, revision }); pending.current = null; await client.invalidateQueries({ queryKey: ['user'] }); setState({ tone: 'success', message: command.operation === 'create' ? 'Pilot taslağı oluşturuldu. Erişim henüz açılmadı.' : 'Pilot durumu güncellendi.' }); }
+    try { await mutation.mutateAsync({ command, revision }); pending.current = null; await client.invalidateQueries({ queryKey: ['user'] }); setState({ tone: 'success', message: command.operation === 'create' ? 'Pilot taslağı oluşturuldu. Erişim henüz açılmadı.' : 'Pilot durumu güncellendi ✅' }); }
     catch (error) { if (!(error instanceof ApiError) || !error.transient && error.kind !== 'invalid_response') pending.current = null; setState(writeError(error, 'Pilot veya adaylar değişti. Güncel görünümü kontrol edin.')); if (error instanceof ApiError && error.kind === 'conflict') await client.invalidateQueries({ queryKey: ['user'] }); }
   }
   const counts = Object.fromEntries(Object.keys(roleLabels).map((r) => [r, data.candidates.filter((c) => c.role === r && selected.includes(c.id)).length]));

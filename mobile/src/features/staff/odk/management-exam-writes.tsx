@@ -305,7 +305,7 @@ function PdfUpload({ examId, onChanged }: { examId: string; onChanged: () => voi
     if (asset.mimeType !== 'application/pdf' || !asset.size || asset.size > 30 * 1024 * 1024) { setState({ tone: 'critical', message: 'En fazla 30 MB PDF seçin.' }); return; }
     try {
       await upload.mutateAsync({ uri: asset.uri, name: asset.name });
-      setState({ tone: 'success', message: 'PDF yüklendi.' });
+      setState({ tone: 'success', message: 'PDF yüklendi ✅' });
       onChanged();
     } catch (error) {
       setState(writeError(error, 'Deneme değişti; yeniden deneyin.'));

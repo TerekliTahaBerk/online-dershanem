@@ -79,7 +79,7 @@ function ChildSelection({ revoked }: { revoked: boolean }) {
   return (
     <View style={styles.gap}>
       {revoked ? (
-        <Banner tone="warning" title="Öğrenci erişimi değişti">
+        <Banner tone="warning" title="Öğrenci erişiminde değişiklik var">
           Seçili öğrencinin bilgileri artık bu hesapla paylaşılmıyor. Görüntülemek istediğiniz öğrenciyi seçin.
         </Banner>
       ) : (
@@ -96,12 +96,12 @@ function NoChildren({ revoked }: { revoked: boolean }) {
   const bootstrap = useReadyBootstrap();
   const preparing = (bootstrap.workspace?.products ?? []).some((product) => product.state === 'PREPARING');
   if (preparing) {
-    return <EmptyState title="Öğrenci hesabı hazırlanıyor" body="Ödemeniz alındı; öğrenci hesabı açıldığında bilgiler burada görünecek. Bu bir hata değildir." />;
+    return <EmptyState title="Öğrenci hesabı hazırlanıyor ⏳" body="Ödemeniz için teşekkür ederiz 💛 Öğrenci hesabı açılır açılmaz bilgiler burada görünecek; bu bir hata değildir, içiniz rahat olsun." />;
   }
   return (
     <EmptyState
-      title={revoked ? 'Öğrenci erişimi değişti' : 'Henüz bağlı öğrenci yok'}
-      body={revoked ? 'Bu hesapla paylaşılan bir öğrenci bilgisi kalmadı. Bir yanlışlık olduğunu düşünüyorsanız eğitim koordinatörünüzle görüşün.' : 'Hesabınız öğrencinizle eşleştirildiğinde bilgiler burada görünür.'}
+      title={revoked ? 'Öğrenci erişiminde değişiklik var' : 'Henüz bağlı bir öğrenci yok'}
+      body={revoked ? 'Bu hesapla paylaşılan bir öğrenci bilgisi kalmadı. Bir yanlışlık olduğunu düşünüyorsanız eğitim koordinatörünüz size yardımcı olmaktan memnuniyet duyar.' : 'Hesabınız öğrencinizle eşleştirildiğinde bilgiler burada görünecek 🤝'}
     />
   );
 }

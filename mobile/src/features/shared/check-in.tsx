@@ -41,11 +41,11 @@ export default function CheckInScreen() {
   const refresh = usePullToRefresh(() => query.refetch());
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="check-in">
-      <PageHeader title="Check-in" description="Nasıl ilerlediğini fark et, gerekirse yardım iste. Puan, sıralama ve serbest metin yok; veli bu alanı göremez." />
-      <QueryView query={query} disabledTitle="Check-in şu anda açık değil.">
+      <PageHeader title="Check-in" description="Nasıl hissettiğini fark et, gerekirse yardım iste 💛 Puan ya da sıralama yok; bu alan yalnızca senin için, velin göremez." />
+      <QueryView query={query} disabledTitle="Check-in şu an kullanıma kapalı.">
         {(data) =>
           data.state === 'NO_PROFILE' ? (
-            <EmptyState title="Profilin hazırlanıyor." />
+            <EmptyState title="Profilin hazırlanıyor ⏳" />
           ) : (
             <>
               <CheckInForm key={data.remaining} data={data} product={product} />
@@ -96,25 +96,25 @@ function CheckInForm({ data, product }: { data: Extract<MobileCheckInState, { st
         shareWithTeacher: share || help,
         helpRequested: help,
       });
-      setMessage({ tone: 'success', text: help ? 'Check-in kaydedildi; yardım isteğin iletildi.' : "Check-in'in kaydedildi." });
+      setMessage({ tone: 'success', text: help ? 'Check-in\'in kaydedildi ve yardım isteğin iletildi 🤝 Yalnız değilsin, en kısa sürede sana dönülecek.' : "Check-in'in kaydedildi, paylaştığın için teşekkürler 💛" });
       await invalidate();
     } catch (error) {
       const uncertain = error instanceof ApiError && (error.transient || error.kind === 'invalid_response');
       setMessage({
         tone: error instanceof ApiError && error.kind === 'conflict' ? 'warning' : 'critical',
-        text: uncertain ? 'Bağlantı kesildi; kaydın oluşmuş olabilir. Geçmişini yenileyip kontrol et.' : error instanceof ApiError ? error.message : 'Check-in kaydedilemedi.',
+        text: uncertain ? 'Bağlantı kesildi; kaydın yine de oluşmuş olabilir. Geçmişini yenileyip kontrol edebilirsin.' : error instanceof ApiError ? error.message : 'Check-in\'ini şu an kaydedemedik 😕 Lütfen tekrar dener misin?',
       });
       if (uncertain || (error instanceof ApiError && error.kind === 'conflict')) await invalidate();
     }
   }
 
   if (!data.targets.length) {
-    return <EmptyState title="Check-in için aktif bir destek alanın yok." body="Bir derse kayıtlı olduğunda veya koç ataman yapıldığında check-in burada açılır." />;
+    return <EmptyState title="Check-in için henüz aktif bir destek alanın yok" body="Bir derse kaydolduğunda ya da koç ataman yapıldığında check-in burada açılacak." />;
   }
 
   return (
     <Section title="60 saniyelik check-in" first action={<StatusBadge label={`Bu hafta ${data.remaining} hak`} tone="info" />}>
-      <Text tone="secondary" variant="secondary">Bu bir sınav, tanı veya puan değildir. Nasıl ilerlediğini anlamana yardımcı olur.</Text>
+      <Text tone="secondary" variant="secondary">Bu bir sınav ya da puanlama değil 😊 Sadece nasıl ilerlediğini anlamana yardımcı olur.</Text>
       {message ? <Banner tone={message.tone}>{message.text}</Banner> : null}
       {data.targets.length > 1 ? (
         <View style={styles.group} accessibilityRole="radiogroup" accessibilityLabel="Hangi destek alanı?">
@@ -132,14 +132,14 @@ function CheckInForm({ data, product }: { data: Extract<MobileCheckInState, { st
       <View style={styles.toggle}>
         <View style={styles.flex}>
           <Text variant="bodyStrong">{product === 'OK' ? 'Koçum görsün' : 'Öğretmenim görsün'}</Text>
-          <Text tone="muted" variant="meta">Kapalıysa yalnız sen görürsün. Veliye hiçbir durumda gösterilmez.</Text>
+          <Text tone="muted" variant="meta">Kapalıysa yalnızca sen görürsün. Velin hiçbir durumda göremez.</Text>
         </View>
         <Switch value={share || help} disabled={help} onValueChange={setShare} trackColor={{ true: theme.accent }} accessibilityLabel={product === 'OK' ? 'Koçum görsün' : 'Öğretmenim görsün'} testID="check-share" />
       </View>
       <View style={[styles.toggle, styles.help]}>
         <View style={styles.flex}>
           <Text variant="bodyStrong">{product === 'OK' ? 'Koçumdan yardım istiyorum' : 'Öğretmenimden yardım istiyorum'}</Text>
-          <Text tone="muted" variant="meta">Bildirim gider; 24 saat içinde küçük bir destek adımı hedeflenir. Açık bir yardım isteğin varken yenisi açılmaz.</Text>
+          <Text tone="muted" variant="meta">Hemen bildirim gider ve 24 saat içinde sana küçük bir destek adımı hazırlanır 🤝 Açık bir yardım isteğin varken yenisi açılmaz.</Text>
         </View>
         <Switch
           value={help}
@@ -152,11 +152,11 @@ function CheckInForm({ data, product }: { data: Extract<MobileCheckInState, { st
           testID="check-help"
         />
       </View>
-      <Banner tone="critical" title="Acil durum alanı değildir.">
-        Kendine veya başkasına zarar verme riski varsa 112’yi ara ve güvendiğin bir yetişkine hemen söyle.
+      <Banner tone="critical" title="Burası acil durumlar için değil">
+        Kendine ya da bir başkasına zarar verme riski varsa lütfen hemen 112’yi ara ve güvendiğin bir yetişkine söyle. Yalnız değilsin.
       </Banner>
       <Button mutation label="Check-in'i kaydet" loading={mutation.isPending} disabled={data.remaining < 1 || !selected} onPress={() => void submit()} testID="check-submit" />
-      {data.remaining < 1 ? <Text tone="muted" variant="meta">Bu hafta iki check-in tamamladın. Yeni hafta başladığında tekrar uğrayabilirsin.</Text> : null}
+      {data.remaining < 1 ? <Text tone="muted" variant="meta">Bu hafta iki check-in tamamladın, harika! 🌟 Yeni hafta başladığında yine bekleriz.</Text> : null}
     </Section>
   );
 }
@@ -164,7 +164,7 @@ function CheckInForm({ data, product }: { data: Extract<MobileCheckInState, { st
 function History({ items, product }: { items: MobileCheckInHistoryItem[]; product: WorkspaceProduct }) {
   return (
     <Section title="Geçmişim">
-      {items.length ? items.map((item) => <HistoryItem key={item.id} item={item} product={product} />) : <Text tone="secondary">Henüz check-in yok.</Text>}
+      {items.length ? items.map((item) => <HistoryItem key={item.id} item={item} product={product} />) : <Text tone="secondary">Henüz bir check-in yapmadın. İlkini yapmaya ne dersin? 😊</Text>}
     </Section>
   );
 }
@@ -182,7 +182,7 @@ function HistoryItem({ item, product }: { item: MobileCheckInHistoryItem; produc
       await mutation.mutateAsync(helpful);
       await invalidate();
     } catch (error) {
-      setMessage(error instanceof ApiError ? error.message : 'Geri bildirim kaydedilemedi.');
+      setMessage(error instanceof ApiError ? error.message : 'Geri bildirimini şu an kaydedemedik 😕 Lütfen tekrar dener misin?');
       if (error instanceof ApiError && error.kind === 'conflict') await invalidate();
     }
   }
@@ -197,7 +197,7 @@ function HistoryItem({ item, product }: { item: MobileCheckInHistoryItem; produc
       <Text tone="secondary" variant="secondary">{`${ENERGY[item.energy]} · ${CONFIDENCE[item.confidence]} · ${BARRIER[item.barrier]}`}</Text>
       {request ? (
         <View style={styles.request}>
-          <Text variant="bodyStrong">{request.status === 'OPEN' ? 'Yanıt bekleniyor' : request.status === 'CLOSED' ? 'Destek tamamlandı' : 'Destek adımı'}</Text>
+          <Text variant="bodyStrong">{request.status === 'OPEN' ? 'Yanıt bekleniyor ⏳' : request.status === 'CLOSED' ? 'Destek tamamlandı ✅' : 'Destek adımı'}</Text>
           {request.actionLabel ? <Text tone="secondary">{request.actionLabel}</Text> : null}
           {message ? <Banner tone="critical">{message}</Banner> : null}
           {request.status === 'RESPONDED' && request.helpful === null ? (

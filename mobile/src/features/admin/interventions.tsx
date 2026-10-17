@@ -40,7 +40,7 @@ export default function InterventionsScreen() {
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="admin-interventions">
       <PageHeader title="Müdahale" description="Hiçbir sinyal sahipsiz kalmasın: kural, 24 saat hedefi, sahiplik ve sonuç tek yerde." />
-      <QueryView query={query} disabledTitle="Müdahale kutusu şu anda açık değil.">
+      <QueryView query={query} disabledTitle="Müdahale kutusu şu an kullanıma kapalı.">
         {(inbox) => <InterventionBody inbox={inbox} />}
       </QueryView>
     </Screen>

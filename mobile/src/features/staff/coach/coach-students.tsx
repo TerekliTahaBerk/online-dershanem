@@ -31,7 +31,7 @@ export default function CoachStudentsScreen() {
               ))}
             </Section>
           ) : (
-            <EmptyState title="Aktif koçluk atamanız yok" body="Atamalar yönetim panelinden yapılır." />
+            <EmptyState title="Henüz aktif bir koçluk atamanız yok" body="Atamalar yönetim panelinden yapılıyor; atandığınızda öğrencileriniz burada görünecek." />
           )
         }
       </QueryView>

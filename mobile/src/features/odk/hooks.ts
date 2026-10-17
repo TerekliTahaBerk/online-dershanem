@@ -29,9 +29,9 @@ export function useAnswerKeyOpener(examId: string) {
     try {
       const file = await downloadAnswerKeyFile({ baseUrl: api.baseUrl, path: answerKeyPath(examId), headers: api.authHeaders(), userId: bootstrap.user.id, examId });
       if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(file.uri, { mimeType: 'application/pdf', dialogTitle: 'Cevap anahtarı' });
-      else setError('Bu cihazda PDF açabilecek bir uygulama bulunamadı.');
+      else setError('Bu cihazda PDF açabilecek bir uygulama bulamadık 😕');
     } catch {
-      setError('Cevap anahtarı açılamadı. Henüz yayınlanmamış olabilir veya bağlantı kesildi.');
+      setError('Cevap anahtarını şu an açamadık 😕 Henüz yayınlanmamış olabilir ya da bağlantı kesilmiş olabilir.');
     } finally {
       setOpening(false);
     }
@@ -74,7 +74,7 @@ export function useCrossProductOpen() {
         target.type === 'yon-plan' ? '/screen/plan' : target.type === 'od-review' ? reviewRecoveryHref('tekrar') : target.type === 'od-recovery' ? reviewRecoveryHref('telafi', target.lessonId) : null;
       if (href) router.replace(href as Href);
     } catch {
-      setError('Çalışma alanı değiştirilemedi. Bağlantını kontrol edip tekrar dene.');
+      setError('Çalışma alanını şu an değiştiremedik 😕 İnternet bağlantını kontrol edip tekrar dener misin?');
     } finally {
       setPending(false);
     }

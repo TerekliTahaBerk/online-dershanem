@@ -75,5 +75,5 @@ export function adminErrorText(error: unknown): string | null {
   if (!error) return null;
   if (error instanceof StepUpCancelledError) return error.message;
   if (error instanceof ApiError) return error.kind === 'conflict' ? `${error.message} Görünüm yenilendi; kontrol edip tekrar dene.` : error.message;
-  return 'İşlem kaydedilemedi.';
+  return 'İşlemi şu an kaydedemedik. Lütfen tekrar dener misiniz?';
 }

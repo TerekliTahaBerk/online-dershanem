@@ -55,7 +55,7 @@ export function useInvalidateStaff(product: StaffProduct) {
 export function StaffRouteGate({ product, navId, children }: { product: StaffProduct; navId: string; children: ReactNode }) {
   const bootstrap = useReadyBootstrap();
   const allowed = bootstrap.user.role === 'TEACHER' && bootstrap.workspace?.activeProduct === product && hasNavItem(bootstrap.workspace.navigation, navId);
-  if (!allowed) return <EmptyState title="Bu bölüm bu çalışma alanında yok" body="Bağlantı başka bir çalışma alanına ait olabilir veya erişimin değişmiş olabilir." />;
+  if (!allowed) return <EmptyState title="Bu bölümü bu çalışma alanında bulamadık 🔍" body="Bağlantı başka bir çalışma alanına ait olabilir ya da erişiminiz değişmiş olabilir." />;
   return <>{children}</>;
 }
 
@@ -85,11 +85,11 @@ export type WriteState = { tone: 'success' | 'warning' | 'critical'; message: st
 export function writeError(error: unknown, conflictMessage: string): WriteState {
   if (error instanceof ApiError) {
     if (error.kind === 'conflict') return { tone: 'warning', message: conflictMessage };
-    if (error.kind === 'step_up_required') return { tone: 'warning', message: 'Bu işlem için kimliğinizi yeniden doğrulamanız gerekiyor. Mobilde ek doğrulama yok; işlemi web panelinden tamamlayın.', stepUp: true };
-    if (error.kind === 'network' || error.kind === 'timeout') return { tone: 'critical', message: 'Bağlantı kurulamadı. Kayıt yapılmadı; bağlantı gelince tekrar deneyin.' };
+    if (error.kind === 'step_up_required') return { tone: 'warning', message: 'Güvenliğiniz için bu işlemden önce kimliğinizi yeniden doğrulamanız gerekiyor. Bu doğrulama şimdilik mobilde yapılamadığından işlemi web panelinden tamamlayabilirsiniz.', stepUp: true };
+    if (error.kind === 'network' || error.kind === 'timeout') return { tone: 'critical', message: 'Bağlantı kurulamadığı için kayıt yapılamadı. Bağlantınız geldiğinde tekrar deneyebilirsiniz.' };
     return { tone: 'critical', message: error.message };
   }
-  return { tone: 'critical', message: 'İşlem kaydedilemedi. Tekrar deneyin.' };
+  return { tone: 'critical', message: 'İşlemi şu an kaydedemedik. Lütfen tekrar dener misiniz?' };
 }
 
 export function WriteBanner({ state, webPath }: { state: WriteState; webPath?: string }) {
@@ -103,7 +103,7 @@ export function WriteBanner({ state, webPath }: { state: WriteState; webPath?: s
 
 export function OfflineWriteNotice({ online }: { online: boolean }) {
   if (online) return null;
-  return <Banner tone="warning" title="Çevrimdışısın">Kaydetmek için bağlantı gerekiyor. Yazdıkların bu ekranda kalır; bağlantı gelince kaydedebilirsin.</Banner>;
+  return <Banner tone="warning" title="Çevrimdışısın 📡">Kaydetmek için internet bağlantısı gerekiyor. Merak etme, yazdıkların bu ekranda duruyor; bağlantın gelince kaydedebilirsin.</Banner>;
 }
 
 /** Önemli yazmalar öncesi sistem onay iletişim kutusu. */

@@ -66,7 +66,7 @@ export function statusPresentation(assignment: MobileAssignment, evidenceEnabled
     if (latest?.status === 'APPROVED') return { label: 'Kanıt onaylandı', tone: 'success' };
     if (latest?.status === 'CHANGES_REQUESTED') return { label: 'Yeniden deneyebilirsin', tone: 'warning' };
   }
-  if (isOverdue(assignment, now)) return { label: 'Süresi geçti', tone: 'critical' };
+  if (isOverdue(assignment, now)) return { label: 'Teslim tarihi geçti', tone: 'critical' };
   if (assignment.status === 'DONE') return { label: PROGRESS_LABEL.DONE, tone: 'success' };
   if (assignment.status === 'IN_PROGRESS') return { label: PROGRESS_LABEL.IN_PROGRESS, tone: 'info' };
   return { label: PROGRESS_LABEL.TODO, tone: 'neutral' };
@@ -92,8 +92,8 @@ export function allowedProgress(assignment: MobileAssignment, evidenceEnabled: b
 
 export function evidenceLengthError(text: string): string | null {
   const length = text.trim().length;
-  if (length < ASSIGNMENT_EVIDENCE_MIN) return `Kanıt metni en az ${ASSIGNMENT_EVIDENCE_MIN} karakter olmalı.`;
-  if (length > ASSIGNMENT_EVIDENCE_MAX) return `Kanıt metni en fazla ${ASSIGNMENT_EVIDENCE_MAX} karakter olabilir.`;
+  if (length < ASSIGNMENT_EVIDENCE_MIN) return `Kanıt metnin en az ${ASSIGNMENT_EVIDENCE_MIN} karakter olmalı; birkaç cümle daha ekleyebilirsin ✍️`;
+  if (length > ASSIGNMENT_EVIDENCE_MAX) return `Kanıt metnin en fazla ${ASSIGNMENT_EVIDENCE_MAX} karakter olabilir; biraz kısaltabilir misin?`;
   return null;
 }
 

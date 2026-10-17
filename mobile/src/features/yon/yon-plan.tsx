@@ -35,11 +35,11 @@ export default function YonPlanScreen() {
   const refresh = usePullToRefresh(() => query.refetch());
   const data = query.data;
   const description =
-    data?.state === 'READY' && data.plan ? `${formatDayMonth(data.plan.weekStart)} – ${formatDayMonth(data.plan.weekEnd)}` : 'Uygun günlerini ve süreni bildir; planın ondan sonra kurulur.';
+    data?.state === 'READY' && data.plan ? `${formatDayMonth(data.plan.weekStart)} – ${formatDayMonth(data.plan.weekEnd)}` : 'Uygun günlerini ve süreni paylaş, planını sana göre birlikte kuralım ✨';
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="yon-plan">
       <PageHeader title="Bu haftanın planı" description={description} />
-      <QueryView query={query} disabledTitle="Haftalık plan şu anda açık değil.">
+      <QueryView query={query} disabledTitle="Haftalık plan şu an kullanıma kapalı, çok yakında burada olacak 🌱">
         {(plan) => <PlanBody data={plan} />}
       </QueryView>
     </Screen>
@@ -48,13 +48,13 @@ export default function YonPlanScreen() {
 
 function PlanBody({ data }: { data: MobileYonPlan }) {
   if (data.state === 'NO_PROFILE') {
-    return <EmptyState title="Profilin hazırlanıyor." body="Öğrenci profilin tamamlandığında koçunun kurduğu plan burada görünecek." />;
+    return <EmptyState title="Profilin hazırlanıyor ⏳" body="Öğrenci profilin tamamlandığında koçunun senin için kurduğu plan burada görünecek." />;
   }
   const plan = data.plan;
   return (
     <>
       {!plan ? (
-        <EmptyState title="Henüz bir planın yok." body="Uygun günlerini ve süreni bildir; koçun planını bu bilgilere göre kurar." />
+        <EmptyState title="Henüz bir planın yok 🗓️" body="Aşağıdan uygun günlerini ve süreni paylaş; koçun planını tam sana göre kursun." />
       ) : (
         <>
           <PlanStatus plan={plan} requiresApproval={data.requiresApproval} />
@@ -87,7 +87,7 @@ function Generate({ plan, planningEnabled, hasDays }: { plan: Plan | null; plann
     <Section title={plan ? 'Haftayı dengele' : 'Planı oluştur'}>
       {generator.feedback ? <Banner tone={generator.feedback.tone}>{generator.feedback.message}</Banner> : null}
       <Text tone="secondary">
-        {!planningEnabled ? 'Haftalık plan tercihin kapalı.' : !hasDays ? 'Önce aşağıdan uygun günlerini kaydet.' : locked ? 'Onaylı plan kilitli. Değiştirmek için önce koçundan değişiklik iste.' : plan ? 'Tamamlanmamış görevler yeniden dağıtılır; tamamladıkların korunur.' : 'Tercihlerine göre bu haftanın planı kurulur.'}
+        {!planningEnabled ? 'Haftalık plan tercihin şu an kapalı.' : !hasDays ? 'Önce aşağıdan uygun günlerini kaydetmen yeterli 😊' : locked ? 'Planın koçun tarafından onaylandı 🔒 Değiştirmek istersen önce koçundan değişiklik isteyebilirsin.' : plan ? 'Tamamlanmamış görevlerin haftaya yeniden dağıtılır; tamamladıkların olduğu gibi kalır ✅' : 'Tercihlerine göre bu haftanın planını senin için kuralım ✨'}
       </Text>
       <Button mutation label={plan ? 'Haftayı dengele' : 'Planı oluştur'} variant={plan ? 'secondary' : 'primary'} loading={generator.generating} disabled={!planningEnabled || !hasDays || locked || generator.generating} onPress={() => void generator.generate()} testID="yon-plan-generate" />
     </Section>
@@ -105,7 +105,7 @@ function PlanStatus({ plan, requiresApproval }: { plan: Plan; requiresApproval: 
         {plan.status === 'CHANGE_REQUESTED' && plan.changeRequestCategory ? <Text tone="secondary" variant="secondary">{CHANGE_CATEGORY_LABEL[plan.changeRequestCategory] ?? ''}</Text> : null}
       </View>
       {plan.status === 'DRAFT' ? (
-        <Text tone="secondary">{`Planın hazırlanıyor${plan.draftTaskCount ? ` (${plan.draftTaskCount} çalışma)` : ''}. Koçun onayladığında görevler burada açılır.`}</Text>
+        <Text tone="secondary">{`Planın hazırlanıyor${plan.draftTaskCount ? ` (${plan.draftTaskCount} çalışma)` : ''} ⏳ Koçun onayladığında görevlerin burada açılacak.`}</Text>
       ) : (
         <>
           <Text tone="secondary">{`${plan.progress.completed}/${plan.progress.total} görev tamamlandı · ${minutesLabel(plan.progress.completedMinutes)} / ${minutesLabel(plan.progress.plannedMinutes)}${plan.progress.remaining ? ` · ${plan.progress.remaining} görev kaldı` : ''}`}</Text>
@@ -114,7 +114,7 @@ function PlanStatus({ plan, requiresApproval }: { plan: Plan; requiresApproval: 
               <ProgressFill percent={plan.progress.percent} />
             </View>
           ) : null}
-          {!plan.canComplete ? <Text tone="muted" variant="meta">Görevleri bu plan onaylandığında işaretleyebilirsin.</Text> : null}
+          {!plan.canComplete ? <Text tone="muted" variant="meta">Plan onaylandığında görevlerini işaretleyebileceksin.</Text> : null}
         </>
       )}
     </Section>
@@ -152,7 +152,7 @@ function WeekView({ plan, todayKey }: { plan: Plan; todayKey: string }) {
           );
         })}
       </View>
-      {tasks.length ? tasks.map((task) => <YonTaskRow key={task.id} task={task} canOpen={plan.canComplete} />) : <Text tone="secondary">Bu güne planlanmış görev yok.</Text>}
+      {tasks.length ? tasks.map((task) => <YonTaskRow key={task.id} task={task} canOpen={plan.canComplete} />) : <Text tone="secondary">Bu güne planlanmış bir görev yok, dinlenmeye de zaman ayır 🌿</Text>}
     </Section>
   );
 }
@@ -162,9 +162,9 @@ function ChangeRequest({ plan }: { plan: Plan }) {
   const [option, setOption] = useState<YonOverloadOption>('REDUCE_LIGHT');
   const request = usePlanChangeRequest({ id: plan.id, version: plan.version });
   return (
-    <Section title="Plan sana uymuyor mu?">
+    <Section title="Plan sana uymuyor mu? 🤔">
       {request.feedback ? <Banner tone={request.feedback.tone}>{request.feedback.message}</Banner> : null}
-      <Text tone="secondary">Yoğunluğu veya günleri koçuna bildirebilirsin. Talep sonrası plan koçunun onayına döner.</Text>
+      <Text tone="secondary">Yoğunluğu ya da günleri koçuna rahatça iletebilirsin. Talebinden sonra plan, koçunun onayına gider.</Text>
       <Button mutation label="Değişiklik iste" variant="secondary" onPress={() => setOpen(true)} testID="yon-plan-change" />
       <BottomSheet visible={open} title="Değişiklik iste" onClose={() => setOpen(false)}>
         <View accessibilityRole="radiogroup" accessibilityLabel="Değişiklik seçeneği" style={styles.options}>

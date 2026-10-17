@@ -43,7 +43,7 @@ export function WorkspaceSwitcher({ compact = false }: { compact?: boolean }) {
       setOpen(false);
       router.replace('/');
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : 'Çalışma alanı değiştirilemedi.');
+      setError(cause instanceof ApiError ? cause.message : 'Çalışma alanını şu an değiştiremedik 😕 Lütfen tekrar dener misin?');
     } finally {
       choosing.current = false;
       setPending(null);

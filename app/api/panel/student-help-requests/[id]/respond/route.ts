@@ -29,7 +29,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const updated = await tx.studentHelpRequest.updateMany({ where: { id, status: "OPEN", version: parsed.data.expectedVersion }, data: { status: "RESPONDED", firstResponseAt: item.firstResponseAt || now, helpful: null, version: { increment: 1 } } });
     if (updated.count !== 1) return false;
     await tx.studentHelpResponse.create({ data: { requestId: id, respondedById: auth.session.userId, action: parsed.data.action } });
-    await tx.notification.create({ data: { userId: item.student.user.id, type: "SYSTEM", title: "Öğretmenin yardım isteğine döndü", body: "Planlanan küçük destek adımını görebilirsin.", href: "/panel/ogrenci/check-in" } });
+    await tx.notification.create({ data: { userId: item.student.user.id, type: "SYSTEM", title: "Öğretmenin sana yanıt verdi 💬", body: "Senin için hazırladığı küçük destek adımı seni bekliyor.", href: "/panel/ogrenci/check-in" } });
     return true;
   });
   if (!changed) return NextResponse.json({ error: "İstek başka bir sekmede yanıtlandı." }, { status: 409 });

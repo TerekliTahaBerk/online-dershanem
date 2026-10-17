@@ -49,7 +49,7 @@ export function ServiceCard({ product, pending, disabled, selected = false, inde
       </View>
       {active ? <Text variant="meta" tone="secondary">{details.features}</Text> : null}
       <View style={styles.foot}>
-        <Text variant="bodyStrong" style={{ color: active ? theme.accent : color.textMuted }}>{pending ? 'Panelin hazırlanıyor…' : active ? 'Panele gir' : presentation.label}</Text>
+        <Text variant="bodyStrong" style={{ color: active ? theme.accent : color.textMuted }}>{pending ? 'Panelin hazırlanıyor ⏳' : active ? 'Panele gir' : presentation.label}</Text>
         {pending ? <ActivityIndicator size="small" color={theme.accent} /> : active ? <ArrowUpRight size={18} color={theme.accent} /> : null}
       </View>
     </MotionPressable>

@@ -45,7 +45,7 @@ export default function TeacherOdkReportsScreen() {
       ) : (
         <>
           <PageHeader title="Deneme Ligi raporları" description="Yalnız ilişkili öğrencilerin yayınlanmış sonuçları." />
-          <QueryView query={students} disabledTitle="Deneme Ligi raporları şu anda açık değil.">
+          <QueryView query={students} disabledTitle="Deneme Ligi raporları şu an kullanıma kapalı.">
             {(data) =>
               data.students.length ? (
                 <Section first>{data.students.map((item) => <Row key={item.studentId} testID={`odk-related-${item.studentId}`} title={item.name} subtitle={item.context} onPress={() => setStudentId(item.studentId)} />)}</Section>

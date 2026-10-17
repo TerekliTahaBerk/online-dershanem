@@ -26,7 +26,7 @@ export function AssignmentDetailScreen({ assignmentId }: { assignmentId: string 
       <QueryView query={query}>
         {(data) => {
           const assignment = data.assignments.find((item) => item.id === assignmentId);
-          if (!assignment) return <EmptyState title="Çalışma bulunamadı" body="Bu çalışma kaldırılmış veya artık grubunda olmayabilir." />;
+          if (!assignment) return <EmptyState title="Bu çalışmayı bulamadık 🔍" body="Çalışma kaldırılmış ya da artık grubunda yer almıyor olabilir." />;
           return <AssignmentDetailBody assignment={assignment} evidenceEnabled={data.evidenceEnabled} />;
         }}
       </QueryView>
@@ -47,7 +47,7 @@ function AssignmentDetailBody({ assignment, evidenceEnabled }: { assignment: Mob
         {assignment.teacherName ? <Row title="Öğretmen" meta={assignment.teacherName} /> : null}
       </Section>
       <Section title="Yönerge">
-        <Text tone="secondary">{assignment.description || 'Öğretmenin ek bir yönerge yazmadı.'}</Text>
+        <Text tone="secondary">{assignment.description || 'Öğretmenin ek bir yönerge eklemedi; çalışmanın başlığı yol göstermeye yeter 😊'}</Text>
       </Section>
       {evidenceFlow && assignment.criteria.length ? (
         <Section title="Değerlendirme ölçütleri">
@@ -142,7 +142,7 @@ function EvidenceSection({ assignment, evidenceEnabled }: { assignment: MobileAs
       {evidence.feedback ? <Banner tone={evidence.feedback.tone}>{evidence.feedback.message}</Banner> : null}
       {open ? (
         <>
-          <Text tone="secondary">{latest ? 'Öğretmenin düzeltme istedi. Yeni denemeni yazıp gönderebilirsin.' : 'Çalışmanı nasıl yaptığını kısaca anlat; öğretmenin ölçütlere göre değerlendirecek.'}</Text>
+          <Text tone="secondary">{latest ? 'Öğretmenin küçük bir düzeltme istedi ✍️ Yeni denemeni yazıp gönderebilirsin, çok az kaldı!' : 'Çalışmanı nasıl yaptığını kısaca anlat; öğretmenin ölçütlere göre değerlendirecek 📝'}</Text>
           <TextField
             testID="evidence-input"
             label="Kanıt metni"
@@ -167,7 +167,7 @@ function EvidenceSection({ assignment, evidenceEnabled }: { assignment: MobileAs
           />
         </>
       ) : (
-        <Text tone="secondary">{latest?.status === 'APPROVED' ? 'Bu çalışma öğretmenin tarafından onaylandı.' : 'Gönderimin öğretmen değerlendirmesinde.'}</Text>
+        <Text tone="secondary">{latest?.status === 'APPROVED' ? 'Bu çalışma öğretmenin tarafından onaylandı, tebrikler! 🎉' : 'Gönderimin öğretmeninde, değerlendirme sürüyor ⏳'}</Text>
       )}
     </Section>
   );

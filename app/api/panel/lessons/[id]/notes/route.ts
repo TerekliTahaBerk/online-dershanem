@@ -81,15 +81,15 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   const firstCompletion = parsed.data.complete && lesson.status !== "COMPLETED";
   const summary = parsed.data.topic || lesson.title;
   const rawSummaryRows = firstCompletion ? [
-    ...lesson.group.enrollments.map((item) => ({ userId: item.student.userId, type: "LESSON_SUMMARY" as const, title: "Ders özeti hazır", body: `${lesson.title} · ${summary}`, href: "/panel/ogrenci" })),
-    ...lesson.group.enrollments.flatMap((item) => item.student.parents.map((link) => ({ userId: link.parentId, type: "LESSON_SUMMARY" as const, title: "Ders özeti hazır", body: `${lesson.title} · ${summary}`, href: `/panel/veli?studentId=${item.student.id}` }))),
+    ...lesson.group.enrollments.map((item) => ({ userId: item.student.userId, type: "LESSON_SUMMARY" as const, title: "Ders özetin hazır 📝", body: `${lesson.title} · ${summary}. Tekrar etmek için harika bir fırsat!`, href: "/panel/ogrenci" })),
+    ...lesson.group.enrollments.flatMap((item) => item.student.parents.map((link) => ({ userId: link.parentId, type: "LESSON_SUMMARY" as const, title: "Ders özeti hazır 📝", body: `${lesson.title} · ${summary}`, href: `/panel/veli?studentId=${item.student.id}` }))),
   ] : [];
-  const rawAbsenceRows = firstCompletion ? parsed.data.students.filter((item) => item.attendance === "ABSENT").flatMap((absent) => lesson.group.enrollments.find((item) => item.student.id === absent.studentId)?.student.parents.map((link) => ({ userId: link.parentId, type: "ABSENCE" as const, title: "Devamsızlık bilgisi", body: `${lesson.title} dersine katılım görünmüyor.`, href: `/panel/veli?studentId=${absent.studentId}` })) || []) : [];
+  const rawAbsenceRows = firstCompletion ? parsed.data.students.filter((item) => item.attendance === "ABSENT").flatMap((absent) => lesson.group.enrollments.find((item) => item.student.id === absent.studentId)?.student.parents.map((link) => ({ userId: link.parentId, type: "ABSENCE" as const, title: "Devam durumu hakkında bilgilendirme", body: `${lesson.title} dersine bugün katılım görünmüyor. Kaçırılan konular için telafi desteğimiz hazır.`, href: `/panel/veli?studentId=${absent.studentId}` })) || []) : [];
   const assignmentRecipients = lesson.group.enrollments.filter((item) => assignmentStudentIds.includes(item.student.id));
   const assignmentBody = parsed.data.assignmentDraft ? `${parsed.data.assignmentDraft.title} · son tarih ${new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium" }).format(new Date(parsed.data.assignmentDraft.dueAt))}` : "";
   const rawAssignmentRows = firstCompletion && parsed.data.assignmentDraft ? [
-    ...assignmentRecipients.map((item) => ({ userId: item.student.userId, type: "ASSIGNMENT" as const, title: "Yeni çalışma eklendi", body: assignmentBody, href: "/panel/ogrenci/odevler" })),
-    ...assignmentRecipients.flatMap((item) => item.student.parents.map((link) => ({ userId: link.parentId, type: "ASSIGNMENT" as const, title: "Yeni çalışma eklendi", body: assignmentBody, href: `/panel/veli/odevler?studentId=${item.student.id}` }))),
+    ...assignmentRecipients.map((item) => ({ userId: item.student.userId, type: "ASSIGNMENT" as const, title: "Yeni bir çalışman var 📚", body: assignmentBody, href: "/panel/ogrenci/odevler" })),
+    ...assignmentRecipients.flatMap((item) => item.student.parents.map((link) => ({ userId: link.parentId, type: "ASSIGNMENT" as const, title: "Yeni bir çalışma eklendi 📚", body: assignmentBody, href: `/panel/veli/odevler?studentId=${item.student.id}` }))),
   ] : [];
   const [summaryRows, absenceRows, assignmentRows] = await Promise.all([
     filterNotificationRows(rawSummaryRows, "lessonSummary"),

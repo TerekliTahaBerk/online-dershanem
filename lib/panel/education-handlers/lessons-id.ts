@@ -89,7 +89,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
         return {
           updatedIds: [makeUp.id],
           summary: `${base.title} dersi için telafi planlandı`,
-          notificationTitle: "Telafi dersi planlandı",
+          notificationTitle: "Telafi dersi planlandı 🧩",
           notificationBody: `${makeUp.title} · ${new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Istanbul" }).format(makeUp.startsAt)}`,
           auditAction: "lesson.makeup_created",
           extraTeacherId: makeUp.teacherId === base.teacherId ? null : makeUp.teacherId,
@@ -229,7 +229,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
         groupId: anchor.groupId,
         meetingUrl: anchor.meetingUrl,
       };
-      const title = action.action === "CANCEL" ? "Ders iptal edildi" : action.action === "SUBSTITUTE" ? "Ders öğretmeni güncellendi" : action.action === "RESCHEDULE" ? "Ders saati güncellendi" : "Ders planı güncellendi";
+      const title = action.action === "CANCEL" ? "Bir ders iptal edildi" : action.action === "SUBSTITUTE" ? "Dersin öğretmeninde değişiklik var 👩‍🏫" : action.action === "RESCHEDULE" ? "Ders saati değişti ⏰" : "Ders planı güncellendi 🗓️";
       return {
         updatedIds: targetIds,
         summary: `${anchor.title} (${lessonScopeLabel(action.scope)}) güncellendi`,

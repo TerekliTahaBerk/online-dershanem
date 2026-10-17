@@ -27,11 +27,11 @@ export function ChangePasswordForm({ onDone, variant = 'panel' }: { onDone?: () 
 
   const localError =
     next.length > 0 && next.length < MIN_LENGTH
-      ? `Yeni parola en az ${MIN_LENGTH} karakter olmalı.`
+      ? `Yeni parolan en az ${MIN_LENGTH} karakter olmalı.`
       : confirm.length > 0 && confirm !== next
-        ? 'Parolalar eşleşmiyor.'
+        ? 'Parolalar birbiriyle eşleşmiyor, bir kez daha kontrol eder misin?'
         : next.length > 0 && next === current
-          ? 'Yeni parola mevcut paroladan farklı olmalı.'
+          ? 'Yeni parolan mevcut parolandan farklı olmalı.'
           : null;
   const canSubmit = current.length > 0 && next.length >= MIN_LENGTH && confirm === next && next !== current && !busy;
 
@@ -48,7 +48,7 @@ export function ChangePasswordForm({ onDone, variant = 'panel' }: { onDone?: () 
       await refreshBootstrap();
       onDone?.();
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : 'Parola değiştirilemedi.');
+      setError(cause instanceof ApiError ? cause.message : 'Parolanı şu an değiştiremedik. Lütfen tekrar dener misin?');
     } finally {
       setBusy(false);
     }
@@ -56,7 +56,7 @@ export function ChangePasswordForm({ onDone, variant = 'panel' }: { onDone?: () 
 
   return (
     <>
-      {success ? <Banner tone="success">Parolan değiştirildi. Diğer cihazlardaki oturumlar kapatıldı.</Banner> : null}
+      {success ? <Banner tone="success">Parolan başarıyla değiştirildi ✅ Güvenliğin için diğer cihazlardaki oturumların kapatıldı.</Banner> : null}
       {error ? <Banner tone="critical">{error}</Banner> : null}
       <TextField
         variant={variant}

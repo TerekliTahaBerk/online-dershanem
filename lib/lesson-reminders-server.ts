@@ -24,11 +24,20 @@ export async function runLessonReminders(now = new Date()) {
           for (const parent of enrollment.student.parents) recipients.set(parent.parentId, `/panel/veli/takvim?studentId=${enrollment.student.id}`);
         }
         let count = 0;
-        for (const [userId, href] of recipients) count += await queueReminderNotification(tx, {
-          id: `${userId}:LESSON:${lesson.id}:${window.category}`, userId, type: "SYSTEM",
-          title: window.category === "T24" ? "Yarınki dersiniz" : "Dersiniz yaklaşıyor",
-          body: `${lesson.title} · ${DATE.format(lesson.startsAt)}. Katılım bilgisini ders takviminizden kontrol edebilirsiniz.`, href,
-        }, "lessonSummary");
+        for (const [userId, href] of recipients) {
+          const parent = href.startsWith("/panel/veli/");
+          const tomorrow = window.category === "T24";
+          count += await queueReminderNotification(tx, {
+            id: `${userId}:LESSON:${lesson.id}:${window.category}`, userId, type: "SYSTEM",
+            title: parent
+              ? (tomorrow ? "Yarın çocuğunuzun dersi var 📚" : "Çocuğunuzun dersi birazdan başlıyor ⏰")
+              : (tomorrow ? "Yarın seni güzel bir ders bekliyor 📚" : "Dersin birazdan başlıyor ⏰"),
+            body: parent
+              ? `${lesson.title} · ${DATE.format(lesson.startsAt)}. Katılım bilgisini ders takviminden görebilirsiniz.`
+              : `${lesson.title} · ${DATE.format(lesson.startsAt)}. ${tomorrow ? "Katılım bilgisi ders takviminde seni bekliyor." : "Defterini hazırla, görüşmek üzere! 👋"}`,
+            href,
+          }, "lessonSummary");
+        }
         return count;
       });
       processed += 1;

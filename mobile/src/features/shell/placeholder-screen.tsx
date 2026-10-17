@@ -16,7 +16,7 @@ export function PlaceholderScreen({ screen }: { screen: NativeScreen }) {
       <Banner tone="info" title="Web panelinde kullanılabilir">
         {PHASE_COPY[screen.phase ?? 'M2']}
       </Banner>
-      {canOpenWeb ? <Button label="Web panelinde aç" variant="secondary" onPress={() => void openOnWeb(screen.webPath)} accessibilityHint="Tarayıcıda açılır; web oturumuyla giriş yapmanız gerekebilir." /> : null}
+      {canOpenWeb ? <Button label="Web panelinde aç" variant="secondary" onPress={() => void openOnWeb(screen.webPath)} accessibilityHint="Tarayıcıda açılır; web oturumuyla giriş yapman gerekebilir." /> : null}
     </Screen>
   );
 }

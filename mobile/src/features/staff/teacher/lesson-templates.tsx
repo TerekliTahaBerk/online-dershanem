@@ -26,7 +26,7 @@ export function LessonTemplates({ templates, current, apply, refresh }: { templa
     setState(null);
     try {
       await mutation.mutateAsync(input); stable.settle(); setEditing(null); setTitle('');
-      setState({ tone: 'success', message: input.method === 'DELETE' ? 'Şablon silindi.' : 'Şablon kaydedildi.' });
+      setState({ tone: 'success', message: input.method === 'DELETE' ? 'Şablon silindi.' : 'Şablon kaydedildi ✅' });
       await refresh();
     } catch (error) {
       stable.settle(error); setState(writeError(error, 'Şablon değişti. Güncel şablonu yeniden seçin; ders notlarınız korunuyor.'));

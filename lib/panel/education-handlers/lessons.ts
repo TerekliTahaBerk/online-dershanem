@@ -142,14 +142,14 @@ export async function POST(request: Request, _context: { params: Promise<{ id: s
       {
         userId: group.teacherId,
         type: "SYSTEM" as const,
-        title: "Ders programlandı",
+        title: "Ders programı oluşturuldu 🗓️",
         body,
         href: "/panel/ogretmen/takvim",
       },
       ...group.enrollments.map((item) => ({
         userId: item.student.userId,
         type: "SYSTEM" as const,
-        title: "Yeni ders programı",
+        title: "Takvime yeni ders eklendi 🗓️",
         body,
         href: "/panel/ogrenci/takvim",
       })),
@@ -157,7 +157,7 @@ export async function POST(request: Request, _context: { params: Promise<{ id: s
         item.student.parents.map((link) => ({
           userId: link.parentId,
           type: "SYSTEM" as const,
-          title: "Yeni ders programı",
+          title: "Takvime yeni ders eklendi 🗓️",
           body,
           href: `/panel/veli/takvim?studentId=${item.student.id}`,
         })),

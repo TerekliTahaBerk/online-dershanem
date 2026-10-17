@@ -25,13 +25,13 @@ it('ders şablonunu uygular; belirsiz kaydı aynı anahtarla tekrarlar; kazanım
   await press(h, h.screen.getByTestId('template-save'));
   await waitFor(() => expect(attempts).toBe(1), WAIT);
   await press(h, h.screen.getByTestId('template-save'));
-  expect(await h.screen.findByText('Şablon kaydedildi.', {}, WAIT)).toBeTruthy();
+  expect(await h.screen.findByText('Şablon kaydedildi ✅', {}, WAIT)).toBeTruthy();
   expect(keys).toHaveLength(2); expect(keys[0]).toBe(keys[1]);
   expect(h.server.called('POST', '/api/panel/teacher/templates')[1].body).toMatchObject({ title: 'Yeni şablon', note: 'Şablon özeti', nextGoal: 'Hedef', homework: 'Çalışma' });
   fireEvent.changeText(h.screen.getByTestId('outcome-search'), 'denklem');
   await press(h, h.screen.getByTestId('outcome-search-submit'));
   await press(h, await h.screen.findByTestId('outcome-favorite-o1', {}, WAIT));
-  expect(await h.screen.findByText('Kazanım favorilere eklendi.', {}, WAIT)).toBeTruthy();
+  expect(await h.screen.findByText('Kazanım favorilere eklendi ⭐', {}, WAIT)).toBeTruthy();
   expect(h.server.called('GET', '/api/panel/curriculum/outcomes/search')[0].path).toContain('lessonId=l1');
   expect(h.server.called('POST', '/api/panel/teacher/outcome-favorites')[0].body).toEqual({ outcomeId: 'o1', favorite: true });
 });

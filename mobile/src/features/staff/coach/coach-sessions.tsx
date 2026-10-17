@@ -34,7 +34,7 @@ export default function CoachSessionsScreen() {
       <QueryView query={query}>
         {(data) => {
           const list = tab === 'upcoming' ? data.upcoming : data.past;
-          return list.length ? <Section first>{list.map(row)}</Section> : <EmptyState title={tab === 'upcoming' ? 'Planlı görüşme yok' : 'Son 30 günde görüşme yok'} />;
+          return list.length ? <Section first>{list.map(row)}</Section> : <EmptyState title={tab === 'upcoming' ? 'Planlı bir görüşmen yok' : 'Son 30 günde görüşme görünmüyor'} />;
         }}
       </QueryView>
     </Screen>

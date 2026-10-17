@@ -20,8 +20,8 @@ export default function ParentInsightsScreen() {
   return (
     <ParentScreen title="Gelişim" testID="parent-insights" refresh={refresh}>
       {(child) => (
-        <ParentQueryView query={query} child={child} disabledTitle="Gelişim özeti şu anda açık değil.">
-          {(data) => (data.state === 'PREPARING' ? <EmptyState title="Özet hazırlanıyor" body="Öğrenci verileri göründüğünde gelişim burada açılır." /> : <InsightsBody data={data} />)}
+        <ParentQueryView query={query} child={child} disabledTitle="Gelişim özeti şu an kullanıma kapalı.">
+          {(data) => (data.state === 'PREPARING' ? <EmptyState title="Özet hazırlanıyor ⏳" body="Öğrenci verileri oluştukça gelişim özeti burada açılacak." /> : <InsightsBody data={data} />)}
         </ParentQueryView>
       )}
     </ParentScreen>
@@ -29,7 +29,7 @@ export default function ParentInsightsScreen() {
 }
 
 function RateLine({ label, rate }: { label: string; rate: MobileParentInsightsReady['behavioral']['attendance'] }) {
-  return <Row title={label} meta={rate.percent === null ? 'Henüz kayıt yok' : `%${Math.round(rate.percent)} (${rate.numerator}/${rate.denominator})`} />;
+  return <Row title={label} meta={rate.percent === null ? 'Henüz kayıt oluşmadı' : `%${Math.round(rate.percent)} (${rate.numerator}/${rate.denominator})`} />;
 }
 
 function InsightsBody({ data }: { data: MobileParentInsightsReady }) {
@@ -38,10 +38,10 @@ function InsightsBody({ data }: { data: MobileParentInsightsReady }) {
     <>
       <Text tone="muted" variant="meta">{data.periodRange || data.periodLabel}</Text>
       <Section title="Özet" first>
-        {data.narrative.length ? data.narrative.map((line, index) => <Text key={`${index}-${line}`}>{line}</Text>) : <Text tone="secondary">Gösterilecek özet henüz yok.</Text>}
+        {data.narrative.length ? data.narrative.map((line, index) => <Text key={`${index}-${line}`}>{line}</Text>) : <Text tone="secondary">Henüz gösterilecek bir özet yok.</Text>}
       </Section>
       {data.isEmpty ? (
-        <EmptyState title="Henüz gösterilecek veri yok" body="Ders katılımı, çalışmalar ve denemeler biriktikçe gidişat burada oluşur." />
+        <EmptyState title="Gidişat burada şekillenecek 🌱" body="Ders katılımı, çalışmalar ve denemeler biriktikçe gelişim tablosu burada oluşacak." />
       ) : (
         <>
           {data.hasExamAccess ? (

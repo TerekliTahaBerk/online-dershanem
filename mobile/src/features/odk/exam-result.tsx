@@ -28,7 +28,7 @@ export default function OdkExamResultScreen({ examId }: { examId: string }) {
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="odk-result">
       {query.error instanceof ApiError && query.error.kind === 'not_found' && !query.data ? (
-        <EmptyState title="Sonuç henüz açıklanmadı." body="Sonucun açıklandığında burada görünür. Erişim hakkın sona ermişse sonuç gösterilmez." />
+        <EmptyState title="Sonucun henüz açıklanmadı ⏳" body="Sonucun açıklandığında burada görünecek. Erişim süren dolmuşsa sonuç gösterilemiyor." />
       ) : (
         <QueryView query={query}>{(result) => <ResultBody result={result} />}</QueryView>
       )}
@@ -49,7 +49,7 @@ function ResultBody({ result }: { result: MobileOdkResult }) {
       <PageHeader
         title="Deneme sonucun"
         context={<FamilyTag family={result.exam.family} />}
-        description={`${result.exam.title}${result.exam.resultsReleasedAt ? ` · ${formatDayMonth(result.exam.resultsReleasedAt)}` : ''}. Sonucun yalnız kendi cevapların ve kilitli cevap anahtarıyla hesaplandı.`}
+        description={`${result.exam.title}${result.exam.resultsReleasedAt ? ` · ${formatDayMonth(result.exam.resultsReleasedAt)}` : ''}. Sonucun yalnızca senin cevapların ve kilitli cevap anahtarıyla hesaplandı 📊`}
       />
       <View style={styles.summary} accessible accessibilityLabel={`Net ${formatNet(result.summary.totalNet)}`}>
         <Text variant="caption" tone="muted">Net</Text>
@@ -154,7 +154,7 @@ function NextSteps({ result }: { result: MobileOdkResult }) {
   if (!items.length && !result.coachSuggestions.length) {
     return (
       <Section title="Sonraki adım">
-        <EmptyState title="Şu an net bir çalışma önerisi üretilemedi." body="Yeni ölçümle sinyal netleştiğinde bir sonraki adım burada görünür." />
+        <EmptyState title="Şimdilik net bir çalışma önerimiz yok" body="Yeni denemelerle tablo netleştiğinde sıradaki adımın burada görünecek 🌱" />
       </Section>
     );
   }
@@ -163,7 +163,7 @@ function NextSteps({ result }: { result: MobileOdkResult }) {
       {cross.error ? <Banner tone="critical">{cross.error}</Banner> : null}
       {answerKey.error ? <Banner tone="warning">{answerKey.error}</Banner> : null}
       {result.coachSuggestions.map((item) => (
-        <Row key={item.outcomeCode} title={`Koçundan plan önerisi · ${item.subject} → ${item.topic}`} subtitle={`${item.label} Plana ekleme koçunun onayıyla yapılır.`} />
+        <Row key={item.outcomeCode} title={`Koçundan plan önerisi · ${item.subject} → ${item.topic}`} subtitle={`${item.label} Plana ekleme koçunun onayıyla yapılır 🤝`} />
       ))}
       {items.map((item, index) => {
         const target = item.target;

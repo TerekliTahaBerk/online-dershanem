@@ -30,11 +30,11 @@ function RecoveryBody({ data }: { data: TeacherRecovery }) {
   async function submit(input: Command) {
     if (input.action === 'publish' && !await confirmAction({ title: 'Telafi paketini yayımla', message: 'Önizlemedeki özet ve kaynaklar öğrenciye açılacak; bildirim gönderilecek.', confirmLabel: 'Yayımla' })) return;
     setState(null);
-    try { await mutation.mutateAsync(input); stable.settle(); setState({ tone: 'success', message: input.action === 'generate' ? 'Telafi taslağı hazır. Yayımlamadan önce kontrol edin.' : 'Telafi paketi yayımlandı.' }); await invalidate(); }
+    try { await mutation.mutateAsync(input); stable.settle(); setState({ tone: 'success', message: input.action === 'generate' ? 'Telafi taslağı hazır ✨ Yayımlamadan önce kontrol etmenizi rica ederiz.' : 'Telafi paketi yayımlandı 🧩 Öğrenciniz artık kaldığı yerden yetişebilir.' }); await invalidate(); }
     catch (error) { stable.settle(error); setState(writeError(error, 'Telafi kaydı değişti. Liste yenilendi; tekrar göndermeden önce kontrol edin.')); if (error instanceof ApiError && error.kind === 'conflict') await invalidate(); }
   }
   return <><OfflineWriteNotice online={online} /><WriteBanner state={state} />
-    {!data.rows.length && <EmptyState title="Telafi bekleyen ders yok" body="Son 30 gündeki devamsızlık ve izin kayıtları burada görünür." />}
+    {!data.rows.length && <EmptyState title="Telafi bekleyen ders yok ✅" body="Son 30 gündeki devamsızlık ve izin kayıtları burada görünecek." />}
     {data.rows.map((row) => <Section key={row.attendanceId} title={row.studentName}>
       <Row title={row.lessonTitle} subtitle={formatShortDateTime(row.lessonDate)} trailing={<StatusBadge label={row.status === 'ABSENT' ? 'Katılmadı' : 'İzinli'} tone="warning" />} />
       {row.package && <>

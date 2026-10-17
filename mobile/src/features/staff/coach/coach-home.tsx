@@ -26,7 +26,7 @@ export default function CoachHomeScreen() {
               {home.todaySessions.length ? (
                 home.todaySessions.map((item) => <Row key={item.id} testID={`coach-today-session-${item.id}`} title={item.studentName} subtitle={item.focus ?? undefined} meta={formatTime(item.at)} onPress={() => router.push(`/coach/session/${encodeURIComponent(item.id)}` as Href)} />)
               ) : (
-                <EmptyState title="Bugün görüşme yok" body={home.nextSession ? `Sıradaki: ${home.nextSession.studentName} · ${formatShortDateTime(home.nextSession.at)}` : undefined} />
+                <EmptyState title="Bugün planlanmış bir görüşmen yok ☕" body={home.nextSession ? `Sıradaki: ${home.nextSession.studentName} · ${formatShortDateTime(home.nextSession.at)}` : undefined} />
               )}
             </Section>
             {home.groups.map((group) => (
@@ -34,7 +34,7 @@ export default function CoachHomeScreen() {
                 {group.students.map((item) => <Row key={`${group.reason}:${item.studentId}`} title={item.name} onPress={() => student(item.studentId)} />)}
               </Section>
             ))}
-            {!home.groups.length ? <EmptyState title="Bugün ilgi bekleyen öğrenci yok" /> : null}
+            {!home.groups.length ? <EmptyState title="Bugün ilgi bekleyen öğrenci yok, her şey yolunda 🌱" /> : null}
             <Section>
               <Button label="Öğrencilerim" variant="secondary" onPress={() => router.push('/screen/coach-students' as Href)} />
               <Button label="Görüşmeler" variant="secondary" onPress={() => router.push('/screen/coach-sessions' as Href)} />

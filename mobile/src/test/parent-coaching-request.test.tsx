@@ -32,14 +32,14 @@ describe('V07 veli görüşmeleri', () => {
     await press(h, h.screen.getByTestId('parent-reschedule-s1'));
     await press(h, await h.screen.findByTestId('parent-reason-FAMILY_SCHEDULE', {}, WAIT));
     await press(h, h.screen.getByTestId('parent-reschedule-submit'));
-    expect(await h.screen.findByText('Saat değişikliği talebiniz koça iletildi.', {}, WAIT)).toBeTruthy();
+    expect(await h.screen.findByText('Saat değişikliği talebiniz koça iletildi 📨 En kısa sürede dönüş yapılacaktır.', {}, WAIT)).toBeTruthy();
     expect(h.server.called('POST', '/api/panel/coaching-sessions/s1')[0].body).toEqual({ action: 'REQUEST', reason: 'FAMILY_SCHEDULE', expectedVersion: 2, idempotencyKey: expect.stringMatching(/^[0-9a-f-]{36}$/) });
     await waitFor(() => expect(h.server.called('GET', '/api/panel/parent/coaching').length).toBeGreaterThan(1), WAIT);
   }, 30000);
 
   it('talep zaten varsa veya sunucu sürüm vermiyorsa talep düğmesi yoktur', async () => {
     const h = await open({ 'GET /api/panel/parent/coaching': () => jsonResponse(200, coaching({ rescheduleRequested: true, meetingUrl: null })) });
-    expect(await h.screen.findByText('Saat değişikliği talebi alındı', {}, WAIT)).toBeTruthy();
+    expect(await h.screen.findByText('Saat değişikliği talebiniz alındı', {}, WAIT)).toBeTruthy();
     expect(h.screen.queryByTestId('parent-reschedule-s1')).toBeNull();
     expect(h.screen.queryByTestId('parent-join-s1')).toBeNull();
   });

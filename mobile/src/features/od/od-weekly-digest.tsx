@@ -24,8 +24,8 @@ export default function OdWeeklyDigestScreen() {
   const refresh = usePullToRefresh(() => query.refetch());
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="od-weekly-digest">
-      <PageHeader title="Haftalık özet" description="Ailenin gördüğü özet burada. Özel öğretmen notların bu özete eklenmez." />
-      <QueryView query={query} disabledTitle="Haftalık özet şu anda açık değil.">
+      <PageHeader title="Haftalık özet" description="Ailenle birlikte gördüğünüz haftalık özet burada 🌟 Öğretmeninin sana özel notları bu özete eklenmez." />
+      <QueryView query={query} disabledTitle="Haftalık özet şu an kullanıma kapalı.">
         {(data) => <WeeklyDigestContent data={data} product="OD" />}
       </QueryView>
     </Screen>
@@ -39,7 +39,7 @@ export default function OdWeeklyDigestScreen() {
  */
 export function WeeklyDigestContent({ data, product }: { data: MobileWeeklyDigest; product: WorkspaceProduct }) {
   if (data.state === 'NONE') {
-    return <EmptyState title="Haftalık özet henüz yayınlanmadı." body="Öğretmenin önizlemeyi tamamladığında sen ve ailen aynı özeti göreceksiniz." />;
+    return <EmptyState title="Haftalık özet çok yakında 🌟" body="Öğretmenin özeti tamamladığında sen ve ailen aynı özeti birlikte göreceksiniz." />;
   }
   return (
     <>
@@ -84,10 +84,10 @@ function DigestFeedback({ digest, product }: { digest: Extract<MobileWeeklyDiges
       // Seçim yalnız sunucu kaydettikten sonra işaretli gösterilir.
       setHelpful(nextHelpful);
       setPulse(nextPulse);
-      setMessage({ tone: 'success', text: 'Geri bildirimin kaydedildi.' });
+      setMessage({ tone: 'success', text: 'Geri bildirimin için teşekkürler 💛' });
       await invalidate();
     } catch (error) {
-      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Geri bildirim kaydedilemedi.' });
+      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Geri bildirimini şu an kaydedemedik 😕 Lütfen tekrar dener misin?' });
     }
   }
 

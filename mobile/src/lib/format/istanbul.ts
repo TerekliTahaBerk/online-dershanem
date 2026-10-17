@@ -37,3 +37,11 @@ export function greetingFor(now: Date): string {
   if (hour < 18) return 'İyi günler';
   return 'İyi akşamlar';
 }
+
+/** Selamlamaya eşlik eden küçük, saate uygun emoji. */
+export function greetingEmojiFor(now: Date): string {
+  const hour = Number(formatters.hour.format(now));
+  if (hour < 11) return '☀️';
+  if (hour < 18) return '👋';
+  return '🌙';
+}

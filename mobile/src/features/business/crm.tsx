@@ -66,7 +66,7 @@ export function useRunner() {
       setNotice({ tone: 'info', text: success });
       return true;
     } catch (cause) {
-      setNotice({ tone: 'critical', text: adminErrorText(cause) ?? 'İşlem kaydedilemedi.' });
+      setNotice({ tone: 'critical', text: adminErrorText(cause) ?? 'İşlemi şu an kaydedemedik. Lütfen tekrar dener misiniz?' });
       return false;
     }
   }
@@ -105,7 +105,7 @@ export function ConversationActions({ data, conversation }: { data: MobileBusine
       setText('');
       setReplyNotice({ tone: 'info', text: 'Yanıt gönderim kuyruğuna alındı.' });
     } catch (cause) {
-      setReplyNotice({ tone: 'critical', text: adminErrorText(cause) ?? 'Mesaj gönderilemedi.' });
+      setReplyNotice({ tone: 'critical', text: adminErrorText(cause) ?? 'Mesajı şu an gönderemedik. Lütfen tekrar dener misiniz?' });
     }
   }
 

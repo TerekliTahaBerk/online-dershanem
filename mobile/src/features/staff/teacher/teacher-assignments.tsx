@@ -25,7 +25,7 @@ export default function TeacherAssignmentsScreen() {
       <Button label="Ödev oluştur" onPress={() => router.push('/teacher/education-editor?kind=assignment' as Href)} />
       {evidence ? <SegmentedTabs label="Görünüm" value={tab} onChange={setTab} options={[{ value: 'queue', label: 'Değerlendirme', count: queue.data?.items.length }, { value: 'list', label: 'Ödevler' }]} /> : null}
       {showQueue ? (
-        <QueryView query={queue} disabledTitle="Kanıtlı teslim şu anda açık değil.">
+        <QueryView query={queue} disabledTitle="Kanıtlı teslim şu an kullanıma kapalı.">
           {(data) =>
             data.items.length ? (
               <Section first>
@@ -41,7 +41,7 @@ export default function TeacherAssignmentsScreen() {
                 ))}
               </Section>
             ) : (
-              <EmptyState title="Değerlendirme bekleyen teslim yok" />
+              <EmptyState title="Değerlendirme bekleyen teslim yok, her şey güncel ✅" />
             )
           }
         </QueryView>
@@ -62,7 +62,7 @@ export default function TeacherAssignmentsScreen() {
                 ))}
               </Section>
             ) : (
-              <EmptyState title="Henüz ödev yok" />
+              <EmptyState title="Henüz bir ödev yok" />
             )
           }
         </QueryView>

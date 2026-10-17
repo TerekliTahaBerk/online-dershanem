@@ -331,7 +331,7 @@ test.describe("panel deneyimi", () => {
     await page.getByRole("button", { name: /çıkış/i }).click();
     await login(page, accounts.student);
     await page.goto("/panel/bildirimler");
-    await expect(page.getByText("Ders özeti hazır", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Ders özetin hazır 📝", { exact: true }).first()).toBeVisible();
   });
 
   test("öğrenci kapasitesine göre plan önerir, öğretmen onaylar ve öğrenci geri bildirim verir", async ({ page }) => {

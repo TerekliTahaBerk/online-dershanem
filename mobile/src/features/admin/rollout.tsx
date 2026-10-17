@@ -52,7 +52,7 @@ function PilotBody({ data }: { data: MobilePilot }) {
       await action();
       setNotice({ tone: 'info', text: success });
     } catch (cause) {
-      setNotice({ tone: 'critical', text: adminErrorText(cause) ?? 'İşlem kaydedilemedi.' });
+      setNotice({ tone: 'critical', text: adminErrorText(cause) ?? 'İşlemi şu an kaydedemedik. Lütfen tekrar dener misiniz?' });
     }
   }
 
@@ -311,7 +311,7 @@ export function MockExamEntryForm({ data, studentId, onSaved, save, staff = true
       startedAt.current = null;
       onSaved('Deneme kaydedildi. Analiz yeni kayıtla güncellendi.');
     } catch (cause) {
-      setError(adminErrorText(cause) ?? 'Deneme kaydedilemedi.');
+      setError(adminErrorText(cause) ?? 'Denemeyi şu an kaydedemedik. Lütfen tekrar dener misiniz?');
     }
   }
 

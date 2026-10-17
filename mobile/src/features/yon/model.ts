@@ -104,7 +104,7 @@ export function parseCompletionDraft(fields: YonCompletionField[], draft: Partia
       values[field] = null;
       continue;
     }
-    if (!/^\d+$/.test(raw)) return { values, error: `${FIELD_LABEL[field]} için tam sayı gir.` };
+    if (!/^\d+$/.test(raw)) return { values, error: `${FIELD_LABEL[field]} için lütfen bir tam sayı gir.` };
     values[field] = Number(raw);
   }
   return { values, error: null };

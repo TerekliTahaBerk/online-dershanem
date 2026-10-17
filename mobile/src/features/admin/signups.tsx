@@ -81,7 +81,7 @@ function Body({ data, onQuery }: { data: MobileSignups; onQuery: (patch: Signups
               />
             ))
           ) : (
-            <EmptyState title="Hesap bekleyen çocuk yok" />
+            <EmptyState title="Hesap bekleyen çocuk yok ✅" />
           )}
         </Section>
       )}

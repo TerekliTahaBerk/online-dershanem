@@ -37,7 +37,7 @@ export default function AdminPreviewScreen() {
     setPending(true);
     setError(null);
     try { await run(); router.replace('/'); }
-    catch (cause) { setError(cause instanceof ApiError ? cause.message : 'Panel modu açılamadı.'); }
+    catch (cause) { setError(cause instanceof ApiError ? cause.message : 'Panel modunu şu an açamadık. Lütfen tekrar dener misiniz?'); }
     finally { setPending(false); }
   }
 

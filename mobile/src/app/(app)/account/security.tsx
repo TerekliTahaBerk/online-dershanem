@@ -35,13 +35,13 @@ export default function AccountSecurityScreen() {
   }
   return (
     <Screen testID="account-security">
-      <PageHeader title="İki adımlı doğrulama" description="Hassas yönetim işlemleri ikinci faktörle korunur." />
-      {done ? <Banner tone="success">Doğrulayıcı uygulama kaydedildi.</Banner> : null}
+      <PageHeader title="İki adımlı doğrulama" description="Hassas işlemler ikinci bir doğrulama adımıyla korunur 🔐" />
+      {done ? <Banner tone="success">Doğrulayıcı uygulaman kaydedildi, hesabın artık daha güvende 🔐</Banner> : null}
       <Section first title="Durum">
         <Row title="Doğrulayıcı uygulama" trailing={<StatusBadge label={mfa.totp ? 'Kurulu' : 'Kurulu değil'} tone={mfa.totp ? 'success' : 'warning'} />} />
         <Row title="Kurtarma kodları" trailing={<StatusBadge label={mfa.recoveryCodes ? 'Var' : 'Yok'} tone={mfa.recoveryCodes ? 'success' : 'warning'} />} />
         <Row title="Geçiş anahtarı" trailing={<StatusBadge label={mfa.passkey ? 'Kayıtlı' : 'Yok'} tone="neutral" />} />
-        <Row title="Adım yükseltme" subtitle={security.stepUpExpiresAt ? `${formatShortDateTime(security.stepUpExpiresAt)} tarihine kadar geçerli` : 'Hassas işlemde yeniden doğrulama istenir'} />
+        <Row title="Adım yükseltme" subtitle={security.stepUpExpiresAt ? `${formatShortDateTime(security.stepUpExpiresAt)} tarihine kadar geçerli` : 'Hassas işlemlerde yeniden doğrulama istenir'} />
       </Section>
       <Section title="Doğrulayıcı uygulama">
         {replacing || !mfa.totp ? (
@@ -58,7 +58,7 @@ export default function AccountSecurityScreen() {
         )}
       </Section>
       <Section title="Geçiş anahtarları">
-        <Text tone="secondary">Geçiş anahtarı ekleme ve kaldırma şimdilik web panelindedir.</Text>
+        <Text tone="secondary">Geçiş anahtarı ekleme ve kaldırma işlemleri şimdilik web panelinden yapılabiliyor.</Text>
         <Button label="Web'de yönet" variant="quiet" onPress={() => void openOnWeb('/panel/guvenlik')} />
       </Section>
     </Screen>

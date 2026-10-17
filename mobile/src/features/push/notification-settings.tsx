@@ -22,11 +22,11 @@ import { queryKeys } from '@/lib/query/keys';
  * üzerine yazılmaz).
  */
 const CATEGORIES: { key: keyof MobileNotificationPreferences; title: string; subtitle: string }[] = [
-  { key: 'assignment', title: 'Çalışmalar ve ödevler', subtitle: 'Yeni çalışma ve teslim hatırlatmaları' },
-  { key: 'lessonSummary', title: 'Dersler ve koçluk', subtitle: 'Ders hatırlatmaları, ders özetleri, görüşme güncellemeleri' },
-  { key: 'absence', title: 'Devamsızlık', subtitle: 'Derse katılım bildirimleri' },
-  { key: 'weeklyDigest', title: 'Haftalık özet', subtitle: 'Yayınlanan haftalık özetler' },
-  { key: 'examUpdates', title: 'Denemeler', subtitle: 'Deneme hatırlatması, katılım, sonuç ve sonraki adım' },
+  { key: 'assignment', title: 'Çalışmalar ve ödevler', subtitle: 'Yeni çalışmalar ve teslim hatırlatmaları 📚' },
+  { key: 'lessonSummary', title: 'Dersler ve koçluk', subtitle: 'Ders hatırlatmaları, ders özetleri ve görüşme güncellemeleri 🗓️' },
+  { key: 'absence', title: 'Devamsızlık', subtitle: 'Derse katılım bilgilendirmeleri 📋' },
+  { key: 'weeklyDigest', title: 'Haftalık özet', subtitle: 'Yayınlanan haftalık özetler 🌟' },
+  { key: 'examUpdates', title: 'Denemeler', subtitle: 'Deneme hatırlatmaları, sonuçlar ve sonraki adımlar 📝' },
 ];
 
 const QUIET_PRESETS: { label: string; start: number | null; end: number | null }[] = [
@@ -36,11 +36,11 @@ const QUIET_PRESETS: { label: string; start: number | null; end: number | null }
 ];
 
 const SUPPORT_COPY: Record<string, string> = {
-  SIMULATOR: 'Telefon bildirimleri yalnız gerçek bir cihazda çalışır.',
-  EXPO_GO: 'Bu geliştirme ortamı (Expo Go) telefon bildirimlerini desteklemiyor; geliştirme derlemesi gerekir.',
-  NO_PROJECT_ID: 'Bu uygulama derlemesi telefon bildirimleri için yapılandırılmamış.',
-  NO_FCM: 'Bu uygulama derlemesi telefon bildirimleri için yapılandırılmamış.',
-  WEB: 'Telefon bildirimleri yalnız mobil uygulamada kullanılabilir.',
+  SIMULATOR: 'Telefon bildirimleri yalnızca gerçek bir cihazda çalışır.',
+  EXPO_GO: 'Bu geliştirme ortamı (Expo Go) telefon bildirimlerini desteklemiyor; bunun için bir geliştirme derlemesi gerekiyor.',
+  NO_PROJECT_ID: 'Bu uygulama derlemesi telefon bildirimleri için henüz yapılandırılmamış.',
+  NO_FCM: 'Bu uygulama derlemesi telefon bildirimleri için henüz yapılandırılmamış.',
+  WEB: 'Telefon bildirimleri yalnızca mobil uygulamada kullanılabilir.',
 };
 
 export default function NotificationSettingsScreen() {
@@ -74,7 +74,7 @@ export default function NotificationSettingsScreen() {
       await save.mutateAsync(patch);
       if (success) setMessage({ tone: 'success', text: success });
     } catch (error) {
-      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Tercih kaydedilemedi.' });
+      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Tercihini şu an kaydedemedik 😕 Lütfen tekrar dener misin?' });
     }
   }
 
@@ -83,15 +83,15 @@ export default function NotificationSettingsScreen() {
     const state = await requestPermission();
     setPermission(state);
     if (state.status !== 'granted') {
-      setMessage({ tone: 'warning', text: 'Telefon bildirimleri için izin verilmedi. İstersen sistem ayarlarından açabilirsin; uygulama içi bildirimler çalışmaya devam eder.' });
+      setMessage({ tone: 'warning', text: 'Telefon bildirimlerine izin verilmedi. Dilersen sistem ayarlarından açabilirsin; uygulama içi bildirimlerin çalışmaya devam ediyor 😊' });
       return;
     }
     try {
       await save.mutateAsync({ pushEnabled: true });
       const result = await syncPushRegistration(api, bootstrap.user.id, { force: true });
-      setMessage(result === 'REGISTERED' || result === 'ALREADY' ? { tone: 'success', text: 'Telefon bildirimleri açıldı. Gönderim zamanlaması ağ ve cihaz koşullarına bağlıdır.' } : { tone: 'warning', text: 'Tercih kaydedildi, ancak bu cihaz kaydedilemedi.' });
+      setMessage(result === 'REGISTERED' || result === 'ALREADY' ? { tone: 'success', text: 'Telefon bildirimleri açıldı 🔔 Önemli gelişmeleri artık kaçırmayacaksın! Gönderim zamanı ağ ve cihaz koşullarına göre değişebilir.' } : { tone: 'warning', text: 'Tercihin kaydedildi, ancak bu cihazı şu an kaydedemedik. Biraz sonra tekrar deneyebilirsin.' });
     } catch (error) {
-      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Telefon bildirimleri açılamadı. Bağlantını kontrol et.' });
+      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Telefon bildirimlerini şu an açamadık 😕 İnternet bağlantını kontrol edip tekrar dener misin?' });
     }
   }
 
@@ -100,9 +100,9 @@ export default function NotificationSettingsScreen() {
     try {
       await save.mutateAsync({ pushEnabled: false });
       await unregisterCurrentDevice(api).catch(() => undefined);
-      setMessage({ tone: 'success', text: 'Telefon bildirimleri kapatıldı. Uygulama içi bildirimler sürüyor.' });
+      setMessage({ tone: 'success', text: 'Telefon bildirimleri kapatıldı. Uygulama içi bildirimlerin gelmeye devam edecek.' });
     } catch (error) {
-      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Tercih kaydedilemedi.' });
+      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Tercihini şu an kaydedemedik 😕 Lütfen tekrar dener misin?' });
     }
   }
 
@@ -111,14 +111,14 @@ export default function NotificationSettingsScreen() {
   if (!pushAvailableFor(bootstrap)) {
     return (
       <Screen>
-        <EmptyState title="Bildirim ayarları bu hesap için mobilde açık değil." />
+        <EmptyState title="Bildirim ayarları bu hesap için mobilde henüz açık değil." />
       </Screen>
     );
   }
 
   return (
     <Screen testID="notification-settings">
-      <PageHeader title="Bildirim ayarları" description="Tercihler bundan sonraki bildirimleri etkiler. Telefon bildirimlerinde ad, not veya puan gibi kişisel ayrıntılar gösterilmez." />
+      <PageHeader title="Bildirim ayarları" description="Hangi bildirimleri almak istediğini sen seç 🔔 Gizliliğin için telefon bildirimlerinde ad, not ya da puan gibi kişisel ayrıntılar gösterilmez." />
       {message ? <Banner tone={message.tone}>{message.text}</Banner> : null}
       {query.isPending ? (
         <Skeleton rows={6} />
@@ -135,7 +135,7 @@ export default function NotificationSettingsScreen() {
                 <View style={styles.row}>
                   <View style={styles.flex}>
                     <Text variant="bodyStrong">Telefon bildirimleri</Text>
-                    <Text tone="muted" variant="meta">Açarsan, yeni bildirimler telefonuna da gönderilir. Sessiz saatlerde gönderim ertelenir.</Text>
+                    <Text tone="muted" variant="meta">Açarsan yeni bildirimler telefonuna da gelir. Sessiz saatlerinde seni rahatsız etmeyiz 🌙</Text>
                   </View>
                   <Switch
                     value={Boolean(query.data?.pushEnabled) && permission?.status === 'granted'}
@@ -148,7 +148,7 @@ export default function NotificationSettingsScreen() {
                 </View>
                 {permission?.status === 'denied' ? (
                   <View style={styles.hint}>
-                    <Text tone="secondary" variant="secondary">İzin sistem ayarlarında kapalı. Uygulama tekrar sormaz; açmak için sistem ayarlarını kullan.</Text>
+                    <Text tone="secondary" variant="secondary">Bildirim izni sistem ayarlarında kapalı. Uygulama bunu tekrar sormaz; açmak istersen sistem ayarlarından kolayca açabilirsin.</Text>
                     <Button label="Sistem ayarlarını aç" variant="secondary" onPress={() => void Linking.openSettings()} />
                   </View>
                 ) : null}
@@ -157,7 +157,7 @@ export default function NotificationSettingsScreen() {
           </Section>
           {staff ? (
             <Section title="İçerik">
-              <Text tone="muted" variant="meta">Personel bildirimleri kilit ekranında genel bir metinle görünür; ayrıntı uygulama açılınca yetkinle okunur. Ödeme ve finans bildirimleri telefona gönderilmez.</Text>
+              <Text tone="muted" variant="meta">Personel bildirimleri kilit ekranında genel bir metinle görünür; ayrıntılar uygulamayı açtığında görünür. Ödeme ve finans bildirimleri telefona gönderilmez.</Text>
             </Section>
           ) : (
           <Section title="Kategoriler">
@@ -173,14 +173,14 @@ export default function NotificationSettingsScreen() {
           </Section>
           )}
           <Section title="Sessiz saatler">
-            <Text tone="muted" variant="meta">Bu saatlerde telefon bildirimi gönderilmez; hâlâ geçerliyse sonradan gönderilir (İstanbul saati).</Text>
+            <Text tone="muted" variant="meta">Bu saatlerde telefonuna bildirim gelmez; hâlâ geçerliyse sessiz saatler bitince iletilir (İstanbul saati) 🌙</Text>
             <View accessibilityRole="radiogroup" accessibilityLabel="Sessiz saatler">
               {QUIET_PRESETS.map((preset) => (
                 <Row
                   key={preset.label}
                   title={preset.label}
                   selected={query.data?.quietStartMinute === preset.start && query.data?.quietEndMinute === preset.end}
-                  onPress={() => void update({ quietStartMinute: preset.start, quietEndMinute: preset.end }, 'Sessiz saatler kaydedildi.')}
+                  onPress={() => void update({ quietStartMinute: preset.start, quietEndMinute: preset.end }, 'Sessiz saatlerin kaydedildi 🌙')}
                   testID={`quiet-${preset.start ?? 'off'}`}
                 />
               ))}
@@ -189,8 +189,8 @@ export default function NotificationSettingsScreen() {
           <Section title="Günlük özet">
             <View style={styles.row}>
               <View style={styles.flex}>
-                <Text variant="bodyStrong">Günün gelişmeleri tek bildirimde</Text>
-                <Text tone="muted" variant="meta">{"Açıkken hatırlatmalar 18:00'de tek özet olarak gelir."}</Text>
+                <Text variant="bodyStrong">Günün özeti tek bildirimde ☀️</Text>
+                <Text tone="muted" variant="meta">{"Açıkken hatırlatmalar her gün 18:00'de tek bir özet olarak gelir."}</Text>
               </View>
               <Switch
                 value={Boolean(query.data?.dailyDigest)}

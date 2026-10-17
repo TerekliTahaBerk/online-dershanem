@@ -39,7 +39,7 @@ export async function publishTeacherDigest(id: string, expectedVersion: number, 
     const changed = await tx.weeklyDigest.updateMany({ where: { id, status: "DRAFT", version: expectedVersion, student: teacherDigestStudentScope(teacherId) }, data: { status: "PUBLISHED", publishedById: teacherId, publishedAt: new Date(), version: { increment: 1 } } });
     if (changed.count !== 1) throw new GroupMutationError("DIGEST_CONFLICT", "Özet başka bir sekmede değişti.");
     const recipients = [...new Set([digest.student.userId, ...digest.student.parents.map((link) => link.parentId)])];
-    const rawRows = recipients.map((userId) => ({ userId, type: "LESSON_SUMMARY" as const, title: "Haftalık özet hazır", body: "İki iyi giden nokta ve bir küçük destek önerisi hazır.", href: userId === digest.student.userId ? "/panel/ogrenci/haftalik" : `/panel/veli/haftalik?studentId=${digest.studentId}` }));
+    const rawRows = recipients.map((userId) => ({ userId, type: "LESSON_SUMMARY" as const, title: "Haftalık özet hazır 🌟", body: "Bu hafta iyi giden iki nokta ve küçük bir destek önerisi sizi bekliyor.", href: userId === digest.student.userId ? "/panel/ogrenci/haftalik" : `/panel/veli/haftalik?studentId=${digest.studentId}` }));
     const rows = await filterNotificationRows(rawRows, "weeklyDigest", tx);
     if (rows.length) await tx.notification.createMany({ data: rows });
     await queuePanelNotificationEmails(rawRows, "weeklyDigest", tx);

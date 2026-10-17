@@ -26,7 +26,7 @@ export function DayComplete() {
   const { product } = useDesign();
   return <View style={[styles.complete, { backgroundColor: product.accentSoft }]} testID="day-complete">
     <DelightIcon name="spark" size={32} color={product.accent} />
-    <View style={styles.copy}><Text variant="sectionTitle">Bugünkü planın tamamlandı!</Text><Text tone="secondary" variant="secondary">Emeğine sağlık. Şimdi kendine küçük bir mola verebilirsin.</Text></View>
+    <View style={styles.copy}><Text variant="sectionTitle">Bugünkü planını tamamladın! 🎉</Text><Text tone="secondary" variant="secondary">Emeğine sağlık! Şimdi kendine güzel bir mola ver, bunu hak ettin ☕</Text></View>
   </View>;
 }
 const styles = StyleSheet.create({

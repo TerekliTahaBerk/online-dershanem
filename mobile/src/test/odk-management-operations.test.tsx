@@ -61,7 +61,7 @@ describe('K04 canlı operasyon', () => {
     expect(await h.screen.findByTestId('ops-attempt', {}, WAIT)).toBeTruthy();
     expect(h.screen.getAllByText('Bağlantı koptu').length).toBeGreaterThan(0);
     await press(h, h.screen.getByTestId('ops-review-MARK_REVIEWED'));
-    expect(await h.screen.findByText('İnceleme kaydedildi.', {}, WAIT)).toBeTruthy();
+    expect(await h.screen.findByText('İnceleme kaydedildi ✅', {}, WAIT)).toBeTruthy();
     expect(h.server.called('POST', `${path}/attempts/a1/review`)[0].body).toEqual({ action: 'MARK_REVIEWED', idempotencyKey: expect.stringMatching(/^[0-9a-f-]{36}$/), expectedRevision: REV });
     await press(h, h.screen.getByTestId('ops-review-REQUIRE_REVIEW'));
     expect(await h.screen.findByText(/Güncel durum yüklendi/, {}, WAIT)).toBeTruthy();

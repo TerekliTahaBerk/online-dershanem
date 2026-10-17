@@ -28,7 +28,7 @@ describe('S14 plan üretimi', () => {
       'POST /api/panel/adaptive-plan/generate': () => jsonResponse(200, { id: 'p1', version: 1, taskCount: 5, rebalanced: false, status: 'DRAFT', autoApproved: false, requiresApproval: true, examCountdown: null }),
     });
     await press(h, await h.screen.findByTestId('yon-plan-generate', {}, WAIT));
-    expect(await h.screen.findByText('Planın oluşturuldu (5 çalışma). Koçun onayladığında görevler açılır.', {}, WAIT)).toBeTruthy();
+    expect(await h.screen.findByText('Planın hazır 🎉 (5 çalışma). Koçun onayladığında görevlerin açılacak.', {}, WAIT)).toBeTruthy();
     expect(h.server.called('POST', '/api/panel/adaptive-plan/generate')[0].body).toEqual({ expectedVersion: 0 });
     await waitFor(() => expect(h.server.called('GET', '/api/panel/student/plan').length).toBeGreaterThan(1), WAIT);
   }, 30000);
@@ -46,7 +46,7 @@ describe('S14 plan üretimi', () => {
 
   it('koç onaylı plan kilitlidir; düğme istek atmaz', async () => {
     const h = await open({ 'GET /api/panel/student/plan': () => jsonResponse(200, view(plan({ status: 'APPROVED', statusLabel: 'Onaylı', draftTaskCount: 0, canRequestChange: true }))) });
-    expect(await h.screen.findByText('Onaylı plan kilitli. Değiştirmek için önce koçundan değişiklik iste.', {}, WAIT)).toBeTruthy();
+    expect(await h.screen.findByText('Planın koçun tarafından onaylandı 🔒 Değiştirmek istersen önce koçundan değişiklik isteyebilirsin.', {}, WAIT)).toBeTruthy();
     await press(h, h.screen.getByTestId('yon-plan-generate'));
     expect(h.server.called('POST', '/api/panel/adaptive-plan/generate')).toHaveLength(0);
   });

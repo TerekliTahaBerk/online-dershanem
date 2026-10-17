@@ -166,7 +166,7 @@ async function processClaimed(ids: string[], token: string, now: Date, mode: Pus
       await finish(delivery.id, token, { state: "CANCELED", lastErrorCode: "DRY_RUN" });
       continue;
     }
-    const copy = pushCopyFor(pushClass!, notification);
+    const copy = pushCopyFor(pushClass!, notification, notification.user.role);
     outgoing.push({
       id: delivery.id,
       attempts: delivery.attempts,

@@ -51,10 +51,10 @@ export async function notifyMockExamEntered(db: EventNotificationDb, input: { mo
   const teachers = [...new Set(student.enrollments.map((item) => item.group.teacherId))];
   const coaches = [...new Set(student.coachAssignments.map((item) => item.coach.userId))];
   const rows = [
-    ...(actor !== student.userId ? [row(student.userId, event, "MOCK:ENTERED", "Deneme sonucun eklendi", summary, "/panel/ogrenci/denemeler", exam.id)] : []),
-    ...teachers.filter((id) => id !== actor).map((id) => row(id, event, "MOCK:ENTERED", "Yeni deneme sonucu", `${name} · ${summary}`, "/panel/ogretmen/denemeler", exam.id)),
-    ...coaches.filter((id) => id !== actor && !teachers.includes(id)).map((id) => row(id, event, "MOCK:ENTERED", "Yeni deneme sonucu", `${name} · ${summary}`, `/panel/ogretmen/hazirlik/${student.id}`, exam.id)),
-    ...student.parents.map((link) => row(link.parentId, event, "MOCK:ENTERED", "Yeni deneme sonucu", `${name} · ${summary}`, scoped("/panel/veli/denemeler", student.id), exam.id)),
+    ...(actor !== student.userId ? [row(student.userId, event, "MOCK:ENTERED", "Deneme sonucun eklendi 📊", summary, "/panel/ogrenci/denemeler", exam.id)] : []),
+    ...teachers.filter((id) => id !== actor).map((id) => row(id, event, "MOCK:ENTERED", "Yeni bir deneme sonucu var 📊", `${name} · ${summary}`, "/panel/ogretmen/denemeler", exam.id)),
+    ...coaches.filter((id) => id !== actor && !teachers.includes(id)).map((id) => row(id, event, "MOCK:ENTERED", "Yeni bir deneme sonucu var 📊", `${name} · ${summary}`, `/panel/ogretmen/hazirlik/${student.id}`, exam.id)),
+    ...student.parents.map((link) => row(link.parentId, event, "MOCK:ENTERED", "Yeni bir deneme sonucu var 📊", `${name} · ${summary}`, scoped("/panel/veli/denemeler", student.id), exam.id)),
   ];
   return deliverEventNotifications(db, rows, "examUpdates");
 }
@@ -70,8 +70,8 @@ export async function notifyMockExamNextAction(db: EventNotificationDb, input: {
   // Metin değişirse yeni olay; aynı metin tekrar kaydedilirse sessiz.
   const event = `MOCK:${exam.id}:NEXT:${createHash("sha256").update(exam.nextAction).digest("hex").slice(0, 16)}`;
   return deliverEventNotifications(db, [
-    row(student.userId, event, "MOCK:NEXT_ACTION", "Denemen için sonraki adım hazır", `${label} · ${step}`, "/panel/ogrenci/denemeler", exam.id),
-    ...student.parents.map((link) => row(link.parentId, event, "MOCK:NEXT_ACTION", "Deneme için sonraki adım belirlendi", `${name} · ${label} · ${step}`, scoped("/panel/veli/denemeler", student.id), exam.id)),
+    row(student.userId, event, "MOCK:NEXT_ACTION", "Denemen için sonraki adımın hazır 🎯", `${label} · ${step}`, "/panel/ogrenci/denemeler", exam.id),
+    ...student.parents.map((link) => row(link.parentId, event, "MOCK:NEXT_ACTION", "Deneme için sonraki adım belirlendi 🎯", `${name} · ${label} · ${step}`, scoped("/panel/veli/denemeler", student.id), exam.id)),
   ], "examUpdates");
 }
 
@@ -88,6 +88,6 @@ export async function notifyOdkExamAssignedToParents(db: EventNotificationDb, in
   return deliverEventNotifications(db, student.parents.map((link) => ({
     id: eventNotificationId("exam", link.parentId, event), userId: link.parentId, type: "SYSTEM" as const,
     sourceType: "ODK_AUDIENCE", category: `ASSIGNED:${student.id}`,
-    title: "Çocuğunuza deneme eklendi", body: `${name} · ${exam.title}${when}`, href: scoped("/panel/odk/veli", student.id),
+    title: "Çocuğunuzun takvimine yeni bir deneme eklendi 📝", body: `${name} · ${exam.title}${when}`, href: scoped("/panel/odk/veli", student.id),
   })), "examUpdates");
 }

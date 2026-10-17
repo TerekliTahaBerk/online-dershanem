@@ -23,7 +23,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const changed = await prisma.$transaction(async (tx) => {
     const updated = await tx.studentHelpRequest.updateMany({ where: { id, status: "RESPONDED", helpful: null, version: parsed.data.expectedVersion }, data: parsed.data.helpful ? { status: "CLOSED", helpful: true, version: { increment: 1 } } : { status: "OPEN", helpful: false, dueAt: studentHelpDueAt(), version: { increment: 1 } } });
     if (updated.count !== 1) return false;
-    if (!parsed.data.helpful) await tx.notification.create({ data: { userId: item.group?.teacherId ?? item.coachAssignment!.coach.userId, type: "SYSTEM", title: "Destek adımı henüz yeterli olmadı", body: "Öğrencin yeni bir kontrollü destek adımı bekliyor.", href: "/panel/ogretmen/yardim" } });
+    if (!parsed.data.helpful) await tx.notification.create({ data: { userId: item.group?.teacherId ?? item.coachAssignment!.coach.userId, type: "SYSTEM", title: "Öğrencin biraz daha desteğe ihtiyaç duyuyor 🤝", body: "Önerdiğin adım henüz yeterli olmadı; öğrencin yeni bir destek adımı bekliyor.", href: "/panel/ogretmen/yardim" } });
     return true;
   });
   if (!changed) return NextResponse.json({ error: "İstek başka bir sekmede değişti." }, { status: 409 });

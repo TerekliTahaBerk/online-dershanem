@@ -67,7 +67,7 @@ export async function POST(request: Request, _context: { params: Promise<{ id: s
 
   const students = [...new Set(group.enrollments.map((item) => item.student.userId))];
   const parents = [...new Set(group.enrollments.flatMap((item) => item.student.parents.map((link) => link.parentId)))];
-  const rawRows = [...students.map((userId) => ({ userId, type: "SYSTEM" as const, title: "Yeni ders materyali", body: material.title, href: "/panel/ogrenci/materyaller" })), ...parents.map((userId) => ({ userId, type: "SYSTEM" as const, title: "Yeni ders materyali", body: material.title, href: "/panel/veli/takip" }))];
+  const rawRows = [...students.map((userId) => ({ userId, type: "SYSTEM" as const, title: "Yeni bir ders materyali eklendi 📎", body: material.title, href: "/panel/ogrenci/materyaller" })), ...parents.map((userId) => ({ userId, type: "SYSTEM" as const, title: "Yeni bir ders materyali eklendi 📎", body: material.title, href: "/panel/veli/takip" }))];
   const rows = await filterNotificationRows(rawRows);
   if (rows.length) await prisma.notification.createMany({ data: rows });
   await queuePanelNotificationEmails(rawRows);

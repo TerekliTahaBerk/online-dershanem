@@ -34,12 +34,12 @@ function ReviewBody({ data }: { data: TeacherReview }) {
   } });
   async function create() {
     setState(null);
-    try { await mutation.mutateAsync(); stable.settle(); setTitle(''); setSourceReference(''); setState({ tone: 'success', message: 'Kaynak yarının küçük tekrarlarına eklendi.' }); await invalidate(); }
+    try { await mutation.mutateAsync(); stable.settle(); setTitle(''); setSourceReference(''); setState({ tone: 'success', message: 'Kaynak yarının küçük tekrarlarına eklendi 🔁' }); await invalidate(); }
     catch (error) { stable.settle(error); setState(writeError(error, 'Öğrencinin kaydı değişti. Liste yenilendi; tekrar göndermeden önce kontrol edin.')); if (error instanceof ApiError && error.kind === 'conflict') await invalidate(); }
   }
   return <>
     <OfflineWriteNotice online={online} /><WriteBanner state={state} />
-    {!data.students.length ? <EmptyState title="Aktif öğrenciniz bulunmuyor" /> : <Section title="Kendi materyalimden tekrar ekle">
+    {!data.students.length ? <EmptyState title="Şu an aktif bir öğrenciniz görünmüyor" /> : <Section title="Kendi materyalimden tekrar ekle">
       <Text tone="secondary">Kitap veya föy ve soru numarası gibi erişilebilir bir kaynak referansı verin.</Text>
       <SearchPicker label="Öğrenci" options={data.students.map((student) => ({ id: student.id, name: student.name }))} value={studentId} onChange={setStudentId} testID="review-student" />
       <TextField label="Kısa çalışma başlığı" value={title} onChangeText={setTitle} maxLength={140} testID="review-title" />

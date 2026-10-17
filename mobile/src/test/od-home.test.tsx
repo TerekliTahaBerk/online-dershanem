@@ -56,7 +56,7 @@ describe('M2.1 OD Bugün', () => {
     expect(h.screen.getByText('Kesirler çalışma kâğıdı')).toBeTruthy();
     expect(h.screen.getByText('4 ders')).toBeTruthy();
     expect(h.screen.getByText('1/3 tamamlandı')).toBeTruthy();
-    expect(h.screen.getByText('1 çalışmanın süresi geçti')).toBeTruthy();
+    expect(h.screen.getByText('1 çalışma seni bekliyor, adım adım halledebilirsin 💪')).toBeTruthy();
     expect(h.screen.getByText('Derslere düzenli katılıyorsun.')).toBeTruthy();
     expect(h.screen.getByTestId('od-other-OK')).toBeTruthy();
     expect(h.screen.queryByTestId('od-other-OD')).toBeNull();
@@ -86,7 +86,7 @@ describe('M2.1 OD Bugün', () => {
     ]);
     await signIn(h, 'ada@example.com');
     const view = within(await h.screen.findByTestId('od-home', {}, WAIT));
-    expect(await view.findByText('Profilin hazırlanıyor.', {}, WAIT)).toBeTruthy();
+    expect(await view.findByText('Profilin hazırlanıyor ⏳', {}, WAIT)).toBeTruthy();
   });
 
   it('şimdi eylemi yok: sakin boş durum ve yalnız menüdeki hedeflere bağlantı', async () => {
@@ -117,7 +117,7 @@ describe('M2.1 OD Bugün', () => {
       }),
     ]);
     await signIn(h, 'ada@example.com');
-    expect(await h.screen.findByText('Sunucudan beklenmeyen bir yanıt alındı.', {}, WAIT)).toBeTruthy();
+    expect(await h.screen.findByText('Sunucudan beklenmedik bir yanıt aldık. Lütfen tekrar dener misiniz?', {}, WAIT)).toBeTruthy();
     await waitFor(() => expect(h.screen.queryByText('Kesirler · Canlı ders')).toBeNull());
   });
 });

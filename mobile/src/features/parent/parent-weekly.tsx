@@ -31,9 +31,9 @@ export default function ParentWeeklyScreen() {
   const query = useParentQuery('digests', fetchParentDigest);
   const refresh = usePullToRefresh(() => query.refetch());
   return (
-    <ParentScreen title="Haftalık özet" description="Haftada bir sakin bakış" testID="parent-weekly" refresh={refresh}>
+    <ParentScreen title="Haftalık özet" description="Haftada bir, sakin ve kısa bir bakış ☕" testID="parent-weekly" refresh={refresh}>
       {(child) => (
-        <ParentQueryView query={query} child={child} disabledTitle="Haftalık özet şu anda açık değil.">
+        <ParentQueryView query={query} child={child} disabledTitle="Haftalık özet şu an kullanıma kapalı.">
           {(data) => <WeeklyBody data={data} child={child} />}
         </ParentQueryView>
       )}
@@ -63,7 +63,7 @@ function WeeklyBody({ data, child }: { data: MobileParentDigest; child: MobilePa
           )}
         </>
       ) : (
-        <EmptyState title="Haftalık özet henüz yayınlanmadı" body="Öğretmen önizlemeyi tamamladığında öğrenciyle aynı anda burada açılır." />
+        <EmptyState title="Haftalık özet çok yakında 🌟" body="Öğretmen özeti tamamladığında öğrencinizle aynı anda burada açılacak." />
       )}
       <Section title="Sistemden görünenler · önümüzdeki günler">
         <Text tone="muted" variant="meta">Bu liste otomatik takvim ve koçluk kayıtlarından gelir; öğretmen özeti değildir.</Text>
@@ -96,16 +96,16 @@ function DigestFeedback({ digestId, studentId, initial }: { digestId: string; st
       await mutation.mutateAsync({ helpful: nextHelpful, anxietyPulse: nextPulse });
       setHelpful(nextHelpful);
       setPulse(nextPulse);
-      setMessage({ tone: 'success', text: 'Geri bildiriminiz kaydedildi.' });
+      setMessage({ tone: 'success', text: 'Geri bildiriminiz için teşekkür ederiz 💛' });
       // Yalnız bu çocuğun özet sorgusu yenilenir.
       await client.invalidateQueries({ queryKey: queryKeys.parentResource(bootstrap.user.id, studentId, 'digests') });
     } catch (error) {
       if (isChildNotFound(error) || (error instanceof ApiError && error.kind === 'not_found')) {
-        setMessage({ tone: 'critical', text: 'Bu özet artık görüntülenemiyor. Sayfayı yenileyin.' });
+        setMessage({ tone: 'critical', text: 'Bu özet artık görüntülenemiyor. Sayfayı yenilemenizi rica ederiz.' });
         await client.invalidateQueries({ queryKey: queryKeys.parentResource(bootstrap.user.id, studentId, 'digests') });
         return;
       }
-      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Geri bildirim kaydedilemedi. Bağlantınızı kontrol edip tekrar deneyin.' });
+      setMessage({ tone: 'critical', text: error instanceof ApiError ? error.message : 'Geri bildiriminizi şu an kaydedemedik. Bağlantınızı kontrol edip tekrar dener misiniz?' });
     }
   }
 

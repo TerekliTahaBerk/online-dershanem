@@ -19,7 +19,7 @@ it('uncertain write preserves original command, revision and key across refresh'
   expect(await h.screen.findByText('Tekrar deneyin.', {}, WAIT)).toBeTruthy(); revision = 'b'.repeat(64);
   await act(async () => { h.screen.UNSAFE_getAllByType(RefreshControl)[0].props.onRefresh(); });
   await waitFor(() => expect(h.server.called('GET', path).length).toBeGreaterThan(1), WAIT);
-  await press(h, h.screen.getByTestId('prep-save-goal')); expect(await h.screen.findByText('İşlem kaydedildi.', {}, WAIT)).toBeTruthy(); expect(keys[0]).toBe(keys[1]);
+  await press(h, h.screen.getByTestId('prep-save-goal')); expect(await h.screen.findByText('İşlem kaydedildi ✅', {}, WAIT)).toBeTruthy(); expect(keys[0]).toBe(keys[1]);
 }, 30000);
 it('all six forms submit native commands; destructive and shared actions require confirmation', async () => {
   const commands: { action: string; payload?: Record<string, unknown> }[] = [];

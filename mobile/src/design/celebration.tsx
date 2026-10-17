@@ -14,8 +14,8 @@ export type Celebration = { key: string; kind: 'task' | 'submission' };
 const CelebrationContext = createContext<(event: Celebration) => void>(() => undefined);
 export const useCelebration = () => useContext(CelebrationContext);
 const COPY = {
-  task: { title: 'Bir adım daha ileri!', body: 'Çalışman tamamlandı. Emeğine sağlık.' },
-  submission: { title: 'Emeğin yola çıktı!', body: 'Gönderimin öğretmenine ulaştı.' },
+  task: { title: 'Bir adım daha ileri! 🎉', body: 'Çalışmanı tamamladın. Emeğine sağlık, seninle gurur duyuyoruz!' },
+  submission: { title: 'Emeğin yola çıktı! 🚀', body: 'Gönderimin öğretmenine ulaştı. Harika iş çıkardın!' },
 };
 
 /** Only confirmed student actions trigger this; no rewards from initial data/refetches. */

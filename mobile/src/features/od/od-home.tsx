@@ -14,7 +14,7 @@ import { openOnWeb, webUrlFor } from '@/features/shell/web-continuation';
 import { fetchOdHome } from '@/lib/api/student';
 import { ApiError } from '@/lib/api/errors';
 import { useReadyBootstrap, useSession } from '@/lib/auth/session-provider';
-import { formatLongDate, formatTime, greetingFor, isSameIstanbulDay, formatShortDateTime } from '@/lib/format/istanbul';
+import { formatLongDate, formatTime, greetingEmojiFor, greetingFor, isSameIstanbulDay, formatShortDateTime } from '@/lib/format/istanbul';
 import { hrefForOdTarget } from '@/navigation/od-targets';
 import { expoHrefFor, targetForNavId } from '@/navigation/route-map';
 
@@ -47,8 +47,8 @@ function summaryLine(home: MobileOdHome): string | undefined {
   const lessons = home.today.filter((item) => item.kind === 'LESSON').length + (home.now?.kind === 'OPEN_LESSON' ? 1 : 0);
   const due = home.today.filter((item) => item.kind === 'ASSIGNMENT_DUE').length;
   const parts = [lessons ? `${lessons} ders` : null, due ? `${due} ödev teslimi` : null, home.week?.dueReviews ? `${home.week.dueReviews} tekrar` : null].filter(Boolean);
-  if (parts.length) return `Bugün ${parts.join(' · ')}.`;
-  return home.now ? undefined : 'Bugün için planlanmış bir çalışma görünmüyor.';
+  if (parts.length) return `Bugün seni ${parts.join(' · ')} bekliyor ✨`;
+  return home.now ? undefined : 'Bugün için planlanmış bir çalışman yok, kendine biraz zaman ayır 🌿';
 }
 
 export default function OdHomeScreen() {
@@ -61,7 +61,7 @@ export default function OdHomeScreen() {
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="od-home">
       <PageHeader
-        title={`${greetingFor(now)}${name ? `, ${name}` : ''}.`}
+        title={`${greetingFor(now)}${name ? `, ${name}` : ''} ${greetingEmojiFor(now)}`}
         context={<Text tone="muted" variant="meta">{formatLongDate(now)}</Text>}
         description={query.data?.state === 'READY' ? summaryLine(query.data) : undefined}
       />
@@ -72,7 +72,7 @@ export default function OdHomeScreen() {
 
 function OdHomeBody({ home, now }: { home: MobileOdHome; now: Date }) {
   if (home.state === 'NO_PROFILE') {
-    return <EmptyState title="Profilin hazırlanıyor." body="Öğrenci profilin tamamlandığında derslerin ve çalışmaların burada görünecek." />;
+    return <EmptyState title="Profilin hazırlanıyor ⏳" body="Öğrenci profilin tamamlandığında derslerin ve çalışmaların burada seni karşılayacak." />;
   }
   return (
     <>
@@ -152,17 +152,17 @@ function WeekSection({ week }: { week: MobileOdWeek }) {
   const assignments = nav.navigation ? expoHrefFor(targetForNavId(nav.navigation, 'assignments')) : null;
   return (
     <Section title="Bu hafta">
-      <Row title="Dersler" meta={week.lessonsPlanned ? `${week.lessonsPlanned} ders` : 'Ders yok'} subtitle={week.lessonsRemainingToday ? `Bugün ${week.lessonsRemainingToday} ders kaldı` : null} />
+      <Row title="Dersler" meta={week.lessonsPlanned ? `${week.lessonsPlanned} ders` : 'Ders yok, dinlen 🌿'} subtitle={week.lessonsRemainingToday ? `Bugün ${week.lessonsRemainingToday} ders kaldı` : null} />
       <Row
         title="Bu hafta teslim edilecekler"
-        meta={week.assignmentsDue ? `${week.assignmentsCompleted}/${week.assignmentsDue} tamamlandı` : 'Teslim yok'}
+        meta={week.assignmentsDue ? `${week.assignmentsCompleted}/${week.assignmentsDue} tamamlandı` : 'Teslim yok 🎈'}
         onPress={assignments && week.assignmentsDue ? () => nav.push(assignments) : undefined}
       />
       {week.pendingAssignments ? (
         <Row
           title="Bekleyen çalışmalar"
           meta={`${week.pendingAssignments}`}
-          subtitle={week.overdueAssignments ? `${week.overdueAssignments} çalışmanın süresi geçti` : null}
+          subtitle={week.overdueAssignments ? `${week.overdueAssignments} çalışma seni bekliyor, adım adım halledebilirsin 💪` : null}
           onPress={assignments ? () => nav.push(assignments) : undefined}
         />
       ) : null}
@@ -205,7 +205,7 @@ function OtherWorkspaces() {
       await selectWorkspace(code);
       router.replace('/');
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : 'Çalışma alanı değiştirilemedi.');
+      setError(cause instanceof ApiError ? cause.message : 'Çalışma alanını şu an değiştiremedik 😕 Lütfen tekrar dener misin?');
     } finally {
       setPending(null);
     }
@@ -219,7 +219,7 @@ function OtherWorkspaces() {
           key={product.code}
           testID={`od-other-${product.code}`}
           title={product.label || PRODUCT_FALLBACK_LABEL[product.code]}
-          subtitle="Ayrı çalışma alanı · geçiş yapar"
+          subtitle="Ayrı bir çalışma alanı · dokununca geçiş yaparsın"
           leading={<ProductLogo product={product.code} size={32} />}
           trailing={pending === product.code ? <Text tone="muted">…</Text> : null}
           disabled={pending !== null}

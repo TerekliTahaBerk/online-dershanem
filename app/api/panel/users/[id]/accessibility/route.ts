@@ -32,7 +32,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return NextResponse.json({ error: "Profil başka bir sekmede oluşturuldu." }, { status: 409 });
     throw error;
   }
-  await prisma.notification.create({ data: { userId: id, type: "SYSTEM", title: "İşlevsel destek düzenlemen güncellendi", body: "Ek süre ve mola düzenlemeni erişilebilirlik ekranından görebilirsin.", href: "/panel/erisilebilirlik" } });
+  await prisma.notification.create({ data: { userId: id, type: "SYSTEM", title: "Destek düzenlemen güncellendi 🤗", body: "Ek süre ve mola düzenlemeni erişilebilirlik ekranından görebilirsin.", href: "/panel/erisilebilirlik" } });
   await logAudit({ actorUserId: auth.session.userId, entityType: "AccessibilityPreference", entityId: id, action: "accessibility.academic_updated", summary: "Öğrencinin işlevsel akademik düzenlemesi güncellendi", payload: academic });
   await recordPanelProductEvent({ name: "academic_accommodation_updated", properties: { extraTimePercent: academic.assessmentExtraPercent, breaksAllowed: academic.breaksAllowed } }, auth.session.role);
   return NextResponse.json({ saved: true, version: expectedVersion === 0 ? 1 : expectedVersion + 1 });

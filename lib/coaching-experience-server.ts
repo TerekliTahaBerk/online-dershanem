@@ -88,7 +88,7 @@ export async function mutateCoachingSession(actor: CoachingActor, id: string, ra
     const result = { id, version: input.expectedVersion + 1 };
     if (input.action === "REQUEST" || (input.action === "SAVE" && session.rescheduleRequestedAt)) {
       const userId = input.action === "REQUEST" ? session.assignment.coach.userId : session.assignment.student.userId;
-      await queueReminderNotification(tx, { id: `${userId}:COACHING:${id}:${input.action}:${result.version}`, userId, type: "SYSTEM", title: input.action === "REQUEST" ? "Görüşme saati için talep var" : "Koçun yeni bir saat önerdi", body: input.action === "REQUEST" ? "Öğrencinizin saat değişikliği talebini görüşme kartından inceleyebilirsiniz." : "Yeni görüşme saatini koçluk ekranından kontrol edip onaylayabilirsin.", href: input.action === "REQUEST" ? `/panel/ogretmen/hazirlik/${session.assignment.studentId}` : "/panel/ogrenci/kocluk" }, "lessonSummary");
+      await queueReminderNotification(tx, { id: `${userId}:COACHING:${id}:${input.action}:${result.version}`, userId, type: "SYSTEM", title: input.action === "REQUEST" ? "Öğrenciniz görüşme saatini değiştirmek istiyor 🗓️" : "Koçun yeni bir saat önerdi 🗓️", body: input.action === "REQUEST" ? "Saat değişikliği talebini görüşme kartından inceleyebilirsiniz." : "Yeni görüşme saatine koçluk ekranından göz atıp uygunsa onaylayabilirsin 😊", href: input.action === "REQUEST" ? `/panel/ogretmen/hazirlik/${session.assignment.studentId}` : "/panel/ogrenci/kocluk" }, "lessonSummary");
     }
     return audited(tx, actor, op, input.action, result);
   });

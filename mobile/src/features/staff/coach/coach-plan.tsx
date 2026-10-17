@@ -22,7 +22,7 @@ export function CoachPlanScreen({ planId }: { planId: string }) {
   const refresh = usePullToRefresh(() => query.refetch());
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="coach-plan">
-      <QueryView query={query} disabledTitle="Haftalık planlar şu anda açık değil.">{(data) => <Body key={`${data.id}:${data.version}`} data={data} refetch={() => query.refetch()} />}</QueryView>
+      <QueryView query={query} disabledTitle="Haftalık planlar şu an kullanıma kapalı.">{(data) => <Body key={`${data.id}:${data.version}`} data={data} refetch={() => query.refetch()} />}</QueryView>
     </Screen>
   );
 }
@@ -52,7 +52,7 @@ function Body({ data, refetch }: { data: MobileCoachPlanDetail; refetch: () => P
     try {
       await move.mutateAsync({ taskId: moving.task.id, scheduledFor });
       setMoving(null);
-      setState({ tone: 'success', message: 'Görev taşındı.' });
+      setState({ tone: 'success', message: 'Görev taşındı ✅' });
       await invalidate();
     } catch (error) {
       setMoving(null);
@@ -66,7 +66,7 @@ function Body({ data, refetch }: { data: MobileCoachPlanDetail; refetch: () => P
     setState(null);
     try {
       await approve.mutateAsync();
-      setState({ tone: 'success', message: 'Plan onaylandı.' });
+      setState({ tone: 'success', message: 'Plan onaylandı 🎉 Öğrencin artık planını görebilir.' });
       await invalidate();
       await refetch();
     } catch (error) {
@@ -93,7 +93,7 @@ function Body({ data, refetch }: { data: MobileCoachPlanDetail; refetch: () => P
             />
           ))
         ) : (
-          <EmptyState title="Bu planda görev yok" />
+          <EmptyState title="Bu planda henüz bir görev yok" />
         )}
       </Section>
       <BottomSheet visible={Boolean(moving)} title={moving ? `"${moving.task.title}" görevini taşı` : ''} onClose={() => setMoving(null)}>

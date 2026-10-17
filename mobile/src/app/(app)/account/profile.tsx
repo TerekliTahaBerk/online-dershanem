@@ -19,15 +19,15 @@ export default function ProfileScreen() {
   const refresh = usePullToRefresh(() => query.refetch());
   return <Screen testID="student-profile" refreshing={refresh.refreshing} onRefresh={refresh.onRefresh}>
     <PageHeader title="Öğrenci profilim" />
-    {!allowed ? <EmptyState title="Bu profil yalnız öğrenci hesaplarında açılır" /> : <QueryView query={query}>{(data) => <>
+    {!allowed ? <EmptyState title="Bu profil yalnızca öğrenci hesaplarında açılır" /> : <QueryView query={query}>{(data) => <>
       <Section title="Profil" first>
         <Row title="Ad soyad" subtitle={data.fullName ?? '—'} />
         <Row title="E-posta" subtitle={data.email} />
         <Row title="Sınıf" subtitle={data.classLevel ?? '—'} />
         <Row title="Hedef" subtitle={data.targetGoal ?? 'Henüz belirlenmedi'} />
       </Section>
-      <Section title="Veliler">{data.parents.length ? data.parents.map((parent, index) => <Row key={index} title={parent} />) : <EmptyState title="Bağlı veli yok" />}</Section>
-      <Section title="Aktif ürünler">{data.activeProducts.length ? data.activeProducts.map((product, index) => <Row key={index} title={product.label} subtitle={product.expiresAt ? `Bitiş: ${formatDayMonth(product.expiresAt)}` : 'Süre sınırı yok'} />) : <EmptyState title="Aktif ürün yok" />}</Section>
+      <Section title="Veliler">{data.parents.length ? data.parents.map((parent, index) => <Row key={index} title={parent} />) : <EmptyState title="Henüz bağlı bir velin yok" />}</Section>
+      <Section title="Aktif ürünler">{data.activeProducts.length ? data.activeProducts.map((product, index) => <Row key={index} title={product.label} subtitle={product.expiresAt ? `Bitiş: ${formatDayMonth(product.expiresAt)}` : 'Süre sınırı yok'} />) : <EmptyState title="Henüz aktif bir ürünün yok" />}</Section>
     </>}</QueryView>}
   </Screen>;
 }

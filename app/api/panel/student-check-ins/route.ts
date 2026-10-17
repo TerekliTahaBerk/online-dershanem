@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       }
       const checkIn = await tx.studentCheckIn.create({ data: { studentId: profile.id, ...target, energy: parsed.data.energy, confidence: parsed.data.confidence, barrier: parsed.data.barrier, shareWithTeacher: parsed.data.shareWithTeacher } });
       const helpRequest = parsed.data.helpRequested ? await tx.studentHelpRequest.create({ data: { checkInId: checkIn.id, studentId: profile.id, ...target, dueAt: studentHelpDueAt(now) } }) : null;
-      if (parsed.data.helpRequested) await tx.notification.create({ data: { userId: recipientId, type: "SYSTEM", title: "Yeni yardım isteği", body: "Bir öğrencin kontrollü check-in üzerinden yardım istedi.", href: "/panel/ogretmen/yardim" } });
+      if (parsed.data.helpRequested) await tx.notification.create({ data: { userId: recipientId, type: "SYSTEM", title: "Bir öğrencin yardım istiyor 🙋", body: "Bir öğrencin check-in üzerinden senden destek istedi.", href: "/panel/ogretmen/yardim" } });
       return { kind: "CREATED" as const, checkIn, helpRequest, weeklyCount: weeklyCount + 1 };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   } catch (error) {

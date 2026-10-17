@@ -168,7 +168,7 @@ export function AttemptSheet({ attemptId, basePath, onClose, onChanged }: { atte
     try {
       await mutation.mutateAsync({ action: action.action, note, revision: detail.data.revision });
       setNote('');
-      setState({ tone: 'success', message: 'İnceleme kaydedildi.' });
+      setState({ tone: 'success', message: 'İnceleme kaydedildi ✅' });
       await client.invalidateQueries({ queryKey: key });
       onChanged();
     } catch (error) {

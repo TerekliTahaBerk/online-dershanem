@@ -25,7 +25,7 @@ export default function ParentAccountScreen() {
   const refresh = usePullToRefresh(() => query.refetch());
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="parent-account">
-      <PageHeader title="Hesap" description="Bağlı öğrenciler ve hesap ayarları" />
+      <PageHeader title="Hesap" description="Bağlı öğrencileriniz ve hesap ayarlarınız" />
       <QueryView query={query}>
         {(data) => (
           <>
@@ -46,7 +46,7 @@ export default function ParentAccountScreen() {
                   />
                 ))
               ) : (
-                <EmptyState title="Hesabınıza bağlı öğrenci görünmüyor" body="Bağlantı eksikse eğitim koordinatörünüzle görüşebilirsiniz." />
+                <EmptyState title="Hesabınıza henüz bağlı bir öğrenci görünmüyor" body="Bir eksiklik olduğunu düşünüyorsanız eğitim koordinatörünüz size memnuniyetle yardımcı olur 🤝" />
               )}
             </Section>
             <Section title="Ayarlar">

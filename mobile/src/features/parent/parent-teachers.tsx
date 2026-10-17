@@ -13,14 +13,14 @@ export default function ParentTeachersScreen() {
   const query = useParentQuery('teachers', fetchParentTeachers);
   const refresh = usePullToRefresh(() => query.refetch());
   return (
-    <ParentScreen title="Öğretmenler" description="Aktif öğretmenler ve branşları. İletişim bilgisi ve iç notlar paylaşılmaz." testID="parent-teachers" refresh={refresh}>
+    <ParentScreen title="Öğretmenler" description="Çocuğunuzla çalışan öğretmenler ve branşları 👩‍🏫 Gizlilik gereği iletişim bilgileri ve iç notlar paylaşılmaz." testID="parent-teachers" refresh={refresh}>
       {(child) => (
         <ParentQueryView query={query} child={child}>
           {(data) =>
             !data.available ? (
-              <EmptyState title="Bu öğrencide canlı ders ürünü yok" />
+              <EmptyState title="Bu öğrencinin canlı dersleri henüz açık değil" />
             ) : !data.teachers.length ? (
-              <EmptyState title="Henüz öğretmen bağlantısı yok" body="Öğretmen atandığında branş bilgisi burada listelenir." />
+              <EmptyState title="Henüz bir öğretmen ataması yok" body="Öğretmen atandığında branş bilgisi burada listelenecek." />
             ) : (
               <Section first>
                 {data.teachers.map((teacher) => (

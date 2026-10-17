@@ -40,8 +40,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (order.status === "PAID") {
     const body = `${order.packageName} · ${(order.totalCents / 100).toLocaleString("tr-TR")} ₺ ödendi`;
     const rawNotificationRows = [
-      { userId: student.id, type: "PAYMENT" as const, title: "Ödeme kaydı eşleştirildi", body, href: "/panel/ogrenci" },
-      ...(student.studentProfile?.parents.map((link) => ({ userId: link.parentId, type: "PAYMENT" as const, title: "Ödeme kaydı eşleştirildi", body, href: student.studentProfile ? `/panel/veli/takip?studentId=${student.studentProfile.id}` : "/panel/veli/takip" })) || []),
+      { userId: student.id, type: "PAYMENT" as const, title: "Ödemen hesabına tanımlandı ✅", body, href: "/panel/ogrenci" },
+      ...(student.studentProfile?.parents.map((link) => ({ userId: link.parentId, type: "PAYMENT" as const, title: "Ödemeniz hesaba tanımlandı ✅", body, href: student.studentProfile ? `/panel/veli/takip?studentId=${student.studentProfile.id}` : "/panel/veli/takip" })) || []),
     ];
     const notificationRows = await filterNotificationRows(rawNotificationRows, "payment");
     if (notificationRows.length) await prisma.notification.createMany({ data: notificationRows });

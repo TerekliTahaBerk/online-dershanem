@@ -242,7 +242,7 @@ describe('M1 uygulama akışları', () => {
   it('aktif ürünü olmayan öğrenci açıklamalı boş durum görür', async () => {
     await boot([account('yok@example.com', makeBootstrap({ products: {}, activeProduct: null }))]);
     await signIn('yok@example.com');
-    expect(await screen.findByText('Aktif çalışma alanın yok', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByText('Henüz aktif bir çalışma alanın yok', {}, WAIT)).toBeTruthy();
   });
 
   it('veli kendi native ekranını (M6), öğretmen ve yönetim kendi bilinçli yer tutucularını görür (öğrenci sekmesi değil)', async () => {
@@ -304,7 +304,7 @@ describe('M1 uygulama akışları', () => {
     const server = await boot([account('ada@example.com', makeBootstrap({ products: { OD: 'ACTIVE' } }))]);
     server.override('GET /api/panel/student/home', () => new Response(JSON.stringify({ error: 'Oturumunuz sona ermiş.', code: 'UNAUTHENTICATED' }), { status: 401 }));
     await signIn('ada@example.com');
-    expect(await screen.findByText('Oturumun sona erdi. Lütfen tekrar giriş yap.', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByText('Güvenliğin için oturumun sona erdi. Kaldığın yerden devam etmek için tekrar giriş yapabilirsin 🔐', {}, WAIT)).toBeTruthy();
     expect(secureStore.__store.size).toBe(0);
   });
 
@@ -312,13 +312,13 @@ describe('M1 uygulama akışları', () => {
     const server = await boot([account('ada@example.com', makeBootstrap({ products: { OK: 'ACTIVE' } }))]);
     server.override('GET /api/panel/me', () => Promise.reject(new TypeError('Network request failed')));
     await signIn('ada@example.com');
-    expect(await screen.findByText('Hesap bilgileri yüklenemedi', {}, { timeout: 15000 })).toBeTruthy();
+    expect(await screen.findByText('Hesap bilgilerini şu an yükleyemedik 😕', {}, { timeout: 15000 })).toBeTruthy();
     expect(screen.queryByTestId('yon-today')).toBeNull();
     server.override('GET /api/panel/me', () => new Response('{"contractVersion":1,"user":{}}', { status: 200 }));
     await act(async () => {
       fireEvent.press(screen.getByText('Tekrar dene'));
     });
-    expect(await screen.findByText('Sunucudan beklenmeyen bir yanıt alındı.', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByText('Sunucudan beklenmedik bir yanıt aldık. Lütfen tekrar dener misiniz?', {}, WAIT)).toBeTruthy();
     server.override('GET /api/panel/me', null);
     await act(async () => {
       fireEvent.press(screen.getByText('Tekrar dene'));
@@ -331,7 +331,7 @@ describe('M1 uygulama akışları', () => {
     const server = await boot([account('ada@example.com', makeBootstrap())]);
     server.override('GET /api/panel/me', () => new Response(JSON.stringify({ error: 'Güncelleyin.', code: 'CLIENT_UPGRADE_REQUIRED', minSupportedVersion: '2.0.0' }), { status: 426 }));
     await signIn('ada@example.com');
-    expect(await screen.findByText('Güncelleme gerekli', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByText('Yeni bir sürüm seni bekliyor ✨', {}, WAIT)).toBeTruthy();
     expect(screen.getByText(/Gereken en düşük sürüm: 2.0.0/)).toBeTruthy();
   });
 
@@ -350,7 +350,7 @@ describe('M1 uygulama akışları', () => {
     await act(async () => {
       fireEvent.press(await screen.findByText('Deneme sonucu', {}, WAIT));
     });
-    expect(await screen.findByText('Bu bildirimin içeriği bu çalışma alanında veya mobilde henüz açılamıyor.', {}, WAIT)).toBeTruthy();
+    expect(await screen.findByText('Bu bildirimin içeriği bu çalışma alanında ya da mobilde henüz açılamıyor; web panelinden ulaşabilirsin.', {}, WAIT)).toBeTruthy();
     await act(async () => {
       fireEvent.press(screen.getByText('Yeni kaynak'));
     });

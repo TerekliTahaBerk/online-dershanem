@@ -33,7 +33,7 @@ export default function MfaGate() {
       setCode('');
       await refreshBootstrap();
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : 'Kod doğrulanamadı.');
+      setError(cause instanceof ApiError ? cause.message : 'Kodu doğrulayamadık. Lütfen kontrol edip tekrar dener misin?');
     } finally {
       setBusy(false);
     }
@@ -48,7 +48,7 @@ export default function MfaGate() {
 
   if (!methods?.totp && !methods?.passkey) {
     return (
-      <AuthScreen title="İkinci faktörü kur" description="Bu hesap için iki adımlı doğrulama zorunlu. Kurulum bu cihazda tamamlanır.">
+      <AuthScreen title="İkinci faktörü kur" description="Hesabını daha güvenli kılmak için iki adımlı doğrulama gerekiyor 🔐 Kurulumu birkaç adımda bu cihazdan tamamlayabilirsin.">
         <TotpEnrollment variant="auth" onDone={refreshBootstrap} />
         {footer}
       </AuthScreen>
@@ -61,7 +61,7 @@ export default function MfaGate() {
         <Banner tone="warning" title="Geçiş anahtarı mobilde henüz desteklenmiyor">
           Hesabın yalnız geçiş anahtarı ile doğrulanıyor. Web panelinde doğrulama yap veya bir doğrulayıcı uygulama ekle; ardından burada “Durumu kontrol et”e dokun.
         </Banner>
-        <Button variant="auth" label="Web panelinde devam et" onPress={() => void openOnWeb('/giris/mfa')} accessibilityHint="Tarayıcıda açılır; web oturumuyla giriş yapmanız gerekebilir." />
+        <Button variant="auth" label="Web panelinde devam et" onPress={() => void openOnWeb('/giris/mfa')} accessibilityHint="Tarayıcıda açılır; web oturumuyla giriş yapman gerekebilir." />
         {footer}
       </AuthScreen>
     );
@@ -69,7 +69,7 @@ export default function MfaGate() {
 
   const valid = method === 'TOTP' ? /^\d{6}$/.test(code.trim()) : code.trim().length >= 6;
   return (
-    <AuthScreen title="İkinci faktör doğrulaması" description={method === 'TOTP' ? 'Doğrulayıcı uygulamadaki 6 haneli kodu gir.' : 'Kayıtlı kurtarma kodlarından birini gir. Her kod yalnız bir kez kullanılabilir.'}>
+    <AuthScreen title="İkinci faktör doğrulaması" description={method === 'TOTP' ? 'Doğrulayıcı uygulamandaki 6 haneli kodu girmen yeterli 🔐' : 'Kayıtlı kurtarma kodlarından birini gir. Her kod yalnızca bir kez kullanılabilir.'}>
       {error ? <Banner tone="critical">{error}</Banner> : null}
       <TextField
         variant="auth"

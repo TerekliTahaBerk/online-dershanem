@@ -97,8 +97,8 @@ export async function updateManagedGroup(actorId: string, id: string, action: Gr
       const [student] = await memberAudience(tx, [action.studentId]);
       await addStudentToGroup(tx, group, student.id);
       await notifyGroupAudience([
-        ...studentAudience(student, `${group.name} grubuna eklendin.`, `${group.name} grubuna eklendi.`),
-        { userId: group.teacherId, title: "Gruba yeni öğrenci eklendi", body: `${student.user.fullName || student.user.email} öğrencisi ${group.name} grubuna eklendi.`, href: "/panel/ogretmen/ogrenci" },
+        ...studentAudience(student, `${group.name} grubuna katıldın, aramıza hoş geldin! 🎉`, `${group.name} grubuna eklendi.`),
+        { userId: group.teacherId, title: "Grubunuza yeni bir öğrenci katıldı 👋", body: `${student.user.fullName || student.user.email} öğrencisi ${group.name} grubuna eklendi.`, href: "/panel/ogretmen/ogrenci" },
       ], tx);
       audit = { action: "group.membership_added", summary: "Öğrenci gruba eklendi", details: { studentId: student.id } };
     } else {
@@ -112,8 +112,8 @@ export async function updateManagedGroup(actorId: string, id: string, action: Gr
       await tx.lesson.updateMany({ where: { groupId: id, status: "PLANNED", startsAt: { gte: now } }, data: { teacherId: teacher.id } });
       const students = await memberAudience(tx, group.enrollments.map((row) => row.studentId));
       await notifyGroupAudience([
-        { userId: teacher.id, title: "Yeni grup ataması", body: `${group.name} grubu sana atandı.`, href: "/panel/ogretmen" },
-        ...(group.teacherId !== teacher.id ? [{ userId: group.teacherId, title: "Grup ataması güncellendi", body: `${group.name} grubu üzerindeki sorumluluğun değişti.`, href: "/panel/ogretmen" }] : []),
+        { userId: teacher.id, title: "Yeni bir grup size emanet 🤝", body: `${group.name} grubu size atandı. Kolay gelsin!`, href: "/panel/ogretmen" },
+        ...(group.teacherId !== teacher.id ? [{ userId: group.teacherId, title: "Grup ataması güncellendi", body: `${group.name} grubu üzerindeki sorumluluğunuz değişti.`, href: "/panel/ogretmen" }] : []),
         ...students.flatMap((student) => studentAudience(student, `${group.name} grubunun öğretmeni güncellendi.`, `${group.name} grubunda öğretmen değişikliği yapıldı.`)),
       ], tx);
       audit = { action: "group.teacher_changed", summary: `${group.name} öğretmeni güncellendi`, details: { previousTeacherId: group.teacherId, teacherId: teacher.id } };
@@ -127,7 +127,7 @@ async function memberAudience(tx: Tx, studentIds: string[]) {
 }
 
 function studentAudience(student: { id: string; userId: string; user: { fullName: string | null; email: string }; parents: Array<{ parentId: string }> }, body: string, parentBody: string): GroupNotificationInput[] {
-  return [{ userId: student.userId, title: "Grup kaydın güncellendi", body, href: "/panel/ogrenci/takvim" }, ...student.parents.map((parent) => ({ userId: parent.parentId, title: "Öğrenci grup kaydı güncellendi", body: `${student.user.fullName || student.user.email} öğrencisi ${parentBody}`, href: `/panel/veli/takvim?studentId=${student.id}` }))];
+  return [{ userId: student.userId, title: "Grup kaydın güncellendi 📌", body, href: "/panel/ogrenci/takvim" }, ...student.parents.map((parent) => ({ userId: parent.parentId, title: "Öğrenci grup kaydı güncellendi", body: `${student.user.fullName || student.user.email} öğrencisi ${parentBody}`, href: `/panel/veli/takvim?studentId=${student.id}` }))];
 }
 
 export function executeGroupMembers(actorId: string, id: string, data: GroupMembersAction, envelope: GroupMutationEnvelope) {
@@ -143,19 +143,19 @@ export function executeGroupMembers(actorId: string, id: string, data: GroupMemb
       const target = await ensureActiveGroup(tx, data.targetGroupId);
       const students = await memberAudience(tx, studentIds);
       await notifyGroupAudience(students.flatMap((student) => [
-        ...studentAudience(student, `${source.name} grubundan ${target.name} grubuna taşındın.`, `${source.name} grubundan ${target.name} grubuna taşındı.`),
-        { userId: source.teacherId, title: "Öğrenci transferi", body: `${student.user.fullName || student.user.email} öğrencisi ${source.name} grubundan alındı.`, href: "/panel/ogretmen/ogrenci" },
-        { userId: target.teacherId, title: "Öğrenci transferi", body: `${student.user.fullName || student.user.email} öğrencisi ${target.name} grubuna taşındı.`, href: "/panel/ogretmen/ogrenci" },
+        ...studentAudience(student, `${source.name} grubundan ${target.name} grubuna taşındın. Yeni grubunda başarılar! 🌟`, `${source.name} grubundan ${target.name} grubuna taşındı.`),
+        { userId: source.teacherId, title: "Öğrenci transferi 🔄", body: `${student.user.fullName || student.user.email} öğrencisi ${source.name} grubundan başka bir gruba taşındı.`, href: "/panel/ogretmen/ogrenci" },
+        { userId: target.teacherId, title: "Grubunuza yeni bir öğrenci katıldı 👋", body: `${student.user.fullName || student.user.email} öğrencisi ${target.name} grubuna taşındı.`, href: "/panel/ogretmen/ogrenci" },
       ]), tx);
       audit = { action: "group.membership_transferred", summary: `${students.length} öğrenci başka gruba taşındı`, details: { studentIds, sourceGroupId: id, targetGroupId: target.id, confirmed: true } };
     } else if (data.action === "REMOVE") {
       await ensureActiveGroup(tx, id);
       for (const studentId of studentIds) { await ensureActiveStudent(tx, studentId); await removeStudentFromGroup(tx, id, studentId); }
-      await notifyGroupAudience((await memberAudience(tx, studentIds)).flatMap((student) => studentAudience(student, `${source.name} grubundan çıkarıldın.`, `${source.name} grubundan çıkarıldı.`)), tx);
+      await notifyGroupAudience((await memberAudience(tx, studentIds)).flatMap((student) => studentAudience(student, `${source.name} grubundaki kaydın sona erdi. Bir sorun olduğunu düşünüyorsan bize yazabilirsin.`, `${source.name} grubundan çıkarıldı.`)), tx);
       audit = { action: "group.membership_removed_bulk", summary: `${studentIds.length} öğrenci gruptan çıkarıldı`, details: { studentIds } };
     } else {
-      const title = data.title || `${source.name} grubu bilgilendirmesi`;
-      const body = data.body || "Grup yöneticisinden yeni bir bilgilendirme mesajı var.";
+      const title = data.title || `${source.name} grubundan bir bilgilendirme 📣`;
+      const body = data.body || "Grup yöneticisinden size yeni bir mesaj var.";
       await notifyGroupAudience((await memberAudience(tx, studentIds)).flatMap((student) => [{ userId: student.userId, title, body, href: "/panel/ogrenci" }, ...student.parents.map((parent) => ({ userId: parent.parentId, title, body, href: `/panel/veli?studentId=${student.id}` }))]), tx);
       audit = { action: "group.members_notified", summary: `${studentIds.length} öğrenciye grup bildirimi oluşturuldu`, details: { studentIds, title } };
     }
@@ -187,6 +187,6 @@ export function previewGroupMembers(id: string, data: GroupMembersAction) {
     }
     const matchedStudents = students.filter((student) => matches.some((row) => row.studentId === student.id));
     const recipients = new Set(matchedStudents.flatMap((student) => [student.userId, ...student.parents.map((parent) => parent.parentId)]));
-    return { mode: "PREVIEW", action: data.action, canExecute: matches.length === studentIds.length, matchedStudents: matches.length, recipientCount: recipients.size, title: data.title || `${source.name} grubu bilgilendirmesi`, body: data.body || "Grup yöneticisinden yeni bir bilgilendirme mesajı var.", sample: matchedStudents.slice(0, 5).map((student) => ({ studentId: student.id, name: student.user.fullName || student.user.email })), expectedRevision };
+    return { mode: "PREVIEW", action: data.action, canExecute: matches.length === studentIds.length, matchedStudents: matches.length, recipientCount: recipients.size, title: data.title || `${source.name} grubundan bir bilgilendirme 📣`, body: data.body || "Grup yöneticisinden size yeni bir mesaj var.", sample: matchedStudents.slice(0, 5).map((student) => ({ studentId: student.id, name: student.user.fullName || student.user.email })), expectedRevision };
   }, { isolationLevel: "RepeatableRead" });
 }

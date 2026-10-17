@@ -28,7 +28,7 @@ it('işlem geçmişi tür filtresi sunucuda uygulanır ve boş görünümü gös
 it('kalite kapalıysa sunucu hatası; sözleşme bozuksa başarı ekranı gösterilmez', async () => {
  const h = await open({ 'GET /api/panel/admin/quality': () => jsonResponse(404, { error: 'Bu bölüm şu anda açık değil.' }), 'GET /api/panel/admin/features': () => jsonResponse(200, { contractVersion: 99, features: [], logs: [] }) });
  await go('/screen/quality'); expect(await h.screen.findByText(/Bu bölüm şu anda açık değil/, {}, WAIT)).toBeTruthy();
- await go('/screen/features'); expect(await h.screen.findByText('Sunucudan beklenmeyen bir yanıt alındı.', {}, WAIT)).toBeTruthy(); expect(h.screen.queryByText('0/0 açık')).toBeNull();
+ await go('/screen/features'); expect(await h.screen.findByText('Sunucudan beklenmedik bir yanıt aldık. Lütfen tekrar dener misiniz?', {}, WAIT)).toBeTruthy(); expect(h.screen.queryByText('0/0 açık')).toBeNull();
 });
 it('metrik detayına öğrenci doğrudan giremez; API isteği yapılmaz', async () => {
  const h = await boot([account('ada@example.com', makeBootstrap())]); await signIn(h, 'ada@example.com'); await go('/admin/metric/lead_count');

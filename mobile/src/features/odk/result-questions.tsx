@@ -56,7 +56,7 @@ export function ResultQuestions({ questions, answerKeyAvailable }: { questions: 
             <Row title="Bölüm" meta={open.sectionTitle} />
             <Row title="Sonuç" trailing={<StatusBadge label={RESULT_LABEL[open.result]} tone={RESULT_TONE[open.result]} />} />
             <Row title="Cevabın" meta={open.selectedOption ?? 'Boş bıraktın'} />
-            <Row title="Doğru cevap" meta={open.correctOption ?? 'Cevap anahtarı yayınlanınca'} />
+            <Row title="Doğru cevap" meta={open.correctOption ?? 'Cevap anahtarı yayınlanınca görünecek'} />
             <Row title="Süre" meta={open.activeDurationMs != null ? `${Math.round(open.activeDurationMs / 1000)} sn` : 'Süre kaydı yok'} />
             {open.marked ? <StatusBadge label="İşaretlemiştin" tone="warning" /> : null}
             {open.outcomes.map((outcome) => (

@@ -105,7 +105,7 @@ function ActivationTab({ desk, onOpen }: { desk: MobileActivationDesk; onOpen: (
             );
           })
         ) : (
-          <EmptyState title="Aktivasyon bekleyen ödenmiş sipariş yok." />
+          <EmptyState title="Aktivasyon bekleyen ödenmiş sipariş yok ✅" />
         )}
       </Section>
     </>
@@ -136,7 +136,7 @@ function ExceptionsTab({ desk }: { desk: MobileActivationDesk }) {
             );
           })
         ) : (
-          <EmptyState title="Açık operasyon istisnası yok." />
+          <EmptyState title="Açık operasyon istisnası yok ✅" />
         )}
       </Section>
       <Section title="Operasyon hazırlık kontrolü">

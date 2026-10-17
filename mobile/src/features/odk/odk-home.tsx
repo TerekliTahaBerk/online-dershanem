@@ -24,7 +24,7 @@ export default function OdkHomeScreen() {
   const refresh = usePullToRefresh(() => query.refetch());
   return (
     <Screen refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} testID="odk-home">
-      <PageHeader title="Deneme Ligi" context={<Text tone="muted" variant="meta">{formatLongDate(new Date())}</Text>} description="Sıradaki denemen, açıklanan sonuçların ve odaklanman gereken konular." />
+      <PageHeader title="Deneme Ligi" context={<Text tone="muted" variant="meta">{formatLongDate(new Date())}</Text>} description="Sıradaki denemen, sonuçların ve odaklanman gereken konular tek yerde 🏆" />
       <QueryView query={query}>{(home) => <HomeBody home={home} />}</QueryView>
     </Screen>
   );
@@ -70,7 +70,7 @@ function HomeBody({ home }: { home: MobileOdkHome }) {
       ) : null}
       {home.focus ? (
         <Section title="Odak konularım">
-          <Text tone="muted" variant="meta">{`${home.focus.examTitle} sonucuna göre en çok gelişim bekleyen kazanımlar.`}</Text>
+          <Text tone="muted" variant="meta">{`${home.focus.examTitle} sonucuna göre biraz daha ilgi bekleyen kazanımlar 🎯`}</Text>
           {home.focus.items.map((item) => (
             <Row key={item.code} title={item.title} subtitle={item.code} meta={`%${item.accuracy.toFixed(0)} · ${item.questionCount} soru`} />
           ))}
@@ -91,7 +91,7 @@ function NextExam({ exam }: { exam: MobileOdkExamRow | null }) {
   if (!exam) {
     return (
       <Section title="Sıradaki deneme" first>
-        <EmptyState title="Henüz planlanmış bir denemen yok." body="Yeni deneme açıldığında burada görünecek." />
+        <EmptyState title="Henüz planlanmış bir denemen yok 📝" body="Yeni bir deneme açıldığında burada görünecek." />
       </Section>
     );
   }
@@ -99,13 +99,13 @@ function NextExam({ exam }: { exam: MobileOdkExamRow | null }) {
   const line =
     exam.state.key === 'IN_PROGRESS'
       ? left !== null
-        ? `Devam ediyor — ${left} dk kaldı`
+        ? `Devam ediyor · ${left} dk kaldı ⏱️`
         : 'Devam ediyor'
       : exam.state.key === 'AVAILABLE'
-        ? 'Şimdi başlayabilirsin (web sınav ekranında)'
+        ? 'Şimdi başlayabilirsin 🚀 (web sınav ekranında)'
         : exam.startsAt
           ? `${formatShortDateTime(exam.startsAt)}'da açılır`
-          : 'Saat bekleniyor';
+          : 'Saat yakında belli olacak';
   const href = examHref(exam.id);
   return (
     <Section title={exam.state.key === 'IN_PROGRESS' ? 'Devam eden deneme' : 'Sıradaki deneme'} first>
