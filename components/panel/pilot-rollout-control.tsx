@@ -50,7 +50,7 @@ export function PilotRolloutControl({
     setBusy(false);
     if (!response.ok) {
       setStepUp(body.code === "STEP_UP_REQUIRED");
-      return setMessage(body.error || "Pilot taslağı oluşturulamadı.");
+      return setMessage(body.error || "Pilot taslağı şu an oluşturulamadı. Lütfen tekrar dener misiniz?");
     }
     const created = body.cohort;
     const coverage = created.members.reduce(
@@ -100,7 +100,7 @@ export function PilotRolloutControl({
     setBusy(false);
     if (!response.ok) {
       setStepUp(body.code === "STEP_UP_REQUIRED");
-      return setMessage(body.error || "Pilot durumu güncellenemedi.");
+      return setMessage(body.error || "Pilot durumu şu an güncellenemedi. Lütfen tekrar dener misiniz?");
     }
     setRows((current) =>
       current.map((item) =>

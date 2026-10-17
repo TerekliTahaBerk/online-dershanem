@@ -23,7 +23,7 @@ const querySchema = z.object({
 export async function GET(request: Request) {
   const auth = await requireApiStaffPermission("odk:ops:live"); if (!auth.ok) return auth.response;
   const parsed = querySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
-  if (!parsed.success) return NextResponse.json({ error: "Süzgeç geçersiz." }, { status: 400, headers: PRIVATE_NO_STORE });
+  if (!parsed.success) return NextResponse.json({ error: "Süzgeç geçerli görünmüyor." }, { status: 400, headers: PRIVATE_NO_STORE });
   const [data, canReview] = await Promise.all([loadOdkOpsConsole(parsed.data), hasStaffPermission(auth.session.userId, "odk:integrity:review")]);
   return staffJson(toMobileOdkOpsConsole({ ...data, canReview }));
 }

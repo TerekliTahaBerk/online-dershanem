@@ -25,7 +25,7 @@ export function TeacherDigestReview({ initialRows }: { initialRows: Row[] }) {
       body: JSON.stringify({ studentId }),
     });
     const body = await response.json().catch(() => ({}));
-    if (!response.ok) return setMessage(body.error || "Taslak hazırlanamadı.");
+    if (!response.ok) return setMessage(body.error || "Taslak şu an hazırlanamadı. Lütfen tekrar dener misiniz?");
     window.location.reload();
   }
   async function publish(row: Row) {
@@ -39,7 +39,7 @@ export function TeacherDigestReview({ initialRows }: { initialRows: Row[] }) {
       },
     );
     const body = await response.json().catch(() => ({}));
-    if (!response.ok) return setMessage(body.error || "Özet yayınlanamadı.");
+    if (!response.ok) return setMessage(body.error || "Özet şu an yayınlanamadı. Lütfen tekrar dener misiniz?");
     setRows((current) =>
       current.map((item) =>
         item.studentId === row.studentId && item.digest
@@ -54,7 +54,7 @@ export function TeacherDigestReview({ initialRows }: { initialRows: Row[] }) {
           : item,
       ),
     );
-    setMessage(`${row.name} için aynı özet öğrenci ve veliye açıldı.`);
+    setMessage(`${row.name} için aynı özet öğrenci ve veliyle paylaşıldı 🌟`);
   }
   return (
     <div className="space-y-4">
@@ -68,7 +68,7 @@ export function TeacherDigestReview({ initialRows }: { initialRows: Row[] }) {
                   ? row.digest.status === "PUBLISHED"
                     ? "Yayınlandı"
                     : "Önizleme hazır"
-                  : "Bu hafta taslak yok"}
+                  : "Bu hafta henüz taslak yok"}
               </p>
             </div>
             <button

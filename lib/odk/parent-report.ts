@@ -43,6 +43,6 @@ export function reportSummarySentences(exams: readonly ReportExam[], trends: rea
   const weak = trends.filter((trend) => trend.latestAccuracy < WEAK_ACCURACY).length;
   const improving = trends.filter((trend) => trend.delta !== null && trend.delta >= 10).length;
   if (weak) sentences.push(`${weak} kazanımda daha fazla çalışma faydalı olabilir${improving ? `; ${improving} kazanımda belirgin ilerleme var` : ""}.`);
-  else if (improving) sentences.push(`${improving} kazanımda belirgin ilerleme var.`);
+  else if (improving) sentences.push(`${improving} kazanımda belirgin ilerleme var 🌱`);
   return sentences;
 }

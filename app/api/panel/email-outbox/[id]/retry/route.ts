@@ -21,6 +21,6 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     if (updated.count) await tx.auditLog.create({ data: { actorUserId: auth.session.userId, entityType: "EmailOutbox", entityId: id, action: "email.retry_queued", summary: "E-posta yeniden gönderim kuyruğuna alındı" } });
     return updated;
   });
-  if (!result.count) return NextResponse.json({ error: "Yeniden denenebilir e-posta bulunamadı." }, { status: 404 });
+  if (!result.count) return NextResponse.json({ error: "Yeniden denenebilir e-posta şu an görünmüyor." }, { status: 404 });
   return NextResponse.json({ ok: true });
 }

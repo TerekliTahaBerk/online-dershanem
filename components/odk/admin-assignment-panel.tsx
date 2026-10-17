@@ -57,7 +57,7 @@ export function AdminAssignmentPanel({
     const result = await response.json().catch(() => ({}));
     if (!response.ok) {
       setMessage({
-        text: result.error || "Atamalar yüklenemedi.",
+        text: result.error || "Atamalar şu an yüklenemedi. Lütfen tekrar dener misiniz?",
         error: true,
       });
       return;
@@ -84,7 +84,7 @@ export function AdminAssignmentPanel({
       );
       const result = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setMessage({ text: result.error || "Atama başarısız.", error: true });
+        setMessage({ text: result.error || "Atama şu an tamamlanamadı. Lütfen tekrar dener misiniz?", error: true });
         return;
       }
       setMessage({
@@ -95,7 +95,7 @@ export function AdminAssignmentPanel({
       await load();
       router.refresh();
     } catch {
-      setMessage({ text: "Bağlantı kurulamadı.", error: true });
+      setMessage({ text: "Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?", error: true });
     } finally {
       setBusy(false);
     }

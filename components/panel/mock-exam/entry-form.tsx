@@ -114,7 +114,7 @@ export function MockExamEntryForm({
     setPrevious(sections);
     setSections(next);
     setPasteApplied(true);
-    setStatus("Toplu değerler uygulandı; toplamları kontrol edin.");
+    setStatus("Toplu değerler uygulandı; toplamlara bir göz atmanızı öneririz.");
   }
   function toggleReason(index: number, category: MockExamErrorCategory) {
     markStarted();
@@ -161,9 +161,9 @@ export function MockExamEntryForm({
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok)
-        throw new Error(mockExamErrorText(body, "Deneme kaydedilemedi."));
+        throw new Error(mockExamErrorText(body, "Deneme şu an kaydedilemedi. Lütfen tekrar dener misiniz?"));
       onCreated(body.exam as MockExamView);
-      setStatus("Deneme kaydedildi. Analiz yeni kayıtla güncellendi.");
+      setStatus("Deneme kaydedildi ✅ Analiz yeni sonuçla güncellendi.");
       setTitle("");
       setPublisher("");
       started.current = false;
@@ -171,7 +171,7 @@ export function MockExamEntryForm({
       setPasteApplied(false);
     } catch (error) {
       setStatus(
-        error instanceof Error ? error.message : "Deneme kaydedilemedi.",
+        error instanceof Error ? error.message : "Deneme şu an kaydedilemedi. Lütfen tekrar dener misiniz?",
       );
     } finally {
       setSaving(false);

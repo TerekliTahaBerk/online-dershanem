@@ -81,11 +81,11 @@ export function WorkspaceSwitcher({
         body: JSON.stringify({ product: option.key }),
       });
       const data = (await response.json().catch(() => ({}))) as { redirect?: string; error?: string };
-      if (!response.ok) throw new Error(data.error ?? "Çalışma alanı açılamadı.");
+      if (!response.ok) throw new Error(data.error ?? "Çalışma alanını şu an açamadık. Lütfen tekrar dener misiniz?");
       window.location.assign(data.redirect ?? option.href);
     } catch (caught) {
       setPending(null);
-      setError(caught instanceof Error ? caught.message : "Bağlantı kurulamadı.");
+      setError(caught instanceof Error ? caught.message : "Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?");
     }
   }
 

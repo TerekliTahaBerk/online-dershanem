@@ -38,16 +38,16 @@ function parentLinkOptions(parents: LinkPerson[], students: { id: string; user: 
 export async function loadEducationEditor(input: { kind: EditorKind; id?: string; group?: string; q?: string; page?: number; week?: number; teacher?: string; teacherScope?: string; lesson?: string }) {
   const { kind, id } = input;
   const teacherScope = input.teacherScope;
-  if (teacherScope && !["assignment", "material"].includes(kind)) throw new GroupMutationError("NOT_FOUND", "Editör bulunamadı.", 404);
+  if (teacherScope && !["assignment", "material"].includes(kind)) throw new GroupMutationError("NOT_FOUND", "Editör bulunamadı; kaldırılmış ya da değişmiş olabilir.", 404);
   const teacherGroup = teacherScope ? { group: { teacherId: teacherScope } } : {};
   if (teacherScope) {
     const target = id
       ? kind === "assignment" ? await prisma.assignment.findFirst({ where: { id, ...teacherGroup }, select: { id: true } }) : await prisma.learningMaterial.findFirst({ where: { id, ...teacherGroup }, select: { id: true } })
       : input.group ? await prisma.group.findFirst({ where: { id: input.group, teacherId: teacherScope, isActive: true }, select: { id: true } }) : true;
-    if (!target) throw new GroupMutationError("NOT_FOUND", "Kayıt bulunamadı.", 404);
+    if (!target) throw new GroupMutationError("NOT_FOUND", "Aradığınız kaydı bulamadık.", 404);
     if (input.lesson) {
       const lesson = await prisma.lesson.findFirst({ where: { id: input.lesson, teacherId: teacherScope, group: { teacherId: teacherScope, isActive: true }, ...(input.group ? { groupId: input.group } : {}) }, select: { groupId: true } });
-      if (!lesson) throw new GroupMutationError("NOT_FOUND", "Ders bulunamadı.", 404);
+      if (!lesson) throw new GroupMutationError("NOT_FOUND", "Dersi bulamadık.", 404);
       input = { ...input, group: lesson.groupId };
     }
   }
@@ -83,7 +83,7 @@ export async function loadEducationEditor(input: { kind: EditorKind; id?: string
   if (kind === "lesson") {
     if (id) {
       const lesson = await prisma.lesson.findUnique({ where: { id } });
-      if (!lesson) throw new GroupMutationError("NOT_FOUND", "Ders bulunamadı.", 404);
+      if (!lesson) throw new GroupMutationError("NOT_FOUND", "Dersi bulamadık.", 404);
       data.title = lesson.title;
       data.description = `${label(lesson.status)} · ${when(lesson.startsAt)} – ${when(lesson.endsAt)}`;
       form("UPDATE", "Dersi düzenle", `lessons/${id}`, "PATCH", [f("action", "", "UPDATE", "hidden"), scope, titleField(lesson.title), dateField("startsAt", "Başlangıç", lesson.startsAt.toISOString()), f("status", "Durum", lesson.status, "choice", enums(["PLANNED", "COMPLETED", "CANCELLED"])), urlField(lesson.meetingUrl ?? "")], revision);
@@ -106,7 +106,7 @@ export async function loadEducationEditor(input: { kind: EditorKind; id?: string
       flags.learningOutcomes ? prisma.learningOutcome.findMany({ where: outcomeWhere, orderBy: { code: "asc" }, take: 200, select: { id: true, code: true, title: true } }) : [],
       id ? [] : prisma.lesson.findMany({ where: scoped, orderBy: { startsAt: "desc" }, take: 100, select: { id: true, title: true, startsAt: true } }),
     ]);
-    if (id && !assignment) throw new GroupMutationError("NOT_FOUND", "Ödev bulunamadı.", 404);
+    if (id && !assignment) throw new GroupMutationError("NOT_FOUND", "Ödev bulunamadı; kaldırılmış ya da değişmiş olabilir.", 404);
     // Arama süzgeci seçili kazanımları dışarıda bırakırsa da adlarıyla görünsünler.
     const linked = assignment?.outcomeLinks.map((link) => link.outcome) ?? [];
     const outcomes = [...linked, ...catalog.filter((item) => !linked.some((outcome) => outcome.id === item.id))];
@@ -129,7 +129,7 @@ export async function loadEducationEditor(input: { kind: EditorKind; id?: string
   }
   if (kind === "material") {
     const item = id ? await prisma.learningMaterial.findUnique({ where: { id } }) : null;
-    if (id && !item) throw new GroupMutationError("NOT_FOUND", "Materyal bulunamadı.", 404);
+    if (id && !item) throw new GroupMutationError("NOT_FOUND", "Materyal bulunamadı; kaldırılmış ya da değişmiş olabilir.", 404);
     const fields = [titleField(item?.title), f("description", "Açıklama", item?.description ?? ""), f("captionsAvailable", "Altyazı mevcut", String(item?.captionsAvailable ?? false), "boolean"), f("transcript", "Metin dökümü", item?.transcript ?? "")];
     if (item) {
       data.title = item.title;
@@ -152,7 +152,7 @@ export async function loadEducationEditor(input: { kind: EditorKind; id?: string
   }
   if (kind === "submission") {
     const item = id ? await prisma.assignmentSubmission.findUnique({ where: { id }, include: { assignment: { include: { rubricCriteria: { orderBy: { position: "asc" } } } }, student: { include: { user: { select: { fullName: true, email: true } } } }, scores: true } }) : null;
-    if (!item || !flags.assignmentEvidence) throw new GroupMutationError("NOT_FOUND", "Teslim bulunamadı.", 404);
+    if (!item || !flags.assignmentEvidence) throw new GroupMutationError("NOT_FOUND", "Teslim bulunamadı; kaldırılmış ya da değişmiş olabilir.", 404);
     data.title = `${names(item.student.user)} · ${item.assignment.title}`;
     data.description = `${label(item.status)}\n${item.textEvidence}\n${item.feedback ?? ""}\n${item.scores.map((score) => `${item.assignment.rubricCriteria.find((criterion) => criterion.id === score.criterionId)?.label ?? "Ölçüt"}: ${label(score.level)}`).join("\n")}`;
     if (item.status === "SUBMITTED") form("REVIEW", "Teslimi değerlendir", `assignment-submissions/${id}/review`, "POST", [f("expectedVersion", "", String(item.version), "number"), f("decision", "Karar", "APPROVE", "choice", enums(["APPROVE", "REQUEST_CHANGES"])), f("feedback", "Geri bildirim", "", "text", [], true), ...item.assignment.rubricCriteria.map((criterion) => f(`score:${criterion.id}`, criterion.label, "MEETS", "score", enums(["NEEDS_WORK", "DEVELOPING", "MEETS"]))), f("interactionDurationMs", "", "0", "number")], revision);
@@ -161,7 +161,7 @@ export async function loadEducationEditor(input: { kind: EditorKind; id?: string
   if (kind === "version") {
     if (id) {
       const version = await prisma.curriculumVersion.findUnique({ where: { id }, include: { subjects: { include: { units: { include: { outcomes: true } } } } } });
-      if (!version) throw new GroupMutationError("NOT_FOUND", "Sürüm bulunamadı.", 404);
+      if (!version) throw new GroupMutationError("NOT_FOUND", "Sürüm bulunamadı; kaldırılmış ya da değişmiş olabilir.", 404);
       data.title = `${version.code} · ${version.title}`;
       form("STATUS", "Sürüm durumunu değiştir", `curriculum/versions/${id}`, "PATCH", [f("status", "Durum", version.status, "choice", enums(["DRAFT", "ACTIVE", "ARCHIVED"]))], revision);
       data.rows = version.subjects.flatMap((subject) => subject.units.flatMap((unit) => unit.outcomes.map((outcome) => ({ id: outcome.id, title: `${outcome.code} · ${outcome.title}`, detail: `${subject.name} · ${unit.name}`, kind: "outcome" as const, at: null }))));
@@ -179,7 +179,7 @@ export async function loadEducationEditor(input: { kind: EditorKind; id?: string
   if (kind === "outcome") {
     if (id) {
       const outcome = await prisma.learningOutcome.findUnique({ where: { id }, include: { unit: { include: { subject: true } }, skills: { include: { skill: true } } } });
-      if (!outcome) throw new GroupMutationError("NOT_FOUND", "Kazanım bulunamadı.", 404);
+      if (!outcome) throw new GroupMutationError("NOT_FOUND", "Kazanım bulunamadı; kaldırılmış ya da değişmiş olabilir.", 404);
       data.title = `${outcome.code} · ${outcome.title}`;
       data.description = `${outcome.unit.subject.name} · ${outcome.unit.name}\n${outcome.description ?? ""}\n${outcome.skills.map((link) => link.skill.name).join(", ")}`;
     } else {

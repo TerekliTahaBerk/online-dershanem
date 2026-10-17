@@ -1,6 +1,6 @@
 import { operationDigest } from "./group-mutation-core";
 export class OrderRetryConflict extends Error {
-  constructor(public code = "ORDER_CONFLICT", message = "Sipariş değişti veya erişim açma işlemi sürüyor. Güncel görünümü kontrol edin.") { super(message); }
+  constructor(public code = "ORDER_CONFLICT", message = "Sipariş değişti veya erişim açma işlemi sürüyor. Güncel hâline göz atıp tekrar deneyebilirsiniz.") { super(message); }
 }
 export function orderRetryRevision(order: { id: string; updatedAt: Date }) {
   return operationDigest({ id: order.id, updatedAt: order.updatedAt.toISOString() });

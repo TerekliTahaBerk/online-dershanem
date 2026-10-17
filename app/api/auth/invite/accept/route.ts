@@ -19,7 +19,7 @@ const schema = z.object({
 
 export async function POST(request: Request) {
   if (!PANEL_ENABLED) {
-    return NextResponse.json({ error: "Panel şu anda kapalı." }, { status: 503 });
+    return NextResponse.json({ error: "Panel şu an kullanıma kapalı, çok yakında yeniden açılacak." }, { status: 503 });
   }
 
   const ip = getClientIp(request.headers);
@@ -32,14 +32,14 @@ export async function POST(request: Request) {
   });
   if (!guard.ok) {
     return NextResponse.json(
-      { error: guard.code === "RATE_LIMIT" ? "Çok fazla deneme. Biraz sonra tekrar deneyin." : guard.message },
+      { error: guard.code === "RATE_LIMIT" ? "Kısa sürede çok fazla deneme yapıldı. Biraz bekleyip tekrar dener misiniz?" : guard.message },
       { status: guard.code === "RATE_LIMIT" ? 429 : 403 },
     );
   }
 
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Davet bağlantısı veya parola geçersiz." }, { status: 400 });
+    return NextResponse.json({ error: "Davet bağlantısı veya parola geçerli görünmüyor." }, { status: 400 });
   }
 
   const tokenHash = hashInviteToken(parsed.data.token);
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   });
 
   if (!user) {
-    return NextResponse.json({ error: "Davet bağlantısı geçersiz veya süresi dolmuş." }, { status: 400 });
+    return NextResponse.json({ error: "Davet bağlantısının süresi dolmuş ya da bağlantı geçersiz. Yeni bir davet için bize yazabilirsiniz." }, { status: 400 });
   }
 
   const strength = validatePasswordStrength(parsed.data.newPassword, {

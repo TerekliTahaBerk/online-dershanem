@@ -24,7 +24,7 @@ export function RiskPanel(props: RiskPanelProps) {
         body={
           data.summary.whyRisky.length
             ? data.summary.whyRisky.join(" ")
-            : "Açık risk sinyali yok."
+            : "Açık risk sinyali yok ✅"
         }
       />
 
@@ -93,7 +93,7 @@ export function RiskPanel(props: RiskPanelProps) {
               </article>
             ))
           ) : (
-            <EmptyLine text="Açık müdahale kaydı yok." />
+            <EmptyLine text="Açık müdahale kaydı yok ✅" />
           )}
         </div>
       </PanelCard>

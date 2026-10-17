@@ -50,7 +50,7 @@ export async function POST(request: Request) {
 
     if (!parsed.success) {
       log.warn("webhook.purchase.invalid_payload", { issues: parsed.error.issues.slice(0, 5) });
-      return NextResponse.json({ error: "Geçersiz webhook verisi." }, { status: 400 });
+      return NextResponse.json({ error: "Webhook verisi geçerli görünmüyor." }, { status: 400 });
     }
 
     const purchase = parsed.data.purchaseId
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
 
     if (!purchase) {
       log.warn("webhook.purchase.intent_not_found", { purchaseId: parsed.data.purchaseId });
-      return NextResponse.json({ error: "Satın alma kaydı bulunamadı." }, { status: 404 });
+      return NextResponse.json({ error: "Satın alma kaydı bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
     }
 
     try {

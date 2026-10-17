@@ -28,12 +28,12 @@ const schema = z.object({
 
 export async function POST(request: Request) {
   if (!PANEL_ENABLED) {
-    return NextResponse.json({ error: "Panel şu anda kapalı." }, { status: 503 });
+    return NextResponse.json({ error: "Panel şu an kullanıma kapalı, çok yakında yeniden açılacak." }, { status: 503 });
   }
 
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "Oturumunuz sona ermiş. Tekrar giriş yapın." }, { status: 401 });
+    return NextResponse.json({ error: "Güvenliğiniz için oturumunuz sona erdi. Lütfen tekrar giriş yapın 🔐" }, { status: 401 });
   }
 
   const guard = await guardMutation({
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
   });
   if (!guard.ok) {
     return NextResponse.json(
-      { error: guard.code === "RATE_LIMIT" ? "Çok fazla deneme. Biraz sonra tekrar deneyin." : guard.message },
+      { error: guard.code === "RATE_LIMIT" ? "Kısa sürede çok fazla deneme yapıldı. Biraz bekleyip tekrar dener misiniz?" : guard.message },
       { status: guard.code === "RATE_LIMIT" ? 429 : 403 },
     );
   }
@@ -54,17 +54,17 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
+    return NextResponse.json({ error: "İstek geçerli görünmüyor. Lütfen bilgileri kontrol edip tekrar deneyin." }, { status: 400 });
   }
 
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
+    return NextResponse.json({ error: "İstek geçerli görünmüyor. Lütfen bilgileri kontrol edip tekrar deneyin." }, { status: 400 });
   }
 
   const user = await prisma.user.findUnique({ where: { id: session.userId } });
   if (!user || user.status !== "ACTIVE") {
-    return NextResponse.json({ error: "Oturumunuz geçersiz. Tekrar giriş yapın." }, { status: 401 });
+    return NextResponse.json({ error: "Oturumunuzun süresi dolmuş. Lütfen tekrar giriş yapın 🔐" }, { status: 401 });
   }
 
   const currentOk = await verifyPassword(parsed.data.currentPassword, user.passwordHash);

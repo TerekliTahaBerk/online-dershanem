@@ -35,8 +35,8 @@ export function AdminProductAccessForm({
     const body = await response.json().catch(() => ({}));
     setBusy(false);
     if (!response.ok)
-      return setMessage(body.error || "Ürün erişimi güncellenemedi.");
-    setMessage("Ürün erişimi güncellendi.");
+      return setMessage(body.error || "Ürün erişimi şu an güncellenemedi. Lütfen tekrar dener misiniz?");
+    setMessage("Ürün erişimi güncellendi ✅");
     router.refresh();
   }
 

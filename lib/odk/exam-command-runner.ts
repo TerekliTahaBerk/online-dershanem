@@ -53,7 +53,7 @@ export async function runOdkExamCommand(input: { examId: string; actorId: string
   try {
     const result = await runEducationMutation({ lockName: `odk-exam:${examId}`, key, digest, actorId, kind: "odk-exam", targetKind: "odk-exam", entityId: examId, action: `odk.native.exam.${command.operation}`, execute: async (db) => {
       const current = await db.odkExam.findUnique({ where: { id: examId }, select: { id: true, status: true, updatedAt: true, currentVersion: { select: { id: true, status: true, updatedAt: true } } } });
-      if (!current?.currentVersion) throw new GroupMutationError("NOT_FOUND", "Deneme bulunamadı.", 404);
+      if (!current?.currentVersion) throw new GroupMutationError("NOT_FOUND", "Denemeyi bulamadık.", 404);
       if (odkExamRevision({ exam: current, version: current.currentVersion }) !== input.expectedRevision) throw new GroupMutationError("ODK_CONFLICT", "Deneme başka bir işlemde değişti. Güncel çalışma alanını kontrol edin.");
       const response = await (() => {
         switch (command.operation) {

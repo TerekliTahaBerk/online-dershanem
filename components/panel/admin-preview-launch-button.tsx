@@ -34,7 +34,7 @@ export function AdminPreviewLaunchButton({
           error?: string;
         } | null;
         if (!response.ok) {
-          window.alert(body?.error || "Önizleme başlatılamadı.");
+          window.alert(body?.error || "Önizleme şu an başlatılamadı. Lütfen tekrar dener misiniz?");
           return;
         }
         window.location.assign(body?.homePath || "/panel");

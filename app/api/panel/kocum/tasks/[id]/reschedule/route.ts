@@ -22,7 +22,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const auth = await requireApiProductRole("OK", "ADMIN", "TEACHER");
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().adaptivePlan) {
-    return NextResponse.json({ error: "Haftalık plan henüz açık değil." }, { status: 404 });
+    return NextResponse.json({ error: "Haftalık plan şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   }
 
   const guard = await guardMutation({
@@ -39,24 +39,24 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { id } = await context.params;
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Geçersiz tarih." }, { status: 400 });
+    return NextResponse.json({ error: "Tarih geçerli görünmüyor." }, { status: 400 });
   }
 
   const task = await loadPlanTaskForStaffMutation(id);
-  if (!task) return NextResponse.json({ error: "Görev bulunamadı." }, { status: 404 });
+  if (!task) return NextResponse.json({ error: "Görev bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
 
   const allowed = await assertAssignedCoach({
     role: auth.session.role as "ADMIN" | "TEACHER",
     userId: auth.session.userId,
     studentProfileId: task.plan.studentId,
   });
-  if (!allowed) return NextResponse.json({ error: "Bu öğrenci için yetkiniz yok." }, { status: 403 });
+  if (!allowed) return NextResponse.json({ error: "Bu öğrenci için yetkiniz bulunmuyor." }, { status: 403 });
 
   if (
     parsed.data.expectedPlanVersion != null &&
     parsed.data.expectedPlanVersion !== task.plan.version
   ) {
-    return NextResponse.json({ error: "Plan güncellenmiş. Sayfayı yenileyin." }, { status: 409 });
+    return NextResponse.json({ error: "Plan bu arada güncellenmiş. Sayfayı yenileyip tekrar deneyebilirsiniz." }, { status: 409 });
   }
 
   const scheduledFor = istanbulDayStart(new Date(parsed.data.scheduledFor));
@@ -97,7 +97,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   });
 
   if (!moved) {
-    return NextResponse.json({ error: "Plan güncellenmiş. Sayfayı yenileyin." }, { status: 409 });
+    return NextResponse.json({ error: "Plan bu arada güncellenmiş. Sayfayı yenileyip tekrar deneyebilirsiniz." }, { status: 409 });
   }
 
   if (task.plan.status === "APPROVED") {

@@ -19,9 +19,9 @@ export function CoachingSessionControls({ session, role }: { session: Session; r
     try {
       const response = await fetch(`/api/panel/coaching-sessions/${session.id}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...body, idempotencyKey: last.current!.key }) });
       const result = await response.json();
-      setMessage(response.ok ? "Görüşme bilgisi kaydedildi." : result.error || "Görüşme kaydedilemedi.");
+      setMessage(response.ok ? "Görüşme bilgisi kaydedildi ✅" : result.error || "Görüşme şu an kaydedilemedi. Lütfen tekrar dener misiniz?");
       if (response.ok || response.status === 409) router.refresh();
-    } catch { setMessage("Bağlantı kurulamadı. Tekrar deneyebilirsiniz."); }
+    } catch { setMessage("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar deneyebilirsiniz."); }
     finally { setBusy(false); }
   }
   return <section aria-label="Görüşme saati" className="space-y-3 border-b border-pn-border py-4 first:pt-0">
@@ -57,8 +57,8 @@ export function CoachingSessionCreate({ studentId }: { studentId: string }) {
   const key = useRef<string | null>(null);
   return <form className="mt-4 space-y-3" onSubmit={async (event) => { event.preventDefault(); if (busy) return; setBusy(true); key.current ??= crypto.randomUUID(); const data = new FormData(event.currentTarget); try {
     const response = await fetch("/api/panel/coaching-sessions", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ studentId, scheduledAt: `${data.get("date")}:00+03:00`, meetingUrl: data.get("meetingUrl") || null, idempotencyKey: key.current }) });
-    const result = await response.json(); setMessage(response.ok ? "Görüşme planlandı." : result.error || "Görüşme planlanamadı."); if (response.ok) { key.current = null; router.refresh(); }
-  } catch { setMessage("Bağlantı kurulamadı. Tekrar deneyebilirsiniz."); } finally { setBusy(false); } }}>
+    const result = await response.json(); setMessage(response.ok ? "Görüşme planlandı ✅" : result.error || "Görüşme şu an planlanamadı. Lütfen tekrar dener misiniz?"); if (response.ok) { key.current = null; router.refresh(); }
+  } catch { setMessage("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar deneyebilirsiniz."); } finally { setBusy(false); } }}>
     <label className="block text-sm">Görüşme saati<input required name="date" type="datetime-local" className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60" /></label>
     <label className="block text-sm">Katılım bağlantısı<input name="meetingUrl" type="url" className="w-full rounded-md border border-pn-border-strong bg-white px-3 py-2 text-[14px] text-pn-text placeholder:text-pn-text-muted transition-colors hover:border-pn-text-muted focus:border-pn-accent focus:outline-none disabled:cursor-not-allowed disabled:opacity-60" placeholder="https://" /></label>
     <button disabled={busy} className={buttonClass("primary", "md")}>Görüşme planla</button><p role="status" className="text-sm">{message}</p>

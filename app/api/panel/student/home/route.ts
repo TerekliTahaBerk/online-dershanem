@@ -18,7 +18,7 @@ const querySchema = z.object({ scope: z.literal("OD").optional() });
 
 export async function GET(request: Request) {
   const query = querySchema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
-  if (!query.success) return NextResponse.json({ error: "Geçersiz çalışma alanı kapsamı." }, { status: 400 });
+  if (!query.success) return NextResponse.json({ error: "Çalışma alanı kapsamı geçerli görünmüyor." }, { status: 400 });
   if (query.data.scope === "OD") {
     const odAuth = await requireApiOdRole("STUDENT");
     if (!odAuth.ok) return odAuth.response;

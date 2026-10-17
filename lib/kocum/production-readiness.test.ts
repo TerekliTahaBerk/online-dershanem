@@ -44,7 +44,7 @@ test("yeniden planlanacak görev öğrenci tarafından kapatılamaz", () => {
   assert.equal(outcome.kind, "REJECT");
   assert.equal(
     outcome.kind === "REJECT" ? outcome.reason : "",
-    "Bu görev yeniden planlanacak durumda.",
+    "Bu görev yeniden planlanmak üzere ayrıldı.",
   );
 });
 

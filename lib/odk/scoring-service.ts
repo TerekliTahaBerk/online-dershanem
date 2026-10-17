@@ -102,7 +102,7 @@ function computeAttemptScore(version: LoadedVersion, questions: ScoringQuestion[
  */
 function scoringPlan(exam: LoadedExam | null, now: Date, override?: AnswerKeyOverride): { ok: true; byVersion: Map<string, { version: LoadedVersion; questions: ScoringQuestion[]; answerKeyHash: string }>; currentHash: string } | { ok: false; error: string } {
   const current = exam?.versions.find((version) => version.id === exam.currentVersionId);
-  if (!exam || !current) return { ok: false, error: "Aktif sınav sürümü bulunamadı." };
+  if (!exam || !current) return { ok: false, error: "Aktif sınav sürümü şu an görünmüyor." };
   if (!exam.endsAt || exam.endsAt > now) return { ok: false, error: "Deneme bitmeden puanlama yapılamaz." };
   if (!["SCHEDULED", "LIVE", "ENDED", "SCORED", "RELEASED"].includes(exam.status)) return { ok: false, error: "Deneme bu durumda puanlanamaz." };
   const usedIds = new Set([current.id, ...exam.attempts.map((attempt) => attempt.versionId)]);
@@ -124,7 +124,7 @@ export async function scoreOdkExam(examId: string, scoredById: string, options: 
   const now = new Date();
   const exam = await loadScoringExam(db, examId);
   const plan = scoringPlan(exam, now);
-  if (!plan.ok || !exam) return { ok: false as const, error: plan.ok ? "Deneme bulunamadı." : plan.error };
+  if (!plan.ok || !exam) return { ok: false as const, error: plan.ok ? "Denemeyi bulamadık." : plan.error };
 
   // Sonuçlar transaction DIŞINDA bellekte hesaplanır; transaction yalnız toplu yazar
   // (P0-12): öğrenci başı ayrı sorgular 160 soruluk AYT'de ~150 öğrencide 5 sn
@@ -185,7 +185,7 @@ export type RescorePreview = {
 export async function previewOdkRescore(examId: string, override?: AnswerKeyOverride, db: ScoringDb = prisma, now = new Date()): Promise<{ ok: true; preview: RescorePreview } | { ok: false; error: string }> {
   const exam = await loadScoringExam(db, examId);
   const plan = scoringPlan(exam, now, override);
-  if (!plan.ok || !exam) return { ok: false, error: plan.ok ? "Deneme bulunamadı." : plan.error };
+  if (!plan.ok || !exam) return { ok: false, error: plan.ok ? "Denemeyi bulamadık." : plan.error };
   const scored = exam.attempts.filter((attempt) => attempt.score);
   // Anahtar farkı her attempt'in kendi sürümündeki soru kümesiyle (P1-8).
   const stored = new Map<string, OdkAnswerOption>();

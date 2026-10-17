@@ -8,7 +8,7 @@ test("kayıt API’si hesap oluşturmayı reddeder", async ({ request }) => {
     headers: { "content-type": "application/json" },
   });
   expect(response.status()).toBe(503);
-  expect(await response.json()).toEqual({ error: "Kayıt şu anda kapalı." });
+  expect(await response.json()).toEqual({ error: "Kayıtlar şu an kapalı; çok yakında yeniden açılacak." });
 });
 
 test("eski kayıt adresi başvuru formuna gider", async ({ page }) => {

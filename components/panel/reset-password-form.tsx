@@ -21,11 +21,11 @@ export function ResetPasswordForm() {
     event.preventDefault();
     setError(null);
     if (!token) {
-      setError("Bu parola yenileme bağlantısı geçersiz.");
+      setError("Bu parola yenileme bağlantısının süresi dolmuş ya da geçersiz. Yeni bir bağlantı isteyebilirsiniz.");
       return;
     }
     if (newPassword !== repeat) {
-      setError("Yeni parolalar birbiriyle eşleşmiyor.");
+      setError("Yeni parolalar birbiriyle eşleşmiyor; bir kez daha kontrol eder misiniz?");
       return;
     }
     setPending(true);
@@ -40,13 +40,13 @@ export function ResetPasswordForm() {
         error?: string;
       };
       if (!response.ok || !data.redirect) {
-        setError(data.error ?? "Parola yenilenemedi.");
+        setError(data.error ?? "Parolanızı şu an yenileyemedik. Lütfen tekrar dener misiniz?");
         setPending(false);
         return;
       }
       window.location.replace(data.redirect);
     } catch {
-      setError("Bağlantı kurulamadı. Lütfen tekrar deneyin.");
+      setError("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?");
       setPending(false);
     }
   }
@@ -68,9 +68,9 @@ export function ResetPasswordForm() {
         role="alert"
         className="text-center text-[14px] leading-7 text-rose-800"
       >
-        Bu parola yenileme bağlantısı geçersiz.{" "}
+        Bu parola yenileme bağlantısının süresi dolmuş ya da geçersiz.{" "}
         <Link href="/parolami-unuttum" className="font-semibold underline">
-          Yeni bağlantı isteyin.
+          Yeni bir bağlantı isteyebilirsiniz.
         </Link>
       </div>
     );

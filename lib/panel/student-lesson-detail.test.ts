@@ -33,7 +33,7 @@ test("attendancePresentation: web etiket ve tonlarıyla aynı", () => {
   assert.deepEqual(attendancePresentation("LATE"), { label: "Geç katıldın", tone: "success" });
   assert.deepEqual(attendancePresentation("ABSENT"), { label: "Katılmadın", tone: "warning" });
   assert.deepEqual(attendancePresentation("EXCUSED"), { label: "Mazeretli", tone: "neutral" });
-  assert.deepEqual(attendancePresentation(null), { label: "Katılım işlenmedi", tone: "neutral" });
+  assert.deepEqual(attendancePresentation(null), { label: "Katılım henüz işlenmedi", tone: "neutral" });
 });
 
 test("ders detayı: katılım bağlantısı yalnız aktif kayıt + aktif grup + pencere açıkken", () => {

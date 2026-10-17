@@ -41,7 +41,7 @@ export async function createTeacherAiDraft(input: z.infer<typeof teacherAiCreate
     await db.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`teacher-ai-key:${input.requestKey}`}, 0))::text`;
     await db.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`teacher-ai:${actorId}`}, 0))::text`;
     const lesson = await loadSourceLesson(input.lessonId, actorId, db);
-    if (!lesson) return NextResponse.json({ error: "Yetkili olduğunuz ders bulunamadı." }, { status: 404 });
+    if (!lesson) return NextResponse.json({ error: "Yetkili olduğunuz ders şu an görünmüyor." }, { status: 404 });
     const replay = await db.teacherAiDraft.findUnique({ where: { requestKey: input.requestKey } });
     if (replay) {
       if (replay.teacherId !== actorId || replay.lessonId !== input.lessonId || replay.taskType !== input.taskType) return NextResponse.json({ error: "İşlem anahtarı başka bir istek için kullanıldı." }, { status: 409 });
@@ -56,8 +56,8 @@ export async function createTeacherAiDraft(input: z.infer<typeof teacherAiCreate
     await recordPanelProductEvent({ name: "ai_draft_requested", properties: { promptVersion: TEACHER_AI_PROMPT_VERSION, taskType: input.taskType, sourceCount: prepared.safe.sources.length, redactionBand: redactionBand(prepared.redactionCount) } }, "TEACHER");
     const generated = await generate(prepared.safe, { forceFallbackReason: forcedReason });
     const latest = await loadSourceLesson(input.lessonId, actorId, db);
-    if (!latest) return NextResponse.json({ error: "Yetkili olduğunuz ders bulunamadı." }, { status: 404 });
-    if (prepareSource(latest, input.taskType).sourceHash !== prepared.sourceHash) return NextResponse.json({ error: "Taslak hazırlanırken kaynak değişti. Yeniden inceleyin." }, { status: 409 });
+    if (!latest) return NextResponse.json({ error: "Yetkili olduğunuz ders şu an görünmüyor." }, { status: 404 });
+    if (prepareSource(latest, input.taskType).sourceHash !== prepared.sourceHash) return NextResponse.json({ error: "Taslak hazırlanırken kaynak değişmiş; yeniden incelemenizi rica ederiz." }, { status: 409 });
     const draft = await db.teacherAiDraft.create({ data: { teacherId: actorId, lessonId: lesson.id, taskType: input.taskType, provider: generated.provider, promptVersion: TEACHER_AI_PROMPT_VERSION, modelName: generated.modelName, sourceHash: prepared.sourceHash, sourceRefs: prepared.safe.sources.map((item) => ({ id: item.id, label: item.label })) as Prisma.InputJsonValue, originalContent: generated.content as Prisma.InputJsonValue, fallbackReason: generated.fallbackReason, redactionCount: prepared.redactionCount, latencyMs: generated.latencyMs, inputTokens: generated.inputTokens, outputTokens: generated.outputTokens, estimatedCostMicrousd: generated.estimatedCostMicrousd, requestKey: input.requestKey } });
     events.push(() => recordPanelProductEvent({ name: "ai_draft_generated", properties: { taskType: input.taskType, provider: generated.provider, latencyBand: latencyBand(generated.latencyMs), citationCount: generated.content.citations.length, fallbackReason: fallbackReason(generated.fallbackReason), costBand: costBand(generated.estimatedCostMicrousd) } }, "TEACHER"));
     await db.auditLog.create({ data: { actorType: "USER", actorUserId: actorId, entityType: "TeacherAiDraft", entityId: draft.id, action: "teacher_ai_draft.generated", summary: "Kaynaklı öğretmen taslağı üretildi", payload: { taskType: draft.taskType, provider: draft.provider, promptVersion: draft.promptVersion, sourceCount: prepared.safe.sources.length, redactionCount: prepared.redactionCount, fallbackReason: draft.fallbackReason } } });
@@ -77,15 +77,15 @@ export async function reviewTeacherAiDraft(id: string, input: z.infer<typeof tea
   const events: Array<() => Promise<void>> = [];
   const response = await client.$transaction(async (tx) => {
     const db = tx as PrismaClient;
-    if (input.action === "APPROVE" && !input.content) return NextResponse.json({ error: "Onaylanan içeriği kontrol edin." }, { status: 400 });
-    if (input.action === "FLAG" && !input.flagReason) return NextResponse.json({ error: "Kontrollü hata nedeni seçin." }, { status: 400 });
+    if (input.action === "APPROVE" && !input.content) return NextResponse.json({ error: "Lütfen onaylanan içeriği bir kez daha kontrol eder misiniz?" }, { status: 400 });
+    if (input.action === "FLAG" && !input.flagReason) return NextResponse.json({ error: "Lütfen kontrollü hata nedeni seçin." }, { status: 400 });
     const draft = await db.teacherAiDraft.findFirst({ where: { id, teacherId: actorId, lesson: { teacherId: actorId, status: { not: "CANCELLED" }, group: { isActive: true } } }, select: { id: true, taskType: true, status: true, provider: true, version: true, createdAt: true, originalContent: true } });
-    if (!draft) return NextResponse.json({ error: "Yetkili olduğunuz taslak bulunamadı." }, { status: 404 });
-    if (draft.status !== "DRAFT" || draft.version !== input.expectedVersion) return NextResponse.json({ error: "Taslak başka bir işlemde güncellendi." }, { status: 409 });
+    if (!draft) return NextResponse.json({ error: "Yetkili olduğunuz taslak şu an görünmüyor." }, { status: 404 });
+    if (draft.status !== "DRAFT" || draft.version !== input.expectedVersion) return NextResponse.json({ error: "Taslak başka bir işlemde güncellenmiş; güncel hâline göz atıp tekrar deneyebilirsiniz." }, { status: 409 });
     const original = aiDraftContentSchema.parse(draft.originalContent); const reviewed = input.content ? { ...input.content, citations: original.citations } satisfies AiDraftContent : null;
     const changed = reviewed ? changedFieldCount(original, reviewed) : 0;
     const result = await db.teacherAiDraft.updateMany({ where: { id, teacherId: actorId, status: "DRAFT", version: input.expectedVersion }, data: { status: input.action === "APPROVE" ? "APPROVED" : input.action === "FLAG" ? "FLAGGED" : "REJECTED", reviewedContent: reviewed as Prisma.InputJsonValue | undefined, flagReason: input.action === "FLAG" ? input.flagReason : null, reviewedAt: new Date(), version: { increment: 1 } } });
-    if (!result.count) return NextResponse.json({ error: "Taslak başka bir işlemde güncellendi." }, { status: 409 });
+    if (!result.count) return NextResponse.json({ error: "Taslak başka bir işlemde güncellenmiş; güncel hâline göz atıp tekrar deneyebilirsiniz." }, { status: 409 });
     const action = input.action === "APPROVE" ? (changed ? "EDIT" : "ACCEPT") : input.action === "FLAG" ? "FLAG" : "REJECT";
     events.push(() => recordPanelProductEvent({ name: "ai_draft_reviewed", properties: { taskType: draft.taskType, provider: draft.provider, action, changedFieldCount: changed, reviewAgeBand: ageBand(Date.now() - draft.createdAt.getTime()) } }, "TEACHER"));
     await db.auditLog.create({ data: { actorType: "USER", actorUserId: actorId, entityType: "TeacherAiDraft", entityId: id, action: `teacher_ai_draft.${input.action.toLowerCase()}`, summary: "Öğretmen AI taslağını inceledi", payload: { taskType: draft.taskType, provider: draft.provider, changedFieldCount: changed, flagReason: input.flagReason || null } } });

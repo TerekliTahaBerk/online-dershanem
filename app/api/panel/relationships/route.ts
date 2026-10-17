@@ -20,15 +20,15 @@ export async function POST(request: Request) {
   const guard = await guardMutation({ action: "panel.relationships.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:relations:${auth.session.userId}`, rateLimit: { max: 60, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Veli ve öğrenci seçin." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Lütfen veli ve öğrenci seçin." }, { status: 400 });
   const [parent, student] = await Promise.all([
     prisma.user.findFirst({ where: { id: parsed.data.parentId, role: "PARENT", status: "ACTIVE" }, select: { id: true } }),
     prisma.studentProfile.findFirst({ where: { id: parsed.data.studentId, user: { status: "ACTIVE" } }, select: { id: true, userId: true } }),
   ]);
-  if (!parent || !student) return NextResponse.json({ error: "Veli veya öğrenci bulunamadı." }, { status: 404 });
+  if (!parent || !student) return NextResponse.json({ error: "Veli ya da öğrenciyi bulamadık." }, { status: 404 });
   // Veli-free ürün politikası: yalnızca KPSS üyeliği olan öğrenciye veli bağlanamaz.
   // Bulunamayanla aynı 404 — UI'da seçeneği gizlemek güvenlik sınırı değildir.
-  if (!(await isStudentUserVisibleToParents(student.userId))) return NextResponse.json({ error: "Veli veya öğrenci bulunamadı." }, { status: 404 });
+  if (!(await isStudentUserVisibleToParents(student.userId))) return NextResponse.json({ error: "Veli ya da öğrenciyi bulamadık." }, { status: 404 });
   const existing = await prisma.parentStudent.findUnique({
     where: { parentId_studentId: { parentId: parent.id, studentId: student.id } },
     select: { id: true, relationship: true },

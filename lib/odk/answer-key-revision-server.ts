@@ -57,7 +57,7 @@ export function revisionStateHash(target: RevisionTarget) {
 
 async function planFor(db: Db, examId: string, changes: AnswerKeyChange[]) {
   const target = await loadRevisionTarget(db, examId);
-  if (!target?.currentVersion) return { ok: false as const, response: NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 }) };
+  if (!target?.currentVersion) return { ok: false as const, response: NextResponse.json({ error: "Denemeyi bulamadık." }, { status: 404 }) };
   const plan = planAnswerKeyRevision({ examStatus: target.status, questions: revisionQuestions(target), changes });
   if (!plan.ok) return { ok: false as const, response: NextResponse.json({ error: plan.issues[0].message, code: plan.issues[0].code, issues: plan.issues }, { status: plan.issues[0].code === "REVISION_NOT_ALLOWED" ? 409 : 400 }) };
   return { ok: true as const, target, plan };

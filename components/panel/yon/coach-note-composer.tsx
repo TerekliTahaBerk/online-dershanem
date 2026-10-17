@@ -44,12 +44,12 @@ export function CoachNoteComposer({ studentId, studentName }: { studentId: strin
     setBusy(false);
     if (!response?.ok) {
       const payload = (await response?.json().catch(() => ({}))) as { error?: string } | undefined;
-      setMessage(payload?.error || "Not kaydedilemedi.");
+      setMessage(payload?.error || "Notu şu an kaydedemedik. Lütfen tekrar dener misin?");
       return;
     }
     setBody("");
     setVisibility("INTERNAL");
-    setMessage("Not kaydedildi.");
+    setMessage("Not kaydedildi ✅");
     router.refresh();
   }
 

@@ -49,7 +49,7 @@ export function ExamList({
                     )}
                   </span>
                   <h3 className="mt-1 text-[14px] font-semibold text-pn-text">
-                    {exam.title || "Adsız deneme"}
+                    {exam.title || "İsimsiz deneme"}
                     {exam.publisher ? ` · ${exam.publisher}` : ""}
                   </h3>
                 </div>

@@ -27,7 +27,7 @@ type LinkInput = {
  */
 export async function linkLeadLifecycleEntities(input: LinkInput) {
   const lead = await prisma.businessLead.findUnique({ where: { id: input.leadId } });
-  if (!lead) throw new LifecycleLinkError("Aday bulunamadı.", "LEAD_NOT_FOUND");
+  if (!lead) throw new LifecycleLinkError("Aday bulunamadı; kaldırılmış ya da değişmiş olabilir.", "LEAD_NOT_FOUND");
 
   let userId = input.userId ?? lead.relatedOdUserId ?? lead.relatedOdkUserId ?? null;
 
@@ -36,7 +36,7 @@ export async function linkLeadLifecycleEntities(input: LinkInput) {
       where: { id: input.odOrderId },
       select: { id: true, userId: true, status: true },
     });
-    if (!order) throw new LifecycleLinkError("OD siparişi bulunamadı.", "ORDER_NOT_FOUND");
+    if (!order) throw new LifecycleLinkError("OD siparişi bulunamadı; kaldırılmış ya da değişmiş olabilir.", "ORDER_NOT_FOUND");
     if (order.userId) userId = order.userId;
   }
   if (input.odkOrderId) {
@@ -44,7 +44,7 @@ export async function linkLeadLifecycleEntities(input: LinkInput) {
       where: { id: input.odkOrderId },
       select: { id: true, studentUserId: true, status: true },
     });
-    if (!order) throw new LifecycleLinkError("ODK siparişi bulunamadı.", "ORDER_NOT_FOUND");
+    if (!order) throw new LifecycleLinkError("ODK siparişi bulunamadı; kaldırılmış ya da değişmiş olabilir.", "ORDER_NOT_FOUND");
     if (order.studentUserId) userId = order.studentUserId;
   }
 

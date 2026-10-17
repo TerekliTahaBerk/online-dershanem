@@ -109,7 +109,7 @@ export function UserBulkOperations({
     if (!response.ok || !payload) {
       setError(
         (payload as { error?: string } | null)?.error ||
-          "Toplu işlem tamamlanamadı.",
+          "Toplu işlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?",
       );
       return;
     }

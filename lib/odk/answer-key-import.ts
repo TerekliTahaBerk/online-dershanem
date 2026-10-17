@@ -57,7 +57,7 @@ export function previewAnswerKeyImport(
       schemaVersion: ANSWER_KEY_SCHEMA_VERSION,
       totalAnswers: 0,
       validAnswers: 0,
-      issues: [{ level: "error", code: "INVALID_STRUCTURE", message: parsed.error.issues[0]?.message || "Cevap anahtarı JSON yapısı geçersiz." }],
+      issues: [{ level: "error", code: "INVALID_STRUCTURE", message: parsed.error.issues[0]?.message || "Cevap anahtarı JSON yapısı geçerli görünmüyor." }],
       mappings: [],
     };
   }

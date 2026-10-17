@@ -14,15 +14,15 @@ type DinoAnswerPayload = {
 
 const FALLBACK_NOTE: Record<string, string> = {
   PROVIDER_DISABLED:
-    "Dino açıklamayı şu anda hazırlayamadı. Dayanakları yine de görebilirsin.",
+    "Dino açıklamayı şu an hazırlayamadı 🦕 Dayanaklarına yine de göz atabilirsin.",
   EXTERNAL_TRANSFER_NOT_READY:
-    "Dino açıklamayı şu anda hazırlayamadı. Dayanakları yine de görebilirsin.",
+    "Dino açıklamayı şu an hazırlayamadı 🦕 Dayanaklarına yine de göz atabilirsin.",
   COST_CONFIG_MISSING:
-    "Dino açıklama yapılandırması eksik. Dayanakları yine de görebilirsin.",
-  DAILY_QUOTA: "Bugünkü Dino açıklama hakkını kullandın.",
-  NO_SOURCE_DATA: "Bu konuda açıklama yapmak için yeterli dayanak yok.",
+    "Dino şu an açıklama yapamıyor 🦕 Dayanaklarına yine de göz atabilirsin.",
+  DAILY_QUOTA: "Bugünlük Dino açıklama hakkını kullandın 🦕 Yarın yine buradayız!",
+  NO_SOURCE_DATA: "Bu konuda açıklama yapabilmek için henüz yeterli veri yok.",
   PROMPT_INJECTION:
-    "Kayıtlarda beklenmedik içerik bulundu; güvenlik için yorum üretilmedi.",
+    "Kayıtlarda beklenmedik bir içerik fark ettik; güvenliğin için yorum yapmadık.",
 };
 
 export function DinoExplanationAction({
@@ -67,7 +67,7 @@ export function DinoExplanationAction({
         .json()
         .catch(() => null)) as DinoAnswerPayload | null;
       if (!response.ok || !payload?.answer) {
-        setError(payload?.error || "Dino açıklamayı şu anda hazırlayamadı.");
+        setError(payload?.error || "Dino açıklamayı şu an hazırlayamadı 🦕 Biraz sonra tekrar dener misin?");
         return;
       }
       const answerText = payload.answer.answer?.text?.trim() || "";
@@ -76,7 +76,7 @@ export function DinoExplanationAction({
         .filter(Boolean);
       const fallbackReason = payload.answer.fallbackReason || null;
       setText(
-        answerText || "Bu konuda açıklama yapmak için yeterli dayanak yok.",
+        answerText || "Bu konuda açıklama yapabilmek için henüz yeterli veri yok.",
       );
       setSources(labels);
       setNote(
@@ -86,7 +86,7 @@ export function DinoExplanationAction({
           : null,
       );
     } catch {
-      setError("Dino açıklamayı şu anda hazırlayamadı.");
+      setError("Dino açıklamayı şu an hazırlayamadı 🦕 Biraz sonra tekrar dener misin?");
     } finally {
       setLoading(false);
     }
@@ -120,9 +120,9 @@ export function DinoExplanationAction({
             className="mt-2 text-[12.5px] font-semibold text-dc-brand-strong disabled:opacity-70"
           >
             {loading
-              ? "Dino açıklamayı hazırlıyor…"
+              ? "Dino açıklamayı hazırlıyor 🦕…"
               : text
-                ? "Dino açıklaması hazır"
+                ? "Dino açıklaması hazır ✨"
                 : error
                   ? "Tekrar dene"
                   : prepareLabel}

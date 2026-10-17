@@ -78,7 +78,7 @@ export function AdminPreviewPicker({
           candidates?: Candidate[];
           error?: string;
         } | null;
-        if (!response.ok) throw new Error(body?.error || "Arama başarısız.");
+        if (!response.ok) throw new Error(body?.error || "Arama şu an tamamlanamadı. Lütfen tekrar dener misiniz?");
         if (!cancelled) {
           setCandidates(body?.candidates ?? []);
           setSelectedId(null);
@@ -86,7 +86,7 @@ export function AdminPreviewPicker({
       })
       .catch((err: unknown) => {
         if (!cancelled)
-          setError(err instanceof Error ? err.message : "Arama başarısız.");
+          setError(err instanceof Error ? err.message : "Arama şu an tamamlanamadı. Lütfen tekrar dener misiniz?");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -124,7 +124,7 @@ export function AdminPreviewPicker({
         error?: string;
       } | null;
       if (!response.ok) {
-        setError(body?.error || "Önizleme başlatılamadı.");
+        setError(body?.error || "Önizleme şu an başlatılamadı. Lütfen tekrar dener misiniz?");
         return;
       }
       setOpen(false);

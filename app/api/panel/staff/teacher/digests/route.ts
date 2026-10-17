@@ -11,7 +11,7 @@ import { guardMutation } from "@/lib/security/mutation-guard";
 export async function GET() {
   const auth = await requireStaffApi("OD", "od:lesson:teach");
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().parentWeeklyDigest) return staffFeatureDisabled("Haftalık özet henüz açık değil.");
+  if (!getPanelFeatureFlags().parentWeeklyDigest) return staffFeatureDisabled("Haftalık özet şu an kullanıma kapalı, çok yakında açılacak.");
   return staffJson({ contractVersion: 1, rows: await loadTeacherDigests(auth.session.userId) });
 }
 
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   const auth = await requireStaffApi("OD", "od:lesson:teach");
   if (!auth.ok) return auth.response;
   const flags = getPanelFeatureFlags();
-  if (!flags.parentWeeklyDigest) return staffFeatureDisabled("Haftalık özet henüz açık değil.");
+  if (!flags.parentWeeklyDigest) return staffFeatureDisabled("Haftalık özet şu an kullanıma kapalı, çok yakında açılacak.");
   const guard = await guardMutation({ action: "panel.teacher.digests", requireSameOrigin: true, headers: request.headers, rateLimitKey: `teacher:digests:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { headers: PRIVATE_NO_STORE, status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = command.safeParse(await request.json().catch(() => null));
@@ -29,14 +29,14 @@ export async function POST(request: Request) {
   if (!parsed.success || !control.success) return NextResponse.json({ error: "İşlem, anahtar veya sürüm geçersiz." }, { headers: PRIVATE_NO_STORE, status: 400 });
   // Re-check ownership before receipt replay: an ended enrollment must revoke reads and writes.
   const allowed = (await loadTeacherDigests(auth.session.userId)).some((row) => row.studentId === parsed.data.studentId);
-  if (!allowed) return NextResponse.json({ error: "Kayıt bulunamadı." }, { headers: PRIVATE_NO_STORE, status: 404 });
+  if (!allowed) return NextResponse.json({ error: "Aradığınız kaydı bulamadık." }, { headers: PRIVATE_NO_STORE, status: 404 });
   const digest = operationDigest({ command: parsed.data, revision: control.data.revision });
   const key = `teacher-digest:${auth.session.userId}:${control.data.key}`;
   try {
     const result = await runEducationMutation({ kind: "digest", targetKind: "student", key, actorId: auth.session.userId, action: `digest.${parsed.data.action}`, digest, execute: async (db) => {
       const row = (await loadTeacherDigests(auth.session.userId, db)).find((item) => item.studentId === parsed.data.studentId);
-      if (!row) throw new GroupMutationError("NOT_FOUND", "Kayıt bulunamadı.", 404);
-      if (row.revision !== control.data.revision) throw new GroupMutationError("DIGEST_CONFLICT", "Özet veya alıcılar değişti. Güncel görünümü kontrol edin.");
+      if (!row) throw new GroupMutationError("NOT_FOUND", "Aradığınız kaydı bulamadık.", 404);
+      if (row.revision !== control.data.revision) throw new GroupMutationError("DIGEST_CONFLICT", "Özet veya alıcılar değişti. Güncel hâline göz atıp tekrar deneyebilirsiniz.");
       if (parsed.data.action === "generate") {
         if (row.digest?.status === "PUBLISHED") throw new GroupMutationError("DIGEST_CONFLICT", "Yayınlanmış özet yenilenemez.");
         const generated = await generateTeacherDigest(row.studentId, auth.session.userId, db);
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
           throw conflict;
         }
       }
-      return NextResponse.json({ error: "Kayıt değişti. Güncel görünümü kontrol edin.", code: "DIGEST_CONFLICT" }, { headers: PRIVATE_NO_STORE, status: 409 });
+      return NextResponse.json({ error: "Kayıt bu arada güncellenmiş. Güncel hâline göz atıp tekrar deneyebilirsiniz.", code: "DIGEST_CONFLICT" }, { headers: PRIVATE_NO_STORE, status: 409 });
     }
     throw error;
   }

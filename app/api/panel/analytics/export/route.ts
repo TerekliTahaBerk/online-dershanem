@@ -24,7 +24,7 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz analiz filtreleri." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Analiz filtreleri geçerli görünmüyor." }, { status: 400 });
   const filters = parseAnalyticsFilters(parsed.data);
 
   const snapshot = await loadManagementAnalyticsSnapshot(filters);

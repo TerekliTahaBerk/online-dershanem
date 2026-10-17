@@ -69,7 +69,7 @@ function receiptEntity(payload: unknown, digest: string) {
 export async function createMockExamService(actor: Actor, input: MockExamCreateInput) {
   const ownProfile = actor.role === "STUDENT" ? await prisma.studentProfile.findUnique({ where: { userId: actor.userId }, select: { id: true } }) : null;
   const studentId = actor.role === "STUDENT" ? ownProfile?.id : input.studentId;
-  if (!studentId) throw new MockExamError(400, "STUDENT_REQUIRED", "Öğrenci seçin.");
+  if (!studentId) throw new MockExamError(400, "STUDENT_REQUIRED", "Lütfen öğrenci seçin.");
 
   const { entryDurationMs: _duration, idempotencyKey, ...body } = input;
   void _duration;
@@ -86,7 +86,7 @@ export async function createMockExamService(actor: Actor, input: MockExamCreateI
   if (prior) return prior;
 
   const student = await prisma.studentProfile.findFirst({ where: { id: studentId, user: { status: "ACTIVE" }, ...(actor.role === "TEACHER" ? { enrollments: { some: { endedAt: null, group: { teacherId: actor.userId, isActive: true } } } } : {}) }, select: { id: true } });
-  if (!student) throw new MockExamError(404, "STUDENT_NOT_FOUND", "Yetkili olduğunuz öğrenci bulunamadı.");
+  if (!student) throw new MockExamError(404, "STUDENT_NOT_FOUND", "Yetkili olduğunuz öğrenci şu an görünmüyor.");
   const validationError = validateMockExamSections(input.exam, input.sections);
   if (validationError) throw new MockExamError(400, "INVALID_SECTIONS", validationError);
   const sectionDuration = input.sections.reduce((sum, section) => sum + (section.durationMinutes || 0), 0);
@@ -119,7 +119,7 @@ export async function createMockExamService(actor: Actor, input: MockExamCreateI
     if (isRetryable(error)) {
       const saved = await replay();
       if (saved) return saved;
-      throw new MockExamError(409, "MOCK_EXAM_CONFLICT", "Deneme kaydı eşzamanlı değişti. Görünümü yenileyin.");
+      throw new MockExamError(409, "MOCK_EXAM_CONFLICT", "Deneme kaydı eşzamanlı değişti. Sayfayı yenileyip tekrar deneyebilirsiniz.");
     }
     throw error;
   }
@@ -150,9 +150,9 @@ export async function reviseMockExamService(actor: Actor, examId: string, input:
 
   const scope = actor.role === "STUDENT" ? { student: { userId: actor.userId } } : actor.role === "TEACHER" ? { student: { enrollments: { some: { endedAt: null, group: { teacherId: actor.userId, isActive: true } } } } } : {};
   const exam = await prisma.mockExam.findFirst({ where: { id: examId, ...scope }, include: { sections: { include: { errors: true } } } });
-  if (!exam) throw new MockExamError(404, "NOT_FOUND", "Yetkili olduğunuz deneme bulunamadı.");
+  if (!exam) throw new MockExamError(404, "NOT_FOUND", "Yetkili olduğunuz deneme şu an görünmüyor.");
   const sectionIds = new Set(exam.sections.map((section) => section.id));
-  if (input.reasons.some((item) => !sectionIds.has(item.sectionId) || new Set(item.categories).size !== item.categories.length)) throw new MockExamError(400, "INVALID_REASONS", "Geçersiz bölüm veya tekrar eden hata nedeni.");
+  if (input.reasons.some((item) => !sectionIds.has(item.sectionId) || new Set(item.categories).size !== item.categories.length)) throw new MockExamError(400, "INVALID_REASONS", "Bölüm veya tekrar eden hata nedeni geçerli görünmüyor.");
   const before = exam.sections.flatMap((section) => section.errors.map((error) => `${section.id}:${error.category}`)).sort();
   const after = input.reasons.flatMap((section) => section.categories.map((error) => `${section.sectionId}:${error}`)).sort();
   const changed = before.filter((item) => !after.includes(item)).length + after.filter((item) => !before.includes(item)).length;
@@ -164,7 +164,7 @@ export async function reviseMockExamService(actor: Actor, examId: string, input:
         if (saved) return receiptEntity(saved.payload, digest);
         if (input.expectedRevision !== undefined) {
           const current = await tx.mockExam.findUniqueOrThrow({ where: { id: examId }, select: { nextAction: true, sections: { select: { id: true, errors: { select: { category: true } } } } } });
-          if (mockExamRevision(current) !== input.expectedRevision) throw new MockExamError(409, "MOCK_EXAM_CONFLICT", "Deneme başka bir yerde güncellendi. Görünümü yenileyin.");
+          if (mockExamRevision(current) !== input.expectedRevision) throw new MockExamError(409, "MOCK_EXAM_CONFLICT", "Deneme başka bir yerde güncellendi. Sayfayı yenileyip tekrar deneyebilirsiniz.");
         }
         await tx.mockExamSectionError.deleteMany({ where: { sectionId: { in: [...sectionIds] } } });
         for (const section of input.reasons) if (section.categories.length) await tx.mockExamSectionError.createMany({ data: section.categories.map((errorCategory) => ({ sectionId: section.sectionId, category: errorCategory, revisedById: actor.role === "STUDENT" ? null : actor.userId })) });
@@ -177,7 +177,7 @@ export async function reviseMockExamService(actor: Actor, examId: string, input:
     if (isRetryable(error)) {
       const saved = await replay();
       if (saved) return saved;
-      throw new MockExamError(409, "MOCK_EXAM_CONFLICT", "Deneme başka bir yerde güncellendi. Görünümü yenileyin.");
+      throw new MockExamError(409, "MOCK_EXAM_CONFLICT", "Deneme başka bir yerde güncellendi. Sayfayı yenileyip tekrar deneyebilirsiniz.");
     }
     throw error;
   }

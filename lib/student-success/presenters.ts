@@ -71,15 +71,15 @@ export function presentForParent(input: {
       lessonAttendance:
         input.summary.attendance.percent !== null
           ? `Derslere katılım %${Math.round(input.summary.attendance.percent)}`
-          : "Ders katılım verisi yok",
+          : "Ders katılım verisi henüz yok",
       planCompletion:
         input.summary.coachingPlanCompletion.percent !== null
           ? `Planın %${Math.round(input.summary.coachingPlanCompletion.percent)}'i tamamlandı`
-          : "Plan verisi yok",
+          : "Plan verisi henüz yok",
       assignments:
         input.summary.assignmentCompletion.percent !== null
           ? `${input.summary.assignmentCompletion.numerator} / ${input.summary.assignmentCompletion.denominator} ödev tamamlandı`
-          : "Ödev verisi yok",
+          : "Ödev verisi henüz yok",
       latestExam: input.summary.latestExamTrend?.examTitle
         ? `${input.summary.latestExamTrend.examTitle}${input.summary.latestExamTrend.netDelta !== null ? ` (${input.summary.latestExamTrend.netDelta >= 0 ? "+" : ""}${input.summary.latestExamTrend.netDelta.toFixed(2)} net)` : ""}`
         : null,

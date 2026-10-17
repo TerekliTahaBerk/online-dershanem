@@ -18,13 +18,13 @@ const schema = z.object({
 export async function PATCH(request: Request) {
   const auth = await requireApiProductRole("OK", "STUDENT");
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().adaptivePlan) return NextResponse.json({ error: "Haftalık plan henüz açık değil." }, { status: 404 });
+  if (!getPanelFeatureFlags().adaptivePlan) return NextResponse.json({ error: "Haftalık plan şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.adaptive_plan.preferences", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:plan-pref:${auth.session.userId}`, rateLimit: { max: 30, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Plan tercihlerini kontrol edin." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Lütfen plan tercihlerini bir kez daha kontrol eder misiniz?" }, { status: 400 });
   const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId }, select: { id: true } });
-  if (!profile) return NextResponse.json({ error: "Öğrenci profili bulunamadı." }, { status: 404 });
+  if (!profile) return NextResponse.json({ error: "Öğrenci profilini bulamadık." }, { status: 404 });
   const availableDays = [...new Set(parsed.data.availableDays)].sort();
   const nextExamAt = parsed.data.nextExamAt ? new Date(parsed.data.nextExamAt) : null;
   if (nextExamAt && (nextExamAt <= new Date() || nextExamAt > new Date(Date.now() + 366 * 86400000))) return NextResponse.json({ error: "Sınav tarihi gelecek bir yıl içinde olmalı." }, { status: 400 });

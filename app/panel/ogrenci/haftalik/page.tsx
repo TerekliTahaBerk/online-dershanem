@@ -21,8 +21,8 @@ export default async function StudentWeeklyDigestPage() {
         email={session.email}
       >
         <PanelEmptyState
-          title="Haftalık özet henüz yayınlanmadı."
-          body="Öğretmenin önizlemeyi tamamladığında sen ve ailen aynı özeti göreceksiniz."
+          title="Haftalık özet çok yakında 🌟"
+          body="Öğretmenin özeti tamamladığında sen ve ailen aynı özeti birlikte göreceksiniz."
         />
       </PanelShell>
     );
@@ -39,10 +39,10 @@ export default async function StudentWeeklyDigestPage() {
           <HeartHandshake size={15} /> Seninle aynı anda
         </p>
         <h1 className={PAGE_TITLE_CLASS}>
-          Ailenin gördüğü özet burada.
+          Ailenle birlikte gördüğünüz haftalık özet 🌟
         </h1>
         <p className={PAGE_DESCRIPTION_CLASS}>
-          Özel öğretmen notların bu özete eklenmez.
+          Öğretmeninin sana özel notları bu özete eklenmez.
         </p>
       </header>
       <div className="mt-7">

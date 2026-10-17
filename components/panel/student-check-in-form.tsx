@@ -63,11 +63,11 @@ export function StudentCheckInForm({
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       setBusy(false);
-      return setMessage(data.error || "Check-in kaydedilemedi.");
+      return setMessage(data.error || "Check-in'ini şu an kaydedemedik 😕 Lütfen tekrar dener misin?");
     }
     setItems((current) => [data.checkIn as History, ...current]);
     setRemaining(data.remaining);
-    setMessage("Check-in kaydedildi.");
+    setMessage("Check-in'in kaydedildi, paylaştığın için teşekkürler 💛");
     setBusy(false);
     router.refresh();
   }
@@ -85,7 +85,7 @@ export function StudentCheckInForm({
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       setBusy(false);
-      return setMessage(data.error || "Geri bildirim kaydedilemedi.");
+      return setMessage(data.error || "Geri bildirimini şu an kaydedemedik 😕 Lütfen tekrar dener misin?");
     }
     setItems((current) =>
       current.map((item) =>
@@ -134,7 +134,7 @@ export function StudentCheckInForm({
           </span>
         </div>
         <p className="mt-2 text-sm text-(--site-body)">
-          Bu bir sınav, tanı veya puan değildir. Nasıl ilerlediğini anlamana
+          Bu bir sınav ya da puanlama değil 😊 Sadece nasıl ilerlediğini anlamana
           yardımcı olur.
         </p>
         <div className="mt-5 space-y-5">
@@ -182,8 +182,8 @@ export function StudentCheckInForm({
             <span>
               <b>Öğretmenim görsün</b>
               <span className="block text-xs text-(--site-muted)">
-                Kapalıysa yalnız sen görürsün. Veliye hiçbir durumda
-                gösterilmez.
+                Kapalıysa yalnızca sen görürsün. Velin hiçbir durumda
+                göremez.
               </span>
             </span>
           </label>
@@ -200,14 +200,14 @@ export function StudentCheckInForm({
             <span>
               <b>Öğretmenimden yardım istiyorum</b>
               <span className="block text-xs text-amber-900">
-                Öğretmenine bildirim gider; 24 saat içinde küçük bir destek
-                adımı hedeflenir.
+                Öğretmenine hemen bildirim gider ve 24 saat içinde sana küçük bir destek
+                adımı hazırlanır 🤝
               </span>
             </span>
           </label>
           <div className="rounded-2xl bg-rose-50 p-3 text-xs leading-5 text-rose-900">
-            <b>Acil durum alanı değildir.</b> Kendine veya başkasına zarar verme
-            riski varsa 112’yi ara ve güvendiğin bir yetişkine hemen söyle.
+            <b>Burası acil durumlar için değil.</b> Kendine ya da bir başkasına zarar verme
+            riski varsa lütfen hemen 112’yi ara ve güvendiğin bir yetişkine söyle. Yalnız değilsin.
           </div>
           {message ? (
             <p role="status" className="text-sm font-bold">
@@ -246,9 +246,9 @@ export function StudentCheckInForm({
                   <div className="mt-3 rounded-2xl bg-(--panel-nav-active) p-3 text-sm">
                     <b>
                       {item.request.status === "OPEN"
-                        ? "Öğretmen yanıtı bekleniyor"
+                        ? "Öğretmeninin yanıtı bekleniyor ⏳"
                         : item.request.status === "CLOSED"
-                          ? "Destek tamamlandı"
+                          ? "Destek tamamlandı ✅"
                           : "Öğretmenin destek adımı"}
                     </b>
                     {item.request.action ? (
@@ -293,7 +293,7 @@ export function StudentCheckInForm({
             ))
           ) : (
             <p className="text-sm text-(--site-muted)">
-              Henüz check-in yok.
+              Henüz bir check-in yapmadın. İlkini yapmaya ne dersin? 😊
             </p>
           )}
         </div>

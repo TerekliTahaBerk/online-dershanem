@@ -55,12 +55,12 @@ export function buildInviteMessage(input: {
   return [
     `Merhaba${input.fullName ? ` ${input.fullName}` : ""},`,
     "",
-    "Online Dershanem panel hesabınız için davet bağlantınız hazır.",
+    "Aramıza hoş geldiniz! 🎉 Online Dershanem panel hesabınız için davet bağlantınız hazır.",
     "",
     `E-posta: ${input.email}`,
     `Davet bağlantısı: ${input.inviteUrl}`,
     `Son geçerlilik: ${formatter.format(input.expiresAt)}`,
     "",
-    "Bağlantıyı açıp kendi parolanızı belirleyerek ilk girişinizi tamamlayabilirsiniz.",
+    "Bağlantıyı açıp size özel bir parola belirleyerek ilk girişinizi kolayca tamamlayabilirsiniz.",
   ].join("\n");
 }

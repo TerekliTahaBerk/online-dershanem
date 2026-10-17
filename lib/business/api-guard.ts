@@ -25,7 +25,7 @@ export type BusinessApiAuth = { ok: true; access: BusinessAccess } | { ok: false
 const fail = (status: number, code: string, error: string): BusinessApiAuth => ({ ok: false, response: NextResponse.json({ error, code }, { status, headers: PRIVATE_NO_STORE }) });
 
 export async function requireBusinessApi(permission: BusinessPermission, options: { stepUp?: boolean; finance?: boolean } = {}): Promise<BusinessApiAuth> {
-  if (!businessFlags.panel || (options.finance && !businessFlags.finance)) return fail(404, "NOT_FOUND", "Bölüm bulunamadı.");
+  if (!businessFlags.panel || (options.finance && !businessFlags.finance)) return fail(404, "NOT_FOUND", "Bölüm bulunamadı; kaldırılmış ya da değişmiş olabilir.");
   const session = await getSession();
   if (!session) return fail(401, "UNAUTHENTICATED", "Oturumunuz sona ermiş. Tekrar giriş yapın.");
   const overlay = await readAdminOverlayTransport(session);
@@ -34,7 +34,7 @@ export async function requireBusinessApi(permission: BusinessPermission, options
   if (session.mustChangePassword) return fail(403, "PASSWORD_CHANGE_REQUIRED", "Devam etmeden önce parolanızı değiştirmeniz gerekiyor.");
   // MFA ve hesap durumu kapıları `getBusinessAccess` içinde (web ile aynı).
   const units = await getBusinessAccess(session, permission);
-  if (units.length === 0) return fail(404, "NOT_FOUND", "Bölüm bulunamadı.");
+  if (units.length === 0) return fail(404, "NOT_FOUND", "Bölüm bulunamadı; kaldırılmış ya da değişmiş olabilir.");
   if (options.stepUp && !hasFreshStepUp(session.stepUpAt)) return fail(428, "STEP_UP_REQUIRED", "Bu hassas işlem için kimliğinizi yeniden doğrulayın.");
   return { ok: true, access: { session, units } };
 }

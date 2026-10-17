@@ -33,7 +33,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const actor = await requireApiAccountRole("TEACHER");
   if (!actor.ok) return actor.response;
   if (!getPanelFeatureFlags().adaptivePlan) {
-    return NextResponse.json({ error: "Haftalık plan henüz açık değil." }, { status: 404 });
+    return NextResponse.json({ error: "Haftalık plan şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   }
   const guard = await guardMutation({
     action: "panel.adaptive_plan.approve",
@@ -47,7 +47,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   }
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Plan sürümü geçersiz." }, { status: 400 });
+    return NextResponse.json({ error: "Plan sürümü geçerli görünmüyor." }, { status: 400 });
   }
   const { id } = await context.params;
 
@@ -56,7 +56,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     where: { id },
     select: { productRef: { select: { code: true, requiresPlanApproval: true } } },
   });
-  if (!planProduct) return NextResponse.json({ error: "Plan bulunamadı." }, { status: 404 });
+  if (!planProduct) return NextResponse.json({ error: "Planı bulamadık." }, { status: 404 });
 
   const auth = await requireApiProductCodeRole(planProduct.productRef.code, "TEACHER");
   if (!auth.ok) return auth.response;
@@ -88,7 +88,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       tasks: { where: { status: "PLANNED" }, select: { id: true } },
     },
   });
-  if (!plan) return NextResponse.json({ error: "Plan bulunamadı." }, { status: 404 });
+  if (!plan) return NextResponse.json({ error: "Planı bulamadık." }, { status: 404 });
   if (plan.status !== "DRAFT") {
     return NextResponse.json({ error: "Yalnız taslak plan onaylanabilir." }, { status: 409 });
   }
@@ -106,7 +106,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     },
   });
   if (updated.count !== 1) {
-    return NextResponse.json({ error: "Plan başka bir sekmede değişti. Sayfayı yenileyin." }, { status: 409 });
+    return NextResponse.json({ error: "Plan başka bir sekmede değişti. Sayfayı yenileyip tekrar deneyebilirsiniz." }, { status: 409 });
   }
 
   const nextVersion = parsed.data.expectedVersion + 1;

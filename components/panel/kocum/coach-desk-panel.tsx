@@ -72,14 +72,14 @@ export function CoachDeskPanel({
     const payload = await response.json().catch(() => ({}));
     setBusy(false);
     if (!response.ok) {
-      setMessage(payload.error || "İşlem başarısız.");
+      setMessage(payload.error || "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?");
       return false;
     }
     return true;
   }
 
   async function addTask() {
-    if (!title.trim()) return setMessage("Görev başlığı gerekli.");
+    if (!title.trim()) return setMessage("Lütfen bir görev başlığı girin.");
     const ok = await postJson("/api/panel/kocum/tasks", {
       studentId,
       weekStart: weekStartIso,
@@ -100,13 +100,13 @@ export function CoachDeskPanel({
     });
     if (ok) {
       setTitle("");
-      setMessage("Görev eklendi.");
+      setMessage("Görev eklendi ✅");
       window.location.reload();
     }
   }
 
   async function applyTemplate() {
-    if (!templateId) return setMessage("Şablon seçin.");
+    if (!templateId) return setMessage("Lütfen bir şablon seçin.");
     const ok = await postJson(
       `/api/panel/kocum/templates/${templateId}/apply`,
       {
@@ -115,18 +115,18 @@ export function CoachDeskPanel({
       },
     );
     if (ok) {
-      setMessage("Şablon plana uygulandı (taslak).");
+      setMessage("Şablon plana uygulandı ✅ (taslak)");
       window.location.reload();
     }
   }
 
   async function copyPlan() {
-    if (!planId) return setMessage("Kopyalanacak plan yok.");
+    if (!planId) return setMessage("Kopyalanabilecek bir plan bulunmuyor.");
     const ok = await postJson(`/api/panel/kocum/plans/${planId}/copy`, {
       carryOverIncomplete: true,
     });
     if (ok) {
-      setMessage("Plan kopyalandı; eksik görevler taşındı.");
+      setMessage("Plan kopyalandı ✅ Eksik görevler taşındı.");
       window.location.reload();
     }
   }
@@ -141,7 +141,7 @@ export function CoachDeskPanel({
     if (ok) {
       setNoteBody("");
       setMessage(
-        `Not kaydedildi (${noteVisibility === "INTERNAL" ? "iç not" : noteVisibility}).`,
+        `Not kaydedildi ✅ (${noteVisibility === "INTERNAL" ? "iç not" : noteVisibility}).`,
       );
     }
   }
@@ -161,8 +161,8 @@ export function CoachDeskPanel({
     if (ok) {
       setMessage(
         publish
-          ? "Haftalık özet yayınlandı."
-          : "Haftalık özet taslak kaydedildi.",
+          ? "Haftalık özet yayınlandı ✅"
+          : "Haftalık özet taslak kaydedildi ✅",
       );
     }
   }
@@ -296,7 +296,7 @@ export function CoachDeskPanel({
               </>
             ) : (
               <p className="mt-2 text-xs text-(--site-muted)">
-                Hazır şablon yok.
+                Henüz hazır bir şablon yok.
               </p>
             )}
           </div>

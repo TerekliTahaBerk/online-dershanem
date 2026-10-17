@@ -91,7 +91,7 @@ export default async function AccountSettingsPage() {
             </ul>
           ) : (
             <p className="mt-3 text-[14px] leading-[1.6] text-dc-ink-muted">
-              Aktif bir paketin yok. Paket satın aldığında erişimin otomatik açılır.
+              Henüz aktif bir paketin yok. Paketini aldığında erişimin otomatik olarak açılır ✨
             </p>
           )}
           <div className="mt-4 flex flex-wrap gap-2">

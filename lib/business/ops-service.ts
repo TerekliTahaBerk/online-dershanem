@@ -49,16 +49,16 @@ async function execute(tx: Prisma.TransactionClient, access: BusinessAccess, com
     }
     case "advertisement.create": {
       const campaign = await tx.businessCampaign.findFirst({ where: { id: command.campaignId, businessUnitId: { in: unitIds } } });
-      if (!campaign) throw fail(404, "CAMPAIGN_NOT_FOUND", "Kampanya bulunamadı.");
+      if (!campaign) throw fail(404, "CAMPAIGN_NOT_FOUND", "Kampanya bulunamadı; kaldırılmış ya da değişmiş olabilir.");
       const adSet = await tx.businessAdSet.create({ data: { campaignId: campaign.id, name: command.adSetName } });
       const ad = await tx.businessAdvertisement.create({ data: { adSetId: adSet.id, name: command.name, spentCents: Math.round(command.spentTl * 100), impressions: command.impressions, clicks: command.clicks, messageStarts: command.messageStarts, leadCount: command.leadCount, saleCount: command.saleCount, revenueCents: Math.round(command.revenueTl * 100) } });
       return { entityType: "BusinessAdvertisement", entityId: ad.id, action: "ADVERTISEMENT_CREATED", result: { entityId: ad.id, section: "reklamlar" } };
     }
     case "attribution.manual": {
       const lead = await tx.businessLead.findFirst({ where: { id: command.leadId, businessUnitId: { in: unitIds } } });
-      if (!lead) throw fail(404, "LEAD_NOT_FOUND", "Aday bulunamadı.");
-      if (command.campaignId && !(await tx.businessCampaign.count({ where: { id: command.campaignId, businessUnitId: lead.businessUnitId } }))) throw fail(404, "CAMPAIGN_NOT_FOUND", "Kampanya bulunamadı.");
-      if (command.advertisementId && !(await tx.businessAdvertisement.count({ where: { id: command.advertisementId, adSet: { campaign: { businessUnitId: lead.businessUnitId } } } }))) throw fail(404, "ADVERTISEMENT_NOT_FOUND", "Reklam bulunamadı.");
+      if (!lead) throw fail(404, "LEAD_NOT_FOUND", "Aday bulunamadı; kaldırılmış ya da değişmiş olabilir.");
+      if (command.campaignId && !(await tx.businessCampaign.count({ where: { id: command.campaignId, businessUnitId: lead.businessUnitId } }))) throw fail(404, "CAMPAIGN_NOT_FOUND", "Kampanya bulunamadı; kaldırılmış ya da değişmiş olabilir.");
+      if (command.advertisementId && !(await tx.businessAdvertisement.count({ where: { id: command.advertisementId, adSet: { campaign: { businessUnitId: lead.businessUnitId } } } }))) throw fail(404, "ADVERTISEMENT_NOT_FOUND", "Reklam bulunamadı; kaldırılmış ya da değişmiş olabilir.");
       await tx.attribution.create({ data: { leadId: lead.id, campaignId: command.campaignId || null, advertisementId: command.advertisementId || null, model: "MANUAL", confidence: 1, isManual: true } });
       return { entityType: "BusinessLead", entityId: lead.id, action: "ATTRIBUTION_MANUALLY_SET", payload: { campaignId: command.campaignId || null, advertisementId: command.advertisementId || null }, result: { entityId: lead.id, section: "adaylar" } };
     }
@@ -101,7 +101,7 @@ async function execute(tx: Prisma.TransactionClient, access: BusinessAccess, com
     }
     case "reconciliation.resolve": {
       const record = await tx.reconciliationRecord.findFirst({ where: { id: command.id, businessUnitId: { in: unitIds } } });
-      if (!record) throw fail(404, "RECONCILIATION_NOT_FOUND", "Mutabakat kaydı bulunamadı.");
+      if (!record) throw fail(404, "RECONCILIATION_NOT_FOUND", "Mutabakat kaydı bulunamadı; kaldırılmış ya da değişmiş olabilir.");
       await tx.reconciliationRecord.update({ where: { id: record.id }, data: { status: command.status, resolvedAt: new Date(), resolvedById: actor } });
       return { entityType: "ReconciliationRecord", entityId: record.id, action: "RECONCILIATION_RESOLVED", payload: { status: command.status }, result: { entityId: record.id, section: "mutabakat" } };
     }

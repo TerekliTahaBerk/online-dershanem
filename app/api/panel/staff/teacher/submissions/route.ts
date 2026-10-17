@@ -8,7 +8,7 @@ import { requireStaffApi, staffFeatureDisabled, staffJson } from "@/lib/panel/st
 export async function GET() {
   const auth = await requireStaffApi("OD", "od:lesson:teach");
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().assignmentEvidence) return staffFeatureDisabled("Kanıtlı teslim henüz açık değil.");
+  if (!getPanelFeatureFlags().assignmentEvidence) return staffFeatureDisabled("Kanıtlı teslim şu an kullanıma kapalı, çok yakında açılacak.");
   const rows = await loadTeacherSubmissionQueue(auth.session.userId);
   return staffJson({
     contractVersion: MOBILE_STAFF_CONTRACT_VERSION,

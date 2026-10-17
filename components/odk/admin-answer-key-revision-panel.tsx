@@ -89,7 +89,7 @@ export function AdminAnswerKeyRevisionPanel({
       }
       if (!response.ok) {
         if (result.code === "REVISION_STALE") resetPreview();
-        setMessage({ text: result.error || "İşlem tamamlanamadı.", error: true });
+        setMessage({ text: result.error || "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?", error: true });
         return;
       }
       if (method === "POST") {

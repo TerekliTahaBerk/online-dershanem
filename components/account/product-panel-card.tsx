@@ -28,8 +28,8 @@ export type ProductPanelCardModel = {
 const STATE_BADGE: Record<ProductPanelState, { label: string; className: string }> = {
   ACTIVE: { label: "Aktif", className: "" },
   PILOT_CLOSED: { label: "Geçici olarak kapalı", className: "bg-dc-surface-muted text-dc-ink-muted" },
-  PREPARING: { label: "Ödeme alındı · hazırlanıyor", className: "bg-amber-50 text-amber-800" },
-  LOCKED: { label: "Paketin yok", className: "bg-dc-surface-muted text-dc-ink-muted" },
+  PREPARING: { label: "Ödeme alındı · hazırlanıyor ⏳", className: "bg-amber-50 text-amber-800" },
+  LOCKED: { label: "Henüz paketin yok", className: "bg-dc-surface-muted text-dc-ink-muted" },
 };
 
 const BRAND_STYLE: Record<ProductPanelBrand["tone"], {
@@ -94,11 +94,11 @@ export function ProductPanelCard({ card }: { card: ProductPanelCardModel }) {
         body: JSON.stringify({ product: card.code }),
       });
       const data = (await response.json().catch(() => ({}))) as { redirect?: string; error?: string };
-      if (!response.ok) throw new Error(data.error ?? "Panel açılamadı.");
+      if (!response.ok) throw new Error(data.error ?? "Paneli şu an açamadık. Lütfen tekrar dener misin?");
       window.location.assign(data.redirect ?? card.href);
     } catch (caught) {
       setPending(false);
-      setError(caught instanceof Error ? caught.message : "Bağlantı kurulamadı.");
+      setError(caught instanceof Error ? caught.message : "Bağlantı kurulamadı. İnternetini kontrol edip tekrar dener misin?");
     }
   }
 
@@ -163,7 +163,7 @@ export function ProductPanelCard({ card }: { card: ProductPanelCardModel }) {
                 Çocuğunuzun öğrenci hesabını açıyoruz; ekibimiz sizi arayacak.
               </p>
             ) : card.state === "PILOT_CLOSED" ? (
-              <p className="rounded-xl bg-dc-surface-muted px-3 py-2.5 text-[12.5px] text-dc-ink-muted">Bu panel kısa bir süre için erişime kapalı.</p>
+              <p className="rounded-xl bg-dc-surface-muted px-3 py-2.5 text-[12.5px] text-dc-ink-muted">Bu panel kısa bir süre için erişime kapalı, çok yakında yeniden açılacak.</p>
             ) : (
               <Link
                 href={card.lockedCta.href}

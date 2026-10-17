@@ -84,7 +84,7 @@ export function NotificationInbox({
           <p className="mt-1 text-xs text-(--site-muted)">
             {unread
               ? `${unread} okunmamış · ${total} eşleşen kayıt`
-              : `${total} kayıt · hepsini gördünüz`}
+              : `${total} kayıt · hepsini gördünüz ✨`}
           </p>
         </div>
         {unread ? (
@@ -174,10 +174,10 @@ export function NotificationInbox({
               <Bell size={20} />
             </span>
             <p className="mt-4 text-sm font-bold text-(--site-ink)">
-              Şimdilik yeni bildirim yok
+              Şimdilik yeni bir bildirim yok ✨
             </p>
             <p className="mt-1 text-xs text-(--site-muted)">
-              Ders, ödev ve önemli sistem gelişmeleri burada görünecek.
+              Ders, ödev ve diğer önemli gelişmeler burada görünecek.
             </p>
           </div>
         ) : null}

@@ -13,7 +13,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const auth = await requireApiRecentAdminStepUp();
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.users.delete.preview", requireSameOrigin: true, headers: { get: (name: string) => request.headers.get(name) }, rateLimitKey: `panel:users:delete-preview:${auth.session.userId}`, rateLimit: { max: 60, windowMs: 15 * 60 * 1000 } });
-  if (!guard.ok) return NextResponse.json({ error: guard.code === "RATE_LIMIT" ? "Çok fazla işlem. Biraz sonra tekrar deneyin." : guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
+  if (!guard.ok) return NextResponse.json({ error: guard.code === "RATE_LIMIT" ? "Kısa sürede çok fazla işlem yapıldı. Biraz bekleyip tekrar dener misiniz?" : guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
 
   const routeParams = idParamsSchema.safeParse(await context.params);
   if (!routeParams.success) return invalidApiInput();
@@ -31,7 +31,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
       _count: { select: USER_DELETE_COUNT_SELECT },
     },
   });
-  if (!target) return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
+  if (!target) return NextResponse.json({ error: "Kullanıcıyı bulamadık." }, { status: 404 });
 
   const blockers = collectDeleteBlockers(target._count);
   if (target.status !== "ARCHIVED") {
@@ -53,16 +53,16 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const auth = await requireApiRecentAdminStepUp();
   if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.users.update", requireSameOrigin: true, headers: { get: (name: string) => request.headers.get(name) }, rateLimitKey: `panel:users:update:${auth.session.userId}`, rateLimit: { max: 90, windowMs: 15 * 60 * 1000 } });
-  if (!guard.ok) return NextResponse.json({ error: guard.code === "RATE_LIMIT" ? "Çok fazla işlem. Biraz sonra tekrar deneyin." : guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
+  if (!guard.ok) return NextResponse.json({ error: guard.code === "RATE_LIMIT" ? "Kısa sürede çok fazla işlem yapıldı. Biraz bekleyip tekrar dener misiniz?" : guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = userProfileUpdateSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Profil alanlarını kontrol edin." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Lütfen profil alanlarını bir kez daha kontrol eder misiniz?" }, { status: 400 });
   const routeParams = idParamsSchema.safeParse(await context.params);
   if (!routeParams.success) return invalidApiInput();
   const { id } = routeParams.data;
   const target = await prisma.user.findUnique({ where: { id }, select: { id: true, email: true, role: true } });
-  if (!target) return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
+  if (!target) return NextResponse.json({ error: "Kullanıcıyı bulamadık." }, { status: 404 });
   const email = normalizeEmail(parsed.data.email);
-  if (!isPlausibleEmail(email)) return NextResponse.json({ error: "E-posta adresi geçerli görünmüyor." }, { status: 400 });
+  if (!isPlausibleEmail(email)) return NextResponse.json({ error: "E-posta adresi geçerli görünmüyor; bir kez daha kontrol eder misiniz?" }, { status: 400 });
   if (await prisma.user.findFirst({ where: { email, id: { not: id } }, select: { id: true } })) return NextResponse.json({ error: "Bu e-posta başka bir hesapta kullanılıyor." }, { status: 409 });
   await prisma.$transaction(async (tx) => {
     await tx.user.update({ where: { id }, data: { email, fullName: parsed.data.fullName || null, phone: parsed.data.phone || null } });
@@ -88,7 +88,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
   });
   if (!guard.ok) {
     return NextResponse.json(
-      { error: guard.code === "RATE_LIMIT" ? "Çok fazla işlem. Biraz sonra tekrar deneyin." : guard.message },
+      { error: guard.code === "RATE_LIMIT" ? "Kısa sürede çok fazla işlem yapıldı. Biraz bekleyip tekrar dener misiniz?" : guard.message },
       { status: guard.code === "RATE_LIMIT" ? 429 : 403 },
     );
   }
@@ -112,7 +112,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
     },
   });
   if (!target) {
-    return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
+    return NextResponse.json({ error: "Kullanıcıyı bulamadık." }, { status: 404 });
   }
 
   if (target.role === "ADMIN") {

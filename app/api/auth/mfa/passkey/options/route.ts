@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   const guard = await guardMutation({ action: "auth.mfa.passkey.options", requireSameOrigin: true, headers: request.headers, rateLimitKey: `mfa:options:${auth.session.userId}`, rateLimit: { max: 20, windowMs: 15 * 60_000 } });
   if (!guard.ok) return mutationGuardResponse(guard);
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz MFA amacı." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "MFA amacı geçerli görünmüyor." }, { status: 400 });
   if (parsed.data.purpose === "ENROLL") {
     if ((await adminHasMfa(auth.session.userId)) && !auth.session.mfaVerifiedAt) return NextResponse.json({ error: "Yeni geçiş anahtarı eklemek için önce MFA doğrulayın." }, { status: 403 });
     return NextResponse.json(await registrationOptions({ ...auth.session }));

@@ -9,7 +9,7 @@ import { staffFeatureDisabled, staffJson } from '@/lib/panel/staff-api';
 export async function GET() {
   const auth = await requireApiAnyProductRole(['OD', 'OK'], 'STUDENT');
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().mockExamAnalysis) return staffFeatureDisabled('Deneme analizi henüz açık değil.');
+  if (!getPanelFeatureFlags().mockExamAnalysis) return staffFeatureDisabled('Deneme analizi şu an kullanıma kapalı, çok yakında açılacak.');
   const student = await prisma.studentProfile.findUnique({
     where: { userId: auth.session.userId }, include: { user: { select: { fullName: true, email: true } } },
   });

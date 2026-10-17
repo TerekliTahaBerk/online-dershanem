@@ -106,7 +106,7 @@ export default async function AccountSettingsSectionPage({ params }: { params: P
                 <SettingsField id="fullName" label="Ad soyad">
                   <input id="fullName" name="fullName" defaultValue={user.fullName ?? ""} autoComplete="name" className={settingsInputClass} />
                 </SettingsField>
-                <SettingsField id="email" label="E-posta" hint="E-posta değişikliği için bizimle iletişime geçin.">
+                <SettingsField id="email" label="E-posta" hint="E-posta adresinizi değiştirmek isterseniz bize yazmanız yeterli; memnuniyetle yardımcı oluruz 🤝">
                   <input id="email" value={user.email} readOnly className={`${settingsInputClass} bg-dc-surface-muted`} />
                 </SettingsField>
                 <SettingsField id="phone" label="Cep telefonu">
@@ -198,7 +198,7 @@ export default async function AccountSettingsSectionPage({ params }: { params: P
               </fieldset>
               <div className="rounded-xl border border-dc-line-soft bg-dc-surface-soft p-4">
                 <p className="text-[13.5px] font-bold text-dc-ink">Veli bilgisi</p>
-                <p className="mt-1 text-[12.5px] text-dc-ink-muted">Velinin hesabını seninkine bağlayabilmemiz için.</p>
+                <p className="mt-1 text-[12.5px] text-dc-ink-muted">Velinin hesabını seninkine bağlayabilmemiz için 🤝</p>
                 <div className="mt-3 grid gap-4 sm:grid-cols-3">
                   <SettingsField id="guardianName" label="Ad soyad">
                     <input id="guardianName" name="guardianName" defaultValue={profile?.guardianName ?? ""} className={settingsInputClass} />
@@ -236,7 +236,7 @@ export default async function AccountSettingsSectionPage({ params }: { params: P
                 </SettingsField>
               </SettingsForm>
               <p className="mt-5 text-[13px] text-dc-ink-muted">
-                İletişim formunu {status?.contactFormSubmitted ? "doldurdun" : "henüz doldurmadın"}.{" "}
+                İletişim formunu {status?.contactFormSubmitted ? "doldurdun, teşekkürler 💛" : "henüz doldurmadın; yalnızca 2 dakikanı alır 😊"}{" "}
                 <Link href={`${CONTACT_FORM_PATH}?tekrar=1`} className="font-semibold text-dc-brand-strong underline">
                   {status?.contactFormSubmitted ? "Formu güncelle" : "Formu doldur"}
                 </Link>
@@ -367,7 +367,7 @@ async function ChildrenSection({ parentUserId }: { parentUserId: string }) {
                       · {optionLabel(CLASS_LEVEL_OPTIONS, child.classLevel) ?? "—"} · {optionLabel(EXAM_TYPE_OPTIONS, child.examType) ?? "—"}
                     </span>
                     <p className="text-[12.5px] text-amber-800">
-                      {paid ? "Ödeme alındı — ekibimiz öğrenci hesabını açıyor." : "Ekibimiz öğrenci hesabını açıp size bağlayacak."}
+                      {paid ? "Ödemeniz için teşekkür ederiz 💛 Ekibimiz öğrenci hesabını açıyor." : "Ekibimiz öğrenci hesabını açıp en kısa sürede size bağlayacak 🤝"}
                     </p>
                   </div>
                   {!paid ? (

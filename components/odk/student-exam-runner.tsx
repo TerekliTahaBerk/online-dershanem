@@ -450,7 +450,7 @@ export function StudentExamRunner({
         submittedRef.current = false;
         setSubmitting(false);
         setSubmitError(
-          "Kaydedilemeyen cevaplar var. Bağlantınızı kontrol edip tekrar deneyin.",
+          "Bazı cevapların henüz kaydedilemedi. İnternet bağlantını kontrol edip tekrar dener misin?",
         );
         return;
       }
@@ -464,8 +464,8 @@ export function StudentExamRunner({
           setSubmitting(false);
           setSubmitError(
             auto
-              ? "Süre doldu. Teslim sunucuda doğrulanıyor; bağlantı gelince otomatik yeniden denenecek."
-              : "Teslim işlemi tamamlanamadı. Tekrar deneyin.",
+              ? "Süre doldu ⏰ Teslimin doğrulanıyor; bağlantı gelince otomatik olarak yeniden denenecek."
+              : "Teslimi şu an tamamlayamadık. Lütfen tekrar dener misin?",
           );
           return;
         }
@@ -476,8 +476,8 @@ export function StudentExamRunner({
         setOnline(false);
         setSubmitError(
           auto
-            ? "Süre doldu. Bağlantı gelince teslim otomatik yeniden denenecek."
-            : "Bağlantı kurulamadı. Cevapların korunuyor; teslimi tekrar deneyin.",
+            ? "Süre doldu ⏰ Bağlantı gelince teslimin otomatik olarak yeniden denenecek."
+            : "Bağlantı kurulamadı. Merak etme, cevapların korunuyor; teslimi tekrar deneyebilirsin.",
         );
       }
     },
@@ -538,7 +538,7 @@ export function StudentExamRunner({
     await Promise.all(Object.values(queues.current));
     if (Object.keys(pending.current).length) {
       setSessionBusy(false);
-      setSubmitError("Kaydedilemeyen cevaplar var. Bağlantınızı kontrol edip tekrar deneyin.");
+      setSubmitError("Bazı cevapların henüz kaydedilemedi. İnternet bağlantını kontrol edip tekrar dener misin?");
       return;
     }
     try {
@@ -550,14 +550,14 @@ export function StudentExamRunner({
       const result = await response.json().catch(() => ({}));
       if (result.code === "ATTEMPT_CLOSED") return closeLocally();
       if (!response.ok) {
-        setSubmitError(result.error || "Oturum kapatılamadı. Tekrar deneyin.");
+        setSubmitError(result.error || "Oturumu şu an kapatamadık. Lütfen tekrar dener misin?");
         return;
       }
       setClosingSession(false);
       router.refresh();
     } catch {
       setOnline(false);
-      setSubmitError("Bağlantı kurulamadı. Cevapların korunuyor; tekrar deneyin.");
+      setSubmitError("Bağlantı kurulamadı. Merak etme, cevapların korunuyor; tekrar deneyebilirsin.");
     } finally {
       setSessionBusy(false);
     }
@@ -742,7 +742,7 @@ export function StudentExamRunner({
 
   function confirmSubmit() {
     const ok = window.confirm(
-      `Sınavı bitirmek üzeresin.\n\n${questions.length} soru\n${answered} cevaplı\n${blank} boş\n${marked} işaretli\n\nSınavı teslim ettikten sonra cevaplarını değiştiremezsin.`,
+      `Denemeyi bitirmek üzeresin 🏁\n\n${questions.length} soru\n${answered} cevaplı\n${blank} boş\n${marked} işaretli\n\nTeslim ettikten sonra cevaplarını değiştiremezsin. Hazır mısın?`,
     );
     if (ok) void submit();
   }
@@ -754,7 +754,7 @@ export function StudentExamRunner({
       ? `${errorCount} kayıt yeniden denenecek`
       : savingCount
         ? `${savingCount} cevap kaydediliyor…`
-        : "Tüm cevaplar kaydedildi";
+        : "Tüm cevapların kaydedildi ✅";
   const lowTime = remaining < 5 * 60_000;
   const sessionLabel = session ? `${session.currentTitle} oturumunun` : "Denemenin";
   const nextSession = session ? session.sessions.find((item) => item.status === "UPCOMING") : null;
@@ -786,7 +786,7 @@ export function StudentExamRunner({
               {formatRemaining(breakRemaining)}
             </p>
             <p className="mt-6 text-[14px] leading-6 text-[#3d4a45]">
-              {lockedAnswered}/{lockedQuestions.length} soruyu cevapladın; bu cevaplar kilitlendi. Ara bitince{" "}
+              {lockedAnswered}/{lockedQuestions.length} soruyu cevapladın, harika gidiyorsun! 👏 Bu cevapların kilitlendi. Biraz nefeslen; ara bitince{" "}
               {session.currentTitle} oturumu {session.sessions.find((item) => item.key === session.currentKey)?.durationMinutes ?? ""} dakikalık
               yeni süreyle kendiliğinden açılır.
             </p>
@@ -870,8 +870,8 @@ export function StudentExamRunner({
           >
             {submitError ||
               (!online
-                ? "Bağlantı yok. Bekleyen cevaplar internet geri geldiğinde yeniden gönderilecek."
-                : `${errorCount} cevap henüz kaydedilemedi. Bağlantını kontrol et.`)}
+                ? "Şu an çevrimdışısın 📡 Bekleyen cevapların internet geri geldiğinde otomatik gönderilecek."
+                : `${errorCount} cevabın henüz kaydedilemedi. İnternet bağlantını kontrol eder misin?`)}
           </div>
         ) : null}
       </header>
@@ -949,7 +949,7 @@ export function StudentExamRunner({
                 ))}
               </dl>
               <p className="mt-4 text-[14px] leading-6 text-[#3d4a45]">
-                Oturumu kapattığında bu oturumun cevapları kilitlenir ve değiştirilemez.
+                Oturumu kapattığında bu oturumdaki cevapların kilitlenir ve artık değiştirilemez.
                 {nextSession ? ` Ardından ara başlar; ${nextSession.title} oturumu aradan sonra kendi süresiyle açılır.` : ""}
               </p>
               <div className="mt-5 flex flex-wrap gap-2">

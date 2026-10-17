@@ -28,7 +28,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
     where: { id, userId: auth.session.userId, revokedAt: null },
     data: { revokedAt },
   });
-  if (result.count !== 1) return NextResponse.json({ error: "Aktif oturum bulunamadı." }, { status: 404 });
+  if (result.count !== 1) return NextResponse.json({ error: "Aktif oturum şu an görünmüyor." }, { status: 404 });
 
   await logAudit({
     actorUserId: auth.session.userId,

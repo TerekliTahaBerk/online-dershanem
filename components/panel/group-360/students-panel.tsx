@@ -97,7 +97,7 @@ export function StudentsPanel({
       router.refresh();
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "İşlem tamamlanamadı.",
+        error instanceof Error ? error.message : "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?",
       );
     } finally {
       setBusy(null);
@@ -111,7 +111,7 @@ export function StudentsPanel({
       `/api/panel/groups/${groupId}/students?${params.toString()}`,
     );
     const body = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(body.error || "Öğrenciler getirilemedi.");
+    if (!response.ok) throw new Error(body.error || "Öğrenciler şu an getirilemedi. Lütfen tekrar dener misiniz?");
     setCandidates(Array.isArray(body.students) ? body.students : []);
   }
 
@@ -157,7 +157,7 @@ export function StudentsPanel({
       }
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "Önizleme alınamadı.",
+        error instanceof Error ? error.message : "Önizleme şu an alınamadı. Lütfen tekrar dener misiniz?",
       );
     } finally {
       setBusy(null);
@@ -198,7 +198,7 @@ export function StudentsPanel({
         setRemovePreview(null);
         setNotifyPreview(null);
       },
-      "Toplu işlem tamamlandı.",
+      "Toplu işlem tamamlandı ✅",
     );
   }
 
@@ -225,7 +225,7 @@ export function StudentsPanel({
               className={buttonClass("secondary", "md")}
               disabled={busy === "search"}
               onClick={() =>
-                void run("search", () => searchStudents(), "Arama güncellendi.")
+                void run("search", () => searchStudents(), "Arama güncellendi ✅")
               }
             >
               {busy === "search" ? "Aranıyor" : "Ara"}

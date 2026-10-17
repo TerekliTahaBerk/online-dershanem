@@ -18,7 +18,7 @@ export const RATE_LIMIT_POLICIES = {
     limit: {
       max: 40,
       windowMs: 15 * 60_000,
-      message: "Çok fazla deneme. Biraz sonra tekrar deneyin.",
+      message: "Kısa sürede çok fazla deneme yapıldı. Biraz bekleyip tekrar dener misiniz?",
     },
   },
   register: {

@@ -60,7 +60,7 @@ export function AdminStaffResponsibilitiesForm({
     const data = (await response.json().catch(() => ({}))) as { error?: string; code?: string; lastHolderWarning?: boolean };
     setBusy(false);
     if (!response.ok) {
-      setMessage({ text: data.error || "İşlem tamamlanamadı.", stepUp: data.code === "STEP_UP_REQUIRED", error: true });
+      setMessage({ text: data.error || "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?", stepUp: data.code === "STEP_UP_REQUIRED", error: true });
       return false;
     }
     setMessage({
@@ -92,7 +92,7 @@ export function AdminStaffResponsibilitiesForm({
     event.preventDefault();
     const value = capacity.trim() === "" ? null : Number(capacity);
     if (value !== null && (!Number.isInteger(value) || value < 1)) return setMessage({ text: "Kapasite pozitif bir tam sayı olmalı.", error: true });
-    await call("PATCH", `/api/panel/users/${userId}/coach-profile`, { coachCapacity: value }, "Koç kapasitesi kaydedildi.");
+    await call("PATCH", `/api/panel/users/${userId}/coach-profile`, { coachCapacity: value }, "Koç kapasitesi kaydedildi ✅");
   }
 
   return (

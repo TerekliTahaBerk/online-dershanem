@@ -6,14 +6,14 @@ import { fileIdParamsSchema, invalidApiInput } from "@/lib/api/input-validation"
 
 export async function GET(request: Request, context: { params: Promise<{ fileId: string }> }) {
   const auth = await requireApiStaffPermission("odk:exam:edit"); if (!auth.ok) return auth.response;
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return NextResponse.json({ error: "Dosya deposu kullanılamıyor." }, { status: 503 });
+  if (!process.env.BLOB_READ_WRITE_TOKEN) return NextResponse.json({ error: "Dosya deposuna şu an ulaşılamıyor. Lütfen biraz sonra tekrar deneyin." }, { status: 503 });
   const params = fileIdParamsSchema.safeParse(await context.params);
   if (!params.success) return invalidApiInput();
   const { fileId } = params.data;
   const file = await prisma.odkExamFile.findUnique({ where: { id: fileId }, select: { blobPathname: true, fileName: true, mimeType: true } });
-  if (!file) return NextResponse.json({ error: "Dosya bulunamadı." }, { status: 404 });
+  if (!file) return NextResponse.json({ error: "Dosya bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
   const result = await get(file.blobPathname, { access: "private", ifNoneMatch: request.headers.get("if-none-match") || undefined });
-  if (!result) return NextResponse.json({ error: "Dosya depoda bulunamadı." }, { status: 404 });
+  if (!result) return NextResponse.json({ error: "Dosya depoda bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
   if (result.statusCode === 304) return new NextResponse(null, { status: 304, headers: { ETag: result.blob.etag } });
   const name = file.fileName.replace(/[\r\n"]/g, "_");
   return new NextResponse(result.stream, { headers: { "Content-Type": file.mimeType, "Content-Disposition": `inline; filename*=UTF-8''${encodeURIComponent(name)}`, "Cache-Control": "private, no-cache", ETag: result.blob.etag, "X-Content-Type-Options": "nosniff" } });

@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Geçersiz not." }, { status: 400 });
+    return NextResponse.json({ error: "Not geçerli görünmüyor." }, { status: 400 });
   }
 
   const allowed = await assertAssignedCoach({
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     userId: auth.session.userId,
     studentProfileId: parsed.data.studentId,
   });
-  if (!allowed) return NextResponse.json({ error: "Bu öğrenci için yetkiniz yok." }, { status: 403 });
+  if (!allowed) return NextResponse.json({ error: "Bu öğrenci için yetkiniz bulunmuyor." }, { status: 403 });
 
   const note = await prisma.coachNote.create({
     data: {

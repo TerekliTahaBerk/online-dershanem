@@ -68,7 +68,7 @@ export async function createPilotCohortService(input: { actorUserId: string; act
         const existing = await tx.pilotCohort.findFirst({ where: { groupId: input.groupId, status: { in: ["DRAFT", "ACTIVE", "PAUSED"] } }, select: { id: true } });
         if (existing) throw new PilotCohortError(409, "OPEN_COHORT_EXISTS", "Bu grup için açık bir pilot kaydı zaten var.");
         const group = await tx.group.findFirst({ where: { id: input.groupId, isActive: true }, select: { id: true, name: true, teacher: { select: { id: true, role: true, status: true } }, enrollments: { where: { endedAt: null, student: { user: { status: "ACTIVE" } } }, select: { student: { select: { user: { select: { id: true, role: true } }, parents: { where: { parent: { status: "ACTIVE" } }, select: { parent: { select: { id: true, role: true } } } } } } } } } });
-        if (!group || group.teacher.status !== "ACTIVE") throw new PilotCohortError(404, "GROUP_NOT_FOUND", "Aktif grup ve öğretmen bulunamadı.");
+        if (!group || group.teacher.status !== "ACTIVE") throw new PilotCohortError(404, "GROUP_NOT_FOUND", "Aktif grup ve öğretmen şu an görünmüyor.");
         const memberMap = new Map<string, "ADMIN" | "TEACHER" | "STUDENT" | "PARENT">([[input.actorUserId, "ADMIN"], [group.teacher.id, "TEACHER"]]);
         for (const enrollment of group.enrollments) {
           memberMap.set(enrollment.student.user.id, "STUDENT");
@@ -90,7 +90,7 @@ export async function createPilotCohortService(input: { actorUserId: string; act
     if (isRetryable(error)) {
       const saved = await replay();
       if (saved) return saved;
-      throw new PilotCohortError(409, "PILOT_CONFLICT", "Pilot kaydı eşzamanlı değişti. Görünümü yenileyin.");
+      throw new PilotCohortError(409, "PILOT_CONFLICT", "Pilot kaydı eşzamanlı değişti. Sayfayı yenileyip tekrar deneyebilirsiniz.");
     }
     throw error;
   }
@@ -111,8 +111,8 @@ export async function transitionPilotCohortService(input: { actorUserId: string;
   if (prior) return prior;
 
   const cohort = await prisma.pilotCohort.findUnique({ where: { id: input.cohortId }, include: { members: { select: { role: true } } } });
-  if (!cohort) throw new PilotCohortError(404, "NOT_FOUND", "Pilot kohortu bulunamadı.");
-  if (cohort.version !== input.expectedVersion) throw new PilotCohortError(409, "VERSION_CONFLICT", "Pilot başka bir yönetici tarafından güncellendi. Sayfayı yenileyin.");
+  if (!cohort) throw new PilotCohortError(404, "NOT_FOUND", "Pilot kohortu bulunamadı; kaldırılmış ya da değişmiş olabilir.");
+  if (cohort.version !== input.expectedVersion) throw new PilotCohortError(409, "VERSION_CONFLICT", "Pilot başka bir yönetici tarafından güncellendi. Sayfayı yenileyip tekrar deneyebilirsiniz.");
   if (!pilotTransitionAllowed(cohort.status, input.action)) throw new PilotCohortError(409, "TRANSITION_NOT_ALLOWED", "Bu pilot durumunda seçilen geçiş yapılamaz.");
   if ((input.action === "PAUSE" || input.action === "ROLLBACK") && !input.stopReason) throw new PilotCohortError(400, "STOP_REASON_REQUIRED", "Durdurma nedeni seçilmelidir.");
   const readiness = await getPilotReadiness(cohort.members.map((member) => member.role));
@@ -135,7 +135,7 @@ export async function transitionPilotCohortService(input: { actorUserId: string;
             stopReason: stops ? stopReason : input.action === "RESUME" ? null : undefined,
           },
         });
-        if (!result.count) throw new PilotCohortError(409, "VERSION_CONFLICT", "Pilot durumu çakıştı. Sayfayı yenileyin.");
+        if (!result.count) throw new PilotCohortError(409, "VERSION_CONFLICT", "Pilot durumu çakıştı. Sayfayı yenileyip tekrar deneyebilirsiniz.");
         const next = await tx.pilotCohort.findUniqueOrThrow({ where: { id: cohort.id } });
         await tx.auditLog.create({ data: { actorUserId: input.actorUserId, actorType: "USER", idempotencyKey: key, entityType: "PilotCohort", entityId: cohort.id, action: `pilot.${input.action.toLowerCase()}`, summary: `Pilot durumu ${status} olarak güncellendi`, payload: { operationDigest: digest, from: cohort.status, to: status, stopReason: stopReason || null, version: next.version, readiness: readinessBand(readiness) } } });
         return next;
@@ -148,7 +148,7 @@ export async function transitionPilotCohortService(input: { actorUserId: string;
     if (isRetryable(error)) {
       const saved = await replay();
       if (saved) return saved;
-      throw new PilotCohortError(409, "VERSION_CONFLICT", "Pilot durumu çakıştı. Sayfayı yenileyin.");
+      throw new PilotCohortError(409, "VERSION_CONFLICT", "Pilot durumu çakıştı. Sayfayı yenileyip tekrar deneyebilirsiniz.");
     }
     throw error;
   }

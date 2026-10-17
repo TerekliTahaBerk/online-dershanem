@@ -117,10 +117,10 @@ export function buildStudentHomeActionPlan(input: ActionBuildInput): StudentHome
         href: `/panel/ogrenci/takvim/${lesson.id}`,
         ctaLabel: joinsNow ? "Derse Katıl" : "Ders Detayı",
         reason: activeNow
-          ? "Ders şu anda devam ediyor."
+          ? "Dersin şu an devam ediyor, hemen katılabilirsin 🎧"
           : startsSoon
-            ? `${Math.max(0, deltaMinutes)} dakika sonra başlıyor.`
-            : `Bugün ${TR_TIME.format(lesson.startsAt)}'te başlıyor.`,
+            ? `${Math.max(0, deltaMinutes)} dakika sonra başlıyor ⏰ Hazırlanmaya ne dersin?`
+            : `Bugün ${TR_TIME.format(lesson.startsAt)}'te başlıyor 📚`,
         ageBand: toAgeBand(lesson.startsAt, now),
         priority: joinsNow ? 0 : 3,
         sortTime: startsAt,
@@ -140,9 +140,9 @@ export function buildStudentHomeActionPlan(input: ActionBuildInput): StudentHome
         href: `/panel/ogrenci/telafi?lessonId=${productData.OD.nextRecovery.lessonId}`,
         ctaLabel: "Telafiye Başla",
         reason: dueAt < now.getTime()
-          ? "Süresi geçmiş bir telafi adımı bekliyor."
+          ? "Seni bekleyen bir telafi adımı var; birlikte yetişeceğiz 💪"
           : sameDay
-            ? "Bugün tamamlanması gerekiyor."
+            ? "Bugün tamamlarsan harika olur 🌟"
             : `Son tarih ${TR_TIME.format(productData.OD.nextRecovery.dueAt)}.`,
         ageBand: toAgeBand(productData.OD.nextRecovery.dueAt, now),
         priority: dueAt < now.getTime() ? 1 : sameDay ? 2 : 4,
@@ -165,7 +165,7 @@ export function buildStudentHomeActionPlan(input: ActionBuildInput): StudentHome
         title: `${task.title} · ${task.durationMinutes} dk`,
         href: "/panel/ogrenci/plan",
         ctaLabel: "Göreve Başla",
-        reason: "Dünden kalan bir plan görevi var.",
+        reason: "Dünden kalan bir görev, şimdi tam zamanı! 💪",
         ageBand: toAgeBand(task.scheduledFor, now),
         priority: 1,
         sortTime: task.scheduledFor.getTime(),
@@ -184,7 +184,7 @@ export function buildStudentHomeActionPlan(input: ActionBuildInput): StudentHome
         title: `${task.title} · ${task.durationMinutes} dk`,
         href: "/panel/ogrenci/plan",
         ctaLabel: "Göreve Başla",
-        reason: "Bugünkü planında yer alıyor.",
+        reason: "Bugünkü planında seni bekliyor ✨",
         ageBand: toAgeBand(task.scheduledFor, now),
         priority: 2,
         sortTime: task.scheduledFor.getTime(),
@@ -222,10 +222,10 @@ export function buildStudentHomeActionPlan(input: ActionBuildInput): StudentHome
         href: `/panel/odk/ogrenci/denemeler/${productData.ODK.upcomingExam.id}`,
         ctaLabel: productData.ODK.upcomingExam.status === "LIVE" ? "Denemeyi Başlat" : "Deneme Detayı",
         reason: productData.ODK.upcomingExam.status === "LIVE"
-          ? "Sınav penceresi açık."
+          ? "Denemen şu an açık, başarılar! 🍀"
           : productData.ODK.upcomingExam.startsAt
-            ? `${TR_TIME.format(productData.ODK.upcomingExam.startsAt)} için planlandı.`
-            : "Başlama saati bu ekrandan takip edilebilir.",
+            ? `${TR_TIME.format(productData.ODK.upcomingExam.startsAt)} için planlandı 📝`
+            : "Başlama saatini bu ekrandan takip edebilirsin.",
         ageBand: toAgeBand(productData.ODK.upcomingExam.startsAt, now),
         priority: productData.ODK.upcomingExam.status === "LIVE" ? 0 : startsSoon ? 3 : 4,
         sortTime: startsAt,
@@ -243,7 +243,7 @@ export function buildStudentHomeActionPlan(input: ActionBuildInput): StudentHome
       title: productData.SHARED.dueReview.title,
       href: "/panel/ogrenci/tekrar",
       ctaLabel: "Tekrara Başla",
-      reason: "Bugünkü tekrar kuyruğunda yer alıyor.",
+      reason: "Bugünkü küçük tekrarlarından biri 🔁",
       ageBand: toAgeBand(productData.SHARED.dueReview.dueAt, now),
       priority: 4,
       sortTime: productData.SHARED.dueReview.dueAt.getTime(),

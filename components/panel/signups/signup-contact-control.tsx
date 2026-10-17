@@ -31,11 +31,11 @@ export function SignupContactControl({
         body: JSON.stringify({ contactStatus: value, contactNote: text }),
       });
       const data = (await response.json().catch(() => ({}))) as { error?: string };
-      if (!response.ok) throw new Error(data.error ?? "Kaydedilemedi.");
+      if (!response.ok) throw new Error(data.error ?? "Şu an kaydedilemedi. Lütfen tekrar dener misiniz?");
       setMessage("Kaydedildi.");
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Kaydedilemedi.");
+      setMessage(error instanceof Error ? error.message : "Şu an kaydedilemedi. Lütfen tekrar dener misiniz?");
     } finally {
       setPending(false);
     }

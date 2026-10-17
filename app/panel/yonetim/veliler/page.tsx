@@ -153,7 +153,7 @@ export default async function ParentsPage({
 
         {parents.length === 0 ? (
           <PanelEmpty
-            title="Bu filtrelerle veli bulunamadı."
+            title="Bu filtrelerle eşleşen bir veli bulunamadı 🔍"
             body="Aramayı değiştirebilir ya da filtreleri temizleyebilirsin."
           />
         ) : (

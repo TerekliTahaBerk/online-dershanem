@@ -91,7 +91,7 @@ export default async function CoachStudentsPage({ searchParams }: { searchParams
               ))}
             </PanelTable>
           ) : (
-            <EmptyState title={signals.length ? "Bu görünümde öğrenci yok." : "Henüz aktif koçluk öğrencin yok."} />
+            <EmptyState title={signals.length ? "Bu görünümde öğrenci görünmüyor." : "Henüz aktif bir koçluk öğrencin yok."} />
           )}
         </div>
       </div>

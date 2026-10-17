@@ -20,8 +20,8 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const params = idParamsSchema.safeParse(await context.params);
   if (!params.success) return invalidApiInput();
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return adminJson({ error: "Pilot geçişini kontrol edin.", code: "VALIDATION" }, { status: 400 });
-  if (/^Bearer\s+/i.test(request.headers.get("authorization") ?? "") && !parsed.data.idempotencyKey) return adminJson({ error: "Güvenli işlem bilgisi eksik. Görünümü yenileyin.", code: "PRECONDITION_REQUIRED" }, { status: 400 });
+  if (!parsed.success) return adminJson({ error: "Lütfen pilot geçişini bir kez daha kontrol eder misiniz?", code: "VALIDATION" }, { status: 400 });
+  if (/^Bearer\s+/i.test(request.headers.get("authorization") ?? "") && !parsed.data.idempotencyKey) return adminJson({ error: "Güvenli işlem bilgisi eksik görünüyor. Sayfayı yenileyip tekrar dener misiniz?", code: "PRECONDITION_REQUIRED" }, { status: 400 });
   try {
     const result = await transitionPilotCohortService({ actorUserId: auth.session.userId, actorRole: auth.session.role, cohortId: params.data.id, ...parsed.data });
     return adminJson(result);

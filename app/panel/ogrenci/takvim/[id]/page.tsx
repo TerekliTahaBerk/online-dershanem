@@ -82,7 +82,7 @@ export default async function StudentLessonDetailPage({
         <Section title="Derste ne işlendi?">
           <p className="text-[14.5px] leading-[1.7] text-pn-text-secondary">
             {shared?.topic ||
-              "Öğretmen bu dersin özetini henüz eklemedi. Eklendiğinde burada görünecek."}
+              "Öğretmenin bu dersin özetini henüz eklemedi. Eklendiğinde burada görünecek 📝"}
           </p>
         </Section>
 
@@ -118,7 +118,7 @@ export default async function StudentLessonDetailPage({
               })}
             </List>
           ) : (
-            <p className="text-[14.5px] text-pn-text-muted">Bu ders için çalışma verilmedi.</p>
+            <p className="text-[14.5px] text-pn-text-muted">Bu ders için bir çalışma verilmedi 🎈</p>
           )}
         </Section>
 

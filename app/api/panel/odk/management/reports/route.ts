@@ -7,7 +7,7 @@ import { reportSummarySentences, WEAK_ACCURACY, previousComparable, netChange } 
 export async function GET(request: Request) {
   const auth = await requireApiStaffPermission("odk:report:read_all"); if (!auth.ok) return auth.response;
   const parsed = z.object({ q: z.string().max(80).optional(), grup: z.string().max(120).optional(), ogrenci: z.string().regex(/^[\w-]{1,191}$/).optional() }).safeParse(Object.fromEntries(new URL(request.url).searchParams));
-  if (!parsed.success) return NextResponse.json({ error: "Rapor seçimi geçersiz." }, { status: 400, headers: PRIVATE_NO_STORE });
+  if (!parsed.success) return NextResponse.json({ error: "Rapor seçimi geçerli görünmüyor." }, { status: 400, headers: PRIVATE_NO_STORE });
   // The explicit read_all permission delegates the same full-report audience as web.
   // Related-teacher endpoint continues to use TEACHER/relationship/contract scope.
   const { students, report, selected } = await loadOdkManagementReports(auth.session.userId, parsed.data);

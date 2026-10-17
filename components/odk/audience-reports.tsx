@@ -80,7 +80,7 @@ export function OdkAudienceReports({
     <>
       <PageHeader
         title={role === "PARENT" ? "Deneme raporu" : "Öğrenci deneme raporu"}
-        description="Sonuçlar yalnız yayınlandıktan sonra görünür. Eğilimler öğrencinin kendi önceki ölçümüyle karşılaştırılır; sıralama yapılmaz."
+        description="Sonuçlar yayınlandıktan sonra görünür 📊 Eğilimler öğrencinin yalnızca kendi önceki ölçümüyle karşılaştırılır; sıralama yapılmaz."
         metadata={
           selected ? (
             <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13.5px] text-pn-text-secondary">
@@ -115,18 +115,18 @@ export function OdkAudienceReports({
           className="mt-6"
           title={
             role === "ADMIN"
-              ? "Henüz denemeye katılmış öğrenci yok."
+              ? "Henüz denemeye katılmış bir öğrenci yok."
               : role === "TEACHER"
-                ? "Aktif grubunuza bağlı öğrenci bulunmuyor."
-                : "Henüz bağlı öğrenciniz bulunmuyor."
+                ? "Aktif grubunuza bağlı bir öğrenci henüz görünmüyor."
+                : "Henüz bağlı bir öğrenciniz bulunmuyor."
           }
-          body="Açıklanmış sonuç oluştuğunda rapor otomatik güncellenir."
+          body="Sonuçlar açıklandığında rapor otomatik olarak güncellenecek."
         />
       ) : !report || !latest ? (
         <EmptyState
           className="mt-6"
-          title="Açıklanmış sonuç henüz yok."
-          body="Öğrenci denemeyi tamamlayıp sonuç açıklandığında rapor burada oluşur."
+          title="Henüz açıklanmış bir sonuç yok"
+          body="Öğrenci denemeyi tamamlayıp sonuç açıklandığında rapor burada oluşacak 📊"
         />
       ) : (
         <>
@@ -187,7 +187,7 @@ export function OdkAudienceReports({
 
           <Section
             title="Kazanım eğilimleri"
-            description={`Yüzde, bağlı sorulardaki doğru oranıdır; az sorulu ölçümlerde yeni kanıt bekleyin.${weakCount ? ` ${weakCount} kazanım %${WEAK_ACCURACY} altında.` : ""}`}
+            description={`Yüzde, ilgili sorulardaki doğru oranını gösterir; az sorulu ölçümlerde yeni denemeleri beklemenizi öneririz.${weakCount ? ` ${weakCount} kazanım %${WEAK_ACCURACY} altında.` : ""}`}
           >
             {report.trends.length ? (
               <PanelTable caption="Kazanım eğilimleri" columns={["Kazanım", "Son doğruluk", "Değişim", "Kanıt"]}>
@@ -213,7 +213,7 @@ export function OdkAudienceReports({
                 ))}
               </PanelTable>
             ) : (
-              <p className="text-[14px] text-pn-text-muted">Kazanım verisi bulunmuyor.</p>
+              <p className="text-[14px] text-pn-text-muted">Henüz kazanım verisi oluşmadı.</p>
             )}
             <p className="mt-4 text-[13px] text-pn-text-muted">
               Tek bir denemeyi kesin yargı olarak kullanmayın; tekrarlayan kazanım kanıtı ve öğrencinin kendi eğilimi daha anlamlıdır.

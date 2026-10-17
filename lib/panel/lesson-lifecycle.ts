@@ -42,7 +42,7 @@ export async function resolveScopedLessons(
       seriesId: true,
     },
   });
-  if (!lesson) throw new LessonLifecycleError("LESSON_NOT_FOUND", "Ders bulunamadı.");
+  if (!lesson) throw new LessonLifecycleError("LESSON_NOT_FOUND", "Dersi bulamadık.");
 
   if (scope === "ONE" || !lesson.seriesId) return [lesson];
 
@@ -72,7 +72,7 @@ export async function assertTeacherActive(
     where: { id: teacherId, role: "TEACHER", status: "ACTIVE" },
     select: { id: true, fullName: true, email: true },
   });
-  if (!teacher) throw new LessonLifecycleError("TEACHER_NOT_FOUND", "Aktif öğretmen bulunamadı.");
+  if (!teacher) throw new LessonLifecycleError("TEACHER_NOT_FOUND", "Aktif öğretmen şu an görünmüyor.");
   return teacher;
 }
 

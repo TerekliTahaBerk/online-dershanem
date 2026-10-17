@@ -42,8 +42,8 @@ export function AdminSessionPlan({
         body: JSON.stringify({ sessions: rows }),
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok) return setMessage({ text: result.error || "Oturum planı kaydedilemedi.", error: true });
-      setMessage({ text: "Oturum planı kaydedildi.", error: false });
+      if (!response.ok) return setMessage({ text: result.error || "Oturum planı şu an kaydedilemedi. Lütfen tekrar dener misiniz?", error: true });
+      setMessage({ text: "Oturum planı kaydedildi ✅", error: false });
       router.refresh();
     } catch {
       setMessage({ text: "Bağlantı kurulamadı. Plan kaydedilmedi; tekrar deneyin.", error: true });

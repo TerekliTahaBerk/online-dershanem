@@ -55,8 +55,8 @@ export function AdminUserProfileForm({ user }: Props) {
           const result = await response.json().catch(() => ({}));
           setBusy(false);
           if (!response.ok)
-            return setMessage(result.error || "Profil güncellenemedi.");
-          setMessage("Profil güncellendi.");
+            return setMessage(result.error || "Profil şu an güncellenemedi. Lütfen tekrar dener misiniz?");
+          setMessage("Profil güncellendi ✅");
           router.refresh();
         }}
       >

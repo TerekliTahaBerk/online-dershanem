@@ -26,9 +26,9 @@ export default async function AdminStepUpPage() {
           Kimliğinizi yeniden doğrulayın
         </h1>
         <p className="mb-7 mt-3 text-sm leading-6 text-slate-600">
-          Hassas işlemler (yönetim, sonuç yayını, istisnai erişim) için doğrulama 10 dakika geçerlidir.
+          Güvenliğiniz için hassas işlemlerden (yönetim, sonuç yayını, istisnai erişim) önce kısa bir doğrulama istiyoruz; doğrulama 10 dakika geçerlidir 🔐
           Telefondan uygulama kodunu veya bu cihaza kayıtlı geçiş anahtarını
-          kullanın.
+          kullanabilirsiniz.
         </p>
         <AdminMfaForm
           purpose="STEP_UP"

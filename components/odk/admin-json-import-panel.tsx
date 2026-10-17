@@ -81,7 +81,7 @@ export function AdminJsonImportPanel({ examId, sections = [], bookletCodes = ["A
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setError(result.error || "Önizleme başarısız.");
+        setError(result.error || "Önizleme şu an tamamlanamadı. Lütfen tekrar dener misiniz?");
         return;
       }
       setImportId(result.importId);
@@ -89,7 +89,7 @@ export function AdminJsonImportPanel({ examId, sections = [], bookletCodes = ["A
       setServerIssues(Array.isArray(result.issues) ? result.issues : []);
       setReady(Boolean(result.summary?.ready));
     } catch {
-      setError("Bağlantı kurulamadı.");
+      setError("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?");
     } finally {
       setBusy(false);
     }
@@ -107,7 +107,7 @@ export function AdminJsonImportPanel({ examId, sections = [], bookletCodes = ["A
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setError(result.code === "IMPORT_STALE" ? "Önizlemeden sonra deneme değişti. Yeniden önizleyin." : result.error || "Kayıt başarısız.");
+        setError(result.code === "IMPORT_STALE" ? "Önizlemeden sonra deneme değişti. Yeniden önizleyin." : result.error || "Kayıt şu an tamamlanamadı. Lütfen tekrar dener misiniz?");
         if (result.code === "IMPORT_STALE") setImportId(null);
         return;
       }
@@ -117,7 +117,7 @@ export function AdminJsonImportPanel({ examId, sections = [], bookletCodes = ["A
       setServerIssues([]);
       router.refresh();
     } catch {
-      setError("Bağlantı kurulamadı.");
+      setError("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?");
     } finally {
       setBusy(false);
     }

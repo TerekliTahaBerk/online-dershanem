@@ -95,8 +95,8 @@ export default async function CoachWorkspacePage() {
         {!assignmentCount ? (
           <EmptyState
             className="mt-6"
-            title="Henüz aktif koçluk öğrencin yok."
-            body="Yönetim sana öğrenci atadığında görüşmeler ve dikkat bekleyenler burada açılır."
+            title="Henüz aktif bir koçluk öğrencin yok"
+            body="Sana öğrenci atandığında görüşmeler ve dikkat bekleyenler burada açılacak 🤝"
           />
         ) : (
           <>
@@ -130,7 +130,7 @@ export default async function CoachWorkspacePage() {
                   })}
                 </PanelTable>
               ) : (
-                <p className="text-[14px] text-pn-text-muted">Bugün planlı görüşmen yok.</p>
+                <p className="text-[14px] text-pn-text-muted">Bugün planlı bir görüşmen yok ☕</p>
               )}
             </Section>
 
@@ -169,7 +169,7 @@ export default async function CoachWorkspacePage() {
                   ))}
                 </div>
               ) : (
-                <EmptyState title="Şu an dikkat bekleyen öğrenci yok." />
+                <EmptyState title="Şu an dikkat bekleyen öğrenci yok, her şey yolunda 🌱" />
               )}
             </Section>
 

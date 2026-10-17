@@ -165,7 +165,7 @@ export default async function OdkAdminExamsPage({
       ) : (
         <EmptyState
           className="mt-5"
-          title={query || familyRecord ? "Süzgece uygun deneme bulunamadı." : "Bu görünümde deneme yok."}
+          title={query || familyRecord ? "Süzgece uyan bir deneme bulunamadı 🔍" : "Bu görünümde deneme yok."}
           body={query || familyRecord ? "Süzgeci temizleyin ya da başka bir görünüm seçin." : "Başka bir görünüm seçin."}
           action={
             <Link href={hrefFor("tumu")} className={buttonClass("secondary", "sm")}>

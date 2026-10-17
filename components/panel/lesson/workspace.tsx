@@ -150,7 +150,7 @@ export function TeacherLessonWorkspace({
             <p aria-live="polite" className="mt-0.5 text-[13px] text-pn-text-secondary">
               {state.actionMessage ||
                 (completed
-                  ? "Bu ders tamamlandı."
+                  ? "Bu ders tamamlandı ✅"
                   : "Notlar taslak olarak kaydolur; hazır olduğunuzda tek işlemle kapatın.")}
             </p>
           </div>

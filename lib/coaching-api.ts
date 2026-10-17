@@ -12,13 +12,13 @@ export async function requireCoachingMutation(request: Request) {
   const auth = account.session.role === "PARENT" ? account : await requireApiProductRole("OK", "TEACHER", "STUDENT");
   if (!auth.ok) return auth;
   const pilot = await checkPilotAccess(auth.session.userId, auth.session.role);
-  if (!pilot.allowed) return { ok: false as const, response: NextResponse.json({ error: "Görüşme bulunamadı." }, { status: 404 }) };
+  if (!pilot.allowed) return { ok: false as const, response: NextResponse.json({ error: "Görüşmeyi bulamadık." }, { status: 404 }) };
   const guard = await guardMutation({ action: "panel.coaching.session", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:coaching-session:${auth.session.userId}`, rateLimit: { max: 60, windowMs: 15 * 60_000 } });
   if (!guard.ok) return { ok: false as const, response: NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 }) };
   return auth;
 }
 export function coachingErrorResponse(error: unknown) {
   if (error instanceof CoachingExperienceError) return NextResponse.json({ error: error.message }, { status: error.status });
-  if (error instanceof ZodError) return NextResponse.json({ error: "Görüşme bilgilerini kontrol edin." }, { status: 400 });
+  if (error instanceof ZodError) return NextResponse.json({ error: "Lütfen görüşme bilgilerini bir kez daha kontrol eder misiniz?" }, { status: 400 });
   throw error;
 }

@@ -150,7 +150,7 @@ export function completionFieldsForKind(kind: KocumTaskKind): CompletionField[] 
 export function validateFeltScale(value: number | null | undefined): string | null {
   if (value == null) return null;
   if (!Number.isInteger(value) || value < 1 || value > 5) {
-    return "Değer 1–5 arasında olmalıdır.";
+    return "Lütfen 1 ile 5 arasında bir değer seç.";
   }
   return null;
 }
@@ -170,7 +170,7 @@ export function validateTaskCompletion(input: TaskCompletionInput): string | nul
     "PARTIAL",
     "COULD_NOT",
   ];
-  if (!allowed.includes(input.status)) return "Geçersiz görev durumu.";
+  if (!allowed.includes(input.status)) return "Bu görev durumu geçerli değil.";
 
   for (const [value, label] of [
     [input.actualQuestions, "Soru sayısı"],
@@ -189,7 +189,7 @@ export function validateTaskCompletion(input: TaskCompletionInput): string | nul
   if (energyErr) return energyErr;
 
   if (input.studentNote && input.studentNote.length > 500) {
-    return "Öğrenci notu en fazla 500 karakter olabilir.";
+    return "Notun en fazla 500 karakter olabilir.";
   }
 
   if (
@@ -200,7 +200,7 @@ export function validateTaskCompletion(input: TaskCompletionInput): string | nul
   ) {
     const sum = input.actualCorrect + input.actualIncorrect + input.actualBlank;
     if (sum > input.actualQuestions) {
-      return "Doğru + yanlış + boş, toplam soru sayısını aşamaz.";
+      return "Doğru, yanlış ve boş sayılarının toplamı çözülen soru sayısını aşmamalı.";
     }
   }
 
@@ -267,7 +267,7 @@ export function evaluateTaskTransition(
   if (from === to) return { kind: "NOOP" };
   if (TASK_TRANSITIONS[from].has(to)) return { kind: "APPLY" };
   if (from === "SKIPPED") {
-    return { kind: "REJECT", reason: "Bu görev yeniden planlanacak durumda." };
+    return { kind: "REJECT", reason: "Bu görev yeniden planlanmak üzere ayrıldı." };
   }
   return {
     kind: "REJECT",

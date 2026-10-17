@@ -21,7 +21,7 @@ export class OdOnboardingError extends Error {
 
 export async function ensurePaidOdOnboarding(tx: DbClient, orderId: string) {
   const order = await tx.odOrder.findUnique({ where: { id: orderId }, select: { id: true, status: true, userId: true, buyerInfo: true } });
-  if (!order) throw new OdOnboardingError("Sipariş bulunamadı.", "NOT_FOUND");
+  if (!order) throw new OdOnboardingError("Siparişi bulamadık.", "NOT_FOUND");
   if (order.status !== "PAID") throw new OdOnboardingError("Onboarding yalnızca ödenmiş sipariş için oluşturulabilir.", "PAYMENT_CONFLICT");
   const now = new Date();
   const onboarding = await tx.odOnboarding.upsert({
@@ -79,7 +79,7 @@ export async function transitionOdOnboarding(input: {
         },
       },
     });
-    if (!onboarding) throw new OdOnboardingError("Sipariş onboarding kaydı bulunamadı.", "NOT_FOUND");
+    if (!onboarding) throw new OdOnboardingError("Sipariş onboarding kaydı bulunamadı; kaldırılmış ya da değişmiş olabilir.", "NOT_FOUND");
 
     const currentState = onboarding.state as OdOnboardingStateValue;
     const allowed = allowedOdOnboardingTransitions(currentState, onboarding.blockedFromState as OdOnboardingStateValue | null);
@@ -107,7 +107,7 @@ export async function transitionOdOnboarding(input: {
     const nextOwnerId = input.ownerId === undefined ? onboarding.ownerId : input.ownerId;
     const nextDueAt = input.dueAt === undefined ? dueAtForOdOnboardingState(input.toState, now) : input.dueAt;
     if (input.toState !== "CANCELED" && !nextOwnerId) {
-      throw new OdOnboardingError("Geçiş için bir operasyon sorumlusu seçin.", "MISSING_PREREQUISITE");
+      throw new OdOnboardingError("Lütfen geçiş için bir operasyon sorumlusu seçin.", "MISSING_PREREQUISITE");
     }
     const update = await tx.odOnboarding.updateMany({
       where: { id: onboarding.id, version: onboarding.version },
@@ -123,7 +123,7 @@ export async function transitionOdOnboarding(input: {
         version: { increment: 1 },
       },
     });
-    if (update.count !== 1) throw new OdOnboardingError("Onboarding başka bir kullanıcı tarafından güncellendi. Sayfayı yenileyin.", "CONFLICT");
+    if (update.count !== 1) throw new OdOnboardingError("Onboarding başka bir kullanıcı tarafından güncellendi. Sayfayı yenileyip tekrar deneyebilirsiniz.", "CONFLICT");
 
     const transition = await tx.odOnboardingTransition.create({
       data: {

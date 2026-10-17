@@ -21,7 +21,7 @@ test("status: enough healthy evidence returns ON_TRACK", () => {
 
   assert.equal(summary.code, "ON_TRACK");
   assert.equal(summary.hasEnoughEvidence, true);
-  assert.equal(summary.title, "Genel olarak düzenli ilerliyor.");
+  assert.equal(summary.title, "Genel olarak düzenli ilerliyor 🌿");
   assert.equal(summary.evidence.length >= 2, true);
 });
 

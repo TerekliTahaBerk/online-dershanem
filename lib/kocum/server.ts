@@ -118,7 +118,7 @@ export async function applyTemplateToStudentWeek(input: {
   replaceExistingDraft?: boolean;
 }, db: PrismaClient = prisma) {
   const template = await db.weeklyPlanTemplate.findUnique({ where: { id: input.templateId } });
-  if (!template) return { ok: false as const, error: "Şablon bulunamadı." };
+  if (!template) return { ok: false as const, error: "Şablon bulunamadı; kaldırılmış ya da değişmiş olabilir." };
 
   const weekStart = istanbulWeekStart(input.weekStart);
   const defs = parseTemplateTaskDefs(template.taskDefs);

@@ -111,7 +111,7 @@ export function previewNoticeMessage(notice: PreviewSubjectNotice): string {
     case "NO_PARENT_CHILDREN":
       return "Bu velinin bağlı öğrencisi yok.";
     case "NO_TEACHER_ASSIGNMENT":
-      return "Bu öğretmene atanmış aktif grup bulunamadı.";
+      return "Bu öğretmene atanmış aktif grup şu an görünmüyor.";
   }
 }
 

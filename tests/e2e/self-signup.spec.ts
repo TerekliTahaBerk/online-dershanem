@@ -74,8 +74,8 @@ test.describe("kendi kendine kayıt", () => {
     await page.waitForURL(/\/panel\/urun-sec$/);
     await expect(page.getByRole("heading", { name: "Hangi panele girmek istiyorsun?" })).toBeVisible();
     await expect(page.getByRole("link", { name: / paneline git$/ })).toHaveCount(0);
-    await expect(page.getByText("Paketin yok", { exact: true })).toHaveCount(3);
-    await expect(page.getByText("Sana ulaşabilmemiz için kısa iletişim formunu doldur.")).toBeVisible();
+    await expect(page.getByText("Henüz paketin yok", { exact: true })).toHaveCount(3);
+    await expect(page.getByText("Seni daha iyi tanıyabilmemiz için kısa iletişim formunu doldurmaya ne dersin? 😊")).toBeVisible();
 
     await page.getByRole("link", { name: "Hesap ayarları" }).click();
     await page.waitForURL(/\/panel\/ayarlar$/);
@@ -88,7 +88,7 @@ test.describe("kendi kendine kayıt", () => {
     await page.getByRole("button", { name: "Kaydet" }).click();
     await expect(page.getByText("Profil bilgilerin kaydedildi.")).toBeVisible();
     await page.goto("/panel/ayarlar");
-    await expect(page.getByText("Hesabın tamamlandı.", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Hesabın tamamlandı 🎉", { exact: true }).first()).toBeVisible();
     await expect(page.getByText(/Hesabını tamamla/)).toHaveCount(0);
 
     // Atlanan özel form ayarlardan yeniden açılır; public form ile karışmaz.
@@ -107,12 +107,12 @@ test.describe("kendi kendine kayıt", () => {
     await frame!.evaluate(() => parent.postMessage(JSON.stringify({ event: "Tally.FormSubmitted", payload: {} }), "*"));
     expect((await submission).status()).toBe(200);
     await page.waitForURL(/\/panel\/urun-sec$/);
-    await expect(page.getByText("Sana ulaşabilmemiz için kısa iletişim formunu doldur.")).toHaveCount(0);
+    await expect(page.getByText("Seni daha iyi tanıyabilmemiz için kısa iletişim formunu doldurmaya ne dersin? 😊")).toHaveCount(0);
     await page.goto("/kayit/iletisim-formu");
     await expect(page).toHaveURL(/\/panel\/urun-sec$/);
     await page.goto("/panel/ayarlar");
     await page.getByRole("link", { name: "Güncelle", exact: true }).click();
-    await expect(page.getByText("Formu daha önce doldurdun; istersen güncelleyebilirsin.")).toBeVisible();
+    await expect(page.getByText("Formu daha önce doldurdun, teşekkürler 💛 İstersen güncelleyebilirsin.")).toBeVisible();
     await page.getByRole("button", { name: "Panele dön", exact: true }).click();
     await page.waitForURL(/\/panel\/urun-sec$/);
   });
@@ -143,7 +143,7 @@ test.describe("kendi kendine kayıt", () => {
     await page.goto("/panel/ayarlar/cocuklarim");
     await expect(page.getByText("E2E Çocuk Bir", { exact: true }).first()).toBeVisible();
     await expect(page.getByText("E2E Çocuk İki", { exact: true }).first()).toBeVisible();
-    await expect(page.getByText("Ekibimiz öğrenci hesabını açıp size bağlayacak.")).toHaveCount(2);
+    await expect(page.getByText("Ekibimiz öğrenci hesabını açıp en kısa sürede size bağlayacak 🤝")).toHaveCount(2);
   });
 
   test("kayıt API'si yönetici rolünü reddeder", async ({ page }) => {

@@ -15,7 +15,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const { id } = routeParams.data;
   const url = new URL(request.url);
   const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
-  if (!parsed.success) return invalidApiInput("Geçersiz öğrenci araması.");
+  if (!parsed.success) return invalidApiInput("Öğrenci araması geçerli görünmüyor.");
   const query = parsed.data.q;
   const limit = 20;
 
@@ -23,7 +23,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     where: { id },
     select: { id: true, capacity: true, isActive: true, enrollments: { where: { endedAt: null }, select: { studentId: true } } },
   });
-  if (!group) return NextResponse.json({ error: "Grup bulunamadı." }, { status: 404, headers: PRIVATE_NO_STORE });
+  if (!group) return NextResponse.json({ error: "Grubu bulamadık." }, { status: 404, headers: PRIVATE_NO_STORE });
 
   const activeStudentIds = new Set(group.enrollments.map((item) => item.studentId));
   const candidates = await prisma.studentProfile.findMany({

@@ -25,7 +25,7 @@ export function RelationshipUpdateForm({
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) {
-      setError(result.error || "Yakınlık güncellenemedi.");
+      setError(result.error || "Yakınlık şu an güncellenemedi. Lütfen tekrar dener misiniz?");
       setBusy(false);
       return;
     }

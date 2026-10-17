@@ -68,7 +68,7 @@ export function CoachWeekCalendar({
       await rescheduleRequest(taskId, scheduledFor);
     } catch {
       setBusyId(null);
-      setMessage("Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.");
+      setMessage("Bağlantı kurulamadı. İnternetini kontrol edip tekrar dener misin?");
     }
   }
 
@@ -88,7 +88,7 @@ export function CoachWeekCalendar({
     const body = await response.json().catch(() => ({}));
     setBusyId(null);
     if (!response.ok) {
-      setMessage(body.error || "Tarih değiştirilemedi.");
+      setMessage(body.error || "Tarih şu an değiştirilemedi. Lütfen tekrar dener misiniz?");
       return;
     }
     setVersion(body.version ?? version + 1);
@@ -102,7 +102,7 @@ export function CoachWeekCalendar({
           : task,
       ),
     );
-    setMessage("Görev tarihi güncellendi.");
+    setMessage("Görev tarihi güncellendi ✅");
   }
 
   function onDrop(day: Date, taskId: string) {

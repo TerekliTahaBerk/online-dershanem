@@ -14,6 +14,6 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const query = querySchema.safeParse({ sekme: new URL(request.url).searchParams.get("sekme") ?? undefined });
   if (!params.success || !query.success) return invalidApiInput();
   const bundle = await loadGroup360Bundle({ groupId: params.data.id, tabRaw: query.data.sekme, missing: "null" });
-  if (!bundle) return adminJson({ error: "Grup bulunamadı.", code: "NOT_FOUND" }, { status: 404 });
+  if (!bundle) return adminJson({ error: "Grubu bulamadık.", code: "NOT_FOUND" }, { status: 404 });
   return adminJson(toMobileGroup360(bundle));
 }

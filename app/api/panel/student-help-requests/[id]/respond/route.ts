@@ -14,15 +14,15 @@ const MAX_AGE = 365 * 24 * 60 * 60 * 1000;
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireStaffApi("OD", "od:lesson:teach"); if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().studentCheckIn) return NextResponse.json({ error: "Yardım kutusu henüz açık değil." }, { status: 404 });
+  if (!getPanelFeatureFlags().studentCheckIn) return NextResponse.json({ error: "Yardım kutusu şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.student_help.respond", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:student-help:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
-  const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Yanıt seçimini kontrol edin." }, { status: 400 });
+  const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Lütfen yanıt seçimini bir kez daha kontrol eder misiniz?" }, { status: 400 });
   const { id } = await context.params;
   const item = await prisma.studentHelpRequest.findFirst({ where: { id, status: "OPEN", ...teacherHelpScope(auth.session.userId) }, include: { student: { include: { user: { select: { id: true } } } }, responses: { select: { id: true } } } });
-  if (!item) return NextResponse.json({ error: "Yardım isteği bulunamadı." }, { status: 404 });
+  if (!item) return NextResponse.json({ error: "Yardım isteğini bulamadık." }, { status: 404 });
   const enrollment = item.groupId ? await prisma.enrollment.findFirst({ where: { studentId: item.studentId, groupId: item.groupId, endedAt: null }, select: { id: true } }) : null;
-  if (item.groupId && !enrollment) return NextResponse.json({ error: "Yardım isteği bulunamadı." }, { status: 404 });
+  if (item.groupId && !enrollment) return NextResponse.json({ error: "Yardım isteğini bulamadık." }, { status: 404 });
   const now = new Date();
   const firstResponse = !item.firstResponseAt;
   const changed = await prisma.$transaction(async (tx) => {

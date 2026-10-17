@@ -101,7 +101,7 @@ export function AdminSetupWizard({
             const result = await response.json().catch(() => ({}));
             setAccountBusy(false);
             if (!response.ok)
-              return setAccountMessage(result.error || "Hesap açılamadı.");
+              return setAccountMessage(result.error || "Hesap şu an açılamadı. Lütfen tekrar dener misiniz?");
             const person = {
               id:
                 role === "STUDENT"
@@ -110,7 +110,7 @@ export function AdminSetupWizard({
               name: result.user.fullName || result.user.email,
             };
             if (!person.id)
-              return setAccountMessage("Öğrenci profili oluşturulamadı.");
+              return setAccountMessage("Öğrenci profili şu an oluşturulamadı. Lütfen tekrar dener misiniz?");
             setPeople((current) =>
               role === "TEACHER"
                 ? { ...current, teachers: [...current.teachers, person] }
@@ -125,7 +125,7 @@ export function AdminSetupWizard({
                   : current,
               );
             if (!result.invite?.url || !result.invite?.expiresAt)
-              return setAccountMessage("Davet bağlantısı üretilemedi.");
+              return setAccountMessage("Davet bağlantısı şu an üretilemedi. Lütfen tekrar dener misiniz?");
             setInvitations((current) => [
               ...current,
               {
@@ -256,7 +256,7 @@ export function AdminSetupWizard({
             });
             const result = await response.json().catch(() => ({}));
             if (!response.ok)
-              return setMessage(result.error || "Kurulum tamamlanamadı.");
+              return setMessage(result.error || "Kurulum şu an tamamlanamadı. Lütfen tekrar dener misiniz?");
             // Sihirbaz başa döner; aynı kurulum ikinci kez gönderilip yinelenen
             // grup oluşmaz.
             formElement.reset();

@@ -20,7 +20,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   const guard = await guardMutation({ action: policy.action, requireSameOrigin: true, headers: request.headers, rateLimitKey: getRateLimitKeyFromUser(auth.session.userId, policy.action), rateLimit: policy.limit });
   if (!guard.ok) return mutationGuardResponse(guard);
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Cevap kaydı geçersiz." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Cevap kaydı geçerli görünmüyor." }, { status: 400 });
   const { id } = await context.params;
   const now = new Date();
   const attempt = await prisma.odkExamAttempt.findFirst({
@@ -46,10 +46,10 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
       },
     },
   });
-  if (!attempt) return NextResponse.json({ error: "Sınav oturumu bulunamadı." }, { status: 404 });
+  if (!attempt) return NextResponse.json({ error: "Sınav oturumunu bulamadık." }, { status: 404 });
   if (attempt.status !== "IN_PROGRESS" || now >= attempt.deadlineAt) {
     if (attempt.status === "IN_PROGRESS") await prisma.odkExamAttempt.update({ where: { id }, data: { status: "AUTO_SUBMITTED", submittedAt: now } });
-    return NextResponse.json({ error: "Sınav süresi sona erdi.", code: "ATTEMPT_CLOSED" }, { status: 409 });
+    return NextResponse.json({ error: "Sınav süresi doldu.", code: "ATTEMPT_CLOSED" }, { status: 409 });
   }
   const section = attempt.version.sections.find((item) => item.questions.length);
   // Soru sürümde yok ya da revizyonla iptal edildi: istemci bekleyen kaydı bırakır (kalıcı ret).
@@ -104,7 +104,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     });
     return NextResponse.json({ answer });
   } catch (error) {
-    if (error instanceof AttemptClosedError) return NextResponse.json({ error: "Sınav süresi sona erdi.", code: "ATTEMPT_CLOSED" }, { status: 409 });
+    if (error instanceof AttemptClosedError) return NextResponse.json({ error: "Sınav süresi doldu.", code: "ATTEMPT_CLOSED" }, { status: 409 });
     if (error instanceof RevisionConflictError || (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")) {
       const latest = await prisma.odkAttemptAnswer.findUnique({ where: { attemptId_questionId: { attemptId: id, questionId: parsed.data.questionId } } });
       return NextResponse.json({ error: "Daha güncel bir cevap zaten kaydedildi.", code: "REVISION_CONFLICT", answer: latest }, { status: 409 });

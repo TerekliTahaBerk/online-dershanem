@@ -79,7 +79,7 @@ export function buildPlanDeterministicReason(input: {
   }
   return input.taskCount
     ? `Bu hafta planda ${input.taskCount} görev görünüyor.`
-    : "Bu hafta için henüz plan görevi yok.";
+    : "Bu hafta için henüz bir plan görevi yok.";
 }
 
 export function buildSubjectDeclineDeterministicReason(input: {
@@ -95,7 +95,7 @@ export function buildReviewDeterministicReason(input: {
   dueCount: number;
   titles: string[];
 }): string {
-  if (!input.dueCount) return "Şu an vadesi gelen tekrar maddesi yok.";
+  if (!input.dueCount) return "Şu an zamanı gelen bir tekrar yok 🎉";
   const sample = input.titles.slice(0, 2).join(", ");
   return input.dueCount === 1
     ? `Tekrar kuyruğunda 1 madde var${sample ? `: ${sample}` : ""}.`
@@ -107,7 +107,7 @@ export function buildTeacherAttentionDeterministicReason(input: {
   topHeadlines: string[];
 }): string {
   if (!input.visibleCount) {
-    return "Bugün dikkat gerektiren açık bir öğrenci sinyali yok.";
+    return "Bugün dikkat gerektiren açık bir öğrenci sinyali yok ✅";
   }
   const sample = input.topHeadlines.slice(0, 2).join("; ");
   return `Bugün ${input.visibleCount} dikkat maddesi var${sample ? `: ${sample}` : ""}.`;

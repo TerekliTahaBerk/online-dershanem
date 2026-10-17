@@ -18,7 +18,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!guard.ok) return mutationGuardResponse(guard);
 
   const parsed = questionTimingBatchSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Timing batch geçersiz." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Timing batch geçerli görünmüyor." }, { status: 400 });
   const { id } = await context.params;
   const attempt = await prisma.odkExamAttempt.findFirst({
     where: { id, studentUserId: auth.session.userId },
@@ -28,7 +28,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       version: { select: { sections: { select: { questions: { where: { isActive: true }, select: { id: true } } } } } },
     },
   });
-  if (!attempt) return NextResponse.json({ error: "Oturum bulunamadı." }, { status: 404 });
+  if (!attempt) return NextResponse.json({ error: "Oturumu bulamadık." }, { status: 404 });
   if (attempt.status !== "IN_PROGRESS") return NextResponse.json({ accepted: 0 });
 
   const allowed = new Set(attempt.version.sections.flatMap((section) => section.questions.map((question) => question.id)));

@@ -15,7 +15,7 @@ export function InviteAcceptForm({ token }: { token: string }) {
     event.preventDefault();
     setError(null);
     if (newPassword !== repeatPassword) {
-      setError("Parolalar birbiriyle eşleşmiyor.");
+      setError("Parolalar birbiriyle eşleşmiyor; bir kez daha kontrol eder misiniz?");
       return;
     }
 
@@ -31,13 +31,13 @@ export function InviteAcceptForm({ token }: { token: string }) {
         error?: string;
       };
       if (!response.ok || !data.redirect) {
-        setError(data.error ?? "Davet doğrulanamadı.");
+        setError(data.error ?? "Daveti şu an doğrulayamadık. Lütfen bağlantıyı kontrol edip tekrar dener misiniz?");
         setPending(false);
         return;
       }
       window.location.replace(data.redirect);
     } catch {
-      setError("Bağlantı kurulamadı. Tekrar deneyin.");
+      setError("Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?");
       setPending(false);
     }
   }
@@ -97,7 +97,7 @@ export function InviteAcceptForm({ token }: { token: string }) {
               className="animate-spin motion-reduce:animate-none"
               aria-hidden="true"
             />
-            Hesap hazırlanıyor
+            Hesabınız hazırlanıyor ⏳
           </span>
         ) : (
           "Hesabı etkinleştir"

@@ -32,10 +32,10 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "İstek okunamadı." }, { status: 400 });
+    return NextResponse.json({ error: "İsteği okuyamadık. Lütfen tekrar dener misiniz?" }, { status: 400 });
   }
   const parsed = bodySchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz işlem." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "İşlem geçerli görünmüyor." }, { status: 400 });
 
   const now = new Date();
   if (parsed.data.action === "submitted") {

@@ -4,7 +4,7 @@ export function credentialIsPlatformBound(input: { transports: readonly string[]
 }
 
 export function mapWebAuthnClientError(error: unknown): string {
-  if (!(error instanceof Error)) return "Doğrulama tamamlanamadı. Lütfen tekrar deneyin.";
+  if (!(error instanceof Error)) return "Doğrulamayı şu an tamamlayamadık. Lütfen tekrar dener misiniz?";
   const message = error.message.toLowerCase();
   if (
     message.includes("not allowed by the user agent") ||
@@ -13,10 +13,10 @@ export function mapWebAuthnClientError(error: unknown): string {
     message.includes("abort") ||
     message.includes("cancel")
   ) {
-    return "Bu telefonda kayıtlı geçiş anahtarı bulunamadı veya işlem iptal edildi. Doğrulama uygulaması kodunu veya kurtarma kodunu kullanın.";
+    return "Bu telefonda kayıtlı geçiş anahtarı bulunamadı veya işlem iptal edildi. Doğrulama uygulaması kodunu ya da kurtarma kodunu kullanabilirsiniz.";
   }
   if (message.includes("no available authenticator")) {
-    return "Uyumlu geçiş anahtarı bulunamadı. Uygulama kodunu veya kurtarma kodunu deneyin.";
+    return "Uyumlu geçiş anahtarı bulunamadı. Uygulama kodunu ya da kurtarma kodunu deneyebilirsiniz.";
   }
   return error.message;
 }

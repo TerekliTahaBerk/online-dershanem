@@ -21,7 +21,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!params.success) return invalidApiInput();
   const { id } = params.data;
   const attempt = await prisma.odkExamAttempt.findFirst({ where: { id, studentUserId: auth.session.userId }, select: { id: true, status: true, deadlineAt: true, startedAt: true, version: { select: { settings: true } }, exam: { select: { family: true, examFamilyRef: { select: { code: true } } } }, _count: { select: { answers: { where: { selectedOption: { not: null } } } } } } });
-  if (!attempt) return NextResponse.json({ error: "Sınav oturumu bulunamadı." }, { status: 404 });
+  if (!attempt) return NextResponse.json({ error: "Sınav oturumunu bulamadık." }, { status: 404 });
   if (attempt.status !== "IN_PROGRESS") return NextResponse.json({ ok: true, status: attempt.status, idempotent: true });
   const now = new Date();
   // Oturumlu sınav: teslim yalnız son oturumda (önceki oturum "Oturumu bitir" ile kapanır).

@@ -12,7 +12,7 @@ export async function markOdkOrderPaid(
       where: { id: orderId },
       include: { package: { select: { title: true } } },
     });
-    if (!order) throw new Error("Sipariş bulunamadı.");
+    if (!order) throw new Error("Siparişi bulamadık.");
     if (order.status !== "PAID") {
       await tx.odkOrder.update({ where: { id: order.id }, data: { status: "PAID" } });
     }

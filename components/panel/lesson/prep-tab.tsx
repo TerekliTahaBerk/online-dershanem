@@ -18,7 +18,7 @@ export function LessonPrepTab({ state, onPreviousGoalApplied }: { state: LessonC
             <PropertyRow label="Çalışma">{previous.homework || "—"}</PropertyRow>
           </PropertyList>
         ) : (
-          <EmptyState title="İlk ders; önceki hedef yok." body="Bu grubun tamamlanmış bir önceki dersi bulunmuyor." />
+          <EmptyState title="İlk ders; önceki hedef yok." body="Bu grubun henüz tamamlanmış bir önceki dersi bulunmuyor." />
         )}
         {form.previousGoal ? (
           <button

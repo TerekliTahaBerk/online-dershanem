@@ -23,7 +23,7 @@ async function post(url: string, body: unknown) {
     body: JSON.stringify(body),
   });
   const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(result.error || "İşlem tamamlanamadı.");
+  if (!response.ok) throw new Error(result.error || "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?");
   return result;
 }
 
@@ -61,7 +61,7 @@ export function AdminLearningForms({
       router.refresh();
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "İşlem tamamlanamadı.",
+        error instanceof Error ? error.message : "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?",
       );
     } finally {
       setBusy(false);
@@ -191,7 +191,7 @@ export function AdminLearningForms({
             async () => {
               await post("/api/panel/lessons", buildLessonPayload(data));
             },
-            "Ders takvime eklendi.",
+            "Ders takvime eklendi ✅",
             formElement,
           );
         }}
@@ -342,7 +342,7 @@ export function AdminLearningForms({
               payload = buildLessonPayload(data);
             } catch (error) {
               setMessage(
-                error instanceof Error ? error.message : "Önizleme alınamadı.",
+                error instanceof Error ? error.message : "Önizleme şu an alınamadı. Lütfen tekrar dener misiniz?",
               );
               return;
             }
@@ -354,7 +354,7 @@ export function AdminLearningForms({
                 setMessage(
                   error instanceof Error
                     ? error.message
-                    : "Önizleme alınamadı.",
+                    : "Önizleme şu an alınamadı. Lütfen tekrar dener misiniz?",
                 ),
               )
               .finally(() => setBusy(false));

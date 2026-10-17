@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return json({ error: "Parolanızı girin.", code: "INVALID_INPUT" }, { status: 400 });
   if (/^Bearer\s+/i.test(request.headers.get("authorization") ?? "") && !parsed.data.idempotencyKey) {
-    return json({ error: "Güvenli işlem bilgisi eksik. Görünümü yenileyin.", code: "PRECONDITION_REQUIRED" }, { status: 400 });
+    return json({ error: "Güvenli işlem bilgisi eksik görünüyor. Sayfayı yenileyip tekrar dener misiniz?", code: "PRECONDITION_REQUIRED" }, { status: 400 });
   }
   try {
     const { result, replayed } = await requestAccountDeletion(auth.session, parsed.data);

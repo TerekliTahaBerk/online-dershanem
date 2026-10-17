@@ -22,12 +22,12 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const guard = await guardMutation({ action: "panel.assignments.progress", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:assignment-progress:${auth.session.userId}`, rateLimit: { max: 160, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) { await recordFinished("rejected"); return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 }); }
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) { await recordFinished("validation"); return NextResponse.json({ error: "Ödev durumu geçersiz." }, { status: 400 }); }
+  if (!parsed.success) { await recordFinished("validation"); return NextResponse.json({ error: "Ödev durumu geçerli görünmüyor." }, { status: 400 }); }
   const { id } = await context.params;
   const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId }, select: { id: true } });
-  if (!profile) { await recordFinished("rejected", parsed.data.status); return NextResponse.json({ error: "Öğrenci profili bulunamadı." }, { status: 404 }); }
+  if (!profile) { await recordFinished("rejected", parsed.data.status); return NextResponse.json({ error: "Öğrenci profilini bulamadık." }, { status: 404 }); }
   const assignment = await prisma.assignment.findFirst({ where: { id, isActive: true, group: { enrollments: { some: { studentId: profile.id, endedAt: null } } } }, select: { id: true, evidenceRequired: true } });
-  if (!assignment) { await recordFinished("rejected", parsed.data.status); return NextResponse.json({ error: "Ödev bulunamadı." }, { status: 404 }); }
+  if (!assignment) { await recordFinished("rejected", parsed.data.status); return NextResponse.json({ error: "Ödev bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 }); }
   const latestSubmission = assignment.evidenceRequired
     ? await prisma.assignmentSubmission.findFirst({ where: { assignmentId: id, studentId: profile.id }, orderBy: { attemptNumber: "desc" }, select: { status: true } })
     : null;
@@ -40,7 +40,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   }
   if (parsed.data.expectedVersion !== undefined && (existing?.version || 0) !== parsed.data.expectedVersion) {
     await recordFinished("rejected", parsed.data.status);
-    return NextResponse.json({ error: "Ödev durumu başka bir sekmede değişti. Son durumu görüp yeniden seçin.", code: "ASSIGNMENT_PROGRESS_CONFLICT", latestVersion: existing?.version || 0 }, { status: 409 });
+    return NextResponse.json({ error: "Ödev durumu başka bir sekmede değişmiş. Güncel hâline göz atıp yeniden seçebilirsin.", code: "ASSIGNMENT_PROGRESS_CONFLICT", latestVersion: existing?.version || 0 }, { status: 409 });
   }
   let version = existing?.version || 0;
   try {
@@ -55,7 +55,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   } catch (error) {
     if (error instanceof AssignmentProgressConflict || (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")) {
       await recordFinished("rejected", parsed.data.status);
-      return NextResponse.json({ error: "Ödev durumu başka bir sekmede değişti. Son durumu görüp yeniden seçin.", code: "ASSIGNMENT_PROGRESS_CONFLICT" }, { status: 409 });
+      return NextResponse.json({ error: "Ödev durumu başka bir sekmede değişmiş. Güncel hâline göz atıp yeniden seçebilirsin.", code: "ASSIGNMENT_PROGRESS_CONFLICT" }, { status: 409 });
     }
     await recordFinished("system_error", parsed.data.status);
     throw error;

@@ -61,8 +61,8 @@ export default async function TeacherAnalizPage() {
 
         {overview.studentCount === 0 ? (
           <PanelEmpty
-            title="Kapsamda öğrenci yok."
-            body="Aktif gruplarınıza öğrenci kaydı olduğunda gidişat özeti burada açılır."
+            title="Henüz kapsamda bir öğrenci yok"
+            body="Aktif gruplarınıza öğrenci kaydı yapıldığında gidişat özeti burada açılacak."
           />
         ) : (
           <>
@@ -92,7 +92,7 @@ export default async function TeacherAnalizPage() {
             >
               {overview.declining.length === 0 ? (
                 <p className="text-[14px] text-pn-text-muted">
-                  Şu an düşen gidişat listesinde öğrenci yok.
+                  Şu an gidişatı düşen bir öğrenci görünmüyor 🌱
                 </p>
               ) : (
                 <List label="Düşen gidişat">

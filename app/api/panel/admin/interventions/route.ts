@@ -13,7 +13,7 @@ export async function GET() {
   const auth = await requireAdminApi();
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().interventionInbox) {
-    return NextResponse.json({ error: "Müdahale kutusu henüz açık değil.", code: "FEATURE_DISABLED" }, { status: 404, headers: PRIVATE_NO_STORE });
+    return NextResponse.json({ error: "Müdahale kutusu şu an kullanıma kapalı, çok yakında açılacak.", code: "FEATURE_DISABLED" }, { status: 404, headers: PRIVATE_NO_STORE });
   }
   const [rows, students] = await Promise.all([getInterventionInbox({ role: "ADMIN", userId: auth.session.userId }), listInterventionStudentOptions()]);
   return adminJson(toMobileInterventionInbox(rows, students));

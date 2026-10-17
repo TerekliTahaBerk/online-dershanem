@@ -21,12 +21,12 @@ export async function POST(request: Request) {
   const rate = await checkRateLimit(getRateLimitKeyFromUser(access.session.userId, "instagram.send"), 30, 60_000);
   if (!rate.allowed) return NextResponse.json({ error: "Çok fazla istek.", code: "RATE_LIMIT" }, { status: 429, headers: rateLimitResponseHeaders(rate.retryAfterMs) });
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz mesaj." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Mesaj geçerli görünmüyor." }, { status: 400 });
   const conversation = await prisma.businessConversation.findFirst({ where: { id: parsed.data.conversationId, businessUnitId: { in: access.units.map((unit) => unit.id) } }, select: { id: true } });
-  if (!conversation) return NextResponse.json({ error: "Konuşma bulunamadı." }, { status: 404 });
+  if (!conversation) return NextResponse.json({ error: "Konuşma bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
   try {
     const id = await sendConversationMessage({ ...parsed.data, senderType: "HUMAN" });
     queueAudit({ actorUserId: access.session.userId, entityType: "BusinessConversation", entityId: parsed.data.conversationId, action: "INSTAGRAM_MESSAGE_SENT", payload: { messageId: id } });
     return NextResponse.json({ id }, { status: 201 });
-  } catch { return NextResponse.json({ error: "Mesaj gönderilemedi." }, { status: 502 }); }
+  } catch { return NextResponse.json({ error: "Mesajı şu an gönderemedik. Lütfen tekrar dener misiniz?" }, { status: 502 }); }
 }

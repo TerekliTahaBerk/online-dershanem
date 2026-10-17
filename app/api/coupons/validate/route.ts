@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: "Geçersiz istek." }, { status: 400 });
+    return NextResponse.json({ ok: false, error: "İstek geçerli görünmüyor. Lütfen bilgileri kontrol edip tekrar deneyin." }, { status: 400 });
   }
   const parsed = Schema.safeParse(body);
   if (!parsed.success) {

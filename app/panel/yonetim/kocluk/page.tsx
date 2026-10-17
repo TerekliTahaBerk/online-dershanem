@@ -41,7 +41,7 @@ const DATE = new Intl.DateTimeFormat("tr-TR", {
 });
 
 const ASSIGN_ERROR: Record<string, string> = {
-  student: "Öğrenci bulunamadı.",
+  student: "Öğrenciyi bulamadık.",
   coach: "Seçilen koç aktif değil ya da koç olarak işaretli değil.",
   membership: "Öğrencinin aktif Yön Koçluk üyeliği yok; koç atanamaz.",
   conflict: "Koç ataması değişti. Güncel görünümü kontrol edip yeniden deneyin.",
@@ -183,7 +183,7 @@ export default async function AdminCoachingPage({
                     ))}
                   </PanelTable>
                 ) : (
-                  <EmptyState title={activeQueue === "koc-bekleyen" ? "Koç bekleyen öğrenci yok." : "Gecikmiş görüşme yok."} />
+                  <EmptyState title={activeQueue === "koc-bekleyen" ? "Koç bekleyen öğrenci yok ✅" : "Gecikmiş görüşme yok ✅"} />
                 );
               })()
             ) : activeQueue === "plansiz" || activeQueue === "hedefsiz" ? (
@@ -224,7 +224,7 @@ export default async function AdminCoachingPage({
                   ))}
                 </List>
               ) : (
-                <EmptyState title="Kapasitesini aşan koç yok." />
+                <EmptyState title="Kapasitesini aşan koç yok ✅" />
               )
             ) : kocumSignals.length ? (
               <List label="Yön operasyon sinyalleri">
@@ -238,7 +238,7 @@ export default async function AdminCoachingPage({
                 ))}
               </List>
             ) : (
-              <EmptyState title="Plansız, koçsuz, yayınlanmamış veya düşük uyumlu öğrenci sinyali yok." />
+              <EmptyState title="Plansız, koçsuz, yayınlanmamış ya da düşük uyumlu öğrenci sinyali yok ✅" />
             )}
           </div>
         </Section>

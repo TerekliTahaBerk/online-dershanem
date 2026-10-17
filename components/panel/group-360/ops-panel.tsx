@@ -38,7 +38,7 @@ export function OpsPanel({
       router.refresh();
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "İşlem tamamlanamadı.",
+        error instanceof Error ? error.message : "İşlem şu an tamamlanamadı. Lütfen tekrar dener misiniz?",
       );
     } finally {
       setBusy(null);
@@ -62,7 +62,7 @@ export function OpsPanel({
             ))}
           </div>
         ) : (
-          <EmptyState title="Açık sorun yok." />
+          <EmptyState title="Açık sorun yok ✅" />
         )}
       </Section>
 
@@ -97,7 +97,7 @@ export function OpsPanel({
                   subject: form.get("subject"),
                   level: form.get("level"),
                 }),
-              "Grup bilgileri güncellendi.",
+              "Grup bilgileri güncellendi ✅",
             );
           }}
         >
@@ -142,7 +142,7 @@ export function OpsPanel({
                   action: "CHANGE_TEACHER",
                   teacherId: form.get("teacherId"),
                 }),
-              "Öğretmen değiştirildi.",
+              "Öğretmen değiştirildi ✅",
             );
           }}
         >
@@ -180,7 +180,7 @@ export function OpsPanel({
                   action: "SET_ACTIVE",
                   isActive: nextState,
                 }),
-              nextState ? "Grup tekrar açıldı." : "Grup arşivlendi.",
+              nextState ? "Grup tekrar açıldı ✅" : "Grup arşivlendi ✅",
             );
           }}
         >

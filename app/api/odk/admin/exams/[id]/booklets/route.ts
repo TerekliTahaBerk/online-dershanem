@@ -13,7 +13,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const params = idParamsSchema.safeParse(await context.params);
   if (!params.success) return invalidApiInput();
   const parsed = bookletOrdersPreviewSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Kitapçık sırası satırları geçersiz." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Kitapçık sırası satırları geçerli görünmüyor." }, { status: 400 });
   return previewBookletOrders(params.data.id, parsed.data.rows);
 }
 

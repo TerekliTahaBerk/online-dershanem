@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   const auth = await requireApiOdRole("ADMIN", "TEACHER");
   if (!auth.ok) return auth.response;
   if (!getPanelFeatureFlags().interventionInbox) {
-    return NextResponse.json({ error: "Müdahale kutusu henüz açık değil." }, { status: 404 });
+    return NextResponse.json({ error: "Müdahale kutusu şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   }
 
   const guard = await guardMutation({
@@ -23,6 +23,6 @@ export async function POST(request: Request) {
   }
 
   const parsed = interventionCreateSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Müdahale kaydı geçersiz." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Müdahale kaydı geçerli görünmüyor." }, { status: 400 });
   return createInterventionRecord(parsed.data, { userId: auth.session.userId, role: auth.session.role as "ADMIN" | "TEACHER" });
 }

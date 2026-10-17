@@ -17,7 +17,7 @@ import type { OdCustomerStart } from "@/lib/od/onboarding-customer";
 export function NoProductAccess({ role, start = null }: { role: UserRole; start?: OdCustomerStart | null }) {
   const isStaff = role === "ADMIN" || role === "TEACHER";
   if (!isStaff) return <div className="max-w-[640px]">
-    <h1 className="mb-5 text-2xl font-bold text-dc-ink">Hoş geldiniz</h1>
+    <h1 className="mb-5 text-2xl font-bold text-dc-ink">Hoş geldiniz 👋</h1>
     <OdStartCard start={start} />
     {!start && <Link href="/paketler" className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]">Paketini Oluştur</Link>}
   </div>;
@@ -29,8 +29,8 @@ export function NoProductAccess({ role, start = null }: { role: UserRole; start?
       </h1>
       <p className="mt-3 text-[15.5px] leading-[1.65] text-dc-ink-muted">
         {isStaff
-          ? "Bu hesaba henüz bir çalışma alanı tanımlanmamış. Yönetim ekibi tanımı yaptığında ilgili bölümler burada açılır."
-          : "Ders, koçluk ve deneme bölümleri paketin tanımlandıktan sonra bu panelde açılır. Paketini oluşturduğunda ya da ödemen tamamlandığında erişimin ekibimiz tarafından açılır."}
+          ? "Bu hesaba henüz bir çalışma alanı tanımlanmamış. Ekibimiz tanımlamayı yaptığında ilgili bölümler burada açılacak."
+          : "Aramıza hoş geldin! 🎉 Ders, koçluk ve deneme bölümlerin paketin tanımlandıktan sonra bu panelde açılacak. Paketini oluşturduğunda ya da ödemen tamamlandığında ekibimiz erişimini hemen açar."}
       </p>
 
       <div className="mt-6 rounded-[14px] border border-dc-line bg-white p-5">
@@ -38,7 +38,7 @@ export function NoProductAccess({ role, start = null }: { role: UserRole; start?
         <ul className="mt-3 flex flex-col gap-2 text-[14.5px] leading-[1.6] text-dc-ink-muted">
           <li>Hangi ürünlere ihtiyacın olduğunu paket kurucudan seç.</li>
           <li>Ön görüşmede paketin ve başlangıç tarihin netleşir.</li>
-          <li>Erişimin açıldığında bu sayfa kendiliğinden dolar.</li>
+          <li>Erişimin açıldığında bu sayfa kendiliğinden dolacak ✨</li>
         </ul>
 
         {!isStaff ? (

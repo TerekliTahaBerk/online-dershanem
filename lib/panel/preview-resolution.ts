@@ -277,7 +277,7 @@ export async function searchPreviewCandidates(input: {
 export function previewErrorMessage(error: PreviewResolutionError | "FORBIDDEN" | "NOT_ADMIN"): string {
   switch (error) {
     case "USER_NOT_FOUND":
-      return "Kullanıcı bulunamadı.";
+      return "Kullanıcıyı bulamadık.";
     case "ROLE_MISMATCH":
       return "Seçilen kullanıcı istenen role sahip değil.";
     case "DELETED_OR_MISSING":

@@ -187,7 +187,7 @@ export async function getStudentGoals(studentProfileId: string): Promise<GoalVie
         current = thisWeekMetrics.completedMinutes;
         basis = "bu haftanın gerçekleşen süresi";
       } else {
-        basis = "bu hafta plan kaydı yok";
+        basis = "bu hafta henüz plan kaydı yok";
       }
     } else if (goal.kind === "WEEKLY_QUESTION_COUNT") {
       label = `Haftalık ${NUM.format(goal.targetValue)} soru`;
@@ -195,7 +195,7 @@ export async function getStudentGoals(studentProfileId: string): Promise<GoalVie
         current = thisWeekMetrics.questionActual;
         basis = "bu haftanın çözülen soruları";
       } else {
-        basis = "bu hafta plan kaydı yok";
+        basis = "bu hafta henüz plan kaydı yok";
       }
     } else {
       label = `Hedef ${NUM.format(goal.targetValue)}`;

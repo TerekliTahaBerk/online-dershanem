@@ -47,7 +47,7 @@ function summary(orders: ReadonlyArray<{ bookletCode: string }>) {
 
 export async function previewBookletOrders(examId: string, rows: BookletOrderInput[], db: Db = prisma) {
   const setup = await loadBookletSetup(db, examId);
-  if (!setup) return NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 });
+  if (!setup) return NextResponse.json({ error: "Denemeyi bulamadık." }, { status: 404 });
   const result = validateBookletOrders(setup.questions, rows);
   return NextResponse.json({ ok: result.issues.length === 0, issues: result.issues, booklets: summary(result.orders), currentHash: bookletOrdersHash(setup.orders) });
 }
@@ -57,7 +57,7 @@ class BookletInProgressError extends Error {}
 
 export async function replaceBookletOrders(examId: string, input: { rows: BookletOrderInput[]; expectedHash: string }, actorId: string, db: Db = prisma) {
   const setup = await loadBookletSetup(db, examId);
-  if (!setup) return NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 });
+  if (!setup) return NextResponse.json({ error: "Denemeyi bulamadık." }, { status: 404 });
   if (setup.exam.status !== "DRAFT" || setup.version.status !== "DRAFT") return NextResponse.json({ error: "Kitapçık sırası yalnız taslak sürümde değiştirilebilir." }, { status: 409 });
   const result = validateBookletOrders(setup.questions, input.rows);
   if (result.issues.length) return NextResponse.json({ error: result.issues[0].message, issues: result.issues }, { status: 400 });
@@ -96,7 +96,7 @@ type CorrectionPlan = { versionId: string; examStatus: string; released: boolean
 
 async function planCorrection(db: Db, examId: string, rows: BookletOrderInput[]) {
   const setup = await loadBookletSetup(db, examId);
-  if (!setup) return { ok: false as const, response: NextResponse.json({ error: "Deneme bulunamadı." }, { status: 404 }) };
+  if (!setup) return { ok: false as const, response: NextResponse.json({ error: "Denemeyi bulamadık." }, { status: 404 }) };
   if (setup.version.status === "DRAFT") return { ok: false as const, response: NextResponse.json({ error: "Taslak sürümde kitapçık sırası doğrudan kaydedilir.", code: "USE_DRAFT_EDIT" }, { status: 409 }) };
   if (setup.exam.status === "ARCHIVED") return { ok: false as const, response: NextResponse.json({ error: "Arşivlenmiş deneme düzeltilemez." }, { status: 409 }) };
   const result = validateBookletOrders(setup.questions, rows);

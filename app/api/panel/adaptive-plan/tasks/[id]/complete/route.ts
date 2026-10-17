@@ -24,7 +24,7 @@ import { idParamsSchema, invalidApiInput } from "@/lib/api/input-validation";
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiProductRole("OK", "STUDENT");
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().adaptivePlan) return NextResponse.json({ error: "Haftalık plan henüz açık değil." }, { status: 404 });
+  if (!getPanelFeatureFlags().adaptivePlan) return NextResponse.json({ error: "Haftalık plan şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.adaptive_plan.task_complete", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:plan-task:${auth.session.userId}`, rateLimit: { max: 120, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const input = z.object({ entryPoint: z.literal("HOME").optional() }).strict().safeParse(await request.json().catch(() => ({})));
@@ -33,14 +33,14 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!params.success) return invalidApiInput();
   const { id } = params.data;
   const task = await prisma.weeklyPlanTask.findFirst({ where: { id, status: "PLANNED", plan: { status: "APPROVED", student: { userId: auth.session.userId } } }, select: { id: true, sourceType: true, sourceReferenceId: true, reasonCode: true, plan: { select: { studentId: true } } } });
-  if (!task) return NextResponse.json({ error: "Plan görevi bulunamadı." }, { status: 404 });
+  if (!task) return NextResponse.json({ error: "Plan görevini bulamadık." }, { status: 404 });
   const completed = await prisma.$transaction(async (tx) => {
     const changed = await tx.weeklyPlanTask.updateMany({ where: { id: task.id, status: "PLANNED", plan: { status: "APPROVED", student: { userId: auth.session.userId } } }, data: { status: "DONE", completedAt: new Date() } });
     if (!changed.count) return false;
     if (task.sourceType === "ASSIGNMENT" && task.sourceReferenceId) await tx.assignmentProgress.updateMany({ where: { assignmentId: task.sourceReferenceId, studentId: task.plan.studentId }, data: { status: "DONE", completedAt: new Date() } });
     return true;
   });
-  if (!completed) return NextResponse.json({ error: "Plan görevi bulunamadı." }, { status: 404 });
+  if (!completed) return NextResponse.json({ error: "Plan görevini bulamadık." }, { status: 404 });
   await appendTimelineEvent({
     studentId: task.plan.studentId,
     kind: "PLAN_COMPLETION",

@@ -60,7 +60,7 @@ export function OdOnboardingControl({
             },
           );
           const result = await response.json().catch(() => ({}));
-          if (!response.ok) setError(result.error || "İşlem kaydedilemedi.");
+          if (!response.ok) setError(result.error || "İşlem şu an kaydedilemedi. Lütfen tekrar dener misiniz?");
           else router.refresh();
         } catch {
           setError("İşlem gönderilemedi. Lütfen tekrar deneyin.");

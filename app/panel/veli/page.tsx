@@ -44,7 +44,7 @@ export default async function ParentHomePage({
   if (!selected) {
     return shell(
       <>
-        <PanelPageHeader title="Hoş geldiniz" />
+        <PanelPageHeader title="Hoş geldiniz 👋" />
         <OdStartCard start={null} />
         <div className="mt-4 flex flex-wrap gap-3">
           <Link href="/panel/veli/hesap" className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-dc-ink text-white hover:bg-black min-h-10 px-3.5 text-[13.5px]">

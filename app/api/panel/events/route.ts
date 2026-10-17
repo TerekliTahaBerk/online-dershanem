@@ -46,7 +46,7 @@ export async function POST(request: Request) {
   }
 
   const parsed = panelEventSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz event." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Event geçerli görünmüyor." }, { status: 400 });
   if (!isClientPanelEvent(parsed.data)) return NextResponse.json({ error: "Bu event yalnız sunucu tarafından üretilebilir." }, { status: 400 });
   if (parsed.data.name === "mock_exam_entry_started" && parsed.data.properties.actorRole !== auth.session.role) return NextResponse.json({ error: "Event rolü oturumla eşleşmiyor." }, { status: 400 });
   if (parsed.data.name === "review_queue_viewed" && parsed.data.properties.actorRole !== auth.session.role) return NextResponse.json({ error: "Event rolü oturumla eşleşmiyor." }, { status: 400 });

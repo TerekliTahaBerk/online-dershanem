@@ -22,6 +22,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!routeParams.success) return invalidApiInput();
   const { id } = routeParams.data;
   const parsed = assignmentCreateSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "Atama geçersiz." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "Atama geçerli görünmüyor." }, { status: 400 });
   return assignOdkExam(id, parsed.data, auth.session.userId);
 }

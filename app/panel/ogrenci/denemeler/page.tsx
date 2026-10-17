@@ -70,8 +70,8 @@ export default async function StudentExamResultPage({
       <>
         <PanelPageHeader title="Dış deneme sonuçların" />
         <PanelEmpty
-          title="Profilin hazırlanıyor."
-          body="Öğrenci profilin tamamlandığında dış deneme sonuçların burada açılır."
+          title="Profilin hazırlanıyor ⏳"
+          body="Öğrenci profilin tamamlandığında dış deneme sonuçların burada açılacak."
         />
       </>,
     );
@@ -109,7 +109,7 @@ export default async function StudentExamResultPage({
       <>
         <PanelPageHeader
           title="Dış deneme sonuçların"
-          description="Okulda, kursta veya başka bir platformda çözdüğün denemenin sonucunu gelişim takibine ekleyebilirsin."
+          description="Okulda, kursta ya da başka bir platformda çözdüğün denemelerin sonucunu ekleyerek gelişimini takip edebilirsin 📈"
         />
         <div className="mt-6">{examEntry}</div>
       </>,

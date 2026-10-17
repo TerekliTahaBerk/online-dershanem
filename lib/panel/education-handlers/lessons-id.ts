@@ -36,7 +36,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const payload = await request.json().catch(() => null);
   const parsed = lessonUpdateSchema.safeParse(payload);
   const legacy = parsed.success ? null : legacyLessonUpdateSchema.safeParse(payload);
-  if (!parsed.success && !legacy?.success) return NextResponse.json({ error: "Ders bilgilerini kontrol edin." }, { status: 400 });
+  if (!parsed.success && !legacy?.success) return NextResponse.json({ error: "Lütfen ders bilgilerini bir kez daha kontrol eder misiniz?" }, { status: 400 });
   const legacyData = legacy && legacy.success ? legacy.data : null;
   const action = parsed.success
     ? parsed.data
@@ -57,7 +57,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       },
     },
   });
-  if (!base) return NextResponse.json({ error: "Ders bulunamadı." }, { status: 404 });
+  if (!base) return NextResponse.json({ error: "Dersi bulamadık." }, { status: 404 });
 
   try {
     const result = await prisma.$transaction(async (tx) => {
@@ -150,7 +150,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
         }
       } else {
         if (!action.title && !action.startsAt && !action.status && action.meetingUrl === undefined) {
-          throw new LessonLifecycleError("SCOPE_NOT_AVAILABLE", "Güncelleme alanı bulunamadı.");
+          throw new LessonLifecycleError("SCOPE_NOT_AVAILABLE", "Güncelleme alanı bulunamadı; kaldırılmış ya da değişmiş olabilir.");
         }
         for (const lesson of scopedLessons) {
           const startsAt = action.startsAt

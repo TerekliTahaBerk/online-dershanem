@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   const guard = await guardMutation({ action: "auth.mfa.passkey.verify", requireSameOrigin: true, headers: request.headers, rateLimitKey: `mfa:verify:${auth.session.userId}`, rateLimit: { max: 20, windowMs: 15 * 60_000 } });
   if (!guard.ok) return mutationGuardResponse(guard);
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz geçiş anahtarı yanıtı." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Geçiş anahtarı yanıtı geçerli görünmüyor." }, { status: 400 });
   const purpose = parsed.data.purpose === "ENROLL" ? "PASSKEY_ENROLLMENT" : parsed.data.purpose === "STEP_UP" ? "STEP_UP" : "MFA_AUTHENTICATION";
   const challenge = await loadChallenge({ challengeId: parsed.data.challengeId, userId: auth.session.userId, sessionId: auth.session.sessionId, purpose });
   if (!challenge) return NextResponse.json({ error: "Doğrulama isteği süresi dolmuş veya daha önce kullanılmış." }, { status: 409 });
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
     const response = parsed.data.response as unknown as AuthenticationResponseJSON;
     const credential = await prisma.passkeyCredential.findFirst({ where: { credentialId: response.id, userId: auth.session.userId, revokedAt: null } });
-    if (!credential) return NextResponse.json({ error: "Geçiş anahtarı bulunamadı." }, { status: 400 });
+    if (!credential) return NextResponse.json({ error: "Geçiş anahtarı bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 400 });
     const verification = await verifyAuthenticationResponse({ response, expectedChallenge: challengeMatches(challenge.challengeHash), expectedOrigin: origin, expectedRPID: rpID, requireUserVerification: true, credential: { id: credential.credentialId, publicKey: new Uint8Array(credential.publicKey), counter: Number(credential.counter), transports: credential.transports as AuthenticatorTransportFuture[] } });
     if (!verification.verified || !(await consumeChallenge(challenge.id))) return NextResponse.json({ error: "Geçiş anahtarı doğrulanamadı veya tekrar kullanıldı." }, { status: 409 });
     await prisma.passkeyCredential.update({ where: { id: credential.id }, data: { counter: BigInt(verification.authenticationInfo.newCounter), lastUsedAt: new Date(), backedUp: verification.authenticationInfo.credentialBackedUp } });

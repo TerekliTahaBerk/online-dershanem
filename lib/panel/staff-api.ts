@@ -31,7 +31,7 @@ export async function requireStaffApi(product: ProductCode, permission: StaffPer
   const auth = await requireApiProductRole(product, "TEACHER");
   if (!auth.ok) return auth;
   if (!(await hasStaffPermission(auth.session.userId, permission))) {
-    return { ok: false, response: NextResponse.json({ error: "Bu işlem için yetkiniz yok.", code: "FORBIDDEN" }, { status: 403, headers: PRIVATE_NO_STORE }) };
+    return { ok: false, response: NextResponse.json({ error: "Bu işlem için yetkiniz bulunmuyor.", code: "FORBIDDEN" }, { status: 403, headers: PRIVATE_NO_STORE }) };
   }
   return auth;
 }
@@ -40,7 +40,7 @@ export function staffJson(body: unknown): Response {
   return NextResponse.json(body, { headers: PRIVATE_NO_STORE });
 }
 
-export function staffNotFound(message = "Kayıt bulunamadı."): Response {
+export function staffNotFound(message = "Aradığınız kaydı bulamadık."): Response {
   return NextResponse.json({ error: message }, { status: 404, headers: PRIVATE_NO_STORE });
 }
 

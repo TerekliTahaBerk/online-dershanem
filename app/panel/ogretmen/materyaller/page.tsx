@@ -32,7 +32,7 @@ export default async function TeacherMaterialsPage() {
           <Library size={15} /> Kaynak kütüphanesi
         </p>
         <h1 className={PAGE_TITLE_CLASS}>
-          Doğru kaynak, doğru grubun önünde.
+          Doğru kaynak, doğru grubun önünde 📎
         </h1>
       </header>
       <TeacherMaterialManager

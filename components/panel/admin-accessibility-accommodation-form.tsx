@@ -35,9 +35,9 @@ export function AdminAccessibilityAccommodationForm({
     const data = await response.json().catch(() => ({}));
     setBusy(false);
     if (!response.ok)
-      return setMessage(data.error || "Düzenleme kaydedilemedi.");
+      return setMessage(data.error || "Düzenleme şu an kaydedilemedi. Lütfen tekrar dener misiniz?");
     setVersion(data.version);
-    setMessage("İşlevsel akademik düzenleme kaydedildi.");
+    setMessage("İşlevsel akademik düzenleme kaydedildi ✅");
     router.refresh();
   }
   return (

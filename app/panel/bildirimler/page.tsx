@@ -98,10 +98,10 @@ export default async function NotificationsPage({
           <Bell size={15} /> Bildirim merkezi
         </p>
         <h1 className={PAGE_TITLE_CLASS}>
-          Önemli gelişmeler tek yerde.
+          Önemli gelişmeler tek yerde 🔔
         </h1>
         <p className={PAGE_DESCRIPTION_CLASS}>
-          Ders, çalışma ve operasyon hareketlerini kaçırmadan takip edin.
+          Ders, çalışma ve diğer önemli gelişmeleri kaçırmadan buradan takip edebilirsiniz.
         </p>
       </header>
       <div

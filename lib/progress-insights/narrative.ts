@@ -21,10 +21,10 @@ export function buildNarrativeForAudience(
 ): string[] {
   if (bundle.isEmpty) {
     if (audience === "student") {
-      return ["Henüz gösterilecek gidişat verisi yok. Ders, çalışma ve denemeler biriktikçe burada açılır."];
+      return ["Gidişatın burada şekillenecek 🌱 Derslerin, çalışmaların ve denemelerin biriktikçe özetin burada açılacak."];
     }
     if (audience === "parent_calm") {
-      return ["Henüz yeterli ölçüm yok. Ders katılımı ve çalışmalar göründükçe özet burada oluşur."];
+      return ["Henüz yeterli ölçüm oluşmadı. Ders katılımı ve çalışmalar göründükçe özet burada oluşacak."];
     }
     return ["Bu kapsamda henüz gidişat verisi yok."];
   }
@@ -38,21 +38,21 @@ export function buildNarrativeForAudience(
       const last = academic.netTrend[academic.netTrend.length - 1]!.net;
       if (academic.netDelta > 0) {
         lines.push(
-          `Toplam netin ${fmtNet(first)} → ${fmtNet(last)} yükseldi. Bu ivmeyi koru.`,
+          `Toplam netin ${fmtNet(first)} → ${fmtNet(last)} yükseldi 🎉 Bu güzel ivmeyi koru!`,
         );
       } else if (academic.netDelta < 0) {
         lines.push(
-          `Toplam netin ${fmtNet(first)} → ${fmtNet(last)} geriledi. Destek alanlarına odaklan.`,
+          `Toplam netin ${fmtNet(first)} → ${fmtNet(last)} geriledi. Dert etme; destek alanlarına birlikte odaklanalım 💪`,
         );
       } else {
-        lines.push(`Toplam netin ${fmtNet(last)} civarında dengeli.`);
+        lines.push(`Toplam netin ${fmtNet(last)} civarında dengeli ilerliyor 🌿`);
       }
     }
     if (behavioral.attendance.percent !== null) {
       lines.push(
         behavioral.attendance.percent >= 80
-          ? `Son ${behavioral.attendance.denominator} derste katılımın güçlü (%${behavioral.attendance.percent}).`
-          : `Son ${behavioral.attendance.denominator} derste katılımın %${behavioral.attendance.percent}. Düzeni güçlendir.`,
+          ? `Son ${behavioral.attendance.denominator} derste katılımın çok güçlü (%${behavioral.attendance.percent}) 👏`
+          : `Son ${behavioral.attendance.denominator} derste katılımın %${behavioral.attendance.percent}. Düzenini biraz daha güçlendirebilirsin 💪`,
       );
     }
     if (behavioral.assignments.percent !== null) {
@@ -61,7 +61,7 @@ export function buildNarrativeForAudience(
       );
     }
     if (behavioral.plan.percent !== null) {
-      lines.push(`Haftalık planın %${behavioral.plan.percent}'si tamam.`);
+      lines.push(`Haftalık planın %${behavioral.plan.percent}'si tamam, böyle devam! 🌟`);
     }
     for (const s of academic.strengths.slice(0, 1)) lines.push(s.sentence);
     for (const s of academic.supportAreas.slice(0, 1)) lines.push(s.sentence);
@@ -73,11 +73,11 @@ export function buildNarrativeForAudience(
       const last = academic.netTrend[academic.netTrend.length - 1]!.net;
       if (academic.netDelta > 0) {
         lines.push(
-          `Deneme toplam neti ${fmtNet(first)} → ${fmtNet(last)} yükseldi. Karşılaştırma yalnızca kendi geçmişiyle yapılır.`,
+          `Deneme toplam neti ${fmtNet(first)} → ${fmtNet(last)} yükseldi 🌱 Karşılaştırma yalnızca kendi geçmişiyle yapılır.`,
         );
       } else if (academic.netDelta < 0) {
         lines.push(
-          `Deneme toplam neti ${fmtNet(first)} → ${fmtNet(last)}. Tekrar önerilen alanlar aşağıda.`,
+          `Deneme toplam neti ${fmtNet(first)} → ${fmtNet(last)}. Tekrar önerilen alanları aşağıda bulabilirsiniz.`,
         );
       } else {
         lines.push(`Deneme toplam neti dengeli ilerliyor (${fmtNet(last)}).`);
@@ -88,7 +88,7 @@ export function buildNarrativeForAudience(
         behavioral.attendance.percent >= 80
           ? "Ders katılımı düzenli görünüyor."
           : behavioral.attendance.percent < 70
-            ? "Son derslerde çalışma düzeninde düşüş var."
+            ? "Son derslerde çalışma düzeninde küçük bir düşüş var; birlikte destek olabiliriz."
             : "Katılım ritmi oluşmaya devam ediyor.",
       );
     }
@@ -122,7 +122,7 @@ export function buildNarrativeForAudience(
     }
   }
 
-  return lines.length ? lines : ["Gidişat verileri birikiyor; özet yakında netleşir."];
+  return lines.length ? lines : ["Gidişat verileri birikiyor; özet çok yakında netleşecek 🌱"];
 }
 
 export function buildTeacherOverviewNarrative(overview: TeacherGidisatOverview): string[] {

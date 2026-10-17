@@ -87,8 +87,8 @@ export async function runEducationMutation(input: {
         }
         if (typeof targetId === "string") {
           const snapshot = await educationSnapshot(tx, targetKind, targetId);
-          if (!snapshot) throw new GroupMutationError("NOT_FOUND", "Kayıt bulunamadı.", 404);
-          if (expectedRevision && educationRevision(snapshot) !== expectedRevision) throw new GroupMutationError("EDUCATION_CONFLICT", "Kayıt değişti. Güncel görünümü kontrol edin.");
+          if (!snapshot) throw new GroupMutationError("NOT_FOUND", "Aradığınız kaydı bulamadık.", 404);
+          if (expectedRevision && educationRevision(snapshot) !== expectedRevision) throw new GroupMutationError("EDUCATION_CONFLICT", "Kayıt bu arada güncellenmiş. Güncel hâline göz atıp tekrar deneyebilirsiniz.");
         }
         transactionClient = educationTransactionClient(tx);
         const response = await execute(transactionClient);
@@ -125,13 +125,13 @@ export function educationWriteHandler(kind: EducationKind, execute: (request: Re
     const auth = teacherMobile ? await requireStaffApi("OD", "od:lesson:teach") : await requireAdminApi({ stepUp: true });
     if (!auth.ok) return auth.response;
     const parsed = controls.safeParse({ key: request.headers.get("X-Od-Idempotency-Key") ?? undefined, revision: request.headers.get("X-Od-Expected-Revision") ?? undefined });
-    if (!parsed.success) return adminJson({ error: "İşlem anahtarı veya sürüm geçersiz.", code: "INVALID_PRECONDITION" }, { status: 400 });
+    if (!parsed.success) return adminJson({ error: "İşlem anahtarı veya sürüm geçerli görünmüyor.", code: "INVALID_PRECONDITION" }, { status: 400 });
     if (mobile && !parsed.data.key) return adminJson({ error: "İşlem anahtarı gerekli.", code: "PRECONDITION_REQUIRED" }, { status: 400 });
     const isUpload = request.headers.get("content-type")?.includes("multipart/form-data");
     let input: Record<string, unknown>;
     try { input = isUpload ? Object.fromEntries(await request.clone().formData()) : await request.clone().text().then((text) => text ? JSON.parse(text) : kind === "material" && request.method === "PATCH" ? {} : null); }
-    catch { return adminJson({ error: "İstek gövdesi geçersiz." }, { status: 400 }); }
-    if (!input || typeof input !== "object" || Array.isArray(input)) return adminJson({ error: "İstek gövdesi geçersiz." }, { status: 400 });
+    catch { return adminJson({ error: "İstek gövdesi geçerli görünmüyor." }, { status: 400 }); }
+    if (!input || typeof input !== "object" || Array.isArray(input)) return adminJson({ error: "İstek gövdesi geçerli görünmüyor." }, { status: 400 });
     const file = input.file;
     if (file instanceof File && (!file.size || file.size > 4 * 1024 * 1024)) return adminJson({ error: "Dosya boyutu en fazla 4 MB olabilir." }, { status: 413 });
     const digestInput = file instanceof File ? { ...input, file: { name: file.name, type: file.type, size: file.size, digest: createHash("sha256").update(new Uint8Array(await file.arrayBuffer())).digest("hex") } } : input;
@@ -144,7 +144,7 @@ export function educationWriteHandler(kind: EducationKind, execute: (request: Re
       const allowed = id
         ? kind === "assignment" ? await prisma.assignment.findFirst({ where: { id, ...groupScope }, select: { id: true } }) : await prisma.learningMaterial.findFirst({ where: { id, ...groupScope }, select: { id: true } })
         : targetKind === "student" ? await prisma.studentProfile.findFirst({ where: { id: targetId, enrollments: { some: { endedAt: null, group: { teacherId: auth.session.userId, isActive: true } } } }, select: { id: true } }) : await prisma.group.findFirst({ where: { id: targetId, teacherId: auth.session.userId, isActive: true }, select: { id: true } });
-      if (!allowed) return adminJson({ error: "Kayıt bulunamadı.", code: "NOT_FOUND" }, { status: 404 });
+      if (!allowed) return adminJson({ error: "Aradığınız kaydı bulamadık.", code: "NOT_FOUND" }, { status: 404 });
     }
     const key = parsed.data.key ? `education:${auth.session.userId}:${parsed.data.key}` : null;
     const digest = operationDigest({ path: new URL(request.url).pathname, method: request.method, input: digestInput, revision: parsed.data.revision });
@@ -160,7 +160,7 @@ export function educationWriteHandler(kind: EducationKind, execute: (request: Re
           const receipt = await prisma.auditLog.findUnique({ where: { idempotencyKey: key } });
           if (receipt) { try { const stored = readGroupReceipt(receipt.payload, digest); return adminJson({ ...(stored.body as object), replayed: true }); } catch { /* conflicting key below */ } }
         }
-        return adminJson({ error: "Kayıt değişti veya aynı kod kullanılıyor. Görünümü yenileyin.", code: "EDUCATION_CONFLICT" }, { status: 409 });
+        return adminJson({ error: "Kayıt değişti veya aynı kod kullanılıyor. Sayfayı yenileyip tekrar deneyebilirsiniz.", code: "EDUCATION_CONFLICT" }, { status: 409 });
       }
       throw error;
     }

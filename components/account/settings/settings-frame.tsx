@@ -52,14 +52,14 @@ export async function SettingsFrame({
       <div className="max-w-[820px]">
         <PanelHeading
           title="Hesap ayarları"
-          description="Bilgilerini tamamla; sana daha hızlı ve doğru destek verelim."
+          description="Bilgilerini tamamla; sana daha hızlı ve doğru destek verelim 🤝"
         />
         {status && (session.role === "STUDENT" || session.role === "PARENT") ? (
           <PanelProgress
             className="mt-4 max-w-md"
             label="Hesap tamamlama"
             value={status.completion.percent}
-            text={status.completion.complete ? "Hesabın tamamlandı." : `Hesabın %${status.completion.percent} tamamlandı.`}
+            text={status.completion.complete ? "Hesabın tamamlandı 🎉" : `Hesabın %${status.completion.percent} tamamlandı.`}
           />
         ) : null}
         <nav aria-label="Ayar bölümleri" className="mt-5 flex flex-wrap gap-2">

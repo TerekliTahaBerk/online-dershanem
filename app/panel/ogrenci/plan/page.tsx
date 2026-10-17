@@ -69,8 +69,8 @@ export default async function StudentPlanPage() {
       <>
         <PanelPageHeader title="Bu haftanın planı" />
         <PanelEmpty
-          title="Profilin hazırlanıyor."
-          body="Öğrenci profilin tamamlandığında koçunun kurduğu plan burada görünecek."
+          title="Profilin hazırlanıyor ⏳"
+          body="Öğrenci profilin tamamlandığında koçunun senin için kurduğu plan burada görünecek."
         />
       </>,
     );
@@ -138,7 +138,7 @@ export default async function StudentPlanPage() {
         description={
           start && end
             ? `${RANGE.format(start)} – ${RANGE.format(end)}`
-            : "Uygun günlerini ve süreni bildir; planın ondan sonra kurulur."
+            : "Uygun günlerini ve süreni paylaş, planını sana göre birlikte kuralım ✨"
         }
       />
 

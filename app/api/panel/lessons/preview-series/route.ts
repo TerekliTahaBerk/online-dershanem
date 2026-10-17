@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return adminJson({ error: "Seri bilgilerini kontrol edin." }, { status: 400 });
+    return adminJson({ error: "Lütfen seri bilgilerini bir kez daha kontrol eder misiniz?" }, { status: 400 });
   }
 
   const resolved = await resolveLessonTargetGroup({
@@ -52,13 +52,13 @@ export async function POST(request: Request) {
     (auth.session.role === "TEACHER" ? auth.session.userId : null);
 
   if (!teacherId) {
-    return adminJson({ error: resolved.error || "Öğretmen seçin." }, { status: 400 });
+    return adminJson({ error: resolved.error || "Lütfen öğretmen seçin." }, { status: 400 });
   }
   if (parsed.data.targetType === "GROUP" && (resolved.error || !group)) {
-    return adminJson({ error: resolved.error || "Grup bulunamadı." }, { status: 404 });
+    return adminJson({ error: resolved.error || "Grubu bulamadık." }, { status: 404 });
   }
   if (parsed.data.targetType === "STUDENT" && !parsed.data.studentId) {
-    return adminJson({ error: "Öğrenci seçin." }, { status: 400 });
+    return adminJson({ error: "Lütfen öğrenci seçin." }, { status: 400 });
   }
   if (parsed.data.targetType === "STUDENT" && resolved.error && resolved.error !== NO_GROUP_YET) {
     return adminJson({ error: resolved.error }, { status: 403 });

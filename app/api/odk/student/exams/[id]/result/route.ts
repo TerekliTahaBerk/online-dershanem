@@ -18,6 +18,6 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   const params = idParamsSchema.safeParse(await context.params);
   if (!params.success) return invalidApiInput();
   const loaded = await loadOdkStudentResult({ userId: auth.session.userId, role: auth.session.role, examId: params.data.id });
-  if (!loaded) return NextResponse.json({ error: "Açıklanmış sonuç bulunamadı.", code: "NOT_FOUND" }, { status: 404 });
+  if (!loaded) return NextResponse.json({ error: "Açıklanmış sonuç şu an görünmüyor.", code: "NOT_FOUND" }, { status: 404 });
   return NextResponse.json(toMobileOdkResult(loaded), { headers: { "Cache-Control": "private, no-store" } });
 }

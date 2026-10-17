@@ -30,7 +30,7 @@ export async function CoachAttention({ userId }: { userId: string }) {
           ))}
         </List>
       ) : (
-        <EmptyState title="Koçlukta bekleyen plan veya görüşme adımı yok." />
+        <EmptyState title="Koçlukta bekleyen plan ya da görüşme adımı yok, her şey güncel ✅" />
       )}
     </Section>
   );

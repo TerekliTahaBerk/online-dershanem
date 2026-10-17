@@ -43,8 +43,8 @@ export default async function StudentTasksPage() {
       <>
         <PanelHeading title="Çalışmalar" />
         <PanelEmpty
-          title="Profilin hazırlanıyor."
-          body="Öğrenci profilin tamamlandığında çalışmaların burada listelenir."
+          title="Profilin hazırlanıyor ⏳"
+          body="Öğrenci profilin tamamlandığında çalışmaların burada listelenecek."
         />
       </>,
     );
@@ -88,13 +88,13 @@ export default async function StudentTasksPage() {
     <>
       <PanelHeading
         title="Çalışmalar"
-        description="Öğretmeninin verdiği Dershanem ödevleri. Koçunun plan görevleri için Plan sayfasına git."
+        description="Öğretmeninin senin için hazırladığı ödevler 📚 Koçunun plan görevlerini Plan sayfasında bulabilirsin."
       />
 
       {assignments.length === 0 ? (
         <PanelEmpty
-          title="Bekleyen ödev yok."
-          body="Öğretmenin yeni bir ödev eklediğinde burada görünecek. Haftalık çalışma planın Plan sayfasında."
+          title="Bekleyen ödevin yok 🎉"
+          body="Harika gidiyorsun! Öğretmenin yeni bir ödev eklediğinde burada görünecek. Haftalık çalışma planın Plan sayfasında seni bekliyor."
         />
       ) : (
         <div className="mt-6 max-w-[880px]">

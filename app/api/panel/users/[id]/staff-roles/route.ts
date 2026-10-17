@@ -50,7 +50,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   const auth = await requireApiAccountRole("ADMIN");
   if (!auth.ok) return auth.response;
   const params = idParamsSchema.safeParse(await context.params);
-  if (!params.success) return NextResponse.json({ error: "Geçersiz kullanıcı." }, { status: 400 });
+  if (!params.success) return NextResponse.json({ error: "Kullanıcı geçerli görünmüyor." }, { status: 400 });
   return NextResponse.json({ assignments: await listStaffAssignmentHistory(params.data.id) });
 }
 

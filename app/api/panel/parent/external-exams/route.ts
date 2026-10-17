@@ -13,7 +13,7 @@ import { featureDisabled, parentJson, requireParentChild } from "@/lib/panel/par
 export async function GET(request: Request) {
   const scope = await requireParentChild(request);
   if (!scope.ok) return scope.response;
-  if (!getPanelFeatureFlags().mockExamAnalysis) return featureDisabled("Deneme analizi henüz açık değil.");
+  if (!getPanelFeatureFlags().mockExamAnalysis) return featureDisabled("Deneme analizi şu an kullanıma kapalı, çok yakında açılacak.");
   const available = scope.child.products.includes("OD") || scope.child.products.includes("ODK");
   const exams = available
     ? await prisma.mockExam.findMany({

@@ -43,7 +43,7 @@ const GROUPS: Array<{ id: string; title: string; kinds: GoalView["kind"][] }> = 
 ];
 
 function currentLabel(goal: GoalView): string {
-  if (goal.current === null) return "ölçüm yok";
+  if (goal.current === null) return "henüz ölçülmedi";
   return goal.kind === "PLAN_COMPLETION" ? `şu an %${goal.current}` : `şu an ${NUM.format(goal.current)}`;
 }
 
@@ -67,8 +67,8 @@ export default async function StudentGoalsPage() {
         <PageHeader title="Hedeflerim" />
         <EmptyState
           className="mt-6"
-          title="Profilin hazırlanıyor."
-          body="Öğrenci profilin tamamlandığında hedeflerin burada görünür."
+          title="Profilin hazırlanıyor ⏳"
+          body="Öğrenci profilin tamamlandığında hedeflerin burada görünecek."
         />
       </>,
     );
@@ -83,15 +83,15 @@ export default async function StudentGoalsPage() {
         title="Hedeflerim"
         description={
           coaching
-            ? `${coaching.coachName} ile belirlediğin hedefler ve şu anki durumun. Hedefleri koçun günceller.`
-            : "Belirlenen hedeflerin ve şu anki durumun."
+            ? `${coaching.coachName} ile belirlediğin hedefler ve şu anki durumun 🎯 Hedeflerini koçun günceller.`
+            : "Hedeflerin ve şu anki durumun 🎯"
         }
       />
 
       {examLine || profile.targetRank ? (
         <Section id="profil-hedefi" title="Sınav ve sıralama" divider={false}>
           <PropertyList>
-            <PropertyRow label="Sınav">{examLine || "Sınav belirlenmedi"}</PropertyRow>
+            <PropertyRow label="Sınav">{examLine || "Henüz belirlenmedi"}</PropertyRow>
             {profile.targetRank ? (
               <PropertyRow label="Hedef sıralama">
                 {RANK.format(profile.targetRank)}
@@ -105,8 +105,8 @@ export default async function StudentGoalsPage() {
       {goals.length === 0 ? (
         <EmptyState
           className="mt-6"
-          title="Henüz hedef belirlenmedi."
-          body="Koçunla birlikte net ve plan hedeflerini belirlediğinizde burada takip edebilirsin."
+          title="Henüz bir hedefin yok 🎯"
+          body="Koçunla birlikte net ve plan hedeflerini belirlediğinizde ilerlemeni buradan takip edebileceksin."
         />
       ) : (
         GROUPS.map((group) => {
@@ -135,7 +135,7 @@ export default async function StudentGoalsPage() {
                       </p>
                       <p className="text-[12.5px] text-pn-text-muted">
                         {goal.current === null
-                          ? "Bu başlıkta henüz ölçüm yok; ilerleme çizilmiyor."
+                          ? "Bu başlıkta henüz bir ölçüm yok; ilk veriler geldiğinde ilerlemeni burada göreceksin."
                           : `Kaynak: ${goal.basis}`}
                         {goal.nearTermNote ? ` · Yakın hedef: ${goal.nearTermNote}` : ""}
                       </p>

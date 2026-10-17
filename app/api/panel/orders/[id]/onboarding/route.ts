@@ -21,11 +21,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });
 
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Geçiş bilgileri geçersiz." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Geçiş bilgileri geçerli görünmüyor." }, { status: 400 });
   const { id } = await context.params;
   if (parsed.data.ownerId) {
     const owner = await prisma.user.findFirst({ where: { id: parsed.data.ownerId, role: { in: ["ADMIN", "TEACHER"] }, status: "ACTIVE" }, select: { id: true } });
-    if (!owner) return NextResponse.json({ error: "Aktif operasyon sorumlusu bulunamadı." }, { status: 404 });
+    if (!owner) return NextResponse.json({ error: "Aktif operasyon sorumlusu şu an görünmüyor." }, { status: 404 });
   }
 
   try {

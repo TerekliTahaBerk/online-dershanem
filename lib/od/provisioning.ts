@@ -117,7 +117,7 @@ async function provisionRemainingOdLines(orderId: string) {
         } else if (fulfillment === "odk_contract") {
           if (!line.productId) throw new OdProvisioningError("ODK satırında ürün kimliği eksik.", "ODK_LINE_PRODUCT_MISSING");
           const contract = parseOdkProductContract(line.productSnapshot);
-          if (!contract.success) throw new OdProvisioningError("ODK satır sözleşmesi geçersiz.", "ODK_LINE_CONTRACT_INVALID");
+          if (!contract.success) throw new OdProvisioningError("ODK satır sözleşmesi geçerli görünmüyor.", "ODK_LINE_CONTRACT_INVALID");
           const paid = await tx.odPayment.findFirst({ where: { orderId, status: "SUCCEEDED" }, orderBy: { paidAt: "asc" }, select: { paidAt: true } });
           const { startsAt, expiresAt } = contractAccessWindow(contract.data.policy, paid?.paidAt ?? new Date());
           const existing = await tx.productMembership.findUnique({ where: { userId_product: { userId: user.id, product: "ODK" } } });
@@ -278,7 +278,7 @@ export async function provisionOdOrder(
   });
   if (claim.count === 0) {
     const order = await prisma.odOrder.findUnique({ where: { id: orderId }, select: { status: true, provisioningStatus: true, userId: true } });
-    if (!order) throw new OdProvisioningError("Sipariş bulunamadı.", "ORDER_NOT_FOUND");
+    if (!order) throw new OdProvisioningError("Siparişi bulamadık.", "ORDER_NOT_FOUND");
     if (order.status !== "PAID") throw new OdProvisioningError("Yalnız ödenmiş sipariş provision edilebilir.", "ORDER_NOT_PAID");
     if (order.provisioningStatus === "SUCCEEDED") return { status: "SUCCEEDED", userId: order.userId!, alreadyProvisioned: true };
     return waitForConcurrentProvisioning(orderId);
@@ -322,7 +322,7 @@ export async function provisionOdOrder(
       }
       const rawEmail = textField(buyer, "studentEmail") ?? textField(buyer, "email");
       const email = normalizeEmail(rawEmail);
-      if (!email) return putOnboardingInManualReview(tx, orderId, "Öğrenci e-postası eksik veya geçersiz.", { code: "STUDENT_EMAIL_MISSING" });
+      if (!email) return putOnboardingInManualReview(tx, orderId, "Öğrenci e-postası eksik veya geçerli görünmüyor.", { code: "STUDENT_EMAIL_MISSING" });
 
       const emailUser = await tx.user.findUnique({ where: { email }, select: { id: true, role: true, status: true } });
       const emailConflict = usableIdentity(emailUser, "STUDENT", "Öğrenci e-postası");
@@ -343,7 +343,7 @@ export async function provisionOdOrder(
       const forcedUser = options.studentUserId ? await tx.user.findUnique({ where: { id: options.studentUserId }, select: { id: true, role: true, status: true } }) : null;
       const forcedConflict = options.studentUserId ? usableIdentity(forcedUser, "STUDENT", "Admin tarafından seçilen hesap") : null;
       if (forcedConflict || (options.studentUserId && !forcedUser)) {
-        return putOnboardingInManualReview(tx, orderId, forcedConflict ?? "Admin tarafından seçilen öğrenci hesabı bulunamadı.", { code: "FORCED_STUDENT_CONFLICT" });
+        return putOnboardingInManualReview(tx, orderId, forcedConflict ?? "Admin tarafından seçilen öğrenci hesabı şu an görünmüyor.", { code: "FORCED_STUDENT_CONFLICT" });
       }
       const candidateIds = new Set((forcedUser ? [forcedUser.id] : [emailUser?.id, tcUser?.id]).filter(Boolean));
       if (candidateIds.size > 1) {

@@ -102,7 +102,7 @@ export default async function OdkAdminResultsHubPage({ searchParams }: { searchP
       ) : (
         <EmptyState
           className="mt-5"
-          title={tab === "kuyruk" ? "Puanlama ya da yayın bekleyen deneme yok." : "Bu aşamada deneme yok."}
+          title={tab === "kuyruk" ? "Puanlama ya da yayın bekleyen deneme yok ✅" : "Bu aşamada deneme yok."}
           body="Sınav penceresi biten denemeler burada sıraya girer."
           action={
             <Link href="/panel/odk/yonetim/sinavlar" className={buttonClass("secondary", "sm")}>

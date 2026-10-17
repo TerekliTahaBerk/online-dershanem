@@ -103,17 +103,17 @@ export function AccessibilityPreferencesForm({
     const data = await response.json().catch(() => ({}));
     setBusy(false);
     if (!response.ok)
-      return setMessage(data.error || "Tercihler kaydedilemedi.");
+      return setMessage(data.error || "Tercihlerinizi şu an kaydedemedik. Lütfen tekrar dener misiniz?");
     applyAccessibilityViewPreference(preference);
     setPreference((current) => ({ ...current, version: data.version }));
-    setMessage("Tercihler kaydedildi ve panele uygulandı.");
+    setMessage("Tercihleriniz kaydedildi ve panele uygulandı ✅");
     router.refresh();
   }
   return (
     <section className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-5">
       <h2 className="text-lg font-extrabold">Benim panel tercihlerim</h2>
       <p className="mt-2 text-sm leading-6 text-(--site-body)">
-        Bunlar tanı veya sağlık kaydı değildir. İstediğiniz zaman açıp
+        Bunlar bir tanı ya da sağlık kaydı değildir 🤗 İstediğiniz zaman açıp
         kapatabilirsiniz.
       </p>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">

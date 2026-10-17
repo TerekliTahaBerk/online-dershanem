@@ -19,7 +19,7 @@ export function attendancePresentation(status: AttendanceStatusValue | null | un
           ? "Katılmadın"
           : status === "EXCUSED"
             ? "Mazeretli"
-            : "Katılım işlenmedi";
+            : "Katılım henüz işlenmedi";
   const tone: AttendanceTone = status === "ABSENT" ? "warning" : status === "PRESENT" || status === "LATE" ? "success" : "neutral";
   return { label, tone };
 }

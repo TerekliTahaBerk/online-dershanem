@@ -28,7 +28,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!process.env.BLOB_READ_WRITE_TOKEN) return NextResponse.json({ error: "Private dosya deposu yapılandırılmamış." }, { status: 503 });
   const form = await request.formData().catch(() => null);
   const parsed = uploadSchema.safeParse({ file: form?.get("file"), type: form?.get("type"), sessionKey: form?.get("sessionKey") || undefined, bookletCode: form?.get("bookletCode") || undefined });
-  if (!parsed.success || parsed.data.file.type !== "application/pdf") return NextResponse.json({ error: "Geçerli bir PDF ve dosya türü seçin." }, { status: 400 });
+  if (!parsed.success || parsed.data.file.type !== "application/pdf") return NextResponse.json({ error: "Lütfen geçerli bir PDF ve dosya türü seçin." }, { status: 400 });
   const { file, type } = parsed.data;
   // Oturum yalnız kitapçık için anlamlıdır; cevap anahtarı PDF'i her zaman tüm denemeye aittir.
   const sessionKey = type === "BOOKLET_PDF" ? parsed.data.sessionKey : "";

@@ -37,7 +37,7 @@ export async function ensureActiveGroup(
     where: { id: groupId },
     select: { id: true, name: true, isActive: true, capacity: true, teacherId: true },
   });
-  if (!group) throw new GroupLifecycleError("GROUP_NOT_FOUND", "Grup bulunamadı.");
+  if (!group) throw new GroupLifecycleError("GROUP_NOT_FOUND", "Grubu bulamadık.");
   if (!group.isActive) throw new GroupLifecycleError("GROUP_INACTIVE", "Kapalı gruba öğrenci işlemi yapılamaz.");
   return group;
 }
@@ -55,7 +55,7 @@ export async function ensureActiveStudent(
       parents: { select: { parentId: true } },
     },
   });
-  if (!student) throw new GroupLifecycleError("STUDENT_NOT_FOUND", "Öğrenci bulunamadı.");
+  if (!student) throw new GroupLifecycleError("STUDENT_NOT_FOUND", "Öğrenciyi bulamadık.");
   return student;
 }
 
@@ -226,7 +226,7 @@ export async function previewStudentTransfer(
   ]);
 
   if (!target) {
-    throw new GroupLifecycleError("GROUP_NOT_FOUND", "Hedef grup bulunamadı.");
+    throw new GroupLifecycleError("GROUP_NOT_FOUND", "Hedef grup bulunamadı; kaldırılmış ya da değişmiş olabilir.");
   }
 
   const activeCount = await tx.enrollment.count({

@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   const guard = await guardMutation({ action: "panel.pilot.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:pilot:${auth.session.userId}`, rateLimit: { max: 20, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403, headers: PRIVATE_NO_STORE });
   const parsed = schema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return adminJson({ error: "Pilot grubu seçimini kontrol edin.", code: "VALIDATION" }, { status: 400 });
+  if (!parsed.success) return adminJson({ error: "Lütfen pilot grubu seçimini bir kez daha kontrol eder misiniz?", code: "VALIDATION" }, { status: 400 });
   try {
     return adminJson(await createPilotCohortService({ actorUserId: auth.session.userId, actorRole: auth.session.role, ...parsed.data }));
   } catch (error) {

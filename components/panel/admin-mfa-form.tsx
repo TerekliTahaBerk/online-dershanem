@@ -78,7 +78,7 @@ export function AdminMfaForm({
         !optionsData.options ||
         !optionsData.challengeId
       ) {
-        throw new Error(optionsData.error || "Geçiş anahtarı başlatılamadı.");
+        throw new Error(optionsData.error || "Geçiş anahtarı şu an başlatılamadı. Lütfen tekrar dener misiniz?");
       }
       const response = await startAuthentication({
         optionsJSON:
@@ -95,7 +95,7 @@ export function AdminMfaForm({
       });
       const verified = await json(verifyResponse);
       if (!verifyResponse.ok || !verified.redirect) {
-        throw new Error(verified.error || "Geçiş anahtarı doğrulanamadı.");
+        throw new Error(verified.error || "Geçiş anahtarı şu an doğrulanamadı. Lütfen tekrar dener misiniz?");
       }
       window.location.replace(
         purpose === "STEP_UP" ? stepUpReturnTo : verified.redirect,
@@ -121,7 +121,7 @@ export function AdminMfaForm({
     });
     const data = await json(response);
     if (!response.ok) {
-      setError(data.error || "Kod doğrulanamadı.");
+      setError(data.error || "Kod şu an doğrulanamadı. Lütfen tekrar dener misiniz?");
       setPending(false);
       return;
     }
@@ -311,7 +311,7 @@ export function AdminMfaEnrollment() {
         !optionData.options ||
         !optionData.challengeId
       ) {
-        throw new Error(optionData.error || "Kurulum başlatılamadı.");
+        throw new Error(optionData.error || "Kurulum şu an başlatılamadı. Lütfen tekrar dener misiniz?");
       }
       const response = await startRegistration({
         optionsJSON:
@@ -328,7 +328,7 @@ export function AdminMfaEnrollment() {
       });
       const verified = await json(verifyResponse);
       if (!verifyResponse.ok || !verified.recoveryCodes) {
-        throw new Error(verified.error || "Geçiş anahtarı kaydedilemedi.");
+        throw new Error(verified.error || "Geçiş anahtarı şu an kaydedilemedi. Lütfen tekrar dener misiniz?");
       }
       setRecoveryCodes(verified.recoveryCodes);
       setPending(false);
@@ -350,7 +350,7 @@ export function AdminMfaEnrollment() {
       error?: string;
     };
     if (!response.ok || !data.secret || !data.otpauthUri) {
-      setError(data.error || "TOTP kurulumu başlatılamadı.");
+      setError(data.error || "TOTP kurulumu şu an başlatılamadı. Lütfen tekrar dener misiniz?");
     } else {
       setSecret(data.secret);
       setOtpauthUri(data.otpauthUri);
@@ -370,7 +370,7 @@ export function AdminMfaEnrollment() {
     });
     const data = await json(response);
     if (!response.ok || !data.recoveryCodes) {
-      setError(data.error || "Kod doğrulanamadı.");
+      setError(data.error || "Kod şu an doğrulanamadı. Lütfen tekrar dener misiniz?");
     } else {
       setRecoveryCodes(data.recoveryCodes);
     }

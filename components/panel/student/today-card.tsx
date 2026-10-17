@@ -36,7 +36,7 @@ export function TodayCard({
       {rows.length === 0 ? (
         <div className="px-[22px] py-[26px]">
           <p className="text-[15px] font-bold text-dc-ink">
-            Bugün planlanmış bir şey yok.
+            Bugün planlanmış bir şey yok, keyfini çıkar 🌿
           </p>
           <p className="mt-1.5 text-[14px] text-dc-ink-muted">
             Yarının programına bakabilir ya da geçmiş ders notlarını gözden

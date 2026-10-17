@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   const auth = await requireAdminApi();
   if (!auth.ok) return auth.response;
   const parsed = schema.safeParse(Object.fromEntries(new URL(request.url).searchParams));
-  if (!parsed.success) return adminJson({ error: "Geçersiz eğitim filtresi." }, { status: 400 });
+  if (!parsed.success) return adminJson({ error: "Eğitim filtresi geçerli görünmüyor." }, { status: 400 });
   try { return adminJson(await loadEducationEditor(parsed.data)); }
   catch (error) { if (error instanceof GroupMutationError) return adminJson({ error: error.message, code: error.code }, { status: error.status }); throw error; }
 }

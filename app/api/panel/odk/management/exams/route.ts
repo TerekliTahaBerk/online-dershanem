@@ -18,12 +18,12 @@ const controls = z.object({ key: z.string().uuid(), revision: z.string().regex(/
 export async function GET(request: Request) {
   const auth = await requireApiProductRole("ODK", "ADMIN", "TEACHER"); if (!auth.ok) return auth.response;
   const parsedQuery = z.object({ q: z.string().max(80).optional(), aile: z.string().max(80).optional(), durum: z.string().max(30).optional(), gorunum: z.string().max(30).optional(), page: z.string().regex(/^\d{1,6}$/).optional() }).safeParse(Object.fromEntries(new URL(request.url).searchParams));
-  if (!parsedQuery.success) return NextResponse.json({ error: "Filtre geçersiz." }, { status: 400, headers: PRIVATE_NO_STORE });
+  if (!parsedQuery.success) return NextResponse.json({ error: "Filtre geçerli görünmüyor." }, { status: 400, headers: PRIVATE_NO_STORE });
   const params = parsedQuery.data;
   // Permission is checked before expensive list/readiness/catalog reads.
   const { loadStaffViewer } = await import("@/lib/odk/staff-management-data");
   const viewer = await loadStaffViewer(auth.session.userId);
-  if (!ODK_EXAM_LIST_PERMISSIONS.some((p) => viewer.permissions.has(p))) return NextResponse.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403, headers: PRIVATE_NO_STORE });
+  if (!ODK_EXAM_LIST_PERMISSIONS.some((p) => viewer.permissions.has(p))) return NextResponse.json({ error: "Bu işlem için yetkiniz bulunmuyor." }, { status: 403, headers: PRIVATE_NO_STORE });
   const list = await loadOdkExamList(auth.session.userId, params);
   const catalog = list.canCreate ? await loadOdkExamCatalog() : { revision: operationDigest(null), families: list.familyRecords.map((f) => ({ code: f.code, name: f.name, legacy: false })), series: [], templates: [] };
   const pageSize = 50, page = Math.max(1, Math.min(Math.ceil(list.shown.length / pageSize) || 1, Number.parseInt(params.page || "1", 10) || 1));
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     if (typeof error === "object" && error && "code" in error && ["P2002", "P2034", "P2025"].includes(String(error.code))) {
       const receipt = await prisma.auditLog.findUnique({ where: { idempotencyKey: key } });
       if (receipt) { try { return staffJson({ ...(readGroupReceipt(receipt.payload, digest).body as object), replayed: true }); } catch (conflict) { if (conflict instanceof GroupMutationError) return NextResponse.json({ error: conflict.message, code: conflict.code }, { status: conflict.status, headers: PRIVATE_NO_STORE }); throw conflict; } }
-      return NextResponse.json({ error: "Adres kullanılıyor veya katalog değişti. Listeyi yenileyin.", code: "ODK_CONFLICT" }, { status: 409, headers: PRIVATE_NO_STORE });
+      return NextResponse.json({ error: "Adres kullanılıyor veya katalog değişti. Listeyi yenileyip tekrar deneyebilirsiniz.", code: "ODK_CONFLICT" }, { status: 409, headers: PRIVATE_NO_STORE });
     }
     throw error;
   }

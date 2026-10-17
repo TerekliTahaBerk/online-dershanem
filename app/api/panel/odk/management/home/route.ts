@@ -7,6 +7,6 @@ import { NextResponse } from "next/server";
 export async function GET() {
   const auth = await requireApiProductRole("ODK", "ADMIN", "TEACHER"); if (!auth.ok) return auth.response;
   const viewer = await loadStaffViewer(auth.session.userId);
-  if (![...ODK_STAFF_MODULES.map((m) => m.permission), ...ODK_EXAM_LIST_PERMISSIONS].some((p) => viewer.permissions.has(p))) return NextResponse.json({ error: "Bu işlem için yetkiniz yok." }, { status: 403, headers: PRIVATE_NO_STORE });
+  if (![...ODK_STAFF_MODULES.map((m) => m.permission), ...ODK_EXAM_LIST_PERMISSIONS].some((p) => viewer.permissions.has(p))) return NextResponse.json({ error: "Bu işlem için yetkiniz bulunmuyor." }, { status: 403, headers: PRIVATE_NO_STORE });
   return staffJson(await loadOdkManagementHome(auth.session.userId));
 }

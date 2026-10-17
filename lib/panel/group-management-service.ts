@@ -21,7 +21,7 @@ type Audit = { action: string; summary: string; details?: Record<string, unknown
 
 export async function loadGroupMutationState(tx: Pick<Tx, "group">, id: string) {
   const group = await tx.group.findUnique({ where: { id }, include: { enrollments: { where: { endedAt: null }, select: { studentId: true, startedAt: true } } } });
-  if (!group) throw new GroupMutationError("GROUP_NOT_FOUND", "Grup bulunamadı.", 404);
+  if (!group) throw new GroupMutationError("GROUP_NOT_FOUND", "Grubu bulamadık.", 404);
   return group;
 }
 
@@ -60,7 +60,7 @@ async function writeGroupOperation(input: { actorId: string; groupId?: string; t
     if (error instanceof Prisma.PrismaClientKnownRequestError && ["P2034", "P2002"].includes(error.code)) {
       const completed = await replay();
       if (completed) return completed;
-      throw new GroupMutationError("GROUP_CONFLICT", "Eşzamanlı bir grup işlemi oldu. Görünümü yenileyin.");
+      throw new GroupMutationError("GROUP_CONFLICT", "Eşzamanlı bir grup işlemi oldu. Sayfayı yenileyip tekrar deneyebilirsiniz.");
     }
     throw error;
   }
@@ -70,7 +70,7 @@ export function createManagedGroup(actorId: string, data: GroupCreateInput, enve
   const studentIds = [...new Set(data.studentIds)];
   return writeGroupOperation({ actorId, operation: { action: "CREATE", ...data, studentIds }, envelope }, async (tx) => {
     const teacher = await tx.user.findFirst({ where: { id: data.teacherId, role: "TEACHER", status: "ACTIVE" }, select: { id: true } });
-    if (!teacher) throw new GroupMutationError("TEACHER_NOT_FOUND", "Aktif öğretmen bulunamadı.", 400);
+    if (!teacher) throw new GroupMutationError("TEACHER_NOT_FOUND", "Aktif öğretmen şu an görünmüyor.", 400);
     for (const studentId of studentIds) await ensureActiveStudent(tx, studentId);
     const group = await tx.group.create({ data: { name: data.name, subject: data.subject, level: data.level || null, teacherId: teacher.id, capacity: DEFAULT_GROUP_CAPACITY, enrollments: { create: studentIds.map((studentId) => ({ studentId })) } } });
     return { id: group.id, audit: { action: "group.created", summary: `${group.name} grubu oluşturuldu`, details: { teacherId: teacher.id, studentCount: studentIds.length } } };
@@ -103,7 +103,7 @@ export async function updateManagedGroup(actorId: string, id: string, action: Gr
       audit = { action: "group.membership_added", summary: "Öğrenci gruba eklendi", details: { studentId: student.id } };
     } else {
       const teacher = await tx.user.findFirst({ where: { id: action.teacherId, role: "TEACHER", status: "ACTIVE" }, select: { id: true } });
-      if (!teacher) throw new GroupMutationError("TEACHER_NOT_FOUND", "Aktif öğretmen bulunamadı.", 400);
+      if (!teacher) throw new GroupMutationError("TEACHER_NOT_FOUND", "Aktif öğretmen şu an görünmüyor.", 400);
       const now = new Date();
       const upcoming = await tx.lesson.findMany({ where: { groupId: id, status: "PLANNED", startsAt: { gte: now } }, select: { id: true, startsAt: true, endsAt: true } });
       for (const lesson of upcoming) await assertLessonNoConflict(tx, { lessonId: lesson.id, teacherId: teacher.id, groupId: id, startsAt: lesson.startsAt, endsAt: lesson.endsAt, studentIds: group.enrollments.map((row) => row.studentId) });

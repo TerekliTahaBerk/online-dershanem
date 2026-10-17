@@ -73,22 +73,22 @@ export function StudentReviewQueue({
         }),
       });
       const body = await result.json().catch(() => ({}));
-      if (!result.ok) throw new Error(body.error || "Tekrar kaydedilemedi.");
+      if (!result.ok) throw new Error(body.error || "Yanıtını şu an kaydedemedik 😕 Lütfen tekrar dener misin?");
       setItems((current) =>
         current.filter((currentItem) => currentItem.id !== item.id),
       );
       setMessage(
         body.status === "MASTERED"
-          ? "Bu çalışma 30 günlük geri çağırmayı da tamamladı. Geçmişin korunuyor."
+          ? "Harika! Bu çalışma 30 günlük tekrarı da tamamladı 🎉 Geçmişin korunuyor."
           : response === "CORRECT"
-            ? "Güzel; bir sonraki dönüş daha ileri bir tarihe yerleşti."
+            ? "Güzel! Bir sonraki tekrar daha ileri bir tarihe yerleşti 🌱"
             : response === "UNSURE"
-              ? "Emin olmamak normal; daha yakın bir tarihte yeniden bakacağız."
-              : "Bu işaret yalnız daha yakın tekrar planlar; ilerlemen silinmedi.",
+              ? "Emin olmamak çok normal 😊 Daha yakın bir tarihte birlikte yeniden bakacağız."
+              : "Bu işaret yalnızca tekrarı öne alır; ilerlemen silinmedi, içi rahat olsun.",
       );
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "Tekrar kaydedilemedi.",
+        error instanceof Error ? error.message : "Yanıtını şu an kaydedemedik 😕 Lütfen tekrar dener misin?",
       );
     } finally {
       setBusy(null);
@@ -103,10 +103,10 @@ export function StudentReviewQueue({
       setItems((current) =>
         current.filter((currentItem) => currentItem.id !== item.id),
       );
-      setMessage("Bugünlük ertelendi; yarın yeniden görebilirsin.");
+      setMessage("Tamamdır, bunu yarına aldık 🌙");
     } else
       setMessage(
-        (await result.json().catch(() => ({}))).error || "Erteleme yapılamadı.",
+        (await result.json().catch(() => ({}))).error || "Şu an erteleyemedik 😕 Lütfen tekrar dener misin?",
       );
     setBusy(null);
   }
@@ -218,10 +218,10 @@ export function StudentReviewQueue({
           <article className="overflow-hidden rounded-[10px] border border-pn-border bg-white p-8 text-center">
             <CheckCircle2 size={25} className="mx-auto text-emerald-600" />
             <h2 className="mt-3 text-sm font-extrabold">
-              Bugünün küçük tekrarları tamam.
+              Bugünlük tekrarlarını tamamladın 🎉
             </h2>
             <p className="mt-2 text-xs leading-5 text-(--site-muted)">
-              Yeni bir öğe zamanı geldiğinde burada en fazla beş çalışma
+              Yeni tekrar zamanı geldiğinde burada en fazla beş çalışma
               göreceksin.
             </p>
           </article>

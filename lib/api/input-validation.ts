@@ -10,6 +10,6 @@ export const recoveryItemParamsSchema = z
   .object({ id: routeIdentifier, itemId: routeIdentifier })
   .strict();
 
-export function invalidApiInput(message = "Geçersiz istek parametreleri.") {
+export function invalidApiInput(message = "İstek parametreleri geçerli görünmüyor.") {
   return NextResponse.json({ error: message }, { status: 400 });
 }

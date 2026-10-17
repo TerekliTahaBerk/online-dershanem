@@ -41,7 +41,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
       },
     },
   });
-  if (!attempt) return NextResponse.json({ error: "Oturum bulunamadı." }, { status: 404 });
+  if (!attempt) return NextResponse.json({ error: "Oturumu bulamadık." }, { status: 404 });
 
   const assessment = assessIntegrity(
     attempt.events.map((event) => ({
@@ -68,7 +68,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   if (!routeParams.success) return invalidApiInput();
   const { id } = routeParams.data;
   const parsed = integrityReviewSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "İnceleme işlemi geçersiz." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message || "İnceleme işlemi geçerli görünmüyor." }, { status: 400 });
 
   try {
     const { result } = await reviewAttemptIntegrity(auth.session.userId, id, parsed.data);

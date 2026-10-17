@@ -64,7 +64,7 @@ export default async function TeacherAssignmentsPage() {
           <ClipboardCheck size={15} /> Çalışma döngüsü
         </p>
         <h1 className={PAGE_TITLE_CLASS}>
-          Ödevleri ver, ilerlemeyi gör.
+          Ödevleri ver, ilerlemeyi kolayca takip et 📚
         </h1>
         <p className={PAGE_DESCRIPTION_CLASS}>
           Ödev öğrenciye ulaşır; tamamlanma durumu veli paneline aynı anda

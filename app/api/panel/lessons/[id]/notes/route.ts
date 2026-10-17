@@ -56,7 +56,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     where: { id, teacherId: auth.session.userId },
     include: { group: { include: { enrollments: { where: { endedAt: null }, include: { student: { select: { id: true, userId: true, parents: { select: { parentId: true } } } } } } } } },
   });
-  if (!lesson) { await recordFinished("rejected", eventData); return NextResponse.json({ error: "Ders bulunamadı." }, { status: 404 }); }
+  if (!lesson) { await recordFinished("rejected", eventData); return NextResponse.json({ error: "Dersi bulamadık." }, { status: 404 }); }
   const allowed = new Set(lesson.group.enrollments.map((item) => item.student.id));
   if (parsed.data.students.some((item) => !allowed.has(item.studentId))) { await recordFinished("rejected", eventData); return NextResponse.json({ error: "Bu gruba ait olmayan öğrenci gönderildi." }, { status: 403 }); }
   const assignmentStudentIds = [...new Set(parsed.data.assignmentDraft?.studentIds || [])];

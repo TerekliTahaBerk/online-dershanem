@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     const parsed = leadSubmissionSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Geçersiz form verisi." },
+        { error: "Form verisi geçerli görünmüyor." },
         { status: 400 },
       );
     }

@@ -16,12 +16,12 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const routeParams = idParamsSchema.safeParse(await context.params);
   if (!routeParams.success) return invalidApiInput();
   const { id } = routeParams.data; const material = await prisma.learningMaterial.findFirst({ where: { id, ...learningMaterialAccessScope(auth.session.role, auth.session.userId) }, select: { id: true } });
-  if (!material) return NextResponse.json({ error: "Materyal bulunamadı." }, { status: 404 });
+  if (!material) return NextResponse.json({ error: "Materyal bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
   const payload = await request.json().catch(() => null);
   const editing = payload && typeof payload === "object" && "title" in payload;
-  if (payload !== null && (!payload || typeof payload !== "object" || Array.isArray(payload) || !editing && Object.keys(payload).length > 0)) return invalidApiInput("Materyal işlemi geçersiz.");
+  if (payload !== null && (!payload || typeof payload !== "object" || Array.isArray(payload) || !editing && Object.keys(payload).length > 0)) return invalidApiInput("Materyal işlemi geçerli görünmüyor.");
   const parsed = editing ? editSchema.safeParse(payload) : null;
-  if (parsed && !parsed.success) return invalidApiInput("Materyal alanlarını kontrol edin.");
+  if (parsed && !parsed.success) return invalidApiInput("Lütfen materyal alanlarını bir kez daha kontrol eder misiniz?");
   const edit = parsed?.success ? parsed.data : null;
   const stored = await prisma.learningMaterial.findUniqueOrThrow({ where: { id } });
   if (edit?.url && stored.blobPathname) return invalidApiInput("Yüklenen dosyanın adresi değiştirilemez.");

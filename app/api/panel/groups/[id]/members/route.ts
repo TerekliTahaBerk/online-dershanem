@@ -13,7 +13,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const body = await request.json().catch(() => null);
   const payload = groupMembersActionSchema.safeParse(body);
   if (!payload.success) {
-    return NextResponse.json({ error: "Üye işlemi isteğini kontrol edin." }, { status: 400 });
+    return NextResponse.json({ error: "Lütfen üye işlemi isteğini bir kez daha kontrol eder misiniz?" }, { status: 400 });
   }
 
   const auth =
@@ -37,7 +37,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       {
         error:
           guard.code === "RATE_LIMIT"
-            ? "Çok fazla işlem. Biraz sonra tekrar deneyin."
+            ? "Kısa sürede çok fazla işlem yapıldı. Biraz bekleyip tekrar dener misiniz?"
             : guard.message,
       },
       { status: guard.code === "RATE_LIMIT" ? 429 : 403 },

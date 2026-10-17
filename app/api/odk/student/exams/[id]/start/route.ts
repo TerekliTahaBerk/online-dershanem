@@ -22,7 +22,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const guard = await guardMutation({ action: "odk.attempt.start", requireSameOrigin: true, headers: request.headers, rateLimitKey: `odk:attempt-start:${auth.session.userId}`, rateLimit: { max: 15, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = schema.safeParse(await request.json().catch(() => ({})));
-  if (!parsed.success) return NextResponse.json({ error: "Sınav giriş onayını kontrol edin." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Lütfen sınav giriş onayını bir kez daha kontrol eder misiniz?" }, { status: 400 });
   const { id } = await context.params;
   const grant = await getActiveOdkExamGrant(auth.session.userId, id);
   if (!grant) {
@@ -35,7 +35,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (existing && existing.deadlineAt > new Date()) { await recordPanelProductEvent({ name: "odk_attempt_started", properties: { family: familyCode, resumed: true, lateEntryBand: odkLateEntryBand(exam.startsAt, existing.startedAt) } }, "STUDENT"); return NextResponse.json({ attemptId: existing.id, resumed: true }); }
   if (existing) await prisma.odkExamAttempt.update({ where: { id: existing.id }, data: { status: "AUTO_SUBMITTED", submittedAt: new Date() } });
   const meetRequired = grant.exam.liveServiceRequired && grant.contract.policy.rights.liveService;
-  if (meetRequired && !parsed.data.meetAcknowledged) return NextResponse.json({ error: "Sınava başlamadan önce Meet katılımınızı onaylayın." }, { status: 400 });
+  if (meetRequired && !parsed.data.meetAcknowledged) return NextResponse.json({ error: "Sınava başlamadan önce Meet katılımını onaylaman gerekiyor 🎥" }, { status: 400 });
   const decision = decideAttemptStart({ status: exam.status, ...contractExamSchedule(grant.exam), durationMinutes: exam.currentVersion.durationMinutes });
   if (!decision.ok) return NextResponse.json({ error: attemptStartError[decision.code], code: decision.code }, { status: 409 });
   const previous = await prisma.odkExamAttempt.aggregate({ where: { examId: id, studentUserId: auth.session.userId, status: { not: "VOID" } }, _count: true, _max: { attemptNumber: true } });

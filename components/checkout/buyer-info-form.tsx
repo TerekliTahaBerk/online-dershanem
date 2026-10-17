@@ -193,7 +193,7 @@ export function BuyerInfoForm({
         typeof json.discountCents !== "number"
       ) {
         setAppliedCoupon(null);
-        setCouponError(json.error || "İndirim kodu doğrulanamadı.");
+        setCouponError(json.error || "İndirim kodu şu an doğrulanamadı. Lütfen tekrar dener misiniz?");
         return;
       }
       setAppliedCoupon({

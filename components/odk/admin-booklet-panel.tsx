@@ -65,7 +65,7 @@ export function AdminBookletPanel({
       const response = await fetch(endpoint, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
       const result = await response.json().catch(() => ({}));
       if (method === "POST") {
-        if (!response.ok) return setMessage({ text: result.error || "Önizleme başarısız.", error: true });
+        if (!response.ok) return setMessage({ text: result.error || "Önizleme şu an tamamlanamadı. Lütfen tekrar dener misiniz?", error: true });
         setIssues(result.issues ?? []);
         setPreviewed(result.ok ? { booklets: result.booklets, currentHash: result.currentHash, impact: result.impact ?? null, changedBooklets: result.changedBooklets ?? [] } : null);
         if (!result.ok) setMessage({ text: `${result.issues.length} sorun var; düzeltip yeniden önizleyin.`, error: true });
@@ -73,7 +73,7 @@ export function AdminBookletPanel({
       }
       if (!response.ok) {
         if (result.code === "BOOKLET_STALE") setPreviewed(null);
-        return setMessage({ text: result.error || "Kaydedilemedi.", error: true });
+        return setMessage({ text: result.error || "Şu an kaydedilemedi. Lütfen tekrar dener misiniz?", error: true });
       }
       if (correcting) {
         setMessage({ text: `Düzeltildi: ${result.changedBooklets.join(", ")} kitapçığı; ${result.affectedAttemptCount} denemede ${result.movedAnswerCount} cevap taşındı${result.rescored ? ", yeniden puanlandı" : ""}.`, error: false });
@@ -85,7 +85,7 @@ export function AdminBookletPanel({
       setPreviewed(null);
       router.refresh();
     } catch {
-      setMessage({ text: "Bağlantı kurulamadı.", error: true });
+      setMessage({ text: "Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?", error: true });
     } finally {
       setBusy(false);
     }

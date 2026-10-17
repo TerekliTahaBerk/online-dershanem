@@ -34,7 +34,7 @@ export async function POST(request: Request, _context: { params: Promise<{ id: s
 
   const parsed = lessonCreationSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "Ders bilgilerini kontrol edin." }, { status: 400 });
+    return NextResponse.json({ error: "Lütfen ders bilgilerini bir kez daha kontrol eder misiniz?" }, { status: 400 });
   }
 
   const resolved = await resolveLessonTargetGroup({

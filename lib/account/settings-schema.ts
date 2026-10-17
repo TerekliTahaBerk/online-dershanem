@@ -51,10 +51,10 @@ export const educationSettingsSchema = z.object({
       .string()
       .trim()
       .max(24)
-      .refine((value) => normalizeTrMobile(value) !== null, { message: "Veli telefonu geçersiz." })
+      .refine((value) => normalizeTrMobile(value) !== null, { message: "Veli telefonu geçerli görünmüyor." })
       .transform((value) => normalizeTrMobile(value) as string),
   ),
-  guardianEmail: optional(z.string().trim().toLowerCase().max(254).email("Veli e-postası geçersiz.")),
+  guardianEmail: optional(z.string().trim().toLowerCase().max(254).email("Veli e-postası geçerli görünmüyor.")),
 });
 
 export const contactSettingsSchema = z.object({

@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     const parsed = purchaseSubmissionSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json({ error: "Geçersiz satın alma formu verisi." }, { status: 400 });
+      return NextResponse.json({ error: "Satın alma formu verisi geçerli görünmüyor." }, { status: 400 });
     }
 
     const submission = await prisma.purchaseIntent.create({

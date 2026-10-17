@@ -50,8 +50,8 @@ export function WeeklyPlanCard({
       />
       <p className="mt-2 text-[13px] text-dc-ink-muted">
         {remaining > 0
-          ? `Hafta sonuna kadar ${remaining} görev kaldı.`
-          : "Bu haftanın görevleri tamam."}
+          ? `Hafta sonuna kadar ${remaining} görev kaldı, sen yaparsın! 💪`
+          : "Bu haftanın görevlerini tamamladın 🎉"}
       </p>
 
       <ul className="mt-4 flex flex-col gap-2.5">

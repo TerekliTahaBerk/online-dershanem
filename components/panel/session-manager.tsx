@@ -35,10 +35,10 @@ export function SessionManager({ sessions }: { sessions: ManagedSession[] }) {
     try {
       const response = await fetch(path, { method });
       const data = (await response.json()) as { error?: string };
-      if (!response.ok) throw new Error(data.error || "Oturum kapatılamadı.");
+      if (!response.ok) throw new Error(data.error || "Oturumu şu an kapatamadık. Lütfen tekrar dener misiniz?");
       router.refresh();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Oturum kapatılamadı.");
+      setError(cause instanceof Error ? cause.message : "Oturumu şu an kapatamadık. Lütfen tekrar dener misiniz?");
     } finally {
       setPending(null);
     }

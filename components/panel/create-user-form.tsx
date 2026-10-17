@@ -93,7 +93,7 @@ export function CreateUserForm() {
       };
 
       if (!response.ok || !data.user || !data.invite) {
-        setError(data.error ?? "Hesap açılamadı.");
+        setError(data.error ?? "Hesap şu an açılamadı. Lütfen tekrar dener misiniz?");
         setPending(false);
         return;
       }

@@ -129,8 +129,8 @@ function PendingSection({ items }: { items: TeacherWorkspacePendingItem[] }) {
         </List>
       ) : (
         <EmptyState
-          title="Bekleyen iş yok."
-          body="Kapanış, yardım, plan veya değerlendirme biriktiğinde burada görünür."
+          title="Bekleyen iş yok, harika! ✅"
+          body="Kapanış, yardım, plan ya da değerlendirme biriktiğinde burada görünecek."
         />
       )}
     </Section>
@@ -165,8 +165,8 @@ function RiskSection({ items }: { items: TeacherWorkspaceRiskStudent[] }) {
         </List>
       ) : (
         <EmptyState
-          title="Riskli öğrenci yok."
-          body="Güçlü bir sinyal oluştuğunda en fazla 8 öğrenci burada listelenir."
+          title="Riskli öğrenci görünmüyor 🌱"
+          body="Güçlü bir sinyal oluştuğunda en fazla 8 öğrenci burada listelenecek."
         />
       )}
     </Section>
@@ -219,8 +219,8 @@ export function TeacherWorkspaceHome({
     <Section title="Bugünkü dersler">
       {workspace.todayLessons.length === 0 ? (
         <EmptyState
-          title="Bugün dersin yok."
-          body="Bekleyen işleri bitirebilir ya da yarının derslerine hazırlanabilirsin."
+          title="Bugün dersin yok ☕"
+          body="Bekleyen işlerini bitirebilir ya da yarının derslerine hazırlanabilirsin."
         />
       ) : (
         <ul aria-label="Bugünkü dersler" className="border-t border-pn-border">

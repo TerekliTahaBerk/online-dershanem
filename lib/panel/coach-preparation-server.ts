@@ -32,12 +32,12 @@ export async function loadCoachPreparation(coachId: string, studentId: string, d
 export const coachRecordSchema = z.object({ studentId: z.string().min(1).max(100), focus: z.string().trim().max(300).optional(), sharedNote: z.string().trim().max(4000).optional(), privateNote: z.string().trim().max(4000).optional(), nextAt: z.string().datetime().optional() }).strict();
 export const coachGoalSchema = z.object({ studentId: z.string().min(1).max(100), kind: z.enum(["SUBJECT_NET", "PLAN_COMPLETION"]), subjectName: z.string().trim().max(100).optional(), targetValue: z.number().min(0), nearTermNote: z.string().trim().max(300).optional() }).strict().superRefine((v, c) => {
   if (v.kind === "PLAN_COMPLETION" && v.targetValue > 100) c.addIssue({ code: "custom", path: ["targetValue"], message: "Yüzde 0–100 olmalı." });
-  if (v.kind === "SUBJECT_NET" && !v.subjectName) c.addIssue({ code: "custom", path: ["subjectName"], message: "Ders seçin." });
+  if (v.kind === "SUBJECT_NET" && !v.subjectName) c.addIssue({ code: "custom", path: ["subjectName"], message: "Lütfen ders seçin." });
 });
 export async function recordCoachSession(input: z.infer<typeof coachRecordSchema>, actorId: string, db: PrismaClient = prisma) {
   return db.$transaction(async (tx) => {
     const assignment = await coachPreparationScope(actorId, input.studentId, tx as PrismaClient);
-    if (!assignment) throw new GroupMutationError("NOT_FOUND", "Öğrenci bulunamadı.", 404);
+    if (!assignment) throw new GroupMutationError("NOT_FOUND", "Öğrenciyi bulamadık.", 404);
     const now = new Date();
     if (input.nextAt && new Date(input.nextAt) <= now) throw new GroupMutationError("INVALID_DATE", "Sonraki görüşme gelecekte olmalı.", 400);
     const planned = await tx.coachingSession.findFirst({ where: { assignmentId: assignment.id, status: "PLANNED" }, orderBy: [{ scheduledAt: "asc" }, { id: "asc" }], select: { id: true, version: true } });
@@ -51,9 +51,9 @@ export async function recordCoachSession(input: z.infer<typeof coachRecordSchema
 }
 export async function setCoachGoal(input: z.infer<typeof coachGoalSchema>, actorId: string, db: PrismaClient = prisma) {
   return db.$transaction(async (tx) => {
-    if (!await coachPreparationScope(actorId, input.studentId, tx as PrismaClient)) throw new GroupMutationError("NOT_FOUND", "Öğrenci bulunamadı.", 404);
+    if (!await coachPreparationScope(actorId, input.studentId, tx as PrismaClient)) throw new GroupMutationError("NOT_FOUND", "Öğrenciyi bulamadık.", 404);
     const subjectName = input.kind === "SUBJECT_NET" ? input.subjectName! : null;
-    if (subjectName && !await tx.mockExamSection.findFirst({ where: { mockExam: { studentId: input.studentId }, subjectName }, select: { id: true } })) throw new GroupMutationError("INVALID_SUBJECT", "Öğrencinin deneme derslerinden seçin.", 400);
+    if (subjectName && !await tx.mockExamSection.findFirst({ where: { mockExam: { studentId: input.studentId }, subjectName }, select: { id: true } })) throw new GroupMutationError("INVALID_SUBJECT", "Lütfen öğrencinin deneme derslerinden seçin.", 400);
     await tx.studentGoal.updateMany({ where: { studentId: input.studentId, kind: input.kind, subjectName, archivedAt: null }, data: { archivedAt: new Date() } });
     const goal = await tx.studentGoal.create({ data: { studentId: input.studentId, kind: input.kind, subjectName, targetValue: input.targetValue, nearTermNote: input.nearTermNote || null, setById: actorId } });
     await tx.auditLog.create({ data: { actorType: "USER", actorUserId: actorId, entityType: "StudentGoal", entityId: goal.id, action: "coaching.goal.set", summary: "Öğrenci hedefi belirlendi" } });

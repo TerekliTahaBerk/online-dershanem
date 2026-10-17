@@ -295,7 +295,7 @@ export function OfflineSyncProvider({
           state: "error",
           response,
           body: {
-            error: "Bağlantı kurulamadı; çevrimdışı kayıt bu hesapta kapalı.",
+            error: "Bağlantı kurulamadı; bu hesapta çevrimdışı kayıt kapalı olduğu için işlemi bağlantı gelince tekrar deneyebilirsiniz.",
           },
         };
       try {
@@ -311,7 +311,7 @@ export function OfflineSyncProvider({
         return {
           state: "error",
           response: null,
-          body: { error: "Bu işlem güvenli çevrimdışı kuyruğa alınamadı." },
+          body: { error: "Bu işlemi çevrimdışı kuyruğa güvenle alamadık; bağlantı gelince tekrar deneyebilirsiniz." },
         };
       }
     },

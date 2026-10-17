@@ -64,8 +64,8 @@ export default async function ParentMockExamsPage({
         <PanelHeading title="Denemeler" />
         <EmptyState
           className="mt-6"
-          title="Öğrenci bağlantın hazırlanıyor."
-          body="Bağlantı kurulduğunda çocuğunun deneme özeti burada görünür."
+          title="Öğrenci bağlantınız hazırlanıyor ⏳"
+          body="Bağlantı kurulduğunda çocuğunuzun deneme özeti burada görünecek."
         />
       </>,
     );
@@ -86,7 +86,7 @@ export default async function ParentMockExamsPage({
       description={
         products.length
           ? `Ürün erişimi: ${products.map(productLabel).join(" · ")}`
-          : "Bu öğrencide aktif ürün yok."
+          : "Bu öğrenci için henüz aktif bir ürün yok."
       }
     />
   );
@@ -97,8 +97,8 @@ export default async function ParentMockExamsPage({
         {heading}
         <EmptyState
           className="mt-6 max-w-[700px]"
-          title="Bu öğrencide deneme üyeliği yok"
-          body="Deneme Ligi eklendiğinde denemeler, sonuç dağılımı ve gelişim karşılaştırması bu ekranda görünür."
+          title="Bu öğrencinin deneme üyeliği henüz yok"
+          body="Deneme Ligi eklendiğinde denemeler, sonuç dağılımı ve gelişim karşılaştırması bu ekranda görünecek 🏆"
           action={
             <Link
               href={withParentStudentContext("/panel/veli/hesap", selected.id)}
@@ -125,8 +125,8 @@ export default async function ParentMockExamsPage({
       {exams.length === 0 ? (
         <EmptyState
           className="mt-6"
-          title="Henüz kayıtlı deneme yok."
-          body="Öğretmen veya koç bir deneme sonucu girdiğinde net dağılımı ve gelişim burada görünür."
+          title="Henüz kayıtlı bir deneme yok 📝"
+          body="Öğretmen ya da koç bir deneme sonucu girdiğinde net dağılımı ve gelişim burada görünecek."
         />
       ) : (
         <div className="mt-7">

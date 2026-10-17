@@ -112,8 +112,8 @@ export async function PATCH(request: Request) {
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });
   const body = await request.json().catch(() => null);
   const existing = await current(auth.session.userId);
-  const patch = request.headers.get("x-od-client") === "mobile" ? patchSchema.safeParse(body) : webSchema.safeParse(body); if (!patch.success) return NextResponse.json({ error: "Tercihleri kontrol edin." }, { status: 400 });
-  const parsed = fullSchema.safeParse({ ...existing, ...patch.data, pushEnabled: patch.data.pushEnabled ?? existing.pushEnabled, examUpdates: patch.data.examUpdates ?? existing.examUpdates }); if (!parsed.success) return NextResponse.json({ error: "Tercihleri kontrol edin." }, { status: 400 });
+  const patch = request.headers.get("x-od-client") === "mobile" ? patchSchema.safeParse(body) : webSchema.safeParse(body); if (!patch.success) return NextResponse.json({ error: "Lütfen tercihleri bir kez daha kontrol eder misiniz?" }, { status: 400 });
+  const parsed = fullSchema.safeParse({ ...existing, ...patch.data, pushEnabled: patch.data.pushEnabled ?? existing.pushEnabled, examUpdates: patch.data.examUpdates ?? existing.examUpdates }); if (!parsed.success) return NextResponse.json({ error: "Lütfen tercihleri bir kez daha kontrol eder misiniz?" }, { status: 400 });
   await prisma.notificationPreference.upsert({ where: { userId: auth.session.userId }, create: { userId: auth.session.userId, ...parsed.data }, update: parsed.data });
   if (getPanelFeatureFlags().parentWeeklyDigest && patch.data.weeklyDigest !== undefined && (auth.session.role === "STUDENT" || auth.session.role === "PARENT")) { const actorRole = auth.session.role === "STUDENT" ? "STUDENT" as const : "PARENT" as const; await recordPanelProductEvent({ name: "weekly_digest_preference_updated", properties: { actorRole, enabled: parsed.data.weeklyDigest, emailEnabled: parsed.data.emailEnabled } }, auth.session.role); }
   return NextResponse.json({ ok: true, preferences: parsed.data });

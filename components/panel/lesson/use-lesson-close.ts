@@ -127,21 +127,21 @@ export function useLessonClose(lesson: LessonData, flags: Flags) {
         if (saved && typeof responseBody?.version === "number") closeVersion.current = responseBody.version;
       }
       if (!saved && !queued && complete)
-        setActionMessage(responseBody?.error || "Ders kapatılamadı; değişiklikleriniz taslakta korunuyor.");
+        setActionMessage(responseBody?.error || "Dersi şu an kapatamadık; merak etmeyin, değişiklikleriniz taslakta korunuyor.");
       if (queued)
         setActionMessage(
           complete
-            ? "Bağlantı yok; ders kapanışı bu cihazda en fazla 24 saat güvenle bekliyor."
-            : "Bağlantı yok; ders taslağı bu cihazda güvenle bekliyor.",
+            ? "Şu an çevrimdışısınız 📡 Ders kapanışı bu cihazda en fazla 24 saat güvenle bekliyor."
+            : "Şu an çevrimdışısınız 📡 Ders taslağı bu cihazda güvenle bekliyor.",
         );
       if (saved && complete) {
         setCompleted(true);
         setActionMessage(
           responseBody?.replayed
-            ? "Bu kapanış daha önce güvenle tamamlandı; çift kayıt oluşturulmadı."
+            ? "Bu kapanış daha önce güvenle tamamlanmış; çift kayıt oluşturulmadı ✅"
             : responseBody?.assignmentCreated
-              ? `Ders tamamlandı; ödev ${assignmentRecipients.length} öğrenciye gönderildi.`
-              : "Ders tamamlandı; öğrenci ve veli özeti hazır.",
+              ? `Ders tamamlandı ✅ Ödev ${assignmentRecipients.length} öğrenciye gönderildi. Emeğinize sağlık!`
+              : "Ders tamamlandı ✅ Öğrenci ve veli özeti hazır. Emeğinize sağlık!",
         );
         if (baselineMetricsEnabled) {
           const initialStudents = new Map(lesson.students.map((student) => [student.id, student]));
@@ -237,14 +237,14 @@ export function useLessonClose(lesson: LessonData, flags: Flags) {
       setSaveState("saved");
       if (detail.requestBody?.complete) {
         setCompleted(true);
-        setActionMessage("Cihazda bekleyen ders kapanışı güvenle eşitlendi.");
-      } else setActionMessage("Cihazda bekleyen ders taslağı güvenle eşitlendi.");
+        setActionMessage("Cihazda bekleyen ders kapanışı güvenle eşitlendi ✅");
+      } else setActionMessage("Cihazda bekleyen ders taslağı güvenle eşitlendi ✅");
     };
     const conflicted = (event: Event) => {
       const detail = (event as CustomEvent<{ kind: string; url: string }>).detail;
       if (detail?.kind !== "LESSON_CLOSE" || detail.url !== url) return;
       setSaveState("error");
-      setActionMessage("Ders başka yerde değişti. Son kaydı açıp cihazdaki değişiklikleri yeniden uygulayın.");
+      setActionMessage("Ders başka bir yerde güncellenmiş. Son kaydı açıp cihazdaki değişiklikleri yeniden uygulayabilirsiniz.");
     };
     window.addEventListener("panel-offline-synced", synced);
     window.addEventListener("panel-offline-conflict", conflicted);
@@ -255,7 +255,7 @@ export function useLessonClose(lesson: LessonData, flags: Flags) {
   }, [lesson.id]);
 
   async function createAssignment() {
-    if (!form.homework.trim()) return setActionMessage("Önce çalışma alanını doldurun.");
+    if (!form.homework.trim()) return setActionMessage("Önce çalışma alanını doldurmanız yeterli.");
     if (!(await save(false))) return;
     const response = await fetch("/api/panel/assignments", {
       method: "POST",
@@ -270,7 +270,7 @@ export function useLessonClose(lesson: LessonData, flags: Flags) {
         outcomeSkipReason: learningOutcomesEnabled ? form.outcomeSkipReason : null,
       }),
     });
-    setActionMessage(response.ok ? "Çalışma ödeve dönüştürüldü ve öğrencilere gönderildi." : "Ödev oluşturulamadı.");
+    setActionMessage(response.ok ? "Çalışma ödeve dönüştürüldü ve öğrencilere gönderildi ✅" : "Ödevi şu an oluşturamadık. Lütfen tekrar dener misiniz?");
   }
 
   function patchStudent(id: string, patch: Partial<LessonStudent>) {
@@ -292,7 +292,7 @@ export function useLessonClose(lesson: LessonData, flags: Flags) {
   /** Önizleme açılabildiyse `true` döner (çalışma alanı boşsa açılmaz). */
   function toggleAssignmentPreview(): boolean {
     if (!form.homework.trim()) {
-      setActionMessage("Ödev önizlemesi için önce çalışma alanını doldurun.");
+      setActionMessage("Ödev önizlemesi için önce çalışma alanını doldurmanız yeterli.");
       return false;
     }
     setAssignmentPreview((current) => {
@@ -337,20 +337,20 @@ export function useLessonClose(lesson: LessonData, flags: Flags) {
   }
 
   async function saveTemplate() {
-    if (templateTitle.trim().length < 2) return setActionMessage("Şablona kısa bir ad verin.");
+    if (templateTitle.trim().length < 2) return setActionMessage("Lütfen şablona kısa bir ad verin.");
     const response = await fetch("/api/panel/teacher/templates", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ title: templateTitle, note: form.note, nextGoal: form.nextGoal, homework: form.homework }),
     });
     const body = await response.json().catch(() => ({}));
-    if (!response.ok) return setActionMessage(body.error || "Şablon kaydedilemedi.");
+    if (!response.ok) return setActionMessage(body.error || "Şablonu şu an kaydedemedik. Lütfen tekrar dener misiniz?");
     setTemplates((current) => [
       { id: body.id, title: body.title, note: body.note || "", nextGoal: body.nextGoal || "", homework: body.homework || "" },
       ...current,
     ]);
     setTemplateTitle("");
-    setActionMessage("Kişisel not şablonu kaydedildi.");
+    setActionMessage("Kişisel not şablonu kaydedildi ✅");
   }
 
   async function deleteTemplate(id: string) {

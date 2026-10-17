@@ -23,7 +23,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
   const parsed = updateSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "İlişki bilgisini kontrol edin." }, { status: 400 });
+    return NextResponse.json({ error: "Lütfen ilişki bilgisini bir kez daha kontrol eder misiniz?" }, { status: 400 });
   }
 
   const routeParams = idParamsSchema.safeParse(await context.params);
@@ -33,7 +33,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     where: { id },
     select: { id: true, parentId: true, studentId: true, relationship: true },
   });
-  if (!relation) return NextResponse.json({ error: "Veli bağlantısı bulunamadı." }, { status: 404 });
+  if (!relation) return NextResponse.json({ error: "Veli bağlantısını bulamadık." }, { status: 404 });
 
   const nextRelationship = parsed.data.relationship?.trim() || null;
   if (relation.relationship === nextRelationship) return NextResponse.json({ ok: true });
@@ -87,7 +87,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
     where: { id },
     select: { id: true, parentId: true, studentId: true, relationship: true },
   });
-  if (!relation) return NextResponse.json({ error: "Veli bağlantısı bulunamadı." }, { status: 404 });
+  if (!relation) return NextResponse.json({ error: "Veli bağlantısını bulamadık." }, { status: 404 });
 
   // Erişim kaldırma ve denetim izi aynı transaction'dadır: biri olmadan diğeri
   // gerçekleşmez. İlişki sonraki her istekte DB'den okunduğu için iptal anlıktır.

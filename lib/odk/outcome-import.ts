@@ -114,7 +114,7 @@ export function previewOutcomeImport(
       totalMappings: 0,
       catalogHits: 0,
       unresolvedCodes: [],
-      issues: [{ level: "error", code: "INVALID_STRUCTURE", message: parsed.error.issues[0]?.message || "Kazanım JSON yapısı geçersiz." }],
+      issues: [{ level: "error", code: "INVALID_STRUCTURE", message: parsed.error.issues[0]?.message || "Kazanım JSON yapısı geçerli görünmüyor." }],
       mappings: [],
     };
   }

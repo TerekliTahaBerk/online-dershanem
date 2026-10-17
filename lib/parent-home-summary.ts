@@ -86,10 +86,10 @@ export function buildParentHomeStatus(input: {
     code,
     title:
       calm.code === "ON_TRACK"
-        ? "Genel olarak düzenli ilerliyor."
+        ? "Genel olarak düzenli ilerliyor 🌿"
         : calm.code === "NEEDS_SUPPORT"
           ? "Bu hafta birkaç noktaya dikkat etmek faydalı olabilir."
-          : "Bu hafta genel durum için henüz yeterli veri görünmüyor.",
+          : "Bu hafta genel durum için henüz yeterli veri oluşmadı.",
     description: calm.sentence,
     evidence: evidence.slice(0, 3),
     hasEnoughEvidence: calm.code !== "LIMITED_DATA",

@@ -24,11 +24,11 @@ export function AttemptReviewActions({ attemptId, reviewed }: { attemptId: strin
         body: JSON.stringify({ action }),
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok) return setMessage({ text: result.error || "İnceleme kaydedilemedi.", error: true });
-      setMessage({ text: "İnceleme kaydedildi.", error: false });
+      if (!response.ok) return setMessage({ text: result.error || "İnceleme şu an kaydedilemedi. Lütfen tekrar dener misiniz?", error: true });
+      setMessage({ text: "İnceleme kaydedildi ✅", error: false });
       router.refresh();
     } catch {
-      setMessage({ text: "Bağlantı kurulamadı.", error: true });
+      setMessage({ text: "Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?", error: true });
     } finally {
       setBusy(false);
     }

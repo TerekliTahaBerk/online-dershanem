@@ -13,7 +13,7 @@ function characterBand(value: number): "20-199" | "200-499" | "500+" { return va
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const auth = await requireApiOdRole("STUDENT"); if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().assignmentEvidence) return NextResponse.json({ error: "Kanıtlı teslim henüz açık değil." }, { status: 404 });
+  if (!getPanelFeatureFlags().assignmentEvidence) return NextResponse.json({ error: "Kanıtlı teslim şu an kullanıma kapalı, çok yakında açılacak." }, { status: 404 });
   const guard = await guardMutation({ action: "panel.assignment-evidence.submit", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:assignment-evidence:${auth.session.userId}`, rateLimit: { max: 40, windowMs: 15 * 60 * 1000 } });
   if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: guard.code === "RATE_LIMIT" ? 429 : 403 });
   const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Kanıt metni 20–2000 karakter olmalı." }, { status: 400 });
@@ -21,7 +21,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const replay = await prisma.assignmentSubmission.findUnique({ where: { idempotencyKey: storedKey }, select: { id: true, assignmentId: true, student: { select: { userId: true } }, attemptNumber: true } });
   if (replay) return replay.assignmentId === id && replay.student.userId === auth.session.userId ? NextResponse.json({ id: replay.id, attemptNumber: replay.attemptNumber, replayed: true }) : NextResponse.json({ error: "Teslim anahtarı kullanılamıyor." }, { status: 409 });
   const assignment = await prisma.assignment.findFirst({ where: { id, isActive: true, evidenceRequired: true, group: { isActive: true, enrollments: { some: { endedAt: null, student: { userId: auth.session.userId } } } } }, include: { group: { select: { teacherId: true } }, rubricCriteria: { select: { id: true } }, progress: { where: { student: { userId: auth.session.userId } }, select: { studentId: true }, take: 1 }, submissions: { where: { student: { userId: auth.session.userId } }, orderBy: { attemptNumber: "desc" }, take: 1, select: { attemptNumber: true, status: true } } } });
-  if (!assignment || assignment.rubricCriteria.length < 2 || !assignment.progress[0]) return NextResponse.json({ error: "Kanıtlı ödev bulunamadı." }, { status: 404 });
+  if (!assignment || assignment.rubricCriteria.length < 2 || !assignment.progress[0]) return NextResponse.json({ error: "Kanıtlı ödev bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
   const latest = assignment.submissions[0]; if (latest && latest.status !== "CHANGES_REQUESTED") return NextResponse.json({ error: latest.status === "APPROVED" ? "Bu çalışma öğretmenin tarafından onaylandı." : "Gönderimin öğretmen değerlendirmesinde." }, { status: 409 });
   const attemptNumber = (latest?.attemptNumber || 0) + 1;
   const submission = await prisma.$transaction(async (tx) => {

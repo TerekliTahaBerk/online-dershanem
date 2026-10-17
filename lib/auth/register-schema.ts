@@ -54,7 +54,7 @@ const optionalMobile = z
   .max(24)
   .optional()
   .nullable()
-  .refine((value) => !value || normalizeTrMobile(value) !== null, { message: "Telefon numarası geçersiz." })
+  .refine((value) => !value || normalizeTrMobile(value) !== null, { message: "Telefon numarası geçerli görünmüyor." })
   .transform((value) => (value ? normalizeTrMobile(value) : null));
 
 const optionalEmail = z
@@ -63,7 +63,7 @@ const optionalEmail = z
   .max(254)
   .optional()
   .nullable()
-  .refine((value) => !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), { message: "E-posta geçersiz." })
+  .refine((value) => !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), { message: "E-posta geçerli görünmüyor." })
   .transform((value) => (value ? value.toLowerCase() : null));
 
 const currentYear = new Date().getFullYear();
@@ -113,7 +113,7 @@ export const MAX_CHILDREN_PER_SIGNUP = 5;
 
 /** Adım 4 — ilgi, satın alma ve iletişim tercihi. */
 export const interestStepSchema = z.object({
-  interestedProducts: z.array(z.enum(PRODUCT_INTERESTS)).min(1, "En az bir ürün seçin.").max(3),
+  interestedProducts: z.array(z.enum(PRODUCT_INTERESTS)).min(1, "Lütfen en az bir ürün seçin.").max(3),
   purchaseStatus: z.enum(PURCHASE_STATUSES),
   existingOrderRef: optionalText(120),
   preferredChannel: z.enum(CONTACT_CHANNELS),
@@ -139,7 +139,7 @@ export const studentRegisterSchema = common
 export const parentRegisterSchema = common.extend({
   accountType: z.literal("PARENT"),
   relationship: z.enum(RELATIONSHIPS),
-  children: z.array(childSchema).min(1, "En az bir çocuk ekleyin.").max(MAX_CHILDREN_PER_SIGNUP),
+  children: z.array(childSchema).min(1, "Lütfen en az bir çocuk ekleyin.").max(MAX_CHILDREN_PER_SIGNUP),
 });
 
 export const registerSchema = z.discriminatedUnion("accountType", [studentRegisterSchema, parentRegisterSchema]);
@@ -150,7 +150,7 @@ export type ChildInput = z.input<typeof childSchema>;
 export type ChildData = z.output<typeof childSchema>;
 
 /** İlk zod hatasını kullanıcıya gösterilecek Türkçe cümleye çevirir. */
-export function firstIssueMessage(error: z.ZodError, fallback = "Lütfen işaretli alanları kontrol edin."): string {
+export function firstIssueMessage(error: z.ZodError, fallback = "Lütfen işaretli alanları bir kez daha kontrol eder misiniz?"): string {
   const issue = error.issues[0];
   if (!issue) return fallback;
   if (issue.message && !/^(Invalid|Too|Expected)/.test(issue.message)) return issue.message;

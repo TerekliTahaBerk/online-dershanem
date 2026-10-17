@@ -68,10 +68,10 @@ function examCountdownHeadline(countdown: ExamCountdownView): string {
 /** Plan yoğunluğunun neden değiştiğini açıklar — kapasite artışı sürpriz olmamalı. */
 function examCountdownNote(tier: ExamCountdownView["tier"]): string {
   return {
-    FAR: "Planın normal temposunda ilerliyor.",
-    APPROACHING: "Planın biraz yoğunlaştı.",
-    NEAR: "Son haftalar: planın günlük biraz daha yoğun.",
-    FINAL_WEEK: "Son hafta: planın en yoğun temposunda.",
+    FAR: "Planın normal temposunda ilerliyor 🌿",
+    APPROACHING: "Planın biraz yoğunlaştı; sınava yaklaşıyoruz 💪",
+    NEAR: "Son haftalar: planın günlük biraz daha yoğun, az kaldı! 🔥",
+    FINAL_WEEK: "Son hafta: planın en yoğun temposunda. Sana güveniyoruz! 🍀",
   }[tier];
 }
 
@@ -147,8 +147,8 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
     setBusy(false);
     setMessage(
       response.ok
-        ? "Tercihlerin kaydedildi."
-        : body.error || "Tercihler kaydedilemedi.",
+        ? "Tercihlerin kaydedildi ✅"
+        : body.error || "Tercihlerini şu an kaydedemedik 😕 Lütfen tekrar dener misin?",
     );
   }
 
@@ -160,7 +160,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
     });
     const body = await response.json().catch(() => ({}));
     setBusy(false);
-    if (!response.ok) return setMessage(body.error || "Plan oluşturulamadı.");
+    if (!response.ok) return setMessage(body.error || "Planı şu an oluşturamadık 😕 Lütfen biraz sonra tekrar dener misin?");
     window.location.reload();
   }
 
@@ -192,7 +192,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
      * dediği görevi TAMAMLANMIŞ buluyor, ödevi de kapanıyordu — üstelik
      * ekranda "Başladın" yazdığı için fark edilmiyordu.
      */
-    if (!response.ok) return setMessage("Görev güncellenemedi.");
+    if (!response.ok) return setMessage("Görevi şu an güncelleyemedik 😕 Lütfen tekrar dener misin?");
 
     setPlan((current) =>
       current
@@ -204,7 +204,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
           }
         : current,
     );
-    setMessage("Göreve başladın.");
+    setMessage("Göreve başladın, kolay gelsin! 💪");
   }
 
   async function submitCompletion(task: Task) {
@@ -244,7 +244,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
     const body = await response.json().catch(() => ({}));
     setBusy(false);
     if (!response.ok) {
-      setMessage(body.error || "Görev güncellenemedi.");
+      setMessage(body.error || "Görevi şu an güncelleyemedik 😕 Lütfen tekrar dener misin?");
       return;
     }
 
@@ -271,10 +271,10 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
     setTaskParam(null);
     setMessage(
       completionDraft.status === "DONE"
-        ? "Harika — görev tamamlandı."
+        ? "Harika, görevi tamamladın! 🎉 Emeğine sağlık."
         : completionDraft.status === "PARTIAL"
-          ? "Kısmi tamamlanma kaydedildi."
-          : "Durum kaydedildi.",
+          ? "İlerlemen kaydedildi 👏 Her adım değerli!"
+          : "Bildirdiğin için teşekkürler 💛 Durumun kaydedildi.",
     );
   }
 
@@ -297,7 +297,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
     );
     const body = await response.json().catch(() => ({}));
     setBusy(false);
-    if (!response.ok) return setMessage(body.error || "Talep iletilemedi.");
+    if (!response.ok) return setMessage(body.error || "Talebini şu an iletemedik 😕 Lütfen tekrar dener misin?");
     setPreference((current) => ({
       ...current,
       overwhelmPulse: overloadRequest.overwhelmPulse,
@@ -309,7 +309,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
       changeRequestCategory: overloadRequest.category,
     });
     setOverloadActionOpen(false);
-    setMessage("Değişiklik talebin koçuna iletildi.");
+    setMessage("Talebin koçuna ulaştı 📨 En kısa sürede birlikte bakacaksınız.");
   }
 
   const tasks = plan?.tasks ?? [];
@@ -401,10 +401,10 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
             tabIndex={-1}
             className="text-[16px] font-semibold text-pn-text outline-hidden"
           >
-            Bu hafta için aktif bir plan görünmüyor.
+            Bu hafta için henüz aktif bir planın yok 🗓️
           </h2>
           <p className="mt-1 text-[14px] text-pn-text-secondary">
-            Aşağıdan gün ve süre tercihlerini kaydettiğinde planın hazırlanır.
+            Aşağıdan gün ve süre tercihlerini kaydettiğinde planın senin için hazırlanır ✨
           </p>
           <div className="mt-5 max-w-[720px]">{preferenceFields}</div>
           <div className="mt-5 flex flex-col gap-2 sm:flex-row">
@@ -487,7 +487,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
           {preference.overwhelmPulse && preference.overwhelmPulse >= 4 ? (
             <p className="mt-3 flex gap-2 rounded-md bg-(--pn-tone-warning-soft) px-3 py-2 text-[13px] text-(--pn-tone-warning)">
               <CircleAlert size={15} className="shrink-0" aria-hidden="true" />
-              Bu hafta plan yoğun görünüyor. Değişiklik isteyerek koçundan destek alabilirsin.
+              Bu hafta plan biraz yoğun görünüyor. Değişiklik isteyerek koçundan destek alabilirsin; yalnız değilsin 🤝
             </p>
           ) : null}
         </section>
@@ -523,7 +523,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
           </div>
 
           {!dayGroups.length ? (
-            <EmptyState className="mt-4" icon={ListChecks} title="Bu hafta planında çalışma görünmüyor." />
+            <EmptyState className="mt-4" icon={ListChecks} title="Bu hafta planında bir çalışma görünmüyor 🌿" />
           ) : view === "hafta" ? (
             <div className="panel-nav-scroll mt-4 overflow-x-auto pb-2">
               <ol aria-label="Haftalık plan" className="grid min-w-[840px] grid-cols-7">
@@ -642,7 +642,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
               {initialCoaching.sharedNote ? (
                 <blockquote className="border-l-2 border-pn-accent-marker pl-3 text-pn-text">{initialCoaching.sharedNote}</blockquote>
               ) : (
-                <p className="text-[13px] text-pn-text-muted">Bu hafta için yeni bir koç notu yok.</p>
+                <p className="text-[13px] text-pn-text-muted">Bu hafta için henüz yeni bir koç notu yok 💌</p>
               )}
               {initialCoachSummary?.studentVisibleText ? (
                 <p className="text-pn-text">{initialCoachSummary.studentVisibleText}</p>
@@ -655,12 +655,12 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
               ) : null}
               {initialCoaching.overdue ? (
                 <p className="text-[13px] text-(--pn-tone-warning)">
-                  Görüşme zamanı geçti. Uygun bir zamanda koçundan yeni görüşme isteyebilirsin.
+                  Görüşme zamanı geçmiş. Sana uygun bir zamanda koçundan yeni bir görüşme isteyebilirsin.
                 </p>
               ) : null}
             </div>
           ) : (
-            <p className="mt-2 text-[14px] text-pn-text-muted">Henüz atanmış bir koç görünmüyor.</p>
+            <p className="mt-2 text-[14px] text-pn-text-muted">Koçun çok yakında belli olacak 🤝</p>
           )}
         </section>
       ) : null}
@@ -672,12 +672,12 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
           </h2>
           {plan.status === "CHANGE_REQUESTED" ? (
             <p className="mt-2 text-[14px] text-pn-text-secondary">
-              Değişiklik talebin koçuna iletildi: {changeCategoryLabels[plan.changeRequestCategory ?? ""] ?? "Belirtilmedi"}
+              Değişiklik talebin koçuna iletildi 📨 {changeCategoryLabels[plan.changeRequestCategory ?? ""] ?? "Belirtilmedi"}
             </p>
           ) : plan.status === "APPROVED" ? (
             <div className="mt-2">
               <p className="text-[14px] text-pn-text-secondary">
-                Planım fazla yoğun veya günlerim değiştiğinde buradan koçuna talep gönderebilirsin.
+                Planın fazla yoğun gelirse ya da günlerin değişirse buradan koçuna rahatça talep gönderebilirsin.
               </p>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <button
@@ -737,7 +737,7 @@ export function StudentAdaptivePlan(props: StudentAdaptivePlanProps) {
           open={controlsOpen}
           onClose={closeControls}
           title="Plan Tercihleri"
-          description="Planı değil, sadece ayarları buradan değiştir."
+          description="Buradan planı değil, yalnızca ayarlarını değiştirebilirsin."
           footer={
             <button
               type="button"

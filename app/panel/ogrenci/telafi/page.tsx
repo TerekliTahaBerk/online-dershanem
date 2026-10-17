@@ -50,11 +50,11 @@ export default async function StudentRecoveryPage({
           <PackageCheck size={15} /> Kaçırdığım ders
         </p>
         <h1 className={PAGE_TITLE_CLASS}>
-          Bu dersi kaçırdın
+          Kaçırdığın derse birlikte yetişelim 🧩
         </h1>
         <p className={PAGE_DESCRIPTION_CLASS}>
-          25 dakikada toparlayabilirsin: konu özeti, materyal ve küçük çalışma
-          tek sırada hazır.
+          Yaklaşık 25 dakikada toparlayabilirsin: konu özeti, materyal ve küçük çalışma
+          tek bir sırada seni bekliyor.
         </p>
       </header>
       <ReviewRecoveryTabs active="telafi" />

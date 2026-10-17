@@ -14,7 +14,7 @@ import { loadStudentRecoveryPackages } from "@/lib/panel/student-review-recovery
 export async function GET() {
   const auth = await requireApiOdRole("STUDENT");
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().recoveryPackage) return NextResponse.json({ error: "Telafi paketi henüz açık değil.", code: "FEATURE_DISABLED" }, { status: 404 });
+  if (!getPanelFeatureFlags().recoveryPackage) return NextResponse.json({ error: "Telafi paketi şu an kullanıma kapalı, çok yakında açılacak.", code: "FEATURE_DISABLED" }, { status: 404 });
   const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId }, select: { id: true } });
   const packages = profile ? await loadStudentRecoveryPackages({ studentUserId: auth.session.userId, role: auth.session.role }) : null;
   return NextResponse.json(toMobileRecovery(packages), { headers: { "Cache-Control": "private, no-store" } });

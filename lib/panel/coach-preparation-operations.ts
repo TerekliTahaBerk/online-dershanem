@@ -185,7 +185,7 @@ export async function copyCoachPlan(input: z.infer<typeof coachCopySchema>, acto
     where: { id },
     include: { productRef: { select: { code: true } }, tasks: { orderBy: [{ scheduledFor: "asc" }, { position: "asc" }] } },
   });
-  if (!source || source.productRef.code !== "OK") return NextResponse.json({ error: "Plan bulunamadı." }, { status: 404 });
+  if (!source || source.productRef.code !== "OK") return NextResponse.json({ error: "Planı bulamadık." }, { status: 404 });
 
 
   const targetWeekStart = istanbulWeekStart(

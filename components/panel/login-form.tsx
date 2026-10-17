@@ -47,7 +47,7 @@ export function LoginForm({
       };
 
       if (!response.ok || !data.redirect) {
-        setError(data.error ?? "Giriş yapılamadı. Lütfen tekrar deneyin.");
+        setError(data.error ?? "Şu an giriş yapamadık. Lütfen bilgilerinizi kontrol edip tekrar dener misiniz?");
         setPending(false);
         return;
       }
@@ -58,7 +58,7 @@ export function LoginForm({
       window.location.replace(data.redirect);
     } catch {
       setError(
-        "Bağlantı kurulamadı. İnternetinizi kontrol edip tekrar deneyin.",
+        "Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip tekrar dener misiniz?",
       );
       setPending(false);
     }
@@ -121,13 +121,13 @@ export function LoginForm({
           role="status"
           className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13.5px] text-emerald-800"
         >
-          Hesabınız hazır. Giriş yaparak devam edebilirsiniz. Daha önce paket
+          Hesabınız hazır, aramıza hoş geldiniz! 🎉 Giriş yaparak devam edebilirsiniz. Daha önce paket
           satın aldıysanız hesabınız ödemeyle birlikte açılmış olabilir;
           parolanızı bilmiyorsanız{" "}
           <Link href="/parolami-unuttum" className="font-semibold underline">
             parolamı unuttum
           </Link>{" "}
-          ile yeni parola belirleyin.
+          ile kolayca yeni bir parola belirleyebilirsiniz.
         </p>
       ) : null}
 
@@ -136,7 +136,7 @@ export function LoginForm({
           role="status"
           className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13.5px] text-emerald-800"
         >
-          Parolanız yenilendi. Yeni parolanızla giriş yapabilirsiniz.
+          Parolanız yenilendi ✅ Yeni parolanızla giriş yapabilirsiniz.
         </p>
       ) : null}
 

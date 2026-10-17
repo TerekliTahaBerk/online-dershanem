@@ -55,8 +55,8 @@ export default async function StudentYonTodayPage() {
         <PageHeader title="Bugün" />
         <EmptyState
           className="mt-6"
-          title="Profilin hazırlanıyor."
-          body="Öğrenci profilin tamamlandığında Yön Koçluk planın burada görünecek."
+          title="Profilin hazırlanıyor ⏳"
+          body="Öğrenci profilin tamamlandığında Yön Koçluk planın burada seni karşılayacak."
         />
       </>,
     );
@@ -67,7 +67,7 @@ export default async function StudentYonTodayPage() {
   const plan = data.hasPlan;
 
   const description = [
-    plan ? `${view.openToday} görev` : null,
+    plan ? `Bugün seni ${view.openToday} görev bekliyor 🎯` : null,
     plan && view.remainingMinutesToday ? `~${formatMinutesAsHours(view.remainingMinutesToday)}` : null,
     nextSession ? `${DATE_TIME.format(nextSession.scheduledAt)} koç görüşmesi` : null,
   ]
@@ -78,7 +78,7 @@ export default async function StudentYonTodayPage() {
     <>
       <PageHeader
         title="Bugün"
-        description={description || "Yön Koçluk planın, koçun ve hedeflerin."}
+        description={description || "Planın, koçun ve hedeflerin burada seni bekliyor ✨"}
         actions={
           <Link
             href={flags.adaptivePlan ? "/panel/ogrenci/plan" : "/panel/ogrenci/kocluk"}
@@ -92,11 +92,11 @@ export default async function StudentYonTodayPage() {
       <Section id="bugunun-plani" title="Bugünün planı" divider={false}>
         {!plan ? (
           <EmptyState
-            title="Bu hafta için yayında bir plan yok."
-            body="Koçun planı hazırlayıp yayınladığında bugünün görevleri burada görünecek."
+            title="Bu haftanın planı yolda 🗓️"
+            body="Koçun planını hazırlayıp yayınladığında bugünün görevleri burada belirecek."
           />
         ) : view.today.length === 0 ? (
-          <p className="text-[14px] text-pn-text-muted">Bugüne planlanmış görev yok. Haftanın kalanına göz atabilirsin.</p>
+          <p className="text-[14px] text-pn-text-muted">Bugün için planlanmış bir görevin yok, keyfini çıkar 🌿 Dilersen haftanın kalanına göz atabilirsin.</p>
         ) : (
           <ul aria-label="Bugünün görevleri" className="border-t border-pn-border">
             {view.today.map((task) => (
@@ -109,11 +109,11 @@ export default async function StudentYonTodayPage() {
       {view.overdueTotal ? (
         <Section
           id="gecikenler"
-          title="Öncelikli gecikenler"
+          title="Biraz bekleyenler"
           description={
             view.overdueTotal > view.overdue.length
-              ? `${view.overdueTotal} görev gecikti; en eski ${view.overdue.length} tanesi aşağıda.`
-              : "Tarihi geçen görevler. Bugüne sığmıyorsa koçuna bildir."
+              ? `${view.overdueTotal} görev seni bekliyor; en eski ${view.overdue.length} tanesini aşağıda bulabilirsin. Adım adım halledeceğiz 💪`
+              : "Tarihi geçen birkaç görevin var. Bugüne sığmıyorsa koçuna haber vermen yeterli, birlikte yeniden planlarız 🤝"
           }
           actions={
             <Link href="/panel/ogrenci/kocluk" className={buttonClass("secondary", "sm")}>
@@ -167,7 +167,7 @@ export default async function StudentYonTodayPage() {
           </PropertyList>
         ) : (
           <p className="text-[14px] text-pn-text-muted">
-            Henüz atanmış koç görünmüyor. Koç ataması yapıldığında görüşmelerin burada açılır.
+            Koçun çok yakında belli olacak 🤝 Atama yapıldığında görüşmelerin burada görünecek.
           </p>
         )}
       </Section>
@@ -178,7 +178,7 @@ export default async function StudentYonTodayPage() {
         description={
           plan
             ? `${view.week.done}/${view.week.total} görev · ${formatMinutesAsHours(view.week.doneMinutes)} / ${formatMinutesAsHours(view.week.plannedMinutes)}`
-            : "Plan yayınlandığında haftalık ilerlemen burada görünür."
+            : "Plan yayınlandığında haftalık ilerlemeni burada takip edebileceksin 📈"
         }
       >
         {plan ? (
@@ -212,7 +212,7 @@ export default async function StudentYonTodayPage() {
             ) : null}
           </figure>
         ) : (
-          <p className="text-[14px] text-pn-text-muted">Henüz paylaşılan bir koç notu yok.</p>
+          <p className="text-[14px] text-pn-text-muted">Koçun henüz bir not paylaşmadı. İlk not geldiğinde burada göreceksin 💌</p>
         )}
       </Section>
 
@@ -234,7 +234,7 @@ export default async function StudentYonTodayPage() {
                 <span className="text-pn-text-muted">
                   {" · "}
                   {goal.current === null
-                    ? "ölçüm yok"
+                    ? "henüz ölçülmedi"
                     : goal.kind === "PLAN_COMPLETION"
                       ? `şu an %${goal.current}`
                       : `şu an ${NUM.format(goal.current)}`}
@@ -243,7 +243,7 @@ export default async function StudentYonTodayPage() {
             ))}
           </PropertyList>
         ) : (
-          <p className="text-[14px] text-pn-text-muted">Henüz hedef belirlenmedi. Görüşmede koçunla birlikte belirleyebilirsin.</p>
+          <p className="text-[14px] text-pn-text-muted">Henüz bir hedefin yok. Bir sonraki görüşmende koçunla birlikte belirleyebilirsiniz 🎯</p>
         )}
       </Section>
 
@@ -252,8 +252,8 @@ export default async function StudentYonTodayPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-[14px] text-pn-text">
               {weeklyCheckIns > 0 && lastCheckIn
-                ? `Bu haftanın check-in'i gönderildi · ${DAY_SHORT.format(lastCheckIn.createdAt)}`
-                : "Bu haftanın check-in'i bekliyor."}
+                ? `Bu haftanın check-in'ini gönderdin, teşekkürler 💛 · ${DAY_SHORT.format(lastCheckIn.createdAt)}`
+                : "Bu haftanın check-in'i seni bekliyor. Nasıl gittiğini merak ediyoruz 😊"}
             </p>
             <Link
               href="/panel/ogrenci/check-in"

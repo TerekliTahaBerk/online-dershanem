@@ -24,11 +24,11 @@ export async function GET(request: Request) {
   // ama JSON 401/403 döner.
   const auth = await requireStaffApi("OD", "od:lesson:teach");
   if (!auth.ok) return auth.response;
-  if (!getPanelFeatureFlags().learningOutcomes) return staffFeatureDisabled("Kazanım kataloğu henüz açık değil.");
+  if (!getPanelFeatureFlags().learningOutcomes) return staffFeatureDisabled("Kazanım kataloğu şu an kullanıma kapalı, çok yakında açılacak.");
   const session = auth.session;
   const url = new URL(request.url);
   const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
-  if (!parsed.success) return NextResponse.json({ error: "Geçersiz arama filtreleri." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Arama filtreleri geçerli görünmüyor." }, { status: 400 });
   const { lessonId, groupId, subject, level, limit } = parsed.data;
   const query = normalizeQuery(parsed.data.query ?? null);
 
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
         select: { id: true, groupId: true, group: { select: { subject: true, level: true } } },
       })
     : null;
-  if (lessonId && !lesson) return staffNotFound("Ders bulunamadı.");
+  if (lessonId && !lesson) return staffNotFound("Dersi bulamadık.");
   if (groupId) {
     const group = await prisma.group.findFirst({ where: { id: groupId, teacherId: session.userId }, select: { subject: true, level: true } });
     if (!group && !lesson) return NextResponse.json({ outcomes: [] });

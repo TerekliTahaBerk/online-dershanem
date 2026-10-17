@@ -79,10 +79,10 @@ export async function POST(request: Request, _context: { params: Promise<{ id: s
   const queuePanelNotificationEmails = transactionalNotificationEmails(prisma);
   const auth = await requireApiOdRole("ADMIN", "TEACHER"); if (!auth.ok) return auth.response;
   const guard = await guardMutation({ action: "panel.materials.create", requireSameOrigin: true, headers: request.headers, rateLimitKey: `panel:materials:${auth.session.userId}`, rateLimit: { max: 80, windowMs: 15 * 60 * 1000 } }); if (!guard.ok) return NextResponse.json({ error: guard.message }, { status: 403 });
-  const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Materyal alanlarını kontrol edin." }, { status: 400 });
+  const parsed = schema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: "Lütfen materyal alanlarını bir kez daha kontrol eder misiniz?" }, { status: 400 });
   const data = parsed.data;
   const group = await prisma.group.findFirst({ where: { id: data.groupId, isActive: true, ...(auth.session.role === "TEACHER" ? { teacherId: auth.session.userId } : {}) }, include: { enrollments: { where: { endedAt: null }, include: { student: { select: { userId: true, parents: { where: { active: true, endedAt: null, canViewAcademic: true }, select: { parentId: true } } } } } } } });
-  if (!group) return NextResponse.json({ error: "Yetkili olduğunuz grup bulunamadı." }, { status: 404 });
+  if (!group) return NextResponse.json({ error: "Yetkili olduğunuz grup şu an görünmüyor." }, { status: 404 });
   if (data.lessonId && !await prisma.lesson.findFirst({ where: { id: data.lessonId, groupId: group.id }, select: { id: true } })) return NextResponse.json({ error: "Ders bu gruba ait değil." }, { status: 400 });
   if (data.assignmentId && !await prisma.assignment.findFirst({ where: { id: data.assignmentId, groupId: group.id }, select: { id: true } })) return NextResponse.json({ error: "Ödev bu gruba ait değil." }, { status: 400 });
   const material = await prisma.learningMaterial.create({ data: { groupId: group.id, lessonId: data.lessonId || null, assignmentId: data.assignmentId || null, createdById: auth.session.userId, title: data.title, description: data.description || null, url: data.url, kind: data.kind, captionsAvailable: data.kind === "VIDEO" && data.captionsAvailable, transcript: data.transcript || null } });

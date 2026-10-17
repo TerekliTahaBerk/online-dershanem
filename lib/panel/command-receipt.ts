@@ -94,7 +94,7 @@ export async function runWithReceipt<R>(input: {
       if (isRetryable(error)) {
         const saved = await replay();
         if (saved) return saved;
-        throw new CommandError(409, "CONFLICT", "Kayıt eşzamanlı değişti. Görünümü yenileyin.");
+        throw new CommandError(409, "CONFLICT", "Kayıt eşzamanlı değişti. Sayfayı yenileyip tekrar deneyebilirsiniz.");
       }
       throw error;
     }

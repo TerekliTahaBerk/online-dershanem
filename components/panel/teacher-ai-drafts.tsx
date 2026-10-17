@@ -78,7 +78,7 @@ function DraftCard({
     const body = await response.json().catch(() => ({}));
     setBusy(false);
     if (!response.ok)
-      return setMessage(body.error || "İnceleme kaydedilemedi.");
+      return setMessage(body.error || "İnceleme şu an kaydedilemedi. Lütfen tekrar dener misiniz?");
     onReviewed({
       ...draft,
       status: body.status,
@@ -90,7 +90,7 @@ function DraftCard({
     });
     setMessage(
       action === "APPROVE"
-        ? "İnsan onayı kaydedildi. İçerik otomatik yayınlanmadı."
+        ? "Onayınız kaydedildi ✅ İçerik otomatik olarak yayınlanmadı."
         : action === "FLAG"
           ? "Hata işaretlendi; taslak kullanılmayacak."
           : "Taslak reddedildi.",
@@ -279,7 +279,7 @@ function DraftCard({
               .writeText(
                 `${content.title}\n\n${content.body}\n\nKontrol: ${content.checkPrompt}\n\nÖlçütler:\n- ${content.successCriteria.join("\n- ")}`,
               )
-              .then(() => setMessage("Onaylı taslak panoya kopyalandı."))
+              .then(() => setMessage("Onaylı taslak panoya kopyalandı ✅"))
           }
           className="inline-flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-pn-border-strong bg-white text-pn-text hover:bg-pn-hover min-h-10 px-3.5 text-[13.5px] mt-4"
         >
@@ -334,7 +334,7 @@ export function TeacherAiDrafts({
     const body = await response.json().catch(() => ({}));
     if (!response.ok) {
       setBusy(false);
-      return setMessage(body.error || "Taslak üretilemedi.");
+      return setMessage(body.error || "Taslak şu an üretilemedi. Lütfen tekrar dener misiniz?");
     }
     const lesson = lessons.find((item) => item.id === lessonId);
     const created = {
@@ -350,7 +350,7 @@ export function TeacherAiDrafts({
         ? current
         : [created, ...current],
     );
-    setMessage("Taslak hazır. Kaynakları ve içeriği kontrol edin.");
+    setMessage("Taslak hazır ✨ Kaynakları ve içeriği kontrol etmenizi rica ederiz.");
     setBusy(false);
     router.refresh();
   }
@@ -426,7 +426,7 @@ export function TeacherAiDrafts({
           ))}
           {!items.length ? (
             <p className="rounded-2xl border border-dashed border-(--site-line) p-8 text-center text-sm text-(--site-muted)">
-              Henüz taslak yok.
+              Henüz bir taslak yok.
             </p>
           ) : null}
         </div>

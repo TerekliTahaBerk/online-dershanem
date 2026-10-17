@@ -106,7 +106,7 @@ export default async function AdminOrdersPage({
             className="mt-5"
             title={
               filtre === "sorun"
-                ? "Erişim sorunu olan sipariş yok."
+                ? "Erişim sorunu olan sipariş yok ✅"
                 : "Sipariş yok."
             }
             body={

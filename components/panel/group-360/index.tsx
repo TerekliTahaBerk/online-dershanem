@@ -91,7 +91,7 @@ export function Group360View({ bundle }: { bundle: Group360Bundle }) {
           headingLevel={2}
           tone="info"
           title="Bu grupla ilgili şu an çözülmesi gereken bir sorun var mı?"
-          body="Hayır — açık operasyon sorunu görünmüyor."
+          body="Hayır, açık bir operasyon sorunu görünmüyor ✅"
         />
       )}
 

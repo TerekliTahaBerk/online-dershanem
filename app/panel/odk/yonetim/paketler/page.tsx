@@ -104,7 +104,7 @@ export default async function OdkAdminPackagesPage({ searchParams }: { searchPar
           ))}
         </PanelTable>
       ) : (
-        <EmptyState className="mt-5" title="Henüz Deneme Ligi paketi tanımlanmadı." />
+        <EmptyState className="mt-5" title="Henüz bir Deneme Ligi paketi tanımlanmadı." />
       )}
 
       {drawer ? (

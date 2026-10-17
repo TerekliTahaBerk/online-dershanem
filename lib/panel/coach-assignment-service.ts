@@ -19,8 +19,8 @@ export { CoachAssignmentConflict, coachAssignmentRevision } from "./coach-assign
 export type AssignCoachError = "student" | "coach" | "membership" | "capacity";
 
 export const ASSIGN_COACH_ERROR_MESSAGE: Record<AssignCoachError, string> = {
-  student: "Öğrenci bulunamadı.",
-  coach: "Aktif koç bulunamadı.",
+  student: "Öğrenciyi bulamadık.",
+  coach: "Aktif koç şu an görünmüyor.",
   membership: "Öğrencinin aktif Yön Koçluk üyeliği yok.",
   capacity: "Koç kapasitesi dolu; atama için en az 3 karakterlik gerekçe gerekli.",
 };

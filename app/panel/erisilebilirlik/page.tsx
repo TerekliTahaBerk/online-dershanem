@@ -48,11 +48,11 @@ export default async function AccessibilityPage() {
           <Accessibility size={16} /> Erişilebilirlik
         </p>
         <h1 className={PAGE_TITLE_CLASS}>
-          Paneli çalışma biçiminize uyarlayın.
+          Paneli size en rahat gelen biçime uyarlayın 🤗
         </h1>
         <p className={PAGE_DESCRIPTION_CLASS}>
           Tercihler hesabınıza bağlıdır ve kullandığınız cihazlar arasında
-          uygulanır. Sağlık tanısı veya engel adı istemeyiz.
+          uygulanır. Sağlık tanısı ya da engel bilgisi istemeyiz.
         </p>
       </header>
       <div className="mt-7 grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
@@ -74,17 +74,17 @@ export default async function AccessibilityPage() {
                 </ul>
               ) : (
                 <p className="mt-3 text-sm leading-6 text-(--site-body)">
-                  Admin tarafından atanmış ek süre veya mola düzenlemesi yok.
+                  Şu an tanımlanmış bir ek süre ya da mola düzenlemen yok.
                 </p>
               )}
               <p className="mt-4 text-xs leading-5 text-(--site-muted)">
-                Değişiklik gerekiyorsa yöneticinizle iletişime geçin. Burada
-                tanı paylaşmanız gerekmez.
+                Bir düzenlemeye ihtiyacın olursa bize yazman yeterli. Burada
+                herhangi bir tanı paylaşman gerekmez 💛
               </p>
             </>
           ) : (
             <p className="mt-3 text-sm leading-6 text-(--site-body)">
-              Ek süre ve mola yalnız öğrenci hesaplarında admin tarafından
+              Ek süre ve mola düzenlemeleri yalnızca öğrenci hesaplarında yönetim tarafından
               yönetilir.
             </p>
           )}

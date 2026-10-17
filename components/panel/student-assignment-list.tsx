@@ -61,7 +61,7 @@ export function StudentAssignmentList({
     const synced = (event: Event) => {
       const detail = (event as CustomEvent<{ kind: string }>).detail;
       if (detail?.kind === "ASSIGNMENT_PROGRESS") {
-        setMessage("Cihazda bekleyen ödev durumu güvenle eşitlendi.");
+        setMessage("Cihazında bekleyen ödev durumu güvenle eşitlendi ✅");
         router.refresh();
       }
     };
@@ -69,7 +69,7 @@ export function StudentAssignmentList({
       const detail = (event as CustomEvent<{ kind: string }>).detail;
       if (detail?.kind === "ASSIGNMENT_PROGRESS")
         setMessage(
-          "Ödev durumu başka yerde değişti; son durumu görüp yeniden seçin.",
+          "Ödev durumu başka bir yerde değişmiş; güncel hâline göz atıp yeniden seçebilirsin.",
         );
     };
     window.addEventListener("panel-offline-synced", synced);
@@ -85,7 +85,7 @@ export function StudentAssignmentList({
       await submitEvidenceRequest(id);
     } catch {
       setBusy(null);
-      setMessage("Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.");
+      setMessage("Şu an bağlanamadık 😕 İnternetini kontrol edip tekrar dener misin?");
     }
   }
 
@@ -107,13 +107,13 @@ export function StudentAssignmentList({
     const body = await response.json().catch(() => ({}));
     setBusy(null);
     if (!response.ok) {
-      setMessage(body.error || "Kanıt gönderilemedi.");
+      setMessage(body.error || "Kanıtını şu an gönderemedik 😕 Lütfen tekrar dener misin?");
       return;
     }
     setMessage(
       body.attemptNumber > 1
-        ? "Yeni denemen öğretmenine gönderildi."
-        : "Kanıtın öğretmen değerlendirmesine gönderildi.",
+        ? "Yeni denemen öğretmenine ulaştı 📨 Emeğine sağlık!"
+        : "Kanıtın öğretmenine ulaştı 📨 Değerlendirme sonucunu sana haber vereceğiz.",
     );
     router.refresh();
   }
@@ -151,22 +151,22 @@ export function StudentAssignmentList({
       );
       setMessage(
         result.state === "queued"
-          ? "Bağlantı yok; ödev durumu bu cihazda güvenle bekliyor."
+          ? "Şu an çevrimdışısın 📡 Ödev durumun bu cihazda güvenle bekliyor, bağlantı gelince eşitlenecek."
           : status === "DONE"
-            ? "Harika! Çalışma tamamlandı, serin büyüyor."
-            : "İlerlemen kaydedildi.",
+            ? "Harika, çalışmayı tamamladın! 🎉 Serin büyüyor 🔥"
+            : "İlerlemen kaydedildi, böyle devam! 💪",
       );
       // Tamamlama, canlı bölgedeki mesajla duyurulur; uçan kutlama bandı
       // panelin sakin diliyle uyuşmadığı için kaldırıldı (roadmap §5.8).
       if (result.state === "synced") router.refresh();
     } else if (result.state === "conflict") {
       setMessage(
-        "Ödev durumu başka bir sekmede değişti. Sayfayı yenileyip yeniden seçin.",
+        "Ödev durumu başka bir sekmede değişmiş. Sayfayı yenileyip yeniden seçebilirsin.",
       );
     } else {
       setMessage(
         String(
-          result.body.error || "Durum kaydedilemedi. Lütfen yeniden deneyin.",
+          result.body.error || "Durumu şu an kaydedemedik 😕 Lütfen tekrar dener misin?",
         ),
       );
     }
@@ -207,7 +207,7 @@ export function StudentAssignmentList({
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-[15px] font-semibold text-pn-text">{assignment.title}</h2>
                   <StatusBadge
-                    label={overdue ? "Süresi geçti" : statusCopy[assignment.status]}
+                    label={overdue ? "Teslim tarihi geçti" : statusCopy[assignment.status]}
                     tone={statusTone(assignment)}
                   />
                   {evidenceFlow && latest ? (
@@ -287,8 +287,8 @@ export function StudentAssignmentList({
         {!items.length ? (
           <EmptyState
             className="mt-4"
-            title="Aktif ödevin yok."
-            body="Öğretmenin yeni bir ödev verdiğinde burada görünecek."
+            title="Aktif ödevin yok 🎉"
+            body="Harika gidiyorsun! Öğretmenin yeni bir ödev verdiğinde burada görünecek."
           />
         ) : null}
       </div>
@@ -306,7 +306,7 @@ export function StudentAssignmentList({
           evidenceText={evidence[opened.id] || ""}
           onEvidenceChange={(value) => setEvidence((current) => ({ ...current, [opened.id]: value }))}
           onSubmitEvidence={() => void submitEvidence(opened.id)}
-          statusLabel={isOverdue(opened) ? "Süresi geçti" : statusCopy[opened.status]}
+          statusLabel={isOverdue(opened) ? "Teslim tarihi geçti" : statusCopy[opened.status]}
           statusTone={statusTone(opened)}
           message={message}
         /> : null}
@@ -345,7 +345,7 @@ function AssignmentDetail({
       <div>
         <StatusBadge label={statusLabel} tone={statusTone} />
         <p className="mt-3 text-[14px] leading-[1.6] text-pn-text-secondary">
-          {assignment.description || "Öğretmenin açıklama eklemedi."}
+          {assignment.description || "Öğretmenin ek bir açıklama eklemedi; ödevin başlığı yol göstermeye yeter 😊"}
         </p>
       </div>
       {evidenceFlow ? (
@@ -392,7 +392,7 @@ function AssignmentDetail({
               </button>
               <p className="mt-2 text-[12.5px] text-pn-text-muted">
                 En az 20 karakter yaz ({evidenceText.trim().length}/20). Şimdilik yalnızca yazılı açıklama kabul ediliyor;
-                fotoğraf ve dosya desteği sonra eklenecek.
+                fotoğraf ve dosya desteği çok yakında geliyor 📸
               </p>
             </div>
           ) : null}

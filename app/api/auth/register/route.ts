@@ -40,7 +40,7 @@ import { notifyActiveAdmins, productInterestFromCodes, recordBusinessLead } from
 
 export async function POST(request: Request) {
   if (!PUBLIC_REGISTER_ENABLED) {
-    return NextResponse.json({ error: "Kayıt şu anda kapalı." }, { status: 503 });
+    return NextResponse.json({ error: "Kayıtlar şu an kapalı; çok yakında yeniden açılacak." }, { status: 503 });
   }
 
   const ip = getClientIp(request.headers);

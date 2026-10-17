@@ -6,7 +6,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   const auth = await requireAdminApi();
   if (!auth.ok) return auth.response;
   const parsed = schema.safeParse(await context.params);
-  if (!parsed.success) return adminJson({ error: "Görüşme kimliği geçersiz." }, { status: 400 });
+  if (!parsed.success) return adminJson({ error: "Görüşme kimliği geçerli görünmüyor." }, { status: 400 });
   const data = await adminCoachingSessionProjection(parsed.data.id);
-  return data ? adminJson(data) : adminJson({ error: "Görüşme bulunamadı." }, { status: 404 });
+  return data ? adminJson(data) : adminJson({ error: "Görüşmeyi bulamadık." }, { status: 404 });
 }

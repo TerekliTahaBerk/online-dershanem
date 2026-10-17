@@ -30,10 +30,10 @@ export async function POST(request: Request) {
   const parsed = schema.safeParse(raw);
   if (!parsed.success) return NextResponse.json({ error: "Check-in seçeneklerini kontrol et." }, { status: 400 });
   const profile = await prisma.studentProfile.findUnique({ where: { userId: auth.session.userId }, select: { id: true } });
-  if (!profile) return NextResponse.json({ error: "Öğrenci profili bulunamadı." }, { status: 404 });
+  if (!profile) return NextResponse.json({ error: "Öğrenci profilini bulamadık." }, { status: 404 });
   const enrollment = parsed.data.groupId ? await prisma.enrollment.findFirst({ where: { studentId: profile.id, groupId: parsed.data.groupId, endedAt: null, group: { isActive: true } }, include: { group: { select: { teacherId: true, name: true } } } }) : null;
   const coach = parsed.data.coachAssignmentId ? await prisma.coachAssignment.findFirst({ where: { id: parsed.data.coachAssignmentId, studentId: profile.id, endedAt: null, coach: { user: { status: "ACTIVE" } }, student: { enrollments: { none: { endedAt: null, group: { isActive: true } } } } }, select: { id: true, coach: { select: { userId: true } } } }) : null;
-  if (!enrollment && !coach) return NextResponse.json({ error: "Destek alanı bulunamadı." }, { status: 404 });
+  if (!enrollment && !coach) return NextResponse.json({ error: "Destek alanı bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
   const target = enrollment ? { groupId: parsed.data.groupId!, coachAssignmentId: null } : { groupId: null, coachAssignmentId: coach!.id };
   const recipientId = enrollment?.group.teacherId ?? coach!.coach.userId;
   const now = new Date();
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
       return { kind: "CREATED" as const, checkIn, helpRequest, weeklyCount: weeklyCount + 1 };
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   } catch (error) {
-    if (error instanceof Error && error.message === "COACH_TARGET_CHANGED") return NextResponse.json({ error: "Destek alanı bulunamadı." }, { status: 404 });
+    if (error instanceof Error && error.message === "COACH_TARGET_CHANGED") return NextResponse.json({ error: "Destek alanı bulunamadı; kaldırılmış ya da değişmiş olabilir." }, { status: 404 });
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") return NextResponse.json({ error: "Aynı anda başka bir check-in kaydedildi. Sayfayı yenileyip tekrar kontrol et." }, { status: 409 });
     throw error;
   }

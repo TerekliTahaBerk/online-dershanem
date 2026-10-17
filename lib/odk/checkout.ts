@@ -41,7 +41,7 @@ export async function createOdkCheckoutSession(input: {
     return {
       ok: false,
       reason: "paytr_not_configured",
-      userMessage: "Ödeme sistemi henüz aktif değil. Lütfen iletişime geçin.",
+      userMessage: "Ödeme sistemi henüz aktif değil. Bize yazarsanız size hemen yardımcı oluruz 🤝",
     };
   }
 
@@ -59,7 +59,7 @@ export async function createOdkCheckoutSession(input: {
     },
   });
   if (!order || !order.package?.isActive) {
-    return { ok: false, reason: "order_not_found", userMessage: "Sipariş bulunamadı." };
+    return { ok: false, reason: "order_not_found", userMessage: "Siparişi bulamadık." };
   }
   if (order.status !== "PENDING") {
     return { ok: false, reason: "order_not_pending", userMessage: "Bu sipariş zaten işlenmiş." };
@@ -146,7 +146,7 @@ export async function createOdkCheckoutSession(input: {
       ok: false,
       reason: tokenRes.reason,
       userMessage:
-        "Ödeme başlatılamadı. Lütfen birkaç dakika sonra tekrar deneyin veya iletişime geçin.",
+        "Ödemeyi şu an başlatamadık. Birkaç dakika sonra tekrar deneyebilir ya da bize yazabilirsiniz 🤝",
     };
   }
 

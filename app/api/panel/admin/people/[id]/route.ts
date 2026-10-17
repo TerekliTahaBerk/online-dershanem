@@ -17,7 +17,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   const params = idParamsSchema.safeParse(await context.params);
   if (!params.success) return invalidApiInput();
   const detail = await loadPersonDetail(params.data.id, { security: true, history: true });
-  if (!detail) return NextResponse.json({ error: "Kişi bulunamadı.", code: "NOT_FOUND" }, { status: 404, headers: PRIVATE_NO_STORE });
+  if (!detail) return NextResponse.json({ error: "Kişi bulunamadı; kaldırılmış ya da değişmiş olabilir.", code: "NOT_FOUND" }, { status: 404, headers: PRIVATE_NO_STORE });
   // Web ile aynı: kayıt özeti yalnız öğrenci / velide okunur.
   const signup = detail.user.role === "STUDENT" || detail.user.role === "PARENT" ? await loadSignupProfileSummary(detail.user.id) : null;
   return adminJson(toMobilePersonDetail(detail, auth.session.userId, { signup, accessibilityEnabled: getPanelFeatureFlags().accessibilityProfile }));

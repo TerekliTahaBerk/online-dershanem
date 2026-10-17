@@ -13,17 +13,17 @@ const schema = z.object({
   token: z.string().min(20).max(200),
   newPassword: z.string().min(1).max(200),
 });
-const INVALID_LINK = "Bu parola yenileme bağlantısı geçersiz, kullanılmış veya süresi dolmuş.";
+const INVALID_LINK = "Bu parola yenileme bağlantısı geçersiz, kullanılmış ya da süresi dolmuş olabilir. Yeni bir bağlantı isteyebilirsiniz.";
 
 export async function POST(request: Request) {
-  if (!PANEL_ENABLED) return NextResponse.json({ error: "Panel şu anda kapalı." }, { status: 503 });
+  if (!PANEL_ENABLED) return NextResponse.json({ error: "Panel şu an kullanıma kapalı, çok yakında yeniden açılacak." }, { status: 503 });
 
   const guard = await guardMutation({
     action: "auth.reset_password",
     requireSameOrigin: true,
     headers: request.headers,
     rateLimitKey: getRateLimitKeyFromIp(request.headers, "auth.reset-password"),
-    rateLimit: { max: 10, windowMs: 15 * 60_000, message: "Çok fazla deneme. Biraz sonra tekrar deneyin." },
+    rateLimit: { max: 10, windowMs: 15 * 60_000, message: "Kısa sürede çok fazla deneme yapıldı. Biraz bekleyip tekrar dener misiniz?" },
   });
   if (!guard.ok) return mutationGuardResponse(guard);
 

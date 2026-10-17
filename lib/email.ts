@@ -62,7 +62,7 @@ export async function sendOrderPaidUserEmail(input: {
   packageName: string; totalCents: number;
 }): Promise<void> {
   const total = (input.totalCents / 100).toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
-  await send(input.to, "Ödemeniz alındı – Online Dershanem", template("Ödemeniz başarıyla alındı", `<p>Merhaba ${escapeHtml(input.name || "")},</p><p><strong>${escapeHtml(input.packageName)}</strong> siparişiniz için ${escapeHtml(total)} tutarındaki ödeme kaydedildi.</p><p>Sipariş: ${escapeHtml(input.orderId)}</p><p>Ekibimiz gerekli bilgilendirme için sizinle iletişime geçecektir.</p>`));
+  await send(input.to, "Ödemeniz alındı, teşekkür ederiz 💛 – Online Dershanem", template("Ödemeniz başarıyla alındı 🎉", `<p>Merhaba ${escapeHtml(input.name || "")},</p><p><strong>${escapeHtml(input.packageName)}</strong> siparişiniz için ${escapeHtml(total)} tutarındaki ödemeniz için teşekkür ederiz; ödemeniz başarıyla kaydedildi.</p><p>Sipariş: ${escapeHtml(input.orderId)}</p><p>Ekibimiz en kısa sürede sizinle iletişime geçerek sonraki adımları paylaşacak. Aramıza hoş geldiniz! 🎉</p>`));
 }
 
 export async function sendOrderPaidAdminEmail(input: {
@@ -90,7 +90,7 @@ export function panelNotificationEmailContent(input: {
     : "";
   return { subject: `${input.title} – Online Dershanem`, html: template(
       escapeHtml(input.title),
-      `<p>Merhaba ${escapeHtml(input.name || "")},</p><p style="line-height:1.6">${escapeHtml(input.body)}</p>${action}<p style="margin-top:24px;color:#666;font-size:13px">Bildirim tercihlerinizi paneldeki Bildirim Merkezi'nden değiştirebilirsiniz.</p>`,
+      `<p>Merhaba ${escapeHtml(input.name || "")},</p><p style="line-height:1.6">${escapeHtml(input.body)}</p>${action}<p style="margin-top:24px;color:#666;font-size:13px">Bildirim tercihlerinizi dilediğiniz zaman paneldeki Bildirim Merkezi'nden değiştirebilirsiniz.</p>`,
     ) };
 }
 
@@ -118,7 +118,7 @@ export async function queuePasswordResetEmail(input: {
   const title = setup ? "Parolanızı belirleyin" : "Parolanızı yenileyin";
   const html = template(
     title,
-    `<p>Merhaba ${escapeHtml(input.name || "")},</p><p>${setup ? "Online Dershanem panel hesabınız hazır. Kendi parolanızı belirleyerek giriş yapabilirsiniz." : "Online Dershanem hesabınız için parola yenileme isteği aldık."}</p><p style="margin-top:24px"><a href="${resetUrl}" style="display:inline-block;background:#3a4a2c;color:#fff;text-decoration:none;padding:12px 18px;border-radius:10px;font-weight:700">Yeni parola belirle</a></p><p style="line-height:1.6">Bu bağlantı ${input.expiresInMinutes} dakika geçerlidir ve yalnızca bir kez kullanılabilir. ${setup ? "Bağlantının süresi dolduysa giriş sayfasındaki Parolamı unuttum bağlantısından yenisini isteyebilirsiniz." : "Bu isteği siz yapmadıysanız e-postayı yok sayabilirsiniz."}</p>`,
+    `<p>Merhaba ${escapeHtml(input.name || "")},</p><p>${setup ? "Aramıza hoş geldiniz! 🎉 Online Dershanem panel hesabınız hazır. Size özel bir parola belirleyerek hemen giriş yapabilirsiniz." : "Online Dershanem hesabınız için parola yenileme isteği aldık. Aşağıdaki butonla birkaç saniyede yeni parolanızı belirleyebilirsiniz 🔐"}</p><p style="margin-top:24px"><a href="${resetUrl}" style="display:inline-block;background:#3a4a2c;color:#fff;text-decoration:none;padding:12px 18px;border-radius:10px;font-weight:700">Yeni parola belirle</a></p><p style="line-height:1.6">Bu bağlantı ${input.expiresInMinutes} dakika geçerlidir ve yalnızca bir kez kullanılabilir. ${setup ? "Bağlantının süresi dolduysa giriş sayfasındaki Parolamı unuttum bağlantısından yenisini isteyebilirsiniz." : "Bu isteği siz yapmadıysanız bu e-postayı güvenle yok sayabilirsiniz; hesabınızda bir değişiklik yapılmaz."}</p>`,
   );
   await db.emailOutbox.create({
     data: {

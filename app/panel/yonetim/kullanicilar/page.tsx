@@ -388,7 +388,7 @@ export default async function UsersPage({
         {/* ── Liste ── */}
         {users.length === 0 ? (
           <PanelEmpty
-            title="Bu filtrelerle kayıt bulunamadı."
+            title="Bu filtrelerle eşleşen bir kayıt bulunamadı 🔍"
             body="Aramayı değiştirebilir ya da filtreleri temizleyebilirsin."
           />
         ) : (

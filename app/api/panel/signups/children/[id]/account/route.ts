@@ -55,25 +55,25 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const { id } = await params;
   const childId = z.string().min(1).max(64).safeParse(id);
-  if (!childId.success) return NextResponse.json({ error: "Kayıt bulunamadı." }, { status: 404 });
+  if (!childId.success) return NextResponse.json({ error: "Aradığınız kaydı bulamadık." }, { status: 404 });
 
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Geçersiz istek." }, { status: 400 });
+    return NextResponse.json({ error: "İstek geçerli görünmüyor. Lütfen bilgileri kontrol edip tekrar deneyin." }, { status: 400 });
   }
   const parsed = bodySchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Öğrenci e-postası zorunlu." }, { status: 400 });
 
   const email = normalizeEmail(parsed.data.email);
-  if (!isPlausibleEmail(email)) return NextResponse.json({ error: "E-posta adresi geçerli görünmüyor." }, { status: 400 });
+  if (!isPlausibleEmail(email)) return NextResponse.json({ error: "E-posta adresi geçerli görünmüyor; bir kez daha kontrol eder misiniz?" }, { status: 400 });
 
   const child = await prisma.pendingChild.findUnique({
     where: { id: childId.data },
     include: { parent: { select: { id: true, role: true, status: true } } },
   });
-  if (!child) return NextResponse.json({ error: "Kayıt bulunamadı." }, { status: 404 });
+  if (!child) return NextResponse.json({ error: "Aradığınız kaydı bulamadık." }, { status: 404 });
   if (child.status !== "PENDING") return NextResponse.json({ error: "Bu çocuk için hesap zaten açılmış ya da kayıt iptal edilmiş." }, { status: 409 });
   if (child.parent.role !== "PARENT" || child.parent.status !== "ACTIVE") {
     return NextResponse.json({ error: "Velinin hesabı aktif değil." }, { status: 409 });
