@@ -1,29 +1,11 @@
 import Script from "next/script";
 
-const gaId = process.env.NEXT_PUBLIC_GA_ID;
 const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 const tiktokPixelId = process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID;
 
 export function Pixels({ nonce }: { nonce?: string }) {
   return (
     <>
-      {gaId ? (
-        <>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-            strategy="afterInteractive"
-            nonce={nonce}
-          />
-          <Script id="ga4-init" strategy="afterInteractive" nonce={nonce}>
-            {`window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);} 
-            window.gtag = gtag;
-            gtag('js', new Date());
-            gtag('config', '${gaId}');`}
-          </Script>
-        </>
-      ) : null}
-
       {metaPixelId ? (
         <Script id="meta-pixel" strategy="afterInteractive" nonce={nonce}>
           {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?

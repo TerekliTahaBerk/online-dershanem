@@ -39,7 +39,10 @@ test("homepage exposes three services and preserves campaign across product disc
   await expect(coaching).toHaveAttribute("href", /utm_source=tiktok/);
   await coaching.click();
   await expect(page.locator('main a[href*="tally.so/r/QK6MYp"]').first()).toHaveAttribute("href", /source=website_yon-kocluk.*utm_source=tiktok/);
-  await expect(page.getByRole("navigation", { name: "Ürünlere hızlı erişim" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Ürünlere hızlı erişim" })).toHaveCount(0);
+  const brands = page.getByRole("group", { name: "Markalar", exact: true });
+  expect(await brands.getByRole("img").evaluateAll(images => images.map(image => image.getAttribute("alt")))).toEqual(["Yön Koçluk", "onlinedershanem.", "Deneme Ligi"]);
+  expect(await brands.getByRole("img").evaluateAll(images => images.map(image => ({ width: image.getBoundingClientRect().width, height: image.getBoundingClientRect().height })))).toEqual(Array(3).fill({width:38,height:38}));
 });
 
 test("coaching offer is explicit and illustrative plan responds to keyboard", async ({ page }) => {

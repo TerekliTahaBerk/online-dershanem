@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { ArrowUpRight, Mail } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
@@ -6,7 +7,7 @@ import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import styles from "./legal-page-template.module.css";
 
-export type LegalSection = { title: string; paragraphs: string[] };
+export type LegalSection = { title: string; paragraphs: string[]; action?: ReactNode };
 type Props = {
   pageTitle: string;
   intro: string;
@@ -53,7 +54,7 @@ export function LegalPageTemplate({ pageTitle, intro, effectiveDate, sections, s
               <div className={styles.help}><Mail size={20} aria-hidden="true" /><h2>Bir sorunuz mu var?</h2><p>Talebinizi doğru ekibe ulaştıralım.</p><Link href="/iletisim">Bize ulaşın <ArrowUpRight size={16} aria-hidden="true" /></Link></div>
             </aside>
             <div className={styles.document}>
-              {sections.map((section, i) => <section key={section.title} id={`bolum-${i + 1}`} className={styles.section}><div className={styles.sectionTitle}><span className={styles.number}>{String(i + 1).padStart(2, "0")}</span><h2>{section.title}</h2></div>{section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}</section>)}
+              {sections.map((section, i) => <section key={section.title} id={`bolum-${i + 1}`} className={styles.section}><div className={styles.sectionTitle}><span className={styles.number}>{String(i + 1).padStart(2, "0")}</span><h2>{section.title}</h2></div>{section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}{section.action}</section>)}
               <div className={styles.sources}><h2>İlgili resmî kaynaklar</h2>{sources.map((source) => <a key={source.href} href={source.href} target="_blank" rel="noreferrer">{source.title}<ArrowUpRight size={14} aria-hidden="true" /></a>)}</div>
             </div>
           </div>

@@ -1,0 +1,9 @@
+.banner { position: fixed; inset: auto 1rem 1rem; z-index: 70; max-width: 42rem; margin-inline: auto; padding: 1rem; border: 1px solid #b8b4aa; border-radius: 1rem; background: #fffdf7; color: #202820; box-shadow: 0 6px 28px #18251a26; font-size: .875rem; }
+.banner strong { font-size: 1rem; }
+.banner p { margin: .5rem 0; line-height: 1.5; }
+.banner a { text-decoration: underline; }
+.actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+.actions button, .preference { min-height: 44px; padding: .6rem 1rem; border: 1px solid #607258; border-radius: .6rem; background: #fffdf7; color: #202820; cursor: pointer; font: inherit; }
+.actions button:focus-visible, .preference:focus-visible { outline: 3px solid #335e2f; outline-offset: 3px; }
+.preference { margin-top: .5rem; font-size: .875rem; }
+@media (max-width: 480px) { .banner { inset-inline: .5rem; bottom: max(.5rem, env(safe-area-inset-bottom)); padding: .875rem; } .actions button { flex: 1; } }

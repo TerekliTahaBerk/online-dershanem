@@ -1,5 +1,16 @@
 # Google tarafında yapılan işlemler
 
+## 27 Ekim 2026 ek işlemleri
+İşletme hesabının kullanıcı tarafından oluşturulan GA4 mülkü `560870730` ve `16209176153` web akışı Search Console alan adı mülküne başarıyla bağlandı. Sorgular raporunda GA4 içinden gerçek Search Console verileri görüldü. Kullanıcı/erişim/DNS değişikliği yapılmadı.
+
+Güncel sitemap hâlâ Başarılı, son okuma 26 Ekim, keşfedilen 38 sayfa. Tekrar gönderilmedi. HTTPS raporu 26 Ekim güncel: HTTPS olmayan 0, HTTPS 16; kritik sorun yok. Breadcrumb 25 Ekim güncel: geçersiz 0, geçerli 15. Ürün snippet ve satıcı raporlarında geçersiz 0 / geçerli 0; eski opsiyonel alan uyarıları 0 öğeye ait. Sahte review, aggregateRating, kargo/iade verisi eklenmedi. İndeks raporu hâlâ 23 Ekim: 35 indeksli / 90 hariç; önceki neden dağılımı değişmedi.
+
+PR #484'ün fiyat rehberi değişikliklerinin gerçekten yayında olduğu Chrome'da doğrulandı. `/blog/online-dershane-fiyatlari-2026` Google dizininde mevcut. Canlı test 27 Ekim 00:14: Google kullanabilir, indekslenebilir, 1 geçerli breadcrumb. Güncellenen içerik için tek yeniden indeksleme isteği gönderildi; “Dizine eklenmesi istendi” ve öncelikli tarama sırasına eklenme bildirimi görüldü. CAPTCHA çözülmedi, tekrar gönderim yapılmadı. Bu istek sıralama veya tarama zamanı garantisi değildir.
+
+GA4 web sitesinden veri almıyor: etiketi ve izin tercihi bağlantısının üretimde yayını gerekir. Gerçek Realtime verisi bu oturumda doğrulanmadı.
+
+## 26 Ekim 2026 tarihsel kayıt
+
 Tarih 26 Ekim 2026, Europe/Istanbul. Kullanıcının açık Chrome sekmesi ve mevcut oturumu kullanıldı. Şifre/cookie/token alınmadı. Alan adı mülkü `sc-domain:onlinedershanem.com`; doğrulanmış sahiplik Ayarlar'da görüldü.
 
 ## Okunan ve dışa aktarılan
