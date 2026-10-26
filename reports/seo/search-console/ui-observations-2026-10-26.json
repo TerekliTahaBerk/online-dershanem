@@ -1,0 +1,139 @@
+{
+  "property": "sc-domain:onlinedershanem.com",
+  "date": "2026-10-26",
+  "timezone": "Europe/Istanbul",
+  "access": "Verified owner shown in Settings",
+  "propertyAdded": "2026-10-26",
+  "indexing": {
+    "reportUpdated": "2026-10-23",
+    "indexed": 35,
+    "notIndexed": 90,
+    "reasons": {
+      "Page with redirect": 46,
+      "Alternate page with proper canonical": 13,
+      "Excluded by noindex": 10,
+      "Not found (404)": 6,
+      "Blocked by robots.txt": 1,
+      "Crawled currently not indexed": 14
+    }
+  },
+  "inspections": [
+    {
+      "url": "https://www.onlinedershanem.com/",
+      "indexed": true,
+      "googleCanonical": "Inspected URL",
+      "declaredCanonical": "https://www.onlinedershanem.com/",
+      "lastCrawl": "2026-10-26 03:26:03",
+      "crawler": "Googlebot smartphone",
+      "crawlAllowed": true,
+      "indexAllowed": true,
+      "fetch": "Successful",
+      "sitemapDiscovery": "Temporary processing error"
+    },
+    {
+      "url": "https://www.onlinedershanem.com/urunler",
+      "indexed": true,
+      "googleCanonical": "Inspected URL",
+      "declaredCanonical": "https://www.onlinedershanem.com/urunler",
+      "lastCrawl": "2026-10-16 16:35:27",
+      "crawler": "Googlebot smartphone",
+      "crawlAllowed": true,
+      "indexAllowed": true,
+      "fetch": "Successful",
+      "sitemapDiscovery": "Temporary processing error"
+    },
+    {
+      "url": "https://www.onlinedershanem.com/urunler/online-dershanem",
+      "indexed": true,
+      "googleCanonical": "Inspected URL",
+      "declaredCanonical": "https://www.onlinedershanem.com/urunler/online-dershanem",
+      "lastCrawl": "2026-10-20 06:18:06",
+      "crawler": "Googlebot smartphone",
+      "crawlAllowed": true,
+      "indexAllowed": true,
+      "fetch": "Successful",
+      "sitemapDiscovery": "No referring sitemap detected"
+    },
+    {
+      "url": "https://www.onlinedershanem.com/urunler/online-kocum",
+      "indexed": true,
+      "googleCanonical": "Inspected URL",
+      "declaredCanonical": "https://www.onlinedershanem.com/urunler/online-kocum",
+      "lastCrawl": "2026-10-14 16:15:50",
+      "crawler": "Googlebot smartphone",
+      "crawlAllowed": true,
+      "indexAllowed": true,
+      "fetch": "Successful",
+      "sitemapDiscovery": "Temporary processing error"
+    },
+    {
+      "url": "https://www.onlinedershanem.com/urunler/online-deneme-kulubum",
+      "indexed": true,
+      "googleCanonical": "Inspected URL",
+      "declaredCanonical": "https://www.onlinedershanem.com/urunler/online-deneme-kulubum",
+      "lastCrawl": "2026-10-19 06:54:35",
+      "crawler": "Googlebot smartphone",
+      "crawlAllowed": true,
+      "indexAllowed": true,
+      "fetch": "Successful",
+      "sitemapDiscovery": "Temporary processing error"
+    }
+  ],
+  "liveTests": [
+    {
+      "path": "/urunler/online-deneme-kulubum",
+      "testTime": "2026-10-26 17:44:20",
+      "result": "URL is available to Google; crawl and indexing allowed; successful fetch; self-declared canonical; 1 valid breadcrumb"
+    },
+    {
+      "path": "/urunler/online-kocum",
+      "testTime": "2026-10-26 17:53",
+      "result": "URL is available to Google; page can be indexed; 1 valid breadcrumb"
+    },
+    {
+      "path": "/urunler/online-dershanem",
+      "testTime": "2026-10-26 17:57",
+      "result": "URL is available to Google; page can be indexed; 1 valid breadcrumb"
+    },
+    {
+      "path": "/",
+      "testTime": "2026-10-26 18:03",
+      "result": "URL is available to Google; page can be indexed; no enhancements"
+    },
+    {
+      "path": "/urunler",
+      "testTime": "2026-10-26 18:09",
+      "result": "URL is available to Google; page can be indexed; 1 valid breadcrumb"
+    }
+  ],
+  "manualActions": "No issues detected",
+  "securityIssues": "No issues detected",
+  "breadcrumbs": {
+    "updated": "2026-10-25",
+    "valid": 15,
+    "invalid": 0
+  },
+  "coreWebVitals": {
+    "updated": "2026-10-21",
+    "mobile": "Insufficient usage data in last 90 days",
+    "desktop": "Insufficient usage data in last 90 days"
+  },
+  "sitemap": {
+    "url": "https://www.onlinedershanem.com/sitemap.xml",
+    "submitted": "2026-10-26",
+    "submissionAccepted": true,
+    "liveUrlCount": 38,
+    "newProcessingVerified": true,
+    "removedEntries": false,
+    "lastRead": "2026-10-26",
+    "status": "Success",
+    "discoveredPages": 38,
+    "previousLastReadBeforeSubmission": "2019-02-26",
+    "previousDiscoveredCountBeforeSubmission": 49950
+  },
+  "analytics": "Authorized Analytics tab reached welcome/provision page; existing GA4 property and stream unverified. No account/property created.",
+  "indexingRequests": 0,
+  "errorValidationRequests": 0,
+  "dnsChanges": 0,
+  "accessChanges": 0
+}

@@ -1,3 +1,4 @@
+import { ProductReadingLinks } from "@/components/product/reading-links";
 import { EditorialProductHero } from "@/components/product/editorial-product-hero";
 import { MarketingApplicationLink } from "@/components/forms/marketing-application-link";
 import { ConsultationSteps } from "@/components/product/consultation-steps";
@@ -215,6 +216,7 @@ export default function OnlineDershanemPage() {
             <MarketingApplicationLink product="online-dershanem" className="site-btn site-btn-primary mt-6" />
           </div>
         </section>
+        <ProductReadingLinks product="online-dershanem" />
       </main>
       <SiteFooter />
     </div>

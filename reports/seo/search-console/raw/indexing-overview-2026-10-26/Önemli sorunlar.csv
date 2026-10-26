@@ -1,0 +1,7 @@
+Sebep,Kaynak,Doğrulama,Sayfa sayısı
+Yönlendirmeli sayfa,Web sitesi,Başlatılmadı,46
+Doğru standart etikete sahip alternatif sayfa,Web sitesi,Başlatılmadı,13
+"""noindex"" etiketi tarafından hariç tutuldu",Web sitesi,Başlatılmadı,10
+Bulunamadı (404),Web sitesi,Başlatılmadı,6
+Robots.txt tarafından engellendi,Web sitesi,Başlatılmadı,1
+Tarandı - şu anda dizine eklenmiş değil,Google sistemleri,Başlatılmadı,14

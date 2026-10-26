@@ -7,6 +7,7 @@ import { BackButton } from "@/components/site/back-button";
 
 export const metadata: Metadata = {
   title: "Sayfa bulunamadı",
+  alternates: { canonical: null },
   robots: { index: false, follow: false },
 };
 

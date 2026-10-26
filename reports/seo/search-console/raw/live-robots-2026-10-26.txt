@@ -1,0 +1,10 @@
+User-Agent: *
+Allow: /
+Disallow: /api/
+Disallow: /panel
+Disallow: /sepet
+Disallow: /paketler/satin-al/
+Disallow: /odk-paketleri/*/satin-al
+
+Host: https://www.onlinedershanem.com
+Sitemap: https://www.onlinedershanem.com/sitemap.xml

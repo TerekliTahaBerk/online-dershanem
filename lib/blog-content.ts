@@ -1,4 +1,6 @@
 import { blogPosts as existingBlogPosts, subjectPackageGroups } from "@/lib/content";
+import { lessonFormatPrices, formatCents } from "@/lib/commerce/package-builder-pricing";
+import { coachingOffer } from "@/lib/marketing-offers";
 
 export type BlogSection = {
   h2: string;
@@ -614,7 +616,48 @@ const newBlogPosts: BlogPost[] = [
   }
 ];
 
+/** Search Console: price guide has 186 impressions / 2 clicks in the 3-month baseline.
+ * Enrich the existing URL with current, sourced service facts rather than creating a duplicate. */
+const reviewedExistingPosts = (existingBlogPosts as BlogPost[]).map((post): BlogPost => {
+  if (post.slug !== "online-dershane-fiyatlari-2026") return post;
+  const formats = lessonFormatPrices();
+  const price = (cents: number | null) => cents === null ? "ücreti ön görüşmede netleşir" : `${formatCents(cents)} / ay`;
+  return {
+    ...post,
+    seoTitle: "Online Dershane Fiyatları 2026: Grup ve Birebir Ders",
+    metaDescription: "LGS ve YKS için online dershane fiyatlarını karşılaştırın: küçük grup ve birebir canlı ders ücretleri, koçlukta ilk ay teklifi ve başlamadan sorulacak sorular.",
+    excerpt: "Aylık ücreti, dersin kapsamı ve öğrenme biçimiyle birlikte değerlendirin. Küçük grup, birebir canlı ders ve koçluk seçeneklerini açık koşullarıyla karşılaştırın.",
+    summary: [
+      `En fazla dört kişilik grup dersi: ${price(formats.grup.campaignCents)}.`,
+      `Birebir canlı ders: ${price(formats.birebir.campaignCents)}.`,
+      `Yön Koçluk: ${coachingOffer.summary}`,
+    ],
+    sections: [
+      {
+        h2: "Onlinedershanem canlı ders ve koçluk ücretleri",
+        paragraphs: ["Aşağıdaki tutarlar tek hizmet seçimi içindir. Canlı derste her ek ders ayrı fiyatlandırılır. Birlikte kullanım kapsamını, uygun programı ve başlangıç koşullarını ön görüşmede netleştirebilirsiniz."],
+        bullets: [
+          `Küçük grup: öğretmenle canlı etkileşim, en fazla dört öğrenci; ${price(formats.grup.campaignCents)}.`,
+          `Birebir: öğrencinin ihtiyaçlarına odaklanan canlı ders; ${price(formats.birebir.campaignCents)}.`,
+          `Yön Koçluk: kişisel haftalık çalışma planı ve birebir görüşmeler. ${coachingOffer.summary}`,
+        ],
+        links: [
+          { label: "Canlı ders seçeneklerini ve kapsamını inceleyin", href: "/urunler/online-dershanem" },
+          { label: "Yön Koçluk teklifini ve görüşme sürecini inceleyin", href: "/urunler/online-kocum" },
+        ],
+      },
+      ...post.sections,
+      {
+        h2: "Başlamadan önce hangi soruları sormalısınız?",
+        bullets: ["Aylık ücrete kaç ders, hangi süre ve hangi dersler dahil?", "Ders günleri ve saatleri okul programıyla uyumlu mu?", "Grup mevcudu kaç kişi ve öğretmene soru sorma olanağı nasıl?", "Kaçırılan ders, iptal ve iade koşulları neler?", "İlk ay indirimi varsa sonraki aylarda ne kadar ödeniyor?"],
+        paragraphs: ["Ön görüşme ücretsizdir; hizmetler ücretlidir. Başvuru formu göndermek ödeme, kesin kayıt veya otomatik hesap erişimi oluşturmaz. Öğrencinin ihtiyacını ve hizmet koşullarını ekibimizle değerlendirebilirsiniz."],
+        links: [{ label: "İptal ve iade politikasını okuyun", href: "/iade" }],
+      },
+    ],
+  };
+});
+
 export const blogPosts: BlogPost[] = [
   ...newBlogPosts,
-  ...(existingBlogPosts as BlogPost[]),
+  ...reviewedExistingPosts,
 ];

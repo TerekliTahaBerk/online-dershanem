@@ -1,3 +1,4 @@
+import { articleProduct } from "@/lib/seo/editorial-links";
 import type { Metadata } from "next";
 import styles from "./article.module.css";
 import Link from "next/link";
@@ -65,6 +66,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
+  const product = articleProduct(post.slug);
   const relatedPosts = post.relatedSlugs
     .map((relatedSlug) => blogPosts.find((item) => item.slug === relatedSlug))
     .filter((item): item is (typeof blogPosts)[number] => Boolean(item));
@@ -301,19 +303,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </section>
           </article>
 
-          <section className="mx-auto mt-6 grid max-w-3xl gap-4 rounded-3xl border border-(--site-line) bg-white p-6 sm:grid-cols-2">
-            <Link
-              href="/urunler/online-dershanem"
-              className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4 text-sm font-semibold text-(--site-ink) transition-colors hover:border-(--brand-orange)"
-            >
-              Online dershane sayfasına git
-            </Link>
-            <Link
-              href="/online-ozel-ders"
-              className="rounded-2xl border border-(--site-line) bg-(--site-bg-warm) p-4 text-sm font-semibold text-(--site-ink) transition-colors hover:border-(--brand-orange)"
-            >
-              Online özel ders sayfasına git
-            </Link>
+          <section className="mx-auto mt-6 max-w-3xl rounded-3xl border border-(--site-line) bg-white p-6" aria-labelledby="related-product-title">
+            <h2 id="related-product-title" className="font-display text-xl font-bold text-(--site-ink)">{product.name} ile bir sonraki adım</h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-(--site-body)">{product.description}</p>
+            <Link href={product.href} className="mt-4 inline-flex min-h-11 items-center font-bold text-(--site-ink) underline underline-offset-4">{product.name} hizmetini incele →</Link>
           </section>
         </Container>
       </main>
