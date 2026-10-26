@@ -1,17 +1,16 @@
-import Link from "next/link";
 import { EditorialProductHero } from "@/components/product/editorial-product-hero";
-import { PreMeetingLink } from "@/components/forms/pre-meeting-link";
+import { MarketingApplicationLink } from "@/components/forms/marketing-application-link";
+import { ConsultationSteps } from "@/components/product/consultation-steps";
 import { yonBrand } from "@/lib/yon-brand";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
-import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
-import { ArrowRight, ClipboardCheck, MessagesSquare, Users } from "lucide-react";
+import { breadcrumbJsonLd, serviceJsonLd } from "@/lib/seo/jsonld";
+import { ClipboardCheck, MessagesSquare, Users } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import {
   ProductDinoBand,
   CrossSellWithPrice,
   ProductFaq,
-  ProductClosingCta,
 } from "@/components/product/product-sections";
 import {
   ParentSummaryVisual,
@@ -25,7 +24,7 @@ import {
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
-  title: "onlinedershanem. | Canlı derste öğretmenle ilerle",
+  title: "LGS ve YKS Canlı Online Ders | onlinedershanem.",
   description:
     "LGS ve YKS için birebir ya da en fazla 4 kişilik grupta canlı ders, ders takibi, veli özeti ve ders sonrası çalışma yönü.",
   canonical: "/urunler/online-dershanem",
@@ -39,7 +38,7 @@ export default function OnlineDershanemPage() {
   return (
     <div className="site-scope">
       <SiteHeader />
-      <SchemaJsonLd schema={breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: "onlinedershanem.", url: "/urunler/online-dershanem" }])} />
+      <SchemaJsonLd schema={[serviceJsonLd({ name: "Online Dershanem", description: "LGS ve YKS için birebir veya en fazla dört kişilik canlı online ders.", url: "/urunler/online-dershanem", serviceType: "Canlı online ders" }), breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: "onlinedershanem.", url: "/urunler/online-dershanem" }])]} />
       <main id="main-content" tabIndex={-1}>
         <EditorialProductHero
           tone="lesson"
@@ -47,8 +46,8 @@ export default function OnlineDershanemPage() {
           lines={[{ text: "Canlı derste" }, { text: "öğretmenle", emphasis: "ilerle." }]}
           description="Sorunu o anda sor, zorlandığın konuyu öğretmeninle birlikte çöz. LGS ve YKS için canlı derslerde öğren; ders sonrası özet ve çalışma adımlarıyla öğrendiklerini pekiştir."
           actions={<>
-            <Link href="/paketler">Paketini Oluştur <ArrowRight size={19} aria-hidden="true" /></Link>
-            <PreMeetingLink href="/iletisim?urun=onlinedershanem#on-gorusme" source="product_hero" className="" />
+            <MarketingApplicationLink product="online-dershanem" />
+            <a href="#ders-secenekleri">Canlı Dersleri Keşfet ↓</a>
           </>}
           facts={[
             { title: "Az kişi, yakın ilgi", detail: "Birebir ya da en fazla 4 kişilik grup" },
@@ -56,6 +55,19 @@ export default function OnlineDershanemPage() {
             { title: "Ders bitince yolun belli", detail: "Konu özeti ve tekrar adımları" },
           ]}
         />
+
+        <section id="ders-secenekleri" className="site-container scroll-mt-36 py-(--dc-section-tight)">
+          <h2 className="font-display text-(length:--public-title) leading-tight text-dc-ink">Sınavına ve öğrenme biçimine uygun ders.</h2>
+          <div className="mt-7 grid gap-5 md:grid-cols-2">
+            {[
+              ["LGS hazırlığı", "Matematik, fen bilimleri, Türkçe, T.C. İnkılap Tarihi, İngilizce ve din kültüründe zorlandığın konuları öğretmeninle çalış."],
+              ["YKS hazırlığı", "TYT ve AYT hedefin için matematik, Türkçe, edebiyat, fizik, kimya ve diğer derslerde ihtiyacını belirle; uygun programı birlikte planla."],
+              ["Birebir ders", `Dersin odağını kendi ihtiyaçlarına göre öğretmeninle belirle. Aylık paket: ${formatCents(oneToOne.campaignCents!)}.`],
+              ["En fazla 4 kişilik grup", `Küçük grupta öğretmene sorularını sor, birlikte çözüm yap. Aylık paket: ${singleProductPriceLabel("dershanem")?.price}.`],
+            ].map(([title, body]) => <article key={title} className="rounded-dc-card border border-dc-line bg-white p-6"><h3 className="text-xl font-bold text-dc-ink">{title}</h3><p className="mt-3 text-[15px] leading-relaxed text-dc-ink-body">{body}</p></article>)}
+          </div>
+          <p className="mt-5 text-sm leading-relaxed text-dc-ink-muted">Ders, gün, saat ve uygun grup seçenekleri başlangıç öncesinde netleştirilir. Her ek ders ayrı fiyatlandırılır.</p>
+        </section>
 
         {/* Derste ve ders sonrasında ne oluyor? */}
         <section className="border-b border-dc-line-soft bg-white">
@@ -139,6 +151,7 @@ export default function OnlineDershanemPage() {
         />
 
         <CrossSellWithPrice
+          applicationProduct="online-dershanem"
           cards={[
             {
               eyebrow: `+ ${yonBrand.name}`,
@@ -151,7 +164,7 @@ export default function OnlineDershanemPage() {
               body: "Öğrendiğin konunun sınavda karşılığını görürsün.",
             },
           ]}
-          advantageNote="Birlikte aldığında paket fiyatın düşer."
+          advantageNote="Birlikte kullanım seçeneklerini ön görüşmede değerlendirebilirsin."
           price={singleProductPriceLabel("dershanem")}
           priceLabel="Maks. 4 kişilik grup · aylık paket"
           priceSuffix="/ ay"
@@ -173,8 +186,10 @@ export default function OnlineDershanemPage() {
             "Ders takibi ve veli özeti",
             "Ders sonrası çalışma yönü",
           ]}
-          priceFootnote="Koçluk da eklediğinde toplamda daha avantajlı."
+          priceFootnote="Ön görüşme ücretsizdir. Başvuru kesin kayıt veya ödeme oluşturmaz."
         />
+
+        <ConsultationSteps product="online-dershanem" />
 
         <ProductFaq
           items={[
@@ -193,14 +208,13 @@ export default function OnlineDershanemPage() {
           ]}
         />
 
-        <ProductClosingCta
-          title="Canlı derse başla."
-          body="İstersen yalnız ders, istersen koçluk ve denemeyle birlikte."
-          secondaryCta={{
-            href: "/paketler",
-            label: "Paketini Oluştur",
-          }}
-        />
+        <section className="site-container py-(--dc-section-tight)">
+          <div className="rounded-dc-banner bg-dc-brand-soft p-7 sm:p-12">
+            <h2 className="font-display text-(length:--public-title) text-dc-ink">Canlı derse bir adım at.</h2>
+            <p className="mt-4 text-dc-ink-body">Hedefini ve zorlandığın konuları paylaş; uygun ders seçeneğini birlikte değerlendirelim.</p>
+            <MarketingApplicationLink product="online-dershanem" className="site-btn site-btn-primary mt-6" />
+          </div>
+        </section>
       </main>
       <SiteFooter />
     </div>

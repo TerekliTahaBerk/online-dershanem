@@ -6,7 +6,7 @@ import { yonBrand } from "@/lib/yon-brand";
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { CampaignLink as Link } from "@/components/forms/campaign-link";
 import { X, Phone, MessageCircle } from "lucide-react";
 import {
   primaryNavForDino,

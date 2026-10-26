@@ -1,3 +1,6 @@
+import { MarketingApplicationLink } from "@/components/forms/marketing-application-link";
+import { ConsultationSteps } from "@/components/product/consultation-steps";
+import { ExamAnalysisExample } from "@/components/product/learning-examples";
 import { EditorialProductHero } from "@/components/product/editorial-product-hero";
 import { yonBrand } from "@/lib/yon-brand";
 import { PublicOdkPackageCard } from "@/components/odk/public-package-card";
@@ -8,7 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Check, Plus } from "lucide-react";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
-import { breadcrumbJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
+import { breadcrumbJsonLd, faqJsonLd, serviceJsonLd } from "@/lib/seo/jsonld";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { PreMeetingLink } from "@/components/forms/pre-meeting-link";
@@ -18,7 +21,7 @@ import { denemeLigiBrand as brand } from "@/lib/deneme-ligi-brand";
 import styles from "./deneme-ligi.module.css";
 
 export const metadata = buildMarketingMetadata({
-  title: brand.name,
+  title: "Deneme Ligi | LGS, TYT ve AYT Online Deneme Sınavı",
   description: brand.description,
   canonical: brand.href,
   imagePath: `${brand.href}/opengraph-image`,
@@ -36,7 +39,7 @@ const steps = [
 const faqs = [
   { q: "Deneme Ligi nedir?", a: "Deneme Ligi, onlinedenemekulübüm. ürününün yeni marka kimliğidir. Online deneme, sonuç analizi ve gelişim takibi onlinedershanem. altyapısı üzerinden sunulur." },
   { q: "Hangi sınavlar için deneme var?", a: "LGS ve YKS öğrencileri için denemeler bulunur. YKS kapsamı TYT ve AYT’dir. Katılacağın denemeler seçtiğin paketin içeriğine bağlıdır." },
-  { q: "Deneme Ligi’ne nasıl katılırım?", a: "Lige Başvur butonuyla başvuru formuna git, hedef sınavını ve Deneme Ligi’ni belirt. Hesabını ekibimiz açar; başlangıç ve erişim koşullarını birlikte netleştiririz. Katılım ücretsiz veya otomatik değildir; mevcut paket koşulları geçerlidir." },
+  { q: "Deneme Ligi’ne nasıl katılırım?", a: "Deneme Ligi’ne Başvur butonuyla başvuru formuna git, hedef sınavını ve Deneme Ligi’ni belirt. Hesabını ekibimiz açar; başlangıç ve erişim koşullarını birlikte netleştiririz. Katılım ücretsiz veya otomatik değildir; mevcut paket koşulları geçerlidir." },
   { q: "Hesap açınca denemelere erişebilir miyim?", a: "Kendi kendine hesap açma kapalıdır; hesabını başvurunun ardından ekibimiz oluşturur. Başvurmak tek başına deneme erişimi sağlamaz. Denemelere katılım, hesabına tanımlanan paket ve erişim haklarına bağlıdır." },
   { q: "Lig puanı, sezon veya ödül sistemi var mı?", a: "Bu aşamada ayrı bir lig puanı, sezon veya ödül sistemi sunulmuyor. Deneme Ligi’nin odağı denemeye katılım, sonuçlarını değerlendirme ve kişisel gelişimini takip etmedir." },
   { q: "Deneme takvimi ve erişim koşulları nasıl belirleniyor?", a: "Deneme takvimi, katılım zamanı ve erişim süresi seçtiğin paketin koşullarına göre belirlenir. Katılım öncesinde paket içeriğini ve başlangıç koşullarını ekibimizle netleştirebilirsin." },
@@ -44,9 +47,7 @@ const faqs = [
 
 function JoinLink() {
   return (
-    <Link href={brand.joinHref} className={styles.join} data-analytics-id="deneme_ligi_application">
-      {brand.joinLabel}<ArrowRight size={18} aria-hidden="true" />
-    </Link>
+    <MarketingApplicationLink product="deneme-ligi" className={styles.join}>Deneme Ligi’ne Başvur <ArrowRight size={18} aria-hidden="true" /></MarketingApplicationLink>
   );
 }
 
@@ -63,6 +64,7 @@ export default async function OnlineDenemeKulubumPage() {
       <SchemaJsonLd schema={[
         breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: brand.name, url: brand.href }]),
         faqJsonLd(faqs),
+        serviceJsonLd({ name: "Deneme Ligi", description: brand.description, url: brand.href, serviceType: "Online deneme sınavı ve sonuç analizi" }),
       ]} />
       <main id="main-content" tabIndex={-1} className={styles.league}>
         <EditorialProductHero
@@ -71,9 +73,7 @@ export default async function OnlineDenemeKulubumPage() {
           lines={[{ text: "Denemeye katıl." }, { text: "Gelişimini", emphasis: "gör." }]}
           description="Her denemeyi bir sonraki çalışmana yön veren bir adıma dönüştür. LGS, TYT ve AYT denemelerini online çöz; sonuçlarını incele, zorlandığın konuları gör ve gelişimini takip et."
           actions={<>
-            <Link href={brand.joinHref} data-analytics-id="deneme_ligi_application">
-              {brand.joinLabel}<ArrowRight size={18} aria-hidden="true" />
-            </Link>
+            <MarketingApplicationLink product="deneme-ligi">Deneme Ligi’ne Başvur <ArrowRight size={18} aria-hidden="true" /></MarketingApplicationLink>
             <a href="#nasil-isler">Nasıl İşler? <span aria-hidden="true">↓</span></a>
           </>}
           facts={[
@@ -139,18 +139,7 @@ export default async function OnlineDenemeKulubumPage() {
               ))}
             </ul>
           </div>
-          <figure className={styles.result}>
-            <figcaption><span>Denemeler arası gelişim</span><span className={styles.example}>Örnek görünüm</span></figcaption>
-            <div className={styles.chart} role="img" aria-label="Temsili net grafiği: birinci deneme 28, ikinci 42, üçüncü 55, dördüncü 68 net. Gerçek öğrenci verisi değildir.">
-              {[28, 42, 55, 68].map((net, index) => (
-                <div className={styles.chartColumn} key={net}>
-                  <span className={styles.bar} style={{ height: `${net * 2.2}px` }}><span>{net}</span></span>
-                  <span className={styles.chartLabel}>{index + 1}. deneme</span>
-                </div>
-              ))}
-            </div>
-            <p className={styles.chartFootnote}>Temsili verilerle hazırlanmıştır; gelişim veya sonuç garantisi değildir.</p>
-          </figure>
+          <ExamAnalysisExample />
         </section>
 
         <section className={styles.membership} aria-labelledby="membership-title">
@@ -178,6 +167,7 @@ export default async function OnlineDenemeKulubumPage() {
           {packages.length ? <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">{packages.map((item) => <PublicOdkPackageCard key={item.contract.package.slug} item={item} />)}</div> : <p className="mt-6 rounded-dc-card border border-dc-line bg-white p-6 text-dc-ink-body">Şu anda burada gösterilebilen deneme paketi bulunmuyor. Güncel takvim ve başlangıç koşulları için ekibimizle görüşebilirsin.</p>}
         </section>
 
+        <ConsultationSteps product="deneme-ligi" />
         <section className={`site-container ${styles.section}`} aria-labelledby="faq-title">
           <div className={styles.faqHeading}>
             <div><p className={styles.label}>SIK SORULANLAR</p><h2 id="faq-title">Merak ettiklerin burada.</h2></div>

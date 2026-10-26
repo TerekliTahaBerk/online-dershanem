@@ -3,7 +3,7 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { HomeHero } from "@/components/home/hero";
 import { ProductTrio } from "@/components/home/product-trio";
 import { Ecosystem } from "@/components/home/ecosystem";
-import { BundleSection } from "@/components/home/bundle-section";
+import { ConsultationSteps } from "@/components/product/consultation-steps";
 import { PlatformPreview } from "@/components/home/platform-preview";
 import { ParentVisibility } from "@/components/home/parent-visibility";
 import { HomeFaq, getHomePageFaqs } from "@/components/home/home-faq";
@@ -30,7 +30,7 @@ export default function HomePage() {
         <ProductTrio />
         <Ecosystem />
         <PlatformPreview />
-        <BundleSection />
+        <ConsultationSteps />
         <ParentVisibility />
         <HomeFaq />
         <ClosingCta />

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { CampaignLink as Link } from "@/components/forms/campaign-link";
 import { publicProductBrand } from "@/lib/public-product-brands";
 import { ProductBrandLabel } from "@/components/product/product-brand-label";
 

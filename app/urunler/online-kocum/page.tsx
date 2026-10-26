@@ -1,6 +1,8 @@
+import { coachingOffer } from "@/lib/marketing-offers";
+import { ConsultationSteps } from "@/components/product/consultation-steps";
 import Link from "next/link";
 import { SchemaJsonLd } from "@/components/seo/schema-json-ld";
-import { breadcrumbJsonLd, faqJsonLd } from "@/lib/seo/jsonld";
+import { breadcrumbJsonLd, faqJsonLd, serviceJsonLd } from "@/lib/seo/jsonld";
 import { SiteHeader } from "@/components/site/site-header";
 import { SiteFooter } from "@/components/site/site-footer";
 import { StepCards, ProductFaq } from "@/components/product/product-sections";
@@ -16,7 +18,7 @@ import { getDinoMarketingCopy } from "@/lib/dino-marketing";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 
 export const metadata = buildMarketingMetadata({
-  title: `${yonBrand.name} | LGS ve YKS`,
+  title: "Yön Koçluk | LGS ve YKS Online Öğrenci Koçluğu",
   description: "onlinekoçum. × Yön Koçluk ile LGS ve YKS için tüm derslerini kapsayan kişisel çalışma planı, birebir insan koç görüşmesi ve düzenli uygulama takibi.",
   canonical: yonBrand.href,
   imagePath: yonBrand.ogImage,
@@ -32,7 +34,8 @@ export default function OnlineKocumPage() {
     { q: "Koçum gerçek bir insan mı?", a: "Evet. Planını seni tanıyan insan koçunla kurarsın. Dino AI, pilot kapsamında veri ve önerilerle koçun kararını desteklemek için hazırlanıyor; koçunun yerini almaz." },
     { q: "Görüşme sıklığı ne?", a: "Görüşme sıklığı öğrencinin ihtiyaçlarına ve programına göre ön görüşmede belirlenir." },
     { q: "Plan hangi dersleri kapsıyor?", a: "Kişisel haftalık çalışma planı LGS veya YKS hedefin doğrultusunda tüm derslerini kapsar. Öncelikler ve çalışma kapasiten koçunla birlikte değerlendirilir." },
-    { q: "Ders almadan koçluk alabilir miyim?", a: "Evet, onlinekoçum. × Yön Koçluk tek başına planlanabilir. Güncel fiyatı bu sayfada ve paket kurucuda görebilirsin; kontenjan ve başlangıç tarihini ekibimizle netleştirebilirsin." },
+    { q: "Ders almadan koçluk alabilir miyim?", a: "Evet, onlinekoçum. × Yön Koçluk tek başına planlanabilir. Güncel tek başına koçluk teklifini bu sayfada görebilirsin; başlangıç koşullarını ekibimizle netleştirebilirsin." },
+    { q: "İlk ay ve sonraki ayların ücreti ne kadar?", a: coachingOffer.summary },
     { q: "Nasıl kayıt olabilirim?", a: yonBrand.registrationNote },
     { q: "Dino AI şu anda kullanılabilir mi?", a: dino.description },
   ];
@@ -42,6 +45,7 @@ export default function OnlineKocumPage() {
       <SchemaJsonLd schema={[
         breadcrumbJsonLd([{ name: "Ana sayfa", url: "/" }, { name: "Ürünler", url: "/urunler" }, { name: yonBrand.mediumName, url: yonBrand.href }]),
         faqJsonLd(faqs),
+        serviceJsonLd({ name: "Yön Koçluk", description: yonBrand.description, url: yonBrand.href, serviceType: "Online öğrenci koçluğu" }),
       ]} />
       <main id="main-content" tabIndex={-1} className={styles.root}>
         <YonHero />
@@ -91,6 +95,7 @@ export default function OnlineKocumPage() {
           </div>
         </section>
         <YonPrice />
+        <ConsultationSteps product="yon-kocluk" />
         <ProductFaq title="Yön hakkında merak ettiklerin." items={faqs} />
         <YonClosing />
       </main>

@@ -1,4 +1,5 @@
 import { listActivePublicProducts } from "@/lib/public-marketing-products-server";
+import { coachingOffer } from "@/lib/marketing-offers";
 import { yonBrand } from "@/lib/yon-brand";
 import { ProductBrandLabel } from "@/components/product/product-brand-label";
 import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
@@ -72,6 +73,7 @@ const columns: Column[] = [
 ];
 
 function priceText(key: ProductKey): string {
+  if (key === "kocum") return `${coachingOffer.firstMonthLabel}; ${coachingOffer.renewalLabel.toLocaleLowerCase("tr-TR")}. İndirim yalnızca ilk ay.`;
   const label = singleProductPriceLabel(key);
   if (!label) return "Ön görüşmede netleşir";
   return `${label.price} ${billingSuffix(billingPeriods[key])}`;
@@ -95,7 +97,7 @@ export async function ProductCompare() {
           </h2>
           <p className="mt-3.5 text-[17px] leading-[1.65] text-dc-ink-body">
             Üç ürünün ne yaptığı, nasıl çalıştığı ve tek başına fiyatı.
-            Birlikte alındığında paket kurucu toplamı gösterir.
+            Koçlukta ilk ay teklifi geçerlidir. Birlikte kullanım koşullarını ön görüşmede netleştirebilirsin.
           </p>
         </div>
         <Link

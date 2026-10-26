@@ -1,6 +1,6 @@
 import { yonBrand } from "@/lib/yon-brand";
 import { ProductBrandLabel } from "@/components/product/product-brand-label";
-import Link from "next/link";
+import { CampaignLink as Link } from "@/components/forms/campaign-link";
 import Image from "next/image";
 import styles from "./product-covers.module.css";
 import type { PublicProduct } from "@/lib/product-architecture";

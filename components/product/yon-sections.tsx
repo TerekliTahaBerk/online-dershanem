@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { PreMeetingLink } from "@/components/forms/pre-meeting-link";
-import { singleProductPriceLabel } from "@/lib/commerce/package-builder-pricing";
+import { WeeklyPlanExample } from "./learning-examples";
+import { coachingOffer } from "@/lib/marketing-offers";
+import { MarketingApplicationLink } from "@/components/forms/marketing-application-link";
 import { yonBrand } from "@/lib/yon-brand";
 import { EditorialProductHero } from "./editorial-product-hero";
 import styles from "./yon-brand.module.css";
@@ -16,7 +16,7 @@ export function YonHero() {
       lines={[{ text: "Yönünü belirle." }, { text: "Planını", emphasis: "uygula." }]}
       description="Hedefini, her hafta uygulayabileceğin bir plana dönüştür. LGS ve YKS hazırlığında tüm derslerini koçunla planla; birebir görüşmelerle çalışma düzenini takip et ve ihtiyaçlarına göre güncelle."
       actions={<>
-        <PreMeetingLink href={yonBrand.meetingHref} source="product_hero" className="" />
+        <MarketingApplicationLink product="yon-kocluk">Ücretsiz Koçluk Ön Görüşmesine Başvur</MarketingApplicationLink>
         <a href="#nasil-calisir">Koçluk nasıl çalışır? <span aria-hidden="true">↓</span></a>
       </>}
       facts={[
@@ -97,28 +97,7 @@ export function YonWeeklyPlan() {
           Bu bir ürün ekranı değil, haftalık planın nasıl anlatılabileceğini gösteren örnek bir görünüm.
         </p>
       </div>
-      <div className={`rounded-dc-card p-5 sm:p-7 ${styles.surface}`}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="text-[20px] font-extrabold text-dc-ink">Bu haftaki yönün</h3>
-          <span className={styles.yellowLabel}>Örnek görünüm</span>
-        </div>
-        <p className="mt-4 text-[14px] leading-[1.6] text-dc-ink-body">
-          <strong>Haftalık hedef:</strong> Paragraf çalışmasını düzenli sürdür, denemede zorlandığın konuları tekrar et.
-        </p>
-        <ul className="mt-5 space-y-3">
-          {[
-            { day: "Pazartesi", lesson: "Türkçe · Paragraf çalışması", status: "Tamamlandı" },
-            { day: "Çarşamba", lesson: "Matematik · Konu tekrarı", status: "Tamamlandı" },
-            { day: "Cuma", lesson: "Fen · Deneme değerlendirmesi", status: "Planda" },
-          ].map(({ day, lesson, status }) => (
-            <li key={day} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-dc-brand-soft-line bg-white p-3.5">
-              <div><p className="text-[12px] font-semibold text-dc-ink-muted">{day}</p><p className="mt-1 text-[14px] font-bold text-dc-ink">{lesson}</p></div>
-              <span className="text-[12px] font-semibold text-dc-brand-strong">{status}</span>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-4 text-[13px] font-semibold text-dc-ink-muted">2 çalışma tamamlandı · 1 çalışma planda</p>
-      </div>
+      <WeeklyPlanExample />
     </section>
   );
 }
@@ -147,7 +126,6 @@ export function YonProgress() {
 }
 
 export function YonPrice() {
-  const price = singleProductPriceLabel("kocum");
   return (
     <section className={`site-container grid gap-8 lg:grid-cols-[1.1fr_1fr] ${styles.section}`}>
       <div>
@@ -155,23 +133,24 @@ export function YonPrice() {
         <h2 className={`mt-3 ${headingClass}`}>Koçluk desteğini birlikte planlayalım.</h2>
         <p className={bodyClass}>
           Tek başına koçluk desteğini veya ders ve denemeyle birlikte kullanımı değerlendirebilirsin.
-          Güncel birlikte alım avantajını paket sayfasında gör.
+          İlk ay avantajıyla başla; sonraki ayların ücretini baştan bil.
         </p>
-        <Link href="/paketler" className="mt-4 inline-flex min-h-11 items-center text-[15px] font-bold text-dc-brand-strong">Paketleri karşılaştır →</Link>
+        <p className="mt-4 text-sm leading-relaxed text-dc-ink-muted">Bu teklif tek başına koçluk hizmeti içindir. Birlikte kullanım koşullarını ön görüşmede netleştirebilirsin.</p>
       </div>
       <div className={`rounded-dc-card p-6 sm:p-8 ${styles.surface}`}>
         <h3 className="text-[18px] font-bold text-dc-ink">{yonBrand.shortName}</h3>
-        {price ? (
-          <div className="mt-3">
-            {price.listPrice ? <span className="text-[14px] text-dc-ink-muted line-through">{price.listPrice}</span> : null}
-            <p className="flex flex-wrap items-baseline gap-2"><span className={`font-display text-[40px] tracking-tight ${styles.title}`}>{price.price}</span><span className="text-[14px] text-dc-ink-muted">/ ay</span></p>
-          </div>
-        ) : <p className="mt-3 text-[15px] font-semibold text-dc-ink">Fiyat ön görüşmede netleşir</p>}
+        <div className="mt-5">
+          <p className={styles.yellowLabel}>{coachingOffer.savingsLabel}</p>
+          <p className="mt-5 text-sm font-semibold text-dc-ink-muted">Standart ücret: {coachingOffer.monthlyTl.toLocaleString("tr-TR")} TL / ay</p>
+          <p className={`mt-2 font-display text-[clamp(2rem,6vw,3rem)] leading-tight tracking-tight ${styles.title}`}>{coachingOffer.firstMonthLabel}</p>
+          <p className="mt-3 text-lg font-bold text-dc-ink">{coachingOffer.renewalLabel}</p>
+          <p className="mt-3 text-sm leading-relaxed text-dc-ink-body">İndirim yalnızca ilk ay için geçerlidir.</p>
+        </div>
         <ul className="mt-5 space-y-2 text-[15px] leading-[1.6] text-dc-ink-body">
           <li>Kişisel haftalık çalışma planı</li><li>Birebir insan koç görüşmesi</li><li>Tüm dersleri kapsayan uygulama takibi</li>
         </ul>
         <p className="mt-5 border-t border-dc-brand-soft-line pt-5 text-[14px] leading-[1.65] text-dc-ink-muted">{yonBrand.registrationNote}</p>
-        <PreMeetingLink href={yonBrand.meetingHref} source="product_hero" className={`site-btn mt-5 w-full ${styles.primary}`} />
+        <MarketingApplicationLink product="yon-kocluk" className={`site-btn mt-5 w-full ${styles.primary}`} />
       </div>
     </section>
   );
@@ -182,7 +161,7 @@ export function YonClosing() {
     <section className={`site-container pb-(--dc-section-tight) ${styles.section}`}>
       <div className={`flex flex-col items-start justify-between gap-7 rounded-dc-banner p-7 sm:p-12 lg:flex-row lg:items-center ${styles.closing}`}>
         <div><h2 className="font-display text-[30px] leading-tight sm:text-[36px]">Haftana bir yön ver.</h2><p className="mt-3 max-w-[550px] text-[16px] leading-[1.65]">Hedefini, mevcut düzenini ve ihtiyacın olan desteği birlikte değerlendirelim.</p></div>
-        <PreMeetingLink href={yonBrand.meetingHref} source="product_hero" className={`site-btn flex-none ${styles.primary}`} />
+        <MarketingApplicationLink product="yon-kocluk" className={`site-btn flex-none ${styles.primary}`} />
       </div>
     </section>
   );

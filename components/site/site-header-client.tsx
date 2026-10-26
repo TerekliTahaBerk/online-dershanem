@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { CampaignLink } from "@/components/forms/campaign-link";
 import { Menu } from "lucide-react";
 import { primaryNavForDino, navCta, navLogin } from "@/lib/site-content";
 import type { PublicProduct } from "@/lib/product-architecture";
@@ -139,6 +140,13 @@ export function SiteHeaderClient({
             </div>
           </div>
         </div>
+        <nav aria-label="Ürünlere hızlı erişim" className="hidden border-t border-(--site-line) lg:block">
+          <div className="site-container flex min-h-12 flex-wrap items-center justify-center gap-x-8 gap-y-1">
+            {products.map((product) => <CampaignLink key={product.href} href={product.href} aria-current={isActive(product.href) ? "page" : undefined} className="inline-flex min-h-11 items-center text-sm font-bold text-(--site-ink) hover:underline">
+              {product.registryCode === "OD" ? "Online Dershanem" : product.registryCode === "OK" ? "Yön Koçluk" : product.registryCode === "ODK" ? "Deneme Ligi" : product.name}
+            </CampaignLink>)}
+          </div>
+        </nav>
       </header>
 
       <MobileMenu
