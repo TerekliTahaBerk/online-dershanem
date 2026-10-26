@@ -1,6 +1,6 @@
-import Link from "next/link";
+import { CampaignLink as Link } from "@/components/forms/campaign-link";
 import { ArrowRight, ArrowUpRight, Sparkles } from "lucide-react";
-import { PreMeetingLink } from "@/components/forms/pre-meeting-link";
+import { MarketingApplicationLink } from "@/components/forms/marketing-application-link";
 import styles from "./hero.module.css";
 
 /** Three product identities, expressed through type rather than dashboard mockups. */
@@ -24,12 +24,16 @@ export function HomeHero() {
         </p>
 
         <div className={styles.actions}>
-          <Link href="/paketler" className={styles.primary}>
-            Paketini Oluştur <ArrowRight size={19} strokeWidth={2} aria-hidden="true" />
-          </Link>
-          <PreMeetingLink source="home_hero" className={styles.secondary} />
+          <MarketingApplicationLink className={styles.primary} />
+          <Link href="/urunler" className={styles.secondary}>Ürünleri Keşfet <ArrowRight size={19} aria-hidden="true" /></Link>
+
         </div>
 
+        <nav aria-label="Hizmetini seç" className="mt-6 flex flex-wrap justify-center gap-3 text-sm font-bold">
+          <Link href="/urunler/online-dershanem" className="inline-flex min-h-11 items-center rounded-full border border-[#CDE2D7] px-5 text-[#16513C]">Online Dershanem →</Link>
+          <Link href="/urunler/online-kocum" className="inline-flex min-h-11 items-center rounded-full border border-[#CADDF8] px-5 text-[#0754C9]">Yön Koçluk →</Link>
+          <Link href="/urunler/online-deneme-kulubum" className="inline-flex min-h-11 items-center rounded-full border border-[#E9E1F3] px-5 text-[#5B2599]">Deneme Ligi →</Link>
+        </nav>
         <dl className={styles.facts}>
           <div>
             <dt>Öğretmeninle canlı ders</dt>

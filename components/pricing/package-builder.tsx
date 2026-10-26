@@ -9,6 +9,7 @@ import { YonMascot } from "@/components/product/yon-mascot";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { coachingOffer } from "@/lib/marketing-offers";
 import { application } from "@/lib/application";
 import { denemeLigiBrand } from "@/lib/deneme-ligi-brand";
 import { BarChart3, CalendarCheck, Check, Video, type LucideIcon } from "lucide-react";
@@ -117,7 +118,8 @@ function crossSellText(
   return null;
 }
 
-function hintText(count: number): string {
+function hintText(count: number, coaching = false): string {
+  if (coaching) return "Tek başına koçluk teklifini incele; birlikte kullanım koşullarını ekibimizle netleştir.";
   if (count === 0) return "Nereden başlamak istiyorsun?";
   if (count === 1) return "Seçimini başvuru formunda belirt; başlangıcını birlikte planlayalım.";
   if (count === 2) return "Birlikte alım avantajı paket özetine yansır.";
@@ -141,6 +143,7 @@ export function PackageBuilder({
 
   const quote = useMemo(() => resolvePackageQuote(selection), [selection]);
   const count = quote.selectedCount;
+  const marketingPriceResolved = quote.priceResolved && !selection.kocum;
   const activeTotals = [
     quote.monthlyTotal,
     quote.periodTotal,
@@ -333,7 +336,7 @@ export function PackageBuilder({
                       tasarımdaki gibi sağ sütun. */}
                   <span className="flex w-full flex-none items-center justify-between gap-3 border-t border-dc-line-soft pt-3.5 sm:block sm:w-auto sm:border-0 sm:pt-0 sm:text-right">
                     <span className="block">
-                      {line.cents !== null ? (
+                      {key === "kocum" ? <span className="block max-w-52 text-sm font-bold text-[#0754C9]">{coachingOffer.firstMonthLabel}<span className="mt-1 block text-xs font-medium">{coachingOffer.renewalLabel} · İndirim yalnızca ilk ay.</span></span> : line.cents !== null ? (
                         <>
                           {/* Kampanya öncesi liste fiyatı — yalnızca gerçekten
                               yüksekse basılır. */}
@@ -618,7 +621,7 @@ export function PackageBuilder({
                     <ProductBrandLabel href={line.product === "kocum" ? yonBrand.href : line.product === "denemeKulubum" ? denemeLigiBrand.href : "/urunler/online-dershanem"} fallback={line.label} compact />
                   </span>
                   <span className="ml-auto text-[13.5px] font-semibold text-dc-ink-faint">
-                    {line.selected && line.cents !== null
+                    {line.selected && line.product === "kocum" ? "Teklif aşağıda" : line.selected && line.cents !== null
                       ? `${formatCents(line.cents)} ${billingSuffix(line.billing)}`
                       : "—"}
                   </span>
@@ -651,13 +654,14 @@ export function PackageBuilder({
             ))}
           </ul>
 
+          {selection.kocum ? <p className="mt-5 rounded-xl border border-[#CADDF8] bg-[#EFF6FF] p-4 text-sm leading-relaxed text-[#04112B]">{coachingOffer.summary} Bu teklif tek başına koçluk içindir. Birlikte kullanım için ücret ve koşulları ön görüşmede netleştirelim.</p> : null}
           <div className="my-5 h-px bg-dc-line-soft" />
 
           <div className="text-[13.5px] font-medium text-dc-ink-muted">
             Fiyat özeti
           </div>
 
-          {quote.priceResolved ? (
+          {marketingPriceResolved ? (
             <div
               aria-live="polite"
               aria-atomic="true"
@@ -692,14 +696,14 @@ export function PackageBuilder({
 
           <p className="mt-1.5 text-[12.5px] leading-[1.6] text-dc-ink-faint">
             {count > 0
-              ? quote.priceResolved
+              ? marketingPriceResolved
                 ? "Güncel fiyatın burada. Başvuru sonrası başlangıç ve erişim koşullarını ekibimizle netleştir."
                 : "Bu özel seçimin fiyatı başvuru sonrası ekibimizle netleşir."
               : "Fiyatını görmek için ürün seç."}
           </p>
 
           {/* Her dönem kendi liste, indirim ve ödenecek tutarıyla uzlaşır. */}
-          {quote.priceResolved
+          {marketingPriceResolved
             ? activeTotals.map((total) => (
                 <div
                   key={total.billing}
@@ -778,7 +782,7 @@ export function PackageBuilder({
             hesabını ve başlangıcını ekibimiz planlar.
           </p>
           <p className="mt-3 text-center text-[12.5px] font-medium leading-normal text-dc-ink-faint">
-            {hintText(count)}
+            {hintText(count, selection.kocum)}
           </p>
 
           {crossSellText(selection, count) ? (
@@ -797,7 +801,7 @@ export function PackageBuilder({
                 {count} ürün seçili
               </div>
               <div className="truncate text-[15px] font-extrabold text-dc-ink">
-                {quote.priceResolved
+                {marketingPriceResolved
                   ? activeTotals
                       .map(
                         (total) =>

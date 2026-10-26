@@ -161,3 +161,19 @@ export function faqJsonLd(items: FaqItem[]) {
     })),
   };
 }
+
+/** Educational service identity without unsupported ratings, availability or prices. */
+export function serviceJsonLd(input: { name: string; description: string; url: string; serviceType: string }) {
+  const url = new URL(input.url, siteUrl).toString();
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "@id": `${url}#service`,
+    name: input.name,
+    description: input.description,
+    url,
+    serviceType: input.serviceType,
+    provider: { "@type": "Organization", "@id": `${siteUrl}/#organization`, name: "onlinedershanem.", url: siteUrl },
+    areaServed: { "@type": "Country", name: "Türkiye" },
+  };
+}

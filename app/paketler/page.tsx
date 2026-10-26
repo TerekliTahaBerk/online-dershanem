@@ -38,9 +38,7 @@ export default async function PackagesPage() {
             Birlikte kullan.
           </h1>
           <p className="mx-auto mt-4 max-w-[640px] text-[18px] leading-[1.65] text-dc-ink-body">
-            Ders, koçluk ve denemenin güncel fiyatlarını doğrudan görürsün.
-            Birlikte alım avantajı paket özetinde, aylık ve dönemlik tutarlar
-            ayrı ayrı gösterilir.
+            Ders ve deneme seçeneklerini karşılaştır, ihtiyacın olan desteği seç. Koçlukta ilk ay teklifi tek başına kullanım içindir; birlikte kullanım koşullarını ön görüşmede netleştirelim.
           </p>
         </section>
 

@@ -20,7 +20,7 @@ test("üç ürünün fiyatı sınav ve online satın alma durumundan bağımsız
   const quote = resolvePackageQuote(base);
   for (const line of quote.lines) {
     const card = page.getByRole("button", { name: new RegExp(line.label) }).first();
-    await expect(card).toContainText(formatCents(line.cents!));
+    await expect(card).toContainText(line.product === "kocum" ? "İlk ay 1.500 TL" : formatCents(line.cents!));
     await expect(card).not.toContainText("Fiyat ön görüşmede netleşir");
   }
 });
@@ -38,11 +38,19 @@ for (const combo of [
       await page.getByRole("button", { name: new RegExp(line.label) }).first().click();
     }
     const summary = page.getByRole("complementary", { name: "Paket özeti" });
-    for (const total of [quote.monthlyTotal, quote.periodTotal].filter((item) => item.selectedLineCount > 0)) {
-      await expect(summary).toContainText(formatCents(total.payableCents!));
-      await expect(summary).toContainText(total.billing === "monthly" ? "Aylık" : "Dönemlik");
+    if (combo.kocum) {
+      await expect(summary).toContainText("İlk ay 1.500 TL");
+      await expect(summary).toContainText("sonraki aylar 2.000 TL / ay");
+      await expect(summary).toContainText("Birlikte kullanım için ücret ve koşulları ön görüşmede netleştirelim");
+      await expect(summary).not.toContainText("₺3.000");
+      await expect(summary).not.toContainText("₺2.500");
+    } else {
+      for (const total of [quote.monthlyTotal, quote.periodTotal].filter((item) => item.selectedLineCount > 0)) {
+        await expect(summary).toContainText(formatCents(total.payableCents!));
+        await expect(summary).toContainText(total.billing === "monthly" ? "Aylık" : "Dönemlik");
+      }
+      await expect(summary).not.toContainText("Fiyat ön görüşmede netleşir");
     }
-    await expect(summary).not.toContainText("Fiyat ön görüşmede netleşir");
     const apply = summary.getByRole("link", { name: "Başvur", exact: true });
     await expect(apply).toHaveAttribute("href", application.href);
     if (combo.denemeKulubum) await expect(summary).toContainText("Deneme Ligi");

@@ -9,12 +9,9 @@ test("ürün ve birlikte alım metinleri aylık/dönemlik fiyatları açıkça a
   const pricing = getPublicPricingCopy();
   assert.match(pricing.standalone, /Grup dersi ₺2\.000\/ay/);
   assert.match(pricing.standalone, /birebir ders ₺4\.000\/ay/);
-  assert.match(pricing.standalone, /onlinekoçum\. × Yön Koçluk ₺3\.000\/ay/);
+  assert.match(pricing.standalone, /onlinekoçum\. × Yön Koçluk: İlk ay 1\.500 TL; sonraki aylar 2\.000 TL \/ ay/);
   assert.match(pricing.standalone, /onlinedenemekulübüm\. × Deneme Ligi ₺1\.000\/dönem/);
-  assert.match(pricing.bundles, /onlinekoçum\. × Yön Koçluk ₺2\.500\/ay/);
   assert.match(pricing.bundles, /onlinedenemekulübüm\. × Deneme Ligi ₺500\/dönem/);
-  assert.match(pricing.bundles, /onlinedenemekulübüm\. × Deneme Ligi ₺750\/dönem/);
-  assert.doesNotMatch(pricing.standalone + pricing.bundles, /ön görüş/);
 });
 
 test("SSS fiyatları katalog etiketlerini ve ortak ürün fiyat metnini kullanır", () => {

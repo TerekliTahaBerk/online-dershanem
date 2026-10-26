@@ -1,3 +1,5 @@
+import { MarketingApplicationLink } from "@/components/forms/marketing-application-link";
+import type { MarketingProduct } from "@/lib/marketing-application";
 import { getDinoMarketingCopy } from "@/lib/dino-marketing";
 import { getPanelFeatureFlags } from "@/lib/panel-feature-flags";
 import type { ReactNode } from "react";
@@ -205,6 +207,7 @@ export function CrossSellWithPrice({
   secondaryPrice,
   features,
   priceFootnote,
+  applicationProduct,
 }: {
   cards: readonly { eyebrow: string; title: string; body: string }[];
   advantageNote: string;
@@ -222,6 +225,7 @@ export function CrossSellWithPrice({
   } | null;
   features: readonly string[];
   priceFootnote: string;
+  applicationProduct?: MarketingProduct;
 }) {
   return (
     <section className="site-container grid items-start gap-6 pt-(--dc-section-tight) lg:grid-cols-[1fr_400px]">
@@ -326,12 +330,7 @@ export function CrossSellWithPrice({
           ))}
         </ul>
 
-        <Link
-          href="/paketler"
-          className="site-btn site-btn-primary mt-5 w-full"
-        >
-          Paketini Oluştur
-        </Link>
+        {applicationProduct ? <MarketingApplicationLink product={applicationProduct} className="site-btn site-btn-primary mt-5 w-full" /> : <Link href="/paketler" className="site-btn site-btn-primary mt-5 w-full">Paketini Oluştur</Link>}
         <p className="mt-2.5 text-center text-[12.5px] font-medium text-dc-ink-faint">
           {priceFootnote}
         </p>
