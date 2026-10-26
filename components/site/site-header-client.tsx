@@ -124,7 +124,7 @@ export function SiteHeaderClient({
 
               <Link
                 href={navCta.href}
-                className="site-btn site-btn-primary site-btn-sm min-h-11 whitespace-nowrap px-3.5! max-lg:text-[13px]!"
+                className="site-btn site-btn-primary site-btn-sm min-h-11 whitespace-nowrap border-0! px-3.5! shadow-none! max-lg:text-[13px]!"
               >
                 {navCta.label}
               </Link>
