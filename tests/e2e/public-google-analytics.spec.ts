@@ -14,12 +14,14 @@ test("no tag before consent; rejection survives reload and can be changed", asyn
   const banner = page.getByRole("region", { name: "Google Analytics tercihi", exact: true });
   await expect(banner).toBeVisible();
   await expect(page.locator('script[src*="googletagmanager.com/gtag"]')).toHaveCount(0);
-  await banner.getByRole("button", { name: "Reddet", exact: true }).click();
+  await banner.getByRole("button", { name: "Hayır", exact: true }).click();
   await expect(banner).toHaveCount(0);
   await page.reload();
-  await expect(page.getByRole("button", { name: "Google Analytics tercihi", exact: true })).toBeVisible();
+  await expect(banner).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Analitik tercihini değiştir", exact: true })).toHaveCount(0);
   await expect(page.locator('script[src*="googletagmanager.com/gtag"]')).toHaveCount(0);
-  await page.getByRole("button", { name: "Google Analytics tercihi", exact: true }).click();
+  await page.getByRole("link", { name: "Gizlilik", exact: true }).click();
+  await page.getByRole("button", { name: "Analitik tercihini değiştir", exact: true }).click();
   await expect(banner).toBeVisible();
 });
 
@@ -27,8 +29,10 @@ test("opt-in loads once, sanitizes events, counts clicks rather than leads, and 
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/urunler/online-kocum?email=private@example.com&utm_campaign=private-name#private-token");
-  await page.getByRole("button", { name: "İzin ver", exact: true }).click();
+  await page.getByRole("button", { name: "Evet", exact: true }).click();
   await expect(page.locator('script[src*="googletagmanager.com/gtag"]')).toHaveCount(1);
+  await expect(page.getByRole("region", { name: "Google Analytics tercihi", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Analitik tercihini değiştir", exact: true })).toHaveCount(0);
   const messages = () => page.evaluate(() => (window.dataLayer ?? []).map(value => Array.from(value as ArrayLike<unknown>)));
   await expect.poll(async () => (await messages()).filter(row => row[0] === "event" && row[1] === "page_view").length).toBe(1);
   const data = await messages();
@@ -43,8 +47,9 @@ test("opt-in loads once, sanitizes events, counts clicks rather than leads, and 
   await expect.poll(async () => (await messages()).filter(row => row[1] === "application_click").length).toBe(1);
   expect(JSON.stringify(await messages())).not.toMatch(/generate_lead|form_submit/);
   await context.addCookies([{ name: "_ga", value: "test-only", url: new URL(page.url()).origin }]);
-  await page.getByRole("button", { name: "Google Analytics tercihi", exact: true }).click();
-  await page.getByRole("button", { name: "Reddet", exact: true }).click();
+  await page.getByRole("link", { name: "Gizlilik", exact: true }).click();
+  await page.getByRole("button", { name: "Analitik tercihini değiştir", exact: true }).click();
+  await page.getByRole("button", { name: "Hayır", exact: true }).click();
   await expect(page.locator('script[src*="googletagmanager.com/gtag"]')).toHaveCount(0);
   expect((await context.cookies()).some(cookie => cookie.name === "_ga")).toBe(false);
   expect(errors).toEqual([]);
@@ -52,7 +57,7 @@ test("opt-in loads once, sanitizes events, counts clicks rather than leads, and 
 
 test("SPA navigation produces one page view per public page and stops on login", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "İzin ver", exact: true }).click();
+  await page.getByRole("button", { name: "Evet", exact: true }).click();
   const views = () => page.evaluate(() => (window.dataLayer ?? []).map(value => Array.from(value as ArrayLike<unknown>)).filter(row => row[0] === "event" && row[1] === "page_view"));
   await expect.poll(async () => (await views()).length).toBe(1);
   await page.getByRole("navigation", { name: "Ürünlere hızlı erişim", exact: true }).getByRole("link", { name: "Yön Koçluk", exact: true }).click();
@@ -74,11 +79,12 @@ test("a remembered grant never loads GA on authentication pages", async ({ page 
 
 test("withdrawal stays disabled when browser storage cannot save the new choice", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "İzin ver", exact: true }).click();
+  await page.getByRole("button", { name: "Evet", exact: true }).click();
   await expect.poll(() => page.evaluate(() => Boolean(window.gtag))).toBe(true);
   await page.evaluate(() => { Storage.prototype.setItem = () => { throw new Error("Storage unavailable"); }; });
-  await page.getByRole("button", { name: "Google Analytics tercihi", exact: true }).click();
-  await page.getByRole("button", { name: "Reddet", exact: true }).click();
+  await page.getByRole("link", { name: "Gizlilik", exact: true }).click();
+  await page.getByRole("button", { name: "Analitik tercihini değiştir", exact: true }).click();
+  await page.getByRole("button", { name: "Hayır", exact: true }).click();
   await expect(page.getByRole("region", { name: "Google Analytics tercihi", exact: true }).getByRole("alert")).toContainText("bu sayfada kapalı");
   expect(await page.evaluate(() => (window as unknown as Record<string, unknown>)["ga-disable-G-M8XHNBR1E6"])).toBe(true);
 });
@@ -86,7 +92,7 @@ test("withdrawal stays disabled when browser storage cannot save the new choice"
 test("mobile consent choices fit without horizontal overflow", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await expect(page.getByRole("button", { name: "Reddet", exact: true })).toBeInViewport();
-  await expect(page.getByRole("button", { name: "İzin ver", exact: true })).toBeInViewport();
+  await expect(page.getByRole("button", { name: "Hayır", exact: true })).toBeInViewport();
+  await expect(page.getByRole("button", { name: "Evet", exact: true })).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

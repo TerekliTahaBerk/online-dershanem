@@ -1,6 +1,8 @@
 # Analitik ve Tally
 
 ## 27 Ekim 2026 güncellemesi — işletme GA4 mülkü
+Tercih arayüzü: Evet/Hayır seçimi kaydedildikten sonra kutu tamamen kapanır; site genelinde sabit tercih düğmesi gösterilmez. Tercihi yeniden açma düğmesi yalnız gizlilik sayfasının çerez/site kullanım ölçümü bölümündedir. Yenileme ve sayfa geçişlerinde kaydedilmiş karar korunur.
+
 Kullanıcı Chrome'da işletme hesabıyla yeni mülkü oluşturdu. Bu oturum yeni hesap/mülk oluşturmadı. Etkin hedef: `tahaberk@onlinedershanem.com`, hesap `413540900`, mülk `560870730`, web akışı `16209176153`, public ölçüm kimliği `G-M8XHNBR1E6`. Önceki kişisel Gmail mülkü `560720190 / G-38E8B93402` bu sitenin yeni entegrasyon hedefi değildir. İki mülke birden veri gönderilmeyecek; eski mülk silinmedi. Onaylanan erişim verme işlemi, kullanıcının işletme mülkünü oluşturması üzerine gereksiz kaldı ve uygulanmadı.
 
 İşletme mülkü oluşturulmadan önce kişisel mülkte de canonical URL, 24 anahtar maskelemesi ve otomatik form/site araması ölçümünü kapatma ayarları kaydedilmişti. Bu eski mülke site etiketi bağlanmadı; kod yalnız yukarıdaki işletme mülkünü hedefler.

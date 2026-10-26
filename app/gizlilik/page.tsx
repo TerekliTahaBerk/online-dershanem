@@ -1,4 +1,5 @@
 import { LegalPageTemplate } from "@/components/sections/legal-page-template";
+import { GoogleAnalyticsPreferencesButton } from "@/components/analytics/google-analytics";
 import { buildMarketingMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMarketingMetadata({
@@ -54,10 +55,11 @@ export default function PrivacyPolicyPage() {
     },
     {
       "title": "Çerezler ve site kullanım ölçümü",
+      "action": <GoogleAnalyticsPreferencesButton />,
       "paragraphs": [
         "Oturum ve güvenlik amacıyla kullanılan teknik bilgiler ile ziyaret ölçümü aynı amaçla işlenmez. Tarayıcınızdan çerezleri silebilir veya engelleyebilirsiniz; oturum için gerekli çerezlerin engellenmesi giriş işlevini etkileyebilir.",
         "Mevcut analitik entegrasyonu etkinleştirildiğinde PostHog ile sayfa görüntüleme, bağlantı tıklama ve kaydırma gibi kullanım olayları ölçülür. Ziyaretçi çerezi bir yıl süreyle tanımlanır; oturum videosu kaydı kapalıdır. Bu bilgiler çerez envanteri ve hukuki dayanak değerlendirmesiyle birlikte ele alınmalıdır.",
-        "Google Analytics, yalnızca Google Analytics tercihinden izin verdiğinizde herkese açık tanıtım sayfalarında yüklenir. Sayfa görüntülemeleri ve ana başvuru formuna bağlantı tıklamaları ölçülür; bir tıklama tamamlanmış başvuru olarak sayılmaz. Hesap, panel ve ödeme sayfaları bu ölçüme dahil edilmez. URL sorguları, form yanıtları ve öğrenci/veli iletişim bilgileri bu olaylara eklenmez. Tercihiniz bu tarayıcıda 180 gün saklanır; Google Analytics tercihi düğmesinden geri çekebilirsiniz. Bu tercih yalnızca Google Analytics içindir; diğer hizmetlerin veri kullanımı yukarıda ayrıca açıklanır."
+        "Google Analytics, yalnızca kullanım ölçümüne izin verdiğinizde herkese açık tanıtım sayfalarında yüklenir. Sayfa görüntülemeleri ve ana başvuru formuna bağlantı tıklamaları ölçülür; bir tıklama tamamlanmış başvuru olarak sayılmaz. Hesap, panel ve ödeme sayfaları bu ölçüme dahil edilmez. URL sorguları, form yanıtları ve öğrenci/veli iletişim bilgileri bu olaylara eklenmez. Tercihiniz bu tarayıcıda 180 gün saklanır; seçimden sonra tercih kutusu kapanır. Bu bölümdeki Analitik tercihini değiştir düğmesinden izninizi geri çekebilirsiniz. Bu tercih yalnızca Google Analytics içindir; diğer hizmetlerin veri kullanımı yukarıda ayrıca açıklanır."
       ]
     },
     {

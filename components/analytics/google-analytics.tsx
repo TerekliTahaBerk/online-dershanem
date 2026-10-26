@@ -14,6 +14,7 @@ declare global {
 }
 
 const CHANGE_EVENT = "od-ga-consent-change";
+const OPEN_EVENT = "od-ga-consent-open";
 const denied = { analytics_storage: "denied", ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied" };
 function consentSnapshot() {
   try { return readGoogleAnalyticsConsent(localStorage.getItem(GA_CONSENT_KEY)); }
@@ -52,6 +53,12 @@ export function GoogleAnalytics({ id, nonce }: { id: string; nonce?: string }) {
   const initialized = useRef(false);
   const publicPath = googleAnalyticsPath(pathname);
   const enabled = /^G-[A-Z0-9]+$/.test(id);
+
+  useEffect(() => {
+    const open = () => setEditing(true);
+    window.addEventListener(OPEN_EVENT, open);
+    return () => window.removeEventListener(OPEN_EVENT, open);
+  }, []);
 
   function choose(next: Choice) {
     if (next === "denied") {
@@ -139,15 +146,20 @@ export function GoogleAnalytics({ id, nonce }: { id: string; nonce?: string }) {
     {choice === "granted" && !sessionDenied && publicPath ? <Script id="od-ga4" src={`https://www.googletagmanager.com/gtag/js?id=${id}`} strategy="afterInteractive" nonce={nonce} onReady={initialize} /> : null}
     {publicPath && choice !== "pending" ? <>
       {choice === "unset" || editing ? <section className={styles.banner} aria-label="Google Analytics tercihi">
-        <strong>Google Analytics ölçümüne izin verir misin?</strong>
-        <p>İzin verirsen herkese açık sayfaların kullanımını ve başvuru bağlantısı tıklamalarını Google Analytics ile ölçeriz. Reddedersen bu Google etiketi yüklenmez. Tercihini buradan değiştirebilirsin. <Link href="/gizlilik">Gizlilik açıklaması</Link></p>
+        <strong>Kullanım ölçümüne izin verir misin?</strong>
+        <p>İzin verirsen sayfa görüntülemelerini ve başvuru bağlantısı tıklamalarını Google Analytics ile ölçeriz. Tercihini gizlilik sayfasından değiştirebilirsin. <Link href="/gizlilik">Gizlilik açıklaması</Link></p>
         {storageError ? <p role="alert">Tercihin kaydedilemedi. Google Analytics bu sayfada kapalı; tercihini saklamak için tarayıcı depolamasını kontrol et.</p> : null}
         <div className={styles.actions}>
-          <button type="button" onClick={() => choose("denied")}>Reddet</button>
-          <button type="button" onClick={() => choose("granted")}>İzin ver</button>
+          <button type="button" onClick={() => choose("denied")}>Hayır</button>
+          <button type="button" onClick={() => choose("granted")}>Evet</button>
           {editing && choice !== "unset" ? <button type="button" onClick={() => setEditing(false)}>Kapat</button> : null}
         </div>
-      </section> : <button className={styles.preference} type="button" onClick={() => setEditing(true)}>Google Analytics tercihi</button>}
+      </section> : null}
     </> : null}
   </>;
+}
+
+/** Rendered in the privacy document, never as a floating site-wide control. */
+export function GoogleAnalyticsPreferencesButton() {
+  return <button className={styles.preference} type="button" onClick={() => window.dispatchEvent(new Event(OPEN_EVENT))}>Analitik tercihini değiştir</button>;
 }
