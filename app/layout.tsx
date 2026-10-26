@@ -38,6 +38,8 @@ import { seoKeywords, siteUrl } from "@/lib/content";
 
 import { Suspense } from "react";
 import { Pixels } from "@/components/analytics/pixels";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { GOOGLE_ANALYTICS_ID } from "@/lib/google-analytics-policy";
 import { PostHogTracking } from "@/components/analytics/posthog-server";
 import { NavigationProgress } from "@/components/ui/navigation-progress";
 import { CartProvider } from "@/components/cart/cart-provider";
@@ -145,6 +147,9 @@ export default async function RootLayout({
                 <NavigationProgress />
               </Suspense>
               <Pixels nonce={nonce} />
+              <Suspense fallback={null}>
+                <GoogleAnalytics id={process.env.NEXT_PUBLIC_GA_ID ?? GOOGLE_ANALYTICS_ID} nonce={nonce} />
+              </Suspense>
               <Suspense fallback={null}>
                 <PostHogTracking />
               </Suspense>
