@@ -1,3 +1,4 @@
+import { ProductReadingLinks } from "@/components/product/reading-links";
 import { MarketingApplicationLink } from "@/components/forms/marketing-application-link";
 import { ConsultationSteps } from "@/components/product/consultation-steps";
 import { ExamAnalysisExample } from "@/components/product/learning-examples";
@@ -193,6 +194,7 @@ export default async function OnlineDenemeKulubumPage() {
             </div>
           </div>
         </section>
+        <ProductReadingLinks product="deneme-ligi" />
       </main>
       <SiteFooter />
     </div>

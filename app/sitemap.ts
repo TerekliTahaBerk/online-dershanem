@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { blogPosts } from "@/lib/blog-content";
-import { blogPublishedAt } from "@/lib/blog-meta";
+import { blogPublishedAt, blogReviewedAt } from "@/lib/blog-meta";
 import { siteUrl } from "@/lib/content";
 import { log } from "@/lib/logger";
 import { listPublicOdkPackages } from "@/lib/odk/public-commerce-server";
@@ -43,14 +43,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const blogRoutes: MetadataRoute.Sitemap = blogPosts.map((post) => ({
     url: `${siteUrl}/blog/${post.slug}`,
-    lastModified: blogPublishedAt[post.slug],
+    lastModified: blogReviewedAt[post.slug] ?? blogPublishedAt[post.slug],
     changeFrequency: "monthly",
     priority: 0.5,
   }));
 
   const odkRoutes: MetadataRoute.Sitemap = odkPackages.map((item) => ({
     url: `${siteUrl}/odk-paketleri/${item.contract.package.slug}`,
-    lastModified: item.contract.capturedAt,
+    // capturedAt is request/snapshot time, not a meaningful content change.
+    // Omit lastmod until the catalog exposes a verified modification date.
     changeFrequency: "weekly",
     priority: 0.8,
   }));

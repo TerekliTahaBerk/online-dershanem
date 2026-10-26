@@ -1,0 +1,1594 @@
+{
+  "sitemapCount": 38,
+  "urls": [
+    "https://www.onlinedershanem.com/",
+    "https://www.onlinedershanem.com/urunler",
+    "https://www.onlinedershanem.com/urunler/online-dershanem",
+    "https://www.onlinedershanem.com/urunler/online-kocum",
+    "https://www.onlinedershanem.com/urunler/online-deneme-kulubum",
+    "https://www.onlinedershanem.com/paketler",
+    "https://www.onlinedershanem.com/uygulamalar/mobil",
+    "https://www.onlinedershanem.com/uygulamalar/bilgin",
+    "https://www.onlinedershanem.com/dino-ai",
+    "https://www.onlinedershanem.com/online-ozel-ders",
+    "https://www.onlinedershanem.com/blog",
+    "https://www.onlinedershanem.com/hakkimizda",
+    "https://www.onlinedershanem.com/sss",
+    "https://www.onlinedershanem.com/iletisim",
+    "https://www.onlinedershanem.com/kvkk",
+    "https://www.onlinedershanem.com/gizlilik",
+    "https://www.onlinedershanem.com/iade",
+    "https://www.onlinedershanem.com/blog/lgs-matematik-calisma-programi",
+    "https://www.onlinedershanem.com/blog/tyt-matematik-calisma-programi",
+    "https://www.onlinedershanem.com/blog/ayt-matematik-calisma-programi",
+    "https://www.onlinedershanem.com/blog/matematikte-temel-eksigi-nasil-kapatilir",
+    "https://www.onlinedershanem.com/blog/lgs-yeni-nesil-matematik-sorulari",
+    "https://www.onlinedershanem.com/blog/tyt-matematik-problem-cozme-hizi",
+    "https://www.onlinedershanem.com/blog/online-matematik-dersi-nasil-olmali",
+    "https://www.onlinedershanem.com/blog/matematik-deneme-analizi",
+    "https://www.onlinedershanem.com/blog/online-dershane-nedir",
+    "https://www.onlinedershanem.com/blog/online-ozel-ders-mi-dershane-mi",
+    "https://www.onlinedershanem.com/blog/yks-online-ders-calisma-plani",
+    "https://www.onlinedershanem.com/blog/lgs-online-ders-net-artirma",
+    "https://www.onlinedershanem.com/blog/online-dershane-fiyatlari-2026",
+    "https://www.onlinedershanem.com/blog/e-dershane-nedir",
+    "https://www.onlinedershanem.com/blog/online-ders-calisma-programi",
+    "https://www.onlinedershanem.com/blog/ozel-ders-mi-kucuk-grup-mu",
+    "https://www.onlinedershanem.com/blog/yks-matematik-net-artirma",
+    "https://www.onlinedershanem.com/blog/lgs-matematikte-zorlananlar-icin",
+    "https://www.onlinedershanem.com/blog/deneme-analizi-nasil-yapilir",
+    "https://www.onlinedershanem.com/blog/online-dershane-secim-rehberi-2026",
+    "https://www.onlinedershanem.com/blog/online-ders-disiplini-nasil-kurulur"
+  ],
+  "pages": [
+    {
+      "path": "/",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/",
+      "canonical": [
+        "https://www.onlinedershanem.com"
+      ],
+      "title": "onlinedershanem. | Ders, Koçluk ve Deneme Ürünleri",
+      "description": "LGS ve YKS öğrencileri için onlinedershanem., onlinekoçum. × Yön Koçluk ve onlinedenemekulübüm. × Deneme Ligi ürünlerini keşfedin.",
+      "robots": "index, follow",
+      "h1": [
+        "Canlı derste öğren.Haftanı planla.Denemeyle ölç."
+      ],
+      "htmlBytes": 201916,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/urunler",
+        "/dino-ai",
+        "/sss",
+        "/paketler",
+        "/iletisim#on-gorusme",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/urunler",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/urunler",
+      "canonical": [
+        "https://www.onlinedershanem.com/urunler"
+      ],
+      "title": "Ürünler | onlinedershanem., onlinekoçum. × Yön Koçluk ve onlinedenemekulübüm. × Deneme Ligi",
+      "description": "LGS ve YKS için canlı ders, haftalık koçluk ve deneme analizi. Üç ürünü tek tek ya da birlikte alabilirsin.",
+      "robots": "index, follow",
+      "h1": [
+        "İhtiyacına göre seç.Kendi düzenini kur."
+      ],
+      "htmlBytes": 164650,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/paketler",
+        "/paketler#kapsam",
+        "/dino-ai",
+        "/iletisim#on-gorusme",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/sss",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/urunler/online-dershanem",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/urunler/online-dershanem",
+      "canonical": [
+        "https://www.onlinedershanem.com/urunler/online-dershanem"
+      ],
+      "title": "LGS ve YKS Canlı Online Ders | onlinedershanem.",
+      "description": "LGS ve YKS için birebir ya da en fazla 4 kişilik grupta canlı ders, ders takibi, veli özeti ve ders sonrası çalışma yönü.",
+      "robots": "index, follow",
+      "h1": [
+        "Canlı dersteöğretmenle ilerle."
+      ],
+      "htmlBytes": 154556,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/urunler/online-kocum",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/urunler/online-kocum",
+      "canonical": [
+        "https://www.onlinedershanem.com/urunler/online-kocum"
+      ],
+      "title": "Yön Koçluk | LGS ve YKS Online Öğrenci Koçluğu | onlinedershanem.",
+      "description": "onlinekoçum. × Yön Koçluk ile LGS ve YKS için tüm derslerini kapsayan kişisel çalışma planı, birebir insan koç görüşmesi ve düzenli uygulama takibi.",
+      "robots": "index, follow",
+      "h1": [
+        "Yönünü belirle.Planını uygula."
+      ],
+      "htmlBytes": 165990,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/dino-ai",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/urunler/online-deneme-kulubum",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/urunler/online-deneme-kulubum",
+      "canonical": [
+        "https://www.onlinedershanem.com/urunler/online-deneme-kulubum"
+      ],
+      "title": "Deneme Ligi | LGS, TYT ve AYT Online Deneme Sınavı | onlinedershanem.",
+      "description": "LGS, TYT ve AYT denemeleriyle seviyeni ölç, sonuçlarını değerlendir ve bir sonraki denemeye daha bilinçli hazırlan.",
+      "robots": "index, follow",
+      "h1": [
+        "Denemeye katıl.Gelişimini gör."
+      ],
+      "htmlBytes": 160032,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/iletisim?urun=onlinedenemekulubum#on-gorusme",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/online-ozel-ders",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/online-ozel-ders",
+      "canonical": [
+        "https://www.onlinedershanem.com/online-ozel-ders"
+      ],
+      "title": "Online Özel Ders mi, Küçük Grup mu? | LGS ve YKS | onlinedershanem.",
+      "description": "LGS ve YKS için birebir online özel ders ve en fazla 4 kişilik canlı grubu karşılaştırın. Öğretmen etkileşimi, çalışma yönü ve güncel seçenekleri inceleyin.",
+      "robots": "index, follow",
+      "h1": [
+        "Birebir mi, küçük grup mu? İhtiyacına göre seç."
+      ],
+      "htmlBytes": 121424,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/paketler",
+        "/blog/online-ozel-ders-mi-dershane-mi",
+        "/iletisim#on-gorusme",
+        "/iletisim",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog"
+      ],
+      "title": "onlinedershanem. Blog",
+      "description": "Online dershane ve online özel ders rehberleri: LGS-YKS çalışma planı, küçük grup ders modeli ve haftalık takip sistemi üzerine yazılar.",
+      "robots": "index, follow",
+      "h1": [
+        "Yeni bir bakış açısı.Daha bilinçli bir adım."
+      ],
+      "htmlBytes": 135973,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/blog/lgs-matematik-calisma-programi",
+        "/blog/tyt-matematik-calisma-programi",
+        "/blog/ayt-matematik-calisma-programi",
+        "/blog/matematikte-temel-eksigi-nasil-kapatilir",
+        "/blog/lgs-yeni-nesil-matematik-sorulari",
+        "/blog/tyt-matematik-problem-cozme-hizi",
+        "/blog/online-matematik-dersi-nasil-olmali",
+        "/blog/matematik-deneme-analizi",
+        "/blog/online-dershane-nedir",
+        "/blog/online-ozel-ders-mi-dershane-mi",
+        "/blog/yks-online-ders-calisma-plani",
+        "/blog/lgs-online-ders-net-artirma",
+        "/blog/online-dershane-fiyatlari-2026",
+        "/blog/e-dershane-nedir",
+        "/blog/online-ders-calisma-programi",
+        "/blog/ozel-ders-mi-kucuk-grup-mu",
+        "/blog/yks-matematik-net-artirma",
+        "/blog/lgs-matematikte-zorlananlar-icin",
+        "/blog/deneme-analizi-nasil-yapilir",
+        "/blog/online-dershane-secim-rehberi-2026",
+        "/blog/online-ders-disiplini-nasil-kurulur",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/seo-audit-missing",
+      "status": 404,
+      "finalUrl": "https://www.onlinedershanem.com/seo-audit-missing",
+      "canonical": [
+        "https://www.onlinedershanem.com"
+      ],
+      "title": "Sayfa bulunamadı | onlinedershanem.",
+      "description": "LGS ve YKS öğrencileri için canlı ders, çalışma düzeni ve online deneme ürünleri.",
+      "robots": "noindex, nofollow",
+      "h1": [
+        "Sayfa bulunamadı"
+      ],
+      "htmlBytes": 112944,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/paketler",
+        "/urunler",
+        "/sss",
+        "/iletisim",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/lgs?utm_source=seo_audit",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/urunler/online-dershanem?utm_source=seo_audit",
+      "canonical": [
+        "https://www.onlinedershanem.com/urunler/online-dershanem"
+      ],
+      "title": "LGS ve YKS Canlı Online Ders | onlinedershanem.",
+      "description": "LGS ve YKS için birebir ya da en fazla 4 kişilik grupta canlı ders, ders takibi, veli özeti ve ders sonrası çalışma yönü.",
+      "robots": "index, follow",
+      "h1": [
+        "Canlı dersteöğretmenle ilerle."
+      ],
+      "htmlBytes": 154654,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/yks",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/urunler/online-dershanem",
+      "canonical": [
+        "https://www.onlinedershanem.com/urunler/online-dershanem"
+      ],
+      "title": "LGS ve YKS Canlı Online Ders | onlinedershanem.",
+      "description": "LGS ve YKS için birebir ya da en fazla 4 kişilik grupta canlı ders, ders takibi, veli özeti ve ders sonrası çalışma yönü.",
+      "robots": "index, follow",
+      "h1": [
+        "Canlı dersteöğretmenle ilerle."
+      ],
+      "htmlBytes": 154556,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/ders-paketleri",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/paketler",
+      "canonical": [
+        "https://www.onlinedershanem.com/paketler"
+      ],
+      "title": "Paketler | Kendi paketini oluştur | onlinedershanem.",
+      "description": "onlinedershanem., onlinekoçum. × Yön Koçluk ve onlinedenemekulübüm. × Deneme Ligi’ni tek tek ya da birlikte seç; güncel fiyatları ve birlikte alım avantajını gör, başlangıcını planla.",
+      "robots": "index, follow",
+      "h1": [
+        "İhtiyacın olan desteği seç.Birlikte kullan."
+      ],
+      "htmlBytes": 189140,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/paketler#kapsam",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/paketler",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/paketler",
+      "canonical": [
+        "https://www.onlinedershanem.com/paketler"
+      ],
+      "title": "Paketler | Kendi paketini oluştur | onlinedershanem.",
+      "description": "onlinedershanem., onlinekoçum. × Yön Koçluk ve onlinedenemekulübüm. × Deneme Ligi’ni tek tek ya da birlikte seç; güncel fiyatları ve birlikte alım avantajını gör, başlangıcını planla.",
+      "robots": "index, follow",
+      "h1": [
+        "İhtiyacın olan desteği seç.Birlikte kullan."
+      ],
+      "htmlBytes": 189140,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/paketler#kapsam",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/uygulamalar/mobil",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/uygulamalar/mobil",
+      "canonical": [
+        "https://www.onlinedershanem.com/uygulamalar/mobil"
+      ],
+      "title": "onlinedershanem Mobil | Dershanen cebinde | onlinedershanem.",
+      "description": "onlinedershanem, Yön Koçluk ve Deneme Ligi tek mobil uygulamada. Derslerini, koçluk planını ve deneme sonuçlarını takip et. iOS ve Android için hazırlanıyor.",
+      "robots": "index, follow",
+      "h1": [
+        "Dersin. Planın.Denemen.Hepsi cebinde."
+      ],
+      "htmlBytes": 150068,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/uygulamalar/bilgin",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/uygulamalar/bilgin",
+      "canonical": [
+        "https://www.onlinedershanem.com/uygulamalar/bilgin"
+      ],
+      "title": "Bilgin | Oyunlaştırılmış YKS ve LGS hazırlığı | onlinedershanem.",
+      "description": "onlinedershanem’in Bilgin uygulamasıyla kısa egzersizleri, öğrenme yolunu ve günlük serileri keşfet. iOS ve Android için yakında.",
+      "robots": "index, follow",
+      "h1": [
+        "Bir soru daha.Bir adım ileri."
+      ],
+      "htmlBytes": 130336,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/dino-ai",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/dino-ai",
+      "canonical": [
+        "https://www.onlinedershanem.com/dino-ai"
+      ],
+      "title": "Dino AI | Ders, plan ve deneme bağı | onlinedershanem.",
+      "description": "Dino AI pilot hazırlıkları: ders, plan ve deneme desteği için öğretmen ve koçun kararını destekleyen örnekler. Ayrı satılan bir ürün değildir.",
+      "robots": "index, follow",
+      "h1": [
+        "Ders, plan, deneme.Aralarındaki bağ: Dino."
+      ],
+      "htmlBytes": 120009,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/urunler",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/hakkimizda",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/hakkimizda",
+      "canonical": [
+        "https://www.onlinedershanem.com/hakkimizda"
+      ],
+      "title": "Hakkımızda | Öğrenme, plan ve ölçme aynı çatı altında | onlinedershanem.",
+      "description": "onlinedershanem. ile canlı öğrenme, Yön Koçluk ile çalışma düzeni, Deneme Ligi ile ölçülebilir ilerleme. İnsan uzmanlığını merkeze alan yaklaşımımızı tanıyın.",
+      "robots": "index, follow",
+      "h1": [
+        "Bir sonraki adımınbirlikte netleşsin."
+      ],
+      "htmlBytes": 133320,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/urunler",
+        "/dino-ai",
+        "/iletisim#on-gorusme",
+        "/iletisim",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/sss",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/sss",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/sss",
+      "canonical": [
+        "https://www.onlinedershanem.com/sss"
+      ],
+      "title": "Sıkça Sorulan Sorular | onlinedershanem.",
+      "description": "Canlı ders, Yön Koçluk, Deneme Ligi, Dino AI, başvuru, satın alma ve panel erişimi hakkında sorular ve açık yanıtlar.",
+      "robots": "index, follow",
+      "h1": [
+        "Sık sorulan sorular"
+      ],
+      "htmlBytes": 158723,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/iade",
+        "/iletisim#on-gorusme",
+        "/iletisim",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/gizlilik",
+        "/kvkk"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/iletisim",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/iletisim",
+      "canonical": [
+        "https://www.onlinedershanem.com/iletisim"
+      ],
+      "title": "İletişim | onlinedershanem.",
+      "description": "Canlı ders, koçluk veya deneme desteğini konuşmak için kısa ön görüşme formunu doldurun; WhatsApp, telefon veya e-posta ile de ulaşabilirsiniz.",
+      "robots": "index, follow",
+      "h1": [
+        "Aklınızdakileri konuşalım."
+      ],
+      "htmlBytes": 119312,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/kvkk",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/kvkk",
+      "canonical": [
+        "https://www.onlinedershanem.com/kvkk"
+      ],
+      "title": "KVKK Aydınlatma Metni | onlinedershanem.",
+      "description": "Kişisel verileriniz hakkında bilgi sahibi olun. İşleme amaçlarını, paylaşım kapsamını ve başvuru haklarınızı buradan inceleyin.",
+      "robots": "index, follow",
+      "h1": [
+        "KVKK Aydınlatma Metni"
+      ],
+      "htmlBytes": 137904,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/gizlilik",
+        "/kvkk",
+        "/iade",
+        "/iletisim",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/gizlilik",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/gizlilik",
+      "canonical": [
+        "https://www.onlinedershanem.com/gizlilik"
+      ],
+      "title": "Gizlilik Politikası | onlinedershanem.",
+      "description": "Eğitim yolculuğunuzda paylaştığınız bilgiler; hangi amaçlarla kullanılır, kimlerle paylaşılır ve nasıl yönetilir?",
+      "robots": "index, follow",
+      "h1": [
+        "Gizlilik Politikası"
+      ],
+      "htmlBytes": 132617,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/gizlilik",
+        "/kvkk",
+        "/iade",
+        "/iletisim",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/iade",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/iade",
+      "canonical": [
+        "https://www.onlinedershanem.com/iade"
+      ],
+      "title": "İade Politikası | onlinedershanem.",
+      "description": "Planlarınız değişebilir. Ders, koçluk ve deneme paketlerinde iptal, cayma ve geri ödeme sürecini açıkça öğrenin.",
+      "robots": "index, follow",
+      "h1": [
+        "İade Politikası"
+      ],
+      "htmlBytes": 135410,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/gizlilik",
+        "/kvkk",
+        "/iade",
+        "/iletisim",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/lgs-matematik-calisma-programi",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/lgs-matematik-calisma-programi",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/lgs-matematik-calisma-programi"
+      ],
+      "title": "LGS Matematik Çalışma Programı: Haftalık Plan | onlinedershanem.",
+      "description": "LGS matematik için konu, soru çözümü, tekrar ve deneme analizini dengeleyen uygulanabilir haftalık çalışma programını adım adım kurun.",
+      "robots": "index, follow",
+      "h1": [
+        "LGS Matematik Çalışma Programı Nasıl Hazırlanır?"
+      ],
+      "htmlBytes": 142273,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/blog/matematik-deneme-analizi",
+        "/blog/lgs-yeni-nesil-matematik-sorulari",
+        "/blog/lgs-matematikte-zorlananlar-icin",
+        "/online-ozel-ders",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/tyt-matematik-calisma-programi",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/tyt-matematik-calisma-programi",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/tyt-matematik-calisma-programi"
+      ],
+      "title": "TYT Matematik Çalışma Programı: Haftalık Rehber | onlinedershanem.",
+      "description": "TYT matematikte temel konu, problem, süreli set ve deneme analizini dengeleyen seviyeye uygun haftalık çalışma programı hazırlayın.",
+      "robots": "index, follow",
+      "h1": [
+        "TYT Matematik Çalışma Programı: Temelden Denemeye"
+      ],
+      "htmlBytes": 141214,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/blog/tyt-matematik-problem-cozme-hizi",
+        "/blog/ayt-matematik-calisma-programi",
+        "/blog/yks-matematik-net-artirma",
+        "/online-ozel-ders",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/ayt-matematik-calisma-programi",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/ayt-matematik-calisma-programi",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/ayt-matematik-calisma-programi"
+      ],
+      "title": "AYT Matematik Çalışma Programı: Konu ve Deneme Planı | onlinedershanem.",
+      "description": "AYT matematikte ön koşul konuları, derin çalışma bloklarını, karışık testleri ve deneme analizini dengeleyen bir program kurun.",
+      "robots": "index, follow",
+      "h1": [
+        "AYT Matematik Çalışma Programı Nasıl Kurulur?"
+      ],
+      "htmlBytes": 134726,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/blog/matematik-deneme-analizi",
+        "/blog/tyt-matematik-calisma-programi",
+        "/blog/matematikte-temel-eksigi-nasil-kapatilir",
+        "/online-ozel-ders",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/matematikte-temel-eksigi-nasil-kapatilir",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/matematikte-temel-eksigi-nasil-kapatilir",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/matematikte-temel-eksigi-nasil-kapatilir"
+      ],
+      "title": "Matematikte Temel Eksikliği Kapatma Rehberi | onlinedershanem.",
+      "description": "Matematik temelindeki eksikleri teşhis edin, ön koşul konularını doğru sıraya koyun ve soru çözümüyle kalıcı bir toparlanma planı kurun.",
+      "robots": "index, follow",
+      "h1": [
+        "Matematikte Temel Eksikliği Nasıl Kapatılır?"
+      ],
+      "htmlBytes": 140223,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/blog/online-matematik-dersi-nasil-olmali",
+        "/paketler",
+        "/iletisim#on-gorusme",
+        "/blog/lgs-matematikte-zorlananlar-icin",
+        "/blog/tyt-matematik-calisma-programi",
+        "/online-ozel-ders",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/lgs-yeni-nesil-matematik-sorulari",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/lgs-yeni-nesil-matematik-sorulari",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/lgs-yeni-nesil-matematik-sorulari"
+      ],
+      "title": "LGS Yeni Nesil Matematik Soruları Çözme Rehberi | onlinedershanem.",
+      "description": "LGS yeni nesil matematik sorularında metni ayıklama, veriyi düzenleme, doğru modeli kurma ve çözümü kontrol etme adımlarını öğrenin.",
+      "robots": "index, follow",
+      "h1": [
+        "LGS Yeni Nesil Matematik Soruları Nasıl Çözülür?"
+      ],
+      "htmlBytes": 134277,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/blog/lgs-matematik-calisma-programi",
+        "/blog/matematik-deneme-analizi",
+        "/blog/lgs-online-ders-net-artirma",
+        "/online-ozel-ders",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/tyt-matematik-problem-cozme-hizi",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/tyt-matematik-problem-cozme-hizi",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/tyt-matematik-problem-cozme-hizi"
+      ],
+      "title": "TYT Matematik Problem Çözme Hızı Nasıl Artar? | onlinedershanem.",
+      "description": "TYT matematik problemlerinde doğruluğu koruyarak hızlanmak için soru aileleri, süreli setler, takılma eşiği ve analiz yöntemlerini uygulayın.",
+      "robots": "index, follow",
+      "h1": [
+        "TYT Matematikte Problem Çözme Hızı Nasıl Gelişir?"
+      ],
+      "htmlBytes": 133489,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/blog/tyt-matematik-calisma-programi",
+        "/blog/matematik-deneme-analizi",
+        "/blog/yks-matematik-net-artirma",
+        "/online-ozel-ders",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/online-matematik-dersi-nasil-olmali",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/online-matematik-dersi-nasil-olmali",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/online-matematik-dersi-nasil-olmali"
+      ],
+      "title": "Online Matematik Dersi Nasıl Olmalı? Seçim Rehberi | onlinedershanem.",
+      "description": "Online matematik dersi seçerken canlı etkileşim, grup büyüklüğü, geri bildirim, ders sonrası plan ve veli bilgilendirmesini değerlendirin.",
+      "robots": "index, follow",
+      "h1": [
+        "İyi Bir Online Matematik Dersi Nasıl Olmalı?"
+      ],
+      "htmlBytes": 140591,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/paketler",
+        "/sss",
+        "/blog/online-dershane-secim-rehberi-2026",
+        "/blog/ozel-ders-mi-kucuk-grup-mu",
+        "/blog/matematikte-temel-eksigi-nasil-kapatilir",
+        "/online-ozel-ders",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/matematik-deneme-analizi",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/matematik-deneme-analizi",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/matematik-deneme-analizi"
+      ],
+      "title": "Matematik Deneme Analizi: Uygulanabilir Şablon | onlinedershanem.",
+      "description": "Matematik denemesindeki yanlış, boş ve uzun süren soruları sınıflandırın; analizden bir sonraki haftaya uygulanabilir çalışma planı çıkarın.",
+      "robots": "index, follow",
+      "h1": [
+        "Matematik Deneme Analizi Nasıl Yapılır?"
+      ],
+      "htmlBytes": 140121,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/blog/lgs-matematik-calisma-programi",
+        "/blog/tyt-matematik-calisma-programi",
+        "/paketler",
+        "/blog/deneme-analizi-nasil-yapilir",
+        "/online-ozel-ders",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/online-dershane-nedir",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/online-dershane-nedir",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/online-dershane-nedir"
+      ],
+      "title": "Online Dershane Nedir? LGS-YKS İçin Seçim Rehberi | onlinedershanem.",
+      "description": "Online dershane nedir, hangi kriterlere göre seçilir? LGS ve YKS öğrencileri için sınıf mevcudu, takip sistemi ve ders bazlı modeli karşılaştıran rehber.",
+      "robots": "index, follow",
+      "h1": [
+        "Online Dershane Nedir? LGS ve YKS İçin Doğru Seçim Rehberi"
+      ],
+      "htmlBytes": 129010,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/online-ozel-ders",
+        "/paketler",
+        "/blog/online-ozel-ders-mi-dershane-mi",
+        "/blog/yks-online-ders-calisma-plani",
+        "/blog/online-dershane-fiyatlari-2026",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/online-ozel-ders-mi-dershane-mi",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/online-ozel-ders-mi-dershane-mi",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/online-ozel-ders-mi-dershane-mi"
+      ],
+      "title": "Online Dershane mi Özel Ders mi? Karşılaştırma Rehberi | onlinedershanem.",
+      "description": "Online dershane mi özel ders mi daha verimli? Maliyet, süreklilik ve sonuç açısından küçük grup modeliyle karşılaştırmalı değerlendirme.",
+      "robots": "index, follow",
+      "h1": [
+        "Online Dershane mi Özel Ders mi? Hangisi Sana Uygun?"
+      ],
+      "htmlBytes": 126677,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/blog/online-dershane-nedir",
+        "/blog/yks-online-ders-calisma-plani",
+        "/blog/online-dershane-fiyatlari-2026",
+        "/online-ozel-ders",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/yks-online-ders-calisma-plani",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/yks-online-ders-calisma-plani",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/yks-online-ders-calisma-plani"
+      ],
+      "title": "TYT ve AYT Aynı Anda Nasıl Çalışılır? Net Üreten Sistem | onlinedershanem.",
+      "description": "TYT ve AYT'yi birlikte yürütürken zaman yönetimi, deneme analizi ve haftalık plan nasıl kurulur? Uygulanabilir bir haftalık plan.",
+      "robots": "index, follow",
+      "h1": [
+        "TYT ve AYT Aynı Anda Nasıl Çalışılır?"
+      ],
+      "htmlBytes": 130595,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/online-ozel-ders",
+        "/blog/online-dershane-nedir",
+        "/blog/online-ozel-ders-mi-dershane-mi",
+        "/blog/online-dershane-fiyatlari-2026",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/lgs-online-ders-net-artirma",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/lgs-online-ders-net-artirma",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/lgs-online-ders-net-artirma"
+      ],
+      "title": "LGS Net Nasıl Artırılır? 8 Haftalık Uygulanabilir Plan | onlinedershanem.",
+      "description": "LGS netlerini artırmak için 8 haftalık uygulanabilir bir plan: düzenli çalışma, deneme analizi ve doğru ölçme sistemiyle ilerleme.",
+      "robots": "index, follow",
+      "h1": [
+        "LGS Net Nasıl Artırılır? 8 Haftalık Uygulanabilir Plan"
+      ],
+      "htmlBytes": 136128,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/online-ozel-ders",
+        "/paketler",
+        "/blog/online-dershane-nedir",
+        "/blog/online-ozel-ders-mi-dershane-mi",
+        "/blog/online-dershane-fiyatlari-2026",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/online-dershane-fiyatlari-2026",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/online-dershane-fiyatlari-2026",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/online-dershane-fiyatlari-2026"
+      ],
+      "title": "Online Dershane Fiyatları 2026: Ne Kadar Ödemelisin? | onlinedershanem.",
+      "description": "Online dershane fiyatları 2026 yılında neye göre değişiyor? Grup büyüklüğü, canlı ders kapsamı, takip ve ödeme koşullarını karşılaştırma rehberi.",
+      "robots": "index, follow",
+      "h1": [
+        "Online Dershane Fiyatları 2026"
+      ],
+      "htmlBytes": 125680,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/paketler",
+        "/blog/online-dershane-nedir",
+        "/blog/online-ozel-ders-mi-dershane-mi",
+        "/blog/yks-online-ders-calisma-plani",
+        "/online-ozel-ders",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/e-dershane-nedir",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/e-dershane-nedir",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/e-dershane-nedir"
+      ],
+      "title": "e Dershane Nedir? LGS ve YKS İçin Kılavuz | onlinedershanem.",
+      "description": "e dershane nedir, online dershaneden farkı var mı? LGS-YKS öğrencileri için verimli e dershane seçme rehberi.",
+      "robots": "index, follow",
+      "h1": [
+        "e Dershane Nedir? Kimler İçin Gerçekten Verimli?"
+      ],
+      "htmlBytes": 124583,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/paketler",
+        "/blog/online-dershane-nedir",
+        "/blog/online-ozel-ders-mi-dershane-mi",
+        "/blog/online-dershane-fiyatlari-2026",
+        "/online-ozel-ders",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/online-ders-calisma-programi",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/online-ders-calisma-programi",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/online-ders-calisma-programi"
+      ],
+      "title": "Online Ders Çalışma Programı: Uygulanabilir Plan | onlinedershanem.",
+      "description": "Online ders sürecinde dağılmadan çalışmak için haftalık program nasıl hazırlanır? Uygulanabilir plan ve takip modeli burada.",
+      "robots": "index, follow",
+      "h1": [
+        "Online Ders Çalışma Programı Nasıl Hazırlanır?"
+      ],
+      "htmlBytes": 124543,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/online-ozel-ders",
+        "/iletisim#on-gorusme",
+        "/blog/yks-online-ders-calisma-plani",
+        "/blog/online-dershane-nedir",
+        "/blog/lgs-online-ders-net-artirma",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/ozel-ders-mi-kucuk-grup-mu",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/ozel-ders-mi-kucuk-grup-mu",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/ozel-ders-mi-kucuk-grup-mu"
+      ],
+      "title": "Özel Ders mi Küçük Grup mu? Karar Rehberi | onlinedershanem.",
+      "description": "Özel ders ve küçük grup online ders modeli arasında karar veremiyor musun? Maliyet, verim ve süreklilik karşılaştırması.",
+      "robots": "index, follow",
+      "h1": [
+        "Özel Ders mi Küçük Grup mu? Hangi Seçim Daha Mantıklı?"
+      ],
+      "htmlBytes": 124119,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/iletisim#on-gorusme",
+        "/blog/online-ozel-ders-mi-dershane-mi",
+        "/blog/online-dershane-nedir",
+        "/blog/online-dershane-fiyatlari-2026",
+        "/online-ozel-ders",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/yks-matematik-net-artirma",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/yks-matematik-net-artirma",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/yks-matematik-net-artirma"
+      ],
+      "title": "YKS Matematik Net Artırma Rehberi | onlinedershanem.",
+      "description": "YKS matematik neti artırmak için soru analizi, süre yönetimi ve haftalık çalışma planı nasıl kurulmalı? Adım adım öğren.",
+      "robots": "index, follow",
+      "h1": [
+        "YKS Matematik Neti Nasıl Artar? Uygulanabilir Yol Haritası"
+      ],
+      "htmlBytes": 124161,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/online-ozel-ders",
+        "/blog/yks-online-ders-calisma-plani",
+        "/blog/online-dershane-nedir",
+        "/blog/online-dershane-fiyatlari-2026",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/lgs-matematikte-zorlananlar-icin",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/lgs-matematikte-zorlananlar-icin",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/lgs-matematikte-zorlananlar-icin"
+      ],
+      "title": "LGS Matematikte Net Artırma Planı | onlinedershanem.",
+      "description": "LGS matematikte zorlanan öğrenciler için adım adım net artırma planı. Problem çözme, deneme analizi ve haftalık tekrar sistemi.",
+      "robots": "index, follow",
+      "h1": [
+        "LGS Matematikte Zorlananlar İçin Kurtarma Planı"
+      ],
+      "htmlBytes": 123729,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/blog/lgs-online-ders-net-artirma",
+        "/blog/online-dershane-nedir",
+        "/blog/online-ozel-ders-mi-dershane-mi",
+        "/online-ozel-ders",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/iletisim#on-gorusme",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/deneme-analizi-nasil-yapilir",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/deneme-analizi-nasil-yapilir",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/deneme-analizi-nasil-yapilir"
+      ],
+      "title": "Deneme Analizi Nasıl Yapılır? Net Artışı İçin Rehber | onlinedershanem.",
+      "description": "Deneme analizi nasıl yapılır? Yanlışları sınıflandırıp bir sonraki haftaya uygulanabilir çalışma planı çıkarmayı öğren.",
+      "robots": "index, follow",
+      "h1": [
+        "Deneme Analizi Nasıl Yapılır? Net Artıran Yöntem"
+      ],
+      "htmlBytes": 124011,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/iletisim#on-gorusme",
+        "/blog/yks-online-ders-calisma-plani",
+        "/blog/lgs-online-ders-net-artirma",
+        "/blog/online-dershane-nedir",
+        "/online-ozel-ders",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/online-dershane-secim-rehberi-2026",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/online-dershane-secim-rehberi-2026",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/online-dershane-secim-rehberi-2026"
+      ],
+      "title": "Online Dershane Seçim Rehberi 2026 | onlinedershanem.",
+      "description": "2026'da online dershane seçerken dikkat edilmesi gereken kriterler: sınıf mevcudu, canlı etkileşim, takip sistemi ve şeffaf ödeme koşulları.",
+      "robots": "index, follow",
+      "h1": [
+        "Online Dershane Seçim Rehberi 2026"
+      ],
+      "htmlBytes": 123763,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/iletisim#on-gorusme",
+        "/blog/online-dershane-nedir",
+        "/blog/online-dershane-fiyatlari-2026",
+        "/blog/online-ozel-ders-mi-dershane-mi",
+        "/online-ozel-ders",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    },
+    {
+      "path": "/blog/online-ders-disiplini-nasil-kurulur",
+      "status": 200,
+      "finalUrl": "https://www.onlinedershanem.com/blog/online-ders-disiplini-nasil-kurulur",
+      "canonical": [
+        "https://www.onlinedershanem.com/blog/online-ders-disiplini-nasil-kurulur"
+      ],
+      "title": "Online Ders Disiplini Kurma Rehberi | onlinedershanem.",
+      "description": "Online ders sürecinde disiplin nasıl kurulur? Ertelemeyi azaltan, kalıcı çalışma alışkanlığı oluşturan pratik yöntemler.",
+      "robots": "index, follow",
+      "h1": [
+        "Online Ders Disiplini Nasıl Kurulur?"
+      ],
+      "htmlBytes": 124256,
+      "links": [
+        "/hakkimizda",
+        "/blog",
+        "/",
+        "/giris",
+        "/urunler/online-dershanem",
+        "/urunler/online-kocum",
+        "/urunler/online-deneme-kulubum",
+        "/iletisim#on-gorusme",
+        "/blog/online-ders-calisma-programi",
+        "/blog/deneme-analizi-nasil-yapilir",
+        "/blog/online-dershane-nedir",
+        "/online-ozel-ders",
+        "/paketler",
+        "/uygulamalar/mobil",
+        "/uygulamalar/bilgin",
+        "/dino-ai",
+        "/sss",
+        "/gizlilik",
+        "/kvkk",
+        "/iade"
+      ],
+      "xBuildSha": null
+    }
+  ]
+}

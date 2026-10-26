@@ -32,7 +32,7 @@ export const blogReviewedAt: Record<string, string> = {
   "online-matematik-dersi-nasil-olmali": "2026-05-27",
   "matematik-deneme-analizi": "2026-05-18",
   "lgs-online-ders-net-artirma": "2026-07-13",
-  "online-dershane-fiyatlari-2026": "2026-07-13",
+  "online-dershane-fiyatlari-2026": "2026-10-26",
   "e-dershane-nedir": "2026-07-13",
   "online-ders-calisma-programi": "2026-07-13",
   "yks-matematik-net-artirma": "2026-07-13",

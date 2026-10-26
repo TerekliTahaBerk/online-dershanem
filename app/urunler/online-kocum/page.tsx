@@ -1,3 +1,4 @@
+import { ProductReadingLinks } from "@/components/product/reading-links";
 import { coachingOffer } from "@/lib/marketing-offers";
 import { ConsultationSteps } from "@/components/product/consultation-steps";
 import Link from "next/link";
@@ -98,6 +99,7 @@ export default function OnlineKocumPage() {
         <ConsultationSteps product="yon-kocluk" />
         <ProductFaq title="Yön hakkında merak ettiklerin." items={faqs} />
         <YonClosing />
+        <ProductReadingLinks product="yon-kocluk" />
       </main>
       <SiteFooter />
     </div>

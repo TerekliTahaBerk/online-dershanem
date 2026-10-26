@@ -1,0 +1,312 @@
+[
+  {
+    "file": "crawled-not-indexed-2026-10-26/Grafik.csv",
+    "bytes": 1150,
+    "sha256": "92b4c7386247ad941a3ff49f3c257235162ef9583c39fb846f3f37bd7b22f611"
+  },
+  {
+    "file": "crawled-not-indexed-2026-10-26/Meta Veri.csv",
+    "bytes": 99,
+    "sha256": "e447d4e4e56063d912bbe80943d3b22eb0739c16c43ba39ff8d22990a3a344af"
+  },
+  {
+    "file": "crawled-not-indexed-2026-10-26/Tablo.csv",
+    "bytes": 984,
+    "sha256": "85d9b40b74d781053ed5d3e83369ae9f7fc6992f36c189651dd0d33349b7185e"
+  },
+  {
+    "file": "crawled-not-indexed-2026-10-26.zip",
+    "bytes": 970,
+    "sha256": "42e2a2e443199b58703da2919355520d92360300c3ce52b8452267362d3ae364"
+  },
+  {
+    "file": "indexing-overview-2026-10-26/Grafik.csv",
+    "bytes": 1755,
+    "sha256": "c3b63f60ae71d9a42d61466cb13ebbcbdf936b57217be0636ebf79b07437f498"
+  },
+  {
+    "file": "indexing-overview-2026-10-26/Kritik olmayan sorunlar.csv",
+    "bytes": 38,
+    "sha256": "7d0d37e2b5c4e007d8b16035c89225547c1479c2c79430fad5bc500b63284794"
+  },
+  {
+    "file": "indexing-overview-2026-10-26/Meta Veri.csv",
+    "bytes": 49,
+    "sha256": "4abc35aa892b400dfb7aa7b09eec19678083f1859f3408a1fece06b9e3dd58cb"
+  },
+  {
+    "file": "indexing-overview-2026-10-26/Önemli sorunlar.csv",
+    "bytes": 436,
+    "sha256": "77604805ac86b2f0f26d875d5eeb9bbed8c37a7e219a1a0819d7a383c92e1e93"
+  },
+  {
+    "file": "indexing-overview-2026-10-26.zip",
+    "bytes": 1304,
+    "sha256": "58d2e13c26ca4ac9048e0d9b0d819aea8e5e589bcc50a0ae5aaa316a4c6346de"
+  },
+  {
+    "file": "lighthouse-live-home-mobile-2026-10-26.json",
+    "bytes": 669599,
+    "sha256": "bb0f29a5fb8397ed8fb2f93929bb1a218c4f9e7bff63a4176bec61c43c220d55"
+  },
+  {
+    "file": "lighthouse-local-baseline-mobile-2026-10-26.json",
+    "bytes": 665207,
+    "sha256": "1bb173fd3cab9cb227afea15e4018d436aef2178007ddb44e7ad2a28c561325e"
+  },
+  {
+    "file": "lighthouse-local-streaming-experiment-mobile-2026-10-26.json",
+    "bytes": 665685,
+    "sha256": "7f3b6645d4a36dc68f293c9ca8765203eb0e5577697f9627bf581fd1ce021ee3"
+  },
+  {
+    "file": "live-analytics-presence-2026-10-26.json",
+    "bytes": 103,
+    "sha256": "d157e07660027a6757272f069f032b72ce4f1eecc7f41d486327ee89182f195b"
+  },
+  {
+    "file": "live-http-audit-2026-10-26.json",
+    "bytes": 52491,
+    "sha256": "a4367077a3d59f343d8fd0aaf024d7ab12a33c42ca556f8d3c990d7d0cd8bd23"
+  },
+  {
+    "file": "live-robots-2026-10-26.txt",
+    "bytes": 231,
+    "sha256": "306b162867669e36686810e570c841745a33301db1bdaa788526a8389b6dfbe5"
+  },
+  {
+    "file": "live-sitemap-2026-10-26.xml",
+    "bytes": 6010,
+    "sha256": "b6271e0f681c028286b4ad88dd8f34559fffd16e60239955045ba26b25e51ee0"
+  },
+  {
+    "file": "performance-12-month-selection-2026-10-26/Arama görünümü.csv",
+    "bytes": 55,
+    "sha256": "9180ddec566fd83705fc3c1f4014523e4fa11afb636bd5acbae75a91b0978753"
+  },
+  {
+    "file": "performance-12-month-selection-2026-10-26/Cihazlar.csv",
+    "bytes": 124,
+    "sha256": "a62675647fc3147df7666175b91d3d0021cf6d6315097e6cafc084e6d02a675a"
+  },
+  {
+    "file": "performance-12-month-selection-2026-10-26/Filtreler.csv",
+    "bytes": 70,
+    "sha256": "1328e7360539394ad6b1ff3fa45d5f4c95087ab30a5ee53269a8d473356831dd"
+  },
+  {
+    "file": "performance-12-month-selection-2026-10-26/Grafik.csv",
+    "bytes": 5438,
+    "sha256": "b1925af501f79c6df6210f940c0956975f71505be3fc34f05bdc24b4e39c1bbc"
+  },
+  {
+    "file": "performance-12-month-selection-2026-10-26/Sayfa sayısı.csv",
+    "bytes": 3889,
+    "sha256": "4443e8cd4f238f1bd2c7552013014c2a4cd8f932a8835e49fe32ff058a35b376"
+  },
+  {
+    "file": "performance-12-month-selection-2026-10-26/Sorgular.csv",
+    "bytes": 2882,
+    "sha256": "07e94129547bb6d65bbec83f5763e7b9d2901b02dcf31a1c882891a6238ff3c3"
+  },
+  {
+    "file": "performance-12-month-selection-2026-10-26/Ülkeler.csv",
+    "bytes": 1115,
+    "sha256": "7d1f856a26f2e67f97e9b94ef63c3ec1dc3f62eb0c6f6e40156b4c7af40a9b0b"
+  },
+  {
+    "file": "performance-12-month-selection-2026-10-26.zip",
+    "bytes": 5260,
+    "sha256": "ed8f348ae338d0b0c162763c1a1b8be2e7241b5fcf263ea2183c759079cbdc63"
+  },
+  {
+    "file": "performance-28-days-2026-10-26/Arama görünümü.csv",
+    "bytes": 55,
+    "sha256": "9180ddec566fd83705fc3c1f4014523e4fa11afb636bd5acbae75a91b0978753"
+  },
+  {
+    "file": "performance-28-days-2026-10-26/Cihazlar.csv",
+    "bytes": 116,
+    "sha256": "87083717046df1de96862a8f6d4cf27088638758b4a1d023ec9237dfeeb9dd4b"
+  },
+  {
+    "file": "performance-28-days-2026-10-26/Filtreler.csv",
+    "bytes": 72,
+    "sha256": "3aeb85307461e1a62407537ff960b164c96b111e35513781929d2b3a60ebe828"
+  },
+  {
+    "file": "performance-28-days-2026-10-26/Grafik.csv",
+    "bytes": 726,
+    "sha256": "e6c86857b18e4d1aefdf9981c5c5cd4323bf1a114ef88d82fea2ab1eb4b71d37"
+  },
+  {
+    "file": "performance-28-days-2026-10-26/Sayfa sayısı.csv",
+    "bytes": 2108,
+    "sha256": "d36f96611d4277173910a13d34f874c190ed4bebef69753aeaeadd3b7195026e"
+  },
+  {
+    "file": "performance-28-days-2026-10-26/Sorgular.csv",
+    "bytes": 1110,
+    "sha256": "f173769101f30666e64aed87a88c0c1241b003be0c6ee4c2b9505eee11e1c035"
+  },
+  {
+    "file": "performance-28-days-2026-10-26/Ülkeler.csv",
+    "bytes": 262,
+    "sha256": "bdfa26e829fb0250a050a6cdc34aa9b017da5b05bfa06f5a6b73ca323dd9c93c"
+  },
+  {
+    "file": "performance-28-days-2026-10-26.zip",
+    "bytes": 2641,
+    "sha256": "95583a5b90ec388034150f8dc4bd66ec9ee013b1ec80f7ba609e6e1f51531d99"
+  },
+  {
+    "file": "performance-28-days-comparison-2026-10-26/Arama görünümü.csv",
+    "bytes": 55,
+    "sha256": "9180ddec566fd83705fc3c1f4014523e4fa11afb636bd5acbae75a91b0978753"
+  },
+  {
+    "file": "performance-28-days-comparison-2026-10-26/Cihazlar.csv",
+    "bytes": 314,
+    "sha256": "7a66b94994221e3d79709799e6acb7a51178e9bea1b98c9b59a1226ca33da4e3"
+  },
+  {
+    "file": "performance-28-days-comparison-2026-10-26/Filtreler.csv",
+    "bytes": 72,
+    "sha256": "3aeb85307461e1a62407537ff960b164c96b111e35513781929d2b3a60ebe828"
+  },
+  {
+    "file": "performance-28-days-comparison-2026-10-26/Sayfa sayısı.csv",
+    "bytes": 2603,
+    "sha256": "879277693490b4f77221bec622dcb8eb134f4932720003f8c475ab3a01006d0e"
+  },
+  {
+    "file": "performance-28-days-comparison-2026-10-26/Sorgular.csv",
+    "bytes": 2209,
+    "sha256": "f5c5a6b9d599d0a70ab5ddf5674e8a812011c405e83d6ebebace2c95f9bebef2"
+  },
+  {
+    "file": "performance-28-days-comparison-2026-10-26/Ülkeler.csv",
+    "bytes": 967,
+    "sha256": "f6e5cb43f05ec832dd3810ecc92e8a216fcc1c278e7ec05e0ac7d0222820f1b5"
+  },
+  {
+    "file": "performance-28-days-comparison-2026-10-26.zip",
+    "bytes": 2925,
+    "sha256": "c8f12cf161abece4a538089922e8903cb40396932dacadad6120b9ebd206f875"
+  },
+  {
+    "file": "performance-3-months-2026-10-26/Arama görünümü.csv",
+    "bytes": 55,
+    "sha256": "9180ddec566fd83705fc3c1f4014523e4fa11afb636bd5acbae75a91b0978753"
+  },
+  {
+    "file": "performance-3-months-2026-10-26/Cihazlar.csv",
+    "bytes": 117,
+    "sha256": "e7e8402642efdf4d79e67c2b3f0036027b6df4aa60e56c0fff087c119f9d3508"
+  },
+  {
+    "file": "performance-3-months-2026-10-26/Filtreler.csv",
+    "bytes": 69,
+    "sha256": "33127bbd2519e4fc10cde922a5d7a3214d837afac9ee9ff5ddb45cb7765a1eb6"
+  },
+  {
+    "file": "performance-3-months-2026-10-26/Grafik.csv",
+    "bytes": 2307,
+    "sha256": "12e28547a0d10d9a993e095536b464272258abf4fa5cdefdaed031ed1749738f"
+  },
+  {
+    "file": "performance-3-months-2026-10-26/Sayfa sayısı.csv",
+    "bytes": 2270,
+    "sha256": "d43fef1c3ef82009cf86cc7471bdebbac7e26cf00c72acadfd6d93717a3417f9"
+  },
+  {
+    "file": "performance-3-months-2026-10-26/Sorgular.csv",
+    "bytes": 2049,
+    "sha256": "61e2c10b7bd3d85598563ae440eb27e3bddfc22ab216be5cabcbaa56d971e29f"
+  },
+  {
+    "file": "performance-3-months-2026-10-26/Ülkeler.csv",
+    "bytes": 837,
+    "sha256": "17363b0161002bd60d4f5933976b3b1406575ab69ed3f4951e45be17e4054272"
+  },
+  {
+    "file": "performance-3-months-2026-10-26.zip",
+    "bytes": 3678,
+    "sha256": "e05df96e7addc40c4a4891824270d21c34a12f934de423d9655eb407c6532b92"
+  },
+  {
+    "file": "performance-6-months-2026-10-26/Arama görünümü.csv",
+    "bytes": 55,
+    "sha256": "9180ddec566fd83705fc3c1f4014523e4fa11afb636bd5acbae75a91b0978753"
+  },
+  {
+    "file": "performance-6-months-2026-10-26/Cihazlar.csv",
+    "bytes": 123,
+    "sha256": "af013b63d13c23bd91bb697cd9b0eeb289fea5b65b16bd82de55c43e9fa7f754"
+  },
+  {
+    "file": "performance-6-months-2026-10-26/Filtreler.csv",
+    "bytes": 69,
+    "sha256": "447170f72892e9818dfeb055af076c88f38fba2e00d90ac3a3eb8931f706396f"
+  },
+  {
+    "file": "performance-6-months-2026-10-26/Grafik.csv",
+    "bytes": 4499,
+    "sha256": "901d74148c1d198214f9ee32158f196f15e2055a79af564f34f2cde08fd5ec03"
+  },
+  {
+    "file": "performance-6-months-2026-10-26/Sayfa sayısı.csv",
+    "bytes": 3600,
+    "sha256": "264eef8169270bbe95083798665a49e6e2c0ac0a250e853913e85f175aa17548"
+  },
+  {
+    "file": "performance-6-months-2026-10-26/Sorgular.csv",
+    "bytes": 2868,
+    "sha256": "02bae9223d76dbbfb058f0e71ced4bb3a8e5ff026cb9ab97c5113e96378db590"
+  },
+  {
+    "file": "performance-6-months-2026-10-26/Ülkeler.csv",
+    "bytes": 1065,
+    "sha256": "cb42801c87718744a401f0c82663aa6432334c14fd60061ef424e0b939572a8b"
+  },
+  {
+    "file": "performance-6-months-2026-10-26.zip",
+    "bytes": 4882,
+    "sha256": "b9f59637358d92f083337786ad2f59f3ee21d423f09b0775b8937593c46c4baa"
+  },
+  {
+    "file": "user-provided-2026-10-26/Arama görünümü.csv",
+    "bytes": 55,
+    "sha256": "9180ddec566fd83705fc3c1f4014523e4fa11afb636bd5acbae75a91b0978753"
+  },
+  {
+    "file": "user-provided-2026-10-26/Cihazlar.csv",
+    "bytes": 117,
+    "sha256": "e7e8402642efdf4d79e67c2b3f0036027b6df4aa60e56c0fff087c119f9d3508"
+  },
+  {
+    "file": "user-provided-2026-10-26/Filtreler.csv",
+    "bytes": 69,
+    "sha256": "33127bbd2519e4fc10cde922a5d7a3214d837afac9ee9ff5ddb45cb7765a1eb6"
+  },
+  {
+    "file": "user-provided-2026-10-26/Grafik.csv",
+    "bytes": 2307,
+    "sha256": "12e28547a0d10d9a993e095536b464272258abf4fa5cdefdaed031ed1749738f"
+  },
+  {
+    "file": "user-provided-2026-10-26/Sayfa sayısı.csv",
+    "bytes": 2270,
+    "sha256": "d43fef1c3ef82009cf86cc7471bdebbac7e26cf00c72acadfd6d93717a3417f9"
+  },
+  {
+    "file": "user-provided-2026-10-26/Sorgular.csv",
+    "bytes": 2049,
+    "sha256": "61e2c10b7bd3d85598563ae440eb27e3bddfc22ab216be5cabcbaa56d971e29f"
+  },
+  {
+    "file": "user-provided-2026-10-26/Ülkeler.csv",
+    "bytes": 837,
+    "sha256": "17363b0161002bd60d4f5933976b3b1406575ab69ed3f4951e45be17e4054272"
+  }
+]

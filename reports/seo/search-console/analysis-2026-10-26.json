@@ -1,0 +1,2950 @@
+{
+  "property": "sc-domain:onlinedershanem.com",
+  "exportedOn": "2026-10-26",
+  "periods": {
+    "performance-12-month-selection-2026-10-26": {
+      "start": "2026-03-16",
+      "end": "2026-10-24",
+      "clicks": 224,
+      "impressions": 2910,
+      "ctrPercent": 7.697594501718213,
+      "approxImpressionWeightedPosition": 14.087560137457046,
+      "queryRows": 91,
+      "visibleQueryClicks": 76,
+      "pages": [
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/",
+          "Tıklamalar": "125",
+          "Gösterimler": "1052",
+          "TO": "11.88%",
+          "Pozisyon": "8.52"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/",
+          "Tıklamalar": "46",
+          "Gösterimler": "618",
+          "TO": "7.44%",
+          "Pozisyon": "14.32"
+        },
+        {
+          "En alakalı sayfalar": "http://onlinedershanem.com/",
+          "Tıklamalar": "11",
+          "Gösterimler": "71",
+          "TO": "15.49%",
+          "Pozisyon": "5.45"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/ders-paketleri",
+          "Tıklamalar": "8",
+          "Gösterimler": "212",
+          "TO": "3.77%",
+          "Pozisyon": "7.38"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/yks",
+          "Tıklamalar": "7",
+          "Gösterimler": "182",
+          "TO": "3.85%",
+          "Pozisyon": "8.74"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-dershane-fiyatlari-2026",
+          "Tıklamalar": "5",
+          "Gösterimler": "279",
+          "TO": "1.79%",
+          "Pozisyon": "18.34"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/paketler",
+          "Tıklamalar": "4",
+          "Gösterimler": "40",
+          "TO": "10%",
+          "Pozisyon": "13.45"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/tyt-matematik-calisma-programi",
+          "Tıklamalar": "3",
+          "Gösterimler": "54",
+          "TO": "5.56%",
+          "Pozisyon": "11.81"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/online-dershane",
+          "Tıklamalar": "2",
+          "Gösterimler": "106",
+          "TO": "1.89%",
+          "Pozisyon": "16.75"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/lgs",
+          "Tıklamalar": "2",
+          "Gösterimler": "86",
+          "TO": "2.33%",
+          "Pozisyon": "9.83"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/lgs",
+          "Tıklamalar": "2",
+          "Gösterimler": "85",
+          "TO": "2.35%",
+          "Pozisyon": "13.82"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/paketler",
+          "Tıklamalar": "2",
+          "Gösterimler": "62",
+          "TO": "3.23%",
+          "Pozisyon": "6.19"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog/online-ders-calisma-programi",
+          "Tıklamalar": "2",
+          "Gösterimler": "28",
+          "TO": "7.14%",
+          "Pozisyon": "5.46"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog/deneme-analizi-nasil-yapilir/",
+          "Tıklamalar": "2",
+          "Gösterimler": "19",
+          "TO": "10.53%",
+          "Pozisyon": "28"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-ders-calisma-programi",
+          "Tıklamalar": "1",
+          "Gösterimler": "85",
+          "TO": "1.18%",
+          "Pozisyon": "15.25"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/online-dershane/",
+          "Tıklamalar": "1",
+          "Gösterimler": "80",
+          "TO": "1.25%",
+          "Pozisyon": "44.02"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/online-dershane",
+          "Tıklamalar": "1",
+          "Gösterimler": "63",
+          "TO": "1.59%",
+          "Pozisyon": "15.81"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/paketler/",
+          "Tıklamalar": "1",
+          "Gösterimler": "63",
+          "TO": "1.59%",
+          "Pozisyon": "22.27"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog/online-dershane-fiyatlari-2026",
+          "Tıklamalar": "1",
+          "Gösterimler": "31",
+          "TO": "3.23%",
+          "Pozisyon": "10.06"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/yks/",
+          "Tıklamalar": "1",
+          "Gösterimler": "27",
+          "TO": "3.7%",
+          "Pozisyon": "23.85"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/matematikte-temel-eksigi-nasil-kapatilir",
+          "Tıklamalar": "1",
+          "Gösterimler": "23",
+          "TO": "4.35%",
+          "Pozisyon": "7.22"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/kamplar/",
+          "Tıklamalar": "1",
+          "Gösterimler": "9",
+          "TO": "11.11%",
+          "Pozisyon": "8.33"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/kariyer/",
+          "Tıklamalar": "1",
+          "Gösterimler": "2",
+          "TO": "50%",
+          "Pozisyon": "3.5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/ayt-matematik-calisma-programi",
+          "Tıklamalar": "1",
+          "Gösterimler": "2",
+          "TO": "50%",
+          "Pozisyon": "17"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/urunler/online-dershanem",
+          "Tıklamalar": "0",
+          "Gösterimler": "92",
+          "TO": "0%",
+          "Pozisyon": "14.07"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog/online-dershane-fiyatlari-2026/",
+          "Tıklamalar": "0",
+          "Gösterimler": "46",
+          "TO": "0%",
+          "Pozisyon": "14.52"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog",
+          "Tıklamalar": "0",
+          "Gösterimler": "43",
+          "TO": "0%",
+          "Pozisyon": "17.84"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/iade",
+          "Tıklamalar": "0",
+          "Gösterimler": "40",
+          "TO": "0%",
+          "Pozisyon": "20.65"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/deneme-analizi-nasil-yapilir",
+          "Tıklamalar": "0",
+          "Gösterimler": "35",
+          "TO": "0%",
+          "Pozisyon": "36.91"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/kamplar",
+          "Tıklamalar": "0",
+          "Gösterimler": "27",
+          "TO": "0%",
+          "Pozisyon": "8.67"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/e-dershane-nedir",
+          "Tıklamalar": "0",
+          "Gösterimler": "23",
+          "TO": "0%",
+          "Pozisyon": "20.74"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog",
+          "Tıklamalar": "0",
+          "Gösterimler": "22",
+          "TO": "0%",
+          "Pozisyon": "9.14"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/gizlilik",
+          "Tıklamalar": "0",
+          "Gösterimler": "21",
+          "TO": "0%",
+          "Pozisyon": "41.48"
+        },
+        {
+          "En alakalı sayfalar": "http://onlinedershanem.com/tyt",
+          "Tıklamalar": "0",
+          "Gösterimler": "16",
+          "TO": "0%",
+          "Pozisyon": "6.12"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-dershane-nedir",
+          "Tıklamalar": "0",
+          "Gösterimler": "13",
+          "TO": "0%",
+          "Pozisyon": "21.38"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog/deneme-analizi-nasil-yapilir",
+          "Tıklamalar": "0",
+          "Gösterimler": "11",
+          "TO": "0%",
+          "Pozisyon": "8.27"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/gizlilik/",
+          "Tıklamalar": "0",
+          "Gösterimler": "10",
+          "TO": "0%",
+          "Pozisyon": "46.1"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/kayit",
+          "Tıklamalar": "0",
+          "Gösterimler": "9",
+          "TO": "0%",
+          "Pozisyon": "42.56"
+        },
+        {
+          "En alakalı sayfalar": "http://onlinedershanem.com/paketler",
+          "Tıklamalar": "0",
+          "Gösterimler": "8",
+          "TO": "0%",
+          "Pozisyon": "5.38"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/yks-online-ders-calisma-plani",
+          "Tıklamalar": "0",
+          "Gösterimler": "7",
+          "TO": "0%",
+          "Pozisyon": "9.71"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/uygulamalar/mobil",
+          "Tıklamalar": "0",
+          "Gösterimler": "6",
+          "TO": "0%",
+          "Pozisyon": "6.17"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog/online-ders-calisma-programi/",
+          "Tıklamalar": "0",
+          "Gösterimler": "5",
+          "TO": "0%",
+          "Pozisyon": "5.6"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog/lgs-matematikte-zorlananlar-icin/",
+          "Tıklamalar": "0",
+          "Gösterimler": "5",
+          "TO": "0%",
+          "Pozisyon": "6.2"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/urunler",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "4.5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/online-ozel-ders",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "5.25"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/yks-online-ders-calisma-plani/",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "7.25"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/kariyer",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "19"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/uygulamalar/bilgin",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "2.67"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/matematik-deneme-analizi",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "8"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/tyt",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "9.33"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-ders-disiplini-nasil-kurulur",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "9.33"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/lgs-matematik-calisma-programi",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "10"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog/",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/hakkimizda",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/urunler/online-kocum",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "5.5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/lgs-yeni-nesil-matematik-sorulari",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "32"
+        },
+        {
+          "En alakalı sayfalar": "http://onlinedershanem.com/lgs",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "3"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/yks",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "3"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/dino-ai",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "7"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-matematik-dersi-nasil-olmali",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "8"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/ozel-ders-mi-kucuk-grup-mu",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "11"
+        }
+      ],
+      "devices": [
+        {
+          "Cihaz": "Mobil",
+          "Tıklamalar": "151",
+          "Gösterimler": "1621",
+          "TO": "9.32%",
+          "Pozisyon": "13.06"
+        },
+        {
+          "Cihaz": "Masaüstü",
+          "Tıklamalar": "67",
+          "Gösterimler": "1170",
+          "TO": "5.73%",
+          "Pozisyon": "16.24"
+        },
+        {
+          "Cihaz": "Tablet",
+          "Tıklamalar": "6",
+          "Gösterimler": "119",
+          "TO": "5.04%",
+          "Pozisyon": "7.01"
+        }
+      ],
+      "countries": [
+        {
+          "Ülke": "Türkiye",
+          "Tıklamalar": "218",
+          "Gösterimler": "2629",
+          "TO": "8.29%",
+          "Pozisyon": "13.11"
+        },
+        {
+          "Ülke": "Kosova",
+          "Tıklamalar": "2",
+          "Gösterimler": "3",
+          "TO": "66.67%",
+          "Pozisyon": "1.67"
+        },
+        {
+          "Ülke": "Amerika Birleşik Devletleri",
+          "Tıklamalar": "1",
+          "Gösterimler": "53",
+          "TO": "1.89%",
+          "Pozisyon": "6.92"
+        },
+        {
+          "Ülke": "İngiltere",
+          "Tıklamalar": "1",
+          "Gösterimler": "12",
+          "TO": "8.33%",
+          "Pozisyon": "12.25"
+        },
+        {
+          "Ülke": "Arnavutluk",
+          "Tıklamalar": "1",
+          "Gösterimler": "3",
+          "TO": "33.33%",
+          "Pozisyon": "1"
+        },
+        {
+          "Ülke": "Kırgızistan",
+          "Tıklamalar": "1",
+          "Gösterimler": "1",
+          "TO": "100%",
+          "Pozisyon": "1"
+        },
+        {
+          "Ülke": "Güney Kıbrıs Rum Yönetimi",
+          "Tıklamalar": "0",
+          "Gösterimler": "47",
+          "TO": "0%",
+          "Pozisyon": "10.26"
+        },
+        {
+          "Ülke": "Hindistan",
+          "Tıklamalar": "0",
+          "Gösterimler": "29",
+          "TO": "0%",
+          "Pozisyon": "48.62"
+        },
+        {
+          "Ülke": "Filipinler",
+          "Tıklamalar": "0",
+          "Gösterimler": "18",
+          "TO": "0%",
+          "Pozisyon": "47.89"
+        },
+        {
+          "Ülke": "Endonezya",
+          "Tıklamalar": "0",
+          "Gösterimler": "17",
+          "TO": "0%",
+          "Pozisyon": "45"
+        },
+        {
+          "Ülke": "Almanya",
+          "Tıklamalar": "0",
+          "Gösterimler": "14",
+          "TO": "0%",
+          "Pozisyon": "6.21"
+        },
+        {
+          "Ülke": "Hollanda",
+          "Tıklamalar": "0",
+          "Gösterimler": "11",
+          "TO": "0%",
+          "Pozisyon": "5.73"
+        },
+        {
+          "Ülke": "Vietnam",
+          "Tıklamalar": "0",
+          "Gösterimler": "6",
+          "TO": "0%",
+          "Pozisyon": "38.83"
+        },
+        {
+          "Ülke": "Kanada",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "17.75"
+        },
+        {
+          "Ülke": "Meksika",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "37.25"
+        },
+        {
+          "Ülke": "Fransa",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "3.67"
+        },
+        {
+          "Ülke": "İsviçre",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "9"
+        },
+        {
+          "Ülke": "Mısır",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "29"
+        },
+        {
+          "Ülke": "Malezya",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "30.67"
+        },
+        {
+          "Ülke": "Avustralya",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "31.33"
+        },
+        {
+          "Ülke": "Irak",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "33.33"
+        },
+        {
+          "Ülke": "Kenya",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "35.33"
+        },
+        {
+          "Ülke": "Güney Kore",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "39.67"
+        },
+        {
+          "Ülke": "Colombia",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "53.67"
+        },
+        {
+          "Ülke": "İspanya",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "1"
+        },
+        {
+          "Ülke": "Moğolistan",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "1.5"
+        },
+        {
+          "Ülke": "Çekya",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "20.5"
+        },
+        {
+          "Ülke": "Georgia",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "50.5"
+        },
+        {
+          "Ülke": "Brezilya",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "51.5"
+        },
+        {
+          "Ülke": "Dominik Cumhuriyeti",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "59"
+        },
+        {
+          "Ülke": "Singapur",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "1"
+        },
+        {
+          "Ülke": "Suudi Arabistan",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "6"
+        },
+        {
+          "Ülke": "Çin",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "7"
+        },
+        {
+          "Ülke": "Venezuela",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "8"
+        },
+        {
+          "Ülke": "Litvanya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "11"
+        },
+        {
+          "Ülke": "Slovenya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "13"
+        },
+        {
+          "Ülke": "Nepal",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "16"
+        },
+        {
+          "Ülke": "Japonya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "18"
+        },
+        {
+          "Ülke": "Kuveyt",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "19"
+        },
+        {
+          "Ülke": "Peru",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "24"
+        },
+        {
+          "Ülke": "Fas",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "39"
+        },
+        {
+          "Ülke": "Pakistan",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "42"
+        },
+        {
+          "Ülke": "Guatemala",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "46"
+        },
+        {
+          "Ülke": "Tayvan",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "46"
+        },
+        {
+          "Ülke": "Şili",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "52"
+        },
+        {
+          "Ülke": "Arjantin",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "60"
+        },
+        {
+          "Ülke": "Bulgaristan",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "66"
+        },
+        {
+          "Ülke": "Hong Kong",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "75"
+        },
+        {
+          "Ülke": "Cezayir",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "83"
+        },
+        {
+          "Ülke": "Ekvador",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "86"
+        }
+      ],
+      "filters": [
+        {
+          "Filtre uygula": "Arama türü",
+          "Değer": "Web (metin tabanlı)"
+        },
+        {
+          "Filtre uygula": "Tarih",
+          "Değer": "Son 12 ay"
+        }
+      ],
+      "brandedQueryApproximation": {
+        "definition": "online\\s*dershanem|onlinedershanem|y[öo]n\\s*ko[çc]luk|online\\s*ko[çc]um|deneme\\s*ligi|onlinedenemekul[üu]b[üu]m",
+        "rows": [
+          {
+            "En çok yapılan sorgular": "online dershanem",
+            "Tıklamalar": "65",
+            "Gösterimler": "116",
+            "TO": "56.03%",
+            "Pozisyon": "1"
+          }
+        ]
+      },
+      "queryOpportunities": [
+        {
+          "En çok yapılan sorgular": "dershanem",
+          "Tıklamalar": "2",
+          "Gösterimler": "247",
+          "TO": "0.81%",
+          "Pozisyon": "9.45"
+        },
+        {
+          "En çok yapılan sorgular": "online dershane fiyatları",
+          "Tıklamalar": "2",
+          "Gösterimler": "101",
+          "TO": "1.98%",
+          "Pozisyon": "12.28"
+        },
+        {
+          "En çok yapılan sorgular": "dershanem com tr",
+          "Tıklamalar": "1",
+          "Gösterimler": "19",
+          "TO": "5.26%",
+          "Pozisyon": "7.74"
+        },
+        {
+          "En çok yapılan sorgular": "yks canlı ders",
+          "Tıklamalar": "1",
+          "Gösterimler": "3",
+          "TO": "33.33%",
+          "Pozisyon": "19.33"
+        },
+        {
+          "En çok yapılan sorgular": "ayt matematik çalışma programı",
+          "Tıklamalar": "1",
+          "Gösterimler": "2",
+          "TO": "50%",
+          "Pozisyon": "17"
+        },
+        {
+          "En çok yapılan sorgular": "dershanem net",
+          "Tıklamalar": "0",
+          "Gösterimler": "142",
+          "TO": "0%",
+          "Pozisyon": "5.43"
+        },
+        {
+          "En çok yapılan sorgular": "dersanem net",
+          "Tıklamalar": "0",
+          "Gösterimler": "61",
+          "TO": "0%",
+          "Pozisyon": "6.66"
+        },
+        {
+          "En çok yapılan sorgular": "dershanem dershanesi",
+          "Tıklamalar": "0",
+          "Gösterimler": "26",
+          "TO": "0%",
+          "Pozisyon": "10.96"
+        },
+        {
+          "En çok yapılan sorgular": "matematik dershanem",
+          "Tıklamalar": "0",
+          "Gösterimler": "16",
+          "TO": "0%",
+          "Pozisyon": "7.56"
+        },
+        {
+          "En çok yapılan sorgular": "yks matematik kursu",
+          "Tıklamalar": "0",
+          "Gösterimler": "11",
+          "TO": "0%",
+          "Pozisyon": "8.45"
+        },
+        {
+          "En çok yapılan sorgular": "canlı dershane",
+          "Tıklamalar": "0",
+          "Gösterimler": "9",
+          "TO": "0%",
+          "Pozisyon": "17.22"
+        },
+        {
+          "En çok yapılan sorgular": "online lgs matematik",
+          "Tıklamalar": "0",
+          "Gösterimler": "6",
+          "TO": "0%",
+          "Pozisyon": "18.83"
+        },
+        {
+          "En çok yapılan sorgular": "online yks matematik",
+          "Tıklamalar": "0",
+          "Gösterimler": "6",
+          "TO": "0%",
+          "Pozisyon": "19"
+        },
+        {
+          "En çok yapılan sorgular": "tyt matematik çalışma programı",
+          "Tıklamalar": "0",
+          "Gösterimler": "5",
+          "TO": "0%",
+          "Pozisyon": "17.8"
+        },
+        {
+          "En çok yapılan sorgular": "dersham",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "10"
+        }
+      ]
+    },
+    "performance-28-days-2026-10-26": {
+      "start": "2026-09-27",
+      "end": "2026-10-24",
+      "clicks": 16,
+      "impressions": 397,
+      "ctrPercent": 4.030226700251889,
+      "approxImpressionWeightedPosition": 14.48816120906801,
+      "queryRows": 35,
+      "visibleQueryClicks": 3,
+      "pages": [
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/",
+          "Tıklamalar": "6",
+          "Gösterimler": "99",
+          "TO": "6.06%",
+          "Pozisyon": "13.3"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/yks",
+          "Tıklamalar": "4",
+          "Gösterimler": "85",
+          "TO": "4.71%",
+          "Pozisyon": "8.34"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/ders-paketleri",
+          "Tıklamalar": "2",
+          "Gösterimler": "59",
+          "TO": "3.39%",
+          "Pozisyon": "6.98"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-dershane-fiyatlari-2026",
+          "Tıklamalar": "1",
+          "Gösterimler": "86",
+          "TO": "1.16%",
+          "Pozisyon": "25.47"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/lgs",
+          "Tıklamalar": "1",
+          "Gösterimler": "28",
+          "TO": "3.57%",
+          "Pozisyon": "10.25"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/matematikte-temel-eksigi-nasil-kapatilir",
+          "Tıklamalar": "1",
+          "Gösterimler": "8",
+          "TO": "12.5%",
+          "Pozisyon": "6.75"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/ayt-matematik-calisma-programi",
+          "Tıklamalar": "1",
+          "Gösterimler": "2",
+          "TO": "50%",
+          "Pozisyon": "17"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/urunler/online-dershanem",
+          "Tıklamalar": "0",
+          "Gösterimler": "23",
+          "TO": "0%",
+          "Pozisyon": "13.83"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/e-dershane-nedir",
+          "Tıklamalar": "0",
+          "Gösterimler": "23",
+          "TO": "0%",
+          "Pozisyon": "20.74"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-dershane-nedir",
+          "Tıklamalar": "0",
+          "Gösterimler": "13",
+          "TO": "0%",
+          "Pozisyon": "21.38"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/gizlilik",
+          "Tıklamalar": "0",
+          "Gösterimler": "9",
+          "TO": "0%",
+          "Pozisyon": "54.11"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/tyt-matematik-calisma-programi",
+          "Tıklamalar": "0",
+          "Gösterimler": "8",
+          "TO": "0%",
+          "Pozisyon": "14.75"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/kamplar",
+          "Tıklamalar": "0",
+          "Gösterimler": "7",
+          "TO": "0%",
+          "Pozisyon": "14.29"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/paketler",
+          "Tıklamalar": "0",
+          "Gösterimler": "7",
+          "TO": "0%",
+          "Pozisyon": "14.71"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/deneme-analizi-nasil-yapilir",
+          "Tıklamalar": "0",
+          "Gösterimler": "7",
+          "TO": "0%",
+          "Pozisyon": "33.14"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/uygulamalar/mobil",
+          "Tıklamalar": "0",
+          "Gösterimler": "6",
+          "TO": "0%",
+          "Pozisyon": "6.17"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-ders-calisma-programi",
+          "Tıklamalar": "0",
+          "Gösterimler": "5",
+          "TO": "0%",
+          "Pozisyon": "29.6"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/urunler",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "4.5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/online-ozel-ders",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "5.25"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/iade",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "7"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/uygulamalar/bilgin",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "2.67"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/matematik-deneme-analizi",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "8"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-ders-disiplini-nasil-kurulur",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "9.33"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/lgs-matematik-calisma-programi",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "10"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/hakkimizda",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/urunler/online-kocum",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "5.5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "14"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/lgs-yeni-nesil-matematik-sorulari",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "32"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/dino-ai",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "7"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-matematik-dersi-nasil-olmali",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "8"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/ozel-ders-mi-kucuk-grup-mu",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "11"
+        }
+      ],
+      "devices": [
+        {
+          "Cihaz": "Mobil",
+          "Tıklamalar": "12",
+          "Gösterimler": "258",
+          "TO": "4.65%",
+          "Pozisyon": "10.38"
+        },
+        {
+          "Cihaz": "Masaüstü",
+          "Tıklamalar": "4",
+          "Gösterimler": "128",
+          "TO": "3.12%",
+          "Pozisyon": "23.35"
+        },
+        {
+          "Cihaz": "Tablet",
+          "Tıklamalar": "0",
+          "Gösterimler": "11",
+          "TO": "0%",
+          "Pozisyon": "7.91"
+        }
+      ],
+      "countries": [
+        {
+          "Ülke": "Türkiye",
+          "Tıklamalar": "15",
+          "Gösterimler": "385",
+          "TO": "3.9%",
+          "Pozisyon": "14.67"
+        },
+        {
+          "Ülke": "Amerika Birleşik Devletleri",
+          "Tıklamalar": "1",
+          "Gösterimler": "5",
+          "TO": "20%",
+          "Pozisyon": "2.4"
+        },
+        {
+          "Ülke": "Hollanda",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "2"
+        },
+        {
+          "Ülke": "İsviçre",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "7"
+        },
+        {
+          "Ülke": "Güney Kıbrıs Rum Yönetimi",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "9"
+        },
+        {
+          "Ülke": "Litvanya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "11"
+        },
+        {
+          "Ülke": "Slovenya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "13"
+        },
+        {
+          "Ülke": "Avustralya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "18"
+        },
+        {
+          "Ülke": "Çekya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "33"
+        }
+      ],
+      "filters": [
+        {
+          "Filtre uygula": "Arama türü",
+          "Değer": "Web (metin tabanlı)"
+        },
+        {
+          "Filtre uygula": "Tarih",
+          "Değer": "Son 28 gün"
+        }
+      ],
+      "brandedQueryApproximation": {
+        "definition": "online\\s*dershanem|onlinedershanem|y[öo]n\\s*ko[çc]luk|online\\s*ko[çc]um|deneme\\s*ligi|onlinedenemekul[üu]b[üu]m",
+        "rows": [
+          {
+            "En çok yapılan sorgular": "online dershanem",
+            "Tıklamalar": "1",
+            "Gösterimler": "2",
+            "TO": "50%",
+            "Pozisyon": "1"
+          }
+        ]
+      },
+      "queryOpportunities": [
+        {
+          "En çok yapılan sorgular": "ayt matematik çalışma programı",
+          "Tıklamalar": "1",
+          "Gösterimler": "2",
+          "TO": "50%",
+          "Pozisyon": "17"
+        },
+        {
+          "En çok yapılan sorgular": "dershanem",
+          "Tıklamalar": "0",
+          "Gösterimler": "14",
+          "TO": "0%",
+          "Pozisyon": "8.71"
+        },
+        {
+          "En çok yapılan sorgular": "online dershane fiyatları",
+          "Tıklamalar": "0",
+          "Gösterimler": "12",
+          "TO": "0%",
+          "Pozisyon": "12.92"
+        },
+        {
+          "En çok yapılan sorgular": "e dershane",
+          "Tıklamalar": "0",
+          "Gösterimler": "7",
+          "TO": "0%",
+          "Pozisyon": "14.86"
+        },
+        {
+          "En çok yapılan sorgular": "dershanem net",
+          "Tıklamalar": "0",
+          "Gösterimler": "5",
+          "TO": "0%",
+          "Pozisyon": "6.6"
+        }
+      ]
+    },
+    "performance-3-months-2026-10-26": {
+      "start": "2026-07-25",
+      "end": "2026-10-24",
+      "clicks": 66,
+      "impressions": 1307,
+      "ctrPercent": 5.049732211170619,
+      "approxImpressionWeightedPosition": 14.384468247895946,
+      "queryRows": 65,
+      "visibleQueryClicks": 5,
+      "pages": [
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/",
+          "Tıklamalar": "44",
+          "Gösterimler": "553",
+          "TO": "7.96%",
+          "Pozisyon": "13.93"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/ders-paketleri",
+          "Tıklamalar": "8",
+          "Gösterimler": "200",
+          "TO": "4%",
+          "Pozisyon": "6.79"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/yks",
+          "Tıklamalar": "7",
+          "Gösterimler": "178",
+          "TO": "3.93%",
+          "Pozisyon": "8.87"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/tyt-matematik-calisma-programi",
+          "Tıklamalar": "3",
+          "Gösterimler": "53",
+          "TO": "5.66%",
+          "Pozisyon": "11.49"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-dershane-fiyatlari-2026",
+          "Tıklamalar": "2",
+          "Gösterimler": "186",
+          "TO": "1.08%",
+          "Pozisyon": "18.13"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/lgs",
+          "Tıklamalar": "2",
+          "Gösterimler": "85",
+          "TO": "2.35%",
+          "Pozisyon": "13.82"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/online-dershane",
+          "Tıklamalar": "1",
+          "Gösterimler": "57",
+          "TO": "1.75%",
+          "Pozisyon": "16.12"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/matematikte-temel-eksigi-nasil-kapatilir",
+          "Tıklamalar": "1",
+          "Gösterimler": "23",
+          "TO": "4.35%",
+          "Pozisyon": "7.22"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/ayt-matematik-calisma-programi",
+          "Tıklamalar": "1",
+          "Gösterimler": "2",
+          "TO": "50%",
+          "Pozisyon": "17"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/urunler/online-dershanem",
+          "Tıklamalar": "0",
+          "Gösterimler": "92",
+          "TO": "0%",
+          "Pozisyon": "14.07"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog",
+          "Tıklamalar": "0",
+          "Gösterimler": "37",
+          "TO": "0%",
+          "Pozisyon": "16.54"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-ders-calisma-programi",
+          "Tıklamalar": "0",
+          "Gösterimler": "36",
+          "TO": "0%",
+          "Pozisyon": "20.75"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/iade",
+          "Tıklamalar": "0",
+          "Gösterimler": "36",
+          "TO": "0%",
+          "Pozisyon": "22.22"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/deneme-analizi-nasil-yapilir",
+          "Tıklamalar": "0",
+          "Gösterimler": "32",
+          "TO": "0%",
+          "Pozisyon": "34.53"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/e-dershane-nedir",
+          "Tıklamalar": "0",
+          "Gösterimler": "23",
+          "TO": "0%",
+          "Pozisyon": "20.74"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/kamplar",
+          "Tıklamalar": "0",
+          "Gösterimler": "20",
+          "TO": "0%",
+          "Pozisyon": "9.55"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/gizlilik",
+          "Tıklamalar": "0",
+          "Gösterimler": "20",
+          "TO": "0%",
+          "Pozisyon": "43.25"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-dershane-nedir",
+          "Tıklamalar": "0",
+          "Gösterimler": "13",
+          "TO": "0%",
+          "Pozisyon": "21.38"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/paketler",
+          "Tıklamalar": "0",
+          "Gösterimler": "7",
+          "TO": "0%",
+          "Pozisyon": "14.71"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/uygulamalar/mobil",
+          "Tıklamalar": "0",
+          "Gösterimler": "6",
+          "TO": "0%",
+          "Pozisyon": "6.17"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/urunler",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "4.5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/online-ozel-ders",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "5.25"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/uygulamalar/bilgin",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "2.67"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/matematik-deneme-analizi",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "8"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-ders-disiplini-nasil-kurulur",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "9.33"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/lgs-matematik-calisma-programi",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "10"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/hakkimizda",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/urunler/online-kocum",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "5.5"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog/lgs-matematikte-zorlananlar-icin/",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "6"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/lgs-yeni-nesil-matematik-sorulari",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "32"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/dino-ai",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "7"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-matematik-dersi-nasil-olmali",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "8"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/ozel-ders-mi-kucuk-grup-mu",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "11"
+        }
+      ],
+      "devices": [
+        {
+          "Cihaz": "Mobil",
+          "Tıklamalar": "46",
+          "Gösterimler": "772",
+          "TO": "5.96%",
+          "Pozisyon": "11.61"
+        },
+        {
+          "Cihaz": "Masaüstü",
+          "Tıklamalar": "16",
+          "Gösterimler": "494",
+          "TO": "3.24%",
+          "Pozisyon": "19.33"
+        },
+        {
+          "Cihaz": "Tablet",
+          "Tıklamalar": "4",
+          "Gösterimler": "41",
+          "TO": "9.76%",
+          "Pozisyon": "7"
+        }
+      ],
+      "countries": [
+        {
+          "Ülke": "Türkiye",
+          "Tıklamalar": "63",
+          "Gösterimler": "1199",
+          "TO": "5.25%",
+          "Pozisyon": "13.46"
+        },
+        {
+          "Ülke": "Amerika Birleşik Devletleri",
+          "Tıklamalar": "1",
+          "Gösterimler": "21",
+          "TO": "4.76%",
+          "Pozisyon": "8.05"
+        },
+        {
+          "Ülke": "Kırgızistan",
+          "Tıklamalar": "1",
+          "Gösterimler": "1",
+          "TO": "100%",
+          "Pozisyon": "1"
+        },
+        {
+          "Ülke": "Kosova",
+          "Tıklamalar": "1",
+          "Gösterimler": "1",
+          "TO": "100%",
+          "Pozisyon": "3"
+        },
+        {
+          "Ülke": "Hindistan",
+          "Tıklamalar": "0",
+          "Gösterimler": "10",
+          "TO": "0%",
+          "Pozisyon": "56.4"
+        },
+        {
+          "Ülke": "Endonezya",
+          "Tıklamalar": "0",
+          "Gösterimler": "8",
+          "TO": "0%",
+          "Pozisyon": "39.38"
+        },
+        {
+          "Ülke": "Filipinler",
+          "Tıklamalar": "0",
+          "Gösterimler": "8",
+          "TO": "0%",
+          "Pozisyon": "47"
+        },
+        {
+          "Ülke": "Güney Kıbrıs Rum Yönetimi",
+          "Tıklamalar": "0",
+          "Gösterimler": "7",
+          "TO": "0%",
+          "Pozisyon": "10"
+        },
+        {
+          "Ülke": "Hollanda",
+          "Tıklamalar": "0",
+          "Gösterimler": "6",
+          "TO": "0%",
+          "Pozisyon": "6.67"
+        },
+        {
+          "Ülke": "Almanya",
+          "Tıklamalar": "0",
+          "Gösterimler": "6",
+          "TO": "0%",
+          "Pozisyon": "7.17"
+        },
+        {
+          "Ülke": "İngiltere",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "6"
+        },
+        {
+          "Ülke": "Güney Kore",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "39.67"
+        },
+        {
+          "Ülke": "İspanya",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "1"
+        },
+        {
+          "Ülke": "Moğolistan",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "1.5"
+        },
+        {
+          "Ülke": "İsviçre",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "11"
+        },
+        {
+          "Ülke": "Avustralya",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "13.5"
+        },
+        {
+          "Ülke": "Kanada",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "34.5"
+        },
+        {
+          "Ülke": "Georgia",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "50.5"
+        },
+        {
+          "Ülke": "Brezilya",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "51.5"
+        },
+        {
+          "Ülke": "Meksika",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "1"
+        },
+        {
+          "Ülke": "Singapur",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "1"
+        },
+        {
+          "Ülke": "Fransa",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "4"
+        },
+        {
+          "Ülke": "Suudi Arabistan",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "6"
+        },
+        {
+          "Ülke": "Litvanya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "11"
+        },
+        {
+          "Ülke": "Slovenya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "13"
+        },
+        {
+          "Ülke": "Japonya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "18"
+        },
+        {
+          "Ülke": "Irak",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "23"
+        },
+        {
+          "Ülke": "Peru",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "24"
+        },
+        {
+          "Ülke": "Mısır",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "28"
+        },
+        {
+          "Ülke": "Çekya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "33"
+        },
+        {
+          "Ülke": "Malezya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "36"
+        },
+        {
+          "Ülke": "Pakistan",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "42"
+        },
+        {
+          "Ülke": "Guatemala",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "46"
+        },
+        {
+          "Ülke": "Kenya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "48"
+        },
+        {
+          "Ülke": "Şili",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "52"
+        },
+        {
+          "Ülke": "Arjantin",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "60"
+        },
+        {
+          "Ülke": "Cezayir",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "83"
+        },
+        {
+          "Ülke": "Ekvador",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "86"
+        }
+      ],
+      "filters": [
+        {
+          "Filtre uygula": "Arama türü",
+          "Değer": "Web (metin tabanlı)"
+        },
+        {
+          "Filtre uygula": "Tarih",
+          "Değer": "Son 3 ay"
+        }
+      ],
+      "brandedQueryApproximation": {
+        "definition": "online\\s*dershanem|onlinedershanem|y[öo]n\\s*ko[çc]luk|online\\s*ko[çc]um|deneme\\s*ligi|onlinedenemekul[üu]b[üu]m",
+        "rows": [
+          {
+            "En çok yapılan sorgular": "online dershanem",
+            "Tıklamalar": "1",
+            "Gösterimler": "2",
+            "TO": "50%",
+            "Pozisyon": "1"
+          }
+        ]
+      },
+      "queryOpportunities": [
+        {
+          "En çok yapılan sorgular": "dershanem",
+          "Tıklamalar": "1",
+          "Gösterimler": "114",
+          "TO": "0.88%",
+          "Pozisyon": "8.84"
+        },
+        {
+          "En çok yapılan sorgular": "yks canlı ders",
+          "Tıklamalar": "1",
+          "Gösterimler": "3",
+          "TO": "33.33%",
+          "Pozisyon": "19.33"
+        },
+        {
+          "En çok yapılan sorgular": "ayt matematik çalışma programı",
+          "Tıklamalar": "1",
+          "Gösterimler": "2",
+          "TO": "50%",
+          "Pozisyon": "17"
+        },
+        {
+          "En çok yapılan sorgular": "online dershane fiyatları",
+          "Tıklamalar": "0",
+          "Gösterimler": "28",
+          "TO": "0%",
+          "Pozisyon": "11.18"
+        },
+        {
+          "En çok yapılan sorgular": "dershanem net",
+          "Tıklamalar": "0",
+          "Gösterimler": "12",
+          "TO": "0%",
+          "Pozisyon": "6.5"
+        },
+        {
+          "En çok yapılan sorgular": "yks matematik kursu",
+          "Tıklamalar": "0",
+          "Gösterimler": "11",
+          "TO": "0%",
+          "Pozisyon": "8.45"
+        },
+        {
+          "En çok yapılan sorgular": "dersanem net",
+          "Tıklamalar": "0",
+          "Gösterimler": "6",
+          "TO": "0%",
+          "Pozisyon": "6.83"
+        },
+        {
+          "En çok yapılan sorgular": "online lgs matematik",
+          "Tıklamalar": "0",
+          "Gösterimler": "6",
+          "TO": "0%",
+          "Pozisyon": "18.83"
+        },
+        {
+          "En çok yapılan sorgular": "online yks matematik",
+          "Tıklamalar": "0",
+          "Gösterimler": "6",
+          "TO": "0%",
+          "Pozisyon": "19"
+        },
+        {
+          "En çok yapılan sorgular": "tyt matematik çalışma programı",
+          "Tıklamalar": "0",
+          "Gösterimler": "5",
+          "TO": "0%",
+          "Pozisyon": "17.8"
+        },
+        {
+          "En çok yapılan sorgular": "dershanem dershanesi",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "13"
+        },
+        {
+          "En çok yapılan sorgular": "dersham",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "12"
+        },
+        {
+          "En çok yapılan sorgular": "onlıne dershane",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "12.5"
+        }
+      ]
+    },
+    "performance-6-months-2026-10-26": {
+      "start": "2026-04-25",
+      "end": "2026-10-24",
+      "clicks": 117,
+      "impressions": 2569,
+      "ctrPercent": 4.554301284546516,
+      "approxImpressionWeightedPosition": 14.830011677695602,
+      "queryRows": 91,
+      "visibleQueryClicks": 31,
+      "pages": [
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/",
+          "Tıklamalar": "46",
+          "Gösterimler": "618",
+          "TO": "7.44%",
+          "Pozisyon": "14.32"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/",
+          "Tıklamalar": "33",
+          "Gösterimler": "845",
+          "TO": "3.91%",
+          "Pozisyon": "9.75"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/ders-paketleri",
+          "Tıklamalar": "8",
+          "Gösterimler": "212",
+          "TO": "3.77%",
+          "Pozisyon": "7.38"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/yks",
+          "Tıklamalar": "7",
+          "Gösterimler": "182",
+          "TO": "3.85%",
+          "Pozisyon": "8.74"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-dershane-fiyatlari-2026",
+          "Tıklamalar": "5",
+          "Gösterimler": "279",
+          "TO": "1.79%",
+          "Pozisyon": "18.34"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/paketler",
+          "Tıklamalar": "4",
+          "Gösterimler": "40",
+          "TO": "10%",
+          "Pozisyon": "13.45"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/tyt-matematik-calisma-programi",
+          "Tıklamalar": "3",
+          "Gösterimler": "54",
+          "TO": "5.56%",
+          "Pozisyon": "11.81"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/lgs",
+          "Tıklamalar": "2",
+          "Gösterimler": "85",
+          "TO": "2.35%",
+          "Pozisyon": "13.82"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/lgs",
+          "Tıklamalar": "2",
+          "Gösterimler": "50",
+          "TO": "4%",
+          "Pozisyon": "11.54"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog/deneme-analizi-nasil-yapilir/",
+          "Tıklamalar": "2",
+          "Gösterimler": "19",
+          "TO": "10.53%",
+          "Pozisyon": "28"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/online-dershane/",
+          "Tıklamalar": "1",
+          "Gösterimler": "80",
+          "TO": "1.25%",
+          "Pozisyon": "44.02"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-ders-calisma-programi",
+          "Tıklamalar": "1",
+          "Gösterimler": "79",
+          "TO": "1.27%",
+          "Pozisyon": "15.91"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/online-dershane",
+          "Tıklamalar": "1",
+          "Gösterimler": "63",
+          "TO": "1.59%",
+          "Pozisyon": "15.81"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/paketler/",
+          "Tıklamalar": "1",
+          "Gösterimler": "63",
+          "TO": "1.59%",
+          "Pozisyon": "22.27"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/yks/",
+          "Tıklamalar": "1",
+          "Gösterimler": "27",
+          "TO": "3.7%",
+          "Pozisyon": "23.85"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/matematikte-temel-eksigi-nasil-kapatilir",
+          "Tıklamalar": "1",
+          "Gösterimler": "23",
+          "TO": "4.35%",
+          "Pozisyon": "7.22"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/kamplar/",
+          "Tıklamalar": "1",
+          "Gösterimler": "9",
+          "TO": "11.11%",
+          "Pozisyon": "8.33"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/kariyer/",
+          "Tıklamalar": "1",
+          "Gösterimler": "2",
+          "TO": "50%",
+          "Pozisyon": "3.5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/ayt-matematik-calisma-programi",
+          "Tıklamalar": "1",
+          "Gösterimler": "2",
+          "TO": "50%",
+          "Pozisyon": "17"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/urunler/online-dershanem",
+          "Tıklamalar": "0",
+          "Gösterimler": "92",
+          "TO": "0%",
+          "Pozisyon": "14.07"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog/online-dershane-fiyatlari-2026/",
+          "Tıklamalar": "0",
+          "Gösterimler": "46",
+          "TO": "0%",
+          "Pozisyon": "14.52"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog",
+          "Tıklamalar": "0",
+          "Gösterimler": "43",
+          "TO": "0%",
+          "Pozisyon": "17.84"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/iade",
+          "Tıklamalar": "0",
+          "Gösterimler": "40",
+          "TO": "0%",
+          "Pozisyon": "20.65"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/deneme-analizi-nasil-yapilir",
+          "Tıklamalar": "0",
+          "Gösterimler": "35",
+          "TO": "0%",
+          "Pozisyon": "36.91"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/kamplar",
+          "Tıklamalar": "0",
+          "Gösterimler": "27",
+          "TO": "0%",
+          "Pozisyon": "8.67"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/e-dershane-nedir",
+          "Tıklamalar": "0",
+          "Gösterimler": "23",
+          "TO": "0%",
+          "Pozisyon": "20.74"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/gizlilik",
+          "Tıklamalar": "0",
+          "Gösterimler": "21",
+          "TO": "0%",
+          "Pozisyon": "41.48"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-dershane-nedir",
+          "Tıklamalar": "0",
+          "Gösterimler": "13",
+          "TO": "0%",
+          "Pozisyon": "21.38"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/gizlilik/",
+          "Tıklamalar": "0",
+          "Gösterimler": "10",
+          "TO": "0%",
+          "Pozisyon": "46.1"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/kayit",
+          "Tıklamalar": "0",
+          "Gösterimler": "9",
+          "TO": "0%",
+          "Pozisyon": "42.56"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/yks-online-ders-calisma-plani",
+          "Tıklamalar": "0",
+          "Gösterimler": "7",
+          "TO": "0%",
+          "Pozisyon": "9.71"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/uygulamalar/mobil",
+          "Tıklamalar": "0",
+          "Gösterimler": "6",
+          "TO": "0%",
+          "Pozisyon": "6.17"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog/online-ders-calisma-programi/",
+          "Tıklamalar": "0",
+          "Gösterimler": "5",
+          "TO": "0%",
+          "Pozisyon": "5.6"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog/lgs-matematikte-zorlananlar-icin/",
+          "Tıklamalar": "0",
+          "Gösterimler": "5",
+          "TO": "0%",
+          "Pozisyon": "6.2"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/online-dershane",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "2.5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/urunler",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "4.5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/online-ozel-ders",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "5.25"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog/online-ders-calisma-programi",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "5.5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/yks-online-ders-calisma-plani/",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "7.25"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/kariyer",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "19"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/uygulamalar/bilgin",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "2.67"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/paketler",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/matematik-deneme-analizi",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "8"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/tyt",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "9.33"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-ders-disiplini-nasil-kurulur",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "9.33"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/lgs-matematik-calisma-programi",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "10"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog/",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/hakkimizda",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "5"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/urunler/online-kocum",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "5.5"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/blog/online-dershane-fiyatlari-2026",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "12"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/lgs-yeni-nesil-matematik-sorulari",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "32"
+        },
+        {
+          "En alakalı sayfalar": "https://onlinedershanem.com/yks",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "3"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/dino-ai",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "7"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/online-matematik-dersi-nasil-olmali",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "8"
+        },
+        {
+          "En alakalı sayfalar": "http://onlinedershanem.com/tyt",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "10"
+        },
+        {
+          "En alakalı sayfalar": "https://www.onlinedershanem.com/blog/ozel-ders-mi-kucuk-grup-mu",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "11"
+        }
+      ],
+      "devices": [
+        {
+          "Cihaz": "Mobil",
+          "Tıklamalar": "75",
+          "Gösterimler": "1403",
+          "TO": "5.35%",
+          "Pozisyon": "13.79"
+        },
+        {
+          "Cihaz": "Masaüstü",
+          "Tıklamalar": "36",
+          "Gösterimler": "1051",
+          "TO": "3.43%",
+          "Pozisyon": "17.09"
+        },
+        {
+          "Cihaz": "Tablet",
+          "Tıklamalar": "6",
+          "Gösterimler": "115",
+          "TO": "5.22%",
+          "Pozisyon": "7.02"
+        }
+      ],
+      "countries": [
+        {
+          "Ülke": "Türkiye",
+          "Tıklamalar": "114",
+          "Gösterimler": "2315",
+          "TO": "4.92%",
+          "Pozisyon": "13.73"
+        },
+        {
+          "Ülke": "Amerika Birleşik Devletleri",
+          "Tıklamalar": "1",
+          "Gösterimler": "42",
+          "TO": "2.38%",
+          "Pozisyon": "6.67"
+        },
+        {
+          "Ülke": "Kırgızistan",
+          "Tıklamalar": "1",
+          "Gösterimler": "1",
+          "TO": "100%",
+          "Pozisyon": "1"
+        },
+        {
+          "Ülke": "Kosova",
+          "Tıklamalar": "1",
+          "Gösterimler": "1",
+          "TO": "100%",
+          "Pozisyon": "3"
+        },
+        {
+          "Ülke": "Güney Kıbrıs Rum Yönetimi",
+          "Tıklamalar": "0",
+          "Gösterimler": "47",
+          "TO": "0%",
+          "Pozisyon": "10.26"
+        },
+        {
+          "Ülke": "Hindistan",
+          "Tıklamalar": "0",
+          "Gösterimler": "29",
+          "TO": "0%",
+          "Pozisyon": "48.62"
+        },
+        {
+          "Ülke": "Filipinler",
+          "Tıklamalar": "0",
+          "Gösterimler": "18",
+          "TO": "0%",
+          "Pozisyon": "47.89"
+        },
+        {
+          "Ülke": "Endonezya",
+          "Tıklamalar": "0",
+          "Gösterimler": "15",
+          "TO": "0%",
+          "Pozisyon": "50.27"
+        },
+        {
+          "Ülke": "Almanya",
+          "Tıklamalar": "0",
+          "Gösterimler": "12",
+          "TO": "0%",
+          "Pozisyon": "7.08"
+        },
+        {
+          "Ülke": "Hollanda",
+          "Tıklamalar": "0",
+          "Gösterimler": "11",
+          "TO": "0%",
+          "Pozisyon": "5.73"
+        },
+        {
+          "Ülke": "İngiltere",
+          "Tıklamalar": "0",
+          "Gösterimler": "10",
+          "TO": "0%",
+          "Pozisyon": "10.7"
+        },
+        {
+          "Ülke": "Vietnam",
+          "Tıklamalar": "0",
+          "Gösterimler": "6",
+          "TO": "0%",
+          "Pozisyon": "38.83"
+        },
+        {
+          "Ülke": "Meksika",
+          "Tıklamalar": "0",
+          "Gösterimler": "4",
+          "TO": "0%",
+          "Pozisyon": "37.25"
+        },
+        {
+          "Ülke": "İsviçre",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "9"
+        },
+        {
+          "Ülke": "Kanada",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "23.33"
+        },
+        {
+          "Ülke": "Mısır",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "29"
+        },
+        {
+          "Ülke": "Avustralya",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "31.33"
+        },
+        {
+          "Ülke": "Irak",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "33.33"
+        },
+        {
+          "Ülke": "Kenya",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "35.33"
+        },
+        {
+          "Ülke": "Güney Kore",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "39.67"
+        },
+        {
+          "Ülke": "Colombia",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "53.67"
+        },
+        {
+          "Ülke": "İspanya",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "1"
+        },
+        {
+          "Ülke": "Moğolistan",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "1.5"
+        },
+        {
+          "Ülke": "Fransa",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "2.5"
+        },
+        {
+          "Ülke": "Malezya",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "27"
+        },
+        {
+          "Ülke": "Georgia",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "50.5"
+        },
+        {
+          "Ülke": "Brezilya",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "51.5"
+        },
+        {
+          "Ülke": "Dominik Cumhuriyeti",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "59"
+        },
+        {
+          "Ülke": "Singapur",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "1"
+        },
+        {
+          "Ülke": "Suudi Arabistan",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "6"
+        },
+        {
+          "Ülke": "Venezuela",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "8"
+        },
+        {
+          "Ülke": "Litvanya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "11"
+        },
+        {
+          "Ülke": "Slovenya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "13"
+        },
+        {
+          "Ülke": "Nepal",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "16"
+        },
+        {
+          "Ülke": "Japonya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "18"
+        },
+        {
+          "Ülke": "Kuveyt",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "19"
+        },
+        {
+          "Ülke": "Peru",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "24"
+        },
+        {
+          "Ülke": "Çekya",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "33"
+        },
+        {
+          "Ülke": "Fas",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "39"
+        },
+        {
+          "Ülke": "Pakistan",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "42"
+        },
+        {
+          "Ülke": "Guatemala",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "46"
+        },
+        {
+          "Ülke": "Tayvan",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "46"
+        },
+        {
+          "Ülke": "Şili",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "52"
+        },
+        {
+          "Ülke": "Arjantin",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "60"
+        },
+        {
+          "Ülke": "Bulgaristan",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "66"
+        },
+        {
+          "Ülke": "Hong Kong",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "75"
+        },
+        {
+          "Ülke": "Cezayir",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "83"
+        },
+        {
+          "Ülke": "Ekvador",
+          "Tıklamalar": "0",
+          "Gösterimler": "1",
+          "TO": "0%",
+          "Pozisyon": "86"
+        }
+      ],
+      "filters": [
+        {
+          "Filtre uygula": "Arama türü",
+          "Değer": "Web (metin tabanlı)"
+        },
+        {
+          "Filtre uygula": "Tarih",
+          "Değer": "Son 6 ay"
+        }
+      ],
+      "brandedQueryApproximation": {
+        "definition": "online\\s*dershanem|onlinedershanem|y[öo]n\\s*ko[çc]luk|online\\s*ko[çc]um|deneme\\s*ligi|onlinedenemekul[üu]b[üu]m",
+        "rows": [
+          {
+            "En çok yapılan sorgular": "online dershanem",
+            "Tıklamalar": "21",
+            "Gösterimler": "31",
+            "TO": "67.74%",
+            "Pozisyon": "1"
+          }
+        ]
+      },
+      "queryOpportunities": [
+        {
+          "En çok yapılan sorgular": "dershanem",
+          "Tıklamalar": "2",
+          "Gösterimler": "241",
+          "TO": "0.83%",
+          "Pozisyon": "9.05"
+        },
+        {
+          "En çok yapılan sorgular": "online dershane fiyatları",
+          "Tıklamalar": "1",
+          "Gösterimler": "83",
+          "TO": "1.2%",
+          "Pozisyon": "12.6"
+        },
+        {
+          "En çok yapılan sorgular": "dershanem com tr",
+          "Tıklamalar": "1",
+          "Gösterimler": "19",
+          "TO": "5.26%",
+          "Pozisyon": "7.74"
+        },
+        {
+          "En çok yapılan sorgular": "yks canlı ders",
+          "Tıklamalar": "1",
+          "Gösterimler": "3",
+          "TO": "33.33%",
+          "Pozisyon": "19.33"
+        },
+        {
+          "En çok yapılan sorgular": "ayt matematik çalışma programı",
+          "Tıklamalar": "1",
+          "Gösterimler": "2",
+          "TO": "50%",
+          "Pozisyon": "17"
+        },
+        {
+          "En çok yapılan sorgular": "dershanem net",
+          "Tıklamalar": "0",
+          "Gösterimler": "138",
+          "TO": "0%",
+          "Pozisyon": "5.33"
+        },
+        {
+          "En çok yapılan sorgular": "dersanem net",
+          "Tıklamalar": "0",
+          "Gösterimler": "61",
+          "TO": "0%",
+          "Pozisyon": "6.66"
+        },
+        {
+          "En çok yapılan sorgular": "dershanem dershanesi",
+          "Tıklamalar": "0",
+          "Gösterimler": "26",
+          "TO": "0%",
+          "Pozisyon": "10.96"
+        },
+        {
+          "En çok yapılan sorgular": "yks matematik kursu",
+          "Tıklamalar": "0",
+          "Gösterimler": "11",
+          "TO": "0%",
+          "Pozisyon": "8.45"
+        },
+        {
+          "En çok yapılan sorgular": "matematik dershanem",
+          "Tıklamalar": "0",
+          "Gösterimler": "9",
+          "TO": "0%",
+          "Pozisyon": "7.33"
+        },
+        {
+          "En çok yapılan sorgular": "canlı dershane",
+          "Tıklamalar": "0",
+          "Gösterimler": "9",
+          "TO": "0%",
+          "Pozisyon": "17.22"
+        },
+        {
+          "En çok yapılan sorgular": "online lgs matematik",
+          "Tıklamalar": "0",
+          "Gösterimler": "6",
+          "TO": "0%",
+          "Pozisyon": "18.83"
+        },
+        {
+          "En çok yapılan sorgular": "online yks matematik",
+          "Tıklamalar": "0",
+          "Gösterimler": "6",
+          "TO": "0%",
+          "Pozisyon": "19"
+        },
+        {
+          "En çok yapılan sorgular": "tyt matematik çalışma programı",
+          "Tıklamalar": "0",
+          "Gösterimler": "5",
+          "TO": "0%",
+          "Pozisyon": "17.8"
+        },
+        {
+          "En çok yapılan sorgular": "dersham",
+          "Tıklamalar": "0",
+          "Gösterimler": "3",
+          "TO": "0%",
+          "Pozisyon": "10"
+        },
+        {
+          "En çok yapılan sorgular": "onlıne dershane",
+          "Tıklamalar": "0",
+          "Gösterimler": "2",
+          "TO": "0%",
+          "Pozisyon": "12.5"
+        }
+      ]
+    }
+  },
+  "sources": [
+    {
+      "file": "performance-12-month-selection-2026-10-26.zip",
+      "sha256": "ed8f348ae338d0b0c162763c1a1b8be2e7241b5fcf263ea2183c759079cbdc63",
+      "members": [
+        "Grafik.csv",
+        "Sorgular.csv",
+        "Sayfa sayısı.csv",
+        "Ülkeler.csv",
+        "Cihazlar.csv",
+        "Arama görünümü.csv",
+        "Filtreler.csv"
+      ]
+    },
+    {
+      "file": "performance-28-days-2026-10-26.zip",
+      "sha256": "95583a5b90ec388034150f8dc4bd66ec9ee013b1ec80f7ba609e6e1f51531d99",
+      "members": [
+        "Grafik.csv",
+        "Sorgular.csv",
+        "Sayfa sayısı.csv",
+        "Ülkeler.csv",
+        "Cihazlar.csv",
+        "Arama görünümü.csv",
+        "Filtreler.csv"
+      ]
+    },
+    {
+      "file": "performance-28-days-comparison-2026-10-26.zip",
+      "sha256": "c8f12cf161abece4a538089922e8903cb40396932dacadad6120b9ebd206f875",
+      "members": [
+        "Sorgular.csv",
+        "Sayfa sayısı.csv",
+        "Ülkeler.csv",
+        "Cihazlar.csv",
+        "Arama görünümü.csv",
+        "Filtreler.csv"
+      ]
+    },
+    {
+      "file": "performance-3-months-2026-10-26.zip",
+      "sha256": "e05df96e7addc40c4a4891824270d21c34a12f934de423d9655eb407c6532b92",
+      "members": [
+        "Grafik.csv",
+        "Sorgular.csv",
+        "Sayfa sayısı.csv",
+        "Ülkeler.csv",
+        "Cihazlar.csv",
+        "Arama görünümü.csv",
+        "Filtreler.csv"
+      ]
+    },
+    {
+      "file": "performance-6-months-2026-10-26.zip",
+      "sha256": "b9f59637358d92f083337786ad2f59f3ee21d423f09b0775b8937593c46c4baa",
+      "members": [
+        "Grafik.csv",
+        "Sorgular.csv",
+        "Sayfa sayısı.csv",
+        "Ülkeler.csv",
+        "Cihazlar.csv",
+        "Arama görünümü.csv",
+        "Filtreler.csv"
+      ]
+    }
+  ],
+  "previous28Days": {
+    "start": "2026-08-30",
+    "end": "2026-09-26",
+    "daysPresent": 28,
+    "clicks": 22,
+    "impressions": 448,
+    "ctrPercent": 4.910714285714286,
+    "approxImpressionWeightedPosition": 10.877232142857142
+  }
+}
