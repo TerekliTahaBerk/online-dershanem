@@ -60,7 +60,7 @@ test("SPA navigation produces one page view per public page and stops on login",
   await page.getByRole("button", { name: "Evet", exact: true }).click();
   const views = () => page.evaluate(() => (window.dataLayer ?? []).map(value => Array.from(value as ArrayLike<unknown>)).filter(row => row[0] === "event" && row[1] === "page_view"));
   await expect.poll(async () => (await views()).length).toBe(1);
-  await page.getByRole("navigation", { name: "Ürünlere hızlı erişim", exact: true }).getByRole("link", { name: "Yön Koçluk", exact: true }).click();
+  await page.getByRole("group", { name: "Markalar", exact: true }).getByRole("link", { name: "Yön Koçluk ürününü incele", exact: true }).click();
   await expect(page).toHaveURL(/\/urunler\/online-kocum$/);
   await expect.poll(async () => (await views()).length).toBe(2);
   await page.getByRole("link", { name: "Giriş Yap", exact: true }).click();

@@ -14,7 +14,7 @@ import { ProductsMenu } from "@/components/site/products-menu";
 import { CartHeaderLink } from "@/components/cart/cart-header-link";
 
 /**
- * Public site header — solda marka, ortada ürünler, sağda giriş ve CTA.
+ * Public site header — solda menü, ortada üç marka, sağda giriş ve CTA.
  * Genişlik ürün adlarını tek satırda taşımaya yetmediğinde mobil menüye geçer.
  */
 export function SiteHeaderClient({
@@ -60,9 +60,9 @@ export function SiteHeaderClient({
       >
         <div className="site-container">
           {/* Handoff 01 Navbar: 76px, sticky; masaüstünde 1fr auto 1fr — solda
-              menü, ortada marka, sağda giriş + birincil CTA. Mobilde 44px'lik
+              menü, ortada markalar, sağda giriş + birincil CTA. Mobilde 56px'lik
               satır + hamburger drawer. */}
-          <div className="grid h-[56px] grid-cols-[auto_1fr] items-center gap-4 lg:h-[76px] lg:grid-cols-[1fr_auto_1fr]">
+          <div className="grid min-h-[56px] grid-cols-[auto_minmax(0,1fr)] items-center gap-2 sm:gap-4 lg:h-[76px] lg:grid-cols-[1fr_auto_1fr]">
             {/* Sol — masaüstü menü */}
             <nav
               aria-label="Ana menü"
@@ -87,26 +87,33 @@ export function SiteHeaderClient({
               ))}
             </nav>
 
-            {/* Orta — marka */}
-            <Link
-              href="/"
-              aria-label="onlinedershanem. ana sayfa"
-              className="flex min-h-11 min-w-11 shrink-0 items-center justify-center lg:order-2 lg:justify-self-center"
-            >
-              {/* Handoff: 38×38, radius 10, object-fit cover */}
-              <Image
-                src="/design/od-logo.png"
-                alt="onlinedershanem."
-                width={1254}
-                height={1254}
-                priority
-                sizes="38px"
-                className="h-9 w-9 rounded-od object-cover sm:h-[38px] sm:w-[38px]"
-              />
-            </Link>
+            {/* Orta — Yön Koçluk / OD / Deneme Ligi */}
+            <div role="group" aria-label="Markalar" className="flex shrink-0 items-center sm:gap-1 lg:order-2 lg:justify-self-center">
+              <CampaignLink href="/urunler/online-kocum" aria-label="Yön Koçluk ürününü incele" className="flex min-h-11 min-w-11 shrink-0 items-center justify-center">
+                <Image src="/yon/logo.png" alt="Yön Koçluk" width={1254} height={1254} sizes="38px" className="h-9 w-9 rounded-od object-cover sm:h-[38px] sm:w-[38px]" />
+              </CampaignLink>
+              <Link
+                href="/"
+                aria-label="onlinedershanem. ana sayfa"
+                className="flex min-h-11 min-w-11 shrink-0 items-center justify-center"
+              >
+                <Image
+                  src="/design/od-logo.png"
+                  alt="onlinedershanem."
+                  width={1254}
+                  height={1254}
+                  priority
+                  sizes="38px"
+                  className="h-9 w-9 rounded-od object-cover sm:h-[38px] sm:w-[38px]"
+                />
+              </Link>
+              <CampaignLink href="/urunler/online-deneme-kulubum" aria-label="Deneme Ligi ürününü incele" className="flex min-h-11 min-w-11 shrink-0 items-center justify-center">
+                <Image src="/deneme-ligi/logo.png" alt="Deneme Ligi" width={1254} height={1254} sizes="38px" className="h-9 w-9 rounded-od object-cover sm:h-[38px] sm:w-[38px]" />
+              </CampaignLink>
+            </div>
 
             {/* Sağ — aksiyonlar / hamburger */}
-            <div className="ml-auto flex items-center gap-2 sm:gap-3 lg:order-3">
+            <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2 py-1 sm:gap-3 lg:order-3">
               <Link
                 href={navLogin.href}
                 aria-current={isActive(navLogin.href) ? "page" : undefined}
@@ -140,13 +147,6 @@ export function SiteHeaderClient({
             </div>
           </div>
         </div>
-        <nav aria-label="Ürünlere hızlı erişim" className="hidden border-t border-(--site-line) lg:block">
-          <div className="site-container flex min-h-12 flex-wrap items-center justify-center gap-x-8 gap-y-1">
-            {products.map((product) => <CampaignLink key={product.href} href={product.href} aria-current={isActive(product.href) ? "page" : undefined} className="inline-flex min-h-11 items-center text-sm font-bold text-(--site-ink) hover:underline">
-              {product.registryCode === "OD" ? "Online Dershanem" : product.registryCode === "OK" ? "Yön Koçluk" : product.registryCode === "ODK" ? "Deneme Ligi" : product.name}
-            </CampaignLink>)}
-          </div>
-        </nav>
       </header>
 
       <MobileMenu
